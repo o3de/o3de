@@ -1,0 +1,29 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        {
+                            "Decompressor Registrar":
+                            {
+                                "$type": "DecompressorRegistrarConfig",
+                                // Slots after the "Decompressor" entry from the
+                                // `<engine-root>/Registry/streamer.game.setreg` file
+                                "$stack_after": "Decompressor",
+                                "MaxNumReads": 2,
+                                "MaxNumTasks": 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

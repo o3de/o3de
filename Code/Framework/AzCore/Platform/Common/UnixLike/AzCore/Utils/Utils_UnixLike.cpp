@@ -94,6 +94,34 @@ namespace AZ::Utils
         return AZ::IO::PathView(absolutePath).IsAbsolute();
     }
 
+    GetEnvOutcome GetEnv(AZStd::span<char> valueBuffer, const char* envname)
+    {
+        if (const char* envValue = std::getenv(envname);
+            envValue != nullptr)
+        {
+            if (AZStd::string_view utf8Value(envValue);
+                valueBuffer.size() >= utf8Value.size())
+            {
+                // copy the utf8 string value over to the value buffer
+                utf8Value.copy(valueBuffer.data(), valueBuffer.size());
+                // return a string that points the beginning of the span buffer
+                // with a size that is set to the environment variable value string
+                return AZStd::string_view(valueBuffer.data(), utf8Value.size());
+            }
+            else
+            {
+                return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::BufferTooSmall, utf8Value.size() });
+            }
+        }
+
+        return AZ::Failure(GetEnvErrorResult{ GetEnvErrorCode::EnvNotSet });
+    }
+
+    bool IsEnvSet(const char* envname)
+    {
+        return std::getenv(envname) != nullptr;
+    }
+
     bool SetEnv(const char* envname, const char* envvalue, bool overwrite)
     {
         return setenv(envname, envvalue, overwrite) != -1;

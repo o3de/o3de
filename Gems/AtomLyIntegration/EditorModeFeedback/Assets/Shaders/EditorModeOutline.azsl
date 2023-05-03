@@ -7,19 +7,6 @@
  */
 
 #include <EditorModeCommon.azsli>
-#include <EditorModeDepthTransition.azsli>
-
-partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{    
-    //! Outline line thickness.
-    float m_lineThickness;
-
-    //! Outline line color.
-    float4 m_lineColor;
-
-    //! Outline style to use (0 = OutlineStyle::Always, 1 = OutlineStyle::Visible)
-    uint m_outlineStyle;
-}
 
 //! Applies an outline effect to the entity mask of the specified line thickness.
 //! @returns The outlines of both the visible entities of interest fragments (red) and visible and

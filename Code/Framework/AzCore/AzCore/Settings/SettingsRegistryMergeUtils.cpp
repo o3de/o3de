@@ -82,7 +82,7 @@ namespace AZ::Internal
 
     static constexpr const char* ProductCacheDirectoryName = "Cache";
 
-    AZ::Outcome<void, AZStd::string> MergeEngineAndProjectSettings(
+    SettingsRegistryInterface::MergeSettingsResult MergeEngineAndProjectSettings(
         AZ::SettingsRegistryInterface& settingsRegistry,
         const AZ::IO::FixedMaxPath& engineJsonPath,
         const AZ::IO::FixedMaxPath& projectJsonPath,
@@ -103,7 +103,9 @@ namespace AZ::Internal
         AZ::IO::FixedMaxPath mergedProjectJsonPath;
         if (settingsRegistry.Get(mergedProjectJsonPath.Native(), InternalProjectJsonPathKey); mergedProjectJsonPath == projectJsonPath)
         {
-            return AZ::Success();
+            SettingsRegistryInterface::MergeSettingsResult result;
+            result.m_returnCode = SettingsRegistryInterface::MergeSettingsReturnCode::Success;
+            return result;
         }
 
         if (auto outcome = settingsRegistry.MergeSettingsFile(projectJsonPath.LexicallyNormal().c_str(), format, ProjectSettingsRootKey);
@@ -121,7 +123,9 @@ namespace AZ::Internal
         // Set the InternalProjectJsonPathKey to avoid loading again
         settingsRegistry.Set(InternalProjectJsonPathKey, projectJsonPath.Native());
 
-        return AZ::Success();
+        SettingsRegistryInterface::MergeSettingsResult result;
+        result.m_returnCode = SettingsRegistryInterface::MergeSettingsReturnCode::Success;
+        return result;
     }
 
     AZ::IO::FixedMaxPath GetCommandLineOption(
@@ -213,7 +217,7 @@ namespace AZ::Internal
             projectJsonPath, projectUserJsonPath);
             !outcome)
         {
-            return outcome;
+            return AZ::Failure(outcome.m_operationMessages);
         }
 
         // In project.json look for the "engine" key.
@@ -900,6 +904,12 @@ namespace AZ::SettingsRegistryMergeUtils
         }
         case ConfigParserSettings::FileReaderClass::UseSystemFileOnly:
         {
+            // If the file path is a dash, read from stdin instead
+            if (filePath == "-")
+            {
+                systemFileStream = AZ::IO::SystemFileStream(AZ::IO::SystemFile::GetStdin());
+                configFile = &systemFileStream;
+            }
             if (systemFileStream.Open(configPath.c_str(), AZ::IO::OpenMode::ModeRead))
             {
                 configFile = &systemFileStream;
@@ -1117,14 +1127,17 @@ namespace AZ::SettingsRegistryMergeUtils
 #endif // AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
     }
 
-    void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    auto MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+        -> SettingsRegistryInterface::MergeSettingsResult
     {
+        SettingsRegistryInterface::MergeSettingsResult aggregateMergeResult;
+
         AZ::IO::FixedMaxPath mergePath = AZ::Utils::GetExecutableDirectory();
         if (!mergePath.empty())
         {
-            registry.MergeSettingsFolder((mergePath / SettingsRegistryInterface::RegistryFolder).Native(),
-                specializations, platform, "", scratchBuffer);
+            aggregateMergeResult.Combine(registry.MergeSettingsFolder((mergePath / SettingsRegistryInterface::RegistryFolder).Native(),
+                specializations, platform, "", scratchBuffer));
         }
 
         // Look within the Cache Root directory for target build dependency .setreg files
@@ -1135,7 +1148,7 @@ namespace AZ::SettingsRegistryMergeUtils
             AZStd::fixed_string<32> registryFolderLower(SettingsRegistryInterface::RegistryFolder);
             AZStd::to_lower(registryFolderLower.begin(), registryFolderLower.end());
             mergePath /= registryFolderLower;
-            registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
+            aggregateMergeResult.Combine(registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer));
         }
 
         AZ::IO::FixedMaxPath projectBinPath;
@@ -1143,24 +1156,31 @@ namespace AZ::SettingsRegistryMergeUtils
         {
             // Append the project build path path to the project root
             projectBinPath /= SettingsRegistryInterface::RegistryFolder;
-            registry.MergeSettingsFolder(projectBinPath.Native(), specializations, platform, "", scratchBuffer);
+            aggregateMergeResult.Combine(registry.MergeSettingsFolder(projectBinPath.Native(), specializations, platform, "", scratchBuffer));
         }
+
+        return aggregateMergeResult;
     }
 
-    void MergeSettingsToRegistry_EngineRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    auto MergeSettingsToRegistry_EngineRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+        -> SettingsRegistryInterface::MergeSettingsResult
     {
+        SettingsRegistryInterface::MergeSettingsResult mergeResult;
         AZ::SettingsRegistryInterface::FixedValueString engineRootPath;
         if (registry.Get(engineRootPath, FilePathKey_EngineRootFolder))
         {
             AZ::IO::FixedMaxPath mergePath{ AZStd::move(engineRootPath) };
             mergePath /= SettingsRegistryInterface::RegistryFolder;
-            registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
+            mergeResult.Combine(registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer));
         }
+
+        return mergeResult;
     }
 
-    void MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    auto MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+        -> SettingsRegistryInterface::MergeSettingsResult
     {
         // collect the paths first, then mutate the registry, so that we do not do any registry modifications while visiting it.
         AZStd::vector<AZ::IO::FixedMaxPath> gemPaths;
@@ -1172,58 +1192,73 @@ namespace AZ::SettingsRegistryMergeUtils
 
         VisitActiveGems(registry, CollectRegistryFolders);
 
+        SettingsRegistryInterface::MergeSettingsResult aggregateMergeResult;
         for (const auto& gemPath : gemPaths)
         {
-            registry.MergeSettingsFolder(
-                (gemPath / SettingsRegistryInterface::RegistryFolder).Native(), specializations, platform, "", scratchBuffer);
+            aggregateMergeResult.Combine(registry.MergeSettingsFolder(
+                (gemPath / SettingsRegistryInterface::RegistryFolder).Native(), specializations, platform, "", scratchBuffer));
         }
+
+        return aggregateMergeResult;
     }
 
-    void MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    auto MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+        -> SettingsRegistryInterface::MergeSettingsResult
     {
-        AZ::SettingsRegistryInterface::FixedValueString sourceGamePath;
-        if (registry.Get(sourceGamePath, FilePathKey_ProjectPath))
+        SettingsRegistryInterface::MergeSettingsResult mergeResult;
+        AZ::SettingsRegistryInterface::FixedValueString projectPath;
+        if (registry.Get(projectPath, FilePathKey_ProjectPath))
         {
-            AZ::IO::FixedMaxPath mergePath{ sourceGamePath };
+            AZ::IO::FixedMaxPath mergePath{ projectPath };
             mergePath /= SettingsRegistryInterface::RegistryFolder;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
         }
+
+        return mergeResult;
     }
 
-    void MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    auto MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+        -> SettingsRegistryInterface::MergeSettingsResult
     {
-        // Unlike other paths, the path can't be overwritten by the dev settings because that would create a circular dependency.
+        SettingsRegistryInterface::MergeSettingsResult mergeResult;
+        // Unlike other paths, the path can't be overwritten by the user settings because that would create a circular dependency.
         AZ::IO::FixedMaxPath projectUserPath;
         if (registry.Get(projectUserPath.Native(), FilePathKey_ProjectPath))
         {
             projectUserPath /= SettingsRegistryInterface::DevUserRegistryFolder;
-            registry.MergeSettingsFolder(projectUserPath.Native(), specializations, platform, "", scratchBuffer);
+            mergeResult.Combine(registry.MergeSettingsFolder(projectUserPath.Native(), specializations, platform, "", scratchBuffer));
         }
+
+        return mergeResult;
     }
 
-    void MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+    auto MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer)
+        -> SettingsRegistryInterface::MergeSettingsResult
     {
+        SettingsRegistryInterface::MergeSettingsResult mergeResult;
         if (AZ::IO::FixedMaxPath o3deUserPath = AZ::Utils::GetO3deManifestDirectory(); !o3deUserPath.empty())
         {
             o3deUserPath /= SettingsRegistryInterface::RegistryFolder;
-            registry.MergeSettingsFolder(o3deUserPath.Native(), specializations, platform, "", scratchBuffer);
+            mergeResult.Combine(registry.MergeSettingsFolder(o3deUserPath.Native(), specializations, platform, "", scratchBuffer));
         }
+
+        return mergeResult;
     }
 
     // This function intentionally copies `commandLine`. It looks like it only uses it as a const reference, but the
     // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
     // ensures that the iterators remain valid.
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeRegdumpCommands)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, const CommandsToParse& commandsToParse)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
         for (const CommandLine::CommandArgument& commandArgument : commandLine)
         {
-            if (commandArgument.m_option == "regset")
+            if (commandsToParse.m_parseRegsetCommands && commandArgument.m_option == "regset")
             {
                 if (!registry.MergeCommandLineArgument(commandArgument.m_value, AZStd::string_view{}))
                 {
@@ -1232,7 +1267,8 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
-            else if (commandArgument.m_option == "regset-file")
+            // Only merge the regset-file when executeReg
+            else if (commandsToParse.m_parseRegsetFileCommands && commandArgument.m_option == "regset-file")
             {
                 AZStd::string_view fileArg(commandArgument.m_value);
                 AZStd::string_view jsonAnchorPath;
@@ -1250,15 +1286,19 @@ namespace AZ::SettingsRegistryMergeUtils
                     const auto mergeFormat = filePath.Extension() != ".setregpatch"
                         ? AZ::SettingsRegistryInterface::Format::JsonMergePatch
                         : AZ::SettingsRegistryInterface::Format::JsonPatch;
-                    if (!registry.MergeSettingsFile(filePath.Native(), mergeFormat, jsonAnchorPath))
+                    if (auto mergeResult = registry.MergeSettingsFile(filePath.Native(), mergeFormat, jsonAnchorPath);
+                        !mergeResult)
                     {
-                        AZ_Warning("SettingsRegistryMergeUtils", false, R"(Merging of file "%.*s" to the Settings Registry has failed at anchor  "%.*s".)",
-                            AZ_STRING_ARG(filePath.Native()), AZ_STRING_ARG(jsonAnchorPath));
+                        AZ_Warning("SettingsRegistryMergeUtils", false,
+                            R"(Merging of file "%.*s" to the Settings Registry has failed at anchor "%.*s".)" "\n"
+                            "Error message is %s",
+                            AZ_STRING_ARG(filePath.Native()), AZ_STRING_ARG(jsonAnchorPath)
+                            , mergeResult.GetMessages().c_str());
                         continue;
                     }
                 }
             }
-            else if (commandArgument.m_option == "regremove")
+            else if (commandsToParse.m_parseRegremoveCommands && commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {
@@ -1269,7 +1309,7 @@ namespace AZ::SettingsRegistryMergeUtils
             }
         }
 
-        if (executeRegdumpCommands)
+        if (commandsToParse.m_parseRegdumpCommands)
         {
             constexpr bool prettifyOutput = true;
             const size_t regdumpSwitchValues = commandLine.GetNumSwitchValues("regdump");

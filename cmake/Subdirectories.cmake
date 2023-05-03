@@ -207,7 +207,7 @@ function(resolve_gem_dependencies object_type object_path)
         set(user_external_subdir_option -ed "${user_external_subdirs}")
     endif()
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" ${user_external_subdir_option}
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" --engine-path "${LY_ROOT_FOLDER}" ${user_external_subdir_option}
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}
         RESULT_VARIABLE O3DE_CLI_RESULT
         OUTPUT_VARIABLE resolved_gem_dependency_output 
@@ -236,6 +236,20 @@ function(resolve_gem_dependencies object_type object_path)
                 cmake_path(SET current_gem_path "${current_gem_path}")
                 cmake_path(COMPARE "${gem_path}" NOT_EQUAL "${current_gem_path}" paths_are_different)
                 if (paths_are_different)
+
+                    if (PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")
+                        # Changing the case can cause problems on Windows where the drive
+                        # letter can be upper or lower case in CMake 
+                        string(TOLOWER "${current_gem_path}" current_gem_path_lower)
+                        string(TOLOWER "${gem_path}" gem_path_lower)
+
+                        if(current_gem_path_lower STREQUAL gem_path_lower)
+                            message(VERBOSE "Not replacing existing path '${current_gem_path}' with different case '${gem_path}'")
+                            unset(gem_name)
+                            continue()
+                        endif()
+                    endif()
+
                     message(VERBOSE "Multiple paths were found for the same gem '${gem_name}'.\n  Current:'${current_gem_path}'\n  New:'${gem_path}'")
                 endif()
             else()
@@ -424,14 +438,14 @@ function(get_external_subdirectories_in_use output_subdirs)
     get_all_external_subdirectories_for_o3de_object(engine_external_subdirs "ENGINE" "" ${LY_ROOT_FOLDER} "engine.json")
     list(APPEND all_external_subdirs ${engine_external_subdirs})
 
-    # Visit each LY_PROJECTS entry and append the external subdirectories
+    # Visit each O3DE_PROJECTS_PATHS entry and append the external subdirectories
     # the project provides and references
     get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
-    foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
-        file(REAL_PATH ${project_path} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    get_property(O3DE_PROJECTS_PATHS GLOBAL PROPERTY O3DE_PROJECTS_PATHS)
+    foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME O3DE_PROJECTS_PATHS)
         # Append the project root path to the list of external subdirectories so that it is visited
         list(APPEND all_external_subdirs ${project_path})
-        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" ${full_directory_path} "project.json")
+        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" "${project_path}" "project.json")
         list(APPEND all_external_subdirs ${external_subdirs})
     endforeach()
 
