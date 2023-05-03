@@ -39,7 +39,19 @@
 AZ_CVAR(AZ::CVarFixedString, sa_image_compare_app_path, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_PATH, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare app path");
 AZ_CVAR(AZ::CVarFixedString, sa_image_compare_arguments, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_ARGUMENTS, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare arguments");
 AZ_CVAR(bool, sa_launch_image_compare_for_failed_baseline_compare, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should ScriptAutomation launch an image compare for every failed screenshot baseline compare");
-
+/* sa_launch_image_compare_for_failed_baseline_compare can be set to true for local work by adding a setreg file containing the below json
+ * {
+ *      "Amazon": {
+ *          "AzCore": {
+ *              "Runtime": {
+ *                  "ConsoleCommands": {
+ *                      "sa_launch_image_compare_for_failed_baseline_compare": 1
+ *                  }
+ *              }
+ *          }
+ *      }
+ *  }
+ */
 namespace AZ::Platform
 {
     bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments);
