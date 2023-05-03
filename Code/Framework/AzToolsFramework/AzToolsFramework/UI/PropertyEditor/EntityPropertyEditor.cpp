@@ -1862,10 +1862,18 @@ namespace AzToolsFramework
     {
         if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
         {
-            // Get icon path based on current component override state
-            AZStd::string iconOverlayPath;
             const AZStd::vector<AZ::Component*>& components = componentEditor.GetComponents();
             AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
+
+            // Overrides on container entities are for internal use only and should not be exposed
+            AZ::EntityId entityId = components[0]->GetEntityId();
+            if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
+            {
+                return;
+            }
+
+            // Get icon path based on current component override state
+            AZStd::string iconOverlayPath;
             AZ::EntityComponentIdPair entityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId());
             if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair);
                 overrideType.has_value())
