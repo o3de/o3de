@@ -16,42 +16,49 @@ namespace AZ::Platform
 {
     bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments)
     {
-            bool result = true;
+        AZ_Info("ScriptAutomation", "Attempting to launch \"%s %s\"", progPath.c_str(), arguments.c_str());
 
-            // Fork a process to run Beyond Compare app
-            pid_t childPid = fork();
+        // do this in the parent process for debugability.
+        AZStd::string localProgPathCopy = progPath; // duplicate so we can have a non-const ptr to the data.
+        AZStd::vector<AZStd::string> argumentTokens;
+        auto SplitString = [&argumentTokens](AZStd::string_view token)
+        {
+            argumentTokens.emplace_back(token);
+        };
+        AZ::StringFunc::TokenizeVisitor(arguments, SplitString, " \t");
 
-            if (childPid == 0)
-            {
-                AZStd::vector<AZstd::string> argumentTokens;
-                auto SplitString = [&argumentTokens](AZStd::string_view token)
-                {
-                    argumentTokens.emplace_back(token);
-                };
-                AZ::StringFunc::TokenizeVisitor(arguments, SplitString, " \t");
-                // In child process
-                AZStd::vector<char*> args;
-                args.push_back(progPath.c_str());
-                for (const auto& argument: argumentTokens)
-                {
-                    args.push_back(argument.c_str());
-                }
-                args.push_back(static_cast<char*>(0));
-                execv(progPath.c_str(), args.data());
+        AZStd::vector<char*> args;
+        args.push_back(localProgPathCopy.data());
+        AZ_Info("ScriptAutomation", "Attempting to launch app\"%s\"", localProgPathCopy.data());
 
-                AZ_Error(
-                    "LaunchProgram", false,
-                    "LaunchProgram: Unable to launch executable %s : errno = %s."
-                    "line tools.",
-                    progPath.c_str(), strerror(errno));
+        for (auto& argument: argumentTokens)
+        {
+            args.push_back(argument.data());
+            AZ_Info("ScriptAutomation", "\targument:\"%s\"", argument.data());
+        }
+        args.push_back(static_cast<char*>(0));
 
-                _exit(errno);
-            }
-            else
-            {
-                result = false;
-            }
 
-            return result;
+        // Fork a process for execv to take over
+        pid_t childPid = fork();
+
+        if (childPid == 0)
+        {
+            // In child process
+            execv(localProgPathCopy.c_str(), args.data());
+            // execv never returns unless the launch failed.
+            // The new program takes over the child process and will exit the child process when done.
+            // This code should never be executed unless the execv call failed.
+            AZ_Error(
+                "LaunchProgram", false,
+                "LaunchProgram: Unable to launch executable %s : errno = %s."
+                "line tools.",
+                localProgPathCopy.c_str(), strerror(errno));
+
+            _exit(errno);
+        }
+
+
+        return true;
     }
 }
