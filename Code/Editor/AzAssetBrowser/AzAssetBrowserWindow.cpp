@@ -145,7 +145,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_createButton->setAutoRaise(true);
         m_ui->m_createButton->setPopupMode(QToolButton::InstantPopup);
 
-        //m_ui->m_addToFavoritesButton->setMenu(m_createMenu);
+        m_ui->m_addToFavoritesButton->setToolTip(tr("Save Search"));
         m_ui->m_addToFavoritesButton->setEnabled(true);
         m_ui->m_addToFavoritesButton->setAutoRaise(true);
         m_ui->m_addToFavoritesButton->setPopupMode(QToolButton::InstantPopup);
@@ -238,7 +238,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_thumbnailViewButton->hide();
         m_ui->m_expandedTableViewButton->hide();
         m_ui->m_createButton->hide();
+        m_ui->m_addToFavoritesButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        m_ui->m_assetBrowserFavoritesWidget->hide();
     }
 
     m_ui->horizontalLayout->setAlignment(m_ui->m_toolsMenuButton, Qt::AlignTop);

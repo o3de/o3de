@@ -14,6 +14,7 @@
 
 #include <QHeaderView>
 #include <QMenu>
+#include <QMimeData>
 #include <QMouseEvent>
 
 namespace AzToolsFramework
@@ -30,9 +31,17 @@ namespace AzToolsFramework
             setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
             setContextMenuPolicy(Qt::CustomContextMenu);
 
+            setDragEnabled(true);
+            setAcceptDrops(true);
+            setDragDropMode(QAbstractItemView::DropOnly);
+            setDropIndicatorShown(true);
+            setContextMenuPolicy(Qt::CustomContextMenu);
+
             m_delegate.data()->SetShowFavoriteIcons(true);
 
             header()->hide();
+
+            m_favoritesModel->
 
             connect(m_delegate.data(), &EntryDelegate::RenameEntry, this, &AssetBrowserFavoritesView::AfterRename);
             connect(this, &QTreeView::customContextMenuRequested, this, &AssetBrowserFavoritesView::OnContextMenu);
@@ -124,6 +133,15 @@ namespace AzToolsFramework
 
                 m_favoritesModel.data()->SaveFavorites();
             }
+        }
+
+        void AssetBrowserFavoritesView::dragMoveEvent(QDragMoveEvent* event)
+        {
+            if (event->mimeData()->hasFormat(AssetBrowserEntry::GetMimeType()))
+            {
+                return;
+            }
+            event->accept();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

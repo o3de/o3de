@@ -39,6 +39,10 @@ namespace AzToolsFramework
 
             void AfterRename(QString newName);
 
+        protected:
+            // Qt overrides
+            void dragMoveEvent(QDragMoveEvent* event) override;
+
         private:
             QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFavoritesModel> m_favoritesModel;
             QScopedPointer<FavoritesEntryDelegate> m_delegate;

@@ -17,6 +17,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h>
@@ -97,29 +98,19 @@ namespace AzToolsFramework
 
             if (index.isValid())
             {
-                    if (index.parent().isValid())
-                    {
-                        AssetBrowserFavoriteItem* item = m_favorites.at(index.row());
-                        if (item->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)
-                        {
-                            defaultFlags |= Qt::ItemIsEditable;
-                        }
-                    }
-
-                // We can only drop items onto folders so set flags accordingly
-                /* AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
-                if (item)
+                if (index.parent().isValid())
                 {
+                    AssetBrowserFavoriteItem* item = m_favorites.at(index.row());
+                    if (item->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)
+                    {
+                        defaultFlags |= Qt::ItemIsEditable;
+                    }
                     if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) ||
                         item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
                     {
                         return Qt::ItemIsDragEnabled | defaultFlags;
                     }
-                    if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
-                    {
-                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
-                    }
-                }*/
+                }
             }
             return defaultFlags;
         }
@@ -188,6 +179,70 @@ namespace AzToolsFramework
                 return createIndex(0, 0);
             }
             return QModelIndex();
+        }
+
+        QStringList AssetBrowserFavoritesModel::mimeTypes() const
+        {
+            QStringList list = QAbstractItemModel::mimeTypes();
+            list.append(AssetBrowserEntry::GetMimeType());
+            return list;
+        }
+
+        bool AssetBrowserFavoritesModel::dropMimeData(
+            const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+        {
+            if (action == Qt::IgnoreAction)
+                return true;
+
+            AZStd::vector<const AssetBrowserEntry*> entries;
+
+            if (Utils::FromMimeData(data, entries))
+            {
+                for (auto entry : entries)
+                {
+                    if (!entry)
+                    {
+                        continue;
+                    }
+                    if (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()) ||
+                         entry->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()))
+                    {
+                        AddFavoriteAsset(entry);
+                    }
+                }
+                return true;
+            }
+
+            return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+        }
+
+        Qt::DropActions AssetBrowserFavoritesModel::supportedDropActions() const
+        {
+            return Qt::CopyAction;
+        }
+
+        QMimeData* AssetBrowserFavoritesModel::mimeData(const QModelIndexList& indexes) const
+        {
+            QMimeData* mimeData = new QMimeData;
+
+            AZStd::vector<const AssetBrowserEntry*> collected;
+            collected.reserve(indexes.size());
+
+            for (const auto& index : indexes)
+            {
+                if (index.isValid())
+                {
+                    const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(index.internalPointer());
+                    if (item)
+                    {
+                        collected.push_back(item);
+                    }
+                }
+            }
+
+            Utils::ToMimeData(mimeData, collected);
+
+            return mimeData;
         }
 
         void AssetBrowserFavoritesModel::SetSearchWidget(SearchWidget* searchWidget)
