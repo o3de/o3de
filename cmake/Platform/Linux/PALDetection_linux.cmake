@@ -8,3 +8,6 @@
 
 ly_set(LY_PLATFORM_DETECTION_Linux Linux)
 ly_set(LY_HOST_PLATFORM_DETECTION_Linux Linux)
+
+# Linux supports multiple system architectures
+ly_set(LY_HOST_ARCHITECTURE_DETECTION_Linux ${CMAKE_SYSTEM_PROCESSOR})

@@ -42,13 +42,21 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, FromMatrix3x3_Call_GetExpectedResult)
     {
         auto actualResult = QuaternionFunctions::FromMatrix3x3(AZ::Matrix3x3::CreateIdentity());
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Quaternion::CreateIdentity()));
+#else
         EXPECT_EQ(actualResult, AZ::Quaternion::CreateIdentity());
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, FromMatrix4x4_Call_GetExpectedResult)
     {
         auto actualResult = QuaternionFunctions::FromMatrix4x4(AZ::Matrix4x4::CreateIdentity());
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Quaternion::CreateIdentity()));
+#else
         EXPECT_EQ(actualResult, AZ::Quaternion::CreateIdentity());
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, FromTransform_Call_GetExpectedResult)
@@ -90,7 +98,12 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, LengthReciprocal_Call_GetExpectedResult)
     {
         auto actualResult = QuaternionFunctions::LengthReciprocal(AZ::Quaternion::CreateIdentity());
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        constexpr float tolerance = 0.00001f;
+        EXPECT_NEAR(actualResult, 1.0f, tolerance);
+#else
         EXPECT_EQ(actualResult, 1);
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, LengthSquared_Call_GetExpectedResult)

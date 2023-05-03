@@ -10,9 +10,21 @@
 #define AZ_PLATFORM_LINUX
 
 // Hardware traits ...
-#define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 0
-#define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 0
-#define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 1
+#if __ARM_ARCH
+    #if __ARM_NEON
+        #define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 0
+        #define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 1
+        #define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 0
+    #else
+        #define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 1
+        #define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 0
+        #define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 0
+    #endif // __ARM_NEON
+#else
+    #define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 0
+    #define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 0
+    #define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 1
+#endif // __ARM_ARCH
 
 // OS traits ...
 #define AZ_TRAIT_OS_ALLOW_MULTICAST 1
