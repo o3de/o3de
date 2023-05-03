@@ -163,7 +163,7 @@ namespace AZ::IO
                 // triggered event
                 struct kevent triggeredEvent;
                 if (int triggeredResult = kevent(static_cast<int>(m_pipeData), nullptr, 0, &triggeredEvent, 1, &timeout);
-                    triggeredResult > 0 && (triggeredEvent->fflags & EV_EOF) == 0)
+                    triggeredResult > 0 && (triggeredEvent.fflags & EV_EOF) == 0)
                 {
                     Flush();
                 }

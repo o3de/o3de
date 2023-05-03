@@ -148,7 +148,6 @@ namespace AzToolsFramework
                 {
                     QIcon icon;
                     icon.addFile(path, size, QIcon::Normal, QIcon::Off);
-                    AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
                     icon.paint(painter, QRect(point.x(), point.y(), size.width(), size.height()));
                 }
                 else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())

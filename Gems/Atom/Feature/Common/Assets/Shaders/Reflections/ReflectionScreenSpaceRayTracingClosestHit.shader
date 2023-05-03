@@ -17,6 +17,8 @@
         ]
     },
 
+    "DisabledRHIBackends": ["metal"],
+    
     "Supervariants":
     [
         {

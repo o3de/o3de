@@ -9,6 +9,7 @@
 #include "EditorDefs.h"
 
 #include "AzAssetBrowserWindow.h"
+#include "AzAssetBrowserMultiWindow.h"
 
 #include <AssetBrowser/Views/AssetBrowserTreeView.h>
 
@@ -465,6 +466,11 @@ void AzAssetBrowserWindow::CreateToolsMenu()
 
     if (ed_useWIPAssetBrowserDesign)
     {
+        auto* openNewAction = new QAction(tr("Open Another Asset Browser"), this);
+        connect(openNewAction, &QAction::triggered, this, [] { AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow(); });
+        m_toolsMenu->addAction(openNewAction);
+
+        m_toolsMenu->addSeparator();
         auto* collapseAllAction = new QAction(tr("Collapse All"), this);
         connect(collapseAllAction, &QAction::triggered, this, [this] { m_ui->m_assetBrowserTreeViewWidget->collapseAll(); });
         m_toolsMenu->addAction(collapseAllAction);

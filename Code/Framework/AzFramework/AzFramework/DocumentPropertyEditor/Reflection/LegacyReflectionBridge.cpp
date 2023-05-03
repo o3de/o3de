@@ -853,6 +853,13 @@ namespace AZ::Reflection
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
                 }
 
+                // RpePropertyHandlerWrapper would cache the parent info from which a wrapped handler may retrieve the parent instance.
+                if (nodeData.m_parentInstance)
+                {
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, PropertyEditor::ParentValue.GetName(), Dom::Utils::ValueFromType<void*>(nodeData.m_parentInstance) });
+                }
+
                 // Calculate our visibility, going through parent nodes in reverse order to see if we should be hidden
                 for (size_t i = 1; i < m_stack.size(); ++i)
                 {
