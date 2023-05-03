@@ -20,7 +20,7 @@ namespace ScriptCanvasEditor
             : private AZ::SystemTickBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scanner, AZ::SystemAllocator);
 
             Scanner(const ScanConfiguration& config, AZStd::function<void()> onComplete);
 
@@ -33,8 +33,8 @@ namespace ScriptCanvasEditor
             ScanConfiguration m_config;
             ScanResult m_result;
 
-            void FilterAsset(SourceHandle);
-            SourceHandle LoadAsset();
+            void FilterAsset(SourceHandle, bool isFromXMLSource);
+            AZStd::pair<SourceHandle, bool> LoadSource();
             SourceHandle& ModCurrentAsset();
             void OnSystemTick() override;
         };

@@ -31,7 +31,7 @@ namespace AZ
             : public RHI::PipelineState
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
 
             static RHI::Ptr<PipelineState> Create();
             
@@ -39,7 +39,7 @@ namespace AZ
             //PipelineType GetType() const;
 
             /// Returns the pipeline layout associated with this PSO.
-            const PipelineLayout& GetPipelineLayout() const;
+            const PipelineLayout* GetPipelineLayout() const;
 
             /// Returns the platform pipeline state object.
             id<MTLRenderPipelineState> GetGraphicsPipelineState() const;
@@ -71,7 +71,6 @@ namespace AZ
             id<MTLFunction> CompileShader(id<MTLDevice> mtlDevice, const AZStd::string_view filePath, const AZStd::string_view entryPoint, const ShaderStageFunction* shaderFunction);
             id<MTLFunction> ExtractMtlFunction(id<MTLDevice> mtlDevice, const RHI::ShaderStageFunction* stageFunc);
             
-            size_t m_hash = 0;
             RHI::ConstPtr<PipelineLayout> m_pipelineLayout;
             AZStd::atomic_bool m_isCompiled = {false};
 
@@ -82,7 +81,6 @@ namespace AZ
             MTLRenderPipelineDescriptor* m_renderPipelineDesc = nil;
             MTLComputePipelineDescriptor* m_computePipelineDesc = nil;
             
-            AZ::u32 m_stencilRef = 0;
             RasterizerState m_rasterizerState;
             MTLPrimitiveType m_primitiveTopology = MTLPrimitiveTypeTriangle;
         };

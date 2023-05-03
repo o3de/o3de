@@ -13,15 +13,17 @@
 #include <QTreeView>
 #include <QPushButton>
 
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/ColliderHelpers.h>
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 
 #include <Editor/ReselectingTreeView.h>
 #include <Tests/D6JointLimitConfiguration.h>
@@ -29,13 +31,12 @@
 
 namespace EMotionFX
 {
-    class RagdollEditTestsFixture : public UIFixture
+    class RagdollEditTestsFixture : public SkeletonOutlinerTestFixture
     {
     public:
         void SetUp() override
         {
-            UIFixture::SetUp();
-
+            //first setup expect_call, then run SetUp
             using ::testing::_;
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
@@ -54,13 +55,16 @@ namespace EMotionFX
 
             EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
                 .WillRepeatedly(
-                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId, [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
-                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation, [[maybe_unused]] const AZ::Vector3& axis,
+                    []([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
+                       [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
+                       [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
+                       [[maybe_unused]] const AZ::Vector3& axis,
                        [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
                     {
                         return AZStd::make_unique<D6JointLimitConfiguration>();
                     });
 
+            UIFixture::SetUp();
         }
 
         void TearDown() override
@@ -69,39 +73,16 @@ namespace EMotionFX
             UIFixture::TearDown();
         }
 
-        void CreateSkeletonAndModelIndices()
-        {
-            // Select the newly created actor
-            AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorID 0", result)) << result.c_str();
-
-            // Change the Editor mode to Physics
-            EMStudio::GetMainWindow()->ApplicationModeChanged("Physics");
-
-            // Get the SkeletonOutlinerPlugin and find its treeview
-            m_skeletonOutliner = static_cast<EMotionFX::SkeletonOutlinerPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SkeletonOutlinerPlugin::CLASS_ID));
-            EXPECT_TRUE(m_skeletonOutliner);
-            m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
-
-            m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
-        }
-
     protected:
         virtual bool ShouldReflectPhysicSystem() override { return true; }
 
-        QModelIndexList m_indexList;
-        ReselectingTreeView* m_treeView;
-        EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
+        Physics::MockPhysicsSystem m_physicsSystem;
+        Physics::MockPhysicsInterface m_physicsInterface;
         Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(RagdollEditTestsFixture, DISABLED_RagdollAddJoint)
-#else
     TEST_F(RagdollEditTestsFixture, RagdollAddJoint)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         const int numJoints = 6;
         RecordProperty("test_case_id", "C3122249");
@@ -114,21 +95,15 @@ namespace EMotionFX
 
         EXPECT_EQ(m_indexList.size(), numJoints);
 
-        // Find the RagdollNodeInspectorPlugin and its button
-        auto ragdollNodeInspector = static_cast<EMotionFX::RagdollNodeInspectorPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::RagdollNodeInspectorPlugin::CLASS_ID));
-        EXPECT_TRUE(ragdollNodeInspector) << "Ragdoll plugin not found!";
-
-        auto addAddToRagdollButton = ragdollNodeInspector->GetDockWidget()->findChild<QPushButton*>("EMFX.RagdollNodeWidget.PushButton.RagdollAddRemoveButton");
-        EXPECT_TRUE(addAddToRagdollButton) << "Add to ragdoll button not found!";
-
         // Find the 3rd joint after the RootJoint in the TreeView and select it
         SelectIndexes(m_indexList, m_treeView, 3, 3);
 
-        // Send the left button click directly to the button
-        QTest::mouseClick(addAddToRagdollButton, Qt::LeftButton);
+        QTreeView* treeView = GetAddCollidersTreeView();
+        auto index = treeView->model()->index(2, 0);
+        treeView->clicked(index);
 
         // Check the node is in the ragdoll
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
+        EXPECT_TRUE(ColliderHelpers::NodeHasRagdoll(m_indexList[3]));
     }
 
     TEST_F(RagdollEditTestsFixture, RagdollAddJointsAndRemove)
@@ -151,7 +126,7 @@ namespace EMotionFX
         EXPECT_TRUE(rect.isValid());
         BringUpContextMenu(m_treeView, rect);
 
-        QMenu* contextMenu = m_skeletonOutliner->GetDockWidget()->findChild<QMenu*>("EMFX.SkeletonOutlinerPlugin.ContextMenu");
+        QMenu* contextMenu = m_skeletonOutlinerPlugin->GetDockWidget()->findChild<QMenu*>("EMFX.SkeletonOutlinerPlugin.ContextMenu");
         EXPECT_TRUE(contextMenu);
         QAction* ragdollAction;
         EXPECT_TRUE(UIFixture::GetActionFromContextMenu(ragdollAction, contextMenu, "Ragdoll"));
@@ -162,10 +137,10 @@ namespace EMotionFX
         addToRagdollAction->trigger();
 
         // Check the nodes are in the ragdoll
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[4]));
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[5]));
-        EXPECT_TRUE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[6]));
+        EXPECT_TRUE(ColliderHelpers::NodeHasRagdoll(m_indexList[3]));
+        EXPECT_TRUE(ColliderHelpers::NodeHasRagdoll(m_indexList[4]));
+        EXPECT_TRUE(ColliderHelpers::NodeHasRagdoll(m_indexList[5]));
+        EXPECT_TRUE(ColliderHelpers::NodeHasRagdoll(m_indexList[6]));
 
         // Remove context menu as it is rebuild below
         delete contextMenu;
@@ -175,7 +150,7 @@ namespace EMotionFX
         BringUpContextMenu(m_treeView, rect2);
 
         // Find the "Remove from ragdoll" entry and trigger it.
-        contextMenu = m_skeletonOutliner->GetDockWidget()->findChild<QMenu*>("EMFX.SkeletonOutlinerPlugin.ContextMenu");
+        contextMenu = m_skeletonOutlinerPlugin->GetDockWidget()->findChild<QMenu*>("EMFX.SkeletonOutlinerPlugin.ContextMenu");
         EXPECT_TRUE(contextMenu);
         EXPECT_TRUE(UIFixture::GetActionFromContextMenu(ragdollAction, contextMenu, "Ragdoll"));
         ragdollMenu = ragdollAction->menu();
@@ -184,9 +159,9 @@ namespace EMotionFX
         removeFromRagdollAction->trigger();
 
         // Check the nodes are removed from ragdoll
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[3]));
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[4]));
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[5]));
-        EXPECT_FALSE(RagdollNodeInspectorPlugin::IsNodeInRagdoll(m_indexList[6]));
+        EXPECT_FALSE(ColliderHelpers::NodeHasRagdoll(m_indexList[3]));
+        EXPECT_FALSE(ColliderHelpers::NodeHasRagdoll(m_indexList[4]));
+        EXPECT_FALSE(ColliderHelpers::NodeHasRagdoll(m_indexList[5]));
+        EXPECT_FALSE(ColliderHelpers::NodeHasRagdoll(m_indexList[6]));
     }
 }

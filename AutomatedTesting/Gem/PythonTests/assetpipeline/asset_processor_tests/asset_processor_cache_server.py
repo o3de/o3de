@@ -16,6 +16,7 @@ import tempfile
 import hashlib
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
@@ -100,7 +101,7 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.wait_for_idle()
         asset_processor.terminate()
 
-
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.assetpipeline
     def test_AssetCacheServer_LocalWorkUnaffected(self, asset_processor, ap_setup_fixture):
         """

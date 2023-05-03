@@ -46,6 +46,7 @@ namespace LmbrCentral
         void SetShapeColor(const AZ::Color& solidColor) override;
         void SetShapeWireframeColor(const AZ::Color& wireColor) override;
         void SetVisibleInEditor(bool visible) override;
+        void SetVisibleInGame(bool visible) override;
         void SetShapeColorIsEditable(bool editable) override;
         bool GetShapeColorIsEditable() override;
 

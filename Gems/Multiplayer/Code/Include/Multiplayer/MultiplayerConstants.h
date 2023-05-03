@@ -8,12 +8,13 @@
 
 #pragma once
 
-#include <AzCore/EBus/Event.h>
 #include <AzCore/Name/Name.h>
-#include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzNetworking/Serialization/ISerializer.h>
-#include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
+
+namespace AZ::Metrics
+{
+    enum class EventLoggerId : AZ::u32;
+}
 
 namespace Multiplayer
 {
@@ -25,4 +26,6 @@ namespace Multiplayer
 
     constexpr uint16_t DefaultServerPort = 33450;
     constexpr uint16_t DefaultServerEditorPort = 33451;
+
+    constexpr AZ::Metrics::EventLoggerId NetworkingMetricsId{ static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}("Networking")) };
 }

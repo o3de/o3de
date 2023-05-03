@@ -3,19 +3,28 @@
         "AssetProcessor": {
             "Settings": {
                 "Exclude PythonTest Benchmark Settings Assets": {
-                    "pattern": "(^|.+/)PythonTests/.*benchmarksettings"
+                    "glob": "*/PythonTests/*.benchmarksettings"
                 },
                 "Exclude fbx_tests": {
-                    "pattern": "(^|.+/)fbx_tests/assets(/.+)$"
+                    "glob": "*/fbx_tests/assets/*"
                 },
                 "Exclude wwise_bank_dependency_tests": {
-                    "pattern": "(^|.+/)wwise_bank_dependency_tests/assets(/.+)$"
+                    "glob": "*/wwise_bank_dependency_tests/assets/*"
                 },
                 "Exclude AssetProcessorTestAssets": {
-                    "pattern": "(^|.+/)asset_processor_tests/assets(/.+)$"
+                    "glob": "*/asset_processor_tests/assets/*"
                 },
                 "Exclude Restricted AssetProcessorTestAssets": {
-                    "pattern": "(^|.+/)asset_processor_tests/restricted(/.+)$"
+                    "glob": "*/asset_processor_tests/restricted/*"
+                },
+                "Exclude AssetBundlerTestAssets": {
+                    "glob": "*/asset_bundler_tests/assets/*"
+                },
+                "Exclude Scene Tests": {
+                    "glob": "*/scene_tests/assets/*"
+                },
+                "Exclude Metadata Tests": {
+                    "glob": "*/metadata_relocation_tests/assets/*"
                 }
             }
         }

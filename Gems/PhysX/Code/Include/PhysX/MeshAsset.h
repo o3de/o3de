@@ -21,14 +21,16 @@ namespace PhysX
 {
     namespace Pipeline
     {
+        class MeshAsset;
+
         //! Optional collider configuration data that is stored in the asset.
         //! All the fields here are optional. If you set them at the asset building stage
         //! that data will then be used in the collider
         class AssetColliderConfiguration
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetColliderConfiguration, AZ::SystemAllocator, 0);
-            AZ_TYPE_INFO(MeshAssetData, "{463AA6A7-8A1A-42B6-B103-F6939CC7A8A5}");
+            AZ_CLASS_ALLOCATOR(AssetColliderConfiguration, AZ::SystemAllocator);
+            AZ_TYPE_INFO(AssetColliderConfiguration, "{463AA6A7-8A1A-42B6-B103-F6939CC7A8A5}");
 
             static void Reflect(AZ::ReflectContext* context);
             void UpdateColliderConfiguration(Physics::ColliderConfiguration& colliderConfiguration) const;
@@ -44,10 +46,14 @@ namespace PhysX
         class MeshAssetData
         {
         public:
-            AZ_CLASS_ALLOCATOR(MeshAssetData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshAssetData, AZ::SystemAllocator);
             AZ_TYPE_INFO(MeshAssetData, "{958C8530-DF1F-4B68-800B-E92056708127}");
 
             static void Reflect(AZ::ReflectContext* context);
+
+            //! Creates a Mesh Asset with random Id from the
+            //! properties of this mesh asset data.
+            AZ::Data::Asset<MeshAsset> CreateMeshAsset() const;
 
             // Reserved material index indicating that cooked mesh itself stores the indices.
             // Wrapping the numeric_limits<AZ::u16>::max function in parenthesis to get around the issue with windows.h defining max as a macro.
@@ -67,10 +73,14 @@ namespace PhysX
             : public AZ::Data::AssetData
         {
         public:
-            AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshAsset, AZ::SystemAllocator);
             AZ_RTTI(MeshAsset, "{7A2871B9-5EAB-4DE0-A901-B0D2C6920DDB}", AZ::Data::AssetData);
 
             static void Reflect(AZ::ReflectContext* context);
+
+            //! Sets the mesh data for this mesh asset and marks it as ready.
+            //! This is useful when creating an in-memory mesh asset.
+            void SetData(const MeshAssetData& assetData);
 
             MeshAssetData m_assetData;
         };

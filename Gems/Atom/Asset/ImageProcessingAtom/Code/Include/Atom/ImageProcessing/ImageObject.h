@@ -14,14 +14,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Color.h>
 
-namespace AZ
-{
-    namespace IO
-    {
-        class SystemFileStream;
-    }
-}
-
 namespace ImageProcessingAtom
 {
     class IImageObject;

@@ -37,6 +37,10 @@ public:
     //! Get the UI cursor position (in pixels) relative
     //! to the top-left corner of the UI overlay viewport
     virtual AZ::Vector2 GetUiCursorPosition() = 0;
+
+    //! Set the UI cursor position using normalized coordinates
+    virtual void SetUiCursorPosition(const AZ::Vector2&) = 0;
+
 };
 
 using UiCursorBus = AZ::EBus<UiCursorInterface>;

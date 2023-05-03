@@ -11,12 +11,17 @@ import mars_utils
 import sys
 import pathlib
 import traceback
-import re
 from test_impact import NativeTestImpact, PythonTestImpact
 from tiaf_logger import get_logger
+import tiaf_report_constants as constants
 
 logger = get_logger(__file__)
 
+class PruneAndSortMultiValues(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+            # Remove the suite duplicates and sort alphabetically
+            values = sorted(set(values), key = lambda x: x[1])
+            setattr(namespace, self.dest, values)
 
 def parse_args():
     def valid_file_path(value):
@@ -99,9 +104,20 @@ def parse_args():
 
     # Test suite
     parser.add_argument(
-        '--suite',
-        help="Test suite to run",
-        required=True
+        '--suites',
+        help="Test suites to run",
+        nargs='+',
+        action=PruneAndSortMultiValues,
+        required=True,
+    )
+
+    # Test label excludes
+    parser.add_argument(
+        '--label-excludes',
+        help="CTest suite labels to exclude if matched",
+        nargs='*',
+        action=PruneAndSortMultiValues,
+        required=False
     )
 
     # Test failure policy
@@ -137,6 +153,7 @@ def parse_args():
         required=False
     )
 
+    # Target exclusion JSON file
     parser.add_argument(
         '--exclude-file',
         type=valid_file_path,
@@ -144,6 +161,7 @@ def parse_args():
         required=False
     )
 
+    # Runtime type (native or python)
     parser.add_argument(
         "--runtime-type",
         choices=SUPPORTED_RUNTIMES.keys(),
@@ -151,9 +169,26 @@ def parse_args():
         required=True
     )
 
+    # Runtime sequence override
     parser.add_argument(
         "--sequence-override",
         help="Override sequence type",
+        required=False
+    )
+
+    # Python test runner policy
+    parser.add_argument(
+        "--testrunner-policy",
+        choices=["live","null"],
+        help="Test runner policy for TIAF",
+        required=False
+    )
+
+    # Test target output routing
+    parser.add_argument(
+        "--target-output",
+        choices=["stdout"],
+        help="Test target std/error output routing",
         required=False
     )
 
@@ -172,6 +207,11 @@ def main(args: dict):
     try:
         tiaf_class = SUPPORTED_RUNTIMES[args.pop("runtime_type")]
         tiaf = tiaf_class(args)
+
+        if not tiaf.enabled:
+            logger.info("TIAF has been disabled for this runtime type.")
+            sys.exit(0)
+
         tiaf_result = tiaf.run()
         if args.get('mars_index_prefix'):
             logger.info("Transmitting report to MARS...")
@@ -179,16 +219,12 @@ def main(args: dict):
                 args['mars_index_prefix'], tiaf_result, sys.argv, args['build_number'])
 
         logger.info("Complete!")
-        # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        # sys.exit(result.return_code)
-        sys.exit(0)
+        sys.exit(tiaf_result[constants.RUNTIME_RETURN_CODE_KEY])
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
         traceback.print_exc()
-    finally:
-        # This will not gate the AR run - replace with result.return_code if you wish to enable gating.
-        sys.exit(0)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

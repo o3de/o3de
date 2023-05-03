@@ -23,6 +23,8 @@ namespace AZ
 
             /// The GPU descriptor handle for unbounded arrays to bind to the command list.
             /// Note that one SRG can only contain at most two unbounded arrays, one SRV and one UAV.
+            // TODO(bindless): The new bindless handling does not require this member. This and all usages can be removed after
+            // terrain/ray-tracing shaders are ported
             static const uint32_t MaxUnboundedArrays = 2;
             GpuDescriptorHandle m_gpuUnboundedArraysDescriptorHandles[MaxUnboundedArrays] = {};
 
@@ -41,7 +43,7 @@ namespace AZ
         {
             using Base = RHI::ShaderResourceGroup;
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 
             static RHI::Ptr<ShaderResourceGroup> Create();
 

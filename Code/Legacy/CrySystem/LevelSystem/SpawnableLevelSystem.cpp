@@ -83,6 +83,9 @@ namespace LegacyLevelSystem
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
 
+        AZ_Error("SpawnableLevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
+            "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface.");
+
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
         // load the last level in the queue, since only one level can be loaded at a time
@@ -113,7 +116,7 @@ namespace LegacyLevelSystem
         delete this;
     }
 
-    bool SpawnableLevelSystem::IsLevelLoaded()
+    bool SpawnableLevelSystem::IsLevelLoaded() const
     {
         return m_bLevelLoaded;
     }
@@ -195,7 +198,7 @@ namespace LegacyLevelSystem
     {
         if (gEnv->IsEditor())
         {
-            AZ_TracePrintf("CrySystem::CLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", levelName);
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was called in the editor - not actually loading.\n", levelName);
             return false;
         }
 
@@ -203,7 +206,7 @@ namespace LegacyLevelSystem
         AZStd::string validLevelName;
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
 
         if (rootSpawnableAssetId.IsValid())
         {
@@ -220,7 +223,7 @@ namespace LegacyLevelSystem
 
                 AZ::Data::AssetCatalogRequestBus::BroadcastResult(
                     rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, possibleLevelAssetPath.c_str(),
-                    nullptr, false);
+                    AZ::Data::AssetType{}, false);
 
                 if (rootSpawnableAssetId.IsValid())
                 {
@@ -232,6 +235,25 @@ namespace LegacyLevelSystem
         if (validLevelName.empty())
         {
             OnLevelNotFound(levelName);
+            return false;
+        }
+
+        // This is a valid level, find out if any systems need to stop level loading before proceeding
+        bool blockLoading = false;
+        AzFramework::LevelLoadBlockerBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelLoadBlockerRequests* handler) -> bool
+            {
+                if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
+                {
+                    blockLoading = true;
+                    return false; // Stop iterating handlers. This level should be blocked.
+                }
+                return true;
+            });
+
+        if (blockLoading)
+        {
+            AZ_TracePrintf("CrySystem::SpawnableLevelSystem", "LoadLevel for %s was blocked.\n", validLevelName.c_str());
             return false;
         }
 
@@ -262,7 +284,7 @@ namespace LegacyLevelSystem
 
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
         if (!rootSpawnableAssetId.IsValid())
         {
             OnLoadingError(levelName, "AssetCatalog has no entry for the requested level.");
@@ -354,7 +376,7 @@ namespace LegacyLevelSystem
     {
         AZ::Data::AssetId rootSpawnableAssetId;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, nullptr, false);
+            rootSpawnableAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, levelName, AZ::Data::AssetType{}, false);
         if (!rootSpawnableAssetId.IsValid())
         {
             // alert the listener
@@ -385,6 +407,9 @@ namespace LegacyLevelSystem
         {
             listener->OnPrepareNextLevel(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnPrepareNextLevel, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -396,6 +421,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLevelNotFound(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLevelNotFound, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -417,6 +445,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingStart(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingStart, levelName);
     }
 
     //------------------------------------------------------------------------
@@ -428,6 +459,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingError(levelName, error);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingError, levelName, error);
     }
 
     //------------------------------------------------------------------------
@@ -450,6 +484,9 @@ namespace LegacyLevelSystem
             listener->OnLoadingComplete(levelName);
         }
 
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingComplete, levelName);
+
     #if AZ_LOADSCREENCOMPONENT_ENABLED
         EBUS_EVENT(LoadScreenBus, Stop);
     #endif // if AZ_LOADSCREENCOMPONENT_ENABLED
@@ -464,6 +501,9 @@ namespace LegacyLevelSystem
         {
             listener->OnLoadingProgress(levelName, progressAmount);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnLoadingProgress, levelName, progressAmount);
     }
 
     //------------------------------------------------------------------------
@@ -473,6 +513,9 @@ namespace LegacyLevelSystem
         {
             listener->OnUnloadComplete(levelName);
         }
+
+        AzFramework::LevelSystemLifecycleNotificationBus::Broadcast(
+            &AzFramework::LevelSystemLifecycleNotifications::OnUnloadComplete, levelName);
 
         AZ_TracePrintf("LevelSystem", "Level unload complete: '%s'\n", levelName);
     }

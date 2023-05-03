@@ -22,6 +22,11 @@
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #include <System/PhysXJointInterface.h>
 
+namespace AZ::Debug
+{
+    class PerformanceCollector;
+}
+
 namespace physx
 {
     class PxFoundation;
@@ -79,12 +84,17 @@ namespace PhysX
         void SetCollisionLayerName(int index, const AZStd::string& layerName);
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group);
         //TEMP -- until these are fully moved over here
+
+        AZ::Debug::PerformanceCollector* GetPerformanceCollector();
+
     private:
         //! Initializes the PhysX SDK.
         //! This sets up the PhysX Foundation, Cooking, and other PhysX sub-systems.
         //! @param cookingParams The cooking params to use when setting up PhysX cooking interface.
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
+
+        void InitializePerformanceCollector();
 
         PhysXSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
@@ -118,6 +128,11 @@ namespace PhysX
         AZStd::unique_ptr<PhysXSettingsRegistryManager> m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
         PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
+
+        static constexpr AZStd::string_view PerformanceLogCategory = "PhysX";
+        static constexpr AZStd::string_view PerformanceSpecPhysXSimulationTime = "PhysX Simulation Time";
+
+        AZStd::unique_ptr<AZ::Debug::PerformanceCollector> m_performanceCollector;
     };
 
     //! Helper function for getting the PhysX System interface from inside the PhysX gem.

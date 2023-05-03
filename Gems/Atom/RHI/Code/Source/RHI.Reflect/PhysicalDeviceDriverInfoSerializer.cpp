@@ -12,7 +12,7 @@ namespace AZ
 {
     namespace RHI
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonPhysicalDeviceDriverInfoSerializer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonPhysicalDeviceDriverInfoSerializer, SystemAllocator);
 
         namespace
         {

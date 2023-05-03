@@ -101,6 +101,10 @@ namespace AzToolsFramework
         //! to the current Container Entity setup.
         bool IsSelectableAccordingToContainerEntities(AZ::EntityId entityId) const;
 
+        //! Returns whether the entityCacheIndex can be selected in the viewport according
+        //! to the current Editor Focus Mode and Container Entity setup.
+        bool IsSelectableInViewport(size_t entityCacheIndex) const;
+
         AZStd::unique_ptr<InvalidClicks> m_invalidClicks; //!< Display for invalid click behavior.
 
         const EditorVisibleEntityDataCacheInterface* m_entityDataCache = nullptr; //!< Entity Data queried by the EditorHelpers.

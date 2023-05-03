@@ -65,9 +65,9 @@ namespace EMotionFX
     class EMFX_API SharedHelperData
         : public SharedData
     {
-        MCORE_MEMORYOBJECTCATEGORY(SharedHelperData, EMFX_DEFAULT_ALIGNMENT, EMFX_MEMCATEGORY_IMPORTER);
-
+        AZ_CLASS_ALLOCATOR_DECL
     public:
+
         // the type returned by GetType()
         enum
         {
@@ -302,6 +302,7 @@ namespace EMotionFX
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionSubMotions,               FileFormat::MOTION_CHUNK_SUBMOTIONS,           1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionMorphSubMotions,          FileFormat::MOTION_CHUNK_MORPHSUBMOTIONS,      1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorMotionData,                     FileFormat::MOTION_CHUNK_MOTIONDATA,           1)
+    EMFX_CHUNKPROCESSOR(ChunkProcessorRootMotionExtraction,           FileFormat::MOTION_CHUNK_ROOTMOTIONEXTRACTION, 1)
 
     // node map file format chunk processors
     EMFX_CHUNKPROCESSOR(ChunkProcessorNodeMap,                     FileFormat::CHUNK_NODEMAP,      1)

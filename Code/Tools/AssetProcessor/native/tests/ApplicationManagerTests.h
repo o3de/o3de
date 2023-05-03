@@ -8,16 +8,22 @@
 
 #pragma once
 
-#include <utilities/BatchApplicationManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include "assetmanager/MockAssetProcessorManager.h"
-#include "assetmanager/MockFileProcessor.h"
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/BatchApplicationManager.h>
+#include <native/tests/MockAssetDatabaseRequestsHandler.h>
+#include <native/tests/assetmanager/MockAssetProcessorManager.h>
+#include <native/tests/assetmanager/MockFileProcessor.h>
+#include <native/tests/UnitTestUtilities.h>
 
 namespace UnitTests
 {
     struct MockBatchApplicationManager : BatchApplicationManager
     {
         using ApplicationManagerBase::InitFileMonitor;
+        using ApplicationManagerBase::DestroyFileMonitor;
+        using ApplicationManagerBase::InitFileStateCache;
+        using ApplicationManagerBase::InitUuidManager;
         using ApplicationManagerBase::m_assetProcessorManager;
         using ApplicationManagerBase::m_fileProcessor;
         using ApplicationManagerBase::m_fileStateCache;
@@ -25,37 +31,23 @@ namespace UnitTests
         using BatchApplicationManager::BatchApplicationManager;
     };
 
-    class DatabaseLocationListener : public AzToolsFramework::AssetDatabase::AssetDatabaseRequests::Bus::Handler
-    {
-    public:
-        DatabaseLocationListener()
-        {
-            BusConnect();
-        }
-        ~DatabaseLocationListener() override
-        {
-            BusDisconnect();
-        }
-
-        bool GetAssetDatabaseLocation(AZStd::string& location) override;
-
-        AZStd::string m_databaseLocation;
-    };
-
-    struct ApplicationManagerTest : ::UnitTest::ScopedAllocatorSetupFixture
+    struct ApplicationManagerTest : ::UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override;
         void TearDown() override;
 
-        AZ::Test::ScopedAutoTempDirectory m_tempDir;
-        DatabaseLocationListener m_databaseLocationListener;
+        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
 
         AZStd::unique_ptr<QCoreApplication> m_coreApplication;
         AZStd::unique_ptr<MockBatchApplicationManager> m_applicationManager;
         AZStd::unique_ptr<QThread> m_apmThread;
         AZStd::unique_ptr<QThread> m_fileProcessorThread;
         AZStd::unique_ptr<MockAssetProcessorManager> m_mockAPM;
+
+        MockVirtualFileIO m_virtualFileIO;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
+        AzToolsFramework::MetadataManager m_metadataManager;
 
         // These are just aliases, no need to manage/delete them
         FileWatcher* m_fileWatcher{};

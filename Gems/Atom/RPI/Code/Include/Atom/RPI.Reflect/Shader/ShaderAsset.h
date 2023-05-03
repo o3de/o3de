@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
+#include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderInputContract.h>
@@ -60,6 +61,7 @@ namespace AZ
             friend class ShaderAssetTester;
             friend class Shader;
         public:
+            AZ_CLASS_ALLOCATOR(ShaderAsset , SystemAllocator)
             AZ_RTTI(ShaderAsset, "{823395A3-D570-49F4-99A9-D820CD1DEF98}", Data::AssetData);
             static void Reflect(ReflectContext* context);
 
@@ -100,6 +102,9 @@ namespace AZ
 
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
+
+            //! Returns the default shader option values.
+            ShaderOptionGroup GetDefaultShaderOptions() const;
 
             //! Returns the supervariant index from the specified name.
             //! Note that this will append the system supervariant name from RPI::ShaderSystem when searching.
@@ -287,6 +292,9 @@ namespace AZ
 
             //! Defines the layout of the shader options in the asset.
             Ptr<ShaderOptionGroupLayout> m_shaderOptionGroupLayout;
+
+            //! Any values set here will override the default values that come from the m_shaderOptionGroupLayout.
+            ShaderVariantId m_defaultShaderOptionValueOverrides;
 
             //! List with shader data per RHI backend.
             AZStd::vector<ShaderApiDataContainer> m_perAPIShaderData;

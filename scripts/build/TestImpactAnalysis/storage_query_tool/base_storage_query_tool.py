@@ -6,9 +6,7 @@
 #
 #
 
-from argparse import Action
 from enum import Enum
-from gzip import READ
 from tiaf_logger import get_logger
 from abc import ABC, abstractmethod
 logger = get_logger(__file__)
@@ -23,6 +21,10 @@ class StorageQueryTool(ABC):
         DELETE = "delete"
         QUERY = None
 
+    class FileType(Enum):
+        JSON = "json"
+        ZIP = "zip"
+
     def __init__(self, **kwargs):
         """
         Initialise storage query tool with search parameters and flags  denoting whether to access or delete the resource.
@@ -34,11 +36,28 @@ class StorageQueryTool(ABC):
         self._file_in = kwargs.get('file_in')
         self._file_out = kwargs.get('file_out')
         self._full_address = kwargs.get('full_address')
+        self._file_type = self.FileType(kwargs.get('file_type'))
 
         if self._action == self.Action.CREATE or self._action == self.Action.UPDATE:
-            self._file = self._get_file(self._file_in)
+            if self._file_type == self.FileType.JSON:
+                self._file = self._get_json_file(self._file_in)
+            if self._file_type == self.FileType.ZIP:
+                self._file = self._get_zip_file(self._file_in)
 
-    def _get_file(self, file_address: str):
+    def _get_zip_file(self, file_address: str):
+        """
+        Get zip file from the specified file address.
+
+        @param file_address: Address to read zip from
+        """
+        try:
+            with open(file_address, "rb") as zip_file:
+                return zip_file.read()
+        except FileNotFoundError as e:
+            logger.error(
+                f"File not found at '{file_address}'. Exception:'{e}'.")
+
+    def _get_json_file(self, file_address: str):
         """
         Get historic json file from specified file address.
 

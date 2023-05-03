@@ -263,6 +263,11 @@ namespace AZ::IO
         return m_path.empty();
     }
 
+    constexpr const char PathView::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
+    }
+
     [[nodiscard]] constexpr bool PathView::HasRootName() const
     {
         return !root_name_view().empty();
@@ -1156,6 +1161,12 @@ namespace AZ::IO
     }
 
     template <typename StringType>
+    constexpr const char BasicPath<StringType>::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
+    }
+
+    template <typename StringType>
     [[nodiscard]] constexpr bool BasicPath<StringType>::HasRootName() const
     {
         return static_cast<PathView>(*this).HasRootName();
@@ -1479,7 +1490,7 @@ namespace AZStd
     template <>
     struct hash<AZ::IO::PathView>
     {
-        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) const noexcept
         {
             auto pathParser = AZ::IO::parser::PathParser::CreateBegin(pathToHash.Native(), pathToHash.m_preferred_separator);
             return AZ::IO::parser::HashPath(pathParser);
@@ -1488,7 +1499,7 @@ namespace AZStd
     template <typename StringType>
     struct hash<AZ::IO::BasicPath<StringType>>
     {
-        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
+        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) const noexcept
         {
             return AZStd::hash<AZ::IO::PathView>{}(pathToHash);
         }

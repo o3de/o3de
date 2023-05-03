@@ -336,7 +336,7 @@ namespace AZ::IO
         //! an estimation.
         //! @param request The request to get the estimation for.
         //! @return The system time the request will complete or zero of no estimation has been done.
-        virtual AZStd::chrono::system_clock::time_point GetEstimatedRequestCompletionTime(FileRequestHandle request) const = 0;
+        virtual AZStd::chrono::steady_clock::time_point GetEstimatedRequestCompletionTime(FileRequestHandle request) const = 0;
 
         //! Get the result for operations that read data.
         //! @param request The request to query.

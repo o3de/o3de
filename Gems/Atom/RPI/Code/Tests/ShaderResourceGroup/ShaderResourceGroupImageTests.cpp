@@ -43,9 +43,9 @@ namespace UnitTest
 
             srgLayout->SetName(Name(nameId));
             srgLayout->SetBindingSlot(0);
-            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2 });
-            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageArray" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 3, 3 });
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 2, 2});
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageArray" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 3, 3, 3});
             srgLayout->Finalize();
 
             return srgLayout;

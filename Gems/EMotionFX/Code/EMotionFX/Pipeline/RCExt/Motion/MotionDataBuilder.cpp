@@ -16,7 +16,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPIExt/Groups/IMotionGroup.h>
-#include <SceneAPIExt/Rules/IMotionScaleRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MotionAdditiveRule.h>
 #include <SceneAPIExt/Rules/MotionSamplingRule.h>
@@ -289,7 +288,7 @@ namespace EMotionFX
 
                 // Keep track of the sample joint index.
                 if (rootMotionExtractionRule && sampleJointDataIndex == InvalidJointDataIndex
-                    && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData().m_sampleJoint.c_str()) != AZStd::string::npos)
+                    && AzFramework::StringFunc::Find(nodePath, rootMotionExtractionRule->GetData()->m_sampleJoint.c_str()) != AZStd::string::npos)
                 {
                     sampleJointDataIndex = jointDataIndex;
                 }
@@ -413,13 +412,12 @@ namespace EMotionFX
             if (rootMotionExtractionRule && sampleJointDataIndex != InvalidJointDataIndex && rootJointDataIndex != InvalidJointDataIndex)
             {
                 const auto& data = rootMotionExtractionRule->GetData();
-                motionData->ExtractRootMotion(sampleJointDataIndex, rootJointDataIndex, data);
+                motionData->ExtractRootMotion(sampleJointDataIndex, rootJointDataIndex, *data);
             }
 
-            AZStd::shared_ptr<Rule::IMotionScaleRule> scaleRule = motionGroup.GetRuleContainerConst().FindFirstByType<Rule::IMotionScaleRule>();
-            if (scaleRule)
+            if (coordinateSystemRule)
             {
-                float scaleFactor = scaleRule->GetScaleFactor();
+                const float scaleFactor = coordinateSystemRule->GetScale();
                 if (!AZ::IsClose(scaleFactor, 1.0f, FLT_EPSILON)) // If the scale factor is 1, no need to call Scale
                 {
                     motionData->Scale(scaleFactor);
@@ -540,6 +538,14 @@ namespace EMotionFX
             // into our finalMotionData.
             delete motionData;
             context.m_motion.SetMotionData(finalMotionData);
+
+            // Set root motion extraction data on the motion itself, so we can later edit it in animation editor.
+            AZStd::shared_ptr<EMotionFX::RootMotionExtractionData> rootMotionData;
+            if (EMotionFX::Pipeline::Rule::LoadFromGroup<EMotionFX::Pipeline::Rule::RootMotionExtractionRule>(motionGroup, rootMotionData))
+            {
+                context.m_motion.SetRootMotionExtractionData(rootMotionData);
+            }
+
             return SceneEvents::ProcessingResult::Success;
         }
     } // namespace Pipeline

@@ -61,37 +61,26 @@ namespace AZ
             DisableSceneNotification();
         }
 
-        void EditorModeFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline)
+        void EditorModeFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
+            RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             if (!m_editorStatePassSystem)
             {
                 return;
             }
 
-            m_editorStatePassSystem->RemoveStatePassesForPipeline(pipeline);
-        }
-
-        void EditorModeFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
-        {
-            if (!m_editorStatePassSystem)
+            if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Added
+                || changeType == RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
             {
-                return;
+                m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
             }
-
-            m_editorStatePassSystem->ConfigureStatePassesForPipeline(pipeline.get());
-        }
-
-        void EditorModeFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
-        {
-            if (!m_editorStatePassSystem)
+            else if (changeType == RPI::SceneNotification::RenderPipelineChangeType::Removed)
             {
-                return;
+                m_editorStatePassSystem->RemoveStatePassesForPipeline(renderPipeline);
             }
-
-            m_editorStatePassSystem->ConfigureStatePassesForPipeline(renderPipeline);
         }
 
-        void EditorModeFeatureProcessor::ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline)
+        void EditorModeFeatureProcessor::AddRenderPasses(RPI::RenderPipeline* renderPipeline)
         {
             if (!m_editorStatePassSystem)
             {
@@ -153,6 +142,23 @@ namespace AZ
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }
+        }
+
+        void EditorModeFeatureProcessor::SetEnableRender(bool enableRender)
+        {            
+            if (!m_editorStatePassSystem)
+            {
+                return;
+            }
+
+            const auto templateName = Name(m_editorStatePassSystem->GetParentPassTemplateName());
+
+            auto passFilter = AZ::RPI::PassFilter::CreateWithTemplateName(templateName, GetParentScene());
+            AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter,  [enableRender](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    pass->SetEnabled(enableRender);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
     } // namespace Render
 } // namespace AZ

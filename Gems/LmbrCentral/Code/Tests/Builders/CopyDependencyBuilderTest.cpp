@@ -16,6 +16,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -32,15 +33,13 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class CopyDependencyBuilderTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
         , private AzToolsFramework::AssetSystemRequestBus::Handler
     {
     protected:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
@@ -105,8 +104,6 @@ namespace UnitTest
 
             m_app->Destroy();
             m_app = nullptr;
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
         static constexpr char testFileFolder[] = "@gemroot:LmbrCentral@/Code/Tests/";
@@ -236,6 +233,7 @@ namespace UnitTest
             assetSafeFolders.emplace_back(resolvedBuffer);
             return true;
         }
+        bool ClearFingerprintForAsset([[maybe_unused]] const AZStd::string& sourcePath) override { return false; }
 
         // When supressing AZ_Errors to count how many occur,
         // you need to tell it you expect double the number of errors.

@@ -39,6 +39,8 @@ namespace AZ
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
+                    ->Field("Shadow Caching Mode", &AreaLightComponentConfig::m_shadowCachingMode)
+                    ->Field("Shadow Caching Enabled", &AreaLightComponentConfig::m_cacheShadows) // temporary attribute that is used for edit context but ignored in serialize context.
                     // Global Illumination
                     ->Field("Affects GI", &AreaLightComponentConfig::m_affectsGI)
                     ->Field("Affects GI Factor", &AreaLightComponentConfig::m_affectsGIFactor)
@@ -189,13 +191,14 @@ namespace AZ
 
         bool AreaLightComponentConfig::IsShadowPcfDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
+            return ShadowsDisabled() || !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
 
         bool AreaLightComponentConfig::IsEsmDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+            return ShadowsDisabled() ||
+                !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
     }
 }

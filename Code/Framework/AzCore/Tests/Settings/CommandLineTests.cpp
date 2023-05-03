@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class CommandLineTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -409,5 +409,23 @@ namespace UnitTest
             EXPECT_STREQ("Foo", commandLine.GetMiscValue(0).c_str());
             EXPECT_STREQ("Bat", commandLine.GetMiscValue(1).c_str());
         }
+    }
+
+    TEST_F(CommandLineTests, CommandLineParser_GetSwitchValue_WithNoArgument_ReturnsLastValue)
+    {
+        AZ::CommandLine commandLine{ "-" };
+
+        constexpr AZStd::string_view argValues[] =
+        {
+            "programname.exe", "--foo=1", "--foo", "2"
+        };
+
+        commandLine.Parse(argValues);
+
+        ASSERT_GE(commandLine.GetNumSwitchValues("foo"), 2);
+        EXPECT_STREQ("2", commandLine.GetSwitchValue("foo").c_str());
+        EXPECT_STREQ("2", commandLine.GetSwitchValue("foo", 1).c_str());
+        EXPECT_STREQ("1", commandLine.GetSwitchValue("foo", 0).c_str());
+
     }
 }   // namespace UnitTest

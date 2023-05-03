@@ -7,11 +7,14 @@
  */
 
 #include <AzCore/std/sort.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventPresetsWidget.h>
-#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventsPlugin.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/MotionEvents/MotionEventPresetCreateDialog.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/TimeView/TrackDataWidget.h>
+#include <EMotionFX/Source/MotionEventTable.h>
+#include <EMotionFX/Source/MotionEventTrack.h>
 #include <QAction>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -31,9 +34,9 @@
 
 namespace EMStudio
 {
-    MotionEventPresetsWidget::MotionEventPresetsWidget(QWidget* parent, MotionEventsPlugin* plugin)
-        : QWidget(parent)
-        , m_plugin(plugin)
+    MotionEventPresetsWidget::MotionEventPresetsWidget(QWidget* parent, TimeViewPlugin* plugin)
+        : AzQtComponents::Card(parent)
+        , m_timeViewPlugin(plugin)
     {
         Init();
     }
@@ -41,6 +44,10 @@ namespace EMStudio
 
     void MotionEventPresetsWidget::Init()
     {
+        setTitle("Motion Event Presets");
+        setContentsMargins(0, 0, 0, 0);
+        AzQtComponents::Card::applyContainerStyle(this);
+
         // create the layouts
         QVBoxLayout* layout = new QVBoxLayout();
         QHBoxLayout* ioButtonsLayout = new QHBoxLayout();
@@ -92,9 +99,11 @@ namespace EMStudio
         layout->addWidget(m_tableWidget);
         layout->addLayout(ioButtonsLayout);
 
-        // set the main layout
-        setLayout(layout);
-
+        auto* contentWidget = new QWidget(this);
+        contentWidget->setLayout(layout);
+        setContentWidget(contentWidget);
+        header()->setExpandable(false);
+        header()->setHasContextMenu(false);
         // connect the signals and the slots
         connect(m_tableWidget, &MotionEventPresetsWidget::DragTableWidget::itemSelectionChanged, this, &MotionEventPresetsWidget::SelectionChanged);
         connect(m_tableWidget, &QTableWidget::cellDoubleClicked, this, [this](int row, int column)
@@ -108,11 +117,13 @@ namespace EMStudio
 
                 GetEventPresetManager()->SetDirtyFlag(true);
                 ReInit();
-                m_plugin->FireColorChangedSignal();
+
+                m_timeViewPlugin->ReInit();
             }
         });
 
-
+        GetEventPresetManager()->LoadFromSettings();
+        GetEventPresetManager()->Load();
         // initialize everything
         ReInit();
         UpdateInterface();
@@ -204,7 +215,7 @@ namespace EMStudio
         }
 
         m_tableWidget->horizontalHeader()->setStretchLastSection(true);
-        
+
         // update the interface
         UpdateInterface();
     }
@@ -330,6 +341,7 @@ namespace EMStudio
         UpdateInterface();
     }
 
+
     void MotionEventPresetsWidget::SavePresets(bool showSaveDialog)
     {
         if (showSaveDialog)
@@ -409,4 +421,30 @@ namespace EMStudio
         QWidget::keyReleaseEvent(event);
         ReInit();
     }
+
+
+    bool MotionEventPresetsWidget::CheckIfIsPresetReadyToDrop()
+    {
+        // get the motion event presets table
+        QTableWidget* eventPresetsTable = GetMotionEventPresetsTable();
+        if (eventPresetsTable == nullptr)
+        {
+            return false;
+        }
+
+        // get the number of motion event presets and iterate through them
+        const uint32 numRows = eventPresetsTable->rowCount();
+        for (uint32 i = 0; i < numRows; ++i)
+        {
+            QTableWidgetItem* itemType = eventPresetsTable->item(i, 1);
+
+            if (itemType->isSelected())
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 } // namespace EMStudio

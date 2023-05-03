@@ -99,6 +99,28 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {%+ endfor -%}
 {%- endmacro -%}
 
+
+{# Copy Constructor #}
+{# Produces the memberwise copy ctor  #}
+{%- macro CopyConstructor(Class) -%}
+{%- if Class.findall('Property')|length() > 0 or Class.findall('Parameter')|length() > 0 -%}
+{{ Class.attrib['Name'] }}([[maybe_unused]] const {{ Class.attrib['Name'] }}& rhs) { \
+{%+ for field in Class.findall('Property') %}
+{%-     set propertyName = CleanName(field.attrib['Name']) -%}
+{{ propertyName }} = rhs.{{ propertyName }}; \
+{%+ endfor -%}
+
+{%+ for field in Class.findall('Parameter') %}
+{%-         set propertyName = CleanName(field.attrib['Name']) -%}
+{{ propertyName }} = rhs.{{ propertyName }}; \
+{%- endfor -%}
+}
+{% endif %}
+{%- endmacro -%}
+{# ---------------- #}
+
+
+
 {%- macro DataSlotDefaultValue(defaultValue) -%}
 {%- if "\\\"" in defaultValue -%}
 {{defaultValue|replace("\\\"", '')}}
@@ -220,7 +242,7 @@ void
 {%-      for return in returns -%}
 {%-         if returnTypes.append(return.attrib['Type']) -%}{%- endif -%}
 {%-      endfor -%}
-AZStd::tuple<{{returns|join(", ")}}>
+AZStd::tuple<{{returnTypes|join(", ")}}>
 {%-  endif -%}
 {%- endmacro -%}
 
@@ -303,7 +325,7 @@ AZStd::tuple<{{returns|join(", ")}}>
 {%      for executionOut in Class.findall('Output') %}
                 {{ ExecutionOutDeclaration(Class, executionOut) }}
 {%-     endfor %}
-size_t GetRequiredOutCount() const override; 
+size_t GetRequiredOutCount() const override; \
 {% endmacro %}
 
 {% macro ExecutionBranchDefinition(Class, qualifiedName, executionOut, outIndexBranch) %}

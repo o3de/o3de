@@ -73,17 +73,25 @@ set(FILES
     Source/Editor/TagSelector.cpp
     Source/Editor/TypeChoiceButton.h
     Source/Editor/TypeChoiceButton.cpp
-    Source/Editor/Plugins/Cloth/ClothJointInspectorPlugin.h
-    Source/Editor/Plugins/Cloth/ClothJointInspectorPlugin.cpp
-    Source/Editor/Plugins/Cloth/ClothJointWidget.h
-    Source/Editor/Plugins/Cloth/ClothJointWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/ClothJointWidget.h
+    Source/Editor/Plugins/ColliderWidgets/ClothJointWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h
+    Source/Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h
+    Source/Editor/Plugins/ColliderWidgets/RagdollNodeWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h
+    Source/Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/ColliderWidgets/JointPropertyWidget.h
+    Source/Editor/Plugins/ColliderWidgets/JointPropertyWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.h
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionJointWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.h
+    Source/Editor/Plugins/ColliderWidgets/HitDetectionOutlinerNotificationHandler.cpp
+    Source/Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.cpp
+    Source/Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerBus.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h
     Source/Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.cpp
-    Source/Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h
-    Source/Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.cpp
-    Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.h
-    Source/Editor/Plugins/HitDetection/HitDetectionJointWidget.cpp
     Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.h
     Source/Editor/Plugins/Ragdoll/ColliderCapsuleManipulators.cpp
     Source/Editor/Plugins/Ragdoll/ColliderRotationManipulators.h
@@ -100,10 +108,6 @@ set(FILES
     Source/Editor/Plugins/Ragdoll/JointTwistLimitManipulators.cpp
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.h
     Source/Editor/Plugins/Ragdoll/RagdollJointLimitWidget.cpp
-    Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h
-    Source/Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.cpp
-    Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.h
-    Source/Editor/Plugins/Ragdoll/RagdollNodeWidget.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.h
     Source/Editor/Plugins/Ragdoll/PhysicsSetupViewportUiCluster.cpp
     Source/Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h
@@ -115,14 +119,12 @@ set(FILES
     Source/Editor/Plugins/SimulatedObject/SimulatedJointWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectActionManager.cpp
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h
-    Source/Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWindow.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWindow.cpp
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWidget.h
     Source/Editor/Plugins/SimulatedObject/SimulatedObjectSelectionWidget.cpp
+    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h
+    Source/Editor/Plugins/SimulatedObject/SimulatedObjectWidget.cpp
     Source/Editor/PropertyWidgets/AnimGraphNodeHandler.h
     Source/Editor/PropertyWidgets/AnimGraphNodeHandler.cpp
     Source/Editor/PropertyWidgets/AnimGraphNodeNameHandler.h

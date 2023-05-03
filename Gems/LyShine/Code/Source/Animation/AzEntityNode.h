@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <set>
 #include "AnimNode.h"
 //#include "SoundTrack.h"
 #include "StlUtils.h"
@@ -27,13 +26,12 @@ class CUiAnimAzEntityNode
     struct SAnimState;
 
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimAzEntityNode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(CUiAnimAzEntityNode, AZ::SystemAllocator)
     AZ_RTTI(CUiAnimAzEntityNode, "{1C6FAEE1-92E4-42ED-8EEB-3483C36A0B77}", CUiAnimNode);
 
     CUiAnimAzEntityNode(const int id);
     CUiAnimAzEntityNode();
     ~CUiAnimAzEntityNode();
-    static void Initialize();
 
     void EnableEntityPhysics(bool bEnable);
 
@@ -176,8 +174,8 @@ private:
         SParamInfo animNodeParamInfo;
     };
 
-    std::vector< SScriptPropertyParamInfo > m_entityScriptPropertiesParamInfos;
-    typedef AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > TScriptPropertyParamInfoMap;
+    AZStd::vector<SScriptPropertyParamInfo> m_entityScriptPropertiesParamInfos;
+    using TScriptPropertyParamInfoMap = AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string>>;
     TScriptPropertyParamInfoMap m_nameToScriptPropertyParamInfo;
     #ifdef CHECK_FOR_TOO_MANY_ONPROPERTY_SCRIPT_CALLS
     uint32 m_OnPropertyCalls;

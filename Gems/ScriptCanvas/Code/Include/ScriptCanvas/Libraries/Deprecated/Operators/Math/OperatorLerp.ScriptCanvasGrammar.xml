@@ -10,7 +10,6 @@
            Version="1"
            Deprecated="True"
            DreprecationUUID="{A4CFB2F2-4045-47ED-AE73-ED60C2072EE4}"
-           GeneratePropertyFriend="True"
            Description="Performs a lerp between the two specified sources using the speed specified or in the amount of time specified, or the minimum of the two">
         <In Name="In" Description=""/>
         <In Name="Cancel" Description=""/>

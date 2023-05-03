@@ -121,6 +121,16 @@ namespace PhysX
             : physx::PxQueryHitType::Enum::eBLOCK;
     }
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+    physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
+        const physx::PxFilterData& filterData, const physx::PxQueryHit& hit,
+        [[maybe_unused]] const physx::PxShape* shape,
+        [[maybe_unused]] const physx::PxRigidActor* actor)
+    {
+        return postFilter(filterData, hit);
+    }
+#endif
+
     physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
         const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
     {
@@ -219,6 +229,8 @@ namespace PhysX
             m_callbackManager->SetControllerFilter(CollisionLayerBasedControllerFilter);
             m_callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
         }
+
+        m_orientation = AZ::Quaternion::CreateIdentity();
     }
 
     void CharacterController::SetFilterDataAndShape(const Physics::CharacterConfiguration& characterConfig)
@@ -413,7 +425,7 @@ namespace PhysX
         m_pxController->setFootPosition(PxMathConvertExtended(position));
         if (m_shadowBody)
         {
-            m_shadowBody->SetTransform(AZ::Transform::CreateTranslation(GetBasePosition()));
+            m_shadowBody->SetTransform(GetTransform());
         }
     }
 
@@ -629,7 +641,7 @@ namespace PhysX
                 m_pxController->move(PxMathConvert(requestedMovement), m_minimumMovementDistance, deltaTime, m_pxControllerFilters);
                 if (m_shadowBody)
                 {
-                    m_shadowBody->SetKinematicTarget(AZ::Transform::CreateTranslation(GetBasePosition()));
+                    m_shadowBody->SetKinematicTarget(GetTransform());
                 }
             }
             const AZ::Vector3 newPosition = GetBasePosition();
@@ -652,7 +664,8 @@ namespace PhysX
     {
         if (m_shadowBody)
         {
-            AZ::Transform transform = AZ::Transform::CreateFromQuaternionAndTranslation(rotation, GetBasePosition());
+            m_orientation = rotation;
+            AZ::Transform transform = GetTransform();
             m_shadowBody->SetKinematicTarget(transform);
         }
     }
@@ -677,11 +690,12 @@ namespace PhysX
 
     AZ::Transform CharacterController::GetTransform() const
     {
-        return AZ::Transform::CreateTranslation(GetPosition());
+        return AZ::Transform::CreateFromQuaternionAndTranslation(m_orientation, GetPosition());
     }
 
     void CharacterController::SetTransform(const AZ::Transform& transform)
     {
+        m_orientation = transform.GetRotation();
         SetBasePosition(transform.GetTranslation());
     }
 

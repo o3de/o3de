@@ -103,7 +103,7 @@ namespace LmbrCentral
             // Deprecate: CylinderColliderConfiguration -> CylinderShapeConfig
             serializeContext->ClassDeprecate(
                 "CylinderColliderConfiguration",
-                "{E1DCB833-EFC4-43AC-97B0-4E07AA0DFAD9}",
+                AZ::Uuid("{E1DCB833-EFC4-43AC-97B0-4E07AA0DFAD9}"),
                 &ClassConverters::DeprecateCylinderColliderConfiguration)
                 ;
 
@@ -149,7 +149,7 @@ namespace LmbrCentral
         {
             serializeContext->ClassDeprecate(
                 "CylinderColliderComponent",
-                "{A43F684B-07B6-4CD7-8D59-643709DF9486}",
+                AZ::Uuid("{A43F684B-07B6-4CD7-8D59-643709DF9486}"),
                 &ClassConverters::DeprecateCylinderColliderComponent)
                 ;
 

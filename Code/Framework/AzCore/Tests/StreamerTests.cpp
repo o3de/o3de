@@ -242,14 +242,12 @@ namespace AZ::IO
     };
 
     class StreamerTestBase
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             m_prevFileIO = FileIOBase::GetInstance();
             FileIOBase::SetInstance(&m_fileIO);
@@ -275,9 +273,7 @@ namespace AZ::IO
 
             FileIOBase::SetInstance(m_prevFileIO);
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         //! Requests are typically completed by Streamer before it updates it's internal bookkeeping.
@@ -334,7 +330,7 @@ namespace AZ::IO
             }
         }
 
-        void PeriodicallyCheckedRead(AZ::IO::PathView filePath, void* buffer, u64 fileSize, u64 offset, AZStd::chrono::seconds timeOut)
+        void PeriodicallyCheckedRead(AZ::IO::PathView filePath, void* buffer, u64 fileSize, u64 offset, AZStd::chrono::seconds timeOut, bool& result)
         {
             AZStd::binary_semaphore sync;
 
@@ -352,6 +348,7 @@ namespace AZ::IO
             this->m_streamer->QueueRequest(AZStd::move(request));
 
             bool hasTimedOut = !sync.try_acquire_for(timeOut);
+            result = readSuccessful && !hasTimedOut;
             ASSERT_FALSE(hasTimedOut);
             ASSERT_TRUE(readSuccessful);
         }
@@ -446,8 +443,13 @@ namespace AZ::IO
         auto testFile = this->CreateTestFile(fileSize, PadArchive::No);
 
         char buffer[fileSize];
-        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5));
-        this->VerifyTestFile(buffer, fileSize);
+        bool readResult{ false };
+        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5), readResult);
+        EXPECT_TRUE(readResult);
+        if(readResult)
+        {
+            this->VerifyTestFile(buffer, fileSize);
+        }
     }
 
     // Read a large file that will need to be broken into chunks.
@@ -457,8 +459,13 @@ namespace AZ::IO
         auto testFile = this->CreateTestFile(fileSize, PadArchive::No);
 
         char* buffer = new char[fileSize];
-        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5));
-        this->VerifyTestFile(buffer, fileSize);
+        bool readResult{ false };
+        this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, fileSize, 0, AZStd::chrono::seconds(5), readResult);
+        EXPECT_TRUE(readResult);
+        if(readResult)
+        {
+            this->VerifyTestFile(buffer, fileSize);
+        }
 
         delete[] buffer;
     }
@@ -483,8 +490,13 @@ namespace AZ::IO
         for (block = 0; block < fileSize; block += readBlock)
         {
             size_t blockSize = AZStd::min(readBlock, fileRemainder);
-            this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, blockSize, block, AZStd::chrono::seconds(5));
-            this->AssertTestFile(buffer, blockSize, block);
+            bool readResult{ false };
+            this->PeriodicallyCheckedRead(testFile->GetFileName(), buffer, blockSize, block, AZStd::chrono::seconds(5), readResult);
+            EXPECT_TRUE(readResult);
+            if (readResult)
+            {
+                this->AssertTestFile(buffer, blockSize, block);
+            }
 
             fileRemainder -= blockSize;
         }

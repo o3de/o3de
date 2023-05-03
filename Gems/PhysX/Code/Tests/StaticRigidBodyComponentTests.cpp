@@ -12,7 +12,7 @@
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorShapeColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
-#include <Source/EditorColliderComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 #include <Source/StaticRigidBodyComponent.h>
 
 #include <Tests/EditorTestUtilities.h>
@@ -51,12 +51,29 @@ namespace PhysXEditorTests
             boxDimensions);
     }
 
-    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_NoRigidBody_RuntimeStaticRigidBodyComponentCreated)
+    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_NoRigidBody_NoRuntimeStaticRigidBodyComponent)
     {
         // Create editor entity
         EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         AddEditorBoxShapeComponent(editorEntity);
+
+        // Create game entity and verify StaticRigidBodyComponent was NOT created
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        const auto* staticRigidBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>();
+
+        EXPECT_TRUE(staticRigidBody == nullptr);
+    }
+
+    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_StaticRigidBody_RuntimeStaticRigidBodyComponentCreated)
+    {
+        // Create editor entity
+        EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        AddEditorBoxShapeComponent(editorEntity);
+
+        // Add static rigid body component
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
 
         // Create game entity and verify StaticRigidBodyComponent was created
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -65,15 +82,14 @@ namespace PhysXEditorTests
         EXPECT_TRUE(staticRigidBody != nullptr);
     }
 
-    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_RigidBody_NoRuntimeStaticRigidBodyComponent)
+    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_DynamicRigidBody_NoRuntimeStaticRigidBodyComponent)
     {
         // Create editor entity
         EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         AddEditorBoxShapeComponent(editorEntity);
 
-        // Add EditorRigidBodyComponent (depends on PhysXColliderService and
-        // should prevent runtime StaticRigidBodyComponent creation)
+        // Add dynamic rigid body component
         editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
 
         // Create game entity and verify StaticRigidBodyComponent was NOT created
@@ -81,6 +97,11 @@ namespace PhysXEditorTests
         const auto* staticRigidBody = gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>();
 
         EXPECT_TRUE(staticRigidBody == nullptr);
+
+        // Verify RigidBodyComponent was created
+        const auto* rigidBody = gameEntity->FindComponent<PhysX::RigidBodyComponent>();
+
+        EXPECT_TRUE(rigidBody != nullptr);
     }
 
     TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_MultipleColliderComponents_SingleRuntimeStaticRigidBodyComponent)
@@ -90,8 +111,11 @@ namespace PhysXEditorTests
         AddEditorBoxShapeComponent(editorEntity);
 
         // Add two EditorColliderComponent components to the entity
-        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+        editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+
+        // Add static rigid body component
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
 
         // Create game entity and verify only one StaticRigidBodyComponent was created
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -101,7 +125,20 @@ namespace PhysXEditorTests
         EXPECT_EQ(staticRigidBodyComponents.size(), 1);
     }
 
-    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_EditorColliderAndNoRigidBodyComponent_EditorStaticRigidBodyCreated)
+    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_EditorColliderAndNoRigidBodyComponent_EntityIsInvalid)
+    {
+        // Create editor entity
+        EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
+        editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
+        AddEditorBoxShapeComponent(editorEntity);
+
+        // the entity should not be in a valid state because the shape collider component requires a rigid body component
+        AZ::Entity::DependencySortOutcome sortOutcome = editorEntity->EvaluateDependenciesGetDetails();
+        EXPECT_FALSE(sortOutcome.IsSuccess());
+        EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::MissingRequiredService);
+    }
+
+    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_EditorColliderAndStaticRigidBodyComponent_EditorStaticRigidBodyCreated)
     {
         // Get current number of static rigid body actors in editor world
         const int originalStaticRigidBodyCount = GetEditorStaticRigidBodyCount();
@@ -110,14 +147,17 @@ namespace PhysXEditorTests
         EntityPtr editorEntity = CreateInactiveEditorEntity("Entity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         AddEditorBoxShapeComponent(editorEntity);
+
+        // Add static rigid body component
+        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
 
         editorEntity->Activate();
 
-        // Verify number of static rigid body actors increased by 1 
+        // Verify number of static rigid body actors increased by 1
         EXPECT_EQ(GetEditorStaticRigidBodyCount(), originalStaticRigidBodyCount + 1);
     }
 
-    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_EditorColliderAndRigidBodyComponent_NoEditorStaticRigidBodyCreated)
+    TEST_F(PhysXEditorFixture, StaticRigidBodyComponent_EditorColliderAndDynamicRigidBodyComponent_NoEditorStaticRigidBodyCreated)
     {
         // Get current number of static rigid body actors in editor world
         const int originalStaticRigidBodyCount = GetEditorStaticRigidBodyCount();
@@ -127,6 +167,7 @@ namespace PhysXEditorTests
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
         AddEditorBoxShapeComponent(editorEntity);
 
+        // Add dynamic rigid body component
         editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
 
         editorEntity->Activate();

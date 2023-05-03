@@ -13,6 +13,7 @@
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/RenderPass.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -30,8 +31,8 @@ namespace AZ
 
             const auto* drawDescriptor = static_cast<const RHI::PipelineStateDescriptorForDraw*>(descriptor.m_pipelineDescritor);
             const RHI::RenderAttachmentLayout& renderAttachmentLayout = drawDescriptor->m_renderAttachmentConfiguration.m_renderAttachmentLayout;            
-            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);
-            renderpassDescriptor.m_device = descriptor.m_device;
+            auto renderpassDescriptor = RenderPass::ConvertRenderAttachmentLayout(
+                *descriptor.m_device, renderAttachmentLayout, drawDescriptor->m_renderStates.m_multisampleState);            
             m_renderPass = descriptor.m_device->AcquireRenderPass(renderpassDescriptor);
 
             return BuildNativePipeline(descriptor, pipelineLayout);
@@ -69,7 +70,7 @@ namespace AZ
             BuildPipelineMultisampleStateCreateInfo(multisampleState, blendState);
             BuildPipelineDepthStencilStateCreateInfo(depthStencilState);
             BuildPipelineColorBlendStateCreateInfo(blendState, renderTargetConfig.GetRenderTargetCount());
-            BuildPipelineDynamicStateCreateInfo(multisampleState);
+            BuildPipelineDynamicStateCreateInfo();
 
             AZ_Assert(!m_pipelineShaderStageCreateInfos.empty(), "There is no shader stages.");
 
@@ -97,7 +98,7 @@ namespace AZ
             const VkPipelineCache pipelineCache = descriptor.m_pipelineLibrary ? descriptor.m_pipelineLibrary->GetNativePipelineCache() : VK_NULL_HANDLE;
 
             const VkResult vkResult = descriptor.m_device->GetContext().CreateGraphicsPipelines(
-                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, nullptr, &GetNativePipelineRef());
+                descriptor.m_device->GetNativeDevice(), pipelineCache, 1, &createInfo, VkSystemAllocator::Get(), &GetNativePipelineRef());
 
             return ConvertResult(vkResult);
         }
@@ -374,10 +375,16 @@ namespace AZ
                         return ConvertSampleLocation(item);
                     });
 
+                    AZ_Assert(
+                        multisampleState.m_customPositionsCount >= static_cast<uint32_t>(info.rasterizationSamples),
+                        "Sample locations is smaller than rasterization samples %d < %d",
+                        static_cast<int>(multisampleState.m_customPositionsCount),
+                        static_cast<int>(info.rasterizationSamples));
+
                     VkSampleLocationsInfoEXT sampleLocations = {};
                     sampleLocations.sType = VK_STRUCTURE_TYPE_SAMPLE_LOCATIONS_INFO_EXT;
                     sampleLocations.sampleLocationGridSize = VkExtent2D{ 1, 1 };
-                    sampleLocations.sampleLocationsCount = multisampleState.m_customPositionsCount;
+                    sampleLocations.sampleLocationsCount = info.rasterizationSamples;
                     sampleLocations.sampleLocationsPerPixel = info.rasterizationSamples;
                     sampleLocations.pSampleLocations = m_customSampleLocations.data();
 
@@ -453,7 +460,15 @@ namespace AZ
             m_colorBlendAttachments.resize(info.attachmentCount);
             for (uint32_t index = 0; index < info.attachmentCount; ++index)
             {
-                FillColorBlendAttachmentState(blendState.m_targets[index], m_colorBlendAttachments[index]);
+                // If m_independentBlendEnable is not enabled, we use the values from attachment 0 (same as D3D12)
+                if (index == 0 || blendState.m_independentBlendEnable)
+                {
+                    FillColorBlendAttachmentState(blendState.m_targets[index], m_colorBlendAttachments[index]);
+                }
+                else
+                {
+                    m_colorBlendAttachments[index] = m_colorBlendAttachments[0];
+                }
             }
             info.pAttachments = m_colorBlendAttachments.empty() ? nullptr : m_colorBlendAttachments.data();
             for (uint32_t index = 0; index < BlendConstantsCount; ++index)
@@ -462,7 +477,7 @@ namespace AZ
             }
         }
 
-        void GraphicsPipeline::BuildPipelineDynamicStateCreateInfo(const RHI::MultisampleState& multisampleState)
+        void GraphicsPipeline::BuildPipelineDynamicStateCreateInfo()
         {
             m_dynamicStates =
             {
@@ -471,13 +486,11 @@ namespace AZ
                 VK_DYNAMIC_STATE_STENCIL_REFERENCE
             };
 
-            if (multisampleState.m_customPositionsCount)
+            auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
+            if (RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw) &&
+                physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {
-                auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
-                if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation))
-                {
-                    m_dynamicStates.push_back(VK_DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT);
-                }
+                m_dynamicStates.push_back(VK_DYNAMIC_STATE_FRAGMENT_SHADING_RATE_KHR);
             }
 
             VkPipelineDynamicStateCreateInfo& info = m_pipelineDynamicStateCreateInfo;

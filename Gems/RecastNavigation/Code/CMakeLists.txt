@@ -151,10 +151,12 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME RecastNavigation.Clients NAMESPACE Gem TARGETS Gem::RecastNavigation)
 ly_create_alias(NAME RecastNavigation.Servers NAMESPACE Gem TARGETS Gem::RecastNavigation)
+ly_create_alias(NAME RecastNavigation.Unified NAMESPACE Gem TARGETS Gem::RecastNavigation)
 
 # For the Client and Server variants of RecastNavigation Gem, an alias to the RecastNavigation.API target will be made
 ly_create_alias(NAME RecastNavigation.Clients.API NAMESPACE Gem TARGETS Gem::RecastNavigation.API)
 ly_create_alias(NAME RecastNavigation.Servers.API NAMESPACE Gem TARGETS Gem::RecastNavigation.API)
+ly_create_alias(NAME RecastNavigation.Unified.API NAMESPACE Gem TARGETS Gem::RecastNavigation.API)
 
 # If we are on a host platform, we want to add the host tools targets like the RecastNavigation.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -285,9 +287,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             )
 
             # Add RecastNavigation.Editor.Tests to googletest
-            ly_add_googletest(
-                NAME Gem::RecastNavigation.Editor.Tests
-            )
+            # Commented out as currently there are no RecastNavigation Editor tests
+            # ly_add_googletest(
+                # NAME Gem::RecastNavigation.Editor.Tests
+            # )
         endif()
     endif()
 endif()

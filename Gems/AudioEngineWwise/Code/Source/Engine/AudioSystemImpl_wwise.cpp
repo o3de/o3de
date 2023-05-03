@@ -1426,7 +1426,7 @@ namespace Audio
                 fileEntryInfo->bLocalized = isLocalized;
                 fileEntryInfo->sFileName = audioFileEntryName;
                 fileEntryInfo->nMemoryBlockAlignment = AK_BANK_PLATFORM_DATA_ALIGNMENT;
-                fileEntryInfo->pImplData = azcreate(SATLAudioFileEntryData_wwise, (), Audio::AudioImplAllocator, "ATLAudioFileEntryData_wwise");
+                fileEntryInfo->pImplData = azcreate(SATLAudioFileEntryData_wwise, (), Audio::AudioImplAllocator);
                 result = EAudioRequestStatus::Success;
             }
             else
@@ -1463,14 +1463,14 @@ namespace Audio
     SATLAudioObjectData_wwise* CAudioSystemImpl_wwise::NewGlobalAudioObjectData(const TAudioObjectID objectId)
     {
         AZ_UNUSED(objectId);
-        auto newObjectData = azcreate(SATLAudioObjectData_wwise, (AK_INVALID_GAME_OBJECT, false), Audio::AudioImplAllocator, "ATLAudioObjectData_wwise-Global");
+        auto newObjectData = azcreate(SATLAudioObjectData_wwise, (AK_INVALID_GAME_OBJECT, false), Audio::AudioImplAllocator);
         return newObjectData;
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     SATLAudioObjectData_wwise* CAudioSystemImpl_wwise::NewAudioObjectData(const TAudioObjectID objectId)
     {
-        auto newObjectData = azcreate(SATLAudioObjectData_wwise, (static_cast<AkGameObjectID>(objectId), true), Audio::AudioImplAllocator, "ATLAudioObjectData_wwise");
+        auto newObjectData = azcreate(SATLAudioObjectData_wwise, (static_cast<AkGameObjectID>(objectId), true), Audio::AudioImplAllocator);
         return newObjectData;
     }
 
@@ -1483,7 +1483,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     SATLListenerData_wwise* CAudioSystemImpl_wwise::NewDefaultAudioListenerObjectData(const TATLIDType listenerId)
     {
-        auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator, "ATLListenerData_wwise-Default");
+        auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator);
         if (newObjectData)
         {
             auto listenerName = AZStd::string::format("DefaultAudioListener(%llu)", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
@@ -1512,7 +1512,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     SATLListenerData_wwise* CAudioSystemImpl_wwise::NewAudioListenerObjectData(const TATLIDType listenerId)
     {
-        auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator, "ATLListenerData_wwise");
+        auto newObjectData = azcreate(SATLListenerData_wwise, (static_cast<AkGameObjectID>(listenerId)), Audio::AudioImplAllocator);
         if (newObjectData)
         {
             auto listenerName = AZStd::string::format("AudioListener(%llu)", static_cast<AZ::u64>(newObjectData->nAKListenerObjectId));
@@ -1552,7 +1552,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     SATLEventData_wwise* CAudioSystemImpl_wwise::NewAudioEventData(const TAudioEventID eventId)
     {
-        auto newObjectData = azcreate(SATLEventData_wwise, (eventId), Audio::AudioImplAllocator, "ATLEventData_wwise");
+        auto newObjectData = azcreate(SATLEventData_wwise, (eventId), Audio::AudioImplAllocator);
         return newObjectData;
     }
 
@@ -1590,7 +1590,7 @@ namespace Audio
 
                 if (akId != AK_INVALID_UNIQUE_ID)
                 {
-                    newTriggerImpl = azcreate(SATLTriggerImplData_wwise, (akId), Audio::AudioImplAllocator, "ATLTriggerImplData_wwise");
+                    newTriggerImpl = azcreate(SATLTriggerImplData_wwise, (akId), Audio::AudioImplAllocator);
                 }
             }
         }
@@ -1617,7 +1617,7 @@ namespace Audio
 
         if (akRtpcId != AK_INVALID_RTPC_ID)
         {
-            newRtpcImpl = azcreate(SATLRtpcImplData_wwise, (akRtpcId, mult, shift), Audio::AudioImplAllocator, "ATLRtpcImplData_wwise");
+            newRtpcImpl = azcreate(SATLRtpcImplData_wwise, (akRtpcId, mult, shift), Audio::AudioImplAllocator);
         }
 
         return newRtpcImpl;
@@ -1672,7 +1672,7 @@ namespace Audio
 
                 if (akBusId != AK_INVALID_AUX_ID)
                 {
-                    newEnvironmentImpl = azcreate(SATLEnvironmentImplData_wwise, (eWAET_AUX_BUS, static_cast<AkAuxBusID>(akBusId)), Audio::AudioImplAllocator, "ATLEnvironmentImplData_wwise");
+                    newEnvironmentImpl = azcreate(SATLEnvironmentImplData_wwise, (eWAET_AUX_BUS, static_cast<AkAuxBusID>(akBusId)), Audio::AudioImplAllocator);
                 }
             }
         }
@@ -1685,7 +1685,7 @@ namespace Audio
 
             if (akRtpcId != AK_INVALID_RTPC_ID)
             {
-                newEnvironmentImpl = azcreate(SATLEnvironmentImplData_wwise, (eWAET_RTPC, akRtpcId, mult, shift), Audio::AudioImplAllocator, "ATLEnvironmentImplData_wwise");
+                newEnvironmentImpl = azcreate(SATLEnvironmentImplData_wwise, (eWAET_RTPC, akRtpcId, mult, shift), Audio::AudioImplAllocator);
             }
         }
 
@@ -1813,7 +1813,7 @@ namespace Audio
 
                     if (akSGroupId != AK_INVALID_UNIQUE_ID && akSNameId != AK_INVALID_UNIQUE_ID)
                     {
-                        switchStateImpl = azcreate(SATLSwitchStateImplData_wwise, (type, akSGroupId, akSNameId), Audio::AudioImplAllocator, "ATLSwitchStateImplData_wwise");
+                        switchStateImpl = azcreate(SATLSwitchStateImplData_wwise, (type, akSGroupId, akSNameId), Audio::AudioImplAllocator);
                     }
                 }
             }
@@ -1843,7 +1843,7 @@ namespace Audio
                     const AkUniqueID akRtpcId = AK::SoundEngine::GetIDFromString(rtpcName);
                     if (akRtpcId != AK_INVALID_RTPC_ID)
                     {
-                        switchStateImpl = azcreate(SATLSwitchStateImplData_wwise, (eWST_RTPC, akRtpcId, akRtpcId, rtpcValue), Audio::AudioImplAllocator, "ATLSwitchStateImplData_wwise");
+                        switchStateImpl = azcreate(SATLSwitchStateImplData_wwise, (eWST_RTPC, akRtpcId, akRtpcId, rtpcValue), Audio::AudioImplAllocator);
                     }
                 }
             }
@@ -2132,4 +2132,3 @@ namespace Audio
     }
 
 } // namespace Audio
-

@@ -94,7 +94,7 @@ namespace AZ::Utils
             }
         }
 
-        // If the O3DEManifest key isn't set in teh settings registry
+        // If the O3DEManifest key isn't set in the settings registry
         // fallback to use the user's home directory with the .o3de folder appended to it
         AZ::IO::FixedMaxPath path = GetHomeDirectory(settingsRegistry);
         path /= ".o3de";
@@ -177,6 +177,29 @@ namespace AZ::Utils
         return {};
     }
 
+    AZ::SettingsRegistryInterface::FixedValueString GetProjectDisplayName(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            FixedValueString projectNameKey{ AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey };
+            projectNameKey += "/display_name";
+
+            if (FixedValueString settingsValue;
+                settingsRegistry->Get(settingsValue, projectNameKey))
+            {
+                return settingsValue;
+            }
+        }
+        // fallback to querying the "project_name", if the "display_name" could not be read
+        return GetProjectName(settingsRegistry);
+    }
+
     AZ::IO::FixedMaxPathString GetGemPath(AZStd::string_view gemName, AZ::SettingsRegistryInterface* settingsRegistry)
     {
         if (settingsRegistry == nullptr)
@@ -192,6 +215,60 @@ namespace AZ::Utils
 
             if (AZ::IO::FixedMaxPathString settingsValue;
                 settingsRegistry->Get(settingsValue, manifestGemJsonPath))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectLogPath))
+            {
+                return settingsValue;
+            }
+        }
+        return {};
+    }
+
+    AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (AZ::IO::FixedMaxPathString settingsValue;
+                settingsRegistry->Get(settingsValue, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
             {
                 return settingsValue;
             }

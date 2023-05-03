@@ -42,10 +42,10 @@ namespace ScriptCanvasEditor
     VariablePaletteTableView::VariablePaletteTableView(QWidget* parent)
         : QTableView(parent)
     {
-        m_containerWizard = aznew ContainerWizard(parent);
+        m_containerWizard = aznew ContainerWizard(this);
 
-        m_model = aznew DataTypePaletteModel(parent);
-        m_proxyModel = aznew DataTypePaletteSortFilterProxyModel(parent);
+        m_model = aznew DataTypePaletteModel(this);
+        m_proxyModel = aznew DataTypePaletteSortFilterProxyModel(this);
         
         m_proxyModel->setSourceModel(m_model);
         m_proxyModel->sort(DataTypePaletteModel::ColumnIndex::Type);

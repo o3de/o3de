@@ -16,7 +16,7 @@ namespace AzToolsFramework
         class EditorPrefabComponent : public AzToolsFramework::Components::EditorComponentBase
         {
         public:
-            static constexpr const char* const EditorPrefabComponentTypeId = "{756E5F9C-3E08-4F8D-855C-A5AEEFB6FCDD}";
+            static inline constexpr AZ::TypeId EditorPrefabComponentTypeId{ "{756E5F9C-3E08-4F8D-855C-A5AEEFB6FCDD}" };
 
             AZ_COMPONENT(EditorPrefabComponent, EditorPrefabComponentTypeId, EditorComponentBase);
 

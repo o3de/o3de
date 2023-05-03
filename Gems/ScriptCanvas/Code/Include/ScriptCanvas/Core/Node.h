@@ -138,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VisualExtensionSlotConfiguration, "{3EA2D6DB-1B8F-451B-A6CE-D5779E56F4A8}");
-        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator);
 
         enum class VisualExtensionType
         {
@@ -217,7 +217,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
+        AZ_RTTI((TypedNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
         virtual ~TypedNodePropertyInterface() = default;
@@ -283,7 +283,7 @@ namespace ScriptCanvas
 
         // The this-> method calls are here to deal with clang quirkiness with dependent template classes. Don't remove them.
 
-        AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
+        AZ_RTTI((TypedComboBoxNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
         virtual ~TypedComboBoxNodePropertyInterface() = default;
@@ -669,6 +669,7 @@ namespace ScriptCanvas
         // Hook here to allow CodeGen to override this
         virtual bool IsDeprecated() const { return false; };
         virtual size_t GenerateFingerprint() const { return 0; }
+        // Use following function to backup node replacement configuration
         virtual NodeReplacementConfiguration GetReplacementNodeConfiguration() const { return {}; };
         virtual AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> GetReplacementSlotsMap() const { return {}; };
 

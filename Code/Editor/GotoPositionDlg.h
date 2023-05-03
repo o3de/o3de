@@ -22,7 +22,7 @@ namespace Ui
 }
 
 //! Utility to deal with ensuring camera pitch values are in the expected range.
-struct GotoPositionPitchConstraints
+struct GoToPositionPitchConstraints
 {
     using AngleRangeConfigureFn = AZStd::function<void(float, float)>;
     //! Notify a callback with the min and max camera pitch constraints (no tolerance included).
@@ -51,6 +51,6 @@ public:
     QString m_transform;
 
 private:
-    GotoPositionPitchConstraints m_gotoPositionPitchConstraints;
+    GoToPositionPitchConstraints m_goToPositionPitchConstraints;
     QScopedPointer<Ui::GotoPositionDialog> m_ui;
 };

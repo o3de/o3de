@@ -354,8 +354,8 @@ namespace PhysX
         const float windMagnitude = 20.0f;
         auto forceRegionEntity = AddWindRegion(originalAabb, windDirection, windMagnitude, WindType::Local);
 
-        // Tick to flush any existing updates pending in wind system 
-        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+        // Tick to flush any existing updates pending in wind system
+        AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
 
         // Move entity to new position
         const AZ::Vector3 newPosition = AZ::Vector3(500.0f, 100.0f, 0.0f);
@@ -375,7 +375,7 @@ namespace PhysX
             EXPECT_CALL(mockHandler, OnWindChanged(originalAabb)).Times(1);
             EXPECT_CALL(mockHandler, OnWindChanged(newAabb)).Times(1);
 
-            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick, 0.01f, AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
         }
     }
 

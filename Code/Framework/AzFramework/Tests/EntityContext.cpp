@@ -23,34 +23,20 @@ namespace UnitTest
     using namespace AzFramework;
 
     class EntityContextBasicTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public EntityContextEventBus::Handler
     {
     public:
 
-        EntityContextBasicTest()
-        {
-        }
-
         void SetUp() override
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             Data::AssetManager::Descriptor desc;
             Data::AssetManager::Create(desc);
-        }
-
-        ~EntityContextBasicTest() override
-        {
         }
 
         void TearDown() override
         {
             Data::AssetManager::Destroy();
-
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
         }
 
         void run()
@@ -75,7 +61,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(m_createEntityEvents == 1);
 
             AZ::Uuid contextId = AZ::Uuid::CreateNull();
-            EBUS_EVENT_ID_RESULT(contextId, entity->GetId(), EntityIdContextQueryBus, GetOwningContextId);
+            EntityIdContextQueryBus::EventResult(contextId, entity->GetId(), &EntityIdContextQueryBus::Events::GetOwningContextId);
 
             AZ_TEST_ASSERT(contextId == context.GetContextId()); // Context properly associated with entity?
 

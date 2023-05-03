@@ -74,7 +74,6 @@ namespace Metastream
         : m_serverEnabled(0)
         , m_serverOptionsCVar(nullptr)
     {
-        MetastreamAllocatorScope::ActivateAllocators();
         m_descriptors.push_back(MetastreamReflectComponent::CreateDescriptor());
 
         // Initialise the cache
@@ -85,7 +84,6 @@ namespace Metastream
     MetastreamGem::~MetastreamGem()
     {
         MetastreamRequestBus::Handler::BusDisconnect();
-        MetastreamAllocatorScope::DeactivateAllocators();
     }
 
     void MetastreamGem::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
@@ -359,12 +357,12 @@ namespace Metastream
 
     void Metastream::MetastreamGem::StartHTTPServerCmd(IConsoleCmdArgs* /*args*/)
     {
-        EBUS_EVENT(Metastream::MetastreamRequestBus, StartHTTPServer);
+        Metastream::MetastreamRequestBus::Broadcast(&Metastream::MetastreamRequestBus::Events::StartHTTPServer);
     }
 
     void Metastream::MetastreamGem::StopHTTPServerCmd(IConsoleCmdArgs* /*args*/)
     {
-        EBUS_EVENT(Metastream::MetastreamRequestBus, StopHTTPServer);
+        Metastream::MetastreamRequestBus::Broadcast(&Metastream::MetastreamRequestBus::Events::StopHTTPServer);
     }
 
     // Unit test methods to get at m_cache and status

@@ -49,7 +49,7 @@ namespace AZ
             }
             AddMaterialPropertyDependency(functor, functor->m_lightUnitPropertyIndex);
 
-            functor->m_shaderInputIndex = context.GetShaderResourceGroupLayout()->FindShaderInputConstantIndex(AZ::Name{ m_shaderInputName });
+            functor->m_shaderInputIndex = context.FindShaderInputConstantIndex(AZ::Name{ m_shaderInputName });
 
             if (functor->m_shaderInputIndex.IsNull())
             {

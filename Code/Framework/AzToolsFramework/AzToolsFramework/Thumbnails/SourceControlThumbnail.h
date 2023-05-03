@@ -24,7 +24,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_RTTI(SourceControlFileInfo, "{F6772100-A178-45A7-8F75-41426B07D829}", ThumbnailKey);
+            AZ_RTTI(SourceControlThumbnailKey, "{F6772100-A178-45A7-8F75-41426B07D829}", ThumbnailKey);
 
             explicit SourceControlThumbnailKey(const char* fileName);
 
@@ -40,7 +40,7 @@ namespace AzToolsFramework
             //! how often should sc thumbnails auto update
             const AZStd::chrono::minutes m_updateInterval;
             //! time since this sc thumbnail updated
-            AZStd::chrono::system_clock::time_point m_nextUpdate;
+            AZStd::chrono::steady_clock::time_point m_nextUpdate;
         };
 
         //! SourceControlThumbnail currently replicates the source control functionality within Material Browser

@@ -58,6 +58,7 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME StreamerProfiler.Clients NAMESPACE Gem TARGETS Gem::StreamerProfiler)
 ly_create_alias(NAME StreamerProfiler.Servers NAMESPACE Gem TARGETS Gem::StreamerProfiler)
+ly_create_alias(NAME StreamerProfiler.Unified NAMESPACE Gem TARGETS Gem::StreamerProfiler)
 
 ################################################################################
 # Tests
@@ -84,8 +85,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
 
         # Add StreamerProfiler.Tests to googletest
-        ly_add_googletest(
-            NAME Gem::StreamerProfiler.Tests
-        )
+        # Commented out as currently there are no StreamerProfiler tests
+        # ly_add_googletest(
+            # NAME Gem::StreamerProfiler.Tests
+        # )
     endif()
 endif()

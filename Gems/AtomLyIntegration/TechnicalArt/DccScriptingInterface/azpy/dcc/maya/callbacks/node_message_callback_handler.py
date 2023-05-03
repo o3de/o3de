@@ -60,31 +60,25 @@
 # --------------------------------------------------------------------------
 # -- Standard Python modules
 import os
+import logging as _logging
 
 # -- External Python modules
 
 # -- Lumberyard Extension Modules
-import azpy
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+from DccScriptingInterface.globals import *
 
 # -- Maya Modules --
 import maya.api.OpenMaya as om
 import maya.cmds as mc
 #--------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------
-# -- Misc Global Space Definitions
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.dcc.maya.callbacks.event_callback_handler'
-
-_LOGGER = azpy.initialize_logger(_PACKAGENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_PACKAGENAME}))
+#--------------------------------------------------------------------------
+# global scope
+from DccScriptingInterface.azpy.dcc.maya.callbacks import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.node_message_callback_handler'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -96,7 +90,7 @@ class NodeMessageCallbackHandler(object):
     < To Do: document Class >
     """
     # --BASE-METHODS-------------------------------------------------------
-    # --constructor-    
+    # --constructor-
     def __init__(self,
                  this_function,
                  this_callback,
@@ -104,7 +98,7 @@ class NodeMessageCallbackHandler(object):
                  install=True,
                  *args, **kwargs):
         """
-        initializes a this_callback object        
+        initializes a this_callback object
         """
         # this_callback id storage
         self._callback_type_id = None
@@ -120,7 +114,7 @@ class NodeMessageCallbackHandler(object):
         # passing in a null MObject (ie, without a name as an argument)
         # registers the this_callback to get all name changes in the scene
         # if you wanted to monitor a specific object's name changes
-        # you could pass a name to the MObject        
+        # you could pass a name to the MObject
         if mNodeName is None:
             self._m_object = om.MObject()
         else:
@@ -139,7 +133,7 @@ class NodeMessageCallbackHandler(object):
 
     @property
     def this_callback(self):
-        return self._this_callback    
+        return self._this_callback
 
     @property
     def this_function(self):
@@ -147,7 +141,7 @@ class NodeMessageCallbackHandler(object):
     #--properties----------------------------------------------------------
 
 
-    # --method------------------------------------------------------------- 
+    # --method-------------------------------------------------------------
     def install(self):
         """
         installs this this_callback for event, which makes it active
@@ -178,7 +172,7 @@ class NodeMessageCallbackHandler(object):
     #----------------------------------------------------------------------
 
 
-    # --method------------------------------------------------------------- 
+    # --method-------------------------------------------------------------
     def uninstall(self):
         """
         uninstalls this thisCallback for the event, deactivates
@@ -205,7 +199,7 @@ class NodeMessageCallbackHandler(object):
     #----------------------------------------------------------------------
 
 
-    # --method------------------------------------------------------------- 
+    # --method-------------------------------------------------------------
     def __del__(self):
         """
         if object is deleted, the thisCallback is uninstalled

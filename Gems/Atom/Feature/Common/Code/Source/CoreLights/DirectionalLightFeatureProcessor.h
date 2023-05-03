@@ -119,6 +119,7 @@ namespace AZ
             : public DirectionalLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(DirectionalLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::DirectionalLightFeatureProcessor, "61610178-8DAA-4BF2-AF17-597F20D527DD", AZ::Render::DirectionalLightFeatureProcessorInterface);
 
             struct CascadeSegment
@@ -254,9 +255,7 @@ namespace AZ
 
         private:
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
             void OnRenderPipelinePersistentViewChanged(RPI::RenderPipeline* renderPipeline, RPI::PipelineViewTag viewTag, RPI::ViewPtr newView, RPI::ViewPtr previousView) override;
 
             //! This prepare for change of render pipelines and camera views.

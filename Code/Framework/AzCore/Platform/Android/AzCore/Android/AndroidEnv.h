@@ -43,7 +43,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AndroidEnv, "{E51A8876-7A26-4CB1-BA88-394A128728C7}")
-            AZ_CLASS_ALLOCATOR(AndroidEnv, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AndroidEnv, AZ::OSAllocator);
 
 
             //! Creation POD for the AndroidEnv
@@ -84,9 +84,6 @@ namespace AZ
             //! Request a thread specific JNIEnv pointer from the JVM.
             //! \return A pointer to the JNIEnv on the current thread.
             JNIEnv* GetJniEnv() const;
-
-            //! Request the global reference to the activity java virtual machine
-            JavaVM* GetActivityJavaVM() const { return m_jvm; }
 
             //! Request the global reference to the activity class
             jclass GetActivityClassRef() const { return m_activityClass; }

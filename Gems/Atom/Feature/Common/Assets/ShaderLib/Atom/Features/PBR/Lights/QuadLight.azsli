@@ -108,7 +108,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
         float3 p3 = posToLight +  left +  up;
 
         bool useFastApproximation = (light.m_flags & QuadLightFlag::UseFastApproximation) > 0;
-        if (!useFastApproximation)
+        if (!useFastApproximation && o_enableQuadLightLTC)
         {
             float3 p[4] = {p0, p1, p2, p3};
             
@@ -122,7 +122,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             lightingData.diffuseLighting += surface.albedo * diffuse * intensity;
             lightingData.specularLighting += specular * intensity;
         }
-        else
+        else if (useFastApproximation && o_enableQuadLightApprox)
         {
             // Calculate solid angle of light
             float solidAngle = RectangleSolidAngle(p0, p1, p2, p3);
@@ -156,6 +156,8 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
             const float transmissionDistance = -1.0f;
             // If the transmissionDistance is ignored then the attenuation distance (only used on thin objects) does not have any influence
             const float attenuationDistance = 0.0f;
+
+#if ENABLE_TRANSMISSION
             lightingData.translucentBackLighting +=
             (
                 GetBackLighting(surface, lightingData, intensity, p0, transmissionDistance, attenuationDistance) +
@@ -164,6 +166,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
                 GetBackLighting(surface, lightingData, intensity, p3, transmissionDistance, attenuationDistance) +
                 GetBackLighting(surface, lightingData, intensity, dirToLightCenter, transmissionDistance, attenuationDistance)
             );
+#endif
             
             // Calculate specular by choosing a single representative point on the light's surface based on the reflection ray
             // Then adjusting it's brightness based on different factors.
@@ -241,12 +244,38 @@ void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout Lighting
     float3 intensityCandelas = light.m_rgbIntensityNits * area;
 
     lightingData.diffuseLighting += (diffuseAcc / float(sampleCount)) * intensityCandelas;
-    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensityCandelas;
     lightingData.specularLighting += (specularAcc / float(sampleCount)) * intensityCandelas;
+
+#if ENABLE_TRANSMISSION
+    lightingData.translucentBackLighting += (translucentAcc / float(sampleCount)) * intensityCandelas;
+#endif
+}
+
+void ApplyQuadLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+#if ENABLE_QUAD_LIGHTS
+
+    if (o_enableQuadLightApprox || o_enableQuadLightLTC)
+    {
+        ViewSrg::QuadLight light = ViewSrg::m_quadLights[lightIndex];
+            
+#if ENABLE_AREA_LIGHT_VALIDATION
+        if (o_area_light_validation)
+        {
+            ValidateQuadLight(light, surface, lightingData);
+        }
+        else
+#endif //ENABLE_AREA_LIGHT_VALIDATION
+        {
+            ApplyQuadLight(light, surface, lightingData);
+        }
+    }
+#endif // ENABLE_QUAD_LIGHTS
 }
 
 void ApplyQuadLights(Surface surface, inout LightingData lightingData)
 {
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while( !lightingData.tileIterator.IsDone() ) 
@@ -254,21 +283,12 @@ void ApplyQuadLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
 
-#if ENABLE_QUAD_LIGHTS
-
-        ViewSrg::QuadLight light = ViewSrg::m_quadLights[currLightIndex];
-        
-    #if ENABLE_AREA_LIGHT_VALIDATION
-        if (o_area_light_validation)
-        {
-            ValidateQuadLight(light, surface, lightingData);
-        }
-        else
-    #endif
-        {
-            ApplyQuadLight(light, surface, lightingData);
-        }
-
-#endif
+        ApplyQuadLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_quadLightCount; lightIndex++)
+    {
+        ApplyQuadLightInternal(lightIndex, surface, lightingData);
+    }
+#endif
 }

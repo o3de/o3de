@@ -30,26 +30,27 @@ class PersistentStorage(ABC):
     RUNTIME_ARTIFACT_DIRECTORY = "RuntimeArtifacts"
     RUNTIME_COVERAGE_DIRECTORY = "RuntimeCoverage"
 
-    def __init__(self, config: dict, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str):
+    def __init__(self, config: dict, suites_string: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, temp_workspace: str):
         """
         Initializes the persistent storage into a state for which there is no historic data available.
 
         @param config: The runtime configuration to obtain the data file paths from.
-        @param suite:  The test suite for which the historic data will be obtained for.
+        @param suites_string: The unique key to differentiate the different suite combinations from one another different for which the historic data will be obtained for.
         @param commit: The commit hash for this build.
         """
 
         # Work on the assumption that there is no historic meta-data (a valid state to be in, should none exist)
-        self._suite = suite
+        self._suites_string = suites_string
         self._last_commit_hash = None
         self._has_historic_data = False
         self._has_previous_last_commit_hash = False
         self._this_commit_hash = commit
         self._this_commit_hash_last_commit_hash = None
         self._historic_data = None
-        logger.info(f"Attempting to access persistent storage for the commit '{self._this_commit_hash}' for suite '{self._suite}'")
+        logger.info(f"Attempting to access persistent storage for the commit '{self._this_commit_hash}' for suites '{self._suites_string}'")
 
-        self._active_workspace= pathlib.Path(active_workspace).joinpath(pathlib.Path(self._suite))
+        self._temp_workspace = pathlib.Path(temp_workspace)
+        self._active_workspace = pathlib.Path(active_workspace).joinpath(pathlib.Path(self._suites_string))
         self._unpacked_coverage_data_file = self._active_workspace.joinpath(unpacked_coverage_data_file_path)
         self._previous_test_run_data_file = self._active_workspace.joinpath(previous_test_run_data_file_path)
 
@@ -79,7 +80,7 @@ class PersistentStorage(ABC):
                     self._has_previous_last_commit_hash = self._this_commit_hash_last_commit_hash is not None
 
                     if self._has_previous_last_commit_hash:
-                        logger.info(f"Last commit hash '{self._this_commit_hash_last_commit_hash}' was used previously for this commit.")
+                        logger.info(f"Last commit hash '{self._this_commit_hash_last_commit_hash}' was used previously for the commit '{self._last_commit_hash}'.")
                     else:
                         logger.info(f"Prior sequence data found for this commit but it is empty (there was no coverage data available at that time).")
                 else:
@@ -96,7 +97,7 @@ class PersistentStorage(ABC):
                 logger.info("No previous test run data found.")
 
             # Create the active workspace directory for the unpacked historic data files so they are accessible by the runtime
-            self._active_workspace.mkdir(exist_ok=True)
+            self._active_workspace.mkdir(exist_ok=True, parents=True)
 
             # Coverage file
             logger.info(f"Writing coverage data to '{self._unpacked_coverage_data_file}'.")

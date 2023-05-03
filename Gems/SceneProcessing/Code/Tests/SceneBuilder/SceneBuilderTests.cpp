@@ -26,7 +26,7 @@ using namespace AZ;
 using namespace SceneBuilder;
 
 class SceneBuilderTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
     , public UnitTest::TraceBusRedirector
 {
 protected:
@@ -231,7 +231,7 @@ struct ImportHandler
     }
 };
 
-using SourceDependencyTests = UnitTest::ScopedAllocatorSetupFixture;
+using SourceDependencyTests = UnitTest::LeakDetectionFixture;
 
 namespace SourceDependencyJson
 {
@@ -283,7 +283,7 @@ TEST_F(SourceDependencyTests, PopulateSourceDependencies_WithEmptyManifest_Shoul
     ASSERT_EQ(dependencies.size(), 0);
 }
 
-struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
+struct SourceDependencyMockedIOTests : UnitTest::LeakDetectionFixture
     , UnitTest::SetRestoreFileIOBaseRAII
 {
     SourceDependencyMockedIOTests()
@@ -349,6 +349,7 @@ TEST_F(SourceDependencyMockedIOTests, RegularManifestHasPriority)
 
     EXPECT_CALL(m_ioMock, Exists(StrEq("file.fbx.test"))).WillRepeatedly(Return(true));
     EXPECT_CALL(m_ioMock, Exists(StrEq(genPath.c_str()))).Times(Exactly(0));
+    EXPECT_CALL(settingsRegistry, Get(::testing::An<FixedValueString&>(), ::testing::_)).Times(1);
     
     ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
     ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);
@@ -379,6 +380,7 @@ TEST_F(SourceDependencyMockedIOTests, GeneratedManifestTest)
 
     EXPECT_CALL(m_ioMock, Exists(StrEq("file.fbx.test"))).WillRepeatedly(Return(false));
     EXPECT_CALL(m_ioMock, Exists(StrEq(genPath.c_str()))).WillRepeatedly(Return(true));
+    EXPECT_CALL(settingsRegistry, Get(::testing::An<FixedValueString&>(), ::testing::_)).Times(1);
 
     ASSERT_TRUE(SceneBuilderWorker::ManifestDependencyCheck(request, response));
     ASSERT_EQ(response.m_sourceFileDependencyList.size(), 2);

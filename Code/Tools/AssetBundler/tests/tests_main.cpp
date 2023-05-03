@@ -24,13 +24,14 @@
 #include <tests/main.h>
 #include <source/utils/applicationManager.h>
 
+#include <QApplication>
 
 extern char g_cachedEngineRoot[AZ_MAX_PATH_LEN];
 
 namespace AssetBundler
 {
     class AssetBundlerBatchUtilsTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     };
 
@@ -89,7 +90,7 @@ namespace AssetBundler
     const char DummyProjectFolder[] = "DummyProject";
 
     class AssetBundlerGemsUtilTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -294,17 +295,16 @@ namespace AssetBundler
 int main(int argc, char* argv[])
 {
     AZ::Debug::Trace::HandleExceptions(true);
+    QApplication app(argc, argv);
     AZ::Test::ApplyGlobalParameters(&argc, argv);
 
     INVOKE_AZ_UNIT_TEST_MAIN();
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
     {
         AssetBundler::ApplicationManager applicationManger(&argc, &argv);
         applicationManger.Init();
         runSuccess = applicationManger.Run() ? 0 : 1;
     }
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     return runSuccess;
 }

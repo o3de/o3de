@@ -28,6 +28,45 @@ class QMenu;
 class QMimeData;
 class QWidget;
 
+// Macros for printing information to the console if a condition is met.
+#if defined(AZ_ENABLE_TRACING)
+#define AZ_TracePrintf_IfTrue(window, expression, ...)\
+    AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")\
+    if (expression)\
+    {\
+        AZ_TraceFmtCompileTimeCheck(\
+            expression,\
+            AZ_VA_HAS_ARGS(__VA_ARGS__),\
+            "String used in place of boolean expression for AZ_TracePrintf_IfTrue.",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
+    }\
+    AZ_POP_DISABLE_WARNING
+
+#define AZ_TracePrintfOnce_IfTrue(window, expression, ...)\
+    AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")\
+    if (expression)\
+    {\
+        AZ_TraceFmtCompileTimeCheck(\
+            expression,\
+            AZ_VA_HAS_ARGS(__VA_ARGS__),\
+            "String used in place of boolean expression for AZ_TracePrintfOnce_IfTrue.",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
+        static bool AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = false;\
+        if (!AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__))\
+        {\
+            AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
+            AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = true;\
+        }\
+    }\
+    AZ_POP_DISABLE_WARNING
+#else // !AZ_ENABLE_TRACING
+#define AZ_TracePrintf_IfTrue(...)
+#define AZ_TracePrintfOnce_IfTrue(...)
+#endif
+
 namespace AtomToolsFramework
 {
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
@@ -40,6 +79,19 @@ namespace AtomToolsFramework
     //! Get a pointer to the application main window
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
+
+    //! Searches a vector of string values for the first non empty string.
+    //! @param values Container of strings to be searched.
+    //! @param defaultValue Value returned if no valid string was found.
+    //! @returns The first nonempty string or the default value
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue = {});
+
+    // Find and replace a whole word or symbol using regular expressions.
+    void ReplaceSymbolsInContainer(
+        const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container);
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container);
 
     //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
     //! @param text Input text that will be converted into a symbol name
@@ -229,8 +281,20 @@ namespace AtomToolsFramework
     //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
+    //! Invokes a visitor function on every file contained in the initial folder, optionally recursing through subfolders and visiting those files as well.
+    void VisitFilesInFolder(const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse);
+
+    //! Invokes a visitor function on all files contained in asset scan folders.
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn);
+
+    // Visits all scan folders asynchronously, gathering all of the paths matching the filter. 
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn);
+
     //! Collect a set of file paths from all project safe folders matching a wild card
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+
+    //! Return a list of all asset safe folders except for those underneath the cache folder, usually intermediate asset folders.
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders();
 
     //! Add menu actions for scripts specified in the settings registry
     //! @param menu The menu where the actions will be inserted
@@ -242,3 +306,4 @@ namespace AtomToolsFramework
     void ReflectUtilFunctions(AZ::ReflectContext* context);
 
 } // namespace AtomToolsFramework
+

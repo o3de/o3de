@@ -17,7 +17,6 @@ struct IAIPathAgent;
 #include <IMNM.h>
 #include <SerializeFwd.h>
 #include <Cry_Geo.h>
-#include <LegacyAllocator.h>
 
 #include <AzCore/std/functional.h>
 #include <AzCore/std/containers/vector.h>
@@ -133,7 +132,7 @@ struct NavigationBlocker
     Location location;
 };
 
-using NavigationBlockers = AZStd::vector<NavigationBlocker, AZ::StdLegacyAllocator>;
+using NavigationBlockers = AZStd::vector<NavigationBlocker>;
 
 //====================================================================
 // PathPointDescriptor
@@ -241,7 +240,7 @@ struct PathfindingExtraConstraint
     UConstraint constraint;
 };
 
-using PathfindingExtraConstraints = AZStd::vector<PathfindingExtraConstraint, AZ::StdLegacyAllocator>;
+using PathfindingExtraConstraints = AZStd::vector<PathfindingExtraConstraint>;
 
 struct PathfindRequest
 {
@@ -347,7 +346,7 @@ struct PathFollowResult
         Vec3 pos;
         Vec3 vel;
     };
-    typedef AZStd::vector<SPredictedState, AZ::StdLegacyAllocator> TPredictedStates;
+    typedef AZStd::vector<SPredictedState> TPredictedStates;
 
     // OLD: Obsolete & to be replaced by new impl.
 

@@ -25,6 +25,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         ~ButtonGroup() = default;
 
         void SetHighlightedButton(ButtonId buttonId);
+        void SetDisabledButton(ButtonId buttonId, bool disabled);
         void ClearHighlightedButton();
 
         void SetViewportUiElementId(ViewportUiElementId id);

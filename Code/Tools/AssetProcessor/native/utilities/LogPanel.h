@@ -26,7 +26,7 @@ namespace AssetProcessor
     class LogTab : public AzToolsFramework::LogPanel::StyledTracePrintFLogTab
     {
     public:
-        AZ_CLASS_ALLOCATOR(LogTab, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LogTab, AZ::SystemAllocator);
         explicit LogTab(const AzToolsFramework::LogPanel::TabSettings& settings, QWidget* parent = nullptr);
         ~LogTab() override = default;
         void AddInitialLogMessage();

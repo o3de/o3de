@@ -9,9 +9,13 @@
 #pragma once
 
 #include <Atom/ImageProcessing/ImageProcessingDefines.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/DataPatch.h>
+
+namespace AZ
+{
+    class ReflectContext;
+    class SerializeContext;
+}
 
 namespace ImageProcessingAtom
 {
@@ -29,7 +33,7 @@ namespace ImageProcessingAtom
     {
     public:
         AZ_TYPE_INFO(TextureSettings, "{980132FF-C450-425D-8AE0-BD96A8486177}");
-        AZ_CLASS_ALLOCATOR(TextureSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TextureSettings, AZ::SystemAllocator);
 
         TextureSettings();
 
@@ -73,7 +77,7 @@ namespace ImageProcessingAtom
         static StringOutcome GetPlatformSpecificTextureSetting(const PlatformName& platformName, const TextureSettings& baseTextureSettings, TextureSettings& textureSettingsOut, AZ::SerializeContext* serializeContext = nullptr);
 
         static void Reflect(AZ::ReflectContext* context);
-               
+
         /**
         * Loads base texture settings obtained from ".assetinfo" file
         * @param FilePath absolute/relative path of the ".assetinfo" file.
@@ -103,7 +107,7 @@ namespace ImageProcessingAtom
         * @return - The collection of TextureSetting instances. If error occurs, a default MultiplatformTextureSettings is returned (see GenerateDefaultMultiplatformTextureSettings()).
         */
         static const MultiplatformTextureSettings GetMultiplatformTextureSetting(const AZStd::string& filepath, bool& canOverridePreset, AZ::SerializeContext* serializeContext = nullptr);
-        
+
         /**
         * Generates a TextureSetting instance of a particular image file for each supported platform.
         * @param textureSettings - A reference to an already-loaded texture settings.

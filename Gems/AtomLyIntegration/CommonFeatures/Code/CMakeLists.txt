@@ -20,6 +20,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
             Gem::Atom_Feature_Common.Public
+            Gem::AtomImGuiTools.Public
 )
 
 ly_add_target(
@@ -73,6 +74,11 @@ ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Servers NAMESPACE Gem
     TARGETS
         Gem::AtomLyIntegration_CommonFeatures
         Gem::GradientSignal.Servers
+)
+ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Unified NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::GradientSignal.Unified
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -170,6 +176,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                     AZ::AzToolsFrameworkTestCommon
                     Gem::AtomLyIntegration_CommonFeatures.Static
                     Gem::AtomLyIntegration_CommonFeatures.Editor.Static
+            RUNTIME_DEPENDENCIES
+                Gem::LmbrCentral.Editor
         )
         ly_add_googletest(
             NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests
@@ -181,4 +189,3 @@ endif()
 # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
 # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
 # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures)

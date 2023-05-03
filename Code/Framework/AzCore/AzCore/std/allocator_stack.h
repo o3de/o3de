@@ -45,10 +45,9 @@ namespace AZStd
     {
         typedef stack_allocator this_type;
     public:
-        typedef void*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::true_type    allow_memory_leaks;
+        using pointer = void*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
 
         AZ_FORCE_INLINE stack_allocator(void* data, size_t size, const char* name = "AZStd::stack_allocator")
             : m_name(name)
@@ -62,7 +61,7 @@ namespace AZStd
         constexpr size_type          max_size() const            { return m_size; }
         AZ_FORCE_INLINE size_type    get_allocated_size() const  { return m_freeData - m_data; }
 
-        pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
+        pointer allocate(size_type byteSize, size_type alignment, int flags = 0)
         {
             (void)flags;
             char* address = AZ::PointerAlignUp(m_freeData, alignment);
@@ -71,14 +70,14 @@ namespace AZStd
             return address;
         }
 
-        AZ_FORCE_INLINE void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        AZ_FORCE_INLINE void  deallocate(pointer ptr, size_type byteSize, size_type alignment)
         {
             // do nothing.
             (void)ptr;
             (void)byteSize;
             (void)alignment;
         }
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)
         {
             (void)ptr;
             (void)newSize;

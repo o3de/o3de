@@ -11,9 +11,12 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/time.h>
 
 namespace AZ::Debug
 {
+    AZStd::optional<Profiler*> ProfileScope::m_cachedProfiler;
+
     AZStd::string GenerateOutputFile(const char* nameHint)
     {
         AZ::IO::FixedMaxPathString captureOutput = GetProfilerCaptureLocation();

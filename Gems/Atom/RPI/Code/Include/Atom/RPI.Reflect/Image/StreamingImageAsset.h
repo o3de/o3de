@@ -57,6 +57,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(StreamingImageAsset, "{3C96A826-9099-4308-A604-7B19ADBF8761}", ImageAsset);
+            AZ_CLASS_ALLOCATOR(StreamingImageAsset , AZ::SystemAllocator)
 
             static void Reflect(ReflectContext* context);
 
@@ -64,9 +65,6 @@ namespace AZ
 
             //! Returns an immutable reference to the mip chain associated by index into the array of mip chains.
             const Data::Asset<ImageMipChainAsset>& GetMipChainAsset(size_t mipChainIndex) const; 
-
-            //! Release referenced ImageMipChainAssets
-            void ReleaseMipChainAssets();
 
             //! Get the last mip chain asset data which contains lowest level of mips.
             const ImageMipChainAsset& GetTailMipChain() const;
@@ -103,6 +101,9 @@ namespace AZ
 
             //! Returns the image descriptor for the specified mip level.
             RHI::ImageDescriptor GetImageDescriptorForMipLevel(AZ::u32 mipLevel) const;
+
+            //! Whether the image has all referenced ImageMipChainAssets loaded
+            bool HasFullMipChainAssets() const;
 
         private:
             struct MipChain

@@ -6,7 +6,6 @@
  *
  */
 
-
 #include "EditorDefs.h"
 
 #include "FolderTreeCtrl.h"
@@ -16,87 +15,77 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 
-// AzQtComponents
-#include <AzQtComponents/Utilities/DesktopUtilities.h>      // for AzQtComponents::ShowFileOnDesktop
+#include <AzCore/std/algorithm.h>
+#include <AzCore/IO/SystemFile.h>
 
-
-enum ETreeImage
-{
-    eTreeImage_Folder = 0,
-    eTreeImage_File = 2
-};
-
-enum CustomRoles
-{
-    IsFolderRole = Qt::UserRole
-};
+#include <AzQtComponents/Utilities/DesktopUtilities.h> // for AzQtComponents::ShowFileOnDesktop
 
 //////////////////////////////////////////////////////////////////////////
 // CFolderTreeCtrl
 //////////////////////////////////////////////////////////////////////////
-CFolderTreeCtrl::CFolderTreeCtrl(const QStringList& folders, const QString& fileNameSpec,
-    const QString& rootName, bool bDisableMonitor, bool bFlatTree, QWidget* parent)
-    : QTreeView(parent)
-    , m_rootTreeItem(nullptr)
-    , m_folders(folders)
-    , m_fileNameSpec(fileNameSpec)
-    , m_rootName(rootName)
-    , m_bDisableMonitor(bDisableMonitor)
-    , m_bFlatStyle(bFlatTree)
-{
-    init(folders, fileNameSpec, rootName, bDisableMonitor, bFlatTree);
-}
 
 CFolderTreeCtrl::CFolderTreeCtrl(QWidget* parent)
     : QTreeView(parent)
-    , m_rootTreeItem(nullptr)
-    , m_bDisableMonitor(false)
-    , m_bFlatStyle(true)
-
+    , m_folderIcon(":/TreeView/folder-icon.svg")
+    , m_fileIcon(":/TreeView/default-icon.svg")
+    , m_model(new QStandardItemModel(this))
+    , m_proxyModel(new QSortFilterProxyModel(this))
 {
-}
-
-
-void CFolderTreeCtrl::init(const QStringList& folders, const QString& fileNameSpec, const QString& rootName, bool bDisableMonitor /*= false*/, bool bFlatTree /*= true*/)
-{
-    m_model = new QStandardItemModel(this);
-    m_proxyModel = new QSortFilterProxyModel(this);
-    m_proxyModel->setRecursiveFilteringEnabled(true);
-
     m_proxyModel->setSourceModel(m_model);
+    m_proxyModel->setRecursiveFilteringEnabled(true);
     setModel(m_proxyModel);
 
-    m_folders = folders;
+    QObject::connect(this, &QTreeView::doubleClicked, this, &CFolderTreeCtrl::OnIndexDoubleClicked);
+}
+
+void CFolderTreeCtrl::Configure(
+    const AZStd::vector<QString>& folders, const QString& fileNameSpec, const QString& rootName, bool bEnabledMonitor, bool bFlatTree)
+{
+    m_folders.clear();
+    AZStd::ranges::copy_if(
+        folders,
+        AZStd::back_inserter(m_folders),
+        [](const auto& path)
+        {
+            if (AZ::IO::SystemFile::Exists(path.toLocal8Bit().constData()) || AZ::IO::SystemFile::IsDirectory(path.toLocal8Bit().constData()))
+            {
+                return true;
+            }
+            return false;
+        });
+    AZStd::transform(m_folders.begin(), m_folders.end(), m_folders.begin(), 
+        [](auto& item) {
+            return Path::RemoveBackslash(Path::ToUnixPath(item));
+        });
+
     m_fileNameSpec = fileNameSpec;
     m_rootName = rootName;
-    m_bDisableMonitor = bDisableMonitor;
+    m_bEnableMonitor = bEnabledMonitor;
     m_bFlatStyle = bFlatTree;
-    m_fileIcon = QIcon(":/TreeView/default-icon.svg");
-    m_folderIcon = QIcon(":/TreeView/folder-icon.svg");
 
-    for (auto item = m_folders.begin(), end = m_folders.end(); item != end; ++item)
+    if (m_rootTreeItem)
     {
-        (*item) = Path::RemoveBackslash(Path::ToUnixPath((*item)));
-
-        if (CFileUtil::PathExists(*item))
-        {
-            m_foldersSegments.insert(std::make_pair((*item), Path::SplitIntoSegments((*item)).size()));
-        }
-        else if (Path::IsFolder((*item).toLocal8Bit().constData()))
-        {
-            m_foldersSegments.insert(std::make_pair((*item), Path::SplitIntoSegments((*item)).size()));
-        }
-        else
-        {
-            (*item).clear();
-        }
+        delete m_rootTreeItem;
+        m_rootTreeItem = nullptr;
     }
+
+    m_rootTreeItem = new CTreeItem(*this, nullptr, QString(), m_rootName, IconType::FolderIcon);
+    m_model->invisibleRootItem()->appendRow(m_rootTreeItem);
 
     setHeaderHidden(true);
 
-    QObject::connect(this, &QTreeView::doubleClicked, this, &CFolderTreeCtrl::OnIndexDoubleClicked);
+    for (auto& item: m_folders)
+    {
+        if (!item.isEmpty())
+        {
+            LoadTreeRec(item);
+        }
+    }
 
-    InitTree();
+    if (m_bEnableMonitor)
+    {
+        CFileChangeMonitor::Instance()->Subscribe(this);
+    }
 
     setSortingEnabled(true);
 }
@@ -115,7 +104,7 @@ QString CFolderTreeCtrl::GetPath(QStandardItem* item) const
 
 bool CFolderTreeCtrl::IsFolder(QStandardItem* item) const
 {
-    return item->data(IsFolderRole).toBool();
+    return item->data(aznumeric_cast<int>(Roles::IsFolderRole)).toBool();
 }
 
 bool CFolderTreeCtrl::IsFile(QStandardItem* item) const
@@ -125,11 +114,8 @@ bool CFolderTreeCtrl::IsFile(QStandardItem* item) const
 
 CFolderTreeCtrl::~CFolderTreeCtrl()
 {
-    // Obliterate tree items before destroying the controls
-    m_rootTreeItem.reset(nullptr);
-
     // Unsubscribe from file change notifications
-    if (!m_bDisableMonitor)
+    if (m_bEnableMonitor)
     {
         CFileChangeMonitor::Instance()->Unsubscribe(this);
     }
@@ -137,11 +123,6 @@ CFolderTreeCtrl::~CFolderTreeCtrl()
 
 void CFolderTreeCtrl::OnIndexDoubleClicked(const QModelIndex& index)
 {
-    if (!m_proxyModel || !m_model)
-    {
-        return;
-    }
-
     QStandardItem* item = GetSourceItemByIndex(index);
     if (item)
     {
@@ -197,37 +178,16 @@ void CFolderTreeCtrl::contextMenuEvent(QContextMenuEvent* e)
 
     QMenu menu;
     QAction* editAction = menu.addAction(tr("Edit"));
-    connect(editAction, &QAction::triggered, this, [=]()
+    connect(editAction, &QAction::triggered, this, [&]()
         {
-            this->Edit(path);
+            Edit(path);
         });
     QAction* showInExplorerAction = menu.addAction(tr("Show In Explorer"));
-    connect(showInExplorerAction, &QAction::triggered, this, [=]()
+    connect(showInExplorerAction,&QAction::triggered,this,[&]()
         {
-            this->ShowInExplorer(path);
+            ShowInExplorer(path);
         });
     menu.exec(QCursor::pos());
-}
-
-void CFolderTreeCtrl::InitTree()
-{
-    m_rootTreeItem.reset(new CTreeItem(*this, m_rootName));
-
-    for (auto item = m_folders.begin(), end = m_folders.end(); item != end; ++item)
-    {
-        if (!(*item).isEmpty())
-        {
-            LoadTreeRec((*item));
-        }
-    }
-
-    if (!m_bDisableMonitor)
-    {
-        CFileChangeMonitor::Instance()->Subscribe(this);
-    }
-
-
-    expandAll();
 }
 
 void CFolderTreeCtrl::LoadTreeRec(const QString& currentFolder)
@@ -247,7 +207,7 @@ void CFolderTreeCtrl::LoadTreeRec(const QString& currentFolder)
         }
 
         // update the base folder name
-        QStringList parts =  Path::SplitIntoSegments(currentFolderSlash);
+        QStringList parts = Path::SplitIntoSegments(currentFolderSlash);
         if (parts.size() > 1)
         {
             parts.removeFirst();
@@ -255,8 +215,8 @@ void CFolderTreeCtrl::LoadTreeRec(const QString& currentFolder)
         }
     }
 
-    for (bool bFoundFile = fileEnum.StartEnumeration(targetFolder, "*", &fileData);
-         bFoundFile; bFoundFile = fileEnum.GetNextFile(&fileData))
+    for (bool bFoundFile = fileEnum.StartEnumeration(targetFolder, "*", &fileData); bFoundFile;
+         bFoundFile = fileEnum.GetNextFile(&fileData))
     {
         const QString fileName = fileData.fileName();
 
@@ -286,8 +246,13 @@ void CFolderTreeCtrl::AddItem(const QString& path)
     if (regex.exactMatch(path))
     {
         CTreeItem* folderTreeItem = CreateFolderItems(QString::fromUtf8(folder.c_str(), static_cast<int>(folder.Native().size())));
-        folderTreeItem->AddChild(QString::fromUtf8(fileNameWithoutExtension.c_str(),
-            static_cast<int>(fileNameWithoutExtension.Native().size())), path, eTreeImage_File);
+        if(folderTreeItem)
+        {
+            folderTreeItem->AddChild(
+                QString::fromUtf8(fileNameWithoutExtension.c_str(), static_cast<int>(fileNameWithoutExtension.Native().size())),
+                path,
+                IconType::FileIcon);
+        }
     }
 }
 
@@ -348,8 +313,13 @@ QString CFolderTreeCtrl::CalculateFolderFullPath(const QStringList& splittedFold
 
 CFolderTreeCtrl::CTreeItem* CFolderTreeCtrl::CreateFolderItems(const QString& folder)
 {
+    if(!m_rootTreeItem) 
+    {
+        return nullptr;
+    }
+
     QStringList splittedFolder = Path::SplitIntoSegments(folder);
-    CTreeItem* currentTreeItem = m_rootTreeItem.get();
+    CTreeItem* currentTreeItem = m_rootTreeItem;
 
     if (!m_bFlatStyle)
     {
@@ -364,7 +334,7 @@ CFolderTreeCtrl::CTreeItem* CFolderTreeCtrl::CreateFolderItems(const QString& fo
             CTreeItem* folderItem = GetItem(fullpath);
             if (!folderItem)
             {
-                currentTreeItem = currentTreeItem->AddChild(currentFolder, fullpath, eTreeImage_Folder);
+                currentTreeItem = currentTreeItem->AddChild(currentFolder, fullpath, IconType::FolderIcon);
             }
             else
             {
@@ -404,22 +374,27 @@ void CFolderTreeCtrl::Edit(const QString& path)
 
 void CFolderTreeCtrl::ShowInExplorer(const QString& path)
 {
-    QString absolutePath = QDir::currentPath();
-
-    CTreeItem* root = m_rootTreeItem.get();
-    CTreeItem* item = GetItem(path);
-
-    if (item != root)
+    if (QFileInfo(path).isAbsolute())
     {
-        absolutePath += QStringLiteral("/%1").arg(path);
+        AzQtComponents::ShowFileOnDesktop(path);
     }
+    else
+    {
+        QString absolutePath = QDir::currentPath();
 
-    AzQtComponents::ShowFileOnDesktop(absolutePath);
+        CTreeItem* item = GetItem(path);
+        if (item != m_rootTreeItem)
+        {
+            absolutePath += QStringLiteral("/%1").arg(path);
+        }
+
+        AzQtComponents::ShowFileOnDesktop(absolutePath);
+    }
 }
 
-QIcon CFolderTreeCtrl::GetItemIcon(int image) const
+QIcon CFolderTreeCtrl::GetItemIcon(IconType image) const
 {
-    return image == eTreeImage_File ? m_fileIcon : m_folderIcon;
+    return image == IconType::FolderIcon ? m_folderIcon : m_fileIcon;
 }
 
 QList<QStandardItem*> CFolderTreeCtrl::GetSelectedItems() const
@@ -446,31 +421,23 @@ void CFolderTreeCtrl::SetSearchFilter(const QString& searchText)
     }
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // CFolderTreeCtrl::CTreeItem
 //////////////////////////////////////////////////////////////////////////
-CFolderTreeCtrl::CTreeItem::CTreeItem(CFolderTreeCtrl& folderTreeCtrl, const QString& path)
-    : QStandardItem(folderTreeCtrl.GetItemIcon(eTreeImage_Folder), folderTreeCtrl.m_rootName)
+
+CFolderTreeCtrl::CTreeItem::CTreeItem(
+    CFolderTreeCtrl& folderTreeCtrl, CFolderTreeCtrl::CTreeItem* parent, const QString& name, const QString& path, IconType icon)
+    : QStandardItem(folderTreeCtrl.GetItemIcon(icon), name)
     , m_folderTreeCtrl(folderTreeCtrl)
     , m_path(path)
 {
-    setData(true, IsFolderRole);
+    if (parent)
+    {
+        parent->appendRow(this);
+    }
+    setData(icon == IconType::FolderIcon, aznumeric_cast<int>(Roles::IsFolderRole));
 
-    m_folderTreeCtrl.m_model->invisibleRootItem()->appendRow(this);
-    m_folderTreeCtrl.m_pathToTreeItem[ m_path ] = this;
-}
-
-CFolderTreeCtrl::CTreeItem::CTreeItem(CFolderTreeCtrl& folderTreeCtrl, CFolderTreeCtrl::CTreeItem* parent,
-    const QString& name, const QString& path, const int image)
-    : QStandardItem(folderTreeCtrl.GetItemIcon(image), name)
-    , m_folderTreeCtrl(folderTreeCtrl)
-    , m_path(path)
-{
-    parent->appendRow(this);
-    setData(image == eTreeImage_Folder, IsFolderRole);
-
-    m_folderTreeCtrl.m_pathToTreeItem[ m_path ] = this;
+    m_folderTreeCtrl.m_pathToTreeItem[m_path] = this;
 }
 
 CFolderTreeCtrl::CTreeItem::~CTreeItem()
@@ -495,8 +462,7 @@ void CFolderTreeCtrl::CTreeItem::Remove()
     }
 }
 
-CFolderTreeCtrl::CTreeItem* CFolderTreeCtrl::CTreeItem::AddChild(const QString& name, const QString& path, const int image)
+CFolderTreeCtrl::CTreeItem* CFolderTreeCtrl::CTreeItem::AddChild(const QString& name, const QString& path, IconType icon)
 {
-    CTreeItem* newItem = new CTreeItem(m_folderTreeCtrl, this, name, path, image);
-    return newItem;
+    return new CTreeItem(m_folderTreeCtrl, this, name, path, icon);
 }

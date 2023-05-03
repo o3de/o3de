@@ -17,6 +17,7 @@
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <SceneAPI/SceneCore/Mocks/DataTypes/MockIGraphObject.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
+#include <SceneAPI/SceneCore/DataTypes/Groups/IMeshGroup.h>
 #include <SceneAPI/SceneData/GraphData/MeshData.h>
 
 namespace UnitTest
@@ -101,18 +102,36 @@ namespace UnitTest
         ExpectExecute("TestExpectTrue(PrefabGroupEventBus.Broadcast.GeneratePrefabGroupManifestUpdates ~= nil)");
     }
 
-    TEST_F(DefaultProceduralPrefabGroupTests, PrefabGroupEventBus_GeneratePrefabGroupManifestUpdates_Works)
+    TEST_F(DefaultProceduralPrefabGroupTests, PrefabGroupEventBus_GeneratePrefabGroupManifestUpdates_HasProceduralMeshGroupRule)
     {
         AZ::SceneAPI::DefaultProceduralPrefabGroup defaultProceduralPrefabGroup;
 
         auto scene = CreateMockScene();
-        AZStd::optional<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates> result;
+        AZStd::optional<AZ::SceneAPI::PrefabGroupRequests::ManifestUpdates> manifestUpdates;
         AZ::SceneAPI::PrefabGroupEventBus::BroadcastResult(
-            result,
+            manifestUpdates,
             &AZ::SceneAPI::PrefabGroupEventBus::Events::GeneratePrefabGroupManifestUpdates,
             *scene.get());
 
-        ASSERT_TRUE(result.has_value());
-        ASSERT_FALSE(result.value().empty());
+        ASSERT_TRUE(manifestUpdates.has_value());
+
+        bool hasProceduralMeshGroupRule = false;
+        for (const auto& manifestUpdate : manifestUpdates.value())
+        {
+            auto* meshGroup = azrtti_cast<AZ::SceneAPI::DataTypes::IMeshGroup*>(manifestUpdate.get());
+            if (meshGroup)
+            {
+                const auto proceduralMeshGroupRule =
+                    meshGroup->GetRuleContainer().FindFirstByType<AZ::SceneAPI::SceneData::ProceduralMeshGroupRule>();
+
+                if (proceduralMeshGroupRule)
+                {
+                    hasProceduralMeshGroupRule = true;
+                    break;
+                }
+            }
+        }
+
+        EXPECT_TRUE(hasProceduralMeshGroupRule);
     }
 }

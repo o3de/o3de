@@ -121,7 +121,7 @@ namespace GraphCanvas
         , public AssetEditorSettingsNotificationBus::Handler        
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConnectionGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionGraphicsItem, AZ::SystemAllocator);
         
         // Helper function to return the length of a vector
         // (Distance from provided point to the origin)

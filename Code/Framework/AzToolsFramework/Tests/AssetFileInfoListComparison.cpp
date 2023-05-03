@@ -42,7 +42,7 @@ namespace // anonymous
 namespace UnitTest
 {
     class AssetFileInfoListComparisonTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:

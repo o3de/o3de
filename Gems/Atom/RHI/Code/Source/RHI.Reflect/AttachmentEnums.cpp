@@ -83,8 +83,12 @@ namespace AZ
                 return "Resolve";
             case ScopeAttachmentUsage::Predication:
                 return "Predication";
+            case ScopeAttachmentUsage::Indirect:
+                return "Indirect";
             case ScopeAttachmentUsage::InputAssembly:
                 return "InputAssembly";
+            case ScopeAttachmentUsage::ShadingRate:
+                return "ShadingRate";
             case ScopeAttachmentUsage::Uninitialized:
                 return "Uninitialized";
             default:
@@ -143,11 +147,27 @@ namespace AZ
                 AZ_Error("ScopeAttachment", !RHI::CheckBitsAll(access, ScopeAttachmentAccess::Write), "ScopeAttachmentAccess cannot be 'Write' when usage is 'InputAssembly'.");
                 return ScopeAttachmentAccess::Read;
 
+            // Remap read/write to read for ShadingRate scope attachments.
+            // We disallow write access and throw an error because having a write access on an ShadingRate input attachment is not allowed.
+            case ScopeAttachmentUsage::ShadingRate:
+                AZ_Error(
+                    "ScopeAttachment",
+                    access == ScopeAttachmentAccess::Read,
+                    "ScopeAttachmentAccess cannot be 'Write' when usage is 'ShadingRate'.");
+                return ScopeAttachmentAccess::Read;
+
             // No access adjustment for Resolve or Predication
             case ScopeAttachmentUsage::Resolve:
                 return access;
             case ScopeAttachmentUsage::Predication:
                 return access;
+
+            case ScopeAttachmentUsage::Indirect:
+                AZ_Error(
+                    "ScopeAttachment",
+                    !RHI::CheckBitsAll(access, ScopeAttachmentAccess::Write),
+                    "ScopeAttachmentAccess cannot be 'Write' when usage is 'Indirect'.");
+                return ScopeAttachmentAccess::Read;
 
             case ScopeAttachmentUsage::Uninitialized:
                 return access;

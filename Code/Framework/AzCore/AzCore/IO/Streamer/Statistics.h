@@ -21,7 +21,7 @@ namespace AZ::IO
     class Statistic
     {
     public:
-        using TimeValue = AZStd::chrono::nanoseconds;
+        using TimeValue = AZStd::chrono::microseconds;
 
         enum class GraphType : u8
         {
@@ -217,6 +217,14 @@ namespace AZ::IO
         GraphType m_graphType;
     };
 
+    namespace Statistics::Internal
+    {
+        template<class T>
+        inline constexpr bool is_duration = false;
+        template<class Rep, class Period>
+        inline constexpr bool is_duration<AZStd::chrono::duration<Rep, Period>> = true;
+    }
+
     //! AverageWindow keeps track of the average of values in a sliding window.
     //! @StorageType The type of the value in the sliding window. Need to be a number of a AZStd::chrono::duration.
     //! @AverageType The type CalculateAverage will return. StorageType needs to be able to be converted to AverageType.
@@ -224,7 +232,7 @@ namespace AZ::IO
     template<typename StorageType, typename AverageType, size_t WindowSize>
     class AverageWindow
     {
-        static_assert(AZStd::is_arithmetic_v<StorageType> || AZStd::chrono::Internal::is_duration<StorageType>::value,
+        static_assert(AZStd::is_arithmetic_v<StorageType> || Statistics::Internal::is_duration<StorageType>,
             "AverageWindow only support numbers and AZStd::chrono::durations.");
         static_assert(
             AZStd::is_convertible_v<StorageType, AverageType>,
@@ -261,7 +269,7 @@ namespace AZ::IO
         AverageType CalculateAverage() const
         {
             size_t count = m_count > 0 ? m_count : 1;
-            return static_cast<AverageType>(static_cast<AverageType>(m_runningTotal) / static_cast<AverageType>(count < WindowSize ? count : WindowSize)); 
+            return static_cast<AverageType>(static_cast<AverageType>(m_runningTotal) / static_cast<AverageType>(count < WindowSize ? count : WindowSize));
         }
         //! Gets the running total of the values in the window.
         StorageType GetTotal() const { return m_runningTotal; }
@@ -282,7 +290,7 @@ namespace AZ::IO
 
     template<size_t WindowSize>
     using TimedAverageWindow = AverageWindow<Statistic::TimeValue, Statistic::TimeValue, WindowSize>;
-        
+
     template<size_t WindowSize>
     class TimedAverageWindowScope
     {
@@ -290,19 +298,19 @@ namespace AZ::IO
         explicit TimedAverageWindowScope(TimedAverageWindow<WindowSize>& window)
             : m_window(window)
         {
-            m_startTime = AZStd::chrono::high_resolution_clock::now();
+            m_startTime = AZStd::chrono::steady_clock::now();
         }
-            
+
         ~TimedAverageWindowScope()
         {
-            AZStd::chrono::high_resolution_clock::time_point now = AZStd::chrono::high_resolution_clock::now();
+            AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
             Statistic::TimeValue duration = AZStd::chrono::duration_cast<Statistic::TimeValue>(now - m_startTime);
             m_window.PushEntry(duration);
         }
 
     private:
         TimedAverageWindow<WindowSize>& m_window;
-        AZStd::chrono::high_resolution_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
 #define TIMED_AVERAGE_WINDOW_SCOPE(window) TimedAverageWindowScope<decltype(window)::s_windowSize> TIMED_AVERAGE_WINDOW##__COUNTER__ (window)

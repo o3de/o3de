@@ -29,7 +29,7 @@ namespace AzToolsFramework
             Q_OBJECT
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code
-            //AZ_CLASS_ALLOCATOR(StaticLogPanel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(StaticLogPanel, AZ::SystemAllocator);
             GenericLogPanel(QWidget* pParent = nullptr);
 
             //! Fill From File - append log data from a file
@@ -67,7 +67,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(GenericLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenericLogTab, AZ::SystemAllocator);
             GenericLogTab(QWidget* pParent, const TabSettings& in_settings);
 
             void SetDataSource(QAbstractItemModel* source);

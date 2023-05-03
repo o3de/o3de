@@ -11,24 +11,36 @@
 """! This module manages the dynamic config and settings for bootstrapping
 Wing Pro 8 IDE integration with o3de inter-op, scripts, extensions, etc.
 
-:file: < DCCsi >/Tools/IDE/Wing/config.py
+:file: DccScriptingInterfac\\Tools\\IDE\\Wing\\config.py
 :Status: Prototype
 :Version: 0.0.1
 :Future: is unknown
 :Notice:
 """
 # -------------------------------------------------------------------------
+import timeit
+_MODULE_START = timeit.default_timer()  # start tracking
+
 # standard imports
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
 # global scope
-_MODULENAME = 'DCCsi.Tools.IDE.Wing.config'
+from DccScriptingInterface.Tools.IDE.Wing import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
+
+# dynaconf boilerplate
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+
+settings.setenv() # ensure default file based settings are in the env
 
 # ensure dccsi and o3de core access
 # in a future iteration it is suggested that the core config
@@ -38,6 +50,13 @@ import DccScriptingInterface.config as dccsi_core_config
 # this will initialize the core dynamic config, settings and env
 # if the Qt/PySide envars are set, it can cause some Qt based apps to fail
 # wing happens to be one of them, this is disabled for wing\start.py to perform
+
+# we also don't want o3de python to mesh with wings python?
+# any module, or tool, the need them can reinit the config
+# the problem with not doing it, is then we are not passing o3de python
+# info to wing, such as launch interpretter DCCSI_PY_IDE
+# wing's default interpretter won't have access to o3de packages, etc.
+# but maybe they could be installed into wing with foundation.py?
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
@@ -68,7 +87,10 @@ if DCCSI_TESTS: # from DccScriptingInterface.globals
     pass
 
 # this is the root path for the wing pkg
+from DccScriptingInterface.Tools.IDE.Wing import ENVAR_PATH_DCCSI_TOOLS_IDE_WING
 from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING
+from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING_SETTINGS
+from DccScriptingInterface.Tools.IDE.Wing import PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS
 # -------------------------------------------------------------------------
 
 
@@ -87,18 +109,32 @@ from DccScriptingInterface.azpy.config_class import ConfigClass
 
 # but it is suggested that when the core <dccsi>\config.py is re-written
 # as a ConfigClass, that the WingConfig inherits from that instead
+
+# wing_config is a class object of WingConfig
+# WingConfig is a child class of ConfigClass
 class WingConfig(ConfigClass):
-    """doc string"""
+    """Extend ConfigClass with new wing functionality"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         _LOGGER.info(f'Initializing: {self.get_classname()}')
 
-# build config
-wing_config = WingConfig(config_name='dccsi_ide_wing', auto_set=True)
+# build config object
+wing_config = WingConfig(config_name='dccsi_ide_wing',
+                               settings_filepath = PATH_DCCSI_TOOLS_IDE_WING_SETTINGS,
+                               settings_local_filepath = PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS,
+                               auto_set=True)
 
-# a managed setting to track the eing config is enabled
+# in another module someone could work this way
+# from DccScriptingInterface.Tools.IDE.Wing.config import wing_config
+# settings = wing_config.get_settings(set_env=True)
+
+# a managed setting to track the wing config is enabled
 from Tools.IDE.Wing.constants import ENVAR_DCCSI_CONFIG_IDE_WING
 wing_config.add_setting(ENVAR_DCCSI_CONFIG_IDE_WING, True)
+
+# path to the Tools\IDE\Wing location
+wing_config.add_setting(ENVAR_PATH_DCCSI_TOOLS_IDE_WING,
+                        PATH_DCCSI_TOOLS_IDE_WING)
 
 # a managed envar for wing version
 from Tools.IDE.Wing.constants import ENVAR_DCCSI_WING_VERSION_MAJOR
@@ -137,26 +173,18 @@ PATH_DCCSI_TOOLS_IDE_WING_PROJ = Path(PATH_DCCSI_TOOLS_IDE_WING_PROJ).resolve()
 wing_config.add_setting(ENVAR_WING_PROJ,
                         PATH_DCCSI_TOOLS_IDE_WING_PROJ.as_posix())
 
-# initialize configs for DCC tools we want to develop with
-# so we get access to their python interpreter, etc.
-# it is suggested the in the future, there be a project setreg for wing
-# whose settings describe which DCC tools to activate on start
+# a managed envar setting  for the userhome wing appdata folder
+from Tools.IDE.Wing.constants import ENVAR_WING_APPDATA
+from Tools.IDE.Wing.constants import PATH_WING_APPDATA
+PATH_WING_APPDATA = Path(PATH_WING_APPDATA).resolve()
+wing_config.add_setting(ENVAR_WING_APPDATA,
+                        PATH_WING_APPDATA.as_posix())
 
-# blender config
-import DccScriptingInterface.Tools.DCC.Blender.config as blender_config
-blender_settings = blender_config.get_config_settings()
-
-# prefix for defining IDE interpreters 'DCCSI_PY_'
-wing_config.add_setting('DCCSI_PY_BLENDER',
-                        blender_settings.DCCSI_BLENDER_PY_EXE,
-                        set_envar=True)
-
-# maya config
-# not implemented yet
-
-# other DCC tools
-# also not yet implemented
 # -------------------------------------------------------------------------
+_MODULE_END = timeit.default_timer() - _MODULE_START
+_LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
+# -------------------------------------------------------------------------
+
 
 ###########################################################################
 # Main Code Block, runs this script as main (testing)
@@ -167,14 +195,37 @@ if __name__ == '__main__':
     # this should hit this modules location and load wing settings
     settings = wing_config.get_settings(set_env=True)
 
+    # initialize configs for DCC tools we want to develop with
+    # so we get access to their python interpreter, etc.
+    # it is suggested the in the future, there be a project setreg for wing
+    # whose settings describe which DCC tools to activate on start
+
+    # # Bolt On blender config
+    # from DccScriptingInterface.Tools.DCC.Blender.config import blender_config
+    #
+    # # prefix for defining IDE interpreters 'DCCSI_PY_'
+    # wing_config.add_setting('DCCSI_PY_BLENDER',
+    #                         blender_config.settings.DCCSI_BLENDER_PY_EXE,
+    #                         set_envar=True)
+
+    # Bolt On maya config
+    # not implemented yet
+
+    # Bolt On other DCC tools
+    # also not yet implemented
+    # -------------------------------------------------------------------------
+
     try:
         settings.DCCSI_CONFIG_IDE_WING
         _LOGGER.info('Wing IDE config is enabled')
     except:
         _LOGGER.error('Setting does not exist')
 
-    _LOGGER.info(f'{ENVAR_DCCSI_WING_VERSION_MAJOR} is: {settings.DCCSI_WING_VERSION_MAJOR}')
-    _LOGGER.info(f'{ENVAR_WINGHOME} is: {settings.WINGHOME}')
-    _LOGGER.info(f'{ENVAR_WING_EXE} is: {settings.WING_EXE}')
-    _LOGGER.info(f'{ENVAR_WING_PROJ} is: {settings.WING_PROJ}')
+    _LOGGER.info(f'Exporting local settings: {PATH_DCCSI_TOOLS_IDE_WING_LOCAL_SETTINGS}')
+
+    try:
+        wing_config.export_settings(set_env=True,
+                                       log_settings=True)
+    except Exception as e:
+        _LOGGER.error(f'{e}')
 # --- END -----------------------------------------------------------------

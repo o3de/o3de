@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const DisplayMapperComponentTypeId = "{FC666EDA-89B6-43C7-A6EC-0D33BE7CDFF1}";
-        static constexpr const char* const EditorDisplayMapperComponentTypeId = "{35963748-D7EC-4F8B-B779-B5BDB7984DA3}";
+        inline constexpr AZ::TypeId DisplayMapperComponentTypeId{ "{FC666EDA-89B6-43C7-A6EC-0D33BE7CDFF1}" };
+        inline constexpr AZ::TypeId EditorDisplayMapperComponentTypeId{ "{35963748-D7EC-4F8B-B779-B5BDB7984DA3}" };
 
     } // namespace Render
 } // namespace AZ

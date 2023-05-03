@@ -825,7 +825,7 @@ bool CExportManager::AddSelectedRegionObjects()
     const size_t numObjects = objects.size();
     if (numObjects > m_data.m_objects.size())
     {
-        m_data.m_objects.reserve(numObjects + 1); // +1 for terrain
+        m_data.m_objects.reserve(numObjects);
     }
     // First run pipeline to precache geometry
     m_isPrecaching = true;

@@ -27,9 +27,12 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QPlainTextEdit" name="SCRIPT_OUTPUT">
+    <widget class="AzToolsFramework::ConsoleTextEdit" name="SCRIPT_OUTPUT">
      <property name="readOnly">
       <bool>true</bool>
+     </property>
+     <property name="searchEnabled">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
@@ -83,6 +86,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>AzToolsFramework::ConsoleTextEdit</class>
+   <extends>QPlainTextEdit</extends>
+   <header>AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

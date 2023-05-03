@@ -26,7 +26,7 @@ namespace AZ
         {
             using Base = RHI::FrameGraphExecuter;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphExecuter> Create();
 

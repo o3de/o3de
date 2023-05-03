@@ -20,7 +20,7 @@ namespace EditorPythonBindings
     {
     public:
         AZ_TYPE_INFO(PythonEditorAction, "{1A5676D2-767B-4C2F-BC35-9CDDCE1430BB}");
-        AZ_CLASS_ALLOCATOR(PythonEditorAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonEditorAction, AZ::SystemAllocator);
 
         explicit PythonEditorAction(PyObject* handler);
 

@@ -53,20 +53,12 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderReinitialized", this);
-            LoadShader();
+            UpdateSrgs();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderAssetReinitialized", this);
-            LoadShader();
-        }
-
-        void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
-        {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::OnShaderVariantReinitialized", this);
-            LoadShader();
+            UpdateSrgs();
         }
 
         void FullscreenTrianglePass::LoadShader()
@@ -106,11 +98,33 @@ namespace AZ
                 return;
             }
 
+            // Store stencil reference value for the draw call
+            m_stencilRef = passData->m_stencilRef;
+
+            m_pipelineStateForDraw.Init(m_shader);
+
+            UpdateSrgs();
+
+            QueueForInitialization();
+
+            ShaderReloadNotificationBus::Handler::BusDisconnect();
+            ShaderReloadNotificationBus::Handler::BusConnect(shaderAsset.GetId());
+        }
+
+        void FullscreenTrianglePass::UpdateSrgs()
+        {
+            if (!m_shader)
+            {
+                return;
+            }
+
             // Load Pass SRG
             const auto passSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
             if (passSrgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
+                m_shaderResourceGroup = ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), passSrgLayout->GetName());
+
+                [[maybe_unused]] const FullscreenTrianglePassData* passData = PassUtils::GetPassData<FullscreenTrianglePassData>(m_passDescriptor);
 
                 AZ_Assert(m_shaderResourceGroup, "[FullscreenTrianglePass '%s']: Failed to create SRG from shader asset '%s'",
                     GetPathName().GetCStr(),
@@ -121,19 +135,42 @@ namespace AZ
 
             // Load Draw SRG
             // this is necessary since the shader may have options, which require a default draw SRG
-            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
-            if (drawSrgLayout)
+            const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
+            m_drawShaderResourceGroup = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
+
+            m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+        }
+
+        void FullscreenTrianglePass::BuildDrawItem()
+        {
+            m_pipelineStateForDraw.SetOutputFromPass(this);
+
+            // No streams required
+            RHI::InputStreamLayout inputStreamLayout;
+            inputStreamLayout.SetTopology(RHI::PrimitiveTopology::TriangleList);
+            inputStreamLayout.Finalize();
+
+            m_pipelineStateForDraw.SetInputStreamLayout(inputStreamLayout);
+
+            // This draw item purposefully does not reference any geometry buffers.
+            // Instead it's expected that the extended class uses a vertex shader 
+            // that generates a full-screen triangle completely from vertex ids.
+            RHI::DrawLinear draw = RHI::DrawLinear();
+            draw.m_vertexCount = 3;
+
+            m_item.m_arguments = RHI::DrawArguments(draw);
+            m_item.m_pipelineState = m_pipelineStateForDraw.Finalize();
+            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
+        }
+
+        void FullscreenTrianglePass::UpdateShaderOptions(const ShaderOptionList& shaderOptions)
+        {
+            if (m_shader)
             {
-                m_drawShaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
+                m_pipelineStateForDraw.Init(m_shader, &shaderOptions);
+                m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+                BuildDrawItem();
             }
-
-            // Store stencil reference value for the draw call
-            m_stencilRef = passData->m_stencilRef;
-
-            QueueForInitialization();
-
-            ShaderReloadNotificationBus::Handler::BusDisconnect();
-            ShaderReloadNotificationBus::Handler::BusConnect(shaderAsset.GetId());
         }
 
         void FullscreenTrianglePass::InitializeInternal()
@@ -142,38 +179,13 @@ namespace AZ
             
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->FullscreenTrianglePass::InitializeInternal", this);
 
-            // This draw item purposefully does not reference any geometry buffers.
-            // Instead it's expected that the extended class uses a vertex shader 
-            // that generates a full-screen triangle completely from vertex ids.
-            RHI::DrawLinear draw = RHI::DrawLinear();
-            draw.m_vertexCount = 3;
-
             if (m_shader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[FullscreenTrianglePass]: Shader not loaded!");
                 return;
             }
 
-            RHI::PipelineStateDescriptorForDraw pipelineStateDescriptor;
-
-            // [GFX TODO][ATOM-872] The pass should be able to drive the shader variant
-            // This is a pattern that should be established somewhere.
-            auto shaderVariant = m_shader->GetVariant(m_shaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
-
-            pipelineStateDescriptor.m_renderAttachmentConfiguration = GetRenderAttachmentConfiguration();
-            pipelineStateDescriptor.m_renderStates.m_multisampleState = GetMultisampleState();
-
-            // No streams required
-            RHI::InputStreamLayout inputStreamLayout;
-            inputStreamLayout.SetTopology(RHI::PrimitiveTopology::TriangleList);
-            inputStreamLayout.Finalize();
-
-            pipelineStateDescriptor.m_inputStreamLayout = inputStreamLayout;
-
-            m_item.m_arguments = RHI::DrawArguments(draw);
-            m_item.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            m_item.m_stencilRef = static_cast<uint8_t>(m_stencilRef);
+            BuildDrawItem();
         }
 
         void FullscreenTrianglePass::FrameBeginInternal(FramePrepareParams params)

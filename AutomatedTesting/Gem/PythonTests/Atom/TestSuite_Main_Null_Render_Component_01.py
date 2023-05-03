@@ -17,6 +17,9 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_BloomAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
 
+    class AtomEditorComponents_ChromaticAberrationAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_ChromaticAberrationAdded as test_module
+
     @pytest.mark.test_case_id("C36553393")
     class AtomEditorComponents_CubeMapCaptureAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_CubeMapCaptureAdded as test_module
@@ -33,7 +36,6 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DepthOfFieldAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
 
-    @pytest.mark.skip(reason="GHI# 12253 Failing in undo/redo intermittently")
     @pytest.mark.test_case_id("C36525659")
     class AtomEditorComponents_DiffuseProbeGridAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_DiffuseProbeGridAdded as test_module

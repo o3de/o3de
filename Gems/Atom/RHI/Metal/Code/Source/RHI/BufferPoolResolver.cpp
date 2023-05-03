@@ -50,7 +50,7 @@ namespace AZ
             {
                 Buffer* stagingBuffer = packet.m_stagingBuffer.get();
                 //Inform the GPU that the CPU has modified the staging buffer.
-                Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
+                Platform::PublishBufferCpuChangeOnGpu(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingBuffer->GetMemoryView().GetSize());
             }
         }
 
@@ -66,10 +66,10 @@ namespace AZ
                 
                 RHI::CopyBufferDescriptor copyDescriptor;
                 copyDescriptor.m_sourceBuffer = stagingBuffer;
-                copyDescriptor.m_sourceOffset = stagingBuffer->GetMemoryView().GetOffset();
+                copyDescriptor.m_sourceOffset = static_cast<uint32_t>(stagingBuffer->GetMemoryView().GetOffset());
                 copyDescriptor.m_destinationBuffer = destBuffer;
-                copyDescriptor.m_destinationOffset = destBuffer->GetMemoryView().GetOffset() + static_cast<uint32_t>(packet.m_byteOffset);
-                copyDescriptor.m_size = stagingBuffer->GetMemoryView().GetSize();
+                copyDescriptor.m_destinationOffset = static_cast<uint32_t>(destBuffer->GetMemoryView().GetOffset() + packet.m_byteOffset);
+                copyDescriptor.m_size = static_cast<uint32_t>(stagingBuffer->GetMemoryView().GetSize());
 
                 commandList.Submit(RHI::CopyItem(copyDescriptor));
                 device.QueueForRelease(stagingBuffer->GetMemoryView());

@@ -11,7 +11,6 @@ import pathlib
 from tiaf_logger import get_logger
 from storage_query_tool import S3StorageQueryTool
 from storage_query_tool import LocalStorageQueryTool
-import sys
 logger = get_logger(__file__)
 
 
@@ -69,12 +68,18 @@ def parse_args():
     parser.add_argument(
         "--file-out",
         type=valid_path,
-        help="Path to store file in when downloading.",
+        help="Path to directory store file in when downloading.",
         required=False
     )
 
-    return parser.parse_args()
+    parser.add_argument(
+        "--file-type",
+        choices=["json", "zip"],
+        help="What file type SQT should expect to be interacting with. Current options are zip and json.",
+        required=True
+    )
 
+    return parser.parse_args()
 
 def run(args: dict):
     try:

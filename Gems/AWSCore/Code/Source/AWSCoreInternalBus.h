@@ -34,6 +34,12 @@ namespace AWSCore
         //! @return The path of AWS resource mapping config file
         virtual AZStd::string GetResourceMappingConfigFilePath() const = 0;
 
+        //! IsAllowedAWSMetadataCredentials
+        //! Whether retrieving credentials from AWS environmental endpoints,
+        //! such as the Amazon EC2 instance metadata service (IMDS), is permitted
+        //! @return The AllowAWSMetadataCredentials setting value
+        virtual bool IsAllowedAWSMetadataCredentials() const = 0;
+
         //! ReloadConfiguration
         //! Reload AWSCore configuration without restarting application
         virtual void ReloadConfiguration() = 0;

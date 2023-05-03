@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/Shape.h>
@@ -17,6 +16,11 @@
 #include <PhysX/MeshAsset.h>
 #include <PhysX/Debug/PhysXDebugConfiguration.h>
 #include <PhysX/Debug/PhysXDebugInterface.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace physx
 {
@@ -50,7 +54,7 @@ namespace PhysX
             , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Collider, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Collider, AZ::SystemAllocator);
             AZ_RTTI(Collider, "{7DE9CA01-DF1E-4D72-BBF4-76C9136BE6A2}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -64,6 +68,7 @@ namespace PhysX
             void ClearCachedGeometry();
 
             void SetDisplayFlag(bool enable);
+            bool IsDisplayFlagEnabled() const;
 
             void BuildMeshes(const Physics::ShapeConfiguration& shapeConfig, AZ::u32 geomIndex) const;
 
@@ -89,17 +94,16 @@ namespace PhysX
                 const Physics::SphereShapeConfiguration& sphereShapeConfig,
                 const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
-            void DrawBox(AzFramework::DebugDisplayRequests& debugDisplay,
+            void DrawBox(
+                AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,
                 const Physics::BoxShapeConfiguration& boxShapeConfig,
-                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
-                const bool forceUniformScaling = false) const;
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
             void DrawCapsule(AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,
                 const Physics::CapsuleShapeConfiguration& capsuleShapeConfig,
-                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne(),
-                const bool forceUniformScaling = false) const;
+                const AZ::Vector3& colliderScale = AZ::Vector3::CreateOne()) const;
 
             void DrawMesh(AzFramework::DebugDisplayRequests& debugDisplay,
                 const Physics::ColliderConfiguration& colliderConfig,
@@ -140,7 +144,7 @@ namespace PhysX
 
             void RefreshTreeHelper();
 
-            // Internal mesh drawing subroutines 
+            // Internal mesh drawing subroutines
             void DrawTriangleMesh(
                 AzFramework::DebugDisplayRequests& debugDisplay, const Physics::ColliderConfiguration& colliderConfig, AZ::u32 geomIndex,
                 const AZ::Vector3& meshScale = AZ::Vector3::CreateOne()) const;

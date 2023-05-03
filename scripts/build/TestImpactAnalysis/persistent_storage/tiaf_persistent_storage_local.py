@@ -21,16 +21,16 @@ class PersistentStorageLocal(PersistentStorage):
     HISTORIC_KEY = "historic"
     DATA_KEY = "data"
 
-    def __init__(self, config: str, suite: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, historic_workspace: str, historic_data_file_path: str):
+    def __init__(self, config: dict, suites_string: str, commit: str, active_workspace: str, unpacked_coverage_data_file_path: str, previous_test_run_data_file_path: str, historic_workspace: str, historic_data_file_path: str, temp_workspace: str):
         """
         Initializes the persistent storage with any local historic data available.
 
         @param config: The runtime config file to obtain the data file paths from.
-        @param suite:  The test suite for which the historic data will be obtained for.
+        @param suites_string:  The concatenated test suite string for which the historic data will be obtained for.
         @param commit: The commit hash for this build.
         """
 
-        super().__init__(config, suite, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path)
+        super().__init__(config, suites_string, commit, active_workspace, unpacked_coverage_data_file_path, previous_test_run_data_file_path, temp_workspace)
         self._retrieve_historic_data(config, historic_workspace, historic_data_file_path)
 
     def _store_historic_data(self, historic_data_json: str):
@@ -52,7 +52,7 @@ class PersistentStorageLocal(PersistentStorage):
         try:
             # Attempt to obtain the local persistent data location specified in the runtime config file
             self._historic_workspace = pathlib.Path(historic_workspace)
-            self._historic_workspace = self._historic_workspace.joinpath(pathlib.Path(self._suite))
+            self._historic_workspace = self._historic_workspace.joinpath(pathlib.Path(self._suites_string))
             historic_data_file = pathlib.Path(historic_data_file_path)
             
             # Attempt to unpack the local historic data file
@@ -108,9 +108,8 @@ class PersistentStorageLocal(PersistentStorage):
         @param source_directory: pathlib.Path to directory to copy files from.
         @param target_direcotry: pathlib.Path to directory to store files in.
         """
-        for artifact_path in source_directory.iterdir():
-            try:
-                shutil.copy2(artifact_path, target_directory.joinpath(artifact_path.name))
-            except OSError as e:
-                logger.error(f"Error copying file {artifact_path.name} from {source_directory} to {target_directory}")
+        try:
+            shutil.copytree(source_directory, target_directory, dirs_exist_ok=True)
+        except OSError as e:
+                logger.error(f"Error copying tree '{source_directory}' to '{target_directory}'")
                 logger.error(f"Error thrown: {e}")

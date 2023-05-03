@@ -10,9 +10,9 @@
 
 #include <AzTest/AzTest.h>
 #include <QCoreApplication>
-#include "native/tests/AssetProcessorTest.h"
-#include "native/unittests/UnitTestRunner.h"
-#include "native/utilities/PlatformConfiguration.h"
+#include <native/tests/AssetProcessorTest.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <native/utilities/PlatformConfiguration.h>
 #include <AssetManager/FileStateCache.h>
 
 class PlatformConfigurationUnitTests

@@ -8,12 +8,15 @@
 
 #pragma once
 
-#include <Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli>
+#include <Atom/Features/PBR/MaterialUtils.azsli>
+#include <Atom/Features/PBR/SpecularAA.azsli>
 #include <Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli>
 
 class Surface
 {
+#if ENABLE_TRANSMISSION
     TransmissionSurfaceData transmission;
+#endif
 
     // ------- BasePbrSurfaceData -------
     float3 position;            //!< Position in world-space

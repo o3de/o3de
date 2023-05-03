@@ -6,7 +6,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from ly_test_tools.launchers.platforms.base import Launcher
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxLauncher, LinuxEditor, DedicatedLinuxLauncher, LinuxMaterialEditor
+from ly_test_tools.launchers.platforms.linux.launcher import (
+    LinuxLauncher, LinuxEditor, DedicatedLinuxLauncher, LinuxAtomToolsLauncher)
 from ly_test_tools.launchers.platforms.mac.launcher import MacLauncher
-from ly_test_tools.launchers.platforms.win.launcher import WinLauncher, DedicatedWinLauncher, WinEditor, WinGenericLauncher, WinMaterialEditor
+from ly_test_tools.launchers.platforms.win.launcher import (
+    WinLauncher, DedicatedWinLauncher, WinEditor, WinAtomToolsLauncher)
 from ly_test_tools.launchers.platforms.android.launcher import AndroidLauncher

@@ -33,6 +33,7 @@ namespace AZ
                     ->Field("RemoveBuildArguments", &ShaderSourceData::m_removeBuildArguments)
                     ->Field("AddBuildArguments", &ShaderSourceData::m_addBuildArguments)
                     ->Field("Definitions", &ShaderSourceData::m_definitions)
+                    ->Field("ShaderOptions", &ShaderSourceData::m_shaderOptionValues)
                     ->Field("DisabledRHIBackends", &ShaderSourceData::m_disabledRhiBackends)
                     ->Field("Supervariants", &ShaderSourceData::m_supervariants)
                     ;
@@ -72,6 +73,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_removeBuildArguments, "Remove Build Arguments", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_addBuildArguments, "Add Build Arguments", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_definitions, "Definitions", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_shaderOptionValues, "Shader Options", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_disabledRhiBackends, "Disabled RHI Backends", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderSourceData::m_supervariants, "Super Variants", "")
                         ;
@@ -151,6 +153,7 @@ namespace AZ
                     ->Property("removeBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_removeBuildArguments))
                     ->Property("addBuildArguments", BehaviorValueProperty(&ShaderSourceData::m_addBuildArguments))
                     ->Property("definitions", BehaviorValueProperty(&ShaderSourceData::m_definitions))
+                    ->Property("shaderOptions", BehaviorValueProperty(&ShaderSourceData::m_shaderOptionValues))
                     ->Property("disabledRhiBackends", BehaviorValueProperty(&ShaderSourceData::m_disabledRhiBackends))
                     ->Property("superVariants", BehaviorValueProperty(&ShaderSourceData::m_supervariants))
                     ->Method("IsRhiBackendDisabled", &ShaderSourceData::IsRhiBackendDisabled)

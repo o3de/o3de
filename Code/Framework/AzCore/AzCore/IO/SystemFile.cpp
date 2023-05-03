@@ -66,6 +66,12 @@ namespace AZ::IO
     {
     }
 
+    SystemFile::SystemFile(const char* fileName, int mode, int platformFlags)
+        : SystemFile()
+    {
+        Open(fileName, mode, platformFlags);
+    }
+
     SystemFile::~SystemFile()
     {
         if (IsOpen())

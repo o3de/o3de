@@ -11,11 +11,12 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/GemTestEnvironment.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <ComponentDescriptors.h>
 #include <EditorComponentDescriptors.h>
-#include <QApplication>
 #include <SystemComponent.h>
 #include <TestColliderComponent.h>
+#include <TestMeshColliderComponent.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
 #include <Configuration/PhysXSettingsRegistryManager.h>
 #include <System/PhysXSystem.h>
@@ -34,13 +35,6 @@ namespace Physics
             : UnitTest::ToolsTestApplication(AZStd::move(appName))
         {
         }
-
-        bool IsPrefabSystemEnabled() const override
-        {
-            // Some physx tests fail if prefabs are enabled for the application,
-            // for now, make them use slices
-            return false;
-        }
     };
 
     class PhysXEditorTestEnvironment
@@ -57,7 +51,8 @@ namespace Physics
             AZStd::vector<AZ::ComponentDescriptor*> descriptors(physxDescriptors.begin(), physxDescriptors.end());
             descriptors.insert(descriptors.end(), physxEditorDescriptors.begin(), physxEditorDescriptors.end());
 
-            descriptors.emplace_back( UnitTest::TestColliderComponentMode::CreateDescriptor());
+            descriptors.emplace_back(UnitTest::TestColliderComponent::CreateDescriptor());
+            descriptors.emplace_back(UnitTest::TestMeshColliderComponent::CreateDescriptor());
 
             AddComponentDescriptors(descriptors);
 
@@ -144,15 +139,4 @@ namespace Physics
 
 } // namespace Physics
 
-AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
-{
-    ::testing::InitGoogleMock(&argc, argv);
-    QApplication app(argc, argv);
-    AZ::Test::ApplyGlobalParameters(&argc, argv);
-    AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({ new Physics::PhysXEditorTestEnvironment });
-    int result = RUN_ALL_TESTS();
-    return result;
-}
-
-IMPLEMENT_TEST_EXECUTABLE_MAIN();
+AZ_TOOLS_UNIT_TEST_HOOK(new Physics::PhysXEditorTestEnvironment);

@@ -18,28 +18,19 @@
         "ios-xcode",
         "ios-unity",
         "ios-monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "ios-mono-default",
       "displayName": "iOS Monolithic with Unity and Xcode",
       "description": "Configures iOS to build the Monolithic permutation using Xcode with Unity builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
+      "binaryDir": "${sourceDir}/build/ios_mono",
       "inherits": [
-        "ios-ninja",
+        "ios-xcode",
         "ios-unity",
         "ios-monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "ios-unity",
@@ -48,13 +39,9 @@
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "binaryDir": "${sourceDir}/build/ios",
       "inherits": [
-        "unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "unity",
+        "host-mac"
+      ]
     },
     {
       "name": "ios-no-unity",
@@ -63,13 +50,9 @@
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "binaryDir": "${sourceDir}/build/ios_no_unity",
       "inherits": [
-        "no-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "no-unity",
+        "host-mac"
+      ]
     },
     {
       "name": "ios-non-monolithic",
@@ -77,13 +60,9 @@
       "description": "Default configuration for non-monolithic builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "inherits": [
-        "non-monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "non-monolithic",
+        "host-mac"
+      ]
     },
     {
       "name": "ios-monolithic",
@@ -92,13 +71,9 @@
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "binaryDir": "${sourceDir}/build/ios_mono",
       "inherits": [
-        "monolithic"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "monolithic",
+        "host-mac"
+      ]
     },
     {
       "name": "ios-xcode",
@@ -106,12 +81,9 @@
       "description": "Configure iOS using with the Xcode generator",
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "binaryDir": "${sourceDir}/build/ios_xcode",
-      "generator": "Xcode",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      "inherits": [
+        "xcode"
+      ]
     },
     {
       "name": "ios-xcode-unity",
@@ -119,15 +91,10 @@
       "description": "Configure iOS with the Xcode generator + Unity Builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "binaryDir": "${sourceDir}/build/ios_xcode_unity",
-      "generator": "Xcode",
       "inherits": [
-        "ios-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "ios-unity",
+        "xcode"
+      ]
     },
     {
       "name": "ios-xcode-no-unity",
@@ -135,15 +102,10 @@
       "description": "Configure iOS with the Xcode Generator without unity builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
       "binaryDir": "${sourceDir}/build/ios_xcode_no_unity",
-      "generator": "Xcode",
       "inherits": [
-        "ios-no-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "ios-no-unity",
+        "xcode"
+      ]
     },
     {
       "name": "ios-ninja",
@@ -153,12 +115,7 @@
       "binaryDir": "${sourceDir}/build/ios_ninja",
       "inherits": [
         "ios-ninja-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "ios-ninja-unity",
@@ -169,12 +126,7 @@
       "inherits": [
         "ninja-multi-config",
         "ios-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     },
     {
       "name": "ios-ninja-no-unity",
@@ -185,12 +137,7 @@
       "inherits": [
         "ninja-multi-config",
         "ios-no-unity"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      ]
     }
   ],
   "buildPresets": [
@@ -199,11 +146,9 @@
       "displayName": "iOS",
       "description": "Builds all targets for iOS",
       "configurePreset": "ios-default",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      "inherits": [
+        "host-mac"
+      ]
     },
     {
       "name": "ios-install",
@@ -211,24 +156,18 @@
       "description": "Builds the \"install\" target for iOS, which builds all target and runs the CMake --install step",
       "configurePreset": "ios-default",
       "inherits": [
-        "install"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "install",
+        "host-mac"
+      ]
     },
     {
       "name": "ios-mono-default",
       "displayName": "iOS Mono",
       "description": "Builds all targets for iOS in the monolithic permutation",
       "configurePreset": "ios-mono-default",
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+      "inherits": [
+        "host-mac"
+      ]
     },
     {
       "name": "ios-mono-install",
@@ -236,13 +175,9 @@
       "description": "Builds the \"install\" target for ios monolithic permutation, which builds all target and runs the CMake --install step",
       "configurePreset": "ios-mono-default",
       "inherits": [
-        "install"
-      ],
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Darwin"
-      }
+        "install",
+        "host-mac"
+      ]
     }
   ],
   "testPresets": []

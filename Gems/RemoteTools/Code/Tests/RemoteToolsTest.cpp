@@ -18,7 +18,6 @@
 #include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 #include <RemoteToolsSystemComponent.h>
-#include <Utilities/RemoteToolsOutboxThread.h>
 
 namespace UnitTest
 {
@@ -26,12 +25,12 @@ namespace UnitTest
 
     static constexpr AZ::Crc32 TestToolsKey("TestRemoteTools"); 
 
-    class RemoteToolsTests : public ScopedAllocatorSetupFixture
+    class RemoteToolsTests : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::NameDictionary::Create();
 
             m_timeSystem = AZStd::make_unique<AZ::TimeSystem>();
@@ -48,7 +47,7 @@ namespace UnitTest
             m_timeSystem.reset();
 
             AZ::NameDictionary::Destroy();
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
         }
 
         AZStd::unique_ptr<AzNetworking::NetworkingSystemComponent> m_networkingSystemComponent;
@@ -102,13 +101,6 @@ namespace UnitTest
         m_remoteTools->ClearReceivedMessages(TestToolsKey);
     }
 
-    TEST(RemoteToolsOutboxTests, RemoteToolsOutboxMessagePush)
-    {
-        RemoteToolsOutboxThread outThread(1000);
-        OutboundToolingDatum datum;
-        outThread.PushOutboxMessage(nullptr, AzNetworking::ConnectionId(0), AZStd::move(datum));
-        EXPECT_EQ(outThread.GetPendingMessageCount(), 1);
-    }
 }
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

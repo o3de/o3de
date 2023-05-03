@@ -15,7 +15,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ::IO::Requests
 {
@@ -28,7 +28,7 @@ namespace AZ::IO
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::StorageDriveConfig, "{3D568902-6C09-4E9E-A4DB-8B561481D298}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(StorageDriveConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StorageDriveConfig, AZ::SystemAllocator);
 
         ~StorageDriveConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -58,7 +58,7 @@ namespace AZ::IO
         bool ExecuteRequests() override;
 
         void UpdateStatus(Status& status) const override;
-        void UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
+        void UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now, AZStd::vector<FileRequest*>& internalPending,
             StreamerContext::PreparedQueue::iterator pendingBegin, StreamerContext::PreparedQueue::iterator pendingEnd) override;
 
         void CollectStatistics(AZStd::vector<Statistic>& statistics) const override;
@@ -75,7 +75,7 @@ namespace AZ::IO
         void FlushCache(const RequestPath& filePath);
         void FlushEntireCache();
 
-        void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::system_clock::time_point& startTime,
+        void EstimateCompletionTimeForRequest(FileRequest* request, AZStd::chrono::steady_clock::time_point& startTime,
             const RequestPath*& activeFile, u64& activeOffset) const;
 
         void Report(const Requests::ReportData& data) const;
@@ -89,7 +89,7 @@ namespace AZ::IO
         AZStd::deque<FileRequest*> m_pendingRequests;
 
         //! The last time a file handle was used to access a file. The handle is stored in m_fileHandles.
-        AZStd::vector<AZStd::chrono::system_clock::time_point> m_fileLastUsed;
+        AZStd::vector<AZStd::chrono::steady_clock::time_point> m_fileLastUsed;
         //! The file path to the file handle. The handle is stored in m_fileHandles.
         AZStd::vector<RequestPath> m_filePaths;
         //! A list of file handles that's being cached in case they're needed again in the future.

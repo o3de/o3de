@@ -96,7 +96,7 @@ namespace UnitTest
 
     // Fixture for testing the viewport editor mode state tracker
     class ViewportEditorModeTrackerTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         ViewportEditorModeTracker m_viewportEditorModeTracker;
@@ -179,7 +179,7 @@ namespace UnitTest
 
     // Fixture for testing the integration of viewport editor mode state tracker
     class ViewportEditorModeTrackerIntegrationTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -322,7 +322,7 @@ namespace UnitTest
     TEST_F(ViewportEditorModeTrackerTestFixture, ActivatingViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatId)
     {
         // Given a viewport not currently being tracked
-        const TrackerId id = 0;
+        constexpr TrackerId id;
         EXPECT_FALSE(m_viewportEditorModeTracker.IsViewportModeTracked({ id }));
         EXPECT_EQ(m_viewportEditorModeTracker.GetViewportEditorModes({ id }), nullptr);
 
@@ -342,7 +342,7 @@ namespace UnitTest
     TEST_F(ViewportEditorModeTrackerTestFixture, DeactivatingViewportEditorModeForNonExistentIdCreatesViewportEditorModesForThatIdButReturnsError)
     {
         // Given a viewport not currently being tracked
-        const TrackerId id = 0;
+        constexpr TrackerId id;
         EXPECT_FALSE(m_viewportEditorModeTracker.IsViewportModeTracked({ id }));
         EXPECT_EQ(m_viewportEditorModeTracker.GetViewportEditorModes({ id }), nullptr);
 
@@ -368,7 +368,7 @@ namespace UnitTest
 
     TEST_F(ViewportEditorModeTrackerTestFixture, GettingNonExistentViewportEditorModesForIdReturnsNull)
     {
-        const TrackerId id = 0;
+        constexpr TrackerId id;
         EXPECT_FALSE(m_viewportEditorModeTracker.IsViewportModeTracked({ id }));
         EXPECT_EQ(m_viewportEditorModeTracker.GetViewportEditorModes({ id }), nullptr);
     }
@@ -376,7 +376,7 @@ namespace UnitTest
     TEST_F(ViewportEditorModeTrackerTestFixture, ActivatingViewportEditorModesForExistingIdInThatStateReturnsError)
     {
         // Given a viewport not currently tracked
-        const TrackerId id = 0;
+        constexpr TrackerId id;
         EXPECT_FALSE(m_viewportEditorModeTracker.IsViewportModeTracked({ id }));
         EXPECT_EQ(m_viewportEditorModeTracker.GetViewportEditorModes({ id }), nullptr);
 
@@ -416,7 +416,7 @@ namespace UnitTest
     TEST_F(ViewportEditorModeTrackerTestFixture, DeactivatingViewportEditorModesForExistingIdNotInThatStateReturnssError)
     {
         // Given a viewport not currently tracked
-        const TrackerId id = 0;
+        constexpr TrackerId id;
         EXPECT_FALSE(m_viewportEditorModeTracker.IsViewportModeTracked({ id }));
         EXPECT_EQ(m_viewportEditorModeTracker.GetViewportEditorModes({ id }), nullptr);
 
@@ -609,7 +609,7 @@ namespace UnitTest
         ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
     }
 
-    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndPickActive)
+    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndFocusActive)
     {
         // When entering focus mode
         m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });

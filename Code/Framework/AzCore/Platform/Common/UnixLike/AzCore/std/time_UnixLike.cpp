@@ -55,14 +55,13 @@ namespace AZStd
         return timeNowSecond;
     }
 
-    AZ::u64 GetTimeUTCMilliSecond()
+    AZStd::chrono::microseconds GetCpuThreadTimeNowMicrosecond()
     {
-        AZ::u64 utc;
         struct timespec ts;
-        int result = clock_gettime(CLOCK_REALTIME, &ts);
-        (void)result;
-        AZ_Assert(result != -1, "clock_gettime error %s\n", strerror(errno));
-        utc =  ts.tv_sec * 1000L +  ts.tv_nsec / 1000000L;
-        return utc;
+        errno = 0;
+        [[maybe_unused]] int result = clock_gettime(CLOCK_THREAD_CPUTIME_ID , &ts);
+
+        AZ_Assert(result != -1, "clock_gettime error using CLOCK_THREAD_CPUTIME_ID: %s\n", strerror(errno));
+        return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::seconds(ts.tv_sec) + AZStd::chrono::nanoseconds(ts.tv_nsec));
     }
 }

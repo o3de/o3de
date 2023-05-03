@@ -68,18 +68,8 @@ namespace UnitTest
         }
     };
 
-    class TrackChangedSerializerTests : public AllocatorsFixture
+    class TrackChangedSerializerTests : public LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            SetupAllocator();
-        }
-
-        void TearDown() override
-        {
-            TeardownAllocator();
-        }
     };
 
     TEST_F(TrackChangedSerializerTests, TestTrackChangedSerializer)

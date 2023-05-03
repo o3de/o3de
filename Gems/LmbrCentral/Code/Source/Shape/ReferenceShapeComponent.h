@@ -24,14 +24,14 @@ namespace LmbrCentral
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReferenceShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReferenceShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(ReferenceShapeConfig, "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::EntityId m_shapeEntityId;
     };
 
-    static const AZ::Uuid ReferenceShapeComponentTypeId = "{EB9C6DC1-900F-4CE8-AA00-81361127063A}";
+    inline constexpr AZ::TypeId ReferenceShapeComponentTypeId{ "{EB9C6DC1-900F-4CE8-AA00-81361127063A}" };
 
     /**
     * allows reference and reuse of shape entities

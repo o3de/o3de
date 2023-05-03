@@ -12,6 +12,7 @@
 #include <AudioAllocators.h>
 
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Random.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/typetraits/is_integral.h>

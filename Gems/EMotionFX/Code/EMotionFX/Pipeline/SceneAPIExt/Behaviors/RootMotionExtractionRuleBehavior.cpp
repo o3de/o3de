@@ -43,6 +43,12 @@ namespace EMotionFX::Pipeline::Behavior
         }
 
         Rule::RootMotionExtractionRule* rootMotionExtractionRule = azrtti_cast<Rule::RootMotionExtractionRule*>(&target);
+        auto data = rootMotionExtractionRule->GetData();
+        if (!data)
+        {
+            return;
+        }
+
         auto nameStorage = scene.GetGraph().GetNameStorage();
         for (auto it = nameStorage.begin(); it != nameStorage.end(); ++it)
         {
@@ -51,9 +57,8 @@ namespace EMotionFX::Pipeline::Behavior
                 // Select the first matching joint in the default name list.
                 if (AzFramework::StringFunc::Find(it->GetName(), defaultJoint) != AZStd::string::npos)
                 {
-                    RootMotionExtractionData data = rootMotionExtractionRule->GetData();
                     // Set the sample joint name to the 'path' which is unique.
-                    data.m_sampleJoint = it->GetPath();
+                    data->m_sampleJoint = it->GetPath();
                     rootMotionExtractionRule->SetData(data);
                     return;
                 }

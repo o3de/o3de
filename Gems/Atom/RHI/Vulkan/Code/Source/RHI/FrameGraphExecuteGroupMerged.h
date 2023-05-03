@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = FrameGraphExecuteGroupBase;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMerged, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMerged, AZ::PoolAllocator);
             AZ_RTTI(FrameGraphExecuteGroupMerged, "{85DE8F45-3CA1-4FD9-9B0E-EE98518D2717}", Base);
 
             FrameGraphExecuteGroupMerged() = default;
@@ -61,6 +61,8 @@ namespace AZ
             RHI::Ptr<CommandList> m_commandList;
             // List of renderpasses and framebuffers used by the scopes in the group.
             AZStd::span<const RenderPassContext> m_renderPassContexts;
+            // Name used by the command list encoding the work for this group
+            const AZ::Name m_mergedCommandListName{ "Merged" };
         };
     }
 }

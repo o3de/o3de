@@ -9,7 +9,7 @@
                 },
                 "ScanFolder Project/Shaders": {
                     "watch": "@PROJECTROOT@/Shaders",
-                    "recurisve": 1,
+                    "recursive": 1,
                     "order": 2
                 },
                 "ScanFolder Project/Registry": {

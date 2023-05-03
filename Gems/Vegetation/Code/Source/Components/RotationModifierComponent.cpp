@@ -14,7 +14,7 @@
 #include <Vegetation/Descriptor.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <Vegetation/InstanceData.h>
-#include <AzCore/Debug/Profiler.h>
+#include <VegetationProfiler.h>
 
 namespace Vegetation
 {
@@ -239,7 +239,7 @@ namespace Vegetation
 
     void RotationModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const GradientSignal::GradientSampleParams sampleParams(instanceData.m_position);
         float factorX = m_configuration.m_gradientSamplerX.GetValue(sampleParams);

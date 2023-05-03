@@ -38,6 +38,8 @@
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
 
+#include "BindlessDescriptorPool.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -53,7 +55,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "C77D578F-841F-41B0-84BB-EE5430FCF8BC", Base);
 
             static RHI::Ptr<Device> Create();
@@ -89,6 +91,8 @@ namespace AZ
 
             AsyncUploadQueue& GetAsyncUploadQueue();
 
+            BindlessDescriptorPool& GetBindlessDescriptorPool();
+
             RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount);
 
             void QueueForRelease(RHI::Ptr<RHI::Object> object);
@@ -114,6 +118,18 @@ namespace AZ
 
             VkBuffer CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const;
             void DestroyBufferResource(VkBuffer vkBuffer) const;
+
+            // Supported modes when specifiying the shading rate through an image.
+            enum class ShadingRateImageMode : uint32_t
+            {
+                None,           // Not supported
+                ImageAttachment,// Using the VK_KHR_fragment_shading_rate extension
+                DensityMap      // Using VK_EXT_fragment_density_map extension
+            };
+
+            ShadingRateImageMode GetImageShadingRateMode() const;
+
+            RHI::Ptr<BufferPool> GetConstantBufferPool();
 
         private:
             Device();
@@ -141,6 +157,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -171,6 +188,8 @@ namespace AZ
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;
 
+            RHI::Ptr<BufferPool> m_constantBufferPool;
+
             ReleaseQueue m_releaseQueue;
             CommandQueueContext m_commandQueueContext;
 
@@ -192,6 +211,9 @@ namespace AZ
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
             bool m_isXrNativeDevice = false;
+
+            BindlessDescriptorPool m_bindlessDescriptorPool;
+            ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
         };
 
         template<typename ObjectType, typename ...Args>

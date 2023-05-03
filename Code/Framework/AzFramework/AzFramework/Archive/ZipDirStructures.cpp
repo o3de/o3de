@@ -9,6 +9,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzFramework/Archive/Codec.h>
@@ -567,7 +568,6 @@ namespace AZ::IO::ZipDir
         stream.avail_in = static_cast<uInt>(nSrcSize);
         stream.avail_out = static_cast<uInt>(*pDestSize);
 
-        AZ_Assert(AZ::AllocatorInstance<AZ::OSAllocator>::IsReady(), "OS Allocator must be ready in order to override zlib allocator");
         stream.zalloc = &ZipDirStructuresInternal::ZlibAlloc;
         stream.zfree = &ZipDirStructuresInternal::ZlibFree;
         stream.opaque = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();

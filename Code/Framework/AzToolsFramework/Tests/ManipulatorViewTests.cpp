@@ -25,7 +25,7 @@ namespace UnitTest
 {
     using namespace AzToolsFramework;
 
-    class ManipulatorViewTest : public AllocatorsTestFixture
+    class ManipulatorViewTest : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
 

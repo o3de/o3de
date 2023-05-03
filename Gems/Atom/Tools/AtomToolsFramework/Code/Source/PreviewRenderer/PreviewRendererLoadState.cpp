@@ -25,7 +25,7 @@ namespace AtomToolsFramework
 
     void PreviewRendererLoadState::OnSystemTick()
     {
-        if (AZStd::chrono::system_clock::now() > (m_startTime + AZStd::chrono::seconds(5)))
+        if (AZStd::chrono::steady_clock::now() > (m_startTime + AZStd::chrono::seconds(5)))
         {
             m_renderer->CancelLoadContent();
             return;

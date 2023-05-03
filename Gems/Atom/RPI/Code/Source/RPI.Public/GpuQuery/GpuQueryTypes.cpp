@@ -29,7 +29,7 @@ namespace AZ
         {
             const RHI::Ptr<RHI::Device> device = RHI::GetRHIDevice();
             const AZStd::chrono::microseconds timeInMicroseconds = device->GpuTimestampToMicroseconds(m_duration, m_hardwareQueueClass);
-            const auto timeInNanoseconds = AZStd::chrono::nanoseconds(timeInMicroseconds);
+            const auto timeInNanoseconds = AZStd::chrono::duration_cast<AZStd::chrono::nanoseconds>(timeInMicroseconds);
 
             return static_cast<uint64_t>(timeInNanoseconds.count());
         }

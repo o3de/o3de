@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/TypeInfoSimple.h>
 
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/function/function_fwd.h>
 
 namespace AZ
 {

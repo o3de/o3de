@@ -62,7 +62,10 @@ namespace EMotionFX
 
                     for (AZ::ScriptProperty* p : rhs.m_parameters)
                     {
-                        m_parameters.push_back(p->Clone());
+                        if (p)
+                        {
+                            m_parameters.push_back(p->Clone());
+                        }
                     }
 
                     return *this;
@@ -138,6 +141,7 @@ namespace EMotionFX
             bool GetVisualizeEnabled() override;
             void SyncAnimGraph(AZ::EntityId leaderEntityId) override;
             void DesyncAnimGraph(AZ::EntityId leaderEntityId) override;
+            void SetActiveMotionSet(const char* activeMotionSetName) override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -159,6 +163,8 @@ namespace EMotionFX
             void UpdateActorExternal(float deltatime) override;
             void SetNetworkRandomSeed(AZ::u64 seed) override;
             AZ::u64 GetNetworkRandomSeed() const override;
+            void SetActorThreadIndex(AZ::u32 threadIndex) override;
+            AZ::u32 GetActorThreadIndex() const override;
             //////////////////////////////////////////////////////////////////////////
             // AnimGraphComponentNotificationBus::Handler
             void OnAnimGraphSynced(EMotionFX::AnimGraphInstance* /*animGraphInstance(Follower)*/) override;

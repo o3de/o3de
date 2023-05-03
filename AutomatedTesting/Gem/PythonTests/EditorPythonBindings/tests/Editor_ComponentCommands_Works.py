@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os, sys
 sys.path.append(os.path.dirname(__file__))
 from Editor_TestClass import BaseClass
+from EditorPythonTestTools.consts.physics import PHYSX_MESH_COLLIDER
 
 class Editor_ComponentCommands_Works(BaseClass):
     # Description: 
@@ -25,7 +26,7 @@ class Editor_ComponentCommands_Works(BaseClass):
             return component1.Equal(component2)
 
         # Get Component Types for Mesh and Comment
-        typeNameList = ["Mesh", "Comment", "PhysX Collider"]
+        typeNameList = ["Mesh", "Comment", PHYSX_MESH_COLLIDER]
         typeIdsList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeIdsByEntityType', typeNameList, entity.EntityType().Game)
 
         BaseClass.check_result(len(typeIdsList) > 0, "Type Ids List returned correctly")
@@ -38,7 +39,7 @@ class Editor_ComponentCommands_Works(BaseClass):
         typeNamesList = editor.EditorComponentAPIBus(bus.Broadcast, 'FindComponentTypeNames', typeIdsList)
         BaseClass.check_result(typeNamesList[0] == "Mesh", "Type Names List contains: Mesh")
         BaseClass.check_result(typeNamesList[1] == "Comment", "Type Names List contains: Comment")
-        BaseClass.check_result(typeNamesList[2] == "PhysX Collider", "Type Names List contains: PhysX Collider")
+        BaseClass.check_result(typeNamesList[2] == PHYSX_MESH_COLLIDER, "Type Names List contains: PhysX Mesh Collider")
 
         # Test Component API
         newEntityId = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
@@ -117,35 +118,35 @@ class Editor_ComponentCommands_Works(BaseClass):
         BaseClass.check_result(not(hasMesh), "Mesh Component removed")
         BaseClass.check_result(editor.EditorComponentAPIBus(bus.Broadcast, 'IsValid', meshComponent) is False, "Mesh component is NOT valid")
 
-        # Test that it is possible to access Components with no Editor Component (for example, the PhysX Collider)
+        # Test that it is possible to access Components with no Editor Component (for example, the PhysX Mesh Collider)
 
         meshColliderComponentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', newEntityId, [meshColliderComponentTypeId])
-        BaseClass.check_result(meshColliderComponentOutcome.IsSuccess(), "PhysX Collider component added to entity")
+        BaseClass.check_result(meshColliderComponentOutcome.IsSuccess(), "PhysX Mesh Collider component added to entity")
 
         meshColliderComponent = meshColliderComponentOutcome.GetValue()
         getMeshColliderComponentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', newEntityId, meshColliderComponentTypeId)
 
         BaseClass.check_result(getMeshColliderComponentOutcome.IsSuccess(), f"getMeshColliderComponentOutcome.IsSuccess()")
-        BaseClass.check_result(CompareComponentEntityIdPairs(meshColliderComponent[0], getMeshColliderComponentOutcome.GetValue()), "PhysX Collider component retrieved from entity")
+        BaseClass.check_result(CompareComponentEntityIdPairs(meshColliderComponent[0], getMeshColliderComponentOutcome.GetValue()), "PhysX Mesh Collider component retrieved from entity")
 
         editor.EditorComponentAPIBus(bus.Broadcast, 'RemoveComponents', [meshColliderComponent[0]])
         hasMeshCollider = editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType', newEntityId, meshColliderComponentTypeId)
-        BaseClass.check_result(not(hasMeshCollider), "PhysX Collider Component removed")
+        BaseClass.check_result(not(hasMeshCollider), "PhysX Mesh Collider Component removed")
 
-        # Test that it is possible to access Components with no Editor Component(for example, the PhysX Collider) via GetComponentOfType
+        # Test that it is possible to access Components with no Editor Component(for example, the PhysX Mesh Collider) via GetComponentOfType
 
         meshColliderComponentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', newEntityId, [meshColliderComponentTypeId])
-        BaseClass.check_result(meshColliderComponentOutcome.IsSuccess(), "PhysX Collider component added to entity")
+        BaseClass.check_result(meshColliderComponentOutcome.IsSuccess(), "PhysX Mesh Collider component added to entity")
 
         meshColliderComponent = meshColliderComponentOutcome.GetValue()[0]
         getMeshColliderComponentOutcome = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', newEntityId, meshColliderComponentTypeId)
 
         BaseClass.check_result(getMeshColliderComponentOutcome.IsSuccess(), "getMeshColliderComponentOutcome.IsSuccess()")
-        BaseClass.check_result(CompareComponentEntityIdPairs(meshColliderComponent, getMeshColliderComponentOutcome.GetValue()), "PhysX Collider component retrieved from entity")
+        BaseClass.check_result(CompareComponentEntityIdPairs(meshColliderComponent, getMeshColliderComponentOutcome.GetValue()), "PhysX Mesh Collider component retrieved from entity")
 
         meshColliderRemoved = False
         meshColliderRemoved = editor.EditorComponentAPIBus(bus.Broadcast, 'RemoveComponents', [meshColliderComponent])
-        BaseClass.check_result(meshColliderRemoved, "PhysX Collider component removed from entity")
+        BaseClass.check_result(meshColliderRemoved, "PhysX Mesh Collider component removed from entity")
 
 if __name__ == "__main__":
     tester = Editor_ComponentCommands_Works()

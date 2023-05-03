@@ -201,19 +201,10 @@ namespace ImageProcessingAtom
         IImageObject* LoadImageFromFile(const AZStd::string& filename)
         {
             // open the file
-            AZ::IO::SystemFile imageFile;
-            imageFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY);
-
-            if (!imageFile.IsOpen())
-            {
-                AZ_Warning("Image Processing", false, "TgaLoader: failed to open file %s", filename.c_str());
-                return nullptr;
-            }
-
-            AZ::IO::SystemFileStream imageFileStream(&imageFile, true);
+            AZ::IO::SystemFileStream imageFileStream(filename.c_str(), AZ::IO::OpenMode::ModeRead);
             if (!imageFileStream.IsOpen())
             {
-                AZ_Warning("Image Processing", false, "TgaLoader: failed to create file stream %s", filename.c_str());
+                AZ_Warning("Image Processing", false, "TgaLoader: failed to open file %s", filename.c_str());
                 return nullptr;
             }
 
@@ -256,7 +247,7 @@ namespace ImageProcessingAtom
             }
 
             // Skip image identification data if there are any
-            imageFileStream.Seek(tgaHeader.m_idLength,  AZ::IO::SystemFileStream::SeekMode::ST_SEEK_CUR);
+            imageFileStream.Seek(tgaHeader.m_idLength,  AZ::IO::GenericStream::SeekMode::ST_SEEK_CUR);
 
             // Read color map if there is one
             AZStd::vector<uint8> colorMap;

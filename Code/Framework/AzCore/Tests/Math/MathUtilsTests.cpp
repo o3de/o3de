@@ -158,7 +158,7 @@ namespace UnitTest
 
     // Test fixture for invalid inputs. We do not test for alignment=0
     // because that leads to undefined behavior with no consistent expected outcome 
-    class RoundUpInvalidInputTestsFixture : public ScopedAllocatorSetupFixture
+    class RoundUpInvalidInputTestsFixture : public LeakDetectionFixture
     {
     };
 

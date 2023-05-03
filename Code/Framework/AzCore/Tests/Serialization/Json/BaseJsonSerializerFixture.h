@@ -23,7 +23,7 @@
 namespace JsonSerializationTests
 {
     class BaseJsonSerializerFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         using ComponentContainer = AZStd::vector<AZ::ComponentDescriptor*>;

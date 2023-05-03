@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Math/MathUtils.h>
 #include <AzCore/base.h>
 #include <AzCore/std/hash.h>
+#include <AzCore/std/ranges/ranges.h>
 #include <AzCore/std/string/fixed_string.h>
 
 #if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION
@@ -18,26 +18,27 @@ struct  _GUID;
 typedef _GUID GUID;
 #endif
 
+
 namespace AZ
 {
     struct Uuid
     {
         enum Variant
         {
-            VAR_UNKNOWN         = -1,
-            VAR_NCS             = 0, // 0 - -
-            VAR_RFC_4122        = 2, // 1 0 -
-            VAR_MICROSOFT       = 6, // 1 1 0
-            VAR_RESERVED        = 7  // 1 1 1
+            VAR_UNKNOWN = -1,
+            VAR_NCS = 0, // 0 - -
+            VAR_RFC_4122 = 2, // 1 0 -
+            VAR_MICROSOFT = 6, // 1 1 0
+            VAR_RESERVED = 7  // 1 1 1
         };
         enum Version
         {
-            VER_UNKNOWN         = -1,
-            VER_TIME            = 1, // 0 0 0 1
-            VER_DCE             = 2, // 0 0 1 0
-            VER_NAME_MD5        = 3, // 0 0 1 1
-            VER_RANDOM          = 4, // 0 1 0 0
-            VER_NAME_SHA1       = 5, // 0 1 0 1
+            VER_UNKNOWN = -1,
+            VER_TIME = 1, // 0 0 0 1
+            VER_DCE = 2, // 0 0 1 0
+            VER_NAME_MD5 = 3, // 0 0 1 1
+            VER_RANDOM = 4, // 0 1 0 0
+            VER_NAME_SHA1 = 5, // 0 1 0 1
             // AZ Custom version, same as VER_RANDOM except we store a CRC32 in the first 4 bytes
             // you can add and combine in this 32 bytes.
             //VER_AZ_RANDOM_CRC32 = 6, // 0 1 1 0
@@ -47,11 +48,15 @@ namespace AZ
         static constexpr size_t MaxStringBuffer = 39; /// 32 Uuid + 4 dashes + 2 brackets + 1 terminate
         using FixedString = AZStd::fixed_string<MaxStringBuffer>;
         constexpr Uuid() = default;
-        Uuid(const char* string, size_t stringLength = 0) { *this = CreateString(string, stringLength); }
+        constexpr explicit Uuid(AZStd::string_view uuidString);
+        constexpr Uuid(const char* string, size_t stringLength);
 
-        static constexpr Uuid CreateNull() { return Uuid{}; };
+        static constexpr Uuid CreateNull();
+        // In some cases it may be preferred to use a non-null, but clearly invalid UUID. For example, a material with a texture reference tracked
+        // via UUID would use the null UUID for when no texture is set, but the Invalid UUID when the texture is set but does not resolve to an asset.
+        static constexpr Uuid CreateInvalid();
         /// Create a Uuid (VAR_RFC_4122,VER_RANDOM)
-        static Uuid Create()        { return CreateRandom(); }
+        static Uuid Create();
         /**
         * This function accepts the following formats, if format is invalid it returns a NULL UUID.
         * 0123456789abcdef0123456789abcdef
@@ -59,23 +64,29 @@ namespace AZ
         * {01234567-89ab-cdef-0123-456789abcdef}
         * {0123456789abcdef0123456789abcdef}
         * \param string pointer to a string buffer
-        * \param stringLength if zero 'string' pointer must be null terminated so we can compute it's length, otherwise you can provide the length of the buffer.
+        * \param stringLength length of the string in the buffer
         */
-        static Uuid CreateString(const char* string, size_t stringLength = 0);
-        static Uuid CreateStringSkipWarnings(const char* string, size_t stringLength, bool skipWarnings);
+        static constexpr Uuid CreateString(const char* string, size_t stringLength);
+        static constexpr Uuid CreateString(AZStd::string_view uuidString);
 
         // Performs a first pass to handle more uuid string formats - allows and removes spaces, 0x, {, }
-        static Uuid CreateStringPermissive(const char* string, size_t stringLength = 0, bool skipWarnings = true);
+        static constexpr Uuid CreateStringPermissive(const char* string, size_t stringLength, bool skipWarnings = true);
+        static constexpr Uuid CreateStringPermissive(AZStd::string_view uuidString, bool skipWarnings = true);
 
         static Uuid CreateRandom();
         /// Create a UUID based on a string name (sha1)
-        static Uuid CreateName(const char* name);
+        static constexpr Uuid CreateName(AZStd::string_view name);
         /// Create a UUID based on a byte stream (sha1)
-        static Uuid CreateData(const void* data, size_t dataSize);
+        static constexpr Uuid CreateData(const AZStd::byte* data, size_t dataSize);
+        // Accepts a range whose value type is implicitly or explicitly convertible to an AZStd::byte
+        template<class R>
+        static constexpr auto CreateData(R&& dataSpan)
+            -> AZStd::enable_if_t<AZStd::convertible_to<AZStd::ranges::range_value_t<R>, AZStd::byte>
+            || decltype(static_cast<AZStd::byte>(AZStd::declval<AZStd::ranges::range_value_t<R>>()), AZStd::true_type())::value, Uuid>;
 
-        bool    IsNull() const;
-        Variant GetVariant() const;
-        Version GetVersion() const;
+        constexpr bool IsNull() const;
+        constexpr Variant GetVariant() const;
+        constexpr Version GetVersion() const;
         /**
          * Outputs to a string in one of the following formats
          * 0123456789abcdef0123456789abcdef
@@ -86,7 +97,7 @@ namespace AZ
          * if negative the the number of characters required for output (nothing is writen to the output),
          * including terminating character.
          */
-        int ToString(char* output, int outputSize, bool isBrackets = true, bool isDashes = true) const;
+        constexpr int ToString(char* output, int outputSize, bool isBrackets = true, bool isDashes = true) const;
 
         /**
          * Outputs to a string in one of the following formats
@@ -99,103 +110,99 @@ namespace AZ
          * including terminating character.
          */
         template<size_t SizeT>
-        int ToString(char(&output)[SizeT], bool isBrackets = true, bool isDashes = true) const
-        {
-            return ToString(output, SizeT, isBrackets, isDashes);
-        }
+        constexpr int ToString(char(&output)[SizeT], bool isBrackets = true, bool isDashes = true) const;
 
         /// The only requirements is that StringType can be constructed from char* and it can copied.
         template<class StringType>
-        inline StringType ToString(bool isBrackets = true, bool isDashes = true) const
-        {
-            char output[MaxStringBuffer];
-            ToString(output, AZ_ARRAY_SIZE(output), isBrackets, isDashes);
-            return StringType(output);
-        }
+        constexpr StringType ToString(bool isBrackets = true, bool isDashes = true) const;
 
         /// For inplace version we require resize, data and size members.
         template<class StringType>
-        inline void ToString(StringType& result, bool isBrackets = true, bool isDashes = true) const
-        {
-            result.resize(-ToString(nullptr, 0, isBrackets, isDashes) - 1); // remove the terminating string
-            ToString(&result[0], static_cast<int>(result.size()) + 1, isBrackets, isDashes);
-        }
+        constexpr void ToString(StringType& result, bool isBrackets = true, bool isDashes = true) const;
 
-        FixedString ToFixedString(bool isBrackets = true, bool isDashes = true) const;
+        constexpr FixedString ToFixedString(bool isBrackets = true, bool isDashes = true) const;
 
-        AZ_MATH_INLINE bool operator==(const Uuid& rhs) const
-        {
-            const AZ::u64* lhs64 = reinterpret_cast<const AZ::u64*>(data);
-            const AZ::u64* rhs64 = reinterpret_cast<const AZ::u64*>(rhs.data);
-            if (lhs64[0] != rhs64[0] || lhs64[1] != rhs64[1])
-            {
-                return false;
-            }
-            return true;
-        }
-        AZ_MATH_INLINE bool operator!=(const Uuid& rhs) const { return !(*this == rhs); }
-        bool operator<(const Uuid& rhs) const;
-        bool operator>(const Uuid& rhs) const;
-        bool operator<=(const Uuid& rhs) const { return !(*this > rhs); }
-        bool operator>=(const Uuid& rhs) const { return !(*this < rhs); }
+        constexpr bool operator==(const Uuid& rhs) const;
+        constexpr bool operator!=(const Uuid& rhs) const;
+        constexpr bool operator<(const Uuid& rhs) const;
+        constexpr bool operator>(const Uuid& rhs) const;
+        constexpr bool operator<=(const Uuid& rhs) const;
+        constexpr bool operator>=(const Uuid& rhs) const;
 
-    #if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION
+#if AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION
         // Add some conversion to from windows
         Uuid(const GUID& guid);
         operator GUID() const;
-        AZ_MATH_INLINE Uuid& operator=(const GUID& guid)          { *this = Uuid(guid); return *this; }
-        AZ_MATH_INLINE bool operator==(const GUID& guid) const    { return *this == Uuid(guid); }
-        AZ_MATH_INLINE bool operator!=(const GUID& guid) const    { return !(*this == guid);  }
-    #endif
+        Uuid& operator=(const GUID& guid);
+        bool operator==(const GUID& guid) const;
+        bool operator!=(const GUID& guid) const;
+        friend bool operator==(const GUID& guid, const Uuid& uuid);
+        friend bool operator!=(const GUID& guid, const Uuid& uuid);
+#endif
 
         /// Adding two UUID generates SHA1 Uuid based on the data of both uuids
-        Uuid operator+(const Uuid& rhs) const;
-        AZ_MATH_INLINE Uuid& operator+=(const Uuid& rhs)      { *this = *this + rhs; return *this; }
+        friend constexpr Uuid operator+(const Uuid& lhs, const Uuid& rhs);
+        constexpr Uuid& operator+=(const Uuid& rhs);
 
         //////////////////////////////////////////////////////////////////////////
         // AZStd interface
-        typedef unsigned char*          iterator;
-        typedef const unsigned char*    const_iterator;
+        using iterator = AZStd::byte*;
+        using const_iterator = const AZStd::byte*;
 
-        AZ_MATH_INLINE iterator begin()               { return data; }
-        AZ_MATH_INLINE iterator end()                 { return data + AZ_ARRAY_SIZE(data); }
-        AZ_MATH_INLINE const_iterator begin() const   { return data; }
-        AZ_MATH_INLINE const_iterator end() const     { return data + AZ_ARRAY_SIZE(data); }
+        constexpr iterator begin();
+        constexpr iterator end();
+        constexpr const_iterator begin() const;
+        constexpr const_iterator end() const;
+        constexpr size_t size() const;
         //////////////////////////////////////////////////////////////////////////
 
-        size_t GetHash() const
-        {
-            // Returning first few bytes as a size_t. This is faster than
-            // hashing every byte and the chance of collision is still very low.
-            union
-            {
-                const size_t* hash;
-                const unsigned char* data;
-            } convert;
+        //! Returns the first 8 bytes of the Uuid interpreted as a little endian
+        //! size_t value as the hash value
+        constexpr size_t GetHash() const;
 
-            convert.data = data;
-            return *convert.hash;
-        }
+    private:
+        static constexpr Uuid CreateStringSkipWarnings(AZStd::string_view uuidString, bool skipWarnings);
 
-        // or _m128i and VMX ???
-        alignas(16) unsigned char data[16]{};
+        //! Converts the next 8 bytes starting from startIndex into a size_t
+        //! The startIndex represents the low byte of a little endian integer
+        constexpr size_t GetSectionAsSizeT(size_t startIndex) const;
+        //! Retrieves the first 8 bytes of the UUID(m_data[7] ... m_data[0]) as a size_t
+        //! in little endian format
+        constexpr size_t GetFirst8BytesAsSizeT() const;
+        //! Retrieves the last 8 bytes of the UUID(m_data[15] ... m_data[8]) as a size_t
+        //! in little endian format
+        constexpr size_t GetLast8BytesAsSizeT() const;
+
+        alignas(16) AZStd::byte m_data[16]{};
     };
+
+//! O3DE_UUID_TO_NONTYPE_PARAM macro is for associating a Uuid with a non-type template parameter
+//! It does this by taking the Hash Value of the TypeId which is the top 8 bytes of the Uuid
+//! and converting using that as the template parameter.
+//! The entire 16 byte Uuid can't be used until C++20 compiler support is available as literal class types
+//! are not available for use as non-type parameters until then
+//! An example of the use is as below
+//! template<auto Uuid>
+//! static bool VersionConverter(...)
+//! template<>
+//! static bool VersionConverter<O3DE_UUID_TO_NONTYPE_PARAM(AZ::Uuid("01234567-89ab-cdef-0123-456789abcdef"))>(...)
+#define O3DE_UUID_TO_NONTYPE_PARAM(literal_) AZ::Uuid(literal_).GetHash()
 } // namespace AZ
 
 namespace AZStd
 {
-    template<class T>
-    struct hash;
+    // extern the fixed_string<39> class required to hold a Uuid string
+    extern template class basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
 
     // hash specialization
     template <>
     struct hash<AZ::Uuid>
     {
-        typedef AZ::Uuid    argument_type;
-        typedef size_t      result_type;
-        AZ_FORCE_INLINE size_t operator()(const AZ::Uuid& id) const
+        constexpr size_t operator()(const AZ::Uuid& id) const
         {
             return id.GetHash();
         }
     };
 }
+
+#include <AzCore/Math/Uuid.inl>

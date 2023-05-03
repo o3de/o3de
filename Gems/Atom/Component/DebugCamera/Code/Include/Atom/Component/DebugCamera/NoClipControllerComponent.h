@@ -61,6 +61,13 @@ namespace AZ
             void SetPitch(float pitch) override;
             void SetFov(float fov) override;
 
+            void SetCameraStateForward(float value) override;
+            void SetCameraStateBack(float value) override;
+            void SetCameraStateLeft(float value) override;
+            void SetCameraStateRight(float value) override;
+            void SetCameraStateUp(float value) override;
+            void SetCameraStateDown(float value) override;
+
             float GetMouseSensitivityX() override;
             float GetMouseSensitivityY() override;
             float GetMoveSpeed() override;

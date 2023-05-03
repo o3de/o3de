@@ -17,23 +17,6 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "InputAssembly"
                 }
-            ],
-            "ImageAttachments": [
-                {
-                    "Name": "ShadowmapImage",
-                    "ImageDescriptor": {
-                        "Format": "D32_FLOAT"
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "Shadowmap",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ShadowmapImage"
-                    }
-                }
             ]
         }
     }

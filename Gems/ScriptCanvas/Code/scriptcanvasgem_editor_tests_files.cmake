@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Tests/Editor/Components/NodeReplacementSystemTest.cpp
+    Tests/Framework/ScriptCanvasUnitTestFixture.h
     Tests/ScriptCanvasTest.cpp
     Tests/ScriptCanvasBuilderTests.cpp
 )

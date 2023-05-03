@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
@@ -156,6 +157,7 @@ namespace AzToolsFramework
             LazyConnectGameModeEventHandler();
 
             bool isUpdateSuccessful = true;
+            bool updatedInstances = false;
             if (!m_updatingTemplateInstancesInQueue && !m_shouldPausePropagation)
             {
                 m_updatingTemplateInstancesInQueue = true;
@@ -172,7 +174,6 @@ namespace AzToolsFramework
 
                     EntityIdList selectedEntityIds;
                     ToolsApplicationRequestBus::BroadcastResult(selectedEntityIds, &ToolsApplicationRequests::GetSelectedEntities);
-                    PrefabDom instanceDom;
 
                     // Process all instances in the queue, capped to the batch size.
                     // Even though we potentially initialized the batch size to the queue, it's possible for the queue size to shrink
@@ -180,6 +181,7 @@ namespace AzToolsFramework
                     // make sure to end the loop once the queue is empty, regardless of what the initial size was.
                     for (int i = 0; (i < instanceCountToUpdateInBatch) && !m_instancesUpdateQueue.empty(); ++i)
                     {
+                        updatedInstances = true;
                         Instance* instanceToUpdate = m_instancesUpdateQueue.front();
                         m_instancesUpdateQueue.pop_front();
                         AZ_Assert(instanceToUpdate != nullptr, "Invalid instance on update queue.");
@@ -218,8 +220,11 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        // Generates instance DOM for a given instance object.
-                        if (!m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate))
+                        // Gets a copy of instance DOM from focused or root prefab template.
+                        PrefabDom instanceDom;
+                        m_instanceDomGeneratorInterface->GetInstanceDomFromTemplate(instanceDom, *instanceToUpdate);
+
+                        if (!instanceDom.IsObject())
                         {
                             AZ_Assert(
                                 false,
@@ -230,7 +235,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        // Loads instance obejct from the generated instance DOM.
+                        // Loads instance object from the generated instance DOM.
                         EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
@@ -287,6 +292,14 @@ namespace AzToolsFramework
                 }
 
                 m_updatingTemplateInstancesInQueue = false;
+            }
+            
+            // this logic avoids calling garbage collect on every frame when no instances have been updated or when 
+            // we are still processing the update queue (if in a mode where the processing queue is emptied slowly over time).
+            if ( (updatedInstances) && (m_instancesUpdateQueue.empty()) )
+            {
+                AZ::AllocatorManager::Instance().GarbageCollect();
+                AZ_MALLOC_TRIM(0);
             }
 
             return isUpdateSuccessful;

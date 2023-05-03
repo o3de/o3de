@@ -62,7 +62,7 @@ namespace AZ
 
                 Sha1 hash;
                 AZ::u32 digest[5] = { 0 };
-                hash.ProcessBytes(machineInfo, wcslen(machineInfo) * sizeof(TCHAR));
+                hash.ProcessBytes(AZStd::as_bytes(AZStd::span{ (machineInfo), wcslen(machineInfo) * sizeof(TCHAR) }));
                 hash.GetDigest(digest);
                 s_machineId = digest[0];
                 if (s_machineId == 0)

@@ -131,6 +131,25 @@ AzQtComponents--CardHeader[class~="ContainerCardHeader"]
     border: none;
 }
 
+AzQtComponents--Card[class~="SectionCard"]
+{
+    border: none;
+    border-image: none;
+}
+
+AzQtComponents--Card[class~="SectionCard"] > #contentContainer
+{
+    background-color: transparent;
+    border: none;
+}
+
+AzQtComponents--CardHeader[class~="SectionCardHeader"]
+{
+    background-color: transparent;
+    border-radius: 0px;
+    border: none;
+}
+
 .primaryCardHeader
 {
     background-color: #333333;

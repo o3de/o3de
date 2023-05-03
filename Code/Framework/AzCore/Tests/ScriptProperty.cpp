@@ -26,12 +26,12 @@ namespace UnitTest
 
     // ScriptPropertyTests
     class ScriptPropertyTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             // Need to initialize our variables here, instead of in the constructor to avoid some memory tracking issues.
             m_tableName = "tableName";
@@ -89,7 +89,7 @@ namespace UnitTest
             delete m_behavior;
             m_behavior = nullptr;            
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void CreateTable()

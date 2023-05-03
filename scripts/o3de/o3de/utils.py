@@ -12,13 +12,17 @@ import argparse
 import sys
 import uuid
 import os
+import stat
 import pathlib
 import shutil
 import urllib.request
+from urllib.parse import ParseResult
 import logging
 import zipfile
+import re
+from packaging.specifiers import SpecifierSet
 
-from o3de import gitproviderinterface, github_utils
+from o3de import github_utils, git_utils
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
@@ -57,6 +61,7 @@ class VerbosityAction(argparse.Action):
         elif count == 1:
             log.setLevel(logging.INFO)
 
+
 def add_verbosity_arg(parser: argparse.ArgumentParser) -> None:
     """
     Add a consistent/common verbosity option to an arg parser
@@ -88,6 +93,22 @@ def copyfileobj(fsrc, fdst, callback, length=0):
             return 1
     return 0
 
+def remove_dir_path(path:pathlib.Path):
+    """
+    Helper function to delete a folder, ignoring all errors if possible
+    :param path: The Path to the folder to delete
+    """
+    if path.exists() and path.is_dir():
+        files_to_delete = []
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                files_to_delete.append(os.path.join(root, file))
+        for file in files_to_delete:
+            os.chmod(file, stat.S_IWRITE)
+            os.remove(file)
+
+        shutil.rmtree(path.resolve(), ignore_errors=True)
+
 
 def validate_identifier(identifier: str) -> bool:
     """
@@ -105,6 +126,27 @@ def validate_identifier(identifier: str) -> bool:
         for character in identifier:
             if not (character.isalnum() or character == '_' or character == '-'):
                 return False
+    return True
+
+
+def validate_version_specifier(version_specifier:str) -> bool:
+    try:
+        get_object_name_and_version_specifier(version_specifier)
+    except (InvalidObjectNameException, InvalidVersionSpecifierException):
+        return False
+    return True 
+
+
+def validate_version_specifier_list(version_specifiers:str or list) -> bool:
+    version_specifier_list = version_specifiers.split() if isinstance(version_specifiers, str) else version_specifiers
+    if not isinstance(version_specifier_list, list):
+        logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3 \n {version_specifiers}')
+        return False
+
+    for version_specifier in version_specifier_list:
+        if not validate_version_specifier(version_specifier):
+            logger.error(f'Version specifiers must be in the format <name><version specifiers>. e.g. name==1.2.3 \n {version_specifier}')
+            return False
     return True
 
 
@@ -163,15 +205,24 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def get_git_provider(parsed_uri):
+
+def get_git_provider(parsed_uri: ParseResult):
     """
     Returns a git provider if one exists given the passed uri
     :param parsed_uri: uniform resource identifier of a possible git repository
     :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
-    return github_utils.get_github_provider(parsed_uri)
+    # check for providers with unique APIs first
+    git_provider = github_utils.get_github_provider(parsed_uri)
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
+    if not git_provider:
+        # fallback to generic git provider
+        git_provider = git_utils.get_generic_git_provider(parsed_uri)
+
+    return git_provider
+
+
+def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -180,34 +231,21 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     :param object_name: name of the object being downloaded
     :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
-    file_exists = False
-    if download_path.is_file():
-        if not force_overwrite:
-            file_exists = True
-        else:
-            try:
-                os.unlink(download_path)
-            except OSError:
-                logger.error(f'Could not remove existing download path {download_path}.')
-                return 1
+    file_exists = download_path.is_file()
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         try:
             current_request = urllib.request.Request(parsed_uri.geturl())
             resume_position = 0
-            if not force_overwrite:
-                if file_exists:
-                    resume_position = os.path.getsize(download_path)
-                    current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+            if file_exists and not force_overwrite:
+                resume_position = os.path.getsize(download_path)
+                current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+
             with urllib.request.urlopen(current_request) as s:
-                download_file_size = 0
-                try:
-                    download_file_size = s.headers['content-length']
-                except KeyError:
-                    pass
+                download_file_size = int(s.headers.get('content-length',0))
 
                 # if the server does not return a content length we also have to assume we would be replacing a complete file
-                if file_exists and (resume_position == int(download_file_size) or int(download_file_size) == 0) and not force_overwrite:
+                if file_exists and (resume_position == download_file_size or download_file_size == 0) and not force_overwrite:
                     logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
                     return 1
 
@@ -218,22 +256,30 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                 else:
                     logger.error(f'HTTP status {e.code} opening {parsed_uri.geturl()}')
                     return 1
+                
+                # remove the file only after we have a response from the server and something to replace it with
+                if file_exists and force_overwrite:
+                    try:
+                        os.unlink(download_path)
+                    except OSError:
+                        logger.error(f'Could not remove existing download path {download_path}.')
+                        return 1
 
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'
                     if total_size == 0 or downloaded > total_size:
-                        print(f'Downloading {object_name} - {downloaded} bytes')
+                        print(f'Downloading {object_name if object_name else parsed_uri.geturl()} - {downloaded} bytes')
                     else:
                         if downloaded == total_size:
                             end_ch = '\n'
-                        print(f'Downloading {object_name} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
+                        print(f'Downloading {object_name if object_name else parsed_uri.geturl()} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
 
                 if download_progress_callback == None:
                     download_progress_callback = print_progress
 
                 def download_progress(downloaded_bytes):
                     if download_progress_callback:
-                        return download_progress_callback(int(downloaded_bytes), int(download_file_size))
+                        return download_progress_callback(int(downloaded_bytes), download_file_size)
                     return False
 
                 with download_path.open(file_mode) as f:
@@ -254,6 +300,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
         shutil.copy(origin_file, download_path)
 
     return 0
+
 
 def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, object_name: str, download_progress_callback = None) -> int:
     """
@@ -319,3 +366,233 @@ def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_
     """
     ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
     return ancestor_file.parent if ancestor_file else None
+
+
+def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
+    """
+    For working with the 'gem_names' lists in project.json
+    Returns a set of gem names in a list of gems
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :param include_optional: If false, exclude optional gems
+    :return: A set of gem name strings
+    """
+    def should_include_gem(gem: str or dict) -> bool:
+        if not isinstance(gem, dict) or include_optional:
+            return True
+        else:
+            # only include required gems 
+            return not gem.get('optional', False)
+
+    return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems if should_include_gem(gem)])
+
+
+def add_or_replace_object_names(object_names:set, new_object_names:list) -> list:
+    """
+    Returns a list of object names with optional version specifiers, where all objects in
+    the object_names list are replaced with objects in the new_object_names list.  Any object_names, that 
+    don't exist in object_names are added to the new list
+    NOTE: this function only accepts lists of strings, it does not work with lists that contain dicts
+    :param object_names: The set of object names with optional version specifiers
+    :param new_object_names: The object names with optional version specifiers to add or replace in object_names 
+    :return: the combined list of object_names modified with new_object_names 
+    """
+    object_name_map = {}
+    for object_name_with_specifier in object_names:
+        object_name, _ = get_object_name_and_optional_version_specifier(object_name_with_specifier)
+        object_name_map[object_name] = object_name_with_specifier
+    
+    # overwrite or add objects from new_object_names
+    for object_name_with_specifier in new_object_names:
+        object_name, _ = get_object_name_and_optional_version_specifier(object_name_with_specifier)
+        object_name_map[object_name] = object_name_with_specifier
+
+    return object_name_map.values()
+
+
+def contains_object_name(object_name:str, candidates:list) -> bool:
+    """
+    Returns True if any item in the list of candidates contains object_name with or
+    without a version specifier
+    :param object_name: The object name to search for 
+    :param candidates: The list of candidate object names with optional version specifiers 
+    :return: True if a match is found 
+    """
+    for candidate in candidates:
+        candidate_name, _ = get_object_name_and_optional_version_specifier(candidate)
+        if candidate_name == object_name:
+            return True
+    return False
+
+
+def remove_gem_duplicates(gems: list) -> list:
+    """
+    For working with the 'gem_names' lists in project.json
+    Adds names to a dict, and when a collision occurs, eject the existing one in favor of the new one.
+    This is because when adding gems the list is extended, so the override will come last.
+    :param gems: The original list of gems, strings or small dicts (json objects)
+    :return: A new list with duplicate gem entries removed
+    """
+    new_list = []
+    names = {}
+    for gem in gems:
+        if not (isinstance(gem, dict) or isinstance(gem, str)):
+            continue
+        gem_name = gem.get('name', '') if isinstance(gem, dict) else gem
+        if gem_name:
+            if gem_name not in names:
+                names[gem_name] = len(new_list)
+                new_list.append(gem)
+            else:
+                new_list[names[gem_name]] = gem
+    return new_list
+
+
+def update_keys_and_values_in_dict(existing_values: dict, new_values: list or str, remove_values: list or str,
+                      replace_values: list or str):
+    """
+    Updates values within a dictionary by replacing all values or by appending values in the new_values list and 
+    removing values in the remove_values
+    :param existing_values dict to modify
+    :param new_values list of key=value pairs to add to the existing dictionary 
+    :param remove_values list with keys to remove from the existing dictionary 
+    :param replace_values list with key=value pairs to replace existing dictionary with
+
+    returns updated existing dictionary
+    """
+    if replace_values != None:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        return dict(entry.split('=') for entry in replace_values if '=' in entry)
+    
+    if new_values:
+        new_values = new_values.split() if isinstance(new_values, str) else new_values
+        new_values = dict(entry.split('=') for entry in new_values if '=' in entry)
+        if new_values:
+            existing_values.update(new_values)
+    
+    if remove_values:
+        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
+        [existing_values.pop(key) for key in remove_values]
+    
+    return existing_values
+
+
+def update_values_in_key_list(existing_values: list, new_values: list or str, remove_values: list or str,
+                      replace_values: list or str):
+    """
+    Updates values within a list by replacing all values or by appending values in the new_values list, 
+    removing values in the remove_values and then removing duplicates.
+    :param existing_values list with existing values to modify
+    :param new_values list with values to add to the existing value list
+    :param remove_values list with values to remove from the existing value list
+    :param replace_values list with values to replace in the existing value list
+
+    returns updated existing value list
+    """
+    if replace_values != None:
+        replace_values = replace_values.split() if isinstance(replace_values, str) else replace_values
+        return list(dict.fromkeys(replace_values))
+
+    if new_values:
+        new_values = new_values.split() if isinstance(new_values, str) else new_values
+        existing_values.extend(new_values)
+    if remove_values:
+        remove_values = remove_values.split() if isinstance(remove_values, str) else remove_values
+        existing_values = list(filter(lambda value: value not in remove_values, existing_values))
+
+    # replace duplicate values
+    return list(dict.fromkeys(existing_values))
+
+
+class InvalidVersionSpecifierException(Exception):
+    pass
+
+
+class InvalidObjectNameException(Exception):
+    pass
+
+
+def get_object_name_and_version_specifier(input:str) -> (str, str) or None:
+    """
+    Get the object name and version specifier from a string in the form <name><version specifier(s)>
+    Valid input examples:
+        o3de>=1.2.3
+        o3de-sdk==1.2.3,~=2.3.4
+    :param input a string in the form <name><PEP 440 version specifier(s)> where the version specifier includes the relational operator such as ==, >=, ~=
+
+    return an engine name and a version specifier or raises an exception if input is invalid
+    """
+
+    regex_str = r"(?P<object_name>(.*?))(?P<version_specifier>((~=|==|!=|<=|>=|<|>|===)(\s*\S+)+))"
+    regex = re.compile(regex_str, re.IGNORECASE)
+    match = regex.fullmatch(input.strip())
+
+    if not match:
+        raise InvalidVersionSpecifierException(f"Invalid name and/or version specifier {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
+
+    if not match.group("object_name"):
+        raise InvalidObjectNameException(f"Invalid or missing name {input}, expected <name><version specifiers> e.g. o3de==1.2.3")
+
+    # SpecifierSet will raise an exception if invalid
+    if not SpecifierSet(match.group("version_specifier")):
+        return None
+    
+    return match.group("object_name").strip(), match.group("version_specifier").strip()
+
+
+def object_name_found(input:str, match:str) -> bool:
+    """
+    Returns True if the object name in the input string matches match 
+    :param input: The input string
+    :param match: The object name to match
+    """
+    object_name, _ = get_object_name_and_optional_version_specifier(input)
+    return object_name == match
+
+def get_object_name_and_optional_version_specifier(input:str):
+    """
+    Returns an object name and optional version specifier 
+    :param input: The input string
+    """
+    try:
+        return get_object_name_and_version_specifier(input)
+    except (InvalidObjectNameException, InvalidVersionSpecifierException):
+        return input, None
+
+
+def replace_dict_keys_with_value_key(input:dict, value_key:str, replaced_key_name:str = None, place_values_in_list:bool = False):
+    """
+    Takes a dictionary of dictionaries and replaces the keys with the value of 
+    a specific value key.
+    For example, if you have a dictionary of gem_paths->gem_json_data, this function can be used
+    to convert the dictionary so the keys are gem names instead of paths (gem_name->gem_json_data)
+    :param input: A dictionary of key->value pairs where every value is a dictionary that has a value_key
+    :param value_key: The value's key to replace the current key with
+    :param replaced_key_name: (Optional) A key name under which to store the replaced key in value
+    :param place_values_in_list: (Optional) Put the values in a list, useful when the new key is not unique
+    """
+
+    # we cannot iterate over the dict while deleting entries
+    # so we iterate over a copy of the keys
+    keys = list(input.keys())
+    for key in keys:
+        value = input[key]
+
+        # if the value is invalid just remove it
+        if value == None:
+            del input[key]
+            continue
+
+        # include the key we're removing if replaced_key_name provided
+        if replaced_key_name:
+            value[replaced_key_name] = key
+
+        # remove the current entry 
+        del input[key]
+
+        # replace with an entry keyed on value_key's value
+        if place_values_in_list:
+            entries = input.get(value[value_key], [])
+            entries.append(value)
+            input[value[value_key]] = entries
+        else:
+            input[value[value_key]] = value

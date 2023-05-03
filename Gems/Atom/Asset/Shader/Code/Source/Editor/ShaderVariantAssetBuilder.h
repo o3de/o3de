@@ -94,6 +94,9 @@ namespace AZ
             //! supported by the platform.
             void ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
 
+            // Launch rga.exe with ProcessLauncher
+            static bool LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage);
+
             static AZStd::string GetShaderVariantTreeAssetJobKey() { return AZStd::string::format("%s_varianttree", ShaderVariantAssetBuilderJobKey); }
             static AZStd::string GetShaderVariantAssetJobKey(RPI::ShaderVariantStableId variantStableId) { return AZStd::string::format("%s_variant_%u", ShaderVariantAssetBuilderJobKey, variantStableId.GetIndex()); }
 

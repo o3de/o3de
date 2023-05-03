@@ -19,7 +19,7 @@ namespace PhysX
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->ClassDeprecate("MeshColliderComponent", "{87A02711-8D7F-4966-87E1-77001EB6B29E}");
+            serializeContext->ClassDeprecate("MeshColliderComponent", AZ::Uuid("{87A02711-8D7F-4966-87E1-77001EB6B29E}"));
             serializeContext->Class<MeshColliderComponent, BaseColliderComponent>()
                 ->Version(1)
             ;
@@ -47,7 +47,7 @@ namespace PhysX
             m_shapeConfiguration = static_cast<Physics::PhysicsAssetShapeConfiguration*>(m_shapeConfigList[0].second.get());
             UpdateMeshAsset();
             MeshColliderComponentRequestsBus::Handler::BusConnect(GetEntityId());
-            BaseColliderComponent::Activate();
+            BaseColliderComponent::Activate(); // Calling Activate() of parent class will create the shapes.
         }
     }
 
@@ -79,6 +79,11 @@ namespace PhysX
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(m_shapeConfiguration->m_asset.GetId());
             m_shapeConfiguration->m_asset.QueueLoad();
+
+            // The asset loading must be completed because the shapes are required to be ready
+            // at activation time, so the rigid body can query them when OnEntityActivated
+            // event is called.
+            m_shapeConfiguration->m_asset.BlockUntilLoadComplete();
         }
     }
 

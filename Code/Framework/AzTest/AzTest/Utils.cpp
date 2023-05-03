@@ -223,6 +223,16 @@ namespace AZ
             return m_tempDirectory;
         }
 
+        AZ::IO::Path ScopedAutoTempDirectory::GetDirectoryAsPath() const
+        {
+            return m_tempDirectory;
+        }
+
+        AZ::IO::FixedMaxPath ScopedAutoTempDirectory::GetDirectoryAsFixedMaxPath() const
+        {
+            return m_tempDirectory;
+        }
+
         // Method to delete a folder recursively
         static void DeleteFolderRecursive(const AZ::IO::PathView& path)
         {

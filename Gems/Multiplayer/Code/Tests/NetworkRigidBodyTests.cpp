@@ -14,6 +14,7 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Physics/PhysicsScene.h>
+#include <AzFramework/Physics/SystemBus.h>
 #include <AzTest/AzTest.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkRigidBodyComponent.h>
@@ -49,11 +50,13 @@ namespace Multiplayer
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle));
         MOCK_METHOD2(GetJointFromHandle, AzPhysics::Joint*(AzPhysics::SceneHandle, AzPhysics::JointHandle));
         MOCK_METHOD1(GetSceneHandle, AzPhysics::SceneHandle(const AZStd::string&));
+        MOCK_METHOD1(GetScene, AzPhysics::Scene*(AzPhysics::SceneHandle));
         MOCK_METHOD2(
             GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle, const AzPhysics::SimulatedBodyHandleList&));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody*(AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle));
         MOCK_METHOD2(QueryScene, AzPhysics::SceneQueryHits(AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequest*));
+        MOCK_METHOD3(QueryScene, bool(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits&));
         MOCK_METHOD4(
             QuerySceneAsync,
             bool(
@@ -73,7 +76,7 @@ namespace Multiplayer
             RegisterSceneActiveSimulatedBodiesHandler,
             void(
                 AzPhysics::SceneHandle,
-                AZ::Event<AZStd::tuple<AZ::Crc32, signed char>, const AZStd::vector<AZStd::tuple<AZ::Crc32, int>>&>::Handler&));
+                AZ::Event<AZStd::tuple<AZ::Crc32, signed char>, const AZStd::vector<AZStd::tuple<AZ::Crc32, int>>&, float>::Handler&));
         MOCK_METHOD2(
             RegisterSceneCollisionEventHandler,
             void(
@@ -120,6 +123,23 @@ namespace Multiplayer
             void(AzPhysics::SceneHandle, const AzPhysics::SimulatedBodyHandle&, const AzPhysics::SimulatedBodyHandle&));
     };
 
+    class MockPhysicsDefaultWorldRequestsHandler : public Physics::DefaultWorldBus::Handler
+    {
+    public:
+        MockPhysicsDefaultWorldRequestsHandler()
+        {
+            Physics::DefaultWorldBus::Handler::BusConnect();
+        }
+        ~MockPhysicsDefaultWorldRequestsHandler()
+        {
+            Physics::DefaultWorldBus::Handler::BusDisconnect();
+        }
+        AzPhysics::SceneHandle GetDefaultSceneHandle() const
+        {
+            return { AZ::Crc32(), AzPhysics::SceneIndex(0) };
+        }
+    };
+
     class NetworkRigidBodyTests : public HierarchyTests
     {
     public:
@@ -143,6 +163,8 @@ namespace Multiplayer
                     }
             ));
 
+            m_mockDefaultWorld = AZStd::make_unique<Multiplayer::MockPhysicsDefaultWorldRequestsHandler>();
+
             m_root = AZStd::make_unique<EntityInfo>(1, "root", NetEntityId{ 1 }, EntityInfo::Role::Root);
             m_child = AZStd::make_unique<EntityInfo>(2, "child", NetEntityId{ 2 }, EntityInfo::Role::Child);
 
@@ -164,6 +186,7 @@ namespace Multiplayer
             m_child.reset();
             m_root.reset();
 
+            m_mockDefaultWorld.reset();
             m_mockSceneInterface.reset();
             m_rigidBody.reset();
 
@@ -205,6 +228,7 @@ namespace Multiplayer
         }
 
         AZStd::unique_ptr<Multiplayer::MockSceneInterface> m_mockSceneInterface;
+        AZStd::unique_ptr<Multiplayer::MockPhysicsDefaultWorldRequestsHandler> m_mockDefaultWorld;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_rigidBodyDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netRigidBodyDescriptor;
 

@@ -54,7 +54,7 @@ namespace LandscapeCanvasEditor
         : public AzToolsFramework::EntityPropertyEditor
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator);
 
         CustomEntityPropertyEditor(QWidget* parent = nullptr);
 
@@ -67,7 +67,7 @@ namespace LandscapeCanvasEditor
         : public AzQtComponents::StyledDockWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator);
 
         CustomNodeInspectorDockWidget(QWidget* parent = nullptr);
 
@@ -100,6 +100,7 @@ namespace LandscapeCanvasEditor
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(MainWindow, AZ::SystemAllocator)
         explicit MainWindow(QWidget* parent = nullptr);
         ~MainWindow() override;
 
@@ -113,6 +114,7 @@ namespace LandscapeCanvasEditor
         void PreOnGraphModelNodeRemoved(GraphModel::NodePtr node) override;
         void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr connection) override;
         void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr connection) override;
+        void PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelGraphModified(GraphModel::NodePtr node) override;
         ////////////////////////////////////////////////////////////////////////
@@ -156,6 +158,10 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList GetAllNodesMatchingEntity(const AZ::EntityId& entityId) override;
         GraphModel::NodePtrList GetAllNodesMatchingEntityComponent(const AZ::EntityComponentIdPair& entityComponentId) override;
         ////////////////////////////////////////////////////////////////////////
+
+        GraphModel::NodePtrList GetAllNodesMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId);
+        GraphModel::NodePtrList GetAllNodesMatchingEntityComponentInGraph(
+            const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId);
 
         ////////////////////////////////////////////////////////////////////////
         // GraphCanvas::AssetEditorMainWindow overrides
@@ -226,7 +232,10 @@ namespace LandscapeCanvasEditor
 
         AZ::EntityId GetRootEntityIdForGraphId(const GraphCanvas::GraphId& graphId);
 
-        AZ::ComponentId AddComponentTypeIdToEntity(const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId);
+        AZ::ComponentId AddComponentTypeIdToEntity(
+            const AZ::EntityId& entityId,
+            AZ::TypeId componentToAddTypeId,
+            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);
@@ -238,7 +247,7 @@ namespace LandscapeCanvasEditor
             Invalid = -1,
             Shapes = 0,
             Gradients,
-            VegetationAreas,
+            WrapperNodes,
             Count
         };
 
@@ -280,6 +289,7 @@ namespace LandscapeCanvasEditor
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_addedWrappedNodes;
         GraphModel::NodePtrList m_deletedWrappedNodes;
         GraphModel::NodePtrList m_deserializedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;

@@ -48,7 +48,7 @@ namespace AzPhysics
             behaviorContext->Class<SystemInterface>("PhysicsSystemInterface")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "physics")
-                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
                 ->Method("GetOnPresimulateEvent", getOnPresimulateEvent)
                     ->Attribute(AZ::Script::Attributes::AzEventDescription, presimulateEventDescription)
                 ->Method("GetOnPostsimulateEvent", getOnPostsimulateEvent)

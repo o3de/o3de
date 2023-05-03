@@ -13,7 +13,7 @@
     <NetworkProperty Type="AZ::Vector3" Name="LinearVelocity"  Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
     <NetworkProperty Type="AZ::Vector3" Name="AngularVelocity" Init="AZ::Vector3::CreateZero()" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />
 
-    <RemoteProcedure Name="SendApplyImpulse" InvokeFrom="Server" HandleOn="Authority" IsPublic="true" IsReliable="true" GenerateEventBindings="false" Description="Applies an impulse">
+    <RemoteProcedure Name="SendApplyImpulse" InvokeFrom="Server" HandleOn="Authority" IsPublic="true" IsReliable="true" GenerateEventBindings="true" Description="Applies an impulse">
         <Param Type="AZ::Vector3" Name="impulse" />
         <Param Type="AZ::Vector3" Name="worldPoint" />
     </RemoteProcedure>

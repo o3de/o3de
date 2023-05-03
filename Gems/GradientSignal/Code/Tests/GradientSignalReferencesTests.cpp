@@ -303,6 +303,34 @@ namespace UnitTest
         TestMixedGradientComponent(dataSize, inputLayer1, inputLayer2, expectedOutput, GradientSignal::MixedGradientLayer::MixingOperation::Multiply, 1.0f);
     }
 
+    TEST_F(GradientSignalReferencesTestsFixture, MixedGradientComponent_OperationScreen)
+    {
+        // Mixed Gradient:  Create two layers and set the second one to blend with "Screen".
+        // Screen is defined as "1 - (1 - a) * (1 - b)"
+
+        constexpr int dataSize = 3;
+        AZStd::vector<float> inputLayer1 =
+        {
+            0.0f, 0.1f, 0.0f,
+            0.4f, 1.0f, 1.0f,
+            0.8f, 0.9f, 0.2f
+        };
+        AZStd::vector<float> inputLayer2 =
+        {
+            0.0f, 0.0f, 0.2f,
+            1.0f, 0.5f, 1.0f,
+            0.6f, 0.3f, 0.4f
+        };
+        AZStd::vector<float> expectedOutput =
+        {
+            0.0f, 0.1f, 0.2f,       // 1 - (1 - 0) * (1 - 0) = 0, 1 - (1 - a) * (1 - 0) = a, 1 - (1 - 0) * (1 - b) = b
+            1.0f, 1.0f, 1.0f,       // 1 - (1 - a) * (1 - 1) = 1, 1 - (1 - 1) * (1 - b) = 1, 1 - (1 - 1) * (1 - 1) = 1
+            0.92f, 0.93f, 0.52f     // 1 - (1 - a) * (1 - b) = c where c >= a and c >= b
+        };
+
+        TestMixedGradientComponent(dataSize, inputLayer1, inputLayer2, expectedOutput, GradientSignal::MixedGradientLayer::MixingOperation::Screen, 1.0f);
+    }
+
     TEST_F(GradientSignalReferencesTestsFixture, MixedGradientComponent_OperationAverage)
     {
         // Mixed Gradient:  Create two layers and set the second one to blend with "Average".

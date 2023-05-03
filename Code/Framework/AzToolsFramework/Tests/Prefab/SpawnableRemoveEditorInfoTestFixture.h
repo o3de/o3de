@@ -83,7 +83,7 @@ namespace UnitTest
     };
 
     class SpawnableRemoveEditorInfoTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     protected:
         void SetUpEditorFixtureImpl() override;

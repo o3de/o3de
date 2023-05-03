@@ -35,7 +35,7 @@ Module Documentation:
     A set of utility functions
 
     <to do: further document this module>
-    
+
     To Do:
         ATOM-5859
 '''
@@ -58,24 +58,12 @@ from pathlib import Path
 
 # -------------------------------------------------------------------------
 #  global space
-import azpy.env_bool as env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-from azpy.constants import FRMT_LOG_LONG
-
-_DCCSI_GDEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_MODULENAME = __name__
-if _MODULENAME is '__main__':
-    _MODULENAME = 'azpy.shared.common.core_utils'
-
-# set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+from DccScriptingInterface.azpy.shared.common import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.core_utils'
 _LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+
+from DccScriptingInterface.azpy.constants import *
 # -------------------------------------------------------------------------
 
 
@@ -421,7 +409,7 @@ def return_stub(stub):
 if __name__ == "__main__":
     '''To Do: Document'''
     # constants for shared use.
-    _DCCSI_GDEBUG = True
+    DCCSI_GDEBUG = True
 
     # happy _LOGGER.info
     _LOGGER.info("# {0} #".format('-' * 72))
@@ -435,7 +423,7 @@ if __name__ == "__main__":
     _KNOWN_SITEDIR_PATHS = site._init_pathinfo()
 
     #  this is just a debug developer convenience _LOGGER.info (for testing acess)
-    if _DCCSI_GDEBUG:
+    if DCCSI_GDEBUG:
         import pkgutil
         _LOGGER.info('Current working dir: {0}'.format(cwd))
         search_path = ['.']  # set to None to see all modules importable from sys.path
@@ -460,7 +448,7 @@ if __name__ == "__main__":
 
     # test gather_paths_of_type_from_dir
     extTest = '*.py'
-    fileList = gather_paths_of_type_from_dir(os.getcwd(), extTest, use_spinner=True)
+    fileList = gather_paths_of_type_from_dir(in_path=os.getcwd(), extension=extTest)
     _LOGGER.info('Found {0}: {1}'.format(extTest, len(fileList)))
     _LOGGER.info('')
 

@@ -84,7 +84,7 @@ namespace AZ::IO::ArchiveInternal
     // an (inside zip) emulated open file
     struct CZipPseudoFile
     {
-        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator);
         CZipPseudoFile()
         {
             Construct();
@@ -236,7 +236,7 @@ namespace AZ::IO
         : public IResourceList
     {
     public:
-        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator);
         CResourceList() { m_iter = m_set.end(); }
         ~CResourceList() override {}
 
@@ -337,16 +337,16 @@ namespace AZ::IO
     {
         SAutoCollectFileAccessTime(Archive* pArchive)
             : m_pArchive{ pArchive }
-            , m_startTime{ AZStd::chrono::system_clock::now() }
+            , m_startTime{ AZStd::chrono::steady_clock::now() }
         {
         }
         ~SAutoCollectFileAccessTime()
         {
-            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now() - m_startTime).count());
+            m_pArchive->m_fFileAccessTime += aznumeric_cast<float>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::steady_clock::now() - m_startTime).count());
         }
     private:
         Archive* m_pArchive;
-        AZStd::chrono::system_clock::time_point m_startTime;
+        AZStd::chrono::steady_clock::time_point m_startTime;
     };
 
     /////////////////////////////////////////////////////
@@ -2115,10 +2115,19 @@ namespace AZ::IO
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
-        auto manifestInfo = AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
 
-        return manifestInfo;
+        if (serializeContext)
+        {
+            auto manifestInfo =
+                AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(
+                    fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
+
+            return manifestInfo;
+        }
+
+        // If the serialize context doesn't exist yet, just silently return for now. The bundle manifest will still get
+        // successfully loaded at a later point.
+        return {};
     }
 
     AZStd::vector<AZ::IO::Path> Archive::ScanForLevels(ZipDir::CachePtr pZip)
@@ -2183,13 +2192,13 @@ namespace AZ::IO
 
     void Archive::OnSystemEntityActivated()
     {
-        for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
+        auto LoadArchives = [this](const AZ::IO::Archive::ArchivesWithCatalogsToLoad& archiveInfo)
         {
             AZStd::intrusive_ptr<INestedArchive> archive =
                 OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
             if (!archive)
             {
-                continue;
+                return false;
             }
 
             ZipDir::CachePtr pZip = static_cast<NestedArchive*>(archive.get())->GetCache();
@@ -2209,7 +2218,9 @@ namespace AZ::IO
                     archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
                 },
                 archiveInfo.m_strFileName.c_str(), bundleManifest, archiveInfo.m_nextBundle, bundleCatalog);
-        }
-        m_archivesWithCatalogsToLoad.clear();
+
+            return true;
+        };
+        AZStd::erase_if(m_archivesWithCatalogsToLoad, LoadArchives);
     }
 }

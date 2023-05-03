@@ -14,6 +14,7 @@ set(FILES
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
     Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
+    Include/Atom/Feature/CoreLights/LightCommon.h
     Include/Atom/Feature/CubeMapCapture/CubeMapCaptureFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -33,6 +34,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
+    Include/Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -40,6 +42,7 @@ set(FILES
     Include/Atom/Feature/SphericalHarmonics/SphericalHarmonicsUtility.inl
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessor.h
     Include/Atom/Feature/Utils/FrameCaptureBus.h
+    Include/Atom/Feature/Utils/FrameCaptureTestBus.h
     Include/Atom/Feature/Utils/GpuBufferHandler.h
     Include/Atom/Feature/Utils/IndexedDataVector.h
     Include/Atom/Feature/Utils/IndexedDataVector.inl
@@ -81,6 +84,13 @@ set(FILES
     Source/CoreLights/DiskLightFeatureProcessor.cpp
     Source/CoreLights/EsmShadowmapsPass.h
     Source/CoreLights/EsmShadowmapsPass.cpp
+    Source/CoreLights/LightCullingPass.cpp
+    Source/CoreLights/LightCullingPass.h
+    Source/CoreLights/LightCullingTilePreparePass.cpp
+    Source/CoreLights/LightCullingTilePreparePass.h
+    Source/CoreLights/LightCullingRemap.cpp
+    Source/CoreLights/LightCullingRemap.h
+    Source/CoreLights/LightCullingConstants.h
     Source/CoreLights/LtcCommon.h
     Source/CoreLights/LtcCommon.cpp
     Source/CoreLights/PointLightFeatureProcessor.h
@@ -101,13 +111,6 @@ set(FILES
     Source/CoreLights/ShadowmapAtlas.cpp
     Source/CoreLights/ShadowmapPass.h
     Source/CoreLights/ShadowmapPass.cpp
-    Source/CoreLights/LightCullingPass.cpp
-    Source/CoreLights/LightCullingPass.h
-    Source/CoreLights/LightCullingTilePreparePass.cpp
-    Source/CoreLights/LightCullingTilePreparePass.h
-    Source/CoreLights/LightCullingRemap.cpp
-    Source/CoreLights/LightCullingRemap.h
-    Source/CoreLights/LightCullingConstants.h
     Source/Checkerboard/CheckerboardColorResolvePass.cpp
     Source/Checkerboard/CheckerboardColorResolvePass.h
     Source/Checkerboard/CheckerboardPass.cpp
@@ -149,8 +152,6 @@ set(FILES
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/DrawListFunctor.cpp
-    Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h
     Source/Math/GaussianMathFilter.cpp
     Source/Math/MathFilter.h
@@ -267,12 +268,18 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.h
+    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpacePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpacePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
@@ -313,6 +320,10 @@ set(FILES
     Source/SkyAtmosphere/SkyAtmosphereParentPass.h
     Source/SkyAtmosphere/SkyAtmospherePass.cpp
     Source/SkyAtmosphere/SkyAtmospherePass.h
+    Source/SplashScreen/SplashScreenFeatureProcessor.cpp
+    Source/SplashScreen/SplashScreenFeatureProcessor.h
+    Source/SplashScreen/SplashScreenPass.cpp
+    Source/SplashScreen/SplashScreenPass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )

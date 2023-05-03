@@ -31,13 +31,13 @@ namespace AZ
         struct ResourcePoolSourceData
         {
             AZ_TYPE_INFO(ResourcePoolSourceData, "{8BFF0760-20E3-446D-9E3D-39D0266F7104}");
-            AZ_CLASS_ALLOCATOR(ResourcePoolSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResourcePoolSourceData, AZ::SystemAllocator);
             
             static void Reflect(ReflectContext* context);
 
             ResourcePoolAssetType m_poolType = ResourcePoolAssetType::Unknown;
             AZStd::string m_poolName = "Unknown";
-            uint32_t m_budgetInBytes = 0;
+            AZ::u64 m_budgetInBytes = 0;
 
             // Configuration for buffer pool
             RHI::HeapMemoryLevel m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;

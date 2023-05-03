@@ -9,6 +9,10 @@
 #include <AzCore/std/concepts/concepts.h>
 #include <AzCore/std/iterator.h>
 #include <AzCore/std/iterator/common_iterator.h>
+#include <AzCore/std/iterator/const_iterator.h>
+#include <AzCore/std/iterator/counted_iterator.h>
+#include <AzCore/std/iterator/move_sentinel.h>
+#include <AzCore/std/iterator/unreachable_sentinel.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/list.h>
@@ -19,7 +23,7 @@
 namespace UnitTest
 {
     class Iterators
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -332,5 +336,125 @@ namespace UnitTest
         using CommonTestIterator = AZStd::common_iterator<IteratorInternal::TestIterator, IteratorInternal::TestSentinel>;
         CommonTestIterator testIter{ IteratorInternal::TestIterator{} };
         EXPECT_FALSE(testIter.operator->()->m_boolValue);
+    }
+
+    TEST_F(Iterators, UnreachableSentinel_DoesNotCompareEqualToAnyIterator)
+    {
+        char testString[] = "123";
+        EXPECT_NE(AZStd::unreachable_sentinel, AZStd::ranges::begin(testString));
+        EXPECT_NE(AZStd::unreachable_sentinel, AZStd::ranges::end(testString));
+        EXPECT_NE(AZStd::ranges::begin(testString), AZStd::unreachable_sentinel);
+        EXPECT_NE(AZStd::ranges::end(testString), AZStd::unreachable_sentinel);
+    }
+
+    TEST_F(Iterators, MoveIterator_SupportsCpp17IteratorTraits_Compiles)
+    {
+        using MoveIterator = AZStd::move_iterator<int*>;
+        using MoveIteratorTraits = AZStd::iterator_traits<MoveIterator>;
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::value_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::difference_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::iterator_category>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::pointer>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename MoveIteratorTraits::reference>);
+    }
+
+    TEST_F(Iterators, MoveSentinel_ComparableToMoveIterator_Succeeds)
+    {
+        AZStd::array testStringArray{ AZStd::string("Hello"), AZStd::string("World") };
+        auto moveIterator = AZStd::make_move_iterator(testStringArray.begin());
+        auto moveSentinel = AZStd::move_sentinel<decltype(testStringArray)::iterator>(testStringArray.end());
+
+        AZStd::array<AZStd::string, 2> movedStringArray{};
+        for (size_t i = 0; moveIterator != moveSentinel; ++moveIterator, ++i)
+        {
+            movedStringArray[i] = *moveIterator;
+        }
+
+        EXPECT_EQ(moveSentinel, moveIterator);
+        EXPECT_EQ(moveIterator, moveSentinel);
+        EXPECT_THAT(movedStringArray, ::testing::ElementsAre(AZStd::string_view("Hello"), AZStd::string_view("World")));
+        EXPECT_THAT(testStringArray, ::testing::ElementsAre(AZStd::string_view(), AZStd::string_view()));
+    }
+
+    TEST_F(Iterators, ConstIterator_ProvidesOnlyConstantReferencesToValueType_Succeeds)
+    {
+        AZStd::string testString("Hello World");
+        using ConstIterator = AZStd::const_iterator<typename decltype(testString)::iterator>;
+        using ConstSentinel = AZStd::const_sentinel<typename decltype(testString)::iterator>;
+        ConstIterator iter = testString.begin();
+        ConstSentinel sen = testString.end();
+
+        static_assert(AZStd::is_const_v<AZStd::remove_reference_t<decltype(*iter)>>);
+        AZStd::string result;
+        for (; iter != sen; ++iter)
+        {
+            result += *iter;
+        }
+
+        EXPECT_EQ(testString, result);
+    }
+
+    TEST_F(Iterators, ConstIterator_SupportsCpp17IteratorTraits_Compiles)
+    {
+        // Indicates whether the iterator type can be used with C++17 style iterator traits
+        // when using algorithms from std namespace
+        using ConstIterator = AZStd::const_iterator<typename AZStd::string::iterator>;
+        using ConstIteratorTraits = AZStd::iterator_traits<ConstIterator>;
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::value_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::difference_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::iterator_category>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::pointer>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename ConstIteratorTraits::reference>);
+    }
+
+    TEST_F(Iterators, CountedIterator_CanIterate_UntilDefaultSentinel)
+    {
+        AZStd::string testString("Hello World");
+        AZStd::counted_iterator<typename decltype(testString)::iterator> testCountedIter(testString.begin(), 5);
+
+        AZStd::string result;
+        for (; testCountedIter != AZStd::default_sentinel; ++testCountedIter)
+        {
+            result += *testCountedIter;
+        }
+
+        EXPECT_EQ("Hello", result);
+        EXPECT_EQ(AZStd::default_sentinel, testCountedIter);
+        ASSERT_EQ(testString.begin() + 5, testCountedIter.base());
+        EXPECT_EQ(0, testCountedIter.count());
+
+        auto copyIter = testCountedIter - 5;
+        copyIter[3] = 'j';
+        EXPECT_EQ('H', *copyIter);
+        EXPECT_EQ('j', *(copyIter + 3));
+    }
+
+    TEST_F(Iterators, CountedIterator_CompareableAgainstOtherCountedIterator)
+    {
+        AZStd::string_view testString("Hello World");
+        AZStd::counted_iterator<typename decltype(testString)::iterator> testCountedIter(testString.begin(), 5);
+        AZStd::counted_iterator<typename decltype(testString)::iterator> testCountedIter2(testString.begin(), 5);
+
+        EXPECT_EQ(testCountedIter, testCountedIter2);
+        ++testCountedIter;
+        EXPECT_NE(testCountedIter, testCountedIter2);
+        EXPECT_LT(testCountedIter2, testCountedIter);
+        EXPECT_GT(testCountedIter, testCountedIter2);
+        EXPECT_LE(testCountedIter2, testCountedIter);
+        EXPECT_GE(testCountedIter, testCountedIter2);
+        EXPECT_EQ(4, testCountedIter.count());
+    }
+
+    TEST_F(Iterators, CountedIterator_SupportsCpp17IteratorTraits_Compiles)
+    {
+        // Indicates whether the iterator type can be used with C++17 style iterator traits
+        // when using algorithms from std namespace
+        using CountedIterator = AZStd::counted_iterator<typename AZStd::string::iterator>;
+        using CountedIteratorTraits = AZStd::iterator_traits<CountedIterator>;
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::value_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::difference_type>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::iterator_category>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::pointer>);
+        static_assert(AZStd::Internal::sfinae_trigger_v<typename CountedIteratorTraits::reference>);
     }
 }

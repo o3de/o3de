@@ -26,7 +26,8 @@ namespace EMotionFX
         : public AnimGraphNode
     {
     public:
-        AZ_RTTI(AnimGraphBindPoseNode, "{72595B5C-045C-4DB1-88A4-40BC4560D7AF}", AnimGraphNode)
+        AZ_CLASS_ALLOCATOR(BlendTreeTestInputNode, AnimGraphAllocator)
+        AZ_RTTI(BlendTreeTestInputNode, "{72595B5C-045C-4DB1-88A4-40BC4560D7AF}", AnimGraphNode)
 
         enum
         {

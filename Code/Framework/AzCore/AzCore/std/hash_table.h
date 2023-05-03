@@ -13,8 +13,9 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/list.h>
 #include <AzCore/std/containers/fixed_list.h>
-
 #include <AzCore/std/hash.h>
+#include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/tuple.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/functional_basic.h>
@@ -24,6 +25,9 @@
 
 namespace AZStd
 {
+    template<class Traits>
+    class hash_table;
+
     namespace Internal
     {
         /**
@@ -285,7 +289,7 @@ namespace AZStd
         template<class Traits>
         class hash_table_storage<Traits, false>
         {
-            typedef hash_table_storage<Traits, false> this_type;
+            typedef hash_table_storage this_type;
 
         public:
             typedef typename Traits::allocator_type                                     allocator_type;
@@ -586,9 +590,8 @@ namespace AZStd
             -> enable_if_t<input_iterator<Iterator> && !is_convertible_v<Iterator, size_type>>
         {
             // insert [first, last) one at a time
-            for (; first != last; ++first)
+            auto inserter = [this](Iterator it, auto&& valueKey)
             {
-                const key_type& valueKey = Traits::key_from_value(*first);
                 size_type bucketIndex = bucket_from_hash(m_hasher(valueKey));
                 vector_value_type& bucket = m_data.buckets()[bucketIndex];
                 size_type& numElements = bucket.first;
@@ -596,18 +599,22 @@ namespace AZStd
                 iterator iter = bucket.second;
                 if (numElements == 0)
                 {
-                    m_data.m_list.push_front(*first);
+                    m_data.m_list.push_front(*it);
                     bucket.second = m_data.m_list.begin();
                 }
                 else
                 {
-                    if (!find_insert_position(valueKey, m_keyEqual, iter, numElements, AZStd::integral_constant<bool, Traits::has_multi_elements>()))
+                    if (!find_insert_position(AZStd::forward<decltype(valueKey)>(valueKey), m_keyEqual, iter, numElements, AZStd::integral_constant<bool, Traits::has_multi_elements>()))
                     {
-                        continue;
+                        return;
                     }
-                    m_data.m_list.insert(iter, *first);
+                    m_data.m_list.insert(iter, *it);
                 }
                 ++numElements;
+            };
+            for (; first != last; ++first)
+            {
+                inserter(first, Traits::key_from_value(*first));
             }
 
             m_data.rehash_if_needed(this);
@@ -617,11 +624,13 @@ namespace AZStd
         {
             if constexpr (is_lvalue_reference_v<R>)
             {
-                insert(ranges::begin(rg), ranges::end(rg));
+                auto rangeView = AZStd::forward<R>(rg) | views::common;
+                insert(ranges::begin(rangeView), ranges::end(rangeView));
             }
             else
             {
-                insert(make_move_iterator(ranges::begin(rg)), make_move_iterator(ranges::end(rg)));
+                auto rangeView = AZStd::forward<R>(rg) | views::as_rvalue | views::common;
+                insert(ranges::begin(rangeView), ranges::end(rangeView));
             }
         }
 
@@ -720,7 +729,7 @@ namespace AZStd
                 {
                     first = erase(first);
                 }
-                return AZStd::Internal::ConstIteratorCast<iterator>(first);
+                return first.base();
             }
         }
 

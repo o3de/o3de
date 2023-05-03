@@ -28,6 +28,7 @@ namespace PhysX
 
         // AzPhysics::SceneInterface ...
         AzPhysics::SceneHandle GetSceneHandle(const AZStd::string& sceneName) override;
+        AzPhysics::Scene* GetScene(AzPhysics::SceneHandle handle) override;
         void StartSimulation(AzPhysics::SceneHandle sceneHandle, float deltatime) override;
         void FinishSimulation(AzPhysics::SceneHandle sceneHandle) override;
         void SetEnabled(AzPhysics::SceneHandle sceneHandle, bool enable) override;
@@ -45,6 +46,7 @@ namespace PhysX
         AzPhysics::Joint* GetJointFromHandle(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) override;
         void RemoveJoint(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request) override;
+        bool QueryScene(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits& result) override;
         AzPhysics::SceneQueryHitsList QuerySceneBatch(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequests& requests) override;
         [[nodiscard]] bool QuerySceneAsync(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneQuery::AsyncRequestId requestId,
             const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQuery::AsyncCallback callback) override;

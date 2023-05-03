@@ -170,7 +170,7 @@ namespace ScriptCanvas
             AzFramework::RemoteToolsEndpointInfo targetInfo;
             if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
             {
-                targetInfo = RemoteToolsInterface::Get()->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
+                targetInfo = remoteTools->GetDesiredEndpoint(ScriptCanvas::RemoteToolsKey);
             }
 
             if (!targetInfo.GetPersistentId())
@@ -276,7 +276,10 @@ namespace ScriptCanvas
 
         void ClientTransceiver::DisconnectFromTarget()
         {
-            RemoteToolsInterface::Get()->SendRemoteToolsMessage(m_currentTarget, Message::DisconnectRequest());
+            if (AzFramework::IRemoteTools* remoteTools = RemoteToolsInterface::Get())
+            {
+                remoteTools->SendRemoteToolsMessage(m_currentTarget, Message::DisconnectRequest());
+            }
         }
 
         void ClientTransceiver::CleanupConnection()

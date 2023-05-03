@@ -9,12 +9,14 @@
 
 #include <AzCore/std/string/string.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include "AzCore/Slice/SliceAsset.h"
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Slice/SliceAsset.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 
 namespace UnitTest
 {
     //! Returns a test folder path 
-    AZStd::string GetTestFolderPath();
+    AZ::IO::Path GetTestFolderPath();
 
     void MakePathFromTestFolder(char* buffer, int bufferLen, const char* fileName);
 
@@ -48,6 +50,18 @@ namespace UnitTest
         int m_warningCount;
         int m_expectedErrorCount;
         int m_expectedWarningCount;
+    };
+
+    //! Helper utility for setting a bool registry value in a test.
+    class RegistryTestHelper
+    {
+    public:
+        void SetUp(AZStd::string_view path, bool value);
+        void TearDown();
+
+    private:
+        AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
+        AZ::SettingsRegistryInterface* m_oldSettingsRegistry = nullptr;
     };
 }
 

@@ -10,6 +10,8 @@
 #include <Atom/RHI/Resource.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
+//#define ASSERT_UNNAMED_RESOURCE_POOLS
+
 namespace AZ
 {
     namespace RHI
@@ -119,6 +121,9 @@ namespace AZ
             const ResourcePoolDescriptor& descriptor,
             const PlatformMethod& platformInitMethod)
         {
+#ifdef ASSERT_UNNAMED_RESOURCE_POOLS
+            AZ_Assert(!GetName().IsEmpty(), "Unnamed ResourcePool created");
+#endif
             if (Validation::IsEnabled())
             {
                 if (IsInitialized())
@@ -160,10 +165,10 @@ namespace AZ
                     ShutdownResourceInternal(*resource);
                     resource->Shutdown();
                 }
+                ShutdownInternal();
                 m_registry.clear();
                 m_memoryUsage = {};
                 m_resolver.reset();
-                ShutdownInternal();
                 DeviceObject::Shutdown();
             }
         }

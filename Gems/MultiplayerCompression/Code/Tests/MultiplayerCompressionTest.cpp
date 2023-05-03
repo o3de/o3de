@@ -12,25 +12,14 @@
 #include <LZ4Compressor.h>
 
 #include <AzCore/Compression/Compression.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzTest/AzTest.h>
 
 class MultiplayerCompressionTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
-protected:
-
-    void SetUp() override
-    {
-        AllocatorsTestFixture::SetUp();
-    }
-
-    void TearDown() override
-    {
-        AllocatorsTestFixture::TearDown();
-    }
 };
 
 TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
@@ -39,7 +28,7 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     buffer.Resize(buffer.GetCapacity());
 
     // Setup and marshal a highly compressable buffer for LZ4
-    AZStd::chrono::system_clock::time_point startTime = AZStd::chrono::system_clock::now();
+    AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
     memset(buffer.GetBuffer(), 255, buffer.GetCapacity());
 
     size_t maxCompressedSize = buffer.GetSize() + 32U;
@@ -51,17 +40,17 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
 
     //Run and test compress
     MultiplayerCompression::LZ4Compressor lz4Compressor;
-    startTime = AZStd::chrono::system_clock::now();
+    startTime = AZStd::chrono::steady_clock::now();
     AzNetworking::CompressorError compressStatus = lz4Compressor.Compress(buffer.GetBuffer(), buffer.GetSize(), pCompressedBuffer, maxCompressedSize, compressedSize);
-    [[maybe_unused]] const AZ::u64 compressTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    [[maybe_unused]] const AZ::u64 compressTime = (AZStd::chrono::steady_clock::now() - startTime).count();
 
     ASSERT_TRUE(compressStatus == AzNetworking::CompressorError::Ok);
     EXPECT_TRUE(compressedSize < maxCompressedSize);
 
     //Run and test decompress
-    startTime = AZStd::chrono::system_clock::now();
+    startTime = AZStd::chrono::steady_clock::now();
     AzNetworking::CompressorError decompressStatus = lz4Compressor.Decompress(pCompressedBuffer, compressedSize, pDecompressedBuffer, buffer.GetSize(), consumedSize, uncompressedSize);
-    [[maybe_unused]] const AZ::u64 decompressTime = (AZStd::chrono::system_clock::now() - startTime).count();
+    [[maybe_unused]] const AZ::u64 decompressTime = (AZStd::chrono::steady_clock::now() - startTime).count();
 
     ASSERT_TRUE(decompressStatus == AzNetworking::CompressorError::Ok);
     EXPECT_TRUE(uncompressedSize = buffer.GetSize());

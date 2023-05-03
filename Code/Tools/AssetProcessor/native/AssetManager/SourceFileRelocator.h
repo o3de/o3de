@@ -76,16 +76,32 @@ namespace AssetProcessor
         Succeeded
     };
 
+    enum RelocationParameters
+    {
+        RelocationParameters_PreviewOnlyFlag = 1 << 0,
+        RelocationParameters_RemoveEmptyFoldersFlag = 1 << 1,
+        RelocationParameters_AllowDependencyBreakingFlag = 1 << 2,
+        RelocationParameters_UpdateReferencesFlag = 1 << 3,
+        RelocationParameters_ExcludeMetaDataFilesFlag = 1 << 4
+    };
+
     static constexpr int SourceFileRelocationInvalidIndex = -1;
 
     struct SourceFileRelocationInfo
     {
-        SourceFileRelocationInfo(AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry, AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products, const AZStd::string& oldRelativePath, const ScanFolderInfo* scanFolder)
-            : m_sourceEntry(AZStd::move(sourceEntry)),
-            m_products(AZStd::move(products)),
-            m_oldRelativePath(oldRelativePath)
+        SourceFileRelocationInfo(
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry,
+            AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products,
+            const AZStd::string& oldRelativePath,
+            const ScanFolderInfo* scanFolder,
+            bool isMetadataEnabledType)
+            : m_sourceEntry(AZStd::move(sourceEntry))
+            , m_products(AZStd::move(products))
+            , m_oldRelativePath(oldRelativePath)
+            , m_isMetadataEnabledType(isMetadataEnabledType)
         {
-            AzFramework::StringFunc::Path::ConstructFull(scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
+            AzFramework::StringFunc::Path::ConstructFull(
+                scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
             m_oldAbsolutePath = AssetUtilities::NormalizeFilePath(m_oldAbsolutePath.c_str()).toUtf8().constData();
         }
 
@@ -109,7 +125,10 @@ namespace AssetProcessor
         AZStd::string m_newAbsolutePath;
         bool m_hasPathDependencies = false;
         SourceFileRelocationStatus m_operationStatus = SourceFileRelocationStatus::None;
-        bool m_isMetaDataFile = false;
+        // If >= 0, this is a metadata file.  This is the index into the
+        // PlatformConfiguration metadata list (use with GetMetaDataFileTypeAt)
+        int m_metadataIndex = SourceFileRelocationInvalidIndex;
+        bool m_isMetadataEnabledType = false; // Indicates if this file uses metadata relocation
         // This is a cached index of the SourceFile in the SourceFileRelocationContainer.
         // This is only used by the metadata file to determine the destination path if needed.
         int m_sourceFileIndex = AssetProcessor::SourceFileRelocationInvalidIndex;
@@ -167,17 +186,19 @@ namespace AssetProcessor
         //! Moves source files or renames a file.  Source and destination can be absolute paths or scanfolder relative paths.  Wildcards are supported for source.
         //! By default no changes are made to the disk.  Set previewOnly to false to actually move files.
         //! If allowDependencyBreaking is false, the move will fail if moving any files will break existing dependencies.  Set to true to ignore and move anyway.
-        virtual AZ::Outcome<RelocationSuccess, MoveFailure> Move(const AZStd::string& source, const AZStd::string& destination, bool previewOnly = true, bool allowDependencyBreaking = false, bool removeEmptyFolders = true, bool updateReferences = false, bool excludeMetaDataFiles = false) = 0;
+        virtual AZ::Outcome<RelocationSuccess, MoveFailure> Move(const AZStd::string& source, const AZStd::string& destination, int flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_RemoveEmptyFoldersFlag) = 0;
 
         //! Deletes source files.  Source can be an absolute path or a scanfolder relative path.  Wildcards are supported.
         //! By default no changes are made to the disk.  Set previewOnly to false to actually delete files.
         //! If allowDependencyBreaking is false, the delete will fail if deleting any file breaks existing dependencies.  Set to true to ignore and delete anyway.
-        virtual AZ::Outcome<RelocationSuccess, AZStd::string> Delete(const AZStd::string& source, bool previewOnly = true, bool allowDependencyBreaking = false, bool removeEmptyFolders = true, bool excludeMetaDataFiles = false) = 0;
+        virtual AZ::Outcome<RelocationSuccess, AZStd::string> Delete(const AZStd::string& source, int flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_RemoveEmptyFoldersFlag) = 0;
 
         //! Takes a relocation set and builds a string report to output the result of what files will change and what dependencies will break
         virtual AZStd::string BuildReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const = 0;
 
-        AZ_DISABLE_COPY_MOVE(ISourceFileRelocation);
+         //! Takes a relocation set and builds a string report to output the result of what files will change and what dependencies will break formatted for use in a dialog box
+        virtual AZStd::string BuildChangeReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks) const = 0;
+       AZ_DISABLE_COPY_MOVE(ISourceFileRelocation);
     };
 
     class SourceFileRelocator
@@ -224,9 +245,10 @@ namespace AssetProcessor
         FileUpdateTasks UpdateReferences(const SourceFileRelocationContainer& relocationContainer, bool useSourceControl) const;
 
         // ISourceFileRelocation implementation
-        AZ::Outcome<RelocationSuccess, MoveFailure> Move(const AZStd::string& source, const AZStd::string& destination, bool previewOnly = true, bool allowDependencyBreaking = false, bool removeEmptyFolders = true, bool updateReferences = false, bool excludeMetaDataFiles = false) override;
-        AZ::Outcome<RelocationSuccess, AZStd::string> Delete(const AZStd::string& source, bool previewOnly = true, bool allowDependencyBreaking = false, bool removeEmptyFolders = true, bool excludeMetaDataFiles = false) override;
+        AZ::Outcome<RelocationSuccess, MoveFailure> Move(const AZStd::string& source, const AZStd::string& destination, int flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_RemoveEmptyFoldersFlag) override;
+        AZ::Outcome<RelocationSuccess, AZStd::string> Delete(const AZStd::string& source, int flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_RemoveEmptyFoldersFlag) override;
         AZStd::string BuildReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks, bool isMove, bool updateReference) const override;
+        AZStd::string BuildChangeReport(const SourceFileRelocationContainer& relocationEntries, const FileUpdateTasks& updateTasks) const override;
 
     private:
         AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_stateData;

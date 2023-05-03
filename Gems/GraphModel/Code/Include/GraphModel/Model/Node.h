@@ -10,7 +10,6 @@
 // AZ
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 
@@ -60,7 +59,7 @@ namespace GraphModel
         friend class Graph; // Because the Graph needs to set the ID, but no one else should be able to.
 
     public:
-        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Node, AZ::SystemAllocator);
         AZ_RTTI(Node, "{274B4495-FDBF-45A9-9BAD-9E90269F2B73}", GraphElement);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -68,11 +67,9 @@ namespace GraphModel
 
         using SlotDefinitionList = AZStd::vector<SlotDefinitionPtr>;
 
-        // We use a map instead of unordered_map to get consistent order in XML to make diffs more readable. Performance
-        // isn't really a concern because these maps will be rather small.
-        // But ConstSlotMap uses unordered_map because it isn't serialized.
+        // We use a map instead of unordered_map to get consistent order.
         using SlotMap = AZStd::map<SlotId, SlotPtr>;
-        using ConstSlotMap = AZStd::unordered_map<SlotId, const SlotPtr>;
+        using ConstSlotMap = AZStd::map<SlotId, const SlotPtr>;
 
         // Special case mapping for holding the extendable slots so we can keep track of their indexed
         // order as well.
@@ -105,7 +102,7 @@ namespace GraphModel
         //! An alternative to the above PostLoadSetup when the
         //! nodeId isn't already known (e.g. a deserialized node that has been copy/pasted)
         virtual void PostLoadSetup();
-        
+
         //! Returns the name that will be displayed as the title of the Node in the UI
         virtual const char* GetTitle() const = 0;
 
@@ -116,14 +113,40 @@ namespace GraphModel
         //! other types, such as wrapper nodes
         virtual NodeType GetNodeType() const;
 
+        //! Return the unique ID for this node in the containing graph
         NodeId GetId() const;
 
+        //! Return the greatest distance, number of connected nodes, between this node and other root nodes.
+        uint32_t GetMaxInputDepth() const;
+
+        //! Return the greatest distance, number of connected nodes, between this node and other leaf nodes.
+        uint32_t GetMaxOutputDepth() const;
+
+        //! Return true if this node contains any slots.
+        bool HasSlots() const;
+
+        //! Return true if this node contains any input slots.
+        bool HasInputSlots() const;
+
+        //! Return true if this node contains any output slots.
+        bool HasOutputSlots() const;
+
+        //! Returns true if the graph contains any connections referencing this node.
         bool HasConnections() const;
+
+        //! Returns true if the graph has any connections to input slots on this node.
         bool HasInputConnections() const;
+
+        //! Returns true if the graph has any connections to output slots on this node.
         bool HasOutputConnections() const;
+
+        //! Returns true if any of the input slots on this node have direct or indirect connections to output slots on the specified node.
         bool HasInputConnectionFromNode(ConstNodePtr node) const;
+
+        //! Returns true if any of the output slots on this node have direct or indirect connections to input slots on the specified node.
         bool HasOutputConnectionToNode(ConstNodePtr node) const;
 
+        //! Returns true if this node contains the specified slot.
         bool Contains(ConstSlotPtr slot) const;
 
         //! Returns SlotDefinitions for all available Slots
@@ -151,7 +174,7 @@ namespace GraphModel
 
         //! Returns the number of extendable slots for a given SlotName.
         //! Will return -1 if the specified slot is not extendable.
-        int GetExtendableSlotCount(const SlotName& name);
+        int GetExtendableSlotCount(const SlotName& name) const;
 
         //! Delete the specified slot, which is only allowed on extendable slots.
         //! This method does nothing if the slot is not extendable.
@@ -172,6 +195,9 @@ namespace GraphModel
         //!    number of allowed slots for this definition
         //! This method does nothing if the slot is not extendable.
         virtual SlotPtr AddExtendedSlot(const SlotName& slotName);
+
+        //! Clear any data that was cached for this node
+        void ClearCachedData();
 
     protected:
 
@@ -246,6 +272,13 @@ namespace GraphModel
         SlotDefinitionList m_outputEventSlotDefinitions; //!< For slots with configuration = SlotDirection::Output SlotType::Event
         SlotDefinitionList m_extendableSlotDefinitions;  //!< For all extendable slot configurations
         SlotDefinitionList m_allSlotDefinitions; //!< Provies a single list of all of the above SlotDefinitionLists for convenient looping over them all
+
+        // Storing the minimum and maximum input depth for this node so that it does not have to be calculated every time
+        mutable AZStd::mutex m_maxInputDepthMutex;
+        mutable uint32_t m_maxInputDepth = AZStd::numeric_limits<uint32_t>::max();
+
+        mutable AZStd::mutex m_maxOutputDepthMutex;
+        mutable uint32_t m_maxOutputDepth = AZStd::numeric_limits<uint32_t>::max();
     };
 
 } // namespace GraphModel

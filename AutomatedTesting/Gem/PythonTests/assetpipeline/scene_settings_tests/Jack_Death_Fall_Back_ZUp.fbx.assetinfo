@@ -1,0 +1,28 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "Jack_Death_Fall_Back_ZUp",
+            "selectedRootBone": "RootNode",
+            "id": "{E0CBDD00-64CA-5FAD-A04D-3199AB76CAE1}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MotionSamplingRule"
+                    },
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::RootMotionExtractionRule",
+                        "data": {
+                            "sampleJoint": "RootNode.jack_root.Bip01__pelvis"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "PrefabGroup",
+            "name": "Animations/Motions/Jack_Death_Fall_Back_ZUp_fbx.procprefab",
+            "id": "{ECC88C70-51A1-5644-8E1E-04AE27F45AC0}"
+        }
+    ]
+}

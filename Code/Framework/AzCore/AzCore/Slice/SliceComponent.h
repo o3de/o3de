@@ -116,7 +116,7 @@ namespace AZ
         class DataFlagsPerEntity
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator);
             AZ_TYPE_INFO(DataFlagsPerEntity, "{57FE7B9E-B2AF-4F6F-9F8D-87F671E91C99}");
             static void Reflect(ReflectContext* context);
 
@@ -225,7 +225,7 @@ namespace AZ
          */
         struct InstantiatedContainer
         {
-            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator);
             AZ_TYPE_INFO(InstantiatedContainer, "{05038EF7-9EF7-40D8-A29B-503D85B85AF8}");
 
             InstantiatedContainer(bool deleteEntitiesOnDestruction = true);
@@ -1084,6 +1084,7 @@ namespace AZ
         class EntityIdAccessor final : public AZ::Entity
         {
         public:
+            AZ_CLASS_ALLOCATOR(EntityIdAccessor, SystemAllocator)
             void ForceSetId(AZ::EntityId id)
             {
                 m_id = id;

@@ -11,13 +11,18 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/ranges/all_view.h>
+#include <AzCore/std/ranges/as_const_view.h>
+#include <AzCore/std/ranges/as_rvalue_view.h>
 #include <AzCore/std/ranges/common_view.h>
+#include <AzCore/std/ranges/counted_view.h>
 #include <AzCore/std/ranges/elements_view.h>
 #include <AzCore/std/ranges/empty_view.h>
 #include <AzCore/std/ranges/filter_view.h>
+#include <AzCore/std/ranges/iota_view.h>
 #include <AzCore/std/ranges/join_view.h>
 #include <AzCore/std/ranges/join_with_view.h>
 #include <AzCore/std/ranges/ranges_adaptor.h>
+#include <AzCore/std/ranges/repeat_view.h>
 #include <AzCore/std/ranges/reverse_view.h>
 #include <AzCore/std/ranges/single_view.h>
 #include <AzCore/std/ranges/split_view.h>
@@ -29,7 +34,7 @@
 namespace UnitTest
 {
     class RangesViewTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(RangesViewTestFixture, AllRangeAdaptor_Succeeds)
@@ -517,6 +522,15 @@ namespace UnitTest
         EXPECT_EQ(expectedString, accumString);
     }
 
+    TEST_F(RangesViewTestFixture, JoinWithView_IsConstexpr_Succeeds)
+    {
+        constexpr AZStd::string_view expectedString = "Hello, World, Moon, Sun";
+        constexpr AZStd::array<AZStd::string_view, 4> rope{ "Hello", "World", "Moon", "Sun" };
+        using namespace AZStd::literals::string_view_literals;
+        constexpr AZStd::fixed_string<128> accumString(AZStd::from_range, rope | AZStd::views::join_with(", "_sv));
+        static_assert(accumString == expectedString);
+    }
+
     // elements_view
     TEST_F(RangesViewTestFixture, ElementsView_CanIterateVectorOfTuple_Succeeds)
     {
@@ -727,5 +741,154 @@ namespace UnitTest
         auto testSubrangeOfReverseReverse = testSubrangeOfReverse | AZStd::views::reverse;
         static_assert(AZStd::same_as<decltype(testSubrange), decltype(testSubrangeOfReverseReverse)>);
         EXPECT_TRUE(AZStd::ranges::equal(testSubrangeOfReverseReverse, "World"_sv));
+    }
+
+    TEST_F(RangesViewTestFixture, CountedView_CanCreateSubrange_FromIteratorAndCounted)
+    {
+        using namespace AZStd::literals::string_view_literals;
+
+        constexpr AZStd::string_view testString = "Hello,World,Moon,Sun";
+        constexpr auto testView = AZStd::views::counted(testString.begin() + 6, 5);
+        EXPECT_TRUE(AZStd::ranges::equal(testView, "World"_sv));
+    }
+
+    TEST_F(RangesViewTestFixture, CountedView_CanCreateSubrange_FromNonContiguousIterator)
+    {
+        using namespace AZStd::literals::string_view_literals;
+
+        AZStd::list<int> testContainer{ 1, 2, 3, 4, 5 };
+        auto testView = AZStd::views::counted(testContainer.begin(), 3);
+        constexpr auto expectedResult = AZStd::to_array<int>({ 1, 2, 3 });
+        EXPECT_TRUE(AZStd::ranges::equal(testView, expectedResult));
+    }
+
+    TEST_F(RangesViewTestFixture, AsRvalueView_MovesContainerElements_Succeeds)
+    {
+        using namespace AZStd::literals::string_view_literals;
+
+        AZStd::vector testStringContainer{ AZStd::string("Hello"), AZStd::string("World") };
+        AZStd::list movedStringContainer{ AZStd::from_range, testStringContainer | AZStd::views::as_rvalue };
+
+        EXPECT_THAT(movedStringContainer, ::testing::ElementsAre(AZStd::string_view("Hello"), AZStd::string_view("World")));
+        EXPECT_THAT(testStringContainer, ::testing::ElementsAre(AZStd::string_view(), AZStd::string_view()));
+    }
+
+    namespace RangesViewTestInternal
+    {
+        struct ConstMutableContainer
+        {
+            struct iterator
+            {
+                using value_type = int;
+                using iterator_concept = AZStd::bidirectional_iterator_tag;
+                using iterator_category = AZStd::bidirectional_iterator_tag;
+
+                const int& operator*() const { return m_charElement; }
+                int& operator*() { return m_intElement; }
+                const int* operator->() const { return &m_charElement; }
+                int* operator->() { return &m_intElement; }
+                iterator& operator++() { ++m_intElement; return *this; }
+                iterator operator++(int) { iterator tmp(*this); ++m_intElement; return tmp; }
+                iterator& operator--() { --m_intElement; return *this; }
+                iterator operator--(int) { iterator tmp(*this); --m_intElement; return tmp; }
+                bool operator==(const iterator& y) const { return m_intElement == y.m_intElement; }
+                bool operator!=(const iterator& y) const { return !operator==(y); }
+                ptrdiff_t operator-(const iterator& y) const { return m_intElement - y.m_intElement; }
+
+                int m_charElement = 'A';
+                int m_intElement = 55;
+            };
+
+            using iterator = iterator;
+            using const_iterator = const iterator;
+
+            iterator begin() { return iterator{}; }
+            iterator begin() const { return iterator{}; }
+            iterator end() { return iterator{ 'A', 60 }; }
+            iterator end() const { return iterator{ 'A', 60 }; }
+        };
+    }
+
+    TEST_F(RangesViewTestFixture, AsConstView_ActAsConstantViewOfContainerSucceeds)
+    {
+        RangesViewTestInternal::ConstMutableContainer testContainer;
+        AZStd::ranges::iterator_t<RangesViewTestInternal::ConstMutableContainer> foundIter = testContainer.begin();
+        EXPECT_EQ(55, *foundIter);
+
+        auto constView = testContainer | AZStd::views::as_const;
+        ASSERT_NE(constView.end(), constView.begin());
+        for (auto elem : constView)
+        {
+            EXPECT_EQ('A', elem);
+        }
+
+        AZStd::string_view testString;
+        [[maybe_unused]] auto constStringView = testString | AZStd::views::as_const;
+        static_assert(AZStd::same_as<decltype(testString), decltype(constStringView)>);
+    }
+
+    TEST_F(RangesViewTestFixture, IotaView_CanGenerateRangeUpToBound)
+    {
+        constexpr AZStd::array expectedValues{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+        AZStd::vector testValue(AZStd::from_range, AZStd::views::iota(0, 10));
+        EXPECT_THAT(testValue, ::testing::ElementsAreArray(expectedValues));
+    }
+
+    TEST_F(RangesViewTestFixture, IotaView_CanGenerateUnboundedValues)
+    {
+        constexpr AZStd::array expectedValues{ -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+
+        constexpr int breakValue = 11;
+        AZStd::vector<int> resultValues;
+        for (int i : AZStd::views::iota(-3))
+        {
+            resultValues.push_back(i);
+            if (i >= breakValue)
+            {
+                break;
+            }
+        }
+        EXPECT_THAT(resultValues, ::testing::ElementsAreArray(expectedValues));
+    }
+
+    TEST_F(RangesViewTestFixture, IotaView_WithZipView_CanGenerateIndexForEveryElementOfOtherView)
+    {
+        const AZStd::map expectedValues{ AZStd::pair{0, 'H'}, {1, 'e'}, { 2, 'l'}, { 3, 'l'}, {4, 'o'} };
+        constexpr AZStd::string_view testString = "Hello";
+
+        AZStd::map<int, char> resultValues;
+        for (auto [i, elem] : AZStd::views::zip(AZStd::views::iota(0), testString))
+        {
+            resultValues[static_cast<int>(i)] = elem;
+        }
+
+        EXPECT_THAT(resultValues, ::testing::ElementsAreArray(expectedValues));
+    }
+
+    TEST_F(RangesViewTestFixture, RepeatView_CanGenerateRangeUpToBound)
+    {
+        using namespace AZStd::literals::string_view_literals;
+        constexpr AZStd::array expectedValues{ "Hello"_sv, "Hello"_sv, "Hello"_sv };
+        AZStd::vector testValue(AZStd::from_range, AZStd::views::repeat("Hello"_sv, 3));
+        EXPECT_THAT(testValue, ::testing::ElementsAreArray(expectedValues));
+    }
+
+    TEST_F(RangesViewTestFixture, RepeatView_CanGenerateUnboundedValues)
+    {
+        using namespace AZStd::literals::string_view_literals;
+        constexpr int maxIterations = 4;
+        constexpr AZStd::array<AZStd::string_view, maxIterations> expectedValues{ "Hello"_sv, "Hello"_sv, "Hello"_sv, "Hello"_sv };
+
+        AZStd::vector<AZStd::string_view> resultValues;
+        int i = 0;
+        for (AZStd::string_view testView : AZStd::views::repeat("Hello"_sv))
+        {
+            if (i++ >= maxIterations)
+            {
+                break;
+            }
+            resultValues.push_back(testView);
+        }
+        EXPECT_THAT(resultValues, ::testing::ElementsAreArray(expectedValues));
     }
 }

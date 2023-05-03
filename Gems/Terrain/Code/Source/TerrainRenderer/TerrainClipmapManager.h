@@ -28,7 +28,7 @@ namespace Terrain
     //! Precision of each clipmap level, depth of the clipmap stack.
     struct ClipmapConfiguration
     {
-        AZ_CLASS_ALLOCATOR(ClipmapConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClipmapConfiguration, AZ::SystemAllocator);
         AZ_RTTI(ClipmapConfiguration, "{5CC8A81E-B850-46BA-A577-E21530D9ED04}");
 
         ClipmapConfiguration() = default;
@@ -202,7 +202,7 @@ namespace Terrain
         using RawVector4u = AZStd::array<uint32_t, 4>;
 
         //! Data to be passed to shaders
-        struct ClipmapData
+        struct alignas(16) ClipmapData
         {
             //! Current viewport size.
             RawVector2f m_viewportSize;

@@ -101,14 +101,3 @@ private:
 
     static CGameExporter* m_pCurrentExporter;
 };
-
-// Helper to setup terrain info.
-template<typename Func>
-void SetupTerrainInfo(const size_t octreeCompiledDataSize, Func&& setupTerrainFn)
-{
-    // only setup the terrain if we know space has been allocated for the octree
-    if (octreeCompiledDataSize > 0)
-    {
-        setupTerrainFn(octreeCompiledDataSize);
-    }
-}

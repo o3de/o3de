@@ -27,11 +27,11 @@
 namespace UnitTest
 {
     class SlicePushCyclicDependencyTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         SlicePushCyclicDependencyTest()
-            : AllocatorsTestFixture()
+            : LeakDetectionFixture()
         { }
 
         void SetUp() override

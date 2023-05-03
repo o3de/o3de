@@ -13,6 +13,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
@@ -52,13 +53,9 @@ namespace EMotionFX
             : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
         {
         public:
-            AZ_TYPE_INFO(EMotionFXAllocator, "{00AEC34F-4A00-4ECB-BC9C-7221E76337D6}");
             using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-            using Descriptor = Base::Descriptor;
 
-            EMotionFXAllocator() : Base("EMotion FX System Allocator", "EMotion FX general memory allocator") 
-            {
-            }
+            AZ_RTTI(EMotionFXAllocator, "{00AEC34F-4A00-4ECB-BC9C-7221E76337D6}", Base);
         };
 
         /**

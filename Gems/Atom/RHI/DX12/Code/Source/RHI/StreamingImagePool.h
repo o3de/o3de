@@ -26,7 +26,7 @@ namespace AZ
         {
             using Base = RHI::StreamingImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{D168A0F2-6B81-4281-9D4D-01C784F98DDD}", Base);
 
             static RHI::Ptr<StreamingImagePool> Create();
@@ -44,6 +44,8 @@ namespace AZ
             RHI::ResultCode InitImageInternal(const RHI::StreamingImageInitRequest& request) override;
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
             RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
+            RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
+            bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -51,7 +53,7 @@ namespace AZ
             void ShutdownInternal() override;
             void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
 
-            //streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
+            // Streaming images are either committed resource or using tiles from heap pages. So there is no fragmentation
             void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
@@ -61,8 +63,8 @@ namespace AZ
             // Allocate and map heap tiles for specified subresource of the image.
             // The allocated heap tiles will be saved in the image
             void AllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
-            // Deallocate and unmap heap tiles for for specified subresource of the image.
-            // The heap tiles info for the image surresource is cleared. 
+            // Deallocate and unmap heap tiles for specified subresource of the image.
+            // The heap tiles info for the image subresource is cleared. 
             void DeAllocateImageTilesInternal(Image& image, uint32_t subresourceIndex);
 
             // Standard mips each have their own set of tiles.

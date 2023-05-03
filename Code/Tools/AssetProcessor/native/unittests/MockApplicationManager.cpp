@@ -10,8 +10,8 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 
 
-#include "native/utilities/AssetBuilderInfo.h"
-#include "MockApplicationManager.h"
+#include <native/utilities/AssetBuilderInfo.h>
+#include <native/unittests/MockApplicationManager.h>
 
 namespace AssetProcessor
 {
@@ -129,7 +129,7 @@ namespace AssetProcessor
             // After the first initialization, the builder with id BUILDER_ID_COPY will have already been registered to the builder bus.  
             // After the initial registration, make sure to unregister based on the fixed internal uuid so we can register it again
             AZ::Uuid uuid = AZ::Uuid::CreateString(newBuilderId.toUtf8().data());
-            EBUS_EVENT(AssetBuilderRegistrationBus, UnRegisterBuilderDescriptor, uuid);
+            AssetBuilderRegistrationBus::Broadcast(&AssetBuilderRegistrationBus::Events::UnRegisterBuilderDescriptor, uuid);
         }
 
         if (!builder->InitializeMockBuilder(rec))

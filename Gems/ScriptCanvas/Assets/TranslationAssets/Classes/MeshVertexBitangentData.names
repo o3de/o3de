@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetCount",
-                    "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Count"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "GetBitangent",
-                    "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Bitangent"
@@ -65,7 +63,6 @@
                 },
                 {
                     "base": "GetBitangentSetIndex",
-                    "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Bitangent Set Index"
@@ -88,7 +85,6 @@
                 },
                 {
                     "base": "GetGenerationMethod",
-                    "context": "MeshVertexBitangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Generation Method"

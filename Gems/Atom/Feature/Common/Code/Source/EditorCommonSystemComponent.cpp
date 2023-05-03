@@ -8,7 +8,6 @@
 
 #include <EditorCommonSystemComponent.h>
 #include <Source/Material/UseTextureFunctorSourceData.h>
-#include <Source/Material/DrawListFunctorSourceData.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
 #include <Source/Material/Transform2DFunctorSourceData.h>
 #include <Source/Material/ConvertEmissiveUnitFunctorSourceData.h>
@@ -45,13 +44,11 @@ namespace AZ
                 {
                     ec->Class<EditorCommonSystemComponent>("Common", "Configures editor- and tool-specific functionality for common render features.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
 
                 AZ::Render::UseTextureFunctorSourceData::Reflect(context);
-                AZ::Render::DrawListFunctorSourceData::Reflect(context);
                 AZ::Render::Transform2DFunctorSourceData::Reflect(context);
                 AZ::Render::ConvertEmissiveUnitFunctorSourceData::Reflect(context);
                 AZ::Render::SubsurfaceTransmissionParameterFunctorSourceData::Reflect(context);
@@ -95,7 +92,6 @@ namespace AZ
             }
 
             materialFunctorRegistration->RegisterMaterialFunctor("UseTexture", azrtti_typeid<UseTextureFunctorSourceData>());
-            materialFunctorRegistration->RegisterMaterialFunctor("OverrideDrawList",         azrtti_typeid<DrawListFunctorSourceData>()); // Deprecated, use "Lua" with SetDrawListTagOverride() instead
             materialFunctorRegistration->RegisterMaterialFunctor("Transform2D",              azrtti_typeid<Transform2DFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("ConvertEmissiveUnit",      azrtti_typeid<ConvertEmissiveUnitFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("HandleSubsurfaceScatteringParameters", azrtti_typeid<SubsurfaceTransmissionParameterFunctorSourceData>());

@@ -71,7 +71,7 @@ namespace BusImplementation
         : public Bus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(HandlerCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HandlerCommon, AZ::SystemAllocator);
 
         unsigned int m_eventCalls = 0;
         unsigned int m_expectedOrder = 0;
@@ -127,7 +127,7 @@ namespace BusImplementation
         : public Bus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MultiHandlerCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiHandlerCommon, AZ::SystemAllocator);
 
         MultiHandlerCommon() = default;
 
@@ -220,7 +220,7 @@ class Handler
     : public BusImplementation::HandlerCommon<Bus>
 {
 public:
-    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator);
 
     Handler(int id, bool connectOnConstruct)
     {
@@ -276,7 +276,7 @@ class Handler<Bus, AZ::EBusAddressPolicy::Single>
     : public BusImplementation::HandlerCommon<Bus>
 {
 public:
-    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(Handler, AZ::SystemAllocator);
 
     Handler(int, bool connectOnConstruct)
     {
@@ -323,7 +323,7 @@ class MultiHandlerById
     : public BusImplementation::MultiHandlerCommon<Bus>
 {
 public:
-    AZ_CLASS_ALLOCATOR(MultiHandlerById, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(MultiHandlerById, AZ::SystemAllocator);
 
     MultiHandlerById(std::initializer_list<int> busIdList)
     {
@@ -370,7 +370,7 @@ namespace UnitTest
 
     template <typename Bus>
     class EBusTestAll
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using BusHandler = Handler<Bus>;
@@ -385,7 +385,7 @@ namespace UnitTest
         void TearDown() override
         {
             DestroyHandlers();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -641,7 +641,7 @@ namespace UnitTest
         Bus::Broadcast(&Bus::Events::OnEvent);
         this->ValidateCalls(1);
 
-        EBUS_EVENT(Bus, OnEvent);
+        Bus::Broadcast(&Bus::Events::OnEvent);
         this->ValidateCalls(2);
     }
 
@@ -667,7 +667,7 @@ namespace UnitTest
         Bus::BroadcastReverse(&Bus::Events::OnEvent);
         this->ValidateCalls(1, false);
 
-        EBUS_EVENT_REVERSE(Bus, OnEvent);
+        Bus::BroadcastReverse(&Bus::Events::OnEvent);
         this->ValidateCalls(2, false);
     }
 
@@ -696,7 +696,7 @@ namespace UnitTest
         this->ValidateCalls(1);
 
         result = -1;
-        EBUS_EVENT_RESULT(result, Bus, OnEvent);
+        Bus::BroadcastResult(result, &Bus::Events::OnEvent);
         EXPECT_LT(0, result);
         this->ValidateCalls(2);
 
@@ -719,7 +719,7 @@ namespace UnitTest
         this->ValidateCalls(1, false);
 
         result = -1;
-        EBUS_EVENT_RESULT_REVERSE(result, Bus, OnEvent);
+        Bus::BroadcastResultReverse(result, &Bus::Events::OnEvent);
         EXPECT_LT(0, result);
         this->ValidateCalls(2, false);
 
@@ -1006,7 +1006,7 @@ namespace UnitTest
         Bus::ExecuteQueuedEvents();
         this->ValidateCalls(1);
 
-        EBUS_QUEUE_EVENT(Bus, OnEvent);
+        Bus::QueueBroadcast(&Bus::Events::OnEvent);
         this->ValidateCalls(1);
         Bus::ExecuteQueuedEvents();
         this->ValidateCalls(2);
@@ -1038,7 +1038,7 @@ namespace UnitTest
         Bus::ExecuteQueuedEvents();
         this->ValidateCalls(1, false);
 
-        EBUS_QUEUE_EVENT_REVERSE(Bus, OnEvent);
+        Bus::QueueBroadcastReverse(&Bus::Events::OnEvent);
         this->ValidateCalls(1, false);
         Bus::ExecuteQueuedEvents();
         this->ValidateCalls(2, false);
@@ -1538,7 +1538,7 @@ namespace UnitTest
     }
 
     class EBus
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(EBus, DISABLED_CopyConstructorOfEBusHandlerDoesNotAssertInInternalDestructorOfHandler)
@@ -1673,24 +1673,24 @@ namespace UnitTest
             MyEventHandler meh0(0, 1);     /// <-- Bind to bus 0 and 1
 
             // Signal OnAction event on all buses
-            EBUS_EVENT(MyEventGroupBus, OnAction, 1.0f, 2.0f);
+            MyEventGroupBus::Broadcast(&MyEventGroupBus::Events::OnAction, 1.0f, 2.0f);
             EXPECT_EQ(2, meh0.actionCalls);
 
             // Signal OnSum event
-            EBUS_EVENT(MyEventGroupBus, OnSum, 2.0f, 5.0f);
+            MyEventGroupBus::Broadcast(&MyEventGroupBus::Events::OnSum, 2.0f, 5.0f);
             EXPECT_EQ(2, meh0.sumCalls);
 
             // Signal OnAction event on bus 0
-            EBUS_EVENT_ID(0, MyEventGroupBus, OnAction, 1.0f, 2.0f);
+            MyEventGroupBus::Event(0, &MyEventGroupBus::Events::OnAction, 1.0f, 2.0f);
             EXPECT_EQ(3, meh0.actionCalls);
 
             // Signal OnAction event on bus 1
-            EBUS_EVENT_ID(1, MyEventGroupBus, OnAction, 1.0f, 2.0f);
+            MyEventGroupBus::Event(1, &MyEventGroupBus::Events::OnAction, 1.0f, 2.0f);
             EXPECT_EQ(4, meh0.actionCalls);
 
             meh0.BusDisconnect(1); // we disconnect from receiving events on bus 1
 
-            EBUS_EVENT(MyEventGroupBus, OnAction, 1.0f, 2.0f);  // this signal will NOT trigger only one call
+            MyEventGroupBus::Broadcast(&MyEventGroupBus::Events::OnAction, 1.0f, 2.0f);  // this signal will NOT trigger only one call
             EXPECT_EQ(5, meh0.actionCalls);
         }
     }
@@ -1747,14 +1747,14 @@ namespace UnitTest
 
         void QueueMessage()
         {
-            EBUS_QUEUE_EVENT_ID(0, QueueTestMultiBus, OnMessage);
-            EBUS_QUEUE_EVENT(QueueTestSingleBus, OnMessage);
+            QueueTestMultiBus::QueueEvent(0, &QueueTestMultiBus::Events::OnMessage);
+            QueueTestSingleBus::QueueBroadcast(&QueueTestSingleBus::Events::OnMessage);
         }
 
         void QueueMessagePtr()
         {
-            EBUS_QUEUE_EVENT_PTR(m_multiPtr, QueueTestMultiBus, OnMessage);
-            EBUS_QUEUE_EVENT(QueueTestSingleBus, OnMessage);
+            QueueTestMultiBus::QueueEvent(m_multiPtr, &QueueTestMultiBus::Events::OnMessage);
+            QueueTestSingleBus::QueueBroadcast(&QueueTestSingleBus::Events::OnMessage);
         }
     }
 
@@ -1763,8 +1763,6 @@ namespace UnitTest
         using namespace QueueMessageTest;
 
         // Setup
-        AllocatorInstance<PoolAllocator>::Create();
-        AllocatorInstance<ThreadPoolAllocator>::Create();
         JobManagerDesc jobDesc;
         JobManagerThreadDesc threadDesc;
         jobDesc.m_workerThreads.push_back(threadDesc);
@@ -1802,7 +1800,7 @@ namespace UnitTest
         QueueTestSingleBus::QueueFunction(&QueueTestSingleBus::Handler::BusDisconnect, m_singleHandler);
 
         // the same as m_multiHandler.BusDisconnect(); but dalayed until QueueTestMultiBus::ExecuteQueuedEvents();
-        EBUS_QUEUE_FUNCTION(QueueTestMultiBus, static_cast<void(QueueTestMultiBus::Handler::*)()>(&QueueTestMultiBus::Handler::BusDisconnect), m_multiHandler);
+        QueueTestMultiBus::QueueFunction(static_cast<void(QueueTestMultiBus::Handler::*)()>(&QueueTestMultiBus::Handler::BusDisconnect), m_multiHandler);
 
         EXPECT_EQ(1, QueueTestSingleBus::GetTotalNumOfEventHandlers());
         EXPECT_EQ(1, QueueTestMultiBus::GetTotalNumOfEventHandlers());
@@ -1818,12 +1816,10 @@ namespace UnitTest
         JobContext::SetGlobalContext(nullptr);
         delete m_jobContext;
         delete m_jobManager;
-        AllocatorInstance<ThreadPoolAllocator>::Destroy();
-        AllocatorInstance<PoolAllocator>::Destroy();
     }
 
     class QueueEbusTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
 
     };
@@ -2002,10 +1998,10 @@ namespace UnitTest
         ConnectDisconnectHandler l(&child);
         EXPECT_EQ(1, ConnectDisconnectBus::GetTotalNumOfEventHandlers());
         // Test connect in the during the message call
-        EBUS_EVENT(ConnectDisconnectBus, OnConnectChild); // connect the child object
+        ConnectDisconnectBus::Broadcast(&ConnectDisconnectBus::Events::OnConnectChild); // connect the child object
 
         EXPECT_EQ(2, ConnectDisconnectBus::GetTotalNumOfEventHandlers());
-        EBUS_EVENT(ConnectDisconnectBus, OnDisconnectAll); // Disconnect all members during a message
+        ConnectDisconnectBus::Broadcast(&ConnectDisconnectBus::Events::OnDisconnectAll); // Disconnect all members during a message
         EXPECT_EQ(0, ConnectDisconnectBus::GetTotalNumOfEventHandlers());
 
 
@@ -2015,15 +2011,15 @@ namespace UnitTest
         ConnectDisconnectIdOrderedHandler pa10(10, 10, &ch10);
         ConnectDisconnectIdOrderedHandler pa20(20, 20, &ch5);
         EXPECT_EQ(2, ConnectDisconnectIdOrderedBus::GetTotalNumOfEventHandlers());
-        EBUS_EVENT(ConnectDisconnectIdOrderedBus, OnConnectChild); // connect the child object
+        ConnectDisconnectIdOrderedBus::Broadcast(&ConnectDisconnectIdOrderedBus::Events::OnConnectChild); // connect the child object
         EXPECT_EQ(4, ConnectDisconnectIdOrderedBus::GetTotalNumOfEventHandlers());
 
         // Disconnect all members from bus 10 (it will be sorted first)
         // This we we can test a bus removal while traversing
-        EBUS_EVENT(ConnectDisconnectIdOrderedBus, OnDisconnectAll, 10);
+        ConnectDisconnectIdOrderedBus::Broadcast(&ConnectDisconnectIdOrderedBus::Events::OnDisconnectAll, 10);
         EXPECT_EQ(2, ConnectDisconnectIdOrderedBus::GetTotalNumOfEventHandlers());
         // Now disconnect all buses
-        EBUS_EVENT(ConnectDisconnectIdOrderedBus, OnDisconnectAll, -1);
+        ConnectDisconnectIdOrderedBus::Broadcast(&ConnectDisconnectIdOrderedBus::Events::OnDisconnectAll, -1);
         EXPECT_EQ(0, ConnectDisconnectIdOrderedBus::GetTotalNumOfEventHandlers());
     }
 
@@ -2223,23 +2219,23 @@ namespace UnitTest
         // Called outside of an even it should always return nullptr
         EXPECT_EQ(nullptr, MyEventBus::GetCurrentBusId());
 
-        EBUS_EVENT_ID(1, MyEventBus, OnAction);  // this should not trigger a call
+        MyEventBus::Event(1, &MyEventBus::Events::OnAction);  // this should not trigger a call
         EXPECT_EQ(0, ml.m_numCalls);
 
         // Issues calls which we listen for
         ml.m_expectedCurrentId = 10;
         mlCopy.m_expectedCurrentId = 10;
-        EBUS_EVENT_ID(10, MyEventBus, OnAction);
+        MyEventBus::Event(10, &MyEventBus::Events::OnAction);
         EXPECT_EQ(1, ml.m_numCalls);
         EXPECT_EQ(1, mlCopy.m_numCalls);  // make sure the handler copy is connected
         mlCopy.BusDisconnect();
 
         ml.m_expectedCurrentId = 12;
-        EBUS_EVENT_ID(12, MyEventBus, OnAction);
+        MyEventBus::Event(12, &MyEventBus::Events::OnAction);
         EXPECT_EQ(2, ml.m_numCalls);
 
         ml.m_expectedCurrentId = 13;
-        EBUS_EVENT_ID(13, MyEventBus, OnAction);
+        MyEventBus::Event(13, &MyEventBus::Events::OnAction);
         EXPECT_EQ(3, ml.m_numCalls);
     }
 
@@ -2358,12 +2354,12 @@ namespace UnitTest
         Handler1 h1Copy = h1;
         EXPECT_EQ(0, h1Copy.m_calls);
 
-        EBUS_EVENT(My3rdPartyBus1, SomeEvent, 1);
+        My3rdPartyBus1::Broadcast(&My3rdPartyBus1::Events::SomeEvent, 1);
         EXPECT_EQ(1, h1.m_calls);
         EXPECT_EQ(1, h1Copy.m_calls);  // check that the copy works too
-        EBUS_EVENT(My3rdPartyBus2, SomeEvent, 2);
+        My3rdPartyBus2::Broadcast(&My3rdPartyBus2::Events::SomeEvent, 2);
         EXPECT_EQ(1, h2.m_calls);
-        EBUS_EVENT(MyEBusInterface, Event, 3);
+        MyEBusInterface::Broadcast(&MyEBusInterface::Events::Event, 3);
         EXPECT_EQ(1, h3.m_calls);
     }
 
@@ -3610,23 +3606,23 @@ namespace UnitTest
         waitHandler.m_connectMethod = [&connectHandler]()
         {
             constexpr int waitMsMax = 100;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
 
             // The other bus should not be able to complete because we're still holding the connect lock
-            while (AZStd::chrono::system_clock::now() < endTime && !connectHandler.BusIsConnected())
+            while (AZStd::chrono::steady_clock::now() < endTime && !connectHandler.BusIsConnected())
             {
                 AZStd::this_thread::yield();
             }
 
-            EXPECT_GE(AZStd::chrono::system_clock::now(), endTime);
+            EXPECT_GE(AZStd::chrono::steady_clock::now(), endTime);
         };
         AZStd::thread connectThread([&connectHandler, &waitHandler]()
         {
             constexpr int waitMsMax = 100;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
-            while (AZStd::chrono::system_clock::now() < endTime && !waitHandler.m_didConnect)
+            while (AZStd::chrono::steady_clock::now() < endTime && !waitHandler.m_didConnect)
             {
                 AZStd::this_thread::yield();
             }
@@ -3650,24 +3646,25 @@ namespace UnitTest
             DelayUnlockHandler connectHandler;
             waitHandler.m_connectMethod = [&connectHandler]()
             {
-                constexpr int waitMsMax = 100;
-                auto startTime = AZStd::chrono::system_clock::now();
+                // Check that a connection for the connectHandler has occured
+                // within a 1 second, which should be more than enough
+                // time for a connection to occur even when the system is under load
+                constexpr int waitMsMax = 1000;
+                auto startTime = AZStd::chrono::steady_clock::now();
                 auto endTime = startTime + AZStd::chrono::milliseconds(waitMsMax);
 
                 // The other bus should be able to connect
-                while (AZStd::chrono::system_clock::now() < endTime && !connectHandler.m_didConnect)
+                while (AZStd::chrono::steady_clock::now() < endTime && !connectHandler.m_didConnect)
                 {
                     AZStd::this_thread::yield();
                 }
                 EXPECT_EQ(connectHandler.BusIsConnected(), true);
-                EXPECT_LE(AZStd::chrono::system_clock::now(), endTime);
+                EXPECT_LE(AZStd::chrono::steady_clock::now(), endTime);
             };
             AZStd::thread connectThread([&connectHandler]()
             {
-
                 connectHandler.BusConnect();
-            }
-            );
+            });
             waitHandler.BusConnect();
             connectThread.join();
             EXPECT_EQ(connectHandler.m_didConnect, true);
@@ -4121,7 +4118,7 @@ namespace UnitTest
 
     template <typename ParamType>
     class EBusParamFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<ParamType>
     {};
 
@@ -4764,7 +4761,7 @@ namespace Benchmark
         using Bus = TestBus<AZ::EBusAddressPolicy::Single, AZ::EBusHandlerPolicy::Multiple, false>;
 
         AZStd::unique_ptr<BM_EBusEnvironment<Bus>> ebusBenchmarkEnv;
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv = AZStd::make_unique<BM_EBusEnvironment<Bus>>();
             ebusBenchmarkEnv->SetUpBenchmark();
@@ -4776,7 +4773,7 @@ namespace Benchmark
             Bus::Broadcast(&Bus::Events::OnWait);
         };
 
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv->Disconnect(state);
             ebusBenchmarkEnv->TearDownBenchmark();
@@ -4789,7 +4786,7 @@ namespace Benchmark
         using Bus = TestBus<AZ::EBusAddressPolicy::Single, AZ::EBusHandlerPolicy::Multiple, true>;
 
         AZStd::unique_ptr<BM_EBusEnvironment<Bus>> ebusBenchmarkEnv;
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv = AZStd::make_unique<BM_EBusEnvironment<Bus>>();
             ebusBenchmarkEnv->SetUpBenchmark();
@@ -4801,7 +4798,7 @@ namespace Benchmark
             Bus::Broadcast(&Bus::Events::OnWait);
         };
 
-        if (state.thread_index == 0)
+        if (state.thread_index() == 0)
         {
             ebusBenchmarkEnv->Disconnect(state);
             ebusBenchmarkEnv->TearDownBenchmark();

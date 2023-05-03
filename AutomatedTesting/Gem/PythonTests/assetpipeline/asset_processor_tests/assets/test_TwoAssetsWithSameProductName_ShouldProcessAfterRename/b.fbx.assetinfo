@@ -1,0 +1,77 @@
+{
+    "values": [
+        {
+            "$type": "{5B03C8E6-8CEE-4DA0-A7FA-CD88689DD45B} MeshGroup",
+            "id": "{D43D325F-29D5-5BA0-9C2F-24FEE6CA6FA0}",
+            "name": "b",
+            "NodeSelectionList": {
+                "unselectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.cube"
+                ]
+            },
+            "PhysicsMaterialSlots": {
+                "Slots": [
+                    {
+                        "Name": "Entire object"
+                    }
+                ]
+            }
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "b",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.cube"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{76FE8BF8-F1BE-5398-87A8-6092E6132C54}"
+        },
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "default_b_D09F1B55_4CA0_551D_91D7_194BF6CDF485_",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    "RootNode.cube"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "ProceduralMeshGroupRule"
+                    },
+                    {
+                        "$type": "CoordinateSystemRule",
+                        "useAdvancedData": true
+                    },
+                    {
+                        "$type": "{6E796AC8-1484-4909-860A-6D3F22A7346F} LodRule"
+                    }
+                ]
+            },
+            "id": "{D09F1B55-4CA0-551D-91D7-194BF6CDF485}"
+        },
+        {
+            "$type": "PrefabGroup",
+            "name": "Gem/PythonTests/assetpipeline/asset_processor_tests/assets/test_TwoAssetsWithSameProductName_ShouldProcessAfterRename/b_fbx.procprefab",
+            "id": "{0AFE0331-36CA-5A8E-ACAB-71E44C5E9012}"
+        },
+        {
+            "$type": "ActorGroup",
+            "name": "b",
+            "selectedRootBone": "RootNode",
+            "id": "{2D535F85-A8A3-4347-850A-0F4AE34CC110}"
+        }
+    ]
+}

@@ -24,9 +24,8 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<StreamingImagePoolAsset, Data::AssetData>()
-                    ->Version(0)
+                    ->Version(1)
                     ->Field("m_poolDescriptor", &StreamingImagePoolAsset::m_poolDescriptor)
-                    ->Field("m_controllerAsset", &StreamingImagePoolAsset::m_controllerAsset)
                     ->Field("m_poolName", &StreamingImagePoolAsset::m_poolName)
                     ;
             }
@@ -40,11 +39,6 @@ namespace AZ
         const RHI::StreamingImagePoolDescriptor& StreamingImagePoolAsset::GetPoolDescriptor() const
         {
             return *m_poolDescriptor;
-        }
-
-        const Data::Asset<StreamingImageControllerAsset>& StreamingImagePoolAsset::GetControllerAsset() const
-        {
-            return m_controllerAsset;
         }
 
         AZStd::string_view StreamingImagePoolAsset::GetPoolName() const

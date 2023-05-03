@@ -67,9 +67,17 @@ void Set{{ PropertyName }}(const {{ Property.attrib['Type'] }}& value);
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {% if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
+{%     if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#if AZ_TRAIT_SERVER
 //! {{ PropertyName }} Accessors
 //! {{ Property.attrib['Description'] }}.
 {{ DeclareNetworkPropertyGetter(Property) }}
+#endif
+{%     else %}
+//! {{ PropertyName }} Accessors
+//! {{ Property.attrib['Description'] }}.
+{{ DeclareNetworkPropertyGetter(Property) }}
+{%     endif %}
 {% endif %}
 {% endcall %}
 {% endmacro %}
@@ -109,17 +117,31 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {% if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
+{% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#if AZ_TRAIT_SERVER
 //! {{ PropertyName }} Accessors
 //! {{ Property.attrib['Description'] }}.
 {{ DeclareNetworkPropertyGetter(Property) -}}
+#endif
+{% else %}
+//! {{ PropertyName }} Accessors
+//! {{ Property.attrib['Description'] }}.
+{{ DeclareNetworkPropertyGetter(Property) -}}
+{% endif %}
+{%     if (ReplicateFrom == 'Authority' and ReplicateTo == 'Server') or (ReplicateTo == 'Client' and Property.attrib['IsPredictable'] | booleanTrue == false) %}
+#if AZ_TRAIT_SERVER
 {{ DeclareNetworkPropertySetter(Property) }}
+#endif
+{%     else %}
+{{ DeclareNetworkPropertySetter(Property) }}
+{%     endif %}
 {% endif %}
 {% endcall %}
 {% endmacro %}
 {#
 
 #}
-{% macro DeclareRpcInvocation(Property, HandleOn) %}
+{% macro DeclareRpcInvocation(Property, InvokeFrom, HandleOn) %}
 {%     set paramNames   = [] %}
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
@@ -128,15 +150,25 @@ const {{ Property.attrib['Type'] }}& Get{{ PropertyName }}() const;
 //! {{ PropertyName }} Invocation
 //! {{ Property.attrib['Description'] }}
 //! HandleOn {{ HandleOn }}
-void {{ PropertyName }}({{ ', '.join(paramDefines) }});
+{% if (InvokeFrom == 'Client') or (InvokeFrom == 'Autonomous') %}
+#if AZ_TRAIT_CLIENT
+{% elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Server') %}
+#if AZ_TRAIT_SERVER
+{% endif %}
+{% if paramDefines|count > 0 %}
+void {{ PropertyName }}([[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }});
+{% else %}
+void {{ PropertyName }}();
+{% endif %}
+#endif
 {% endmacro %}
 {#
 
 #}
-{% macro DeclareRpcInvocations(Component, Section, HandleOn, IsProtected) %}
-{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, Section, HandleOn) %}
+{% macro DeclareRpcInvocations(Component, InvokeFrom, HandleOn, IsProtected) %}
+{% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
 {%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
-{{ DeclareRpcInvocation(Property, HandleOn) -}}
+{{ DeclareRpcInvocation(Property, InvokeFrom, HandleOn) -}}
 {%    endif %}
 {% endcall %}
 {% endmacro %}
@@ -166,6 +198,9 @@ AZ::Event<{{ Property.attrib['Type'] }}> m_{{ LowerFirst(Property.attrib['Name']
 #}
 {% macro DeclareNetworkPropertyVars(Component, ReplicateFrom, ReplicateTo) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
+{% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#if AZ_TRAIT_SERVER
+{% endif %}
 {%     if Property.attrib['Container'] == 'Array' %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
 Multiplayer::RewindableArray<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }};
@@ -183,6 +218,9 @@ Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::Rewind
 {%     else %}
 {{ Property.attrib['Type'] }} m_{{ LowerFirst(Property.attrib['Name']) }} = {{ Property.attrib['Init'] }};
 {%     endif %}
+{% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#endif
+{% endif %}
 {% endcall %}
 {% endmacro %}
 {#
@@ -191,6 +229,9 @@ Multiplayer::RewindableObject<{{ Property.attrib['Type'] }}, Multiplayer::Rewind
 {% macro DeclareNetworkPropertyReflectVars(Component, ReplicateFrom, ReplicateTo) %}
 {% call(Property) AutoComponentMacros.ParseNetworkProperties(Component, ReplicateFrom, ReplicateTo) %}
 {% if Property.attrib['IsRewindable']|booleanTrue %}
+{% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#if AZ_TRAIT_SERVER
+{% endif %}
 {%     if Property.attrib['Container'] == 'Array' %}
 AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}> m_{{ LowerFirst(Property.attrib['Name']) }}Reflect;
 {%     elif Property.attrib['Container'] == 'Vector' %}
@@ -198,6 +239,9 @@ AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }
 {%     else %}
 {{ Property.attrib['Type'] }} m_{{ LowerFirst(Property.attrib['Name']) }}Reflect = {{ Property.attrib['Init'] }};
 {%     endif %}
+{% if ReplicateFrom == 'Authority' and ReplicateTo == 'Server' %}
+#endif
+{% endif %}
 {% endif %}
 {% endcall %}
 {% endmacro %}
@@ -363,7 +407,13 @@ namespace {{ Component.attrib['Namespace'] }}
         Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
+{% if Input.attrib['ReplicateFrom'] == 'Authority' and Input.attrib['ReplicateTo'] == 'Server' %}
+#if AZ_TRAIT_SERVER
         {{ Input.attrib['Type'] }} m_{{ LowerFirst(Input.attrib['Name']) }} = {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }});
+#endif
+{% else %}
+        {{ Input.attrib['Type'] }} m_{{ LowerFirst(Input.attrib['Name']) }} = {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }});
+{% endif %}
 {% endcall %}
 
         static Multiplayer::NetComponentId s_netComponentId;
@@ -478,7 +528,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ AutoComponentMacros.DeclareRpcEvents(Component, 'Authority', 'Autonomous')|indent(8) }}
     };
 
-    static const AZ::Uuid s_{{ LowerFirst(ComponentName) }}ConcreteUuid = "{{ (ComponentName) | createHashGuid }}";
+    inline constexpr AZ::Uuid s_{{ LowerFirst(ComponentName) }}ConcreteUuid{ "{{ (ComponentName) | createHashGuid }}" };
     class {{ ComponentBaseName }}{% if not ComponentDerived %} final{% endif %}{{ "" }}
         : public Multiplayer::MultiplayerComponent
     {
@@ -486,7 +536,7 @@ namespace {{ Component.attrib['Namespace'] }}
         friend class {{ ControllerBaseName }};
     public:
 {% if ComponentDerived %}
-        AZ_CLASS_ALLOCATOR({{ ComponentBaseName }}, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR({{ ComponentBaseName }}, AZ::SystemAllocator);
         AZ_RTTI({{ ComponentBaseName }}, "{{ (ComponentBaseName) | createHashGuid }}", Multiplayer::MultiplayerComponent);
 {% else %}
         AZ_MULTIPLAYER_COMPONENT({{ Component.attrib['Namespace'] }}::{{ ComponentBaseName }}, s_{{ LowerFirst(ComponentName) }}ConcreteUuid, Multiplayer::MultiplayerComponent);
@@ -533,6 +583,7 @@ namespace {{ Component.attrib['Namespace'] }}
         bool HasController() const override;
         Multiplayer::MultiplayerController* GetController() override;
         const Multiplayer::MultiplayerController* GetController() const override;
+        static AZ::HashValue64 GetVersionHash();
 
     protected:
         void ConstructController() override;
@@ -608,6 +659,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endcall %}
 
         static Multiplayer::NetComponentId s_netComponentId;
+        static AZ::HashValue64 s_versionHash;
         friend void RegisterMultiplayerComponents();
     };
 }

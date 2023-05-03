@@ -21,10 +21,7 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-from azpy.dcc.houdini import _PKG_DCC_NAME
-
-_MODULENAME = 'tools.dcc.{}.stub'.format(_PKG_DCC_NAME)
-
+from DccScriptingInterface.azpy.dcc.houdini import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.stub'
 _LOGGER = _logging.getLogger(_MODULENAME)
-
-_LOGGER.info('This stub is an api placeholder: {}'.format(_MODULENAME))
+_LOGGER.info(f'This stub is an api placeholder: {_MODULENAME}')

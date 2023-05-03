@@ -163,6 +163,11 @@ namespace AZ
             }
         }
 
+        const AZ::Uuid FileSoftNameSetting::GetTypeId() const
+        {
+            return azrtti_typeid<FileSoftNameSetting>();
+        }
+
         void FileSoftNameSetting::Reflect(ReflectContext* context)
         {
             GraphType::Reflect(context);
@@ -175,6 +180,8 @@ namespace AZ
                     ->Version(1)
                     ->Field("graphTypes", &FileSoftNameSetting::m_graphTypes)
                     ->Field("inclusiveList", &FileSoftNameSetting::m_inclusiveList);
+
+                serialize->RegisterGenericType<AZStd::vector<AZStd::unique_ptr<FileSoftNameSetting>>>();
 
                 EditContext* editContext = serialize->GetEditContext();
                 if (editContext)

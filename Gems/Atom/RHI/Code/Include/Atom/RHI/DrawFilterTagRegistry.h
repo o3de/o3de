@@ -9,11 +9,12 @@
 
 #include <Atom/RHI/DrawItem.h>
 #include <Atom/RHI/TagRegistry.h>
+#include <Atom/RHI.Reflect/Handle.h>
 
 namespace AZ
 {
     namespace RHI
     {
-        using DrawFilterTagRegistry = TagRegistry<DrawFilterTag, Limits::Pipeline::DrawFilterTagCountMax>;
+        using DrawFilterTagRegistry = TagRegistry<DrawFilterTag::IndexType, Limits::Pipeline::DrawFilterTagCountMax>;
     }
 }

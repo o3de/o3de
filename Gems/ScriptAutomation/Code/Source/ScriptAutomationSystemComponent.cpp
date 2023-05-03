@@ -13,6 +13,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Script/ScriptAsset.h>
@@ -67,6 +68,38 @@ namespace ScriptAutomation
         }
     } // namespace
 
+    void ExecuteLuaScript(const AZ::ConsoleCommandContainer& arguments)
+    {
+        auto scriptAuto = ScriptAutomationInterface::Get();
+
+        if (!scriptAuto)
+        {
+            AZ_Error("ScriptAutomation", false, "There is no ScriptAutomation instance registered to the interface.");
+            return;
+        }
+
+        const char* scriptPath = arguments[0].data();
+
+        scriptAuto->ActivateScript(scriptPath);
+    }
+
+    AZ_CONSOLEFREEFUNC(ExecuteLuaScript, AZ::ConsoleFunctorFlags::Null, "Execute a Lua script");
+
+    void ScriptAutomationSystemComponent::ActivateScript(const char* scriptPath)
+    {
+        m_isStarted = false;
+        m_automationScript = scriptPath;
+
+        AZ::TickBus::Handler::BusConnect();
+    }
+
+    void ScriptAutomationSystemComponent::DeactivateScripts()
+    {
+        m_isStarted = false;
+        m_automationScript = "";
+        AZ::TickBus::Handler::BusDisconnect();
+    }
+
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -78,7 +111,6 @@ namespace ScriptAutomation
             {
                 ec->Class<ScriptAutomationSystemComponent>("ScriptAutomation", "Provides a mechanism for automating various tasks through Lua scripting in the game launchers")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
@@ -129,10 +161,12 @@ namespace ScriptAutomation
         m_scriptIdleSeconds = numSeconds;
     }
 
-    void ScriptAutomationSystemComponent::SetFrameCaptureId(uint32_t frameCaptureId)
+    void ScriptAutomationSystemComponent::SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId)
     {
+         // FrameCapture system supports multiple active frame captures, Script Automation would need changes to support more than 1 active at a time.
+        AZ_Assert(m_scriptFrameCaptureId == AZ::Render::InvalidFrameCaptureId, "Attempting to start a frame capture while one is in progress");
         m_scriptFrameCaptureId = frameCaptureId;
-        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect();
+        AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
     }
 
     void ScriptAutomationSystemComponent::StartProfilingCapture()
@@ -160,11 +194,8 @@ namespace ScriptAutomation
             auto commandLine = application->GetAzCommandLine();
             if (commandLine->HasSwitch(automationSuiteSwitch))
             {
-                m_isStarted = false;
-                m_automationScript = commandLine->GetSwitchValue(automationSuiteSwitch, 0);
                 m_exitOnFinish = commandLine->HasSwitch(automationExitSwitch);
-
-                AZ::TickBus::Handler::BusConnect();
+                ActivateScript(commandLine->GetSwitchValue(automationSuiteSwitch, 0).c_str());
             }
         }
     }
@@ -174,10 +205,7 @@ namespace ScriptAutomation
         m_scriptContext = nullptr;
         m_scriptBehaviorContext = nullptr;
 
-        if (AZ::TickBus::Handler::BusIsConnected())
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-        }
+        DeactivateScripts();
 
         ScriptAutomationRequestBus::Handler::BusDisconnect();
     }
@@ -232,6 +260,8 @@ namespace ScriptAutomation
             {
                 if(!m_scriptPaused) // final operation may have paused, wait for it to complete or time out
                 {
+                    DeactivateScripts();
+
                     ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationFinished);
 
                     if (m_exitOnFinish)
@@ -329,14 +359,9 @@ namespace ScriptAutomation
         ResumeAutomation();
     }
 
-    void ScriptAutomationSystemComponent::OnCaptureFinished(uint32_t frameCaptureId, AZ::Render::FrameCaptureResult result, const AZStd::string &info)
+    void ScriptAutomationSystemComponent::OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string &info)
     {
-         // ignore captures that are not triggered by the script manager
-        if (m_scriptFrameCaptureId == AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId || frameCaptureId != m_scriptFrameCaptureId)
-        {
-            return;
-        }
-        m_scriptFrameCaptureId = AZ::Render::FrameCaptureRequests::s_InvalidFrameCaptureId;
+        m_scriptFrameCaptureId = AZ::Render::InvalidFrameCaptureId;
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
 

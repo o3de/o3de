@@ -36,20 +36,24 @@ class DirectionalLightShadow
 
     static float2 GetVisibilityThinTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv, float shrinkFactor);
 
-    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
+    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector);
 
     //! This alters the input color to visualize which cascade is being used
     //! and whether PCF is used as a fallback in ESM+PCF mode or not.
-    static float3 AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
+    static float3 AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector);
 };
 
 bool DirectionalLightShadow::UseFullscreenShadows()
 {
+#if FORCE_OPAQUE
+    return true;
+#else
     bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
     return useFullscreenShadows;
+#endif
 }
 
-DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector)
 {
     DirectionalShadowCalculator calc;
     calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
@@ -65,7 +69,7 @@ DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint li
 float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
 {
     float visibility;
-    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
     
     if (UseFullscreenShadows())
     {
@@ -87,7 +91,7 @@ float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, f
 float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv, float shrinkFactor)
 {
     float visibility;
-    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
 
     if (UseFullscreenShadows())
     {
@@ -116,12 +120,12 @@ float DirectionalLightShadow::GetVisibility(uint lightIndex, float3 worldPos, fl
     }
     else
     {
-        DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+        DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
         return calc.GetVisibility();
     }
 }
 
-float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector)
 {
     if ((ViewSrg::m_directionalLightShadows[lightIndex].m_debugFlags &
         ViewSrg::DirectionalLightShadowDebugColoringBitMask) == 0)
@@ -131,7 +135,7 @@ float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, f
 
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
 
-    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
     calc.ComputeShadowCoords();
 
     if (calc.m_cascadeIndex < cascadeCount)

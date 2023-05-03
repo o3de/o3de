@@ -9,10 +9,6 @@
            Category="String"
            Version="0"
            Deprecated="True"
-           DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassName="String"
-           ReplacementMethodName="Starts With"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="True" Description=""/>
@@ -41,11 +37,7 @@
            Base="ScriptCanvas::Node"
            Category="String"
            Deprecated="True"
-           DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassName="String"
-           ReplacementMethodName="Ends With"
            Version="0"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="True" Description=""/>
@@ -75,10 +67,6 @@
            Category="String"
            Version="0"
            Deprecated="True"
-           DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassName="String"
-           ReplacementMethodName="Split"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description=""/>
@@ -107,10 +95,6 @@
            Category="String"
            Version="0"
            Deprecated="True"
-           DeprecationUUID="{E42861BD-1956-45AE-8DD7-CCFC1E3E5ACF}"
-           ReplacementClassName="String"
-           ReplacementMethodName="Join"
-           GeneratePropertyFriend="True"
            Description=".">
         <In Name="In" Description="Input signal"/>
         <Out Name="Out" Description=""/>

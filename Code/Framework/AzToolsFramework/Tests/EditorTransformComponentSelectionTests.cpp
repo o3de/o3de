@@ -54,7 +54,7 @@ namespace UnitTest
         return selectedEntitiesBefore;
     }
 
-    class EditorEntityVisibilityCacheFixture : public ToolsApplicationFixture
+    class EditorEntityVisibilityCacheFixture : public ToolsApplicationFixture<>
     {
     public:
         void CreateLayerAndEntityHierarchy()
@@ -119,7 +119,7 @@ namespace UnitTest
     }
 
     // Fixture to support testing EditorTransformComponentSelection functionality on an Entity selection.
-    class EditorTransformComponentSelectionFixture : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -145,7 +145,7 @@ namespace UnitTest
         return entityId;
     }
 
-    class EditorTransformComponentSelectionViewportPickingFixture : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionViewportPickingFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -312,7 +312,14 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // R - reset entity and manipulator orientation when in Rotation Mode
-        QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_R);
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            QTest::keyPress(m_defaultMainWindow, Qt::Key_R);
+        }
+        else
+        {
+            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_R);
+        }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -361,7 +368,14 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // Ctrl+R - reset only manipulator orientation when in Rotation Mode
-        QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_R, Qt::ControlModifier);
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            QTest::keyPress(m_defaultMainWindow, Qt::Key_R, Qt::ControlModifier);
+        }
+        else
+        {
+            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_R, Qt::ControlModifier);
+        }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -487,7 +501,14 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // 'Invert Selection' shortcut
-        QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_I, Qt::ControlModifier | Qt::ShiftModifier);
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            QTest::keyPress(m_defaultMainWindow, Qt::Key_I, Qt::ControlModifier | Qt::ShiftModifier);
+        }
+        else
+        {
+            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_I, Qt::ControlModifier | Qt::ShiftModifier);
+        }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -517,7 +538,14 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // 'Select All' shortcut
-        QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_A, Qt::ControlModifier);
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            QTest::keyPress(m_defaultMainWindow, Qt::Key_A, Qt::ControlModifier);
+        }
+        else
+        {
+            QTest::keyPress(&m_editorActions.m_defaultWidget, Qt::Key_A, Qt::ControlModifier);
+        }
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2621,7 +2649,7 @@ namespace UnitTest
             ReferenceFrameWithOrientation{ AzToolsFramework::ReferenceFrame::World, AZ::Quaternion::CreateIdentity() }));
 
     class EditorEntityModelVisibilityFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , private AzToolsFramework::EditorEntityVisibilityNotificationBus::Router
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
     {
@@ -2979,7 +3007,7 @@ namespace UnitTest
         }
     }
 
-    class EditorEntityModelEntityInfoRequestFixture : public ToolsApplicationFixture
+    class EditorEntityModelEntityInfoRequestFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -3244,7 +3272,7 @@ namespace UnitTest
         EXPECT_THAT(hoveredEntityEntityId, Eq(AZ::EntityId(12345)));
     }
 
-    class EditorTransformComponentSelectionRenderGeometryIntersectionFixture : public ToolsApplicationFixture
+    class EditorTransformComponentSelectionRenderGeometryIntersectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

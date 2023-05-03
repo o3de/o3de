@@ -9,8 +9,8 @@
 #pragma once
 
 #include "../Include/SandboxAPI.h"
-#include <CryCommon/LegacyAllocator.h>
 #include <set>
+#include <AzCore/std/containers/vector.h>
 
 #include <QStringList>
 
@@ -105,7 +105,7 @@ struct IFileUtil
         }
     };
 
-    using FileArray = AZStd::vector<FileDesc, AZ::StdLegacyAllocator>;
+    using FileArray = AZStd::vector<FileDesc>;
 
     typedef bool (* ScanDirectoryUpdateCallBack)(const QString& msg);
 

@@ -165,12 +165,12 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(result.GetValue()["arr"][0].GetInt64(), 1);
     }
 
-    TEST_F(DomPatchTests, RemoveOperation_PopArray_Succeeds)
+    TEST_F(DomPatchTests, RemoveOperation_PopArray_Fails)
     {
         Path p("/arr/-");
         PatchOperation op = PatchOperation::RemoveOperation(p);
         auto result = op.Apply(m_dataset);
-        EXPECT_EQ(result.GetValue()["arr"].ArraySize(), 4);
+        ASSERT_FALSE(result.IsSuccess());
     }
 
     TEST_F(DomPatchTests, RemoveOperation_RemoveKeyFromNode_Succeeds)
@@ -192,13 +192,12 @@ namespace AZ::Dom::Tests
         EXPECT_EQ(result.GetValue()["node"][1].GetInt64(), 4);
     }
 
-    TEST_F(DomPatchTests, RemoveOperation_PopIndexFromNode_Succeeds)
+    TEST_F(DomPatchTests, RemoveOperation_PopIndexFromNode_Fails)
     {
         Path p("/node/-");
         PatchOperation op = PatchOperation::RemoveOperation(p);
         auto result = op.Apply(m_dataset);
-        ASSERT_TRUE(result.IsSuccess());
-        EXPECT_EQ(result.GetValue()["node"].ArraySize(), 4);
+        ASSERT_FALSE(result.IsSuccess());
     }
 
     TEST_F(DomPatchTests, RemoveOperation_RemoveKeyFromArray_Fails)
@@ -559,5 +558,26 @@ namespace AZ::Dom::Tests
         m_deltaDataset.ArrayPushBack(Value(4));
         m_deltaDataset.ArrayPushBack(Value(6));
         GenerateAndVerifyDelta();
+    }
+
+    TEST_F(DomPatchTests, TestPatch_DenormalizeOnApply)
+    {
+        m_dataset = Value(Type::Array);
+        m_dataset.ArrayPushBack(Value(2));
+
+        m_deltaDataset = m_dataset;
+        m_deltaDataset.ArrayPushBack(Value(4));
+
+        DeltaPatchGenerationParameters params;
+        params.m_generateDenormalizedPaths = false;
+        PatchUndoRedoInfo info = GenerateHierarchicalDeltaPatch(m_dataset, m_deltaDataset, params);
+
+        EXPECT_TRUE(info.m_forwardPatches.ContainsNormalizedEntries());
+
+        auto result = info.m_forwardPatches.ApplyAndDenormalize(m_dataset);
+        EXPECT_TRUE(result.IsSuccess());
+        EXPECT_TRUE(Utils::DeepCompareIsEqual(result.GetValue(), m_deltaDataset));
+
+        EXPECT_FALSE(info.m_forwardPatches.ContainsNormalizedEntries());
     }
 } // namespace AZ::Dom::Tests

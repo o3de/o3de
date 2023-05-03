@@ -34,19 +34,19 @@ namespace UnitTest
             : public MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(SetShaderOptionFunctor, SystemAllocator)
             AZ_RTTI(SetShaderOptionFunctor, "{6316D98D-D2DD-4E9C-808C-58118DC9FF73}", MaterialFunctor);
 
-            SetShaderOptionFunctor(size_t shaderIndex, ShaderOptionIndex shaderOptionIndex, ShaderOptionValue shaderOptionValue)
-                : m_shaderIndex(shaderIndex)
-                , m_shaderOptionIndex(shaderOptionIndex)
+            SetShaderOptionFunctor(Name shaderOptionName, ShaderOptionValue shaderOptionValue)
+                : m_shaderOptionName(shaderOptionName)
                 , m_shaderOptionValue(shaderOptionValue)
             {
             }
 
             using MaterialFunctor::Process;
-            void Process(MaterialFunctor::RuntimeContext& context) override
+            void Process(MaterialFunctorAPI::RuntimeContext& context) override
             {
-                m_processResult = context.SetShaderOptionValue(0, m_shaderOptionIndex, m_shaderOptionValue);
+                m_processResult = context.SetShaderOptionValue(m_shaderOptionName, m_shaderOptionValue);
             }
 
             // Note a real functor wouldn't do this, it's just for testing
@@ -56,8 +56,7 @@ namespace UnitTest
             }
 
         private:
-            size_t m_shaderIndex;
-            ShaderOptionIndex m_shaderOptionIndex;
+            Name m_shaderOptionName;
             ShaderOptionValue m_shaderOptionValue;
             bool m_processResult = false;
         };
@@ -66,10 +65,11 @@ namespace UnitTest
             : public MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(PropertyDependencyTestFunctor, SystemAllocator)
             MOCK_METHOD0(ProcessCalled, void());
 
             using MaterialFunctor::Process;
-            void Process(RuntimeContext& context) override
+            void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override
             {
                 ProcessCalled();
 
@@ -91,6 +91,7 @@ namespace UnitTest
             : public MaterialFunctorSourceData
         {
         public:
+            AZ_CLASS_ALLOCATOR(PropertyDependencyTestFunctorSourceData, AZ::SystemAllocator)
             using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override
             {
@@ -149,26 +150,31 @@ namespace UnitTest
         materialTypeCreator.ClaimShaderOptionOwnership(Name{"o_optionB"});
         EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
 
-        SetShaderOptionFunctor testFunctorSetOptionA{0, ShaderOptionIndex{0}, ShaderOptionValue{1}};
-        SetShaderOptionFunctor testFunctorSetOptionB{0, ShaderOptionIndex{1}, ShaderOptionValue{1}};
-        SetShaderOptionFunctor testFunctorSetOptionC{0, ShaderOptionIndex{2}, ShaderOptionValue{1}};
-        SetShaderOptionFunctor testFunctorSetOptionInvalid{0, ShaderOptionIndex{3}, ShaderOptionValue{1}};
+        SetShaderOptionFunctor testFunctorSetOptionA{Name{"o_optionA"}, ShaderOptionValue{1}};
+        SetShaderOptionFunctor testFunctorSetOptionB{Name{"o_optionB"}, ShaderOptionValue{1}};
+        SetShaderOptionFunctor testFunctorSetOptionC{Name{"o_optionC"}, ShaderOptionValue{1}};
+        SetShaderOptionFunctor testFunctorSetOptionInvalid{Name{"o_optionInvalid"}, ShaderOptionValue{1}};
 
 
         // Most of this data can be empty since this particular functor doesn't access it.
         AZStd::vector<MaterialPropertyValue> unusedPropertyValues;
+        MaterialPropertyCollection properties;
+        properties.Init(materialTypeAsset->GetMaterialPropertiesLayout(), unusedPropertyValues);
+        MaterialPipelineDataMap unusedPipelineData;
         ShaderResourceGroup* unusedSrg = nullptr;
-        ShaderCollection shaderCollectionCopy = materialTypeAsset->GetShaderCollection();
+
+
+        ShaderCollection shaderCollectionCopy = materialTypeAsset->GetGeneralShaderCollection();
 
         {
             // Successfully set o_optionA
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
+                & testFunctorSetOptionA.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
                 unusedSrg,
-                &testFunctorSetOptionA.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                &shaderCollectionCopy,
+                &unusedPipelineData
             };
             testFunctorSetOptionA.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionA.GetProcessResult());
@@ -179,13 +185,13 @@ namespace UnitTest
 
         {
             // Successfully set o_optionB
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
-                unusedSrg,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
                 &testFunctorSetOptionB.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
+                unusedSrg,
+                &shaderCollectionCopy,
+                &unusedPipelineData
             };
             testFunctorSetOptionB.Process(runtimeContext);
             EXPECT_TRUE(testFunctorSetOptionB.GetProcessResult());
@@ -197,13 +203,13 @@ namespace UnitTest
         {
             // Fail to set o_optionC because it is not owned by the material type
             AZ_TEST_START_TRACE_SUPPRESSION;
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
-                unusedSrg,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
                 &testFunctorSetOptionC.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
+                unusedSrg,
+                &shaderCollectionCopy,
+                &unusedPipelineData
             };
             testFunctorSetOptionC.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionC.GetProcessResult());
@@ -213,13 +219,13 @@ namespace UnitTest
         {
             // Fail to set option index that is out of range
             AZ_TEST_START_TRACE_SUPPRESSION;
-            MaterialFunctor::RuntimeContext runtimeContext = MaterialFunctor::RuntimeContext{
-                unusedPropertyValues,
-                materialTypeAsset->GetMaterialPropertiesLayout(),
-                &shaderCollectionCopy,
+            MaterialFunctorAPI::RuntimeContext runtimeContext = MaterialFunctorAPI::RuntimeContext{
+                properties,
+                & testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
+                AZ::RPI::MaterialPropertyPsoHandling::Allowed,
                 unusedSrg,
-                &testFunctorSetOptionInvalid.GetMaterialPropertyDependencies(),
-                AZ::RPI::MaterialPropertyPsoHandling::Allowed
+                &shaderCollectionCopy,
+                &unusedPipelineData
             };
             testFunctorSetOptionInvalid.Process(runtimeContext);
             EXPECT_FALSE(testFunctorSetOptionInvalid.GetProcessResult());
@@ -265,7 +271,6 @@ namespace UnitTest
                 "Dummy.materialtype",
                 materialTypeCreator.GetMaterialPropertiesLayout(),
                 materialTypeCreator.GetMaterialShaderResourceGroupLayout(),
-                materialTypeCreator.GetShaderCollection(),
                 &nameContext
             )
         );
@@ -277,7 +282,7 @@ namespace UnitTest
         materialTypeCreator.End(m_testMaterialTypeAsset);
 
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), m_testMaterialTypeAsset);
         materialCreator.SetPropertyValue(registedPropertyName, 42);
         materialCreator.SetPropertyValue(unregistedPropertyName, 42);
         materialCreator.SetPropertyValue(unrelatedPropertyName, 42);
@@ -316,28 +321,30 @@ namespace UnitTest
         m_testMaterialAsset = {};
     }
     
+    class FindPropertyIndexTestFunctor : public MaterialFunctor
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(FindPropertyIndexTestFunctor, AZ::SystemAllocator)
+        MaterialPropertyIndex m_foundIndex;
+    };
+
+    class FindPropertyIndexTestFunctorSourceData : public MaterialFunctorSourceData
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(FindPropertyIndexTestFunctorSourceData, AZ::SystemAllocator)
+        Name m_materialPropertyName;
+
+        using MaterialFunctorSourceData::CreateFunctor;
+        FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
+        {
+            RPI::Ptr<FindPropertyIndexTestFunctor> functor = aznew FindPropertyIndexTestFunctor;
+            functor->m_foundIndex = runtimeContext.FindMaterialPropertyIndex(m_materialPropertyName);
+            return Success(RPI::Ptr<MaterialFunctor>(functor));
+        }
+    };
+        
     TEST_F(MaterialFunctorTests, UseNameContextInFunctorSourceData_PropertyLookup)
     {
-        class FindPropertyIndexTestFunctor : public MaterialFunctor
-        {
-        public:
-            MaterialPropertyIndex m_foundIndex;
-        };
-
-        class FindPropertyIndexTestFunctorSourceData : public MaterialFunctorSourceData
-        {
-        public:
-            Name m_materialPropertyName;
-
-            using MaterialFunctorSourceData::CreateFunctor;
-            FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
-            {
-                RPI::Ptr<FindPropertyIndexTestFunctor> functor = aznew FindPropertyIndexTestFunctor;
-                functor->m_foundIndex = runtimeContext.FindMaterialPropertyIndex(m_materialPropertyName);
-                return Success(RPI::Ptr<MaterialFunctor>(functor));
-            }
-        };
-        
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
         MaterialTypeAssetCreator materialTypeCreator;
         materialTypeCreator.Begin(Uuid::CreateRandom());
@@ -356,7 +363,6 @@ namespace UnitTest
             "",
             materialTypeAsset->GetMaterialPropertiesLayout(),
             nullptr,
-            nullptr,
             &nameContext);
 
         RPI::Ptr<MaterialFunctor> functor = sourceData.CreateFunctor(createFunctorContext).TakeValue();
@@ -364,90 +370,39 @@ namespace UnitTest
         EXPECT_TRUE(reinterpret_cast<FindPropertyIndexTestFunctor*>(functor.get())->m_foundIndex.IsValid());
     }
     
-    TEST_F(MaterialFunctorTests, UseNameContextInFunctorSourceData_ShaderOptionLookup)
+    class FindShaderInputIndexTestFunctor : public MaterialFunctor
     {
-        class FindShaderOptionIndexTestFunctor : public MaterialFunctor
-        {
-        public:
-            ShaderOptionIndex m_foundIndex;
-        };
+    public:
+        AZ_CLASS_ALLOCATOR(FindShaderInputIndexTestFunctor, SystemAllocator)
+        RHI::ShaderInputConstantIndex m_foundConstantIndex;
+        RHI::ShaderInputImageIndex m_foundImageIndex;
+    };
 
-        class FindShaderOptionIndexTestFunctorSourceData : public MaterialFunctorSourceData
-        {
-        public:
-            Name m_shaderOptionName;
-            
-            using MaterialFunctorSourceData::CreateFunctor;
-            FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
-            {
-                RPI::Ptr<FindShaderOptionIndexTestFunctor> functor = aznew FindShaderOptionIndexTestFunctor;
-                functor->m_foundIndex = runtimeContext.FindShaderOptionIndex(0, m_shaderOptionName);
-                return Success(RPI::Ptr<MaterialFunctor>(functor));
-            }
-        };
+    class FindShaderInputIndexTestFunctorSourceData : public MaterialFunctorSourceData
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(FindShaderInputIndexTestFunctorSourceData, AZ::SystemAllocator)
+        Name m_shaderConstantName;
+        Name m_shaderImageName;
         
-        RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionLayout = RPI::ShaderOptionGroupLayout::Create();
-        shaderOptionLayout->AddShaderOption(
-            RPI::ShaderOptionDescriptor{Name("o_layer1_baseColor_useTexture"), RPI::ShaderOptionType::Boolean, 0, 0, CreateBoolShaderOptionValues()});
-        shaderOptionLayout->Finalize();
+        using MaterialFunctorSourceData::CreateFunctor;
+        FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
+        {
+            RPI::Ptr<FindShaderInputIndexTestFunctor> functor = aznew FindShaderInputIndexTestFunctor;
+            functor->m_foundConstantIndex = runtimeContext.FindShaderInputConstantIndex(m_shaderConstantName);
+            functor->m_foundImageIndex = runtimeContext.FindShaderInputImageIndex(m_shaderImageName);
+            return Success(RPI::Ptr<MaterialFunctor>(functor));
+        }
+    };
 
-        Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), nullptr, shaderOptionLayout);
-
-        Data::Asset<MaterialTypeAsset> materialTypeAsset;
-        MaterialTypeAssetCreator materialTypeCreator;
-        materialTypeCreator.Begin(Uuid::CreateRandom());
-        materialTypeCreator.AddShader(shaderAsset);
-        materialTypeCreator.End(materialTypeAsset);
-
-        FindShaderOptionIndexTestFunctorSourceData sourceData;
-        sourceData.m_shaderOptionName = "useTexture";
-
-        MaterialNameContext nameContext;
-        nameContext.ExtendShaderOptionContext("o_layer1_baseColor_");
-
-        MaterialFunctorSourceData::RuntimeContext createFunctorContext(
-            "",
-            nullptr,
-            nullptr,
-            &materialTypeAsset->GetShaderCollection(),
-            &nameContext);
-
-        RPI::Ptr<MaterialFunctor> functor = sourceData.CreateFunctor(createFunctorContext).TakeValue();
-
-        EXPECT_TRUE(reinterpret_cast<FindShaderOptionIndexTestFunctor*>(functor.get())->m_foundIndex.IsValid());
-    }
-    
     TEST_F(MaterialFunctorTests, UseNameContextInFunctorSourceData_ShaderConstantLookup)
     {
-        class FindShaderInputIndexTestFunctor : public MaterialFunctor
-        {
-        public:
-            RHI::ShaderInputConstantIndex m_foundConstantIndex;
-            RHI::ShaderInputImageIndex m_foundImageIndex;
-        };
-
-        class FindShaderInputIndexTestFunctorSourceData : public MaterialFunctorSourceData
-        {
-        public:
-            Name m_shaderConstantName;
-            Name m_shaderImageName;
-            
-            using MaterialFunctorSourceData::CreateFunctor;
-            FunctorResult CreateFunctor(const RuntimeContext& runtimeContext) const override
-            {
-                RPI::Ptr<FindShaderInputIndexTestFunctor> functor = aznew FindShaderInputIndexTestFunctor;
-                functor->m_foundConstantIndex = runtimeContext.FindShaderInputConstantIndex(m_shaderConstantName);
-                functor->m_foundImageIndex = runtimeContext.FindShaderInputImageIndex(m_shaderImageName);
-                return Success(RPI::Ptr<MaterialFunctor>(functor));
-            }
-        };
-
         AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> srgLayout = RHI::ShaderResourceGroupLayout::Create();
         srgLayout->SetName(Name("MaterialSrg"));
         srgLayout->SetUniqueId(Uuid::CreateRandom().ToString<AZStd::string>()); // Any random string will suffice.
         srgLayout->SetBindingSlot(SrgBindingSlot::Material);
-        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_layer1_baseColor_factor" }, 0, 4, 0});
-        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1});
+        srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{Name{ "m_layer1_baseColor_factor" }, 0, 4, 0, 0});
+        srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{Name{ "m_layer1_baseColor_texture" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1, 1});
         srgLayout->Finalize();
 
         Data::Asset<ShaderAsset> shaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), srgLayout);
@@ -469,7 +424,6 @@ namespace UnitTest
             "",
             nullptr,
             srgLayout.get(),
-            nullptr,
             &nameContext);
 
         RPI::Ptr<MaterialFunctor> functor = sourceData.CreateFunctor(createFunctorContext).TakeValue();

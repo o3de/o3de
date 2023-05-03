@@ -189,7 +189,7 @@ namespace AZ
             AZ_Assert(usage != ScopeAttachmentUsage::Uninitialized, "ScopeAttachmentUsage is Uninitialized");
 
             //A scopeattachment can be used in multiple ways within the same scope. Hence, instead of adding duplicate scopeattachments
-            //for a scope we add multiple usage/access related data within the same scopeattahcment.
+            //for a scope we add multiple usage/access related data within the same scopeattachment.
             for (ImageScopeAttachment* imageScopeInnerAttachment : m_currentScope->m_imageAttachments)
             {
                 if(imageScopeInnerAttachment->GetFrameAttachment().GetId() == frameAttachment.GetId())

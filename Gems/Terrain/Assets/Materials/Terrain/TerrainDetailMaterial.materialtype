@@ -77,7 +77,8 @@
                     {
                         "type": "Lua",
                         "args": {
-                            "file": "TerrainOverrideParallax.lua"
+                            //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                            "file": "Materials/Terrain/TerrainOverrideParallax.lua"
                         }
                     }
                 ]
@@ -93,47 +94,9 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "Materials/Types/StandardPBR_ForwardPass.shader",
-            "tag": "ForwardPass"
-        },
-        {
-            "file": "Materials/Types/StandardPBR_ForwardPass_EDS.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Materials/Types/StandardPBR_LowEndForward.shader",
-            "tag": "LowEndForward"
-        },
-        {
-            "file": "Materials/Types/StandardPBR_LowEndForward_EDS.shader",
-            "tag": "LowEndForward_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Materials/Types/StandardPBR_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Materials/Types/StandardPBR_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        }
-    ],
+    "lightingModel": "Standard",
+    "materialShaderCode": "Materials/Types/StandardPBR.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/Types/StandardPBR_ShaderEnable.lua"
-            }
-        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

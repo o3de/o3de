@@ -51,9 +51,9 @@ function(o3de_read_manifest o3de_manifest_json_data)
     endif()
 endfunction()
 
-
 #! o3de_find_gem_with_registered_external_subdirs: Query the path of a gem using its name
-#
+#  IMPORTANT NOTE: This does not take into account any gem versions or dependency resolution, 
+#  which is fine if you don't need it and just want speed.
 # \arg:gem_name the gem name to find
 # \arg:output_gem_path the path of the gem to set
 # \arg:registered_external_subdirs a list of external subdirectories registered accross

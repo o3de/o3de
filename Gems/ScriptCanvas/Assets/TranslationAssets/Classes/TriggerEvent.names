@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetTriggerEntityId",
-                    "context": "TriggerEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Trigger Entity Id"
@@ -21,13 +20,15 @@
                     },
                     "details": {
                         "name": "Get Trigger Entity Id",
+                        "tooltip": "Get the Id of the entity to which the trigger is attached",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
                             "details": {
-                                "name": "Trigger Event"
+                                "name": "Trigger Event",
+                                "tooltip": "An event raised by entering or exiting a trigger"
                             }
                         }
                     ],
@@ -35,15 +36,14 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "name": "Trigger Entity Id",
+                                "tooltip": "The Id of the entity to which the trigger is attached"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetOtherEntityId",
-                    "context": "TriggerEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Other Entity Id"
@@ -54,13 +54,15 @@
                     },
                     "details": {
                         "name": "Get Other Entity Id",
+                        "tooltip": "Get the Id of the entity entering/exiting the trigger",
                         "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
                             "details": {
-                                "name": "Trigger Event"
+                                "name": "Trigger Event",
+                                "tooltip": "An event raised by entering or exiting a trigger"
                             }
                         }
                     ],
@@ -68,8 +70,8 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "name": "Other Entity Id",
+                                "tooltip": "The Id of the entity entering/exiting the trigger"
                             }
                         }
                     ]

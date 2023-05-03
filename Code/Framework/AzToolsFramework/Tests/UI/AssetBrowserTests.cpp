@@ -34,7 +34,7 @@ namespace UnitTest
     // Test fixture for the AssetBrowser model that uses a QAbstractItemModelTester to validate the state of the model
     // when QAbstractItemModel signals fire. Tests will exit with a fatal error if an invalid state is detected.
     class AssetBrowserTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public testing::WithParamInterface<const char*>
     {
     protected:
@@ -239,6 +239,29 @@ namespace UnitTest
                 return false;
             }
         );
+
+        ON_CALL(*m_fileIOMock, Open(::testing::_, ::testing::_, ::testing::_))
+            .WillByDefault(
+                [&](auto filePath, auto, AZ::IO::HandleType& handle)
+                {
+                    handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
+        ON_CALL(*m_fileIOMock, Close(::testing::_))
+            .WillByDefault(
+                [&](AZ::IO::HandleType /* handle*/)
+                {
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
+        ON_CALL(*m_fileIOMock, Size(testing::An<AZ::IO::HandleType>(), ::testing::_))
+            .WillByDefault(
+                [&](AZ::IO::HandleType /* handle*/, auto& size)
+                {
+                    size = 0;
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
 
         using namespace testing;
 

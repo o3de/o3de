@@ -12,7 +12,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/time.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/UnitTest/TestTypes.h>
 

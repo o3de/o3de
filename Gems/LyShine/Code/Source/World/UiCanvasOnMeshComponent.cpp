@@ -13,6 +13,7 @@
 #include <AzCore/Math/IntersectPoint.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Name/NameDictionary.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/Bus/World/UiCanvasRefBus.h>
 #include <LyShine/UiSerializeHelpers.h>
@@ -269,8 +270,12 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
     AZ::TransformBus::EventResult(meshWorldTM, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
     AZ::Transform meshWorldTMInverse = meshWorldTM.GetInverse();
 
-    AZ::Vector3 rayOrigin = meshWorldTMInverse.TransformPoint(rayRequest.m_startWorldPosition);
-    AZ::Vector3 rayEnd = meshWorldTMInverse.TransformPoint(rayRequest.m_endWorldPosition);
+    AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
+    AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
+
+    const AZ::Vector3 clampedNonUniformScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
+    AZ::Vector3 rayOrigin = meshWorldTMInverse.TransformPoint(rayRequest.m_startWorldPosition) / clampedNonUniformScale;
+    AZ::Vector3 rayEnd = meshWorldTMInverse.TransformPoint(rayRequest.m_endWorldPosition) / clampedNonUniformScale;
     AZ::Vector3 rayDirection = rayEnd - rayOrigin;
 
     // When a segment intersects a triangle, the returned hit distance will be between [0, 1].
@@ -374,7 +379,7 @@ bool UiCanvasOnMeshComponent::CalculateUVFromRayIntersection(const AzFramework::
 AZ::EntityId UiCanvasOnMeshComponent::GetCanvas()
 {
     AZ::EntityId result;
-    EBUS_EVENT_ID_RESULT(result, GetEntityId(), UiCanvasRefBus, GetCanvas);
+    UiCanvasRefBus::EventResult(result, GetEntityId(), &UiCanvasRefBus::Events::GetCanvas);
     return result;
 }
 

@@ -37,6 +37,7 @@ namespace GradientSignal
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MixedGradientLayer::m_operation, "Operation", "Function used to mix the current gradient with the previous result.")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Initialize, "Initialize")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Multiply, "Multiply")
+                    ->EnumAttribute(MixedGradientLayer::MixingOperation::Screen, "Screen")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Add, "Linear Dodge (Add)")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Subtract, "Subtract")
                     ->EnumAttribute(MixedGradientLayer::MixingOperation::Min, "Darken (Min)")

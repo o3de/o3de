@@ -27,9 +27,51 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/UnitTest/Mocks/MockSettingsRegistry.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo();
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
 
 namespace AZ
 {
+    class MockEditorPythonEventsInterface
+        : public AzToolsFramework::EditorPythonEventsInterface
+    {
+    public:
+        MOCK_METHOD1(StartPython, bool(bool));
+        MOCK_METHOD1(StopPython, bool(bool));
+        MOCK_METHOD0(IsPythonActive, bool());
+        MOCK_METHOD0(WaitForInitialization, void());
+        MOCK_METHOD1(ExecuteWithLock, void(AZStd::function<void()>));
+        MOCK_METHOD1(TryExecuteWithLock, bool(AZStd::function<void()>));
+    };
+
+    class MockEditorPythonRunnerRequestBus
+        : public AzToolsFramework::EditorPythonRunnerRequestBus::Handler
+    {
+    public:
+        MockEditorPythonRunnerRequestBus()
+        {
+            AzToolsFramework::EditorPythonRunnerRequestBus::Handler::BusConnect();
+        }
+
+        ~MockEditorPythonRunnerRequestBus()
+        {
+            AzToolsFramework::EditorPythonRunnerRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD2(ExecuteByString, void(AZStd::string_view, bool));
+        MOCK_METHOD1(ExecuteByFilename, bool(AZStd::string_view));
+        MOCK_METHOD2(ExecuteByFilenameWithArgs, bool(AZStd::string_view, const AZStd::vector<AZStd::string_view>&));
+        MOCK_METHOD3(ExecuteByFilenameAsTest, bool(AZStd::string_view, AZStd::string_view, const AZStd::vector<AZStd::string_view>&));
+    };
+
+    using NiceEditorPythonEventsInterfaceMock = ::testing::NiceMock<MockEditorPythonEventsInterface>;
+    using NiceMockEditorPythonRunnerRequestBus = ::testing::NiceMock<MockEditorPythonRunnerRequestBus>;
+    using NiceMockFileIOBase = ::testing::NiceMock<AZ::IO::MockFileIOBase>;
+
     namespace SceneAPI
     {
         class MockRotationRule final
@@ -37,7 +79,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MockRotationRule, "{90AECE4A-58D4-411C-9CDE-59B54C59354F}", DataTypes::IManifestObject);
-            AZ_CLASS_ALLOCATOR(MockRotationRule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MockRotationRule, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context)
             {
@@ -72,7 +114,7 @@ namespace AZ
     namespace SceneData
     {
         class SceneManifest_JSON
-            : public UnitTest::AllocatorsFixture
+            : public UnitTest::LeakDetectionFixture
         {
         public:
             AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -81,7 +123,7 @@ namespace AZ
 
             void SetUp() override
             {
-                UnitTest::AllocatorsFixture::SetUp();
+                UnitTest::LeakDetectionFixture::SetUp();
                 AZ::NameDictionary::Create();
 
                 m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -97,21 +139,31 @@ namespace AZ
                 m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
 
                 m_data.reset(new DataMembers);
+                m_data->m_settings = AZStd::make_unique<AZ::NiceSettingsRegistrySimpleMock>();
 
                 using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
-                ON_CALL(m_data->m_settings, Get(::testing::Matcher<FixedValueString&>(::testing::_), testing::_))
+                ON_CALL(*m_data->m_settings, Get(::testing::Matcher<FixedValueString&>(::testing::_), testing::_))
                     .WillByDefault([](FixedValueString& value, AZStd::string_view) -> bool
-                        {
-                            value = "mock_path";
-                            return true;
-                        });
+                    {
+                        value = "mock_path";
+                        return true;
+                    });
 
-                AZ::SettingsRegistry::Register(&m_data->m_settings);
+                AZ::SettingsRegistry::Register(m_data->m_settings.get());
+
+                SetupFileBaseIO();
             }
 
             void TearDown() override
             {
+                TeardownFileBaseIO();
+
+                if (m_data->m_editorPythonEventsInterfacePrepared)
+                {
+                    Interface<AzToolsFramework::EditorPythonEventsInterface>::Unregister(&m_data->m_editorPythonEventsInterface);
+                }
+
                 m_jsonRegistrationContext->EnableRemoveReflection();
                 m_jsonSystemComponent->Reflect(m_jsonRegistrationContext.get());
                 m_jsonRegistrationContext->DisableRemoveReflection();
@@ -120,16 +172,69 @@ namespace AZ
                 m_jsonRegistrationContext.reset();
                 m_jsonSystemComponent.reset();
 
-                AZ::SettingsRegistry::Unregister(&m_data->m_settings);
+                if (m_data->m_settings)
+                {
+                    AZ::SettingsRegistry::Unregister(m_data->m_settings.get());
+                    m_data->m_settings.reset();
+                }
                 m_data.reset();
 
+                CleanUpSceneCoreGenericClassInfo();
+                CleanUpSceneDataGenericClassInfo();
+
                 AZ::NameDictionary::Destroy();
-                UnitTest::AllocatorsFixture::TearDown();
+                UnitTest::LeakDetectionFixture::TearDown();
+            }
+
+            void PrepareMockPythonInterface()
+            {
+                ON_CALL(m_data->m_editorPythonEventsInterface, StartPython(::testing::_)).WillByDefault(::testing::Return(true));
+                ON_CALL(m_data->m_editorPythonEventsInterface, StopPython(::testing::_)).WillByDefault(::testing::Return(true));
+                ON_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).WillByDefault(::testing::Return(true));
+
+                ON_CALL(m_data->m_editorPythonEventsInterface, ExecuteWithLock(::testing::_))
+                    .WillByDefault([](auto callback)
+                    {
+                        callback();
+                    });
+
+                ON_CALL(m_data->m_editorPythonEventsInterface, TryExecuteWithLock(::testing::_))
+                    .WillByDefault([](auto callback) -> bool
+                    {
+                        callback();
+                        return true;
+                    });
+
+                Interface<AzToolsFramework::EditorPythonEventsInterface>::Register(&m_data->m_editorPythonEventsInterface);
+                m_data->m_editorPythonEventsInterfacePrepared = true;
+            }
+
+            void SetupFileBaseIO()
+            {
+                m_data->m_fileIOMock = AZStd::make_unique<NiceMockFileIOBase>();
+                m_data->m_prevFileIO = IO::FileIOBase::GetInstance();
+                IO::FileIOBase::SetInstance(nullptr);
+                IO::FileIOBase::SetInstance(m_data->m_fileIOMock.get());
+            }
+
+            void TeardownFileBaseIO()
+            {
+                if (m_data->m_fileIOMock)
+                {
+                    IO::FileIOBase::SetInstance(nullptr);
+                    IO::FileIOBase::SetInstance(m_data->m_prevFileIO);
+                    m_data->m_fileIOMock.reset();
+                }
             }
 
             struct DataMembers
             {
-                AZ::NiceSettingsRegistrySimpleMock  m_settings;
+                NiceMockEditorPythonRunnerRequestBus m_niceMockEditorPythonRunnerRequestBus;
+                AZStd::unique_ptr<NiceSettingsRegistrySimpleMock> m_settings;
+                NiceEditorPythonEventsInterfaceMock m_editorPythonEventsInterface;
+                bool m_editorPythonEventsInterfacePrepared = false;
+                AZStd::unique_ptr<NiceMockFileIOBase> m_fileIOMock;
+                IO::FileIOBase* m_prevFileIO = nullptr;
             };
 
             AZStd::unique_ptr<DataMembers> m_data;
@@ -264,6 +369,7 @@ namespace AZ
             })JSON" };
 
             auto scene = AZ::SceneAPI::Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
             auto result = scene.GetManifest().LoadFromString(jsonManifest, m_serializeContext.get(), m_jsonRegistrationContext.get());
             EXPECT_TRUE(result.IsSuccess());
             EXPECT_FALSE(scene.GetManifest().IsEmpty());
@@ -290,6 +396,7 @@ namespace AZ
             })JSON" };
 
             auto scene = Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
             auto result = scene.GetManifest().LoadFromString(defaultJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
             EXPECT_TRUE(result.IsSuccess());
             EXPECT_FALSE(scene.GetManifest().IsEmpty());
@@ -315,6 +422,7 @@ namespace AZ
             })JSON" };
 
             auto scene = Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
             auto result = scene.GetManifest().LoadFromString(fallbackLogicJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
             EXPECT_TRUE(result.IsSuccess());
             EXPECT_FALSE(scene.GetManifest().IsEmpty());
@@ -340,6 +448,7 @@ namespace AZ
             })JSON" };
 
             auto scene = Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
             auto result = scene.GetManifest().LoadFromString(fallbackLogicJson, m_serializeContext.get(), m_jsonRegistrationContext.get());
             EXPECT_TRUE(result.IsSuccess());
             EXPECT_FALSE(scene.GetManifest().IsEmpty());
@@ -347,6 +456,89 @@ namespace AZ
 
             auto view = Containers::MakeDerivedFilterView<DataTypes::IScriptProcessorRule>(scene.GetManifest().GetValueStorage());
             EXPECT_EQ(view.begin()->GetScriptProcessorFallbackLogic(), DataTypes::ScriptProcessorFallbackLogic::ContinueBuild);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_ScriptLogic_CallsIntoPythonInterface)
+        {
+            using namespace SceneAPI::Containers;
+            using namespace SceneAPI::Events;
+
+            constexpr const char* jsonManifest = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": "mock_update_manifest.py"
+                    }
+                ]
+            })JSON" };
+
+            PrepareMockPythonInterface();
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).Times(1);
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, ExecuteWithLock(testing::_)).Times(1);
+
+            ON_CALL(*m_data->m_fileIOMock.get(), Exists(::testing::_))
+                .WillByDefault([](const char*) -> bool
+                {
+                    return true;
+                }
+            );
+            EXPECT_CALL(*m_data->m_fileIOMock.get(), Exists(testing::_)).Times(1);
+
+            bool executeByFilenameCalled = false;
+            ON_CALL(m_data->m_niceMockEditorPythonRunnerRequestBus, ExecuteByFilename(::testing::_))
+                .WillByDefault([&executeByFilenameCalled](AZStd::string_view)
+                {
+                    executeByFilenameCalled = true;
+                    return true;
+                }
+            );
+            EXPECT_CALL(m_data->m_niceMockEditorPythonRunnerRequestBus, ExecuteByFilename(testing::_)).Times(1);
+
+            auto scene = AZ::SceneAPI::Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
+            auto result = scene.GetManifest().LoadFromString(jsonManifest, m_serializeContext.get(), m_jsonRegistrationContext.get());
+            EXPECT_TRUE(result.IsSuccess());
+            EXPECT_FALSE(scene.GetManifest().IsEmpty());
+
+            auto scriptProcessorRuleBehavior = AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
+            scriptProcessorRuleBehavior.Activate();
+            scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
+            scriptProcessorRuleBehavior.Deactivate();
+            EXPECT_TRUE(executeByFilenameCalled);
+        }
+
+        TEST_F(SceneManifest_JSON, ScriptProcessorRule_EditorPythonEventsInterface_RunsWithEditorPythonEventsInterfaceCleared)
+        {
+            using namespace SceneAPI::Containers;
+            using namespace SceneAPI::Events;
+
+            constexpr const char* jsonManifest = { R"JSON(
+            {
+                "values": [
+                    {
+                        "$type": "ScriptProcessorRule",
+                        "scriptFilename": ""
+                    }
+                ]
+            })JSON" };
+
+            PrepareMockPythonInterface();
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, IsPythonActive()).Times(1);
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, StartPython(testing::_)).Times(0);
+            EXPECT_CALL(m_data->m_editorPythonEventsInterface, StopPython(testing::_)).Times(1);
+
+            auto scene = AZ::SceneAPI::Containers::Scene("mock");
+            scene.SetManifestFilename("mock.fake.assetinfo");
+            scene.GetManifest().LoadFromString(jsonManifest, m_serializeContext.get(), m_jsonRegistrationContext.get());
+
+            auto scriptProcessorRuleBehavior = AZ::SceneAPI::Behaviors::ScriptProcessorRuleBehavior();
+            scriptProcessorRuleBehavior.Activate();
+            auto update = scriptProcessorRuleBehavior.UpdateManifest(scene, AssetImportRequest::Update, AssetImportRequest::Generic);
+            EXPECT_EQ(update, ProcessingResult::Ignored);
+            AZ::SettingsRegistry::Unregister(m_data->m_settings.get());
+            m_data->m_settings.reset();
+            scriptProcessorRuleBehavior.Deactivate();
         }
     }
 }

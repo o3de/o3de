@@ -10,6 +10,7 @@
 
 #include <CommonFiles/Preprocessor.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/containers/vector.h>

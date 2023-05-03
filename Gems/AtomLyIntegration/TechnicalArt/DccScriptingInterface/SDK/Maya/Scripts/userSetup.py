@@ -206,7 +206,7 @@ _fix_paths = None
 # -------------------------------------------------------------------------
 # add appropriate common tools paths to the maya environment variables
 def startup():
-    """Early starup execution before mayautils.executeDeferred(). 
+    """Early starup execution before mayautils.executeDeferred().
     Some things like UI and plugins should be defered to avoid failure"""
     _LOGGER.info('startup() fired')
 
@@ -267,11 +267,11 @@ def post_startup():
     # this ensures the fixPaths callback is loaded
     # even when the other global callbacks are disabled
     from set_callbacks import install_fix_paths
-    install_fix_paths()    
+    install_fix_paths()
 
     # set the project workspace
     #_PATH_O3DE_PROJECT = _BASE_ENVVAR_DICT[ENVAR_PATH_O3DE_PROJECT]
-    _project_workspace = os.path.join(_PATH_O3DE_PROJECT, TAG_MAYA_WORKSPACE)
+    _project_workspace = os.path.join(_PATH_O3DE_PROJECT, SLUG_MAYA_WORKSPACE)
     if os.path.isfile(_project_workspace):
         try:
             # load workspace
@@ -292,14 +292,14 @@ def post_startup():
         _LOGGER.info('Add UI dependent tools')
         # wrap in a try, because we haven't implmented it yet
         try:
-            mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
+            mel.eval(str(r'source "{}"'.format(SLUG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.error(e)
 
     # manage custom menu in a sub-module
     from set_menu import set_main_menu
     set_main_menu()
-    
+
     # To Do: manage custom shelf in a sub-module
 
     _LOGGER.info('post_startup(), COMPLETE')

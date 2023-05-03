@@ -68,6 +68,12 @@ namespace AZ::Dom
 
         AZ::Outcome<Value, AZStd::string> Apply(Value rootElement) const;
         PatchOutcome ApplyInPlace(Value& rootElement) const;
+        AZ::Outcome<Value, AZStd::string> ApplyAndDenormalize(Value rootElement);
+        PatchOutcome ApplyInPlaceAndDenormalize(Value& rootElement);
+
+        //! Returns true if this contains an "EndOfArray" entry in any relevant paths, meaning resolving
+        //! the path requires a lookup inside a target DOM.
+        bool ContainsNormalizedEntries() const;
 
         Value GetDomRepresentation() const;
         static AZ::Outcome<PatchOperation, AZStd::string> CreateFromDomRepresentation(Value domValue);
@@ -89,6 +95,9 @@ namespace AZ::Dom
             PathEntry m_key;
         };
 
+        // For a given path and target value, removes any EndOfArray entries 
+        // and replaces them with the resolved path
+        static bool DenormalizePath(Dom::Path& path, const Dom::Value& sourceValue);
         static AZ::Outcome<PathContext, AZStd::string> LookupPath(
             Value& rootElement, const Path& path, ExistenceCheckFlags existenceCheckFlags = ExistenceCheckFlags::DefaultExistenceCheck);
 
@@ -175,11 +184,39 @@ namespace AZ::Dom
         OperationsContainer::const_iterator cend() const;
         size_t size() const;
 
+        //! Applies this patch to the given DOM element.
+        //! \param rootElement The DOM element to patch.
+        //! \param strategy A callback to be run after every patch application, see PatchApplicationState.
+        //! \return an outcome with either the patched element or an error string
         AZ::Outcome<Value, AZStd::string> Apply(Value rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
+        //! Applies this patch to the given DOM element in place, changing it to the new value.
+        //! \param rootElement The DOM element to patch.
+        //! \param strategy A callback to be run after every patch application, see PatchApplicationState.
+        //! \return an outcome with either the patched element or an error string
         PatchOutcome ApplyInPlace(Value& rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure) const;
+
+        //! Applies this patch to the given DOM element.
+        //! After applying the patch, any "EndOfArray" patch entries are denormalized into their resolved paths.
+        //! This operation mutates the underyling patch operations; make a copy if you wish to keep the original patch.
+        //! \param rootElement The DOM element to patch.
+        //! \param strategy A callback to be run after every patch application, see PatchApplicationState.
+        //! \return an outcome with either the patched element or an error string
+        AZ::Outcome<Value, AZStd::string> ApplyAndDenormalize(
+            Value rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure);
+        //! Applies this patch to the given DOM element in place, changing it to the new value.
+        //! After applying the patch, any "EndOfArray" patch entries are denormalized into their resolved paths.
+        //! This operation mutates the underyling patch operations; make a copy if you wish to keep the original patch.
+        //! \param rootElement The DOM element to patch.
+        //! \param strategy A callback to be run after every patch application, see PatchApplicationState.
+        //! \return an outcome with either the patched element or an error string
+        PatchOutcome ApplyInPlaceAndDenormalize(Value& rootElement, StrategyFunctor strategy = PatchApplicationStrategy::HaltOnFailure);
 
         Value GetDomRepresentation() const;
         static AZ::Outcome<Patch, AZStd::string> CreateFromDomRepresentation(Value domValue);
+
+        //! Returns true if any of this patch's operations contain  an "EndOfArray" entry
+        //! inside their paths, meaning the path requires a lookup inside a target DOM.
+        bool ContainsNormalizedEntries() const;
 
     private:
         OperationsContainer m_operations;

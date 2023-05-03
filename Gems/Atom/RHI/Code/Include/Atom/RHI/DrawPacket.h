@@ -11,6 +11,12 @@
 #include <Atom/RHI/DrawList.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 
+// Predefinition for unit test friend class
+namespace UnitTest
+{
+    class DrawPacketTest;
+}
+
 namespace AZ
 {
     class IAllocator;
@@ -37,10 +43,12 @@ namespace AZ
         class DrawPacket final : public AZStd::intrusive_base
         {
             friend class DrawPacketBuilder;
+            friend class UnitTest::DrawPacketTest;
         public:
             using DrawItemVisitor = AZStd::function<void(DrawListTag, DrawItemProperties)>;
 
             //! Draw packets cannot be move constructed or copied, as they contain an additional memory payload.
+            //! Use DrawPacketBuilder::Clone to copy a draw packet.
             AZ_DISABLE_COPY_MOVE(DrawPacket);
 
             //! Returns the mask representing all the draw lists affected by the packet.
@@ -52,14 +60,20 @@ namespace AZ
             //! Returns the draw item and its properties associated with the provided index.
             DrawItemProperties GetDrawItem(size_t index) const;
 
-            //! Returns the draw list tag associated with the provided index.
+            //! Returns the draw list tag associated with the provided index, used to filter the draw item into an appropriate pass.
             DrawListTag GetDrawListTag(size_t index) const;
 
-            //! Returns the draw filter mask which applied to all the draw items.
-            DrawFilterMask GetDrawFilterMask() const;
+            //! Returns the draw filter mask associated with the provided index, used to filter the draw item into an appropriate render pipeline.
+            DrawFilterMask GetDrawFilterMask(size_t index) const;
 
             //! Overloaded operator delete for freeing a draw packet.
             void operator delete(void* p, size_t size);
+
+            //! Update the root constant at the specified interval. The same root constants are shared by all draw items in the draw packet
+            void SetRootConstant(uint32_t offset, const AZStd::span<uint8_t>& data);
+
+            //! Set the instance count in all draw items.
+            void SetInstanceCount(uint32_t instanceCount);
 
         private:
             /// Use DrawPacketBuilder to construct an instance.
@@ -70,9 +84,6 @@ namespace AZ
 
             // The bit-mask of all active filter tags.
             DrawListMask m_drawListMask = 0;
-
-            // The draw filter applies to each draw item
-            DrawFilterMask m_drawFilterMask = DrawFilterMaskDefaultValue;
 
             // The index buffer view used when the draw call is indexed.
             IndexBufferView m_indexBufferView;
@@ -93,6 +104,9 @@ namespace AZ
 
             // List of draw list tags associated with the draw item index.
             const DrawListTag* m_drawListTags = nullptr;
+
+            // List of draw filter masks associated with the draw item index.
+            const DrawFilterMask* m_drawFilterMasks = nullptr;
 
             // List of shader resource groups shared by all draw items.
             const ShaderResourceGroup* const* m_shaderResourceGroups = nullptr;

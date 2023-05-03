@@ -26,6 +26,7 @@ namespace AZ
             , private AZ::TickBus::Handler
         {
         public:
+            AZ_CLASS_ALLOCATOR(EditorModeFeatureProcessor, SystemAllocator)
             AZ_RTTI(AZ::Render::EditorModeFeatureProcessor, "{78D40D57-F564-4ECD-B9F5-D8C9784B15D0}", AZ::RPI::FeatureProcessor);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -33,17 +34,18 @@ namespace AZ
             // FeatureProcessor overrides ...
             void Activate() override;
             void Deactivate() override;
-            void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
+            void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
             void Render(const RenderPacket& packet) override;
             void Simulate(const SimulatePacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             // AZ::TickBus overrides ...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+            //! Enable or disable the rendering editor mode feedback.
+            void SetEnableRender(bool enableRender);
 
         private:
             //! The pass system for the editor state feedback effects.

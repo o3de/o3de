@@ -14,7 +14,7 @@ import platform
 import re
 import sys
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 if ROOT_DEV_PATH not in sys.path:
@@ -23,9 +23,17 @@ if ROOT_DEV_PATH not in sys.path:
 from cmake.Tools import common
 from cmake.Tools.Platform.Android import android_support
 
+
+O3DE_SCRIPTS_PATH = os.path.join(ROOT_DEV_PATH, 'scripts', 'o3de')
+if O3DE_SCRIPTS_PATH not in sys.path:
+    sys.path.append(O3DE_SCRIPTS_PATH)
+
+from o3de import manifest
+
+
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
-GRADLE_MIN_VERSION = LooseVersion('6.5')
-GRADLE_MAX_VERSION = LooseVersion('7.0.2')
+GRADLE_MIN_VERSION = Version('6.5')
+GRADLE_MAX_VERSION = Version('7.5.1')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 
@@ -45,7 +53,7 @@ def verify_gradle(override_gradle_path=None):
 
 
 CMAKE_ARGUMENT_NAME = '--cmake-install-path'
-CMAKE_MIN_VERSION = LooseVersion('3.20.0')
+CMAKE_MIN_VERSION = Version('3.20.0')
 CMAKE_VERSION_REGEX = re.compile(r'cmake version (\d+.\d+.?\d*)')
 CMAKE_EXECUTABLE = 'cmake'
 
@@ -114,7 +122,7 @@ MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
 ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
-ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.2")
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = Version("4.2.2")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"
@@ -126,14 +134,17 @@ ALL_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE, ASSET_MODE_VFS]
 ASSET_TYPE_ARGUMENT_NAME = '--asset-type'
 DEFAULT_ASSET_TYPE = 'android'
 
+manifest_json = manifest.load_o3de_manifest()
+DEFAULT_3RD_PARTY_PATH = pathlib.Path(manifest_json.get('default_third_party_folder', manifest.get_o3de_third_party_folder()))
+
 
 def wrap_parsed_args(parsed_args):
     """
     Function to add a method to the parsed argument object to transform a long-form argument name to and get the
     parsed values based on the input long form.
 
-    This will allow us to read an argument like '--foo-bar=Orange' by using the built in method rather than looking for
-    the argparsed transformed attrobite 'foo_bar'
+    This will allow us to read an argument like '--foo-bar=Orange' by using the built-in method rather than looking for
+    the argparsed transformed attribute 'foo_bar'.
 
     :param parsed_args: The parsed args object to wrap
     """
@@ -164,8 +175,9 @@ def main(args):
                         required=True)
 
     parser.add_argument('--third-party-path',
-                        help='The path to the 3rd Party root directory',
-                        required=True)
+                        help=f'The path to the 3rd Party root directory (defaults to {DEFAULT_3RD_PARTY_PATH})',
+                        type=pathlib.Path,
+                        default=DEFAULT_3RD_PARTY_PATH)
 
     parser.add_argument(ANDROID_SDK_ARGUMENT_NAME,
                         help='The path to the android SDK',
@@ -323,7 +335,7 @@ def main(args):
 
     # Use the SDK Resolver to make sure the build tools and ndk
     android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME),
-                                                command_line_tools_version=parsed_args.get_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER))
+                                                     command_line_tools_version=parsed_args.get_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER))
 
     # If no SDK platform is provided, check for any installed one
     if android_sdk_platform_version < 0:

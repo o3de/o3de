@@ -13,6 +13,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -35,7 +36,8 @@ namespace AZ
 
             if (buffers.m_accelerationStructure)
             {
-                device.GetContext().DestroyAccelerationStructureKHR(device.GetNativeDevice(), buffers.m_accelerationStructure, nullptr);
+                device.GetContext().DestroyAccelerationStructureKHR(
+                    device.GetNativeDevice(), buffers.m_accelerationStructure, VkSystemAllocator::Get());
                 buffers.m_accelerationStructure = nullptr;
             }
 
@@ -76,8 +78,9 @@ namespace AZ
                     device.GetContext().GetBufferDeviceAddress(device.GetNativeDevice(), &addressInfo) +
                     geometry.m_indexBuffer.GetByteOffset();
                 geometryDesc.geometry.triangles.indexType = (geometry.m_indexBuffer.GetIndexFormat() == RHI::IndexFormat::Uint16) ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32;
-
                 geometryDesc.geometry.triangles.transformData = {}; // [GFX-TODO][ATOM-4989] Add BLAS Transform Buffer
+
+                // all BLAS geometry is set to opaque, but can be set to transparent at the TLAS Instance level
                 geometryDesc.flags = VK_GEOMETRY_OPAQUE_BIT_KHR;
                 buffers.m_geometryDescs.push_back(geometryDesc);
 
@@ -159,7 +162,7 @@ namespace AZ
             createInfo.buffer = blasMemoryView->GetNativeBuffer();
 
             VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
-                device.GetNativeDevice(), &createInfo, nullptr, &buffers.m_accelerationStructure);
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &buffers.m_accelerationStructure);
             AssertSuccess(vkResult);
 
             buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure;

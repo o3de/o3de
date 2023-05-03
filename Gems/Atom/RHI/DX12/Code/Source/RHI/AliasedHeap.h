@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::AliasedHeap;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
             AZ_RTTI(AliasedHeap, "{EE67B349-67EC-40BC-8E57-94FD6338C143}", Base);
 
             static RHI::Ptr<AliasedHeap> Create();
@@ -32,6 +32,7 @@ namespace AZ
             struct Descriptor
                 : public RHI::AliasedHeapDescriptor
             {
+                AZ_CLASS_ALLOCATOR(Descriptor, SystemAllocator)
                 D3D12_HEAP_FLAGS m_heapFlags = D3D12_HEAP_FLAG_ALLOW_ALL_BUFFERS_AND_TEXTURES;
             };            
 

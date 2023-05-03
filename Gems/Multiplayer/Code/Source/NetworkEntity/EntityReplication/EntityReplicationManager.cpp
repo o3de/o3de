@@ -36,13 +36,16 @@ namespace Multiplayer
     constexpr uint32_t ReplicationManagerPacketOverhead = 16;
 
     AZ_CVAR(bool, bg_replicationWindowImmediateAddRemove, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Update replication windows immediately on visibility Add/Removes.");
-
+    AZ_CVAR(AZ::TimeMs, sv_ReplicationWindowUpdateMs, AZ::TimeMs{ 300 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Rate for replication window updates.");
+    
     EntityReplicationManager::EntityReplicationManager(AzNetworking::IConnection& connection, AzNetworking::IConnectionListener& connectionListener, Mode updateMode)
         : m_updateMode(updateMode)
         , m_connection(connection)
         , m_connectionListener(connectionListener)
         , m_orphanedEntityRpcs(*this)
         , m_clearRemovedReplicators([this]() { ClearRemovedReplicators(); }, AZ::Name("EntityReplicationManager::ClearRemovedReplicators"))
+        , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
+        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
         , m_updateWindow([this]() { UpdateWindow(); }, AZ::Name("EntityReplicationManager::UpdateWindow"))
         , m_entityExitDomainEventHandler([this](const ConstNetworkEntityHandle& entityHandle) { OnEntityExitDomain(entityHandle); })
         , m_notifyEntityMigrationHandler([this](const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) { OnPostEntityMigration(entityHandle, remoteHostId); })
@@ -56,8 +59,11 @@ namespace Multiplayer
         // Schedule ClearRemovedReplicators()
         m_clearRemovedReplicators.Enqueue(AZ::Time::ZeroTimeMs, true);
 
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
+        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityDeactivatedEventHandler(m_entityDeactivatedEventHandler);
+
         // Start window update events
-        m_updateWindow.Enqueue(AZ::Time::ZeroTimeMs, true);
+        m_updateWindow.Enqueue(sv_ReplicationWindowUpdateMs, true);
 
         INetworkEntityManager* networkEntityManager = GetNetworkEntityManager();
         if (networkEntityManager != nullptr)
@@ -570,7 +576,12 @@ namespace Multiplayer
         }
         else
         {
-            AZLOG_WARN("Replicator for id %llu is null on remote host %s. It may have already been deleted.", static_cast<AZ::u64>(updateMessage.GetEntityId()), GetRemoteHostId().GetString().c_str());
+            // Replicators are cleared on the server via ScheduledEvent. It's possible for redundant delete messages to be sent before the event fires.
+            AZLOG(
+                NET_RepDeletes,
+                "Replicator for id %llu is null on remote host %s. It likely has already been deleted.",
+                static_cast<AZ::u64>(updateMessage.GetEntityId()),
+                GetRemoteHostId().GetString().c_str());
             return true;
         }
 
@@ -1025,6 +1036,38 @@ namespace Multiplayer
         orphanedRpcsIter->second.m_rpcMessages.emplace_back(AZStd::move(message));
     }
 
+    void EntityReplicationManager::OnEntityActivated(AZ::Entity* entity)
+    {
+        ConstNetworkEntityHandle entityHandle(entity);
+        NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
+        if (netBindComponent != nullptr && netBindComponent->HasController())
+        {
+            if (m_replicationWindow && m_replicationWindow->AddEntity(entity))
+            {
+                if (!m_entityReplicatorMap.contains(entityHandle.GetNetEntityId()))
+                {
+                    const ReplicationSet& window = m_replicationWindow->GetReplicationSet();
+                    AddEntityReplicator(entityHandle, window.find(entityHandle)->second.m_netEntityRole);
+                }
+            }
+        }
+    }
+
+    void EntityReplicationManager::OnEntityDeactivated(AZ::Entity* entity)
+    {
+        if (m_replicationWindow)
+        {
+            m_replicationWindow->RemoveEntity(entity);
+
+            ConstNetworkEntityHandle entityHandle(entity);
+            EntityReplicator* replicator = GetEntityReplicator(entityHandle);
+            if (replicator && !replicator->IsMarkedForRemoval())
+            {
+                replicator->MarkForRemoval();
+            }
+        }
+    }
+
     void EntityReplicationManager::UpdateWindow()
     {
         if (!m_replicationWindow)
@@ -1035,6 +1078,8 @@ namespace Multiplayer
 
         if (m_replicationWindow->ReplicationSetUpdateReady())
         {
+            m_replicationWindow->UpdateWindow();
+
             const ReplicationSet& newWindow = m_replicationWindow->GetReplicationSet();
 
             // Walk both for adds and removals

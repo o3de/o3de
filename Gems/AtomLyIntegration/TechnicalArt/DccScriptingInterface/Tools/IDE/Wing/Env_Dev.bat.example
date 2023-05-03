@@ -17,20 +17,63 @@ echo.
 echo ~    local env settings
 echo.
 
+:: These are local overrides for developers launching the dev environment
+:: Using the .bat files (for windows)
+
+:: You can make similar overrides that propogate via python, by creating
+:: and editing a settings.local.json file with these values
+
+:: you can generate a cached settings.local.json via running the 
+:: config.py from commandline with the following commands
+:: open a CMD
+> cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+> python config.py -arg1=True -arg2=True
+
+:: propogate additional envars into the dev environment
 set O3DE_BUILD_FOO=True
 echo     O3DE_BUILD_FOO = %O3DE_BUILD_FOO%
 
+:: set the location of the engine root
+set O3DE_DEV=C:\depot\o3de-dev
+echo     O3DE_DEV = %O3DE_DEV%
+
+:: if you are a developer and working in an engine-centric way
+:: this will set the folder you build into
 set O3DE_BUILD_FOLDER=build
 echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
+:: build out a path to the build and bin folder
+set PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%
+echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
+
+set PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile
+echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
+
+:: or you can just set the bin folder
+:: this is the sdk installer path 
+::set PATH_O3DE_BIN=C:\O3DE\0.0.0.0\bin\Windows\profile\Default
+:echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
+
+:: enables additional debug behaviour in code
 set DCCSI_GDEBUG=True
 echo     DCCSI_GDEBUG = %DCCSI_GDEBUG%
 
+:: enables additional developer behaviours like auto-attach debugger
 set DCCSI_DEV_MODE=True
 echo     DCCSI_DEV_MODE = %DCCSI_DEV_MODE%
 
+:: enables which debugger to use
+:: currently only wing is supported
 set DCCSI_GDEBUGGER=WING
 echo     DCCSI_GDEBUGGER = %DCCSI_GDEBUGGER%
 
+:: Default level logger will handle
+:: Override this to control the setting
+:: CRITICAL:50
+:: ERROR:40
+:: WARNING:30
+:: INFO:20
+:: DEBUG:10
+:: NOTSET:0
 set DCCSI_LOGLEVEL=10
 echo     DCCSI_LOGLEVEL = %DCCSI_LOGLEVEL%

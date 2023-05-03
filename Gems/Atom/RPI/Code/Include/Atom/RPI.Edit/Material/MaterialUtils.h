@@ -26,6 +26,7 @@ namespace AZ
     {
         class MaterialSourceData;
         class MaterialTypeSourceData;
+        struct MaterialPipelineSourceData;
 
         namespace MaterialUtils
         {
@@ -51,8 +52,15 @@ namespace AZ
             //! @return if resolving is successful. An error will be reported if it fails.
             bool ResolveMaterialPropertyEnumValue(const MaterialPropertyDescriptor* propertyDescriptor, const AZ::Name& enumName, MaterialPropertyValue& outResolvedValue);
 
+            //! Load a material pipeline file from a json file or document.
+            //! It will use the passed in document if not null, or otherwise load the json document from the path.
+            //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
+            //! @param document an optional already loaded json document.
+            //! @param importedFiles receives the list of files that were imported by the JSON serializer
+            AZ::Outcome<MaterialPipelineSourceData> LoadMaterialPipelineSourceData(const AZStd::string& filePath, rapidjson::Document* document = nullptr, ImportedJsonFiles* importedFiles = nullptr);
+
             //! Load a material type from a json file or document.
-            //! Otherwise, it will use the passed in document first if not null, or load the json document from the path.
+            //! It will use the passed in document if not null, or otherwise load the json document from the path.
             //! @param filePath path to the JSON file to load, unless the @document is already provided. In either case, this path will be used to resolve any relative file references.
             //! @param document an optional already loaded json document.
             //! @param importedFiles receives the list of files that were imported by the JSON serializer
@@ -72,11 +80,39 @@ namespace AZ
                 const AZStd::string_view* acceptedFieldNames, uint32_t acceptedFieldNameCount,
                 const rapidjson::Value& object, JsonDeserializerContext& context, JsonSerializationResult::ResultCode& result);
 
-            //! Materials assets can either be finalized during asset-processing time or when materials are loaded at runtime.
-            //! Finalizing during asset processing reduces load times and obfuscates the material data.
-            //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
-            //! Removing the dependency on the material type data will require special handling of material type asset dependencies when loading and reloading materials.
-            bool BuildersShouldFinalizeMaterialAssets();
+            //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
+            bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
+
+            //! Returns whether the name is a valid C-style identifier
+            bool IsValidName(AZStd::string_view name);
+            bool IsValidName(const AZ::Name& name);
+
+            //! Returns whether the name is a valid C-style identifier, and reports errors if it is not.
+            bool CheckIsValidPropertyName(AZStd::string_view name);
+            bool CheckIsValidGroupName(AZStd::string_view name);
+
+            //! Returns the file path that would be used for an intermediate .materialtype, if there were one, for the given .materialtype path.
+            //! @param originalMaterialTypeSourcePath the path to the .materialtype
+            //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.
+            AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& originalMaterialTypeSourcePath);
+            AZStd::string PredictIntermediateMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath);
+
+            //! Checks to see if there is an intermediate .materialtype for the given .materialtype path, and returns its path.
+            AZStd::string GetIntermediateMaterialTypeSourcePath(const AZStd::string& forOriginalMaterialTypeSourcePath);
+
+            //! Returns the path of the final .materialtype path, which may be the same as the original path, or could be a different path if there is
+            //! an intermediate .materialtype file associated with this one.
+            //! @param originalMaterialTypeSourcePath the path to the .materialtype
+            //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.
+            AZStd::string GetFinalMaterialTypeSourcePath(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath);
+
+            //! Returns AssetId of the MaterialTypeAsset from the given .materialtype source file path. This will account for the possibility that there
+            //! is an intermediate .materialtype file associated with the given .materialtype.
+            //! @param originalMaterialTypeSourcePath the path to the .materialtype
+            //! @param referencingFilePath The @originalMaterialTypeSourcePath can be relative to this path in addition to the asset root.
+            Outcome<Data::AssetId> GetFinalMaterialTypeAssetId(const AZStd::string& referencingFilePath, const AZStd::string& originalMaterialTypeSourcePath);
+
+
         }
     }
 }

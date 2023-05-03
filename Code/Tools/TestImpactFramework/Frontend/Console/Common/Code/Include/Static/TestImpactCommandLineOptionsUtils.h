@@ -30,12 +30,9 @@ namespace TestImpact
     //! Attempts to parse the specified binary state option.
     template<typename T>
     AZStd::optional<T> ParseBinaryStateOption(
-        const AZStd::string& optionName,
-        const AZStd::pair<OptionValue<T>,
-        OptionValue<T>>& state, const AZ::CommandLine& cmd)
+        const AZStd::string& optionName, const AZStd::pair<OptionValue<T>, OptionValue<T>>& state, const AZ::CommandLine& cmd)
     {
-        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName); numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -43,13 +40,11 @@ namespace TestImpact
                 AZStd::string::format("Unexpected number of parameters for %s option", optionName.c_str()));
 
             const auto option = cmd.GetSwitchValue(optionName, 0);
-            if (const auto& [optionValueText, optionValue] = state.first;
-                option == optionValueText)
+            if (const auto& [optionValueText, optionValue] = state.first; option == optionValueText)
             {
                 return optionValue;
             }
-            if (const auto& [optionValueText, optionValue] = state.second;
-                option == optionValueText)
+            if (const auto& [optionValueText, optionValue] = state.second; option == optionValueText)
             {
                 return optionValue;
             }
@@ -64,12 +59,9 @@ namespace TestImpact
     //! Attempts to pass an arbitrarily sized state option.
     template<typename T>
     AZStd::optional<T> ParseMultiStateOption(
-        const AZStd::string& optionName,
-        const AZStd::vector<AZStd::pair<AZStd::string, T>>& states,
-        const AZ::CommandLine& cmd)
+        const AZStd::string& optionName, const AZStd::vector<AZStd::pair<AZStd::string, T>>& states, const AZ::CommandLine& cmd)
     {
-        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName);
-            numSwitchValues)
+        if (const auto numSwitchValues = cmd.GetNumSwitchValues(optionName); numSwitchValues)
         {
             AZ_TestImpact_Eval(
                 numSwitchValues == 1,
@@ -79,8 +71,7 @@ namespace TestImpact
             const auto option = cmd.GetSwitchValue(optionName, 0);
             for (const auto& state : states)
             {
-                if (const auto& [optionValueText, optionValue] = state;
-                    option == optionValueText)
+                if (const auto& [optionValueText, optionValue] = state; option == optionValueText)
                 {
                     return optionValue;
                 }
@@ -97,15 +88,26 @@ namespace TestImpact
     template<typename T>
     AZStd::optional<T> ParseOnOffOption(const AZStd::string& optionName, const AZStd::pair<T, T>& states, const AZ::CommandLine& cmd)
     {
-        return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ {"off", states.first}, { "on", states.second } }, cmd);
+        return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ { "off", states.first }, { "on", states.second } }, cmd);
     }
 
     //! Attempts to pass a specialization of the binary state option where the command line values are "abort" and "continue".
     template<typename T>
-    AZStd::optional<T> ParseAbortContinueOption(const AZStd::string& optionName, const AZStd::pair<T, T>& states, const AZ::CommandLine& cmd)
+    AZStd::optional<T> ParseAbortContinueOption(
+        const AZStd::string& optionName, const AZStd::pair<T, T>& states, const AZ::CommandLine& cmd)
     {
-        return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ {"abort", states.first}, { "continue", states.second } }, cmd);
+        return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ { "abort", states.first }, { "continue", states.second } }, cmd);
     }
+
+    //! Attempts to pass a specialization of the binary state option where the command line values are "live" and "null".
+    template<typename T>
+    AZStd::optional<T> ParseLiveNullOption(const AZStd::string& optionName, const AZStd::pair<T, T>& states, const AZ::CommandLine& cmd)
+    {
+        return ParseBinaryStateOption(optionName, BinaryStateOption<T>{ { "live", states.first }, { "null" , states.second } }, cmd);
+    }
+
+    //! Attempts to parse a multi-value option.
+    AZStd::set<AZStd::string> ParseMultiValueOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);
 
     //! Attempts to parse a path option value.
     AZStd::optional<RepoPath> ParsePathOption(const AZStd::string& optionName, const AZ::CommandLine& cmd);

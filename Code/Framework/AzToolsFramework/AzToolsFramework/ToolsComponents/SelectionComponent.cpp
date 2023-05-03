@@ -11,6 +11,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/EntitySerializer.h>
 
 namespace AzToolsFramework
@@ -36,7 +37,7 @@ namespace AzToolsFramework
                 AZ::JsonDeserializerContext& context) override;
         };
 
-        AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(SelectionComponentSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result SelectionComponentSerializer::Load(
             [[maybe_unused]] void* outputValue,
@@ -61,7 +62,7 @@ namespace AzToolsFramework
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<SelectionComponent, EditorComponentBase>()->Version(2);
-                serializeContext->ClassDeprecate("SelectionComponent", "{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}");
+                serializeContext->ClassDeprecate("SelectionComponent", AZ::Uuid("{73B724FC-43D1-4C75-ACF5-79AA8A3BF89D}"));
             }
 
             if (AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context))

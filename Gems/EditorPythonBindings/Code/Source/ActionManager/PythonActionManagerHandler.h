@@ -63,10 +63,16 @@ namespace EditorPythonBindings
             const AZStd::string& menuIdentifier, int sortIndex) override;
         AzToolsFramework::MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddWidgetToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddMenuToMenuBar(
+            const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
 
         // ToolBarManagerRequestBus overrides ...
         AzToolsFramework::ToolBarManagerOperationResult RegisterToolBar(
             const AZStd::string& toolBarIdentifier, const AzToolsFramework::ToolBarProperties& properties) override;
+        AzToolsFramework::ToolBarManagerOperationResult RegisterToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea) override;
         AzToolsFramework::ToolBarManagerOperationResult AddActionToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier, int sortIndex) override;
         AzToolsFramework::ToolBarManagerOperationResult AddActionWithSubMenuToToolBar(
@@ -84,7 +90,9 @@ namespace EditorPythonBindings
             const AZStd::string& toolBarIdentifier, int sortIndex) override;
         AzToolsFramework::ToolBarManagerOperationResult AddWidgetToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
-        QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) override;
+        AzToolsFramework::ToolBarManagerOperationResult AddToolBarToToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex) override;
+        QToolBar* GenerateToolBar(const AZStd::string& toolBarIdentifier) override;
         AzToolsFramework::ToolBarManagerIntegerResult GetSortKeyOfActionInToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& actionIdentifier) const override;
         AzToolsFramework::ToolBarManagerIntegerResult GetSortKeyOfWidgetInToolBar(

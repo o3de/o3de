@@ -21,6 +21,7 @@ namespace AWSClientAuthUnitTest
         : public AWSClientAuth::AWSClientAuthSystemComponent
     {
     public:
+        AZ_CLASS_ALLOCATOR(AWSClientAuthSystemComponentMock, AZ::SystemAllocator)
         using AWSClientAuth::AWSClientAuthSystemComponent::GetCognitoIDPClient;
         using AWSClientAuth::AWSClientAuthSystemComponent::GetCognitoIdentityClient;
 
@@ -72,7 +73,6 @@ namespace AWSClientAuthUnitTest
                 {
                     ec->Class<AWSCoreSystemComponentMock>("AWSCoreMock", "Adds core support for working with AWS")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }

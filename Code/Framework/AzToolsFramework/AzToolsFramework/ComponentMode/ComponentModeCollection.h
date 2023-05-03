@@ -10,6 +10,7 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/ComponentMode/ComponentModeActionHandler.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeViewportUi.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
@@ -56,8 +57,8 @@ namespace AzToolsFramework
             /// ComponentMode, add them too (duplicates will not be added - handled by AddComponentMode)
             void AddOtherSelectedEntityModes();
 
-            /// Return is the Editor-wide ComponentMode state active.
-            bool InComponentMode() const { return m_componentMode; }
+            /// Return if the Editor-wide ComponentMode state is active.
+            bool InComponentMode() const { return m_componentModeState == ComponentModeState::Active; }
             /// Are ComponentModes in the process of being added.
             /// Used to determine if other selected entities with the same Component type should also be added.
             bool ModesAdded() const { return m_adding; }
@@ -93,12 +94,35 @@ namespace AzToolsFramework
 
             // ComponentModeCollectionInterface overrides ...
             AZStd::vector<AZ::Uuid> GetComponentTypes() const override;
+            void EnumerateActiveComponents(const ComponentModeCollectionInterface::ActiveComponentModeCB& callBack) const override;
 
         private:
+            enum class ComponentModeState : uint8_t
+            {
+                Active,
+                Stopping,
+                Stopped
+            };
+
             // Internal helper used by Select[|Prev|Next]ActiveComponentMode
             bool ActiveComponentModeChanged(const AZ::Uuid& previousComponentType);
 
+            struct ComponentModeItem
+            {
+                ComponentModeItem(
+                    AZ::EntityComponentIdPair entityComponentIdPair = AZ::EntityComponentIdPair(),
+                    AZ::Uuid componentType = AZ::Uuid::CreateNull())
+                    : m_entityComponentIdPair(entityComponentIdPair)
+                    , m_componentType(componentType)
+                {
+                }
+
+                AZ::EntityComponentIdPair m_entityComponentIdPair;
+                AZ::Uuid m_componentType;
+            };
+
             AZStd::vector<AZ::Uuid> m_activeComponentTypes; ///< What types of ComponentMode are currently active.
+            AZStd::vector<ComponentModeItem> m_activeComponentModes; ///< What Entity Components have a ComponentMode currently active.
             AZStd::vector<ComponentModeViewportUi> m_viewportUiHandlers; ///< Viewport UI handlers for each ComponentMode.
             AZStd::vector<EntityAndComponentMode> m_entitiesAndComponentModes; ///< The active ComponentModes (one per Entity).
             AZStd::vector<EntityAndComponentModeBuilders> m_entitiesAndComponentModeBuilders; ///< Factory functions to re-create specific modes
@@ -106,8 +130,12 @@ namespace AzToolsFramework
 
             size_t m_selectedComponentModeIndex = 0; ///< Index into the array of active ComponentModes, current index is 'selected' ComponentMode.
             bool m_adding = false; ///< Are we currently adding individual ComponentModes to the Editor wide ComponentMode.
-            bool m_componentMode = false; ///< Editor (global) ComponentMode flag - is ComponentMode active or not.
+            /// Editor (global) ComponentMode state - is ComponentMode active or not.
+            ComponentModeState m_componentModeState = ComponentModeState::Stopped; 
             ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr; //!< Tracker for activating/deactivating viewport editor modes.
+
+            // Handler object to sync Component Mode action to the Action Manager.
+            ComponentModeActionHandler m_componentModeActionHandler;
         };
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

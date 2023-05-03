@@ -94,8 +94,8 @@ namespace EMotionFX
 {
     const float BlendSpace2DNode::s_epsilonForBarycentricCoords = 0.001f;
 
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendSpace2DNode::Triangle::Triangle(uint16_t indexA, uint16_t indexB, uint16_t indexC)
     {
@@ -396,7 +396,7 @@ namespace EMotionFX
                 AnimGraphNode* paramSrcNode = paramConnection->GetSourceNode();
                 if (paramSrcNode)
                 {
-                    paramSrcNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                    TopDownUpdateIncomingNode(animGraphInstance, paramSrcNode, timePassedInSeconds);
                 }
             }
         }
@@ -484,12 +484,12 @@ namespace EMotionFX
         EMotionFX::BlendTreeConnection* param1Connection = GetInputPort(INPUTPORT_XVALUE).m_connection;
         if (param1Connection)
         {
-            param1Connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, param1Connection->GetSourceNode(), timePassedInSeconds);
         }
         EMotionFX::BlendTreeConnection* param2Connection = GetInputPort(INPUTPORT_YVALUE).m_connection;
         if (param2Connection)
         {
-            param2Connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, param2Connection->GetSourceNode(), timePassedInSeconds);
         }
 
         if (uniqueData->m_motionInfos.empty())

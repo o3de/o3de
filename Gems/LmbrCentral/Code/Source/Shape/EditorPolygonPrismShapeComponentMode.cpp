@@ -18,7 +18,12 @@
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator)
+
+    void EditorPolygonPrismShapeComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorPolygonPrismShapeComponentMode>(context);
+    }
 
     /// Util to calculate central position of prism (to draw the height manipulator)
     static AZ::Vector3 CalculateHeightManipulatorPosition(const AZ::PolygonPrism& polygonPrism)
@@ -39,6 +44,7 @@ namespace LmbrCentral
         const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType)
         : EditorBaseComponentMode(entityComponentIdPair, componentType)
         , m_nonUniformScaleChangedHandler([this](const AZ::Vector3& scale){OnNonUniformScaleChanged(scale);})
+        , m_vertexSelection(entityComponentIdPair)
     {
         m_currentTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(
@@ -83,9 +89,14 @@ namespace LmbrCentral
         return m_vertexSelection.HandleMouse(mouseInteraction);
     }
 
-     AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
+    AZStd::string EditorPolygonPrismShapeComponentMode::GetComponentModeName() const
     {
         return "Polygon Prism Shape Edit Mode";
+    }
+
+    AZ::Uuid EditorPolygonPrismShapeComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorPolygonPrismShapeComponentMode>();
     }
 
     void EditorPolygonPrismShapeComponentMode::CreateManipulators()

@@ -13,8 +13,10 @@ namespace AzFramework
     struct ScreenPoint;
     struct ScreenVector;
     struct ScreenSize;
+    class InputChannelId;
 
     void PrintTo(const ScreenPoint& screenPoint, std::ostream* os);
     void PrintTo(const ScreenVector& screenVector, std::ostream* os);
     void PrintTo(const ScreenSize& screenSize, std::ostream* os);
+    void PrintTo(const InputChannelId& inputChannelId, std::ostream* os);
 } // namespace AzFramework

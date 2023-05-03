@@ -17,7 +17,7 @@ class CAnimScriptVarNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimScriptVarNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimScriptVarNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimScriptVarNode, "{D93FC866-A158-4C00-AB03-29DC7D3CCCFF}", CAnimNode);
 
     CAnimScriptVarNode(const int id);

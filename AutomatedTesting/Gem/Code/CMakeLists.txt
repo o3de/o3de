@@ -24,11 +24,11 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzNetworking
-            Gem::Multiplayer
+            Gem::Multiplayer.Unified
         PRIVATE
             AZ::AzCore
             Gem::Atom_AtomBridge.Static
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
     AUTOGEN_RULES
         *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
         *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
@@ -41,16 +41,14 @@ ly_create_alias(NAME AutomatedTesting.Builders NAMESPACE Gem TARGETS Gem::Automa
 ly_create_alias(NAME AutomatedTesting.Tools    NAMESPACE Gem TARGETS Gem::AutomatedTesting)
 ly_create_alias(NAME AutomatedTesting.Clients  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
 ly_create_alias(NAME AutomatedTesting.Servers  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
-
-################################################################################
-# Gem dependencies
-################################################################################
-
-# Enable the enabled_gems for the Project:
-ly_enable_gems(PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake)
+ly_create_alias(NAME AutomatedTesting.Unified  NAMESPACE Gem TARGETS Gem::AutomatedTesting)
 
 # Add project to the list server projects to create the AutomatedTesting.ServerLauncher
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS AutomatedTesting)
 endif()
 
+# Add project to the list server projects to create the AutomatedTesting.UnifiedLauncher
+if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+    set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_UNIFIED_PROJECTS AutomatedTesting)
+endif()

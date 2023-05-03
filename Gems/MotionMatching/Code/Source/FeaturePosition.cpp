@@ -23,7 +23,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeaturePosition, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeaturePosition, MotionMatchAllocator)
 
     void FeaturePosition::ExtractFeatureValues(const ExtractFeatureContext& context)
     {

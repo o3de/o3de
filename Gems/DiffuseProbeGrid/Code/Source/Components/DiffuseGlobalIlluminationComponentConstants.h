@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const DiffuseGlobalIlluminationComponentTypeId = "{D51F8033-EF0D-4A13-BED3-5B193555B8D2}";
-        static constexpr const char* const EditorDiffuseGlobalIlluminationComponentTypeId = "{169378DD-4052-4A60-BD63-90B02CFA69C1}";
+        inline constexpr AZ::TypeId DiffuseGlobalIlluminationComponentTypeId{ "{D51F8033-EF0D-4A13-BED3-5B193555B8D2}" };
+        inline constexpr AZ::TypeId EditorDiffuseGlobalIlluminationComponentTypeId{ "{169378DD-4052-4A60-BD63-90B02CFA69C1}" };
 
     } // namespace Render
 } // namespace AZ

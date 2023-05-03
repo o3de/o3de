@@ -61,7 +61,7 @@ namespace UnitTest
     static AZStd::sys_time_t s_totalJobsTime = 0;
 
     class DefaultJobManagerSetupFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
 
     {
     protected:
@@ -76,10 +76,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
-
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
@@ -113,10 +110,7 @@ namespace UnitTest
             delete m_jobContext;
             delete m_jobManager;
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -181,7 +175,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(Vector3SumJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(Vector3SumJob, ThreadPoolAllocator);
 
         Vector3SumJob(const Vector3* array, unsigned int size, Vector3* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -281,7 +275,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(FibonacciJobJoin, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FibonacciJobJoin, ThreadPoolAllocator);
 
         FibonacciJobJoin(int* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -301,7 +295,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(FibonacciJobFork, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FibonacciJobFork, ThreadPoolAllocator);
 
         FibonacciJobFork(int n, int* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -342,7 +336,7 @@ namespace UnitTest
         : public DefaultJobManagerSetupFixture
     {
     public:
-        //AZ_CLASS_ALLOCATOR(JobFibonacciTest, ThreadPoolAllocator, 0)
+        //AZ_CLASS_ALLOCATOR(JobFibonacciTest, ThreadPoolAllocator);
 
         void run()
         {
@@ -371,7 +365,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(FibonacciJob2, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(FibonacciJob2, ThreadPoolAllocator);
 
         FibonacciJob2(int n, int* result, JobContext* context = nullptr)
             : Job(true, context)
@@ -438,7 +432,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(MergeSortJobJoin, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MergeSortJobJoin, ThreadPoolAllocator);
 
         MergeSortJobJoin(int* array, int* tempArray, int size1, int size2, JobContext* context = nullptr)
             : Job(true, context)
@@ -493,7 +487,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(MergeSortJobFork, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MergeSortJobFork, ThreadPoolAllocator);
 
         MergeSortJobFork(int* array, int* tempArray, int size, JobContext* context = nullptr)
             : Job(true, context)
@@ -582,7 +576,7 @@ namespace UnitTest
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(QuickSortJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(QuickSortJob, ThreadPoolAllocator);
 
         QuickSortJob(int* array, int left, int right, JobContext* context = nullptr)
             : Job(true, context)
@@ -1462,7 +1456,7 @@ namespace UnitTest
     public:
         static AZStd::atomic<AZ::s32> s_numIncompleteJobs;
 
-        AZ_CLASS_ALLOCATOR(TestJobWithPriority, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TestJobWithPriority, ThreadPoolAllocator);
 
         TestJobWithPriority(AZ::s8 priority, const char* name, JobContext* context, AZStd::binary_semaphore& binarySemaphore, AZStd::vector<AZStd::string>& namesOfProcessedJobs)
             : Job(true, context, false, priority)
@@ -1576,7 +1570,7 @@ namespace Benchmark
     public:
         static AZStd::atomic<AZ::s32> s_numIncompleteJobs;
 
-        AZ_CLASS_ALLOCATOR(TestJobCalculatePi, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TestJobCalculatePi, ThreadPoolAllocator);
 
         TestJobCalculatePi(AZ::u32 depth, AZ::s8 priority, JobContext* context)
             : Job(true, context, false, priority)
@@ -1608,9 +1602,6 @@ namespace Benchmark
 
         void internalSetUp()
         {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-
             JobManagerDesc desc;
             JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
@@ -1669,9 +1660,6 @@ namespace Benchmark
             m_randomDepths = {};
             delete m_jobContext;
             delete m_jobManager;
-
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
         }
         void TearDown(::benchmark::State&) override
         {

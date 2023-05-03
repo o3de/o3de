@@ -173,6 +173,12 @@ namespace Profiler
         // System tick bus overrides
         void OnSystemTick() override;
 
+        // Convert time ticks to milliseconds
+        float TicksToMs(double ticks);
+
+        // Convert time ticks to milliseconds
+        float TicksToMs(AZStd::sys_time_t ticks);
+
         //  --- Visualizer Members ---
 
         int m_updateFrequencyMs = DefaultUpdateFrequencyMs;
@@ -236,6 +242,8 @@ namespace Profiler
         // Index into the file picker, used to determine which file to load when "Load File" is pressed.
         int m_currentFileIndex = 0;
 
+        // Ticks per second used when the profiler data was recorded (when loading from a file).
+        AZStd::sys_time_t m_ticksPerSecondFromFile = 0;
 
         // --- Loading capture state ---
         AZStd::unordered_set<AZStd::string> m_deserializedStringPool;

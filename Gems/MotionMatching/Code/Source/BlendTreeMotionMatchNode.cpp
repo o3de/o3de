@@ -26,8 +26,8 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMotionMatchNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeMotionMatchNode::BlendTreeMotionMatchNode()
         : AnimGraphNode()
@@ -135,6 +135,7 @@ namespace EMotionFX::MotionMatching
         settings.m_minFramesPerKdTreeNode = animGraphNode->m_minFramesPerKdTreeNode;
         settings.m_motionList.reserve(animGraphNode->m_motionIds.size());
         settings.m_normalizeData = animGraphNode->m_normalizeData;
+        settings.m_featureScalerType = animGraphNode->m_featureScalerType;
         settings.m_featureTansformerSettings.m_featureMin = animGraphNode->m_featureMin;
         settings.m_featureTansformerSettings.m_featureMax = animGraphNode->m_featureMax;
         settings.m_featureTansformerSettings.m_clip = animGraphNode->m_clipFeatures;
@@ -324,9 +325,19 @@ namespace EMotionFX::MotionMatching
         return AZ::Edit::PropertyVisibility::Show;
     }
 
-    AZ::Crc32 BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility() const
+    AZ::Crc32 BlendTreeMotionMatchNode::GetFeatureScalerTypeSettingsVisibility() const
     {
         if (m_normalizeData)
+        {
+            return AZ::Edit::PropertyVisibility::Show;
+        }
+
+        return AZ::Edit::PropertyVisibility::Hide;
+    }
+
+    AZ::Crc32 BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility() const
+    {
+        if (m_normalizeData && m_featureScalerType == MotionMatchingData::MinMaxScalerType)
         {
             return AZ::Edit::PropertyVisibility::Show;
         }
@@ -371,7 +382,7 @@ namespace EMotionFX::MotionMatching
         }
 
         serializeContext->Class<BlendTreeMotionMatchNode, AnimGraphNode>()
-            ->Version(10)
+            ->Version(11)
             ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
             ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
             ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
@@ -386,6 +397,7 @@ namespace EMotionFX::MotionMatching
             ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
             ->Field("featureSchema", &BlendTreeMotionMatchNode::m_featureSchema)
             ->Field("motionIds", &BlendTreeMotionMatchNode::m_motionIds)
+            ->Field("featureScalerType", &BlendTreeMotionMatchNode::m_featureScalerType)
             ;
 
         AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -425,15 +437,21 @@ namespace EMotionFX::MotionMatching
                 ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_normalizeData, "Normalize Data", "Normalize feature data for more intuitive control over weighting the cost factors.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_featureScalerType, "Type", "Feature scaler type to be used to normalize the data.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetFeatureScalerTypeSettingsVisibility)
+                    ->EnumAttribute(MotionMatchingData::StandardScalerType, "Standard Scaler")
+                    ->EnumAttribute(MotionMatchingData::MinMaxScalerType, "Min-max Scaler")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMin, "Feature Minimum", "Minimum value after data transformation.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_featureMax, "Feature Maximum", "Maximum value after data transformation.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_clipFeatures, "Clip Features", "Clip feature values for outliers to the above range.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &BlendTreeMotionMatchNode::Reinit)
-                ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetDataNormalizationSettingsVisibility)
+                ->Attribute(AZ::Edit::Attributes::Visibility, &BlendTreeMotionMatchNode::GetMinMaxSettingsVisibility)
             ->ClassElement(AZ::Edit::ClassElements::Group, "Acceleration Structure")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_maxKdTreeDepth, "Max kd-tree depth", "The maximum number of hierarchy levels in the kdTree.")

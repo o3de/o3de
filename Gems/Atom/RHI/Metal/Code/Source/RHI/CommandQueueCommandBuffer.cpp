@@ -57,7 +57,7 @@ namespace AZ
                         const char * cbLabel = [ buffer.label UTF8String ];
                         AZ_Printf("RHI", "Command Buffer %s failed to execute\n", cbLabel);
                         
-                        int eCode = buffer.error.code;
+                        int eCode = static_cast<int>(buffer.error.code);
                         switch (eCode)
                         {
                         case MTLCommandBufferErrorNone:

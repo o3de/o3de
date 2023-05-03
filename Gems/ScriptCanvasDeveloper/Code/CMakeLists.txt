@@ -56,6 +56,7 @@ ly_add_target(
 # By default, the above module is the Client/Server module
 ly_create_alias(NAME ScriptCanvasDeveloper.Clients NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper)
 ly_create_alias(NAME ScriptCanvasDeveloper.Servers NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper)
+ly_create_alias(NAME ScriptCanvasDeveloper.Unified NAMESPACE Gem TARGETS Gem::ScriptCanvasDeveloper)
 
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

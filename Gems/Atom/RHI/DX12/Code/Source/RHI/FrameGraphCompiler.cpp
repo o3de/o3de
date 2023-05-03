@@ -108,10 +108,12 @@ namespace AZ
                 {
                     result += "PREDICATION|";
                 }
-                if (state & D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT)
+#ifdef O3DE_DX12_VRS_SUPPORT
+                if (state & D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE)
                 {
-                    result += "INDIRECT_ARGUMENT|";
+                    result += "SHADING RATE|";
                 }
+#endif
             }
 
             if (result.size())
@@ -325,7 +327,13 @@ namespace AZ
                     mergedResourceState |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER | D3D12_RESOURCE_STATE_INDEX_BUFFER;
                     break;
                 }
-                
+#ifdef O3DE_DX12_VRS_SUPPORT
+                case RHI::ScopeAttachmentUsage::ShadingRate:
+                {
+                    mergedResourceState |= D3D12_RESOURCE_STATE_SHADING_RATE_SOURCE;
+                    break;
+                }
+#endif
                 case RHI::ScopeAttachmentUsage::Uninitialized:
                 default:
                     AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized or not supported");
@@ -372,14 +380,19 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileResourceBarriers(DX12)");
 
-            for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
             {
-                CompileBufferBarriers(rootScope, *bufferFrameAttachment);
+                AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileBufferBarriers(DX12)");
+                for (RHI::BufferFrameAttachment* bufferFrameAttachment : attachmentDatabase.GetBufferAttachments())
+                {
+                    CompileBufferBarriers(rootScope, *bufferFrameAttachment);
+                }
             }
-
-            for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
             {
-                CompileImageBarriers(*imageFrameAttachment);
+                AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileImageBarriers (DX12)");
+                for (RHI::ImageFrameAttachment* imageFrameAttachment : attachmentDatabase.GetImageAttachments())
+                {
+                    CompileImageBarriers(*imageFrameAttachment);
+                }
             }
         }
 
@@ -390,8 +403,6 @@ namespace AZ
 #else
             ResourceTransitionLoggerNull logger(bufferFrameAttachment.GetId());
 #endif
-
-            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileBufferBarriers(DX12)");
 
             Buffer& buffer = static_cast<Buffer&>(*bufferFrameAttachment.GetBuffer());
             RHI::BufferScopeAttachment* scopeAttachment = bufferFrameAttachment.GetFirstScopeAttachment();
@@ -466,8 +477,6 @@ namespace AZ
             ResourceTransitionLoggerNull logger(imageFrameAttachment.GetId());
 #endif
 
-            AZ_PROFILE_SCOPE(RHI, "FrameGraphCompiler: CompileImageBarriers (DX12)");
-
             Image& image = static_cast<Image&>(*imageFrameAttachment.GetImage());
             RHI::ImageScopeAttachment* scopeAttachment = imageFrameAttachment.GetFirstScopeAttachment();
 
@@ -475,6 +484,13 @@ namespace AZ
             {
                 AZ_WarningOnce("RHI", false, "Imported ImageFrameAttachment isn't used in any Scope");
                 return;
+            }
+
+            const BarrierOp::CommandListState* barrierState = nullptr;
+            if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::Depth))
+            {
+                // Depth/Stencil resources needs to set the sample positions before doing barrier operations.
+                barrierState = &image.GetDescriptor().m_multisampleState;
             }
 
             D3D12_RESOURCE_TRANSITION_BARRIER transition = {0};
@@ -499,7 +515,7 @@ namespace AZ
                             firstScope.IsStateSupportedByQueue(transition.StateAfter))
                         {
                             logger.LogPreDiscardTransition(firstScope);
-                            firstScope.QueuePreDiscardTransition(transition);
+                            firstScope.QueuePreDiscardTransition(transition, barrierState);
                         }
                         else
                         {
@@ -509,7 +525,7 @@ namespace AZ
                             if (previousScope)
                             {
                                 logger.LogEpilogueTransition(*previousScope);
-                                previousScope->QueueEpilogueTransition(transition);
+                                previousScope->QueueEpilogueTransition(transition, barrierState);
                             }
                         }
                         logger.SetStateBefore(transition.StateBefore);
@@ -554,11 +570,11 @@ namespace AZ
                         logger.LogPrologueTransition(scopeAfter);
                         if (scopeAttachment->HasUsage(RHI::ScopeAttachmentUsage::Resolve))
                         {
-                            scopeAfter.QueueResolveTransition(transition);
+                            scopeAfter.QueueResolveTransition(transition, barrierState);
                         }
                         else
                         {
-                            scopeAfter.QueuePrologueTransition(transition);
+                            scopeAfter.QueuePrologueTransition(transition, barrierState);
                         }
                     }
 
@@ -627,7 +643,7 @@ namespace AZ
                                 logger.SetStateBefore(transition.StateBefore);
                                 logger.SetStateAfter(transition.StateAfter);
                                 logger.LogPrologueTransition(scopeAfter);
-                                scopeAfter.QueuePrologueTransition(transition);
+                                scopeAfter.QueuePrologueTransition(transition, barrierState);
                             }
 
                             // Moving into copy queue.
@@ -640,14 +656,14 @@ namespace AZ
                                 // since state promotion will take care of it.
                                 logger.SetStateAfter(transitionCopy.StateAfter);
                                 logger.LogEpilogueTransition(*scopeBefore);
-                                scopeBefore->QueueEpilogueTransition(transitionCopy);
+                                scopeBefore->QueueEpilogueTransition(transitionCopy, barrierState);
                             }
 
                             // Moving between compute / graphics queue.
                             else
                             {
                                 logger.LogEpilogueTransition(*scopeBefore);
-                                scopeBefore->QueueEpilogueTransition(transition);
+                                scopeBefore->QueueEpilogueTransition(transition, barrierState);
                             }
                         }
                     }
@@ -658,9 +674,8 @@ namespace AZ
                     {
                         transition.StateBefore = transition.StateAfter;
                         transition.StateAfter = D3D12_RESOURCE_STATE_RESOLVE_SOURCE;
-                        scopeAfter.QueueResolveTransition(transition);
+                        scopeAfter.QueueResolveTransition(transition, barrierState);
                     }
-
                 }
 
                 scopeAttachment = scopeAttachment->GetNext();

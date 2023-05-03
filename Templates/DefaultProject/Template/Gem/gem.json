@@ -1,5 +1,6 @@
 {
     "gem_name": "${Name}",
+    "version": "${Version}",
     "display_name": "${Name}",
     "license": "What license ${Name} uses goes here: i.e. Apache-2.0 or MIT",
     "license_url": "Link to the license web site goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
@@ -13,9 +14,16 @@
     "user_tags": [
         "${Name}"
     ],
+    "platforms": [
+        "${Platforms}"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
     "documentation_url": "",
     "dependencies": [
+    ],
+    "compatible_engines": [
+    ],
+    "engine_api_dependencies":[
     ]
 }

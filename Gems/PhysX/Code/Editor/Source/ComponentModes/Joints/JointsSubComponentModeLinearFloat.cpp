@@ -21,7 +21,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeLinearFloat, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeLinearFloat, AZ::SystemAllocator);
 
     JointsSubComponentModeLinearFloat::JointsSubComponentModeLinearFloat(
         const AZStd::string& propertyName, float exponent, float max, float min)
@@ -42,7 +42,7 @@ namespace PhysX
 
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         m_manipulator = AzToolsFramework::LinearManipulator::MakeShared(worldTransform);
         m_manipulator->AddEntityComponentIdPair(idPair);

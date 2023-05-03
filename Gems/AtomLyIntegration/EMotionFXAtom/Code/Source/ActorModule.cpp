@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ActorModule, "{84DCA4A9-39A1-4A04-A7DE-66FF62A3B7AD}", Module);
-            AZ_CLASS_ALLOCATOR(ActorModule, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ActorModule, SystemAllocator);
 
             ActorModule()
                 : Module()

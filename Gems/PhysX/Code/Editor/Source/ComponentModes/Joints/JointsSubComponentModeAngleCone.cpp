@@ -25,7 +25,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAngleCone, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeAngleCone, AZ::SystemAllocator);
 
     namespace Internal
     {
@@ -47,10 +47,10 @@ namespace PhysX
         m_entityComponentIdPair = idPair;
         EditorJointRequestBus::EventResult(
             m_resetPostion, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetVector3Value,
-            JointsComponentModeCommon::ParamaterNames::Position);
+            JointsComponentModeCommon::ParameterNames::Position);
         EditorJointRequestBus::EventResult(
             m_resetRotation, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetVector3Value,
-            JointsComponentModeCommon::ParamaterNames::Rotation);
+            JointsComponentModeCommon::ParameterNames::Rotation);
         EditorJointRequestBus::EventResult(
             m_resetLimits, m_entityComponentIdPair, &EditorJointRequests::GetLinearValuePair, m_propertyName);
 
@@ -59,7 +59,7 @@ namespace PhysX
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
             localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue,
-            JointsComponentModeCommon::ParamaterNames::Transform);
+            JointsComponentModeCommon::ParameterNames::Transform);
         const AZ::Quaternion localRotation = localTransform.GetRotation();
 
         // Initialize manipulators used to resize the base of the cone.
@@ -124,7 +124,7 @@ namespace PhysX
                 AZ::Transform localTransform = AZ::Transform::CreateIdentity();
                 EditorJointRequestBus::EventResult(
                     localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue,
-                    JointsComponentModeCommon::ParamaterNames::Transform);
+                    JointsComponentModeCommon::ParameterNames::Transform);
                 const AZ::Quaternion localRotation = localTransform.GetRotation();
                 const float axisDisplacement = action.LocalPositionOffset().Dot(localRotation.TransformVector(action.m_fixed.m_axis));
                 const float originalBaseY = tan(AZ::DegToRad(sharedState->m_startValues.first)) * Internal::ConeHeight;
@@ -153,7 +153,7 @@ namespace PhysX
                 AZ::Transform localTransform = AZ::Transform::CreateIdentity();
                 EditorJointRequestBus::EventResult(
                     localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue,
-                    JointsComponentModeCommon::ParamaterNames::Transform);
+                    JointsComponentModeCommon::ParameterNames::Transform);
                 const AZ::Quaternion localRotation = localTransform.GetRotation();
                 const float axisDisplacement = action.LocalPositionOffset().Dot(localRotation.TransformVector(action.m_fixed.m_axis));
                 const float originalBaseZ = tan(AZ::DegToRad(sharedState->m_startValues.second)) * Internal::ConeHeight;
@@ -182,7 +182,7 @@ namespace PhysX
                 AZ::Transform localTransform = AZ::Transform::CreateIdentity();
                 EditorJointRequestBus::EventResult(
                     localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue,
-                    JointsComponentModeCommon::ParamaterNames::Transform);
+                    JointsComponentModeCommon::ParameterNames::Transform);
 
                 const AZ::Quaternion localRotation = localTransform.GetRotation();
 
@@ -229,7 +229,7 @@ namespace PhysX
         {
             PhysX::EditorJointRequestBus::EventResult(
                 sharedStateXRotate->m_startTM, m_entityComponentIdPair, &PhysX::EditorJointRequests::GetTransformValue,
-                JointsComponentModeCommon::ParamaterNames::Transform);
+                JointsComponentModeCommon::ParameterNames::Transform);
         };
 
         m_xRotationManipulator->InstallLeftMouseDownCallback(mouseDownRotateXCallback);
@@ -244,10 +244,10 @@ namespace PhysX
 
                 PhysX::EditorJointRequestBus::Event(
                     m_entityComponentIdPair, &PhysX::EditorJointRequests::SetVector3Value,
-                    JointsComponentModeCommon::ParamaterNames::Position, newTransform.GetTranslation());
+                    JointsComponentModeCommon::ParameterNames::Position, newTransform.GetTranslation());
                 PhysX::EditorJointRequestBus::Event(
                     m_entityComponentIdPair, &PhysX::EditorJointRequests::SetVector3Value,
-                    JointsComponentModeCommon::ParamaterNames::Rotation, newTransform.GetRotation().GetEulerDegrees());
+                    JointsComponentModeCommon::ParameterNames::Rotation, newTransform.GetRotation().GetEulerDegrees());
 
                 m_yLinearManipulator->SetLocalOrientation(manipulatorOrientation);
                 m_zLinearManipulator->SetLocalOrientation(manipulatorOrientation);
@@ -274,7 +274,7 @@ namespace PhysX
     {
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
-            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParamaterNames::Transform);
+            localTransform, idPair, &EditorJointRequests::GetTransformValue, JointsComponentModeCommon::ParameterNames::Transform);
 
         float coneHeight = Internal::ConeHeight;
         AngleLimitsFloatPair yzSwingAngleLimits;
@@ -317,9 +317,9 @@ namespace PhysX
     void JointsSubComponentModeAngleCone::ResetValues(const AZ::EntityComponentIdPair& idPair)
     {
         EditorJointRequestBus::Event(
-            idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Position, m_resetPostion);
+            idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Position, m_resetPostion);
         EditorJointRequestBus::Event(
-            idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Rotation, m_resetRotation);
+            idPair, &PhysX::EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Rotation, m_resetRotation);
         EditorJointRequestBus::Event(idPair, &EditorJointRequests::SetLinearValuePair, m_propertyName, m_resetLimits);
     }
 
@@ -361,7 +361,7 @@ namespace PhysX
         AZ::Transform localTransform = AZ::Transform::CreateIdentity();
         EditorJointRequestBus::EventResult(
             localTransform, m_entityComponentIdPair, &EditorJointRequests::GetTransformValue,
-            JointsComponentModeCommon::ParamaterNames::Transform);
+            JointsComponentModeCommon::ParameterNames::Transform);
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();

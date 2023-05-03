@@ -29,7 +29,7 @@ namespace AzToolsFramework
 
         public:
             AZ_RTTI(SourceAssetBrowserEntry, "{9FD4FF76-4CC3-4E96-953F-5BF63C2E1F1D}", AssetBrowserEntry);
-            AZ_CLASS_ALLOCATOR(SourceAssetBrowserEntry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SourceAssetBrowserEntry, AZ::SystemAllocator);
 
             SourceAssetBrowserEntry() = default;
             ~SourceAssetBrowserEntry() override;
@@ -38,6 +38,7 @@ namespace AzToolsFramework
             AssetEntryType GetEntryType() const override;
 
             const AZStd::string GetExtension() const;
+            const AZStd::string GetFileName() const;
             AZ::s64 GetFileID() const;
             AZ::s64 GetSourceID() const;
             AZ::s64 GetScanFolderID() const;

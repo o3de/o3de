@@ -27,7 +27,7 @@ namespace ScriptCanvas
     class SourceTree
     {
     public:
-        AZ_CLASS_ALLOCATOR(SourceTree, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceTree, AZ::SystemAllocator);
 
         SourceHandle m_source;
         AZStd::vector<SourceTree> m_dependencies;
@@ -49,6 +49,7 @@ namespace ScriptCanvas
     struct DeserializeResult
     {
         bool m_isSuccessful = false;
+        bool m_fromObjectStreamXML = false;
         AZStd::string m_jsonResults;
         AZStd::string m_errors;
         DataPtr m_graphDataPtr;

@@ -542,30 +542,11 @@ QString DockWidget::settingsKey(const QString& paneName)
     return QStringLiteral("ViewPane-") + paneName;
 }
 
-// run generic function on all widgets considered for greying out/disabling
-template<typename Fn>
-void SetDefaultActionsEnabled(
-    const bool enabled, QtViewPanes& registeredPanes, const Fn& fn)
+void EnableAllWidgetInstances(QList<DockWidget*>& widgetInstances, bool enable)
 {
-    for (QtViewPane& p : registeredPanes)
+    for (auto& dockWidget : widgetInstances)
     {
-        if (!p.m_dockWidgetInstances.empty())
-        {
-            for (auto& dockWidget : p.m_dockWidgetInstances)
-            {
-                const auto& paneName = dockWidget->PaneName();
-                // disable/fade all widgets other than those in the EntityInspector, EntityOutliner and Console
-                // note: The Console is not greyed out and the EntityInspector and EntityOutliner handle their
-                // own fading when entering/leaving ComponentMode
-                if (paneName != LyViewPane::EntityInspector &&
-                    paneName != LyViewPane::EntityInspectorPinned &&
-                    paneName != LyViewPane::Console &&
-                    paneName != LyViewPane::EntityOutliner)
-                {
-                    fn(dockWidget->widget(), enabled);
-                }
-            }
-        }
+        AzQtComponents::SetWidgetInteractEnabled(dockWidget->widget(), enable);
     }
 }
 
@@ -585,35 +566,42 @@ QtViewPaneManager::QtViewPaneManager(QObject* parent)
     m_windowRequest.BusConnect();
 
     m_componentModeNotifications->SetEnteredComponentModeFunc(
-        [this](const AzToolsFramework::ViewportEditorModesInterface&)
-    {
-        // gray out panels when entering ComponentMode
-        SetDefaultActionsEnabled(false, m_registeredPanes, [](QWidget* widget, bool on)
+        [this]([[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModes)
         {
-            AzQtComponents::SetWidgetInteractEnabled(widget, on);
+            for (QtViewPane& p : m_registeredPanes)
+            {
+                if (p.m_options.isDisabledInComponentMode)
+                {
+                    // By default, disable all widgets when entering Component Mode
+                    EnableAllWidgetInstances(p.m_dockWidgetInstances, false);
+                }
+            }
         });
-    });
 
     m_componentModeNotifications->SetLeftComponentModeFunc(
-        [this](const AzToolsFramework::ViewportEditorModesInterface&)
+        [this]([[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModes)
     {
-        // enable panels again when leaving ComponentMode
-        SetDefaultActionsEnabled(true, m_registeredPanes, [](QWidget* widget, bool on)
-        {
-            AzQtComponents::SetWidgetInteractEnabled(widget, on);
+            for (QtViewPane& p : m_registeredPanes)
+            {
+                if (p.m_options.isDisabledInComponentMode)
+                {
+                    // By default, enable all widgets again when leaving Component Mode
+                    EnableAllWidgetInstances(p.m_dockWidgetInstances, true);
+                }
+            }
         });
-    });
 
     m_windowRequest.SetEnableEditorUiFunc(
         [this](bool enable)
         {
-            // gray out panels when entering ImGui mode
-            SetDefaultActionsEnabled(
-                enable, m_registeredPanes,
-                [](QWidget* widget, bool on)
+            for (QtViewPane& p : m_registeredPanes)
+            {
+                if (p.m_options.isDisabledInImGuiMode)
                 {
-                    AzQtComponents::SetWidgetInteractEnabled(widget, on);
-                });
+                    // By default, disable/enable all widgets when entering/exiting IMGUI
+                    EnableAllWidgetInstances(p.m_dockWidgetInstances, enable);
+                }
+            }
         });
 }
 
@@ -1126,6 +1114,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // Reset the default view panes to be opened. Used for restoring default layout and component entity layout.
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
+    const QtViewPane* assetBrowserInspectorPane = OpenPane(LyViewPane::AssetBrowserInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* entityInspectorViewPane = OpenPane(LyViewPane::EntityInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
@@ -1144,17 +1133,51 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         // so that the inspector will be to the right of the viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
 
-        // Retrieve the width of the screen that our main window is on so we can
+        // Retrieve the width and height of the screen that our main window is on so we can
         // use it later for resizing our panes. The main window ends up being maximized
         // when we restore the default layout, but even if we maximize the main window
-        // before doing anything else, its width won't update until after this has all
+        // before doing anything else, its height and width won't update until after this has all
         // been processed, so we need to resize the panes based on what the main window
-        // width WILL be after maximized
+        // height and width WILL be after maximized
         int screenWidth = QApplication::desktop()->screenGeometry(m_mainWindow).width();
+        int screenHeight = QApplication::desktop()->screenGeometry(m_mainWindow).height();
 
         // Add the console view pane first
         m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
         consoleViewPane->m_dockWidget->setFloating(false);
+
+        if (assetBrowserViewPane)
+        {
+            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
+            assetBrowserViewPane->m_dockWidget->setFloating(false);
+
+            static const float bottomTabWidgetPercentage = 0.25f;
+            int newHeight = static_cast<int>((float)screenHeight * bottomTabWidgetPercentage);
+
+            AzQtComponents::DockTabWidget* bottomTabWidget = m_advancedDockManager->tabifyDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, m_mainWindow);
+            if (bottomTabWidget)
+            {
+                bottomTabWidget->setCurrentWidget(assetBrowserViewPane->m_dockWidget);
+
+                QDockWidget* bottomTabWidgetParent = qobject_cast<QDockWidget*>(bottomTabWidget->parentWidget());
+                m_mainWindow->resizeDocks({ bottomTabWidgetParent }, { newHeight }, Qt::Vertical);
+            }
+            else
+            {
+                m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
+            }
+        }
+
+        if (assetBrowserInspectorPane)
+        {
+            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserInspectorPane->m_dockWidget);
+            assetBrowserInspectorPane->m_dockWidget->setFloating(false);
+
+            static const float assetBrowserInspectorWidthPercentage = 0.15f;
+            int newWidth = static_cast<int>((float)screenWidth * assetBrowserInspectorWidthPercentage);
+
+            m_mainWindow->resizeDocks({ assetBrowserInspectorPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
+        }
 
         if (entityInspectorViewPane)
         {
@@ -1185,19 +1208,13 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             }
         }
 
-        if (assetBrowserViewPane && entityOutlinerViewPane)
+        if (entityOutlinerViewPane)
         {
             m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, entityOutlinerViewPane->m_dockWidget);
             entityOutlinerViewPane->m_dockWidget->setFloating(false);
 
-            m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, assetBrowserViewPane->m_dockWidget);
-            assetBrowserViewPane->m_dockWidget->setFloating(false);
-
-            m_advancedDockManager->splitDockWidget(m_mainWindow, entityOutlinerViewPane->m_dockWidget, assetBrowserViewPane->m_dockWidget, Qt::Vertical);
-
-            // Resize our entity outliner (and by proxy the asset browser split with it)
-            // so that they get an appropriate default width since the minimum sizes have
-            // been removed from these widgets
+            // Resize our entity outliner so that it gets an appropriate default width
+            // since the minimum sizes been removed from this widget
             static const float entityOutlinerWidthPercentage = 0.15f;
             int newWidth = static_cast<int>((float)screenWidth * entityOutlinerWidthPercentage);
             m_mainWindow->resizeDocks({ entityOutlinerViewPane->m_dockWidget }, { newWidth }, Qt::Horizontal);

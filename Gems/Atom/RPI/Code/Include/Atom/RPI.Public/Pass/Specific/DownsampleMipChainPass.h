@@ -19,8 +19,6 @@ namespace AZ
 {
     namespace RPI
     {
-        using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
-
         //! This pass takes a mip mapped texture as input where the most detailed mip is already written to.
         //! It then recursively downsamples that mip to lower mip levels using the provided Compute Shader.
         //! It does this by recursively creating Compute Passes to write to each mip using the Compute Shader.
@@ -32,7 +30,7 @@ namespace AZ
 
         public:
             AZ_RTTI(DownsampleMipChainPass, "{593B0B69-89E4-4DA5-82D2-745FB2E5FFDC}", ParentPass);
-            AZ_CLASS_ALLOCATOR(DownsampleMipChainPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DownsampleMipChainPass, SystemAllocator);
           
             //! Creates a new pass without a PassTemplate
             static Ptr<DownsampleMipChainPass> Create(const PassDescriptor& descriptor);

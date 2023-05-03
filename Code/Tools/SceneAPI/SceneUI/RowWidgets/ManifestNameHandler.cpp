@@ -16,7 +16,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestNameHandler, SystemAllocator);
 
             ManifestNameHandler* ManifestNameHandler::s_instance = nullptr;
 

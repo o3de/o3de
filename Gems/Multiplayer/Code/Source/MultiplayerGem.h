@@ -18,7 +18,7 @@ namespace Multiplayer
     public:
 
         AZ_RTTI(MultiplayerModule, "{497FF057-6CE1-43D5-9A9F-D2B7ABF6D3A7}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MultiplayerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplayerModule, AZ::SystemAllocator);
 
         MultiplayerModule();
         ~MultiplayerModule() override = default;

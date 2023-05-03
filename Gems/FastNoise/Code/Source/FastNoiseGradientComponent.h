@@ -39,7 +39,7 @@ namespace FastNoiseGem
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(FastNoiseGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FastNoiseGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(FastNoiseGradientConfig, "{831C1F11-5898-4FBF-B4CF-92B757A907A8}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -65,7 +65,7 @@ namespace FastNoiseGem
         float m_cellularJitter = 0.45f;
     };
 
-    static const AZ::Uuid FastNoiseGradientComponentTypeId = "{81449CDF-D6DE-46DA-A50C-576B0B921311}";
+    inline constexpr AZ::TypeId FastNoiseGradientComponentTypeId{ "{81449CDF-D6DE-46DA-A50C-576B0B921311}" };
 
     class FastNoiseGradientComponent
         : public AZ::Component

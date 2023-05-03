@@ -32,7 +32,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceAltitudeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceAltitudeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceAltitudeGradientConfig, "{3CB05FC9-6E0F-435E-B420-F027B6716804}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZ::EntityId m_shapeEntityId;
@@ -49,7 +49,7 @@ namespace GradientSignal
         bool IsShapeValid() const;
     };
 
-    static const AZ::Uuid SurfaceAltitudeGradientComponentTypeId = "{76359FA6-AD40-4DF9-81C6-F63F2632B665}";
+    inline constexpr AZ::TypeId SurfaceAltitudeGradientComponentTypeId{ "{76359FA6-AD40-4DF9-81C6-F63F2632B665}" };
 
     /**
     * Component implementing GradientRequestBus based on altitude

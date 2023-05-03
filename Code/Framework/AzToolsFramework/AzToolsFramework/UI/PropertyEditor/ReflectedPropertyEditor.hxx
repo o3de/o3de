@@ -14,6 +14,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include "PropertyEditorAPI.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QFrame>
@@ -36,18 +37,23 @@ namespace AzToolsFramework
     class PropertyRowWidget;
     class ComponentEditor;
 
+    class ReflectedPropertyEditor;
+    AZ_TYPE_INFO_SPECIALIZE(ReflectedPropertyEditor, "{F5B220A4-16DF-4E03-B0B2-CF776D59B9B7}");
+
     /**
      * the Reflected Property Editor is a Qt Control which you can place inside a GUI, which you then feed
      * a series of object(s) and instances.  Any object or instance with Editor reflection will then be editable
      * in the Reflected Property editor control, with the GUI arrangement specified in the edit reflection for
      * those objects.
      */
-    class ReflectedPropertyEditor 
+    class ReflectedPropertyEditor
         : public QFrame
+        , public IPropertyEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator);
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 
@@ -59,11 +65,11 @@ namespace AzToolsFramework
         void Setup(AZ::SerializeContext* context, IPropertyEditorNotify* ptrNotify, bool enableScrollbars, int propertyLabelWidth = 200, ComponentEditor *editorParent = nullptr);
 
         // allows disabling display of root container property widgets
-        void SetHideRootProperties(bool hideRootProperties);
+        void SetHideRootProperties(bool hideRootProperties) override;
 
-        bool AddInstance(void* instance, const AZ::Uuid& classId, void* aggregateInstance = nullptr, void* compareInstance = nullptr);
+        bool AddInstance(void* instance, const AZ::Uuid& classId, void* aggregateInstance = nullptr, void* compareInstance = nullptr) override;
         void SetCompareInstance(void* instance, const AZ::Uuid& classId);
-        void ClearInstances();
+        void ClearInstances() override;
         void ReadValuesIntoGui(QWidget* widget, InstanceDataNode* node);
         template<class T>
         bool AddInstance(T* instance, void* aggregateInstance = nullptr, void* compareInstance = nullptr)
@@ -71,30 +77,31 @@ namespace AzToolsFramework
             return AddInstance(instance, azrtti_typeid(instance), aggregateInstance, compareInstance);
         }
 
-        void InvalidateAll(const char* filter = nullptr); // recreates the entire tree of properties.
+        void InvalidateAll(const char* filter = nullptr) override; // recreates the entire tree of properties.
         void InvalidateAttributesAndValues(); // re-reads all attributes, and all values.
         void InvalidateValues(); // just updates the values inside properties.
 
-        void SetFilterString(AZStd::string str);
+        void SetFilterString(AZStd::string str) override;
         AZStd::string GetFilterString();
-        void SetSavedStateKey(AZ::u32 key); // a settings key which is used to store and load the set of things that are expanded or not and other settings
+        // a settings key which is used to store and load the set of things that are expanded or not and other settings
+        void SetSavedStateKey([[maybe_unused]] AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName = "") override;
 
-        void QueueInvalidation(PropertyModificationRefreshLevel level);
+        void QueueInvalidation(PropertyModificationRefreshLevel level) override;
         //will force any queued invalidations to happen immediately
         void ForceQueuedInvalidation();
 
-        void CancelQueuedRefresh(); // Cancels any pending property refreshes
+        void CancelQueuedRefresh() override; // Cancels any pending property refreshes
 
         //! When set, disables data access for this property editor.
         //! This prevents any value refreshes from the inspected values from occurring as well as disabling user input.
-        void PreventDataAccess(bool shouldPrevent);
+        void PreventDataAccess(bool shouldPrevent) override;
         // O3DE_DEPRECATED(LY-120821)
         void PreventRefresh(bool shouldPrevent){PreventDataAccess(shouldPrevent);}
 
-        void SetAutoResizeLabels(bool autoResizeLabels);
+        void SetAutoResizeLabels(bool autoResizeLabels) override;
 
         InstanceDataNode* GetNodeFromWidget(QWidget* pTarget) const;
-        PropertyRowWidget* GetWidgetFromNode(InstanceDataNode* node) const;
+        PropertyRowWidget* GetWidgetFromNode(InstanceDataNode* node) const override;
 
         void ExpandAll(bool saveExpansionState = true);
         void CollapseAll(bool saveExpansionState = true);
@@ -114,27 +121,27 @@ namespace AzToolsFramework
         QSize sizeHint() const override;
 
         using InstanceDataHierarchyCallBack = AZStd::function<void(AzToolsFramework::InstanceDataHierarchy& /*hierarchy*/)>;
-        void EnumerateInstances(InstanceDataHierarchyCallBack enumerationCallback);
+        void EnumerateInstances(InstanceDataHierarchyCallBack enumerationCallback) override;
 
-        void SetValueComparisonFunction(const InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction);
+        void SetValueComparisonFunction(const InstanceDataHierarchy::ValueComparisonFunction& valueComparisonFunction) override;
 
         // Set custom function for evaluating whether a node is read-only
-        void SetReadOnlyQueryFunction(const ReadOnlyQueryFunction& readOnlyQueryFunction);
+        void SetReadOnlyQueryFunction(const ReadOnlyQueryFunction& readOnlyQueryFunction) override;
 
         // Set custom function for evaluating whether a node is hidden
-        void SetHiddenQueryFunction(const HiddenQueryFunction& hiddenQueryFunction);
+        void SetHiddenQueryFunction(const HiddenQueryFunction& hiddenQueryFunction) override;
 
-        bool HasFilteredOutNodes() const;
-        bool HasVisibleNodes() const;
+        bool HasFilteredOutNodes() const override;
+        bool HasVisibleNodes() const override;
 
         // Set custom function for evaluating if we a given node should show an indicator or not
-        void SetIndicatorQueryFunction(const IndicatorQueryFunction& indicatorQueryFunction);
+        void SetIndicatorQueryFunction(const IndicatorQueryFunction& indicatorQueryFunction) override;
 
         // if you want it to save its state, you need to give it a user settings label:
         //void SetSavedStateLabel(AZ::u32 label);
         //static void Reflect(const AZ::ClassDataReflection& reflection);
 
-        void SetDynamicEditDataProvider(DynamicEditDataProvider provider);
+        void SetDynamicEditDataProvider(DynamicEditDataProvider provider) override;
 
 
         QWidget* GetContainerWidget();
@@ -155,13 +162,13 @@ namespace AzToolsFramework
         using VisibilityCallback = AZStd::function<void(InstanceDataNode* node, NodeDisplayVisibility& visibility, bool& checkChildVisibility)>;
         void SetVisibilityCallback(VisibilityCallback callback);
 
-        void MoveNodeToIndex(InstanceDataNode* node, int index);
-        void MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
-        void MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
+        void MoveNodeToIndex(InstanceDataNode* node, int index) override;
+        void MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore) override;
+        void MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore) override;
 
         int GetNodeIndexInContainer(InstanceDataNode* node);
         InstanceDataNode* GetNodeAtIndex(int index);
-        QSet<PropertyRowWidget*> GetTopLevelWidgets();
+        QSet<PropertyRowWidget*> GetTopLevelWidgets() override;
     signals:
         void OnExpansionContractionDone();
     private:

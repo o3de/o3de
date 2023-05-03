@@ -22,6 +22,7 @@
 #include <Allocators.h>
 #include <Feature.h>
 #include <FeatureMatrixMinMaxScaler.h>
+#include <FeatureMatrixStandardScaler.h>
 #include <FeatureSchemaDefault.h>
 #include <FeatureTrajectory.h>
 #include <FrameDatabase.h>
@@ -32,7 +33,7 @@ namespace EMotionFX::MotionMatching
 {
     AZ_CVAR_EXTERNED(bool, mm_multiThreadedInitialization);
 
-    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingData, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionMatchingData, MotionMatchAllocator)
 
     MotionMatchingData::MotionMatchingData(const FeatureSchema& featureSchema)
         : m_featureSchema(featureSchema)
@@ -228,8 +229,25 @@ namespace EMotionFX::MotionMatching
             AZ::Debug::Timer transformFeatureTimer;
             transformFeatureTimer.Stamp();
 
-            MinMaxScaler* minMaxScaler = aznew MinMaxScaler();
-            m_featureTransformer.reset(minMaxScaler);
+            switch (settings.m_featureScalerType)
+            {
+            case FeatureScalerType::StandardScalerType:
+                {
+                    m_featureTransformer.reset(aznew StandardScaler());
+                    break;
+                }
+            case FeatureScalerType::MinMaxScalerType:
+                {
+                    m_featureTransformer.reset(aznew MinMaxScaler());
+                    break;
+                }
+            default:
+                {
+                    m_featureTransformer.reset();
+                    AZ_Error("Motion Matching", false, "Unknown feature scaler type.")
+                }
+            }
+
             m_featureTransformer->Fit(m_featureMatrix, settings.m_featureTansformerSettings);
             m_featureMatrix = m_featureTransformer->Transform(m_featureMatrix);
 

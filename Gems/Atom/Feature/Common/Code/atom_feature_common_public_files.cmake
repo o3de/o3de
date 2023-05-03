@@ -26,6 +26,7 @@ set(FILES
     Include/Atom/Feature/Decals/DecalFeatureProcessorInterface.h
     Include/Atom/Feature/DisplayMapper/DisplayMapperFeatureProcessorInterface.h
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessorInterface.h
+    Include/Atom/Feature/Mesh/MeshCommon.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessorInterface.h
     Include/Atom/Feature/MorphTargets/MorphTargetInputBuffers.h
     Include/Atom/Feature/ParamMacros/EndParams.inl
@@ -82,6 +83,7 @@ set(FILES
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshStatsBus.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshVertexStreams.h
     Include/Atom/Feature/SkinnedMesh/SkinnedMeshShaderOptions.h
+    Include/Atom/Feature/SplashScreen/SplashScreenSettings.h
     Include/Atom/Feature/TransformService/TransformServiceFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h
     Include/Atom/Feature/SkyAtmosphere/SkyAtmosphereFeatureProcessorInterface.h
@@ -89,4 +91,5 @@ set(FILES
     Source/MorphTargets/MorphTargetInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInputBuffers.cpp
     Source/SkinnedMesh/SkinnedMeshInstance.cpp
+    Source/SplashScreen/SplashScreenSettings.cpp
 )

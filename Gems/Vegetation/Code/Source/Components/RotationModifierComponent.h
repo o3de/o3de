@@ -27,7 +27,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(RotationModifierConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RotationModifierConfig, AZ::SystemAllocator);
         AZ_RTTI(RotationModifierConfig, "{FF8B1DED-C1A8-4322-86D2-C8432E4B0526}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;
@@ -45,7 +45,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSamplerZ;
     };
 
-    static const AZ::Uuid RotationModifierComponentTypeId = "{9C9158D1-6386-4375-8A3C-B9CA325246FB}";
+    inline constexpr AZ::TypeId RotationModifierComponentTypeId{ "{9C9158D1-6386-4375-8A3C-B9CA325246FB}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that offsets rotation

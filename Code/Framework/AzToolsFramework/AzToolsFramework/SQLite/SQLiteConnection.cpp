@@ -15,6 +15,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/functional.h>
 #include <sqlite3.h>
+#include <AzToolsFramework/AssetDatabase/PathOrUuid.h>
 
 namespace AzToolsFramework
 {
@@ -26,7 +27,7 @@ namespace AzToolsFramework
         class StatementPrototype
         {
         public:
-            AZ_CLASS_ALLOCATOR(StatementPrototype, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(StatementPrototype, AZ::SystemAllocator)
             StatementPrototype();
             StatementPrototype(const AZStd::string& stmt);
             ~StatementPrototype();
@@ -443,13 +444,13 @@ namespace AzToolsFramework
             const void* blobAddr = GetColumnBlob(statement, col);
             int blobBytes = GetColumnBlobBytes(statement, col);
             AZ::Uuid newUuid;
-            AZ_Error("SQLiteConnection", blobAddr && (blobBytes == sizeof(newUuid.data)), "GetColumnUuid: Database column %i does not contain a UUID - could be a sign of a corrupt database.", col);
-            if ((!blobAddr) || (blobBytes != sizeof(newUuid.data)))
+            AZ_Error("SQLiteConnection", blobAddr && (blobBytes == AZStd::ranges::size(newUuid)), "GetColumnUuid: Database column %i does not contain a UUID - could be a sign of a corrupt database.", col);
+            if ((!blobAddr) || (blobBytes != AZStd::ranges::size(newUuid)))
             {
                 return AZ::Uuid::CreateNull();
             }
 
-            memcpy(newUuid.data, blobAddr, blobBytes);
+            memcpy(AZStd::ranges::data(newUuid), blobAddr, blobBytes);
             return newUuid;
         }
 
@@ -639,9 +640,20 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            int res = sqlite3_bind_blob(m_statement, idx, data.data, sizeof(data.data), nullptr);
+            int res = sqlite3_bind_blob(m_statement, idx, AZStd::ranges::data(data), static_cast<int>(AZStd::ranges::size(data)), nullptr);
             AZ_Assert(res == SQLITE_OK, "Statement::BindValueUuid: failed to bind!");
             return (res == SQLITE_OK);
+        }
+
+        bool Statement::BindValuePathOrUuid(int col, const AssetDatabase::PathOrUuid& data)
+        {
+            AZ_Assert(m_statement, "Statement::BindValuePathOrUuid: Statement not ready!");
+            if(!m_statement)
+            {
+                return false;
+            }
+
+            return BindValueText(col, data.ToString().c_str());
         }
 
         bool Statement::BindValueDouble(int idx, double data)

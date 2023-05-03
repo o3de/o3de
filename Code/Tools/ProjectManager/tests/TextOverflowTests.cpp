@@ -12,7 +12,7 @@
 namespace O3DE::ProjectManager
 {
     class TextOverflowWidgetTests
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         static bool EndsWithOverflowLink(const QString& str)

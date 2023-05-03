@@ -9,7 +9,7 @@
 
 #include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -54,6 +54,6 @@ namespace AWSClientAuth
         AZStd::string m_refreshToken;
         AZStd::string m_openIdToken;
         ProviderNameEnum m_providerName;
-        AZStd::chrono::system_clock::time_point m_tokensExpireTimeStamp;
+        AZStd::chrono::steady_clock::time_point m_tokensExpireTimeStamp;
     };
 } // namespace AWSClientAuth

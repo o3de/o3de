@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Console/IConsole.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
@@ -73,10 +74,13 @@ namespace AtomToolsFramework
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());
 
         AZ::Name cameraName = AZ::Name(AZStd::string::format("Viewport %i Default Camera", m_viewportContext->GetId()));
-        m_defaultCamera = AZ::RPI::View::CreateView(cameraName, AZ::RPI::View::UsageFlags::UsageCamera);
-        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushView(m_viewportContext->GetName(), m_defaultCamera);
+        m_defaultCameraGroup = AZStd::make_shared<AZ::RPI::ViewGroup>();
+        m_defaultCameraGroup->Init(AZ::RPI::ViewGroup::Descriptor{ nullptr, nullptr });
+        m_defaultCameraGroup->CreateMainView(cameraName);
+        m_defaultCameraGroup->CreateStereoscopicViews(cameraName);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushViewGroup(m_viewportContext->GetName(), m_defaultCameraGroup);
 
-        m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(m_defaultCamera);
+        m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(GetDefaultCamera());
         m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
         m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
         m_viewportInteractionImpl->Connect(newId);
@@ -154,7 +158,7 @@ namespace AtomToolsFramework
             {
                 if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
                 {
-                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetDefaultCamera().get());
                 }
                 return;
             }
@@ -175,18 +179,18 @@ namespace AtomToolsFramework
         m_viewportContext->SetRenderScene(atomScene);
         if (auto auxGeomFP = atomScene->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
         {
-            m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+            m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetDefaultCamera().get());
         }
     }
 
     AZ::RPI::ViewPtr RenderViewportWidget::GetDefaultCamera()
     {
-        return m_defaultCamera;
+        return m_defaultCameraGroup->GetView();
     }
 
     AZ::RPI::ConstViewPtr RenderViewportWidget::GetDefaultCamera() const
     {
-        return m_defaultCamera;
+        return m_defaultCameraGroup->GetView();
     }
 
     bool RenderViewportWidget::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
@@ -410,7 +414,7 @@ namespace AtomToolsFramework
         return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
     }
 
-    void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize)
+    void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize, [[maybe_unused]] const AzFramework::WindowPosOptions& options)
     {
         const QSize targetSize = QSize{aznumeric_cast<int>(clientAreaSize.m_width), aznumeric_cast<int>(clientAreaSize.m_height)};
         resize(targetSize);
@@ -455,13 +459,17 @@ namespace AtomToolsFramework
 
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
-        return 1;
+        uint32_t vsyncInterval = 1;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("vsync_interval", vsyncInterval);
+        }
+        return vsyncInterval;
     }
 
     // Editor ignores requests to change the sync interval
-    bool RenderViewportWidget::SetSyncInterval(uint32_t /*ignored*/)
+    bool RenderViewportWidget::SetSyncInterval([[maybe_unused]] uint32_t newSyncInterval)
     {
         return false;
     }
-
 } //namespace AtomToolsFramework

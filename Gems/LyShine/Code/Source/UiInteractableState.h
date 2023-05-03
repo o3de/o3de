@@ -18,7 +18,7 @@
 #include <AzCore/RTTI/ReflectContext.h>
 
 #include <AzCore/Math/Color.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include <LyShine/UiAssetTypes.h>
 
 #include <IFont.h>
@@ -33,7 +33,7 @@ class ISprite;
 class UiInteractableStateAction
 {
 public: // member functions
-    AZ_CLASS_ALLOCATOR(UiInteractableStateAction, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiInteractableStateAction, AZ::SystemAllocator);
     AZ_RTTI(UiInteractableStateAction, "{D86C82E1-E027-453F-A43B-BD801CF88391}");
 
     virtual ~UiInteractableStateAction() {}
@@ -63,7 +63,7 @@ class UiInteractableStateColor
     : public UiInteractableStateAction
 {
 public: // member functions
-    AZ_CLASS_ALLOCATOR(UiInteractableStateColor, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiInteractableStateColor, AZ::SystemAllocator);
     AZ_RTTI(UiInteractableStateColor, "{D7978A94-592F-4E1A-86EF-E34A819A55FB}", UiInteractableStateAction);
 
     UiInteractableStateColor();
@@ -99,7 +99,7 @@ class UiInteractableStateAlpha
     : public UiInteractableStateAction
 {
 public: // member functions
-    AZ_CLASS_ALLOCATOR(UiInteractableStateAlpha, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiInteractableStateAlpha, AZ::SystemAllocator);
     AZ_RTTI(UiInteractableStateAlpha, "{ABCD5D45-CC47-4C17-8D21-9471032618F6}", UiInteractableStateAction);
 
     UiInteractableStateAlpha();
@@ -130,7 +130,7 @@ class UiInteractableStateSprite
     : public UiInteractableStateAction
 {
 public: // member functions
-    AZ_CLASS_ALLOCATOR(UiInteractableStateSprite, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiInteractableStateSprite, AZ::SystemAllocator);
     AZ_RTTI(UiInteractableStateSprite, "{89294558-CF45-4AA8-9EAA-A1D81BAB92A7}", UiInteractableStateAction);
 
     UiInteractableStateSprite();
@@ -184,7 +184,7 @@ public: // types
     using FontEffectComboBoxVec = AZStd::vector < AZStd::pair<unsigned int, AZStd::string> >;
 
 public: // member functions
-    AZ_CLASS_ALLOCATOR(UiInteractableStateFont, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UiInteractableStateFont, AZ::SystemAllocator);
     AZ_RTTI(UiInteractableStateFont, "{0E39A3BC-CEF5-4385-9D06-BFEE189E77E1}", UiInteractableStateAction);
 
     UiInteractableStateFont();

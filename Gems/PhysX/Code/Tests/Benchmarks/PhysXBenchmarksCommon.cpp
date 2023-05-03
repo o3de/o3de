@@ -11,16 +11,10 @@
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <PhysXTestUtil.h>
 #include <PhysXTestCommon.h>
+#include <Scene/PhysXScene.h>
 
 namespace PhysX::Benchmarks
 {
-    PhysXBenchmarkEnvironment::~PhysXBenchmarkEnvironment()
-    {
-        //within our scene queries we use thread_locals, as a result the allocator needs to be around until the module is cleaned up.
-        //having the allocator cleaned up here rather then in TeardownInternal() allows it to be around long enough to clean up resource nicely.
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-
     void PhysXBenchmarkEnvironment::SetUpBenchmark()
     {
         PhysX::Environment::SetupInternal();
@@ -50,6 +44,7 @@ namespace PhysX::Benchmarks
     {
         m_defaultScene->StartSimulation(timeStep);
         m_defaultScene->FinishSimulation();
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
     }
 
     void PhysXBaseBenchmarkFixture::SetUpInternal()

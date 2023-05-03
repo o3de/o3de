@@ -28,6 +28,7 @@ set(FILES
     AzCore/std/parallel/config_Platform.h
     AzCore/std/string/fixed_string_Platform.inl
     ../Common/Clang/AzCore/std/string/fixed_string_Clang.inl
+    ../Common/Apple/AzCore/Process/ProcessInfo_Apple.cpp
     ../Common/UnixLike/AzCore/Debug/StackTracer_UnixLike.cpp
     ../Common/Apple/AzCore/Debug/Trace_Apple.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
@@ -43,10 +44,7 @@ set(FILES
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
     ../Common/Apple/AzCore/Memory/OSAllocator_Apple.h
-    ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
-    AzCore/Memory/HeapSchema_iOS.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Math/Internal/MathTypes_iOS.h
     ../Common/Default/AzCore/Module/Internal/ModuleManagerSearchPathTool_Default.cpp
     AzCore/Math/Random_Platform.h

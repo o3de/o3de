@@ -18,11 +18,10 @@ namespace AZ
 {
     namespace RPI
     {
-        SwapChainPass::SwapChainPass(
-            const PassDescriptor& descriptor, const WindowContext* windowContext, const WindowContext::SwapChainMode swapChainMode)
+        SwapChainPass::SwapChainPass(const PassDescriptor& descriptor, const WindowContext* windowContext, const ViewType viewType)
             : ParentPass(descriptor)
             , m_windowContext(windowContext)
-            , m_swapChainMode(swapChainMode)
+            , m_viewType(viewType)
         {
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
         }
@@ -30,7 +29,7 @@ namespace AZ
         Ptr<ParentPass> SwapChainPass::Recreate() const
         {
             PassDescriptor desc = GetPassDescriptor();
-            Ptr<ParentPass> pass = aznew SwapChainPass(desc, m_windowContext, m_swapChainMode);
+            Ptr<ParentPass> pass = aznew SwapChainPass(desc, m_windowContext, m_viewType);
             return pass;
         }
 
@@ -60,11 +59,11 @@ namespace AZ
 
         void SwapChainPass::SetupSwapChainAttachment()
         {
-            m_swapChainDimensions = m_windowContext->GetSwapChain(m_swapChainMode)->GetDescriptor().m_dimensions;
+            m_swapChainDimensions = m_windowContext->GetSwapChain(m_viewType)->GetDescriptor().m_dimensions;
 
             m_swapChainAttachment = aznew PassAttachment();
             m_swapChainAttachment->m_name = "SwapChainOutput";
-            m_swapChainAttachment->m_path = m_windowContext->GetSwapChainAttachmentId(m_swapChainMode);
+            m_swapChainAttachment->m_path = m_windowContext->GetSwapChainAttachmentId(m_viewType);
 
             RHI::ImageDescriptor swapChainImageDesc;
             swapChainImageDesc.m_bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite;
@@ -85,14 +84,13 @@ namespace AZ
 
         void SwapChainPass::BuildInternal()
         {
-            if (m_windowContext->GetSwapChainsSize() == 0 ||
-                m_windowContext->GetSwapChain(m_swapChainMode) == nullptr)
+            if (m_windowContext->GetSwapChainsSize() == 0 || m_windowContext->GetSwapChain(m_viewType) == nullptr)
             {
                 return;
             }
 
-            m_scissorState = m_windowContext->GetScissor(m_swapChainMode);
-            m_viewportState = m_windowContext->GetViewport(m_swapChainMode);
+            m_scissorState = m_windowContext->GetScissor(m_viewType);
+            m_viewportState = m_windowContext->GetViewport(m_viewType);
 
             SetupSwapChainAttachment();
 
@@ -104,9 +102,8 @@ namespace AZ
             params.m_scissorState = m_scissorState;
             params.m_viewportState = m_viewportState;
 
-            if (m_windowContext->GetSwapChainsSize() == 0 ||
-                m_windowContext->GetSwapChain(m_swapChainMode) == nullptr ||
-                m_windowContext->GetSwapChain(m_swapChainMode)->GetImageCount() == 0)
+            if (m_windowContext->GetSwapChainsSize() == 0 || m_windowContext->GetSwapChain(m_viewType) == nullptr ||
+                m_windowContext->GetSwapChain(m_viewType)->GetImageCount() == 0)
             {
                 return;
             }
@@ -116,14 +113,14 @@ namespace AZ
             AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get();
             if (rpiSystem->GetXRSystem())
             {
-                switch (m_swapChainMode)
+                switch (m_viewType)
                 {
-                case WindowContext::SwapChainMode::XrLeft:
+                case ViewType::XrLeft:
                     {
                         rpiSystem->GetXRSystem()->AcquireSwapChainImage(0);
                         break;
                     }
-                case WindowContext::SwapChainMode::XrRight:
+                case ViewType::XrRight:
                     {
                         rpiSystem->GetXRSystem()->AcquireSwapChainImage(1);
                         break;
@@ -138,7 +135,7 @@ namespace AZ
 
             // Import the SwapChain
             attachmentDatabase.ImportSwapChain(
-                m_windowContext->GetSwapChainAttachmentId(m_swapChainMode), m_windowContext->GetSwapChain(m_swapChainMode));
+                m_windowContext->GetSwapChainAttachmentId(m_viewType), m_windowContext->GetSwapChain(m_viewType));
 
             ParentPass::FrameBeginInternal(params);
         }

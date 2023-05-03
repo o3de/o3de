@@ -72,7 +72,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     bool CAudioTranslationLayer::Initialize()
     {
-        m_lastUpdateTime = AZStd::chrono::system_clock::now();
+        m_lastUpdateTime = AZStd::chrono::steady_clock::now();
         return true;
     }
 
@@ -87,7 +87,7 @@ namespace Audio
     {
         AZ_PROFILE_FUNCTION(Audio);
 
-        auto current = AZStd::chrono::system_clock::now();
+        auto current = AZStd::chrono::steady_clock::now();
         m_elapsedTime = AZStd::chrono::duration_cast<duration_ms>(current - m_lastUpdateTime);
         m_lastUpdateTime = current;
         float elapsedMs = m_elapsedTime.count();
@@ -767,7 +767,7 @@ namespace Audio
                 pGlobalObjectData, &AudioSystemImplementationRequestBus::Events::NewGlobalAudioObjectData, m_nGlobalAudioObjectID);
 
             m_pGlobalAudioObject = azcreate(
-                CATLGlobalAudioObject, (m_nGlobalAudioObjectID, pGlobalObjectData), Audio::AudioSystemAllocator, "ATLGlobalAudioObject");
+                CATLGlobalAudioObject, (m_nGlobalAudioObjectID, pGlobalObjectData), Audio::AudioSystemAllocator);
 
             m_oAudioListenerMgr.Initialize();
             m_oAudioObjectMgr.Initialize();

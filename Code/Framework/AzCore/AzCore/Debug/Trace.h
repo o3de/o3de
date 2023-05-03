@@ -30,13 +30,7 @@ namespace AZ
             void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
         }
 
-        enum LogLevel : int
-        {
-            Disabled = 0,
-            Errors = 1,
-            Warnings = 2,
-            Info = 3
-        };
+        enum class LogLevel { Disabled = 0, Errors = 1, Warnings = 2, Info = 3, Debug = 4, Trace = 5 };
 
         // Represents the options to select C language FILE* stream to write raw output
         enum class RedirectCStream
@@ -46,57 +40,44 @@ namespace AZ
             None
         };
 
-        class ITrace
+        class O3DEKERNEL_API ITrace
         {
         public:
-            O3DEKERNEL_API ITrace()
-            {
-                s_tracer = this;
-            }
-            O3DEKERNEL_API virtual ~ITrace()
-            {
-                s_tracer = nullptr;
-            }
+            ITrace();
+            virtual ~ITrace();
             ITrace(const ITrace&) = delete;
-            O3DEKERNEL_API ITrace(ITrace&&) = default;
+            ITrace(ITrace&&) = default;
             ITrace& operator=(const ITrace&) = delete;
-            O3DEKERNEL_API ITrace& operator=(ITrace&&) = default;
+            ITrace& operator=(ITrace&&) = default;
 
-            O3DEKERNEL_API static ITrace& Instance()
-            {
-                if (!s_tracer)
-                {
-                    static ITrace defaultTracer;
-                }
-                return *s_tracer;
-            }
+            static ITrace& Instance();
 
-            O3DEKERNEL_API virtual void Init() {}
-            O3DEKERNEL_API virtual void Destroy() {}
-            O3DEKERNEL_API virtual bool IsDebuggerPresent() { return false; }
-            O3DEKERNEL_API virtual void Break() {}
-            O3DEKERNEL_API virtual void Crash() {}
+            virtual void Init() {}
+            virtual void Destroy() {}
+            virtual bool IsDebuggerPresent() { return false; }
+            virtual void Break() {}
+            virtual void Crash() {}
 
             /// Indicates if trace logging functions are enabled based on compile mode and cvar logging level
-            O3DEKERNEL_API bool IsTraceLoggingEnabledForLevel(LogLevel level)
+            bool IsTraceLoggingEnabledForLevel(LogLevel level)
             {
                 return m_logLevel >= level;
             }
-            O3DEKERNEL_API void SetLogLevel(LogLevel newLevel)
+            void SetLogLevel(LogLevel newLevel)
             {
                 m_logLevel = newLevel;
             }
 
-            O3DEKERNEL_API bool GetAlwaysPrintCallstack() const
+            bool GetAlwaysPrintCallstack() const
             {
                 return m_printCallstack;
             }
-            O3DEKERNEL_API void SetAlwaysPrintCallstack(bool enable)
+            void SetAlwaysPrintCallstack(bool enable)
             {
                 m_printCallstack = enable;
             }
 
-            O3DEKERNEL_API virtual void Assert(const char* fileName, int line, const char* funcName, const char* format, ...)
+            virtual void Assert(const char* fileName, int line, const char* funcName, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -105,7 +86,7 @@ namespace AZ
                 va_end(mark);
                 fprintf(stderr, "Assert: %s:%d (%s): %s\n", fileName, line, funcName, message);
             }
-            O3DEKERNEL_API virtual void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            virtual void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -114,7 +95,7 @@ namespace AZ
                 va_end(mark);
                 fprintf(stderr, "Error: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
             }
-            O3DEKERNEL_API virtual void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            virtual void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -123,7 +104,7 @@ namespace AZ
                 va_end(mark);
                 fprintf(stderr, "Warning: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
             }
-            O3DEKERNEL_API virtual void Printf(const char* window, const char* format, ...)
+            virtual void Printf(const char* window, const char* format, ...)
             {
                 char message[s_maxMessageLength];
                 va_list mark;
@@ -132,19 +113,19 @@ namespace AZ
                 va_end(mark);
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-            O3DEKERNEL_API virtual void Output(const char* window, const char* message)
+            virtual void Output(const char* window, const char* message)
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-            O3DEKERNEL_API virtual void RawOutput(const char* window, const char* message)
+            virtual void RawOutput(const char* window, const char* message)
             {
                 fprintf(stdout, "%s: %s\n", window, message);
             }
-            O3DEKERNEL_API virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
+            virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
 
         private:
             inline static constexpr size_t s_maxMessageLength = 4096;
-            O3DEKERNEL_API inline static ITrace* s_tracer{};
+            inline static ITrace* s_tracer{};
 
             LogLevel m_logLevel = LogLevel::Info;
             bool m_printCallstack = false;
@@ -299,10 +280,10 @@ namespace AZ
             "String used in place of boolean expression for AZ_ErrorOnce.",                                                 \
             "Did you mean AZ_ErrorOnce("#window", false, \"%s\", "#expression"); ?",                                        \
             "Did you mean AZ_ErrorOnce("#window", false, "#expression", "#__VA_ARGS__"); ?");                               \
-        static bool AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = false;                                                                    \
-        if (!AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__))                                                                                  \
+        static bool AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = false;                                                 \
+        if (!AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__))                                                                \
         {                                                                                                                   \
-            AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = true;                                                                            \
+            AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = true;                                                          \
             AZ::Debug::Trace::Instance().Error(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, window, __VA_ARGS__);             \
         }                                                                                                                   \
     }                                                                                                                       \
@@ -332,22 +313,50 @@ namespace AZ
             "String used in place of boolean expression for AZ_WarningOnce.",                                                   \
             "Did you mean AZ_WarningOnce("#window", false, \"%s\", "#expression"); ?",                                          \
             "Did you mean AZ_WarningOnce("#window", false, "#expression", "#__VA_ARGS__"); ?");                                 \
-        static bool AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = false;                                                                     \
-        if (!AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__))                                                                                    \
+        static bool AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = false;                                                   \
+        if (!AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__))                                                                  \
         {                                                                                                                       \
             AZ::Debug::Trace::Instance().Warning(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, window, __VA_ARGS__);               \
-            AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = true;                                                                              \
+            AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = true;                                                            \
         }                                                                                                                       \
     }                                                                                                                           \
     AZ_POP_DISABLE_WARNING
 
-    #define AZ_TracePrintf(window, ...)                                                                            \
-    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
+    #define AZ_Info(window, ...)                                                                                   \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                      \
     {                                                                                                              \
         AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
     }
 
+    #define AZ_Trace(window, ...)                                                                                  \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Trace))                     \
+    {                                                                                                              \
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    }
 
+    //! The AZ_TraceOnce macro output the result of the format string only once for each use of the macro
+    //! It does not take into account the result of the format string to determine whether to output the string or not
+    //! What this means is that if the formatting results in different output string result only the first result
+    //! will ever be output
+    #define AZ_TraceOnce(window, ...) \
+    { \
+        static bool AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__) = false; \
+        if (!AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__)) \
+        { \
+            AZ_Trace(window, __VA_ARGS__); \
+            AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__) = true; \
+        } \
+    }
+
+    // O3DE_DEPRECATION_NOTICE(GHI-xxxx) - Use AZ_Trace
+    // Use of AZ_TracePrintf and AZ_TracePrintfOnce are deprecated
+    #define AZ_TracePrintf(window, ...)                                                                            \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                      \
+    {                                                                                                              \
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    }
+
+    // O3DE_DEPRECATION_NOTICE(GHI-xxxx) - Use AZ_TraceOnce
     //! The AZ_TrancePrintfOnce macro output the result of the format string only once for each use of the macro
     //! It does not take into account the result of the format string to determine whether to output the string or not
     //! What this means is that if the formatting results in different output string result only the first result
@@ -386,6 +395,9 @@ namespace AZ
     #define AZ_ErrorOnce(...)
     #define AZ_Warning(...)
     #define AZ_WarningOnce(...)
+    #define AZ_Info(...)
+    #define AZ_Trace(...)
+    #define AZ_TraceOnce(...)
     #define AZ_TracePrintf(...)
     #define AZ_TracePrintfOnce(...)
 

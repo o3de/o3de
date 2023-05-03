@@ -34,6 +34,10 @@ namespace AZ
                 void GetGeneratedManifestExtension(AZStd::string& result) override;
                 Events::LoadingResult LoadAsset(Containers::Scene& scene, const AZStd::string& path, const Uuid& guid,
                     RequestingApplication requester) override;
+                void GetPolicyName(AZStd::string& result) const override
+                {
+                    result = "ManifestImportRequestHandler";
+                }
                 
             private:
                 static const char* s_extension;

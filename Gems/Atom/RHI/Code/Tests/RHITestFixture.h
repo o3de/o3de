@@ -24,64 +24,16 @@
 
 namespace UnitTest
 {
-    inline constexpr bool EnableLeakTracking = false;
-
     class RHITestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::ReflectionManager> m_reflectionManager;
 
     public:
-        RHITestFixture()
-        {
-            {
-                AZ::PoolAllocator::Descriptor desc;
-
-                if constexpr (EnableLeakTracking)
-                {
-                    desc.m_allocationRecords = true;
-                    desc.m_stackRecordLevels = 5;
-                    desc.m_isMemoryGuards = true;
-                    desc.m_isMarkUnallocatedMemory = true;
-                }
-
-                AZ::AllocatorInstance<AZ::PoolAllocator>::Create(desc);
-            }
-
-            {
-                AZ::ThreadPoolAllocator::Descriptor desc;
-
-                if constexpr (EnableLeakTracking)
-                {
-                    desc.m_allocationRecords = true;
-                    desc.m_stackRecordLevels = 5;
-                    desc.m_isMemoryGuards = true;
-                    desc.m_isMarkUnallocatedMemory = true;
-                }
-
-                AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create(desc);
-            }
-
-            if constexpr (EnableLeakTracking)
-            {
-                AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords();
-                if (records)
-                {
-                    records->SetMode(AZ::Debug::AllocationRecords::RECORD_FULL);
-                }
-            }
-        }
-
 
         AZ::SerializeContext* GetSerializeContext()
         {
             return m_reflectionManager ? m_reflectionManager->GetReflectContext<AZ::SerializeContext>() : nullptr;
-        }
-
-        virtual ~RHITestFixture()
-        {
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void SetUp() override

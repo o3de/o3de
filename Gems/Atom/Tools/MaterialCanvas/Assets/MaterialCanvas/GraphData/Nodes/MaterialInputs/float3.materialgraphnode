@@ -1,0 +1,108 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{CE1EF97A-5BFE-4459-8967-53878C7F074F}",
+        "category": "Material Inputs",
+        "title": "Float3 Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Create a shader variable with the type and default value defined by this node. It will be exposed and customizable as a material property.",
+        "slotDataTypeGroups": [
+            "inValue|outValue",
+            "outX|outY|outZ"
+        ],
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Material type group name that will contain the property corresponding to this input.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string"
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description about what this material input does and how it should be used.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Default value for the material property.",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Configured value of the material property.",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = MaterialSrg::inValue.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

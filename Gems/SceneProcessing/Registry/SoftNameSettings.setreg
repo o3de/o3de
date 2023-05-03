@@ -1,0 +1,83 @@
+{
+    "O3DE": {
+        "AssetProcessor": {
+            "SceneBuilder": {
+                "NodeSoftNameSettings": [
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Ll][Oo][Dd]_?1(_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "LODMesh1",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Ll][Oo][Dd]_?2(_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "LODMesh2",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Ll][Oo][Dd]_?3(_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "LODMesh3",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Ll][Oo][Dd]_?4(_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "LODMesh4",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Ll][Oo][Dd]_?5(_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "LODMesh5",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Pp][Hh][Yy][Ss](_optimized)?$",
+                            "matcher": 2
+                        },
+                        "virtualType": "PhysicsMesh",
+                        "includeChildren": true
+                    },
+                    {
+                        "pattern": {
+                            "pattern": "^.*_[Pp][Hh][Yy][Ss](_optimized)?$",
+                            "matcher": 1
+                        },
+                        "virtualType": "Ignore",
+                        "includeChildren": false
+                    }
+                ],
+                "FileSoftNameSettings": [
+                    {
+                        "pattern": {
+                            "pattern": "_anim",
+                            "matcher": 1
+                        },
+                        "virtualType": "Ignore",
+                        "inclusiveList": false,
+                        "graphTypes": {
+                            "types": [
+                                {
+                                    "name": "IAnimationData"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

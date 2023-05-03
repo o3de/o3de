@@ -13,6 +13,8 @@
 #include <Vegetation/InstanceData.h>
 #include <AzCore/Debug/Profiler.h>
 
+#include <VegetationProfiler.h>
+
 namespace Vegetation
 {
     void DescriptorListCombinerConfig::Reflect(AZ::ReflectContext* context)
@@ -187,7 +189,7 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetDescriptors(DescriptorPtrVec& descriptors) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         for (const auto& entityId : m_configuration.m_descriptorProviders)
         {
@@ -200,7 +202,7 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetInclusionSurfaceTags(SurfaceData::SurfaceTagVector& tags, bool& includeAll) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         for (const auto& entityId : m_configuration.m_descriptorProviders)
         {
@@ -213,7 +215,7 @@ namespace Vegetation
 
     void DescriptorListCombinerComponent::GetExclusionSurfaceTags(SurfaceData::SurfaceTagVector& tags) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         for (const auto& entityId : m_configuration.m_descriptorProviders)
         {

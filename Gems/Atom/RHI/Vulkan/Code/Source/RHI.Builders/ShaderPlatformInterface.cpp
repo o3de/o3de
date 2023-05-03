@@ -25,11 +25,7 @@ namespace AZ
     namespace Vulkan
     {
         [[maybe_unused]] static const char* VulkanShaderPlatformName = "VulkanShaderPlatform";
-        static const char* WindowsPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/PlatformHeader.hlsli";
-        static const char* AndroidPlatformShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/PlatformHeader.hlsli";
-        static const char* WindowsAzslShaderHeader = "Builders/ShaderHeaders/Platform/Windows/Vulkan/AzslcHeader.azsli";
-        static const char* AndroidAzslShaderHeader = "Builders/ShaderHeaders/Platform/Android/Vulkan/AzslcHeader.azsli";
-    
+
         RHI::APIType ShaderPlatformInterface::GetAPIType() const
         {
             return Vulkan::RHIType;
@@ -96,15 +92,15 @@ namespace AZ
             return pipelineLayoutDescriptor->Finalize() == RHI::ResultCode::Success;
         }
 
-        const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const
+        const char* ShaderPlatformInterface::GetAzslHeader([[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform) const
         {
-            if(platform.HasTag("mobile"))
+            if (platform.HasTag("mobile"))
             {
-                return AndroidAzslShaderHeader;
+                return AZ_TRAIT_ATOM_MOBILE_AZSL_SHADER_HEADER;
             }
             else
             {
-                return WindowsAzslShaderHeader;
+                return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
             }
         }
 
@@ -161,7 +157,7 @@ namespace AZ
             const RHI::ShaderHardwareStage shaderStageType,
             const RHI::ShaderBuildArguments& shaderBuildArguments,
             AZStd::vector<uint8_t>& compiledShader,
-            const AssetBuilderSDK::PlatformInfo& platform,
+            [[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform,
             ByProducts& byProducts) const
         {
             // Shader compiler executable
@@ -208,6 +204,14 @@ namespace AZ
             // If, in the future, the need arises across other RHIs and platforms
             // We can revisit these hard coded parameters.
             auto dxcArguments = shaderBuildArguments.m_dxcArguments;
+
+            //Add debug symbols within spirv
+            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
+            if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
+            {
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fspv-debug=line" });
+            }
+
             switch (shaderStageType)
             {
             case RHI::ShaderHardwareStage::Vertex:
@@ -229,13 +233,13 @@ namespace AZ
             }
 
             AZStd::string prependFile;
-            if(platform.HasTag("mobile"))
+            if (platform.HasTag("mobile"))
             {
-                prependFile = AndroidPlatformShaderHeader;
+                prependFile = AZ_TRAIT_ATOM_MOBILE_AZSL_PLATFORM_HEADER;
             }
             else
             {
-                prependFile = WindowsPlatformShaderHeader;
+                prependFile = AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER;
             }
 
             RHI::PrependArguments args;
@@ -244,7 +248,6 @@ namespace AZ
             args.m_destinationFolder = tempFolder.c_str();
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend header
-            const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
 
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {

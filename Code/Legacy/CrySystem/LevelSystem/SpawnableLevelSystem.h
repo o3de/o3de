@@ -9,8 +9,7 @@
 #pragma once
 
 #include "ILevelSystem.h"
-#include <AzCore/Console/IConsole.h>
-#include <AzFramework/Archive/IArchive.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 #include <CryCommon/TimeValue.h>
 
@@ -20,12 +19,14 @@ namespace LegacyLevelSystem
 class SpawnableLevelSystem
         : public ILevelSystem
         , public AzFramework::RootSpawnableNotificationBus::Handler
+        , AzFramework::LevelSystemLifecycleInterface::Registrar
     {
     public:
         explicit SpawnableLevelSystem(ISystem* pSystem);
         ~SpawnableLevelSystem() override;
 
-        // ILevelSystem
+        //! ILevelSystem overrides.
+        //! @{
         void Release() override;
 
         void AddListener(ILevelSystemListener* pListener) override;
@@ -33,8 +34,6 @@ class SpawnableLevelSystem
 
         bool LoadLevel(const char* levelName) override;
         void UnloadLevel() override;
-        bool IsLevelLoaded() override;
-        const char* GetCurrentLevelName() const override;
 
         // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
         void SetLevelLoadFailed(bool loadFailed) override;
@@ -42,12 +41,18 @@ class SpawnableLevelSystem
         AZ::Data::AssetType GetLevelAssetType() const override;
 
         // The following methods are deprecated from ILevelSystem and will be removed once slice support is removed.
-
         // [LYN-2376] Remove once legacy slice support is removed
         void Rescan([[maybe_unused]] const char* levelsFolder) override;
         int GetLevelCount() override;
         ILevelInfo* GetLevelInfo([[maybe_unused]] int level) override;
         ILevelInfo* GetLevelInfo([[maybe_unused]] const char* levelName) override;
+        //! @}
+
+        //! AzFramework::LevelSystemLifecycleInterface overrides.
+        //! @{
+        const char* GetCurrentLevelName() const override;
+        bool IsLevelLoaded() const override;
+        //! @}
 
     private:
         void OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, uint32_t generation) override;

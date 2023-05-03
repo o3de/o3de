@@ -27,7 +27,7 @@ namespace AZ
             virtual void Compile([[maybe_unused]] Scope& scope) {}
 
             /// Queues transition barriers at the beginning of a scope.
-            virtual void QueuePrologueTransitionBarriers(CommandList&) const {}
+            virtual void QueuePrologueTransitionBarriers(CommandList&) {}
 
             /// Performs resolve-specific copy / streaming operations.
             virtual void Resolve(CommandList&) const {}

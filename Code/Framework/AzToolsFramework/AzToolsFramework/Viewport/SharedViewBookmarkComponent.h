@@ -16,7 +16,7 @@ namespace AzToolsFramework
     //! @brief struct that stores a vector of View bookmarks.
     struct EditorViewBookmarks final
     {
-        AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorViewBookmarks, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorViewBookmarks, "{EA0B8FF9-F706-4115-8226-E3F54F1EE8A1}");
 
         static void Reflect(AZ::ReflectContext* context);
@@ -32,7 +32,7 @@ namespace AzToolsFramework
     class SharedViewBookmarkComponent : public AzToolsFramework::Components::EditorComponentBase
     {
     public:
-        static constexpr const char* const ViewBookmarkComponentTypeId = "{6959832F-9382-4C7D-83AC-380DA9F138DE}";
+        static inline constexpr AZ::TypeId ViewBookmarkComponentTypeId{ "{6959832F-9382-4C7D-83AC-380DA9F138DE}" };
 
         AZ_EDITOR_COMPONENT(SharedViewBookmarkComponent, ViewBookmarkComponentTypeId, EditorComponentBase);
 

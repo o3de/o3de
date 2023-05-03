@@ -35,7 +35,7 @@ namespace UnitTest
     };
 
     class BehaviorClassTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -43,7 +43,7 @@ namespace UnitTest
             Counter0::Reset();
 
             m_context.Class<Counter0>("Counter0")
-                ->Property("val", static_cast<int& (Counter0::*)()>(&Counter0::val), nullptr);            
+                ->Property("val", static_cast<int& (Counter0::*)()>(&Counter0::val), nullptr);
 
             m_context.Class<TypingStruct>("TypingStruct")
                 ->Property("stringValue", BehaviorValueGetter(&TypingStruct::m_stringValue), BehaviorValueSetter(&TypingStruct::m_stringValue))
@@ -59,7 +59,7 @@ namespace UnitTest
     };
 
     class BehaviorContextTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         AZ::BehaviorContext m_behaviorContext;
@@ -73,7 +73,7 @@ namespace UnitTest
 
         if (findIter != m_typingClass->m_properties.end())
         {
-            EXPECT_EQ(AZ::BehaviorParameter::TR_STRING, findIter->second->m_getter->GetResult()->m_traits & AZ::BehaviorParameter::TR_STRING);            
+            EXPECT_EQ(AZ::BehaviorParameter::TR_STRING, findIter->second->m_getter->GetResult()->m_traits & AZ::BehaviorParameter::TR_STRING);
         }
     }
 
@@ -173,7 +173,7 @@ namespace UnitTest
         }
     };
 
-    using BehaviorContextConstTest = AllocatorsFixture;
+    using BehaviorContextConstTest = LeakDetectionFixture;
     TEST_F(BehaviorContextConstTest, BehaviorContext_BindConstMethods_Compiles)
     {
         AZ::BehaviorContext bc;
@@ -198,7 +198,7 @@ namespace UnitTest
             ;
     }
 
-    void MethodAcceptingTemplate(const AZStd::string&)
+    void MethodAcceptingTemplate(const AZStd::vector<int>&)
     { }
 
 
@@ -206,15 +206,15 @@ namespace UnitTest
     {
         // Test reflecting with OnDemandReflection
         m_behaviorContext.Method("TestTemplatedOnDemandReflection", &MethodAcceptingTemplate);
-        EXPECT_TRUE(m_behaviorContext.IsOnDemandTypeReflected(azrtti_typeid<AZStd::string>()));
-        EXPECT_NE(m_behaviorContext.m_typeToClassMap.find(azrtti_typeid<AZStd::string>()), m_behaviorContext.m_typeToClassMap.end());
+        EXPECT_TRUE(m_behaviorContext.IsOnDemandTypeReflected(azrtti_typeid<AZStd::vector<int>>()));
+        EXPECT_NE(m_behaviorContext.m_typeToClassMap.find(azrtti_typeid<AZStd::vector<int>>()), m_behaviorContext.m_typeToClassMap.end());
 
         // Test unreflecting OnDemandReflection
         m_behaviorContext.EnableRemoveReflection();
         m_behaviorContext.Method("TestTemplatedOnDemandReflection", &MethodAcceptingTemplate);
         m_behaviorContext.DisableRemoveReflection();
-        EXPECT_FALSE(m_behaviorContext.IsOnDemandTypeReflected(azrtti_typeid<AZStd::string>()));
-        EXPECT_EQ(m_behaviorContext.m_typeToClassMap.find(azrtti_typeid<AZStd::string>()), m_behaviorContext.m_typeToClassMap.end());
+        EXPECT_FALSE(m_behaviorContext.IsOnDemandTypeReflected(azrtti_typeid<AZStd::vector<int>>()));
+        EXPECT_EQ(m_behaviorContext.m_typeToClassMap.find(azrtti_typeid<AZStd::vector<int>>()), m_behaviorContext.m_typeToClassMap.end());
     }
 
     // Used for on demand reflection to pick up the vector and string types
@@ -438,7 +438,6 @@ namespace UnitTest
         const AZ::Uuid stringTypeid = AZ::AzTypeInfo<AZStd::string>::Uuid();
         auto stringClassIt = m_behaviorContext.m_typeToClassMap.find(stringTypeid);
         EXPECT_NE(m_behaviorContext.m_typeToClassMap.end(), stringClassIt);
-        EXPECT_TRUE(m_behaviorContext.IsOnDemandTypeReflected(stringTypeid));
 
         // Validate that OnDemandReflection works for all handler member functions
         const AZ::Uuid stringToStringMapTypeid = AZ::AzTypeInfo<AZStd::unordered_map<AZStd::string, AZStd::string>>::Uuid();

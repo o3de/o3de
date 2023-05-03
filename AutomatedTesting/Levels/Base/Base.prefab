@@ -7,6 +7,11 @@
                 "$type": "EditorInspectorComponent",
                 "Id": 10641544592923449938
             },
+            "Component_[10994490130550932366]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 10994490130550932366,
+                "LocalBookmarkFileName": "Base_16637101422677413.setreg"
+            },
             "Component_[12039882709170782873]": {
                 "$type": "EditorOnlyEntityComponent",
                 "Id": 12039882709170782873
@@ -17,16 +22,7 @@
             },
             "Component_[14126657869720434043]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 14126657869720434043,
-                "ChildEntityOrderEntryArray": [
-                    {
-                        "EntityId": ""
-                    },
-                    {
-                        "EntityId": "",
-                        "SortIndex": 1
-                    }
-                ]
+                "Id": 14126657869720434043
             },
             "Component_[15230859088967841193]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -40,10 +36,6 @@
             "Component_[5688118765544765547]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
-            },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
             },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",

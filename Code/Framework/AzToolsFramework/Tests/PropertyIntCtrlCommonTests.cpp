@@ -16,7 +16,7 @@ namespace UnitTest
 
     template<typename ValueType>
     struct PropertyIntCtrlCommonFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
 
     };

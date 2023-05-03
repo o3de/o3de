@@ -75,15 +75,12 @@ namespace AZ
                 };
             }
 
-            AZ::IO::SystemFile file;
-            file.Open(path, AZ::IO::SystemFile::SF_OPEN_READ_ONLY);
-            if (!file.IsOpen())
+            AZ::IO::SystemFileStream fileLoadStream(path, AZ::IO::OpenMode::ModeRead);
+            if (!fileLoadStream.IsOpen())
             {
                 loadSettings.m_errorHandler("Cannot open file.");
                 return {};
             }
-            constexpr bool StreamOwnsFilePointer = true;
-            AZ::IO::SystemFileStream fileLoadStream(&file, StreamOwnsFilePointer);
 
             auto pngFile = LoadInternal(fileLoadStream, loadSettings);
             return pngFile;

@@ -44,7 +44,7 @@ namespace AZStd
     {
     public:
         AZ_TYPE_INFO(AZStd::any, "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}");
-        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator);
 
         /// Typed used to identify other types (acquired via azrtti_typeid<Type>())
         using type_id = AZ::Uuid;
@@ -191,7 +191,7 @@ namespace AZStd
             m_typeInfo.m_handler(Action::Reserve, this, nullptr);
 
             // Call copy constructor
-            construct<decay_t<ValueType>>(this, forward<ValueType>(val));
+            construct<decay_t<ValueType>>(this, AZStd::forward<ValueType>(val));
         }
 
 
@@ -246,7 +246,7 @@ namespace AZStd
         template <typename ValueType, typename = enable_if_t<!is_same<decay_t<ValueType>, any>::value>>
         any& operator=(ValueType&& val)
         {
-            any(forward<ValueType>(val)).swap(*this);
+            any(AZStd::forward<ValueType>(val)).swap(*this);
             return *this;
         }
 
@@ -287,7 +287,7 @@ namespace AZStd
         template<typename ValueType, typename ParamType> // ParamType must be deduced to allow universal ref
         static void construct(AZStd::any* dest, ParamType&& value, AZStd::enable_if_t<AZStd::is_constructible_v<ValueType, ParamType>, AZStd::true_type*> = nullptr /* AZStd::is_constructible_v<ValueType, ParamType>*/)
         {
-            new (dest->get_data()) ValueType(forward<ParamType>(value));
+            new (dest->get_data()) ValueType(AZStd::forward<ParamType>(value));
         }
 
         // The ValueType is not copy constructible in this case

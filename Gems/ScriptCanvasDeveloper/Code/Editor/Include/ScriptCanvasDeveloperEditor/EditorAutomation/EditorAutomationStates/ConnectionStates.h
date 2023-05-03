@@ -21,6 +21,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CoupleNodesState, AZ::SystemAllocator)
         CoupleNodesState(AutomationStateModelId firstNode, GraphCanvas::ConnectionType connectionType, AutomationStateModelId secondNode, AutomationStateModelId outputId = "");
         ~CoupleNodesState() override = default;
 
@@ -46,6 +47,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(ConnectEndpointsState, AZ::SystemAllocator)
         ConnectEndpointsState(AutomationStateModelId sourceEndpoint, AutomationStateModelId targetEndpoint, AutomationStateModelId outputId = "");
         ~ConnectEndpointsState() override = default;
 
