@@ -792,8 +792,6 @@ namespace AzQtComponents
         if (idx.isValid())
         {
             selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-            emit clicked(idx);
-            update();
             // Pass event to base class to enable drag/drop selections.
             QAbstractItemView::mousePressEvent(event);
             return;

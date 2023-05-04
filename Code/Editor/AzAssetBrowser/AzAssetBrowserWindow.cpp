@@ -301,8 +301,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget,
         &QAbstractItemView::clicked,
         this,
-        [this](const QModelIndex&)
+        [this](const QModelIndex& idx)
         {
+            using namespace AzToolsFramework::AssetBrowser;
+            auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
             m_ui->m_searchWidget->ClearStringFilter();
         });
 
@@ -716,6 +719,8 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
 
     if (entryType == AssetBrowserEntry::AssetEntryType::Folder)
     {
+        m_ui->m_searchWidget->ClearStringFilter();
+
         auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
         auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
 
@@ -728,6 +733,14 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
             targetIndexAncestor = targetIndexAncestor.parent();
         }
 
+        if (m_ui->m_thumbnailView->GetThumbnailActiveView())
+        {
+            m_ui->m_thumbnailView->GetThumbnailViewWidget()->selectionModel()->clearSelection();
+        }
+        else if (m_ui->m_expandedTableView->GetExpandedTableViewActive())
+        {
+            m_ui->m_expandedTableView->GetExpandedTableViewWidget()->selectionModel()->clearSelection();
+        }
         m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
     else if (entryType == AssetBrowserEntry::AssetEntryType::Product || entryType == AssetBrowserEntry::AssetEntryType::Source)
@@ -838,7 +851,6 @@ void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
     auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
     UpdateBreadcrumbs(entry);
-    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
 }
 
 // while its tempting to use Activated here, we don't actually want it to count as activation
