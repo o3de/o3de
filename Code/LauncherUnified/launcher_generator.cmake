@@ -6,6 +6,9 @@
 #
 #
 
+# This will be used to turn on "PerMonitor" DPI scaling support. (Currently there is no way in CMake to specify "PerMonitorV2")
+set(O3DE_DPI_AWARENESS "PerMonitor")
+
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 # Launcher targets for a project need to be generated when configuring a project.
@@ -130,8 +133,9 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
             LY_PROJECT_NAME ${project_name}
     )
 
-    # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
-    set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
+    # Turn on DPI scaling support.
+    set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE ${O3DE_DPI_AWARENESS})
+
     if(LY_DEFAULT_PROJECT_PATH)
         if (TARGET ${project_name})
             get_target_property(project_game_launcher_additional_args ${project_name} GAMELAUNCHER_ADDITIONAL_VS_DEBUGGER_COMMAND_ARGUMENTS)
@@ -185,6 +189,9 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 FOLDER ${project_name}
                 LY_PROJECT_NAME ${project_name}
         )
+
+        # Turn on DPI scaling support.
+        set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DPI_AWARE ${O3DE_DPI_AWARENESS})
 
         if(LY_DEFAULT_PROJECT_PATH)
             if (TARGET ${project_name})
@@ -246,6 +253,9 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 FOLDER ${project_name}
                 LY_PROJECT_NAME ${project_name}
         )
+
+        # Turn on DPI scaling support.
+        set_property(TARGET ${project_name}.UnifiedLauncher APPEND PROPERTY VS_DPI_AWARE ${O3DE_DPI_AWARENESS})
 
         if(LY_DEFAULT_PROJECT_PATH)
             if (TARGET ${project_name})
