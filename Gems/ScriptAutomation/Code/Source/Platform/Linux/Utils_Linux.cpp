@@ -58,7 +58,6 @@ namespace AZ::Platform
             _exit(errno);
         }
 
-
         return true;
     }
 }
