@@ -13,7 +13,7 @@
 
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -44,7 +44,7 @@ namespace AzToolsFramework
             : QDialog(parent)
             , m_ui(new Ui::AssetPickerDialogClass())
             , m_filterModel(new AssetBrowserFilterModel(parent))
-            , m_tableModel(new AssetBrowserTableModel(parent))
+            , m_tableModel(new AssetBrowserListModel(parent))
             , m_selection(selection)
             , m_hasFilter(false)
         {

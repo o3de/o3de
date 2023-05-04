@@ -106,12 +106,12 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::setModel(QAbstractItemModel* model)
         {
-            m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
-            AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
+            m_tableModel = qobject_cast<AssetBrowserListModel*>(model);
+            AZ_Assert(m_tableModel, "Expecting AssetBrowserListModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
             m_delegate->Init();
             AzQtComponents::TableView::setModel(model);
-            connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserListView::layoutChangedSlot);
+            connect(m_tableModel, &AssetBrowserListModel::layoutChanged, this, &AssetBrowserListView::layoutChangedSlot);
 
             header()->setStretchLastSection(true);
             header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);

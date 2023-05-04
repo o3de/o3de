@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
 
 #include <AzQtComponents/Components/Widgets/TableView.h>
 
@@ -24,7 +24,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserEntry;
-        class AssetBrowserTableModel;
+        class AssetBrowserListModel;
         class AssetBrowserFilterModel;
         class SearchEntryDelegate;
 
@@ -77,7 +77,7 @@ namespace AzToolsFramework
                 QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
         private:
             QString m_name;
-            QPointer<AssetBrowserTableModel> m_tableModel;
+            QPointer<AssetBrowserListModel> m_tableModel;
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
 
