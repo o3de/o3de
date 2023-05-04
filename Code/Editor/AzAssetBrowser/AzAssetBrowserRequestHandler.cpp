@@ -35,7 +35,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorBus.h>
@@ -425,7 +425,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser = treeView->GetIsAssetBrowserMainView();
     }
 
-    AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(caller);
+    AssetBrowserListView* tableView = qobject_cast<AssetBrowserListView*>(caller);
     if (tableView)
     {
         calledFromAssetBrowser |= tableView->GetIsAssetBrowserMainView();

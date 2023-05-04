@@ -28,15 +28,15 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class SearchEntryDelegate;
 
-        class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
+        class AssetBrowserListView //! List view that displays the asset browser entries in a list.
             : public AzQtComponents::TableView
             , public AssetBrowserViewRequestBus::Handler
             , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
         public:
-            explicit AssetBrowserTableView(QWidget* parent = nullptr);
-            ~AssetBrowserTableView() override;
+            explicit AssetBrowserListView(QWidget* parent = nullptr);
+            ~AssetBrowserListView() override;
 
             void setModel(QAbstractItemModel *model) override;
             void SetName(const QString& name);

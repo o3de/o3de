@@ -726,8 +726,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTreeView.h
     AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
-    AssetBrowser/Views/AssetBrowserTableView.cpp
-    AssetBrowser/Views/AssetBrowserTableView.h
+    AssetBrowser/Views/AssetBrowserListView.cpp
+    AssetBrowser/Views/AssetBrowserListView.h
     AssetBrowser/Views/AssetBrowserExpandedTableView.cpp
     AssetBrowser/Views/AssetBrowserExpandedTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp

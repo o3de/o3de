@@ -321,7 +321,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget">
+            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserListView" name="m_assetBrowserListViewWidget">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -412,9 +412,9 @@
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserListView</class>
    <extends>QTableView</extends>
-   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h</header>
   </customwidget>
   <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserExpandedTableView</class>

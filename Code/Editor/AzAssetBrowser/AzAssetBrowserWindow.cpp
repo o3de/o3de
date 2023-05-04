@@ -116,7 +116,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
-    m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+    m_ui->m_assetBrowserListViewWidget->setVisible(false);
     m_ui->m_toolsMenuButton->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
 
@@ -135,7 +135,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());
         m_tableModel->setDynamicSortFilter(true);
-        m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
+        m_ui->m_assetBrowserListViewWidget->setModel(m_tableModel.data());
 
         m_createMenu = new QMenu("Create New Asset Menu", this);
         m_ui->m_createButton->setMenu(m_createMenu);
@@ -148,11 +148,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged,
             this, &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
 
-        connect(m_ui->m_assetBrowserTableViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
+        connect(m_ui->m_assetBrowserListViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
 
         connect(
-            m_ui->m_assetBrowserTableViewWidget->selectionModel(),
+            m_ui->m_assetBrowserListViewWidget->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             [this](const QItemSelection& selected, const QItemSelection& deselected)
@@ -164,16 +164,16 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
                 }
             });
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked,
+        connect(m_ui->m_assetBrowserListViewWidget, &QAbstractItemView::doubleClicked,
             this, &AzAssetBrowserWindow::DoubleClickedItem);
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter,
+        connect(m_ui->m_assetBrowserListViewWidget, &AzAssetBrowser::AssetBrowserListView::ClearStringFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearStringFilter);
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter,
+        connect(m_ui->m_assetBrowserListViewWidget, &AzAssetBrowser::AssetBrowserListView::ClearTypeFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-        m_ui->m_assetBrowserTableViewWidget->SetIsAssetBrowserMainView();
+        m_ui->m_assetBrowserListViewWidget->SetIsAssetBrowserMainView();
 
         connect(
             m_ui->m_thumbnailView,
@@ -333,7 +333,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         });
 
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
+        m_ui->m_assetBrowserListViewWidget, &AzAssetBrowser::AssetBrowserListView::UpdateSizeSlot);
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
     m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
@@ -352,7 +352,7 @@ void AzAssetBrowserWindow::AddCreateMenu()
     m_createMenu->clear();
 
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                                                                                 : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+                                                                                 : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
     const AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
     if (!entry || selectedAssets.size() != 1)
     {
@@ -427,7 +427,7 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
 {
     return m_ui->m_assetBrowserTreeViewWidget == viewWidget ||
-        m_ui->m_assetBrowserTableViewWidget == viewWidget ||
+        m_ui->m_assetBrowserListViewWidget == viewWidget ||
         m_ui->m_thumbnailView == viewWidget ||
         m_ui->m_expandedTableView == viewWidget;
 }
@@ -504,7 +504,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_ui->m_searchWidget->AddFolderFilter();
 
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
-        m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+        m_ui->m_assetBrowserListViewWidget->setVisible(false);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
     }
@@ -588,9 +588,9 @@ void AzAssetBrowserWindow::SetTreeViewMode()
 
     m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::TreeViewMode;
 
-    if (m_ui->m_assetBrowserTableViewWidget->isVisible())
+    if (m_ui->m_assetBrowserListViewWidget->isVisible())
     {
-        m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+        m_ui->m_assetBrowserListViewWidget->setVisible(false);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
     }
 }
@@ -611,7 +611,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
     if (m_assetBrowserDisplayState == AzAssetBrowser::AssetBrowserDisplayState::ListViewMode)
     {
-        m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
+        m_ui->m_assetBrowserListViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
     }
 
@@ -857,7 +857,7 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                                                                                 : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+                                                                                 : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
 
     for (const AzAssetBrowser::AssetBrowserEntry* entry : selectedAssets)
     {
