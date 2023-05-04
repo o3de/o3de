@@ -45,7 +45,7 @@ void QComponentEntityEditorInspectorWindow::AfterEntitySelectionChanged(
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlySelectedEntities,
     [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
 {
-    if (m_inspectorWidgetStack->currentWidget() != m_propertyEditor && !m_isInspectorPinned)
+    if (m_inspectorWidgetStack->currentWidget() != m_propertyEditor && !m_propertyEditor->IsLockedToSpecificEntities())
     {
         m_inspectorWidgetStack->setCurrentIndex(m_inspectorWidgetStack->indexOf(m_propertyEditor));
     }
@@ -53,7 +53,7 @@ void QComponentEntityEditorInspectorWindow::AfterEntitySelectionChanged(
 
 void QComponentEntityEditorInspectorWindow::PreviewAsset([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
 {
-    if (m_inspectorWidgetStack->currentWidget() != m_assetBrowserInspector && !m_isInspectorPinned)
+    if (m_inspectorWidgetStack->currentWidget() != m_assetBrowserInspector && !m_propertyEditor->IsLockedToSpecificEntities())
     {
         m_inspectorWidgetStack->setCurrentIndex(m_inspectorWidgetStack->indexOf(m_assetBrowserInspector));
     }

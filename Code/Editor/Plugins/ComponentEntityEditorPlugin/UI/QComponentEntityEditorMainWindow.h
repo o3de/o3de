@@ -70,8 +70,6 @@ public:
         return guid;
     }
 
-    void SetPinnedInspector() { m_isInspectorPinned = true; }
-
     AzToolsFramework::EntityPropertyEditor* GetPropertyEditor() { return m_propertyEditor; }
     AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget* GetAssetBrowserInspector() { return m_assetBrowserInspector; }
 
@@ -81,5 +79,4 @@ private:
     AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget* m_assetBrowserInspector;
 
     QStackedWidget* m_inspectorWidgetStack;
-    bool m_isInspectorPinned = false;
 };
