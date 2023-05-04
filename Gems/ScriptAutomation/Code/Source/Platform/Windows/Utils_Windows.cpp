@@ -6,43 +6,32 @@
  *
  */
 
-#include <AzCore/std/string/string.h>
 #include <AzCore/PlatformIncl.h>
+
+#include <AzCore/std/functional.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/StringFunc/StringFunc.h>
+
+#include <AzFramework/Process/ProcessWatcher.h>
 
 namespace AZ::Platform
 {
     bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments)
     {
-        bool result = false;
+        AZ_Info("ScriptAutomation", "Attempting to launch \"%s %s\"", progPath.c_str(), arguments.c_str());
 
-        AZStd::wstring exeW;
-        AZStd::to_wstring(exeW, progPath.c_str());
-        AZStd::wstring argumentsW;
-        AZStd::to_wstring(argumentsW, arguments.c_str());
+        AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
 
-        STARTUPINFOW si;
-        PROCESS_INFORMATION pi;
+        AZStd::vector<AZStd::string> launchCmd = { progPath };
+        auto SplitString = [&launchCmd](AZStd::string_view token)
+        {
+            launchCmd.emplace_back(token);
+        };
+        AZ::StringFunc::TokenizeVisitor(arguments, SplitString, " \t");
 
-        ZeroMemory(&si, sizeof(si));
-        si.cb = sizeof(si);
-        ZeroMemory(&pi, sizeof(pi));
+        processLaunchInfo.m_commandlineParameters = AZStd::move(launchCmd);
 
-        // start the program up
-        result = CreateProcess(exeW.data(),   // the path
-            argumentsW.data(),        // Command line
-            NULL,           // Process handle not inheritable
-            NULL,           // Thread handle not inheritable
-            FALSE,          // Set handle inheritance to FALSE
-            0,              // No creation flags
-            NULL,           // Use parent's environment block
-            NULL,           // Use parent's starting directory 
-            &si,            // Pointer to STARTUPINFO structure
-            &pi             // Pointer to PROCESS_INFORMATION structure (removed extra parentheses)
-        );
-        // Close process and thread handles. 
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-
-        return result;
+        return AzFramework::ProcessLauncher::LaunchUnwatchedProcess(processLaunchInfo);
     }
 }
