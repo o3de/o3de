@@ -306,7 +306,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         {
             using namespace AzToolsFramework::AssetBrowser;
             auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-            AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+            {
+                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+            }
             m_ui->m_searchWidget->ClearStringFilter();
         });
 
