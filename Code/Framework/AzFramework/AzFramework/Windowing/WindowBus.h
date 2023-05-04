@@ -36,6 +36,9 @@ namespace AzFramework
     struct WindowPosOptions
     {
         //! This flag will allow the window to be resized bigger than the screen width or height.
+        //! The default setting of false will clamp the window size to the maximum possible size that can
+        //! fit on the screen, independent of window position. A portion of the window still may not be
+        //! visible, but the window has the ability to fit fully on the screen.
         bool m_ignoreScreenSizeLimit = false;
     };
 
@@ -58,6 +61,15 @@ namespace AzFramework
         //! Get the client area size. This is the size that can be rendered to.
         //! On some platforms this may not be the correct size until Activate is called.
         virtual WindowSize GetClientAreaSize() const = 0;
+
+        //! Get the maximum supported client area size for this window.
+        //! This can return different sizes depending on which monitor the window is on.
+        //! On some platforms this may not be the correct size until Activate is called.
+        virtual WindowSize GetMaximumClientAreaSize() const
+        {
+            AZ_Assert(false, "GetMaximumClientAreaSize() not supported.");
+            return { AZStd::numeric_limits<uint32_t>::max(), AZStd::numeric_limits<uint32_t>::max() };
+        }
 
         //! Set the client area size. This is the size that can be rendered to.
         //! \param[in] clientAreaSize Size of the client area in pixels
@@ -118,6 +130,9 @@ namespace AzFramework
 
         //! This is called if the window's underyling DPI scaling factor changes.
         virtual void OnDpiScaleFactorChanged(float dpiScaleFactor) { AZ_UNUSED(dpiScaleFactor); }
+
+        //! This is called when the fullscreen mode of the window changes.
+        virtual void OnFullScreenModeChanged([[maybe_unused]] bool fullscreen) {}
 
         //! This is called when the window is deactivated from code or if the user closes the window.
         virtual void OnWindowClosed() {};

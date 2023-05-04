@@ -103,6 +103,11 @@ namespace AzFramework
         return m_pimpl->GetClientAreaSize();
     }
 
+    WindowSize NativeWindow::GetMaximumClientAreaSize() const
+    {
+        return m_pimpl->GetMaximumClientAreaSize();
+    }
+
     void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
         m_pimpl->ResizeClientArea(clientAreaSize, options);
@@ -259,6 +264,12 @@ namespace AzFramework
     WindowSize NativeWindow::Implementation::GetClientAreaSize() const
     {
         return WindowSize(m_width, m_height);
+    }
+
+    WindowSize NativeWindow::Implementation::GetMaximumClientAreaSize() const
+    {
+        AZ_Assert(false, "GetMaximumClientAreaSize() not supported.");
+        return { AZStd::numeric_limits<uint32_t>::max(), AZStd::numeric_limits<uint32_t>::max() };
     }
 
     void NativeWindow::Implementation::ResizeClientArea(

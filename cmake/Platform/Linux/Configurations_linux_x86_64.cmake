@@ -86,11 +86,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
             -lpthread
     )
     ly_set(CMAKE_CXX_EXTENSIONS OFF)
-
 else()
-
     message(FATAL_ERROR "Compiler ${CMAKE_CXX_COMPILER_ID} not supported in ${PAL_PLATFORM_NAME}")
-
 endif()
 
 ly_set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
