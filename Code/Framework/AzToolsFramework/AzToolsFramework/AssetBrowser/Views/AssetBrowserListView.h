@@ -77,7 +77,7 @@ namespace AzToolsFramework
                 QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
         private:
             QString m_name;
-            QPointer<AssetBrowserListModel> m_tableModel;
+            QPointer<AssetBrowserListModel> m_listModel;
             QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
             SearchEntryDelegate* m_delegate = nullptr;
 

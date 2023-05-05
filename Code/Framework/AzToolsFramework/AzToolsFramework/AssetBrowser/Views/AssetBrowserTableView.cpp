@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
@@ -38,11 +38,11 @@ namespace AzToolsFramework
     {
         static constexpr const char* const ExpandedTableViewMainViewName = "AssetBrowserExpandedTableView_main";
 
-        AssetBrowserExpandedTableView::AssetBrowserExpandedTableView(QWidget* parent)
+        AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
             : QWidget(parent)
             , m_expandedTableViewWidget(new AzQtComponents::AssetFolderTableView(parent))
-            , m_expandedTableViewProxyModel(new AssetBrowserExpandedTableViewProxyModel(parent))
-            , m_assetFilterModel(new AssetBrowserExpandedFilterModel(parent))
+            , m_expandedTableViewProxyModel(new AssetBrowserTableViewProxyModel(parent))
+            , m_assetFilterModel(new AssetBrowserTableFilterModel(parent))
             , m_expandedTableViewDelegate(new ExpandedTableViewDelegate(m_expandedTableViewWidget))
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
@@ -172,14 +172,14 @@ namespace AzToolsFramework
                 m_expandedTableViewWidget,
                 &AzQtComponents::AssetFolderTableView::tableRootIndexChanged,
                 m_expandedTableViewProxyModel,
-                &AssetBrowserExpandedTableViewProxyModel::SetRootIndex);
+                &AssetBrowserTableViewProxyModel::SetRootIndex);
 
             auto layout = new QVBoxLayout();
             layout->addWidget(m_expandedTableViewWidget);
             setLayout(layout);
         }
 
-        AssetBrowserExpandedTableView::~AssetBrowserExpandedTableView()
+        AssetBrowserTableView::~AssetBrowserTableView()
         {
             if (AzToolsFramework::IsNewActionManagerEnabled())
             {
@@ -191,62 +191,62 @@ namespace AzToolsFramework
             }
         }
 
-        AzQtComponents::AssetFolderTableView* AssetBrowserExpandedTableView::GetExpandedTableViewWidget() const
+        AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetExpandedTableViewWidget() const
         {
             return m_expandedTableViewWidget;
         }
 
-         void AssetBrowserExpandedTableView::SetName(const QString& name)
+         void AssetBrowserTableView::SetName(const QString& name)
         {
             m_name = name;
         }
 
-        const QString& AssetBrowserExpandedTableView::GetName() const
+        const QString& AssetBrowserTableView::GetName() const
         {
             return m_name;
         }
 
-        void AssetBrowserExpandedTableView::SetIsAssetBrowserMainView()
+        void AssetBrowserTableView::SetIsAssetBrowserMainView()
         {
             SetName(ExpandedTableViewMainViewName);
         }
 
-        bool AssetBrowserExpandedTableView::GetIsAssetBrowserMainView() const
+        bool AssetBrowserTableView::GetIsAssetBrowserMainView() const
         {
             return GetName() == ExpandedTableViewMainViewName;
         }
 
-        void AssetBrowserExpandedTableView::SetExpandedTableViewActive(bool isActiveView)
+        void AssetBrowserTableView::SetTableViewActive(bool isActiveView)
         {
             m_isActiveView = isActiveView;
         }
 
-        bool AssetBrowserExpandedTableView::GetExpandedTableViewActive() const
+        bool AssetBrowserTableView::GetTableViewActive() const
         {
             return m_isActiveView;
         }
 
-        void AssetBrowserExpandedTableView::DeleteEntries()
+        void AssetBrowserTableView::DeleteEntries()
         {
             auto entries = GetSelectedAssets();
 
             AssetBrowserViewUtils::DeleteEntries(entries, this);
         }
 
-        void AssetBrowserExpandedTableView::MoveEntries()
+        void AssetBrowserTableView::MoveEntries()
         {
             auto entries = GetSelectedAssets();
 
             AssetBrowserViewUtils::MoveEntries(entries, this);
         }
 
-        void AssetBrowserExpandedTableView::DuplicateEntries()
+        void AssetBrowserTableView::DuplicateEntries()
         {
             auto entries = GetSelectedAssets();
             AssetBrowserViewUtils::DuplicateEntries(entries);
         }
 
-        void AssetBrowserExpandedTableView::RenameEntry()
+        void AssetBrowserTableView::RenameEntry()
         {
             auto entries = GetSelectedAssets();
 
@@ -257,14 +257,14 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserExpandedTableView::AfterRename(QString newVal)
+        void AssetBrowserTableView::AfterRename(QString newVal)
         {
             auto entries = GetSelectedAssets();
 
             AssetBrowserViewUtils::AfterRename(newVal, entries, this);
         }
 
-        AZStd::vector<const AssetBrowserEntry*> AssetBrowserExpandedTableView::GetSelectedAssets() const
+        AZStd::vector<const AssetBrowserEntry*> AssetBrowserTableView::GetSelectedAssets() const
         {
             // No need to check for product assets since they do not appear in the table view
             AZStd::vector<const AssetBrowserEntry*> entries;
@@ -283,13 +283,13 @@ namespace AzToolsFramework
             return entries;
         }
 
-        void AssetBrowserExpandedTableView::OpenItemForEditing(const QModelIndex& index)
+        void AssetBrowserTableView::OpenItemForEditing(const QModelIndex& index)
         {
             QModelIndex proxyIndex = m_expandedTableViewProxyModel->mapFromSource(m_assetFilterModel->mapFromSource(index));
 
             if (proxyIndex.isValid())
             {
-                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
 
                 m_expandedTableViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
@@ -297,7 +297,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserExpandedTableView::SetAssetTreeView(AssetBrowserTreeView* treeView)
+        void AssetBrowserTableView::SetAssetTreeView(AssetBrowserTreeView* treeView)
         {
             if (m_assetTreeView)
             {
@@ -309,12 +309,11 @@ namespace AzToolsFramework
                         treeViewFilterModel,
                         &AssetBrowserFilterModel::filterChanged,
                         this,
-                        &AssetBrowserExpandedTableView::UpdateFilterInLocalFilterModel);
+                        &AssetBrowserTableView::UpdateFilterInLocalFilterModel);
                 }
             }
 
             m_assetTreeView = treeView;
-            m_assetTreeView->SetAttachedExpandedTableView(this);
 
             if (!m_assetTreeView)
             {
@@ -340,26 +339,26 @@ namespace AzToolsFramework
                 treeViewFilterModel,
                 &AssetBrowserFilterModel::filterChanged,
                 this,
-                &AssetBrowserExpandedTableView::UpdateFilterInLocalFilterModel);
+                &AssetBrowserTableView::UpdateFilterInLocalFilterModel);
 
             connect(
                 m_assetTreeView,
                 &AssetBrowserTreeView::selectionChangedSignal,
                 this,
-                &AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged);
+                &AssetBrowserTableView::HandleTreeViewSelectionChanged);
         }
 
-        void AssetBrowserExpandedTableView::setSelectionMode(QAbstractItemView::SelectionMode mode)
+        void AssetBrowserTableView::setSelectionMode(QAbstractItemView::SelectionMode mode)
         {
             m_expandedTableViewWidget->setSelectionMode(mode);
         }
 
-        QAbstractItemView::SelectionMode AssetBrowserExpandedTableView::selectionMode() const
+        QAbstractItemView::SelectionMode AssetBrowserTableView::selectionMode() const
         {
             return m_expandedTableViewWidget->selectionMode();
         }
 
-        void AssetBrowserExpandedTableView::SelectEntry(QString assetName)
+        void AssetBrowserTableView::SelectEntry(QString assetName)
         {
             QModelIndex rootIndex = m_expandedTableViewProxyModel->GetRootIndex();
 
@@ -382,7 +381,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+        void AssetBrowserTableView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
             Q_UNUSED(deselected);
 
@@ -405,7 +404,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserExpandedTableView::UpdateFilterInLocalFilterModel()
+        void AssetBrowserTableView::UpdateFilterInLocalFilterModel()
         {
             if (!m_assetTreeView)
             {

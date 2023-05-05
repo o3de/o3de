@@ -32,7 +32,7 @@ namespace AzToolsFramework
         const float MaxHeaderResizeProportion = .75f;
         const float DefaultHeaderResizeProportion = .5f;
 
-        static constexpr const char* const TableViewMainViewName = "AssetBrowserListView_main";
+        static constexpr const char* const ListViewMainViewName = "AssetBrowserListView_main";
 
         AssetBrowserListView::AssetBrowserListView(QWidget* parent)
             : AzQtComponents::TableView(parent)
@@ -106,12 +106,12 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::setModel(QAbstractItemModel* model)
         {
-            m_tableModel = qobject_cast<AssetBrowserListModel*>(model);
-            AZ_Assert(m_tableModel, "Expecting AssetBrowserListModel");
-            m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
+            m_listModel = qobject_cast<AssetBrowserListModel*>(model);
+            AZ_Assert(m_listModel, "Expecting AssetBrowserListModel");
+            m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_listModel->sourceModel());
             m_delegate->Init();
             AzQtComponents::TableView::setModel(model);
-            connect(m_tableModel, &AssetBrowserListModel::layoutChanged, this, &AssetBrowserListView::layoutChangedSlot);
+            connect(m_listModel, &AssetBrowserListModel::layoutChanged, this, &AssetBrowserListView::layoutChangedSlot);
 
             header()->setStretchLastSection(true);
             header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
@@ -139,12 +139,12 @@ namespace AzToolsFramework
 
         void AssetBrowserListView::SetIsAssetBrowserMainView()
         {
-            SetName(TableViewMainViewName);
+            SetName(ListViewMainViewName);
         }
 
         bool AssetBrowserListView::GetIsAssetBrowserMainView()
         {
-            return GetName() == TableViewMainViewName;
+            return GetName() == ListViewMainViewName;
         }
 
         void AssetBrowserListView::DeleteEntries()
@@ -191,7 +191,7 @@ namespace AzToolsFramework
             {
                 if (index.column() == 0)
                 {
-                    sourceIndexes.push_back(m_sourceFilterModel->mapToSource(m_tableModel->mapToSource(index)));
+                    sourceIndexes.push_back(m_sourceFilterModel->mapToSource(m_listModel->mapToSource(index)));
                 }
             }
 

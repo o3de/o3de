@@ -26,9 +26,9 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserExpandedFilterModel;
+        class AssetBrowserTableFilterModel;
         class AssetBrowserTreeView;
-        class AssetBrowserExpandedTableViewProxyModel;
+        class AssetBrowserTableViewProxyModel;
         class AssetBrowserEntry;
 
         class ExpandedTableViewDelegate
@@ -46,15 +46,15 @@ namespace AzToolsFramework
             void renameTableEntry(const QString& value) const;
         };
 
-        class AssetBrowserExpandedTableView
+        class AssetBrowserTableView
             : public QWidget
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedTableView, AZ::SystemAllocator);
+            AZ_CLASS_ALLOCATOR(AssetBrowserTableView, AZ::SystemAllocator);
 
-            explicit AssetBrowserExpandedTableView(QWidget* parent = nullptr);
-            ~AssetBrowserExpandedTableView() override;
+            explicit AssetBrowserTableView(QWidget* parent = nullptr);
+            ~AssetBrowserTableView() override;
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
@@ -62,8 +62,8 @@ namespace AzToolsFramework
             const QString& GetName() const;
             void SetIsAssetBrowserMainView();
             bool GetIsAssetBrowserMainView() const;
-            void SetExpandedTableViewActive(bool isActiveView);
-            bool GetExpandedTableViewActive() const;
+            void SetTableViewActive(bool isActiveView);
+            bool GetTableViewActive() const;
 
             void DuplicateEntries();
             void MoveEntries();
@@ -87,8 +87,8 @@ namespace AzToolsFramework
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
             AzQtComponents::AssetFolderTableView* m_expandedTableViewWidget = nullptr;
-            AssetBrowserExpandedTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
-            AssetBrowserExpandedFilterModel* m_assetFilterModel = nullptr;
+            AssetBrowserTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
+            AssetBrowserTableFilterModel* m_assetFilterModel = nullptr;
             ExpandedTableViewDelegate* m_expandedTableViewDelegate = nullptr;
             QString m_name;
             bool m_isActiveView = false;
