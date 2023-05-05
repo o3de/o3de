@@ -746,9 +746,9 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
         {
             m_ui->m_thumbnailView->GetThumbnailViewWidget()->selectionModel()->clearSelection();
         }
-        else if (m_ui->m_expandedTableView->GetExpandedTableViewActive())
+        else if (m_ui->m_tableView->GetTableViewActive())
         {
-            m_ui->m_expandedTableView->GetExpandedTableViewWidget()->selectionModel()->clearSelection();
+            m_ui->m_tableView->GetExpandedTableViewWidget()->selectionModel()->clearSelection();
         }
         m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
