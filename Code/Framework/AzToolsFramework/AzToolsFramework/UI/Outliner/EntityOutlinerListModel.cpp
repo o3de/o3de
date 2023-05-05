@@ -47,7 +47,6 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
@@ -853,34 +852,32 @@ namespace AzToolsFramework
         {
             return false;
         }
-        
-        // Only allow reparenting the selected entities if they are all under the same instance.
-        // We check the parent entity separately because it may be a container entity and
-        // container entities consider their owning instance to be the parent instance
-        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-        AZ_Assert(prefabPublicInterface, "EntityOutlinerListModel requires a PrefabPublicInterface instance on Initialize.");
-        if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
-        {
-            return false;
-        }
 
-        // Disable parenting to a different owning instance
-        auto instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
-        if (instanceEntityMapperInterface)
+        if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
         {
-            auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
-
-            AZ::EntityId firstSelectedEntityId = selectedEntityIds.front();
-            auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(firstSelectedEntityId);
-            // If the selected entity id is a container entity id, then we need get its parent owning instance.
-            // This is because containers, despite representing the nested instance in the parent, are owned by the child.
-            if ((selectedInstanceReference->get().GetContainerEntityId() == firstSelectedEntityId) &&
-                !prefabPublicInterface->IsLevelInstanceContainerEntity(firstSelectedEntityId))
+            // Only allow reparenting the selected entities if they are all under the same instance.
+            // We check the parent entity separately because it may be a container entity and
+            // container entities consider their owning instance to be the parent instance.
+            if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
             {
-                selectedInstanceReference = selectedInstanceReference->get().GetParentInstance();
+                return false;
             }
 
-            if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
+            // Prevent parenting to a different owning prefab instance.
+            AZ::EntityId selectedEntityId = selectedEntityIds.front();
+            AZ::EntityId selectedContainerId = prefabPublicInterface->GetInstanceContainerEntityId(selectedEntityId);
+            AZ::EntityId newParentContainerId = prefabPublicInterface->GetInstanceContainerEntityId(newParentId);
+
+            // If the selected entity id is a container entity id, then we need to get its parent owning instance.
+            // This is because a container entity is actually owned by the prefab instance itself.
+            if (selectedContainerId == selectedEntityId && !prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntityId))
+            {
+                AZ::EntityId parentOfSelectedContainer;
+                AZ::TransformBus::EventResult(parentOfSelectedContainer, selectedContainerId, &AZ::TransformBus::Events::GetParentId);
+                selectedContainerId = prefabPublicInterface->GetInstanceContainerEntityId(parentOfSelectedContainer);
+            }
+
+            if (selectedContainerId != newParentContainerId)
             {
                 return false;
             }
