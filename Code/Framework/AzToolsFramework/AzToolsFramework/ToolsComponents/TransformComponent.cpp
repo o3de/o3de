@@ -31,6 +31,7 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
@@ -939,6 +940,19 @@ namespace AzToolsFramework
             {
                 // Handled by the calling code.
                 return AZ::Success();
+            }
+
+            // Only allow reparenting the selected entities if they are all under the same instance.
+            // We check the parent entity separately because it may be a container entity and
+            // container entities consider their owning instance to be the parent instance
+            EntityIdList entitiesToCheck;
+            entitiesToCheck.reserve(2);
+            entitiesToCheck.push_back(actualValue);
+            entitiesToCheck.push_back(GetEntityId());
+            const Prefab::PrefabPublicInterface* prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+            if (prefabPublicInterface && !prefabPublicInterface->EntitiesBelongToSameInstance(entitiesToCheck))
+            {
+                return AZ::Failure(AZStd::string("An entity in one prefab cannot be a child to an entity in another prefab"));
             }
 
             // Prevent setting the parent to the entity itself.

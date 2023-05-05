@@ -17,14 +17,18 @@ namespace AzToolsFramework
     {
         using ShownColumnsSet = AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)>;
 
-        class AssetBrowserExpandedFilterModel
+        class AssetBrowserTableFilterModel
             : public AssetBrowserFilterModel
          {
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserExpandedFilterModel, AZ::SystemAllocator);
-            explicit AssetBrowserExpandedFilterModel(QObject* parent = nullptr);
+            AZ_CLASS_ALLOCATOR(AssetBrowserTableFilterModel, AZ::SystemAllocator);
+            explicit AssetBrowserTableFilterModel(QObject* parent = nullptr);
+
+        protected:
+            bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
+
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

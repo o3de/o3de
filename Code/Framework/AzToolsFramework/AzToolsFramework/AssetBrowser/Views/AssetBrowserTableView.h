@@ -6,83 +6,95 @@
  *
  */
 #pragma once
+
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/vector.h>
 
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
-
-#include <AzQtComponents/Components/Widgets/TableView.h>
-
-#include <QModelIndex>
-#include <QPointer>
+#include <QItemSelection>
+#include <QWidget>
+#include <QAbstractItemView>
+#include <QStyledItemDelegate>
 #endif
+
+namespace AzQtComponents
+{
+    class AssetFolderTableView;
+}
 
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class AssetBrowserTableFilterModel;
+        class AssetBrowserTreeView;
+        class AssetBrowserTableViewProxyModel;
         class AssetBrowserEntry;
-        class AssetBrowserTableModel;
-        class AssetBrowserFilterModel;
-        class SearchEntryDelegate;
 
-        class AssetBrowserTableView //! Table view that displays the asset browser entries in a list.
-            : public AzQtComponents::TableView
-            , public AssetBrowserViewRequestBus::Handler
-            , public AssetBrowserComponentNotificationBus::Handler
+        class ExpandedTableViewDelegate
+            : public QStyledItemDelegate
         {
             Q_OBJECT
         public:
+            AZ_CLASS_ALLOCATOR(ExpandedTableViewDelegate, AZ::SystemAllocator);
+            ExpandedTableViewDelegate(QWidget* parent = nullptr);
+
+            void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+            QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+        signals:
+            void renameTableEntry(const QString& value) const;
+        };
+
+        class AssetBrowserTableView
+            : public QWidget
+        {
+            Q_OBJECT
+        public:
+            AZ_CLASS_ALLOCATOR(AssetBrowserTableView, AZ::SystemAllocator);
+
             explicit AssetBrowserTableView(QWidget* parent = nullptr);
             ~AssetBrowserTableView() override;
 
-            void setModel(QAbstractItemModel *model) override;
+            void SetAssetTreeView(AssetBrowserTreeView* treeView);
+
             void SetName(const QString& name);
-            QString& GetName();
+            const QString& GetName() const;
             void SetIsAssetBrowserMainView();
-            bool GetIsAssetBrowserMainView();
+            bool GetIsAssetBrowserMainView() const;
+            void SetTableViewActive(bool isActiveView);
+            bool GetTableViewActive() const;
 
             void DuplicateEntries();
             void MoveEntries();
             void DeleteEntries();
             void RenameEntry();
             void AfterRename(QString newVal);
-            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets() const;
+            void OpenItemForEditing(const QModelIndex& index);
 
-            //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserViewRequestBus
-            virtual void SelectProduct(AZ::Data::AssetId assetID) override;
-            virtual void SelectFileAtPath(const AZStd::string& assetPath) override;
-            virtual void ClearFilter() override;
-            virtual void Update() override;
+            AzQtComponents::AssetFolderTableView* GetExpandedTableViewWidget() const;
+            void setSelectionMode(QAbstractItemView::SelectionMode mode);
+            QAbstractItemView::SelectionMode selectionMode() const;
 
-            //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserComponentNotificationBus
-            void OnAssetBrowserComponentReady() override;
-            //////////////////////////////////////////////////////////////////////////
-        Q_SIGNALS:
-            void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
-            void ClearStringFilter();
-            void ClearTypeFilter();
+            void SelectEntry(QString assetName);
 
-        public Q_SLOTS:
-            void UpdateSizeSlot(int newWidth);
+        signals:
+            void entryClicked(const AssetBrowserEntry* entry);
+            void entryDoubleClicked(const AssetBrowserEntry* entry);
+            void showInFolderTriggered(const AssetBrowserEntry* entry);
 
-        protected Q_SLOTS:
-            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
-            void rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) override;
-            void layoutChangedSlot(const QList<QPersistentModelIndex> &parents = QList<QPersistentModelIndex>(),
-                QAbstractItemModel::LayoutChangeHint hint = QAbstractItemModel::NoLayoutChangeHint);
         private:
+            AssetBrowserTreeView* m_assetTreeView = nullptr;
+            AzQtComponents::AssetFolderTableView* m_expandedTableViewWidget = nullptr;
+            AssetBrowserTableViewProxyModel* m_expandedTableViewProxyModel = nullptr;
+            AssetBrowserTableFilterModel* m_assetFilterModel = nullptr;
+            ExpandedTableViewDelegate* m_expandedTableViewDelegate = nullptr;
             QString m_name;
-            QPointer<AssetBrowserTableModel> m_tableModel;
-            QPointer<AssetBrowserFilterModel> m_sourceFilterModel;
-            SearchEntryDelegate* m_delegate = nullptr;
+            bool m_isActiveView = false;
 
-        private Q_SLOTS:
-            void OnContextMenu(const QPoint& point);
+            void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+            void UpdateFilterInLocalFilterModel();
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
