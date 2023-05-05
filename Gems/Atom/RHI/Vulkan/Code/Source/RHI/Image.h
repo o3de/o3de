@@ -181,7 +181,9 @@ namespace AZ
             RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const InitFlags flags);
             RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const MemoryView& memoryView, const InitFlags flags);
 
+            //! Common initialization for all Init functions (init variables, set desciptor, set initflags, init DeviceObject, etc)
             void OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, InitFlags flags);
+            //! Common post initialization for all Init functions (set name, get memory requirements, etc)
             void OnPostInit();
 
             // Allocate memory and bind memory which can store mips up to residentMipLevel 

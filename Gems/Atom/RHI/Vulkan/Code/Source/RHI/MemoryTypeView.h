@@ -93,7 +93,7 @@ namespace AZ
         }
 
         template<typename T>
-        inline size_t MemoryTypeView<T>::GetOffset() const
+        size_t MemoryTypeView<T>::GetOffset() const
         {
             return m_offset;
         }

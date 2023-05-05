@@ -107,7 +107,7 @@ namespace AZ
 
             BindlessDescriptorPool& GetBindlessDescriptorPool();
 
-            RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount);
+            RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment = 2^0);
 
             void QueueForRelease(RHI::Ptr<RHI::Object> object);
 
@@ -186,7 +186,9 @@ namespace AZ
             //! Flags will be corrected if required features or extensions are not enabled.
             VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
+            // Initialize the VMA allocator for this device
             RHI::ResultCode InitVulkanAllocator(RHI::PhysicalDevice& physicalDevice);
+            // Shutdown VMA allocator of this device
             void ShutdownVulkanAllocator();
 
             VkImageUsageFlags CalculateImageUsageFlags(const RHI::ImageDescriptor& descriptor) const;
@@ -204,6 +206,8 @@ namespace AZ
             CommandListAllocator m_commandListAllocator;
             SemaphoreAllocator m_semaphoreAllocator;
 
+            // New VkImageUsageFlags are query in a lazy way (only when they are not already in the map)
+            // so we make the map mutable to keep the constness of the query function.
             mutable AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;

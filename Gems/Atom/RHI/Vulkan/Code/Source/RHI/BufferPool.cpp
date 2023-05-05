@@ -201,6 +201,7 @@ namespace AZ
 
         void BufferPool::ComputeFragmentation() const
         {
+            // Since we use a per device memory allocator (VMA), there's no longer a per BufferPool fragmentation, only a global one.
         }
     }
 }

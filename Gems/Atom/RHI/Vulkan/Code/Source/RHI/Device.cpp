@@ -583,10 +583,11 @@ namespace AZ
             return m_bindlessDescriptorPool;
         }
 
-        RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount)
+        RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment /* = 1*/)
         {
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(RHI::BufferBindFlags::CopyRead, byteCount);
+            bufferDesc.m_alignment = alignment;
             RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
@@ -1304,7 +1305,7 @@ namespace AZ
 
             auto finalFlags = usageFlags & usageMask;
 
-            // Output a warning about desired usages are not support
+            // Output a warning about desired usages that are not supported
             if (finalFlags != usageFlags)
             {
                 AZ_Warning("Vulkan", false, "Missing usage bit flags (unsupported): %x", usageFlags & ~finalFlags);

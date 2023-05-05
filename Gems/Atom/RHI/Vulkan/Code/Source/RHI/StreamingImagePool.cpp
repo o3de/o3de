@@ -102,6 +102,8 @@ namespace AZ
             AssertSuccess(vkResult);
             if (vkResult == VK_SUCCESS)
             {
+                // Initialize all vma allocations as Vulkan::Allocations
+                // Each element is a separated allocation.
                 AZStd::transform(
                     allocations.begin(),
                     allocations.end(),

@@ -25,6 +25,8 @@ namespace AZ
         RHI::ResultCode BufferMemory::Init(Device& device, const MemoryView& memoryView, const Descriptor& descriptor)
         {
             BufferCreateInfo createInfo = device.BuildBufferCreateInfo(descriptor);
+            // Create the buffer using a specific memory location. This function doesn't allocate new memory, it binds
+            // the provided memory (with the proper offset) to the buffer.
             VkResult vkResult = vmaCreateAliasingBuffer2(
                 device.GetVmaAllocator(),
                 memoryView.GetAllocation()->GetVmaAllocation(),
@@ -51,6 +53,7 @@ namespace AZ
             VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(descriptor.m_heapMemoryLevel);
             VmaAllocation vmaAlloc;
             VkResult vkResult;
+            // Creates the buffer, allocates new memory and bind it to the buffer.
             vkResult = vmaCreateBufferWithAlignment(
                 device.GetVmaAllocator(),
                 &createInfo.m_vkCreateInfo,

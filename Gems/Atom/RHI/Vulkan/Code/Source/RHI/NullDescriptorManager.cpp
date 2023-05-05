@@ -207,6 +207,8 @@ namespace AZ
                 desc.m_imageView = ImageView::Create();
                 ImageViewDescriptor viewDesc;
                 viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
+                // Swizzle all channels to return (0, 0, 0, 1) always
+                // This is similar to what the robustness2 extension does when reading a null texture.
                 viewDesc.m_componentMapping = ImageComponentMapping(
                     ImageComponentMapping::Swizzle::Zero,
                     ImageComponentMapping::Swizzle::Zero,

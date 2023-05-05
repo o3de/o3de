@@ -578,7 +578,7 @@ namespace AZ
             Device& device,
             const RHI::ImageDescriptor& descriptor,
             const MemoryView& memoryView,
-            [[maybe_unused]] const Image::InitFlags flags)
+            const Image::InitFlags flags)
         {
             OnPreInit(device, descriptor, flags);
             RHI::ResultCode result = BuildNativeImage(&memoryView);
@@ -816,6 +816,8 @@ namespace AZ
             VkResult result = VK_SUCCESS;
             if (memoryView)
             {
+                // Creates an image at a specific memory location. This function doesn't allocate new memory,
+                // it just binds the provided memory to the newly created image.
                 result = vmaCreateAliasingImage2(
                     device.GetVmaAllocator(),
                     memoryView->GetAllocation()->GetVmaAllocation(),
@@ -841,6 +843,7 @@ namespace AZ
             {
                 VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
                 VmaAllocation vmaAlloc;
+                // Creates a new image, allocates a new memory for it, and binds the memory to the image.
                 result = vmaCreateImage(
                     device.GetVmaAllocator(),
                     &createInfo.m_vkCreateInfo,
