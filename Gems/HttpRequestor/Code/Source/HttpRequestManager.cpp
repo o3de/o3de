@@ -150,28 +150,30 @@ namespace HttpRequestor
             httpRequest->SetContentLength(AZStd::to_string(httpRequestParameters.GetBodyStream()->str().length()).c_str());
         }
 
-        auto httpResponse = httpClient->MakeRequest(httpRequest);
+        AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+        const auto httpResponse = httpClient->MakeRequest(httpRequest);
+        const auto difference = AZStd::chrono::duration_cast<AZStd::chrono::duration<float, AZStd::milli> >(AZStd::chrono::steady_clock::now() - start) / 2.0f;;
 
         if (!httpResponse)
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR);
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
             return;
         }
 
         if (httpResponse->GetResponseCode() != Aws::Http::HttpResponseCode::OK)
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), httpResponse->GetResponseCode());
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), httpResponse->GetResponseCode(), httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
             return;
         }
 
         Aws::Utils::Json::JsonValue json(httpResponse->GetResponseBody());
         if (json.WasParseSuccessful())
         {
-            httpRequestParameters.GetCallback()(AZStd::move(json), httpResponse->GetResponseCode());
+            httpRequestParameters.GetCallback()(AZStd::move(json), httpResponse->GetResponseCode(), httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
         }
         else
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR);
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
         }
     }
 
