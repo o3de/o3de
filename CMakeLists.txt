@@ -16,6 +16,12 @@ if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24")
     cmake_policy(SET CMP0135 NEW) 
 endif()
 
+OPTION(CARBONATED "Enable Carbonated patches" OFF)
+
+if(CARBONATED)
+    add_compile_definitions(CARBONATED)
+endif(CARBONATED)
+
 include(cmake/LySet.cmake)
 include(cmake/GeneralSettings.cmake)
 include(cmake/FileUtil.cmake)
