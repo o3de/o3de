@@ -9,6 +9,7 @@
 
 #include "EditorDefs.h"
 
+#include <AzAssetBrowser/AzAssetBrowserMultiWindow.h>
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AzAssetBrowserRequestHandler.h"
 
@@ -539,18 +540,28 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
-            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, caller](){
-                auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
-                const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
-                auto* browser2 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(name2)->Widget());
-                if (browser1->ViewWidgetBelongsTo(caller))
+            menu->addAction(
+                QObject::tr("Open in another Asset Browser"),
+                [fullFilePath, thumbnailView, expandedTableView]()
                 {
-                    browser2->SelectAsset(fullFilePath.c_str());
+
+                AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
+                
+                if (thumbnailView)
+                {
+                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                }
+                else if (expandedTableView)
+                {
+                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::TableView);
                 }
                 else
                 {
-                    browser1->SelectAsset(fullFilePath.c_str());
+                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::ListView);
                 }
+
+                newAssetBrowser->SelectAsset(fullFilePath.c_str());
+                  
             });
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;

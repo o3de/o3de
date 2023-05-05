@@ -1716,10 +1716,10 @@ namespace SettingsRegistryTests
     {
         constexpr AZStd::fixed_string<AZ::IO::MaxPathLength + 1> path(AZ::IO::MaxPathLength + 1, 'a');
         
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFolder(path, { "editor", "test" }, {});
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(result);
+        // The message structure should contain the error message
+        EXPECT_FALSE(result.GetMessages().empty());
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0"));
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::String, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0/Error"));
@@ -1731,10 +1731,10 @@ namespace SettingsRegistryTests
         CreateTestFile("Memory.test.editor.setreg", "{}");
         CreateTestFile("Memory.editor.test.setreg", "{}");
 
-        AZ_TEST_START_TRACE_SUPPRESSION;
         auto result = m_registry->MergeSettingsFolder((m_tempDirectory.GetDirectoryAsFixedMaxPath() / AZ::SettingsRegistryInterface::RegistryFolder).Native(), { "editor", "test" }, {});
-        EXPECT_GT(::UnitTest::TestRunner::Instance().StopAssertTests(), 0);
         EXPECT_FALSE(result);
+        // The message structure should contain the error message
+        EXPECT_FALSE(result.GetMessages().empty());
 
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::Object, m_registry->GetType(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/0")); // Folder and specialization settings.
 

@@ -30,6 +30,10 @@ QPushButton[primary="true"]:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #0085e2, stop: 1.0 #0e60db);
 }
+QPushButton[primary="true"]:disabled {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #777777, stop: 1.0 #444444);
+}
 
 QPushButton[secondary="true"] {
     qproperty-flat: true;
@@ -470,7 +474,9 @@ QTabBar::tab:focus {
     max-height: 28px;
     min-width: 150px;
     margin-right:30px;
+    font-weight: 600px;
 }
+
 
 #dialogSubTitle {
     font-size:14px;
@@ -483,6 +489,12 @@ QTabBar::tab:focus {
 
 #verticalSeparatingLine {
     color: #888888;
+}
+
+#ExternalLinkDialog #externalLink {
+    color: #94D2FF;
+    margin:5px 0 30px 0;
+    font-size:12px;
 }
 
 /************** Project Settings **************/
@@ -836,13 +848,18 @@ QProgressBar::chunk {
 }
 
 /* be specific here to override the general QLabel margins */
-#GemCatalogInspector #GemCatalogRequirements {
+#GemCatalogInspector #GemCatalogRequirements,
+#GemCatalogInspector #GemCatalogCompatibilityWarning {
    margin:0 0 10px 0; 
    padding-left:34px;
    min-height: 34px;
    font-size:10px;
    color:#ddd;
    background:transparent url(:/Info.svg) no-repeat left center;
+}
+
+#GemCatalogInspector #GemCatalogCompatibilityWarning {
+   background:transparent url(:/Warning.svg) no-repeat left center;
 }
 
 #GemCatalogCartOverlayGemDownloadHeader {
@@ -1052,10 +1069,6 @@ QProgressBar::chunk {
     font-weight:600;
 }
 
-#gemRepoInspector {
-    background: #444444;
-}
-
 #gemRepoAddDialogInstructionTitleLabel {
     font-size:14px;
     font-weight:bold;
@@ -1072,6 +1085,26 @@ QProgressBar::chunk {
 
 /************** Gem Repo Inspector **************/
 
+#gemRepoInspector {
+    background: #444444;
+}
+
+#gemRepoInspector QLabel {
+    margin:0;
+}
+
+/* IMPORTANT DO NOT REMOVE min/max-width 
+ * FlowLayout inside TagWidgetContainer can provide 
+ * incorrect height when the width isn't static and the
+ * tag widgets have padding (see #TagWidget)
+ * resulting in bottom widgets getting cut off
+ */
+#gemRepoInspector #TagWidgetContainer {
+    min-width:210px;
+    max-width:210px;
+    margin:0;
+}
+
 #gemRepoInspectorNameLabel {
     font-size: 18px;
     color: #FFFFFF;
@@ -1085,6 +1118,17 @@ QProgressBar::chunk {
 #gemRepoInspectorAddInfoTitleLabel {
     font-size: 16px;
     color: #FFFFFF;
+}
+
+#gemRepoInspector QPushButton {
+    qproperty-flat: true;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+    margin-top:10px;
 }
 
 /************** Download object dialogs **************/

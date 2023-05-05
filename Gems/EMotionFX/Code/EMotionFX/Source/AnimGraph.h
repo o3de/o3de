@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -41,6 +42,12 @@ namespace EMotionFX
     public:
         AZ_RTTI(AnimGraph, "{BD543125-CFEE-426C-B0AC-129F2A4C6BC8}")
         AZ_CLASS_ALLOCATOR_DECL
+
+        /**
+        * Picks a random color for the anim graph.
+        * @result The generated color.
+        */
+        static AZ::Color RandomGraphColor();
 
         AnimGraph();
         virtual ~AnimGraph();

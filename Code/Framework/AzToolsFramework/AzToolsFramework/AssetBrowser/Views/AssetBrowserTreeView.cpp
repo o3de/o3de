@@ -23,6 +23,8 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -223,6 +225,12 @@ namespace AzToolsFramework
             SelectProduct(QModelIndex(), assetID);
         }
 
+        void AssetBrowserTreeView::SelectFileAtPathAfterUpdate(const AZStd::string& assetPath)
+        {
+            m_fileToSelectAfterUpdate = assetPath;
+        }
+        
+
         void AssetBrowserTreeView::SelectFileAtPath(const AZStd::string& assetPath)
         {
             if (assetPath.empty())
@@ -263,6 +271,16 @@ namespace AzToolsFramework
 
             // Entries are in reverse order, so fix this
             AZStd::reverse(entries.begin(), entries.end());
+
+            // If we're in the thumbnail view, the actual asset will not appear in this treeview.
+            if (m_attachedThumbnailView)
+            {
+                m_attachedThumbnailView->SelectEntry(entries.back().data());
+            }
+            if (m_attachedExpandedTableView)
+            {
+                m_attachedExpandedTableView->SelectEntry(entries.back().data());
+            }
 
             SelectEntry(QModelIndex(), entries);
         }
@@ -332,7 +350,7 @@ namespace AzToolsFramework
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
 
             // If we've cleared the filter but had something selected, ensure it stays selected and visible.
-            if (!hasFilter && !selectedIndexes.isEmpty())
+            if (!hasFilter && !selectedIndexes.isEmpty() && m_fileToSelectAfterUpdate.empty())
             {
                 QModelIndex curIndex = selectedIndexes[0];
                 m_expandToEntriesByDefault = true;
@@ -371,10 +389,17 @@ namespace AzToolsFramework
                     curIndex = indexBelow(curIndex);
                 }
             }
-            else if (m_indexToSelectAfterUpdate.isValid())
+
+            if (m_indexToSelectAfterUpdate.isValid())
             {
                 selectionModel()->select(m_indexToSelectAfterUpdate, QItemSelectionModel::ClearAndSelect);
                 m_indexToSelectAfterUpdate = QModelIndex();
+            }
+
+            if (!m_fileToSelectAfterUpdate.empty())
+            {
+                SelectFileAtPath(m_fileToSelectAfterUpdate);
+                m_fileToSelectAfterUpdate = "";
             }
             m_applySnapshot = true;
         }
@@ -666,6 +691,16 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::SetShowIndexAfterUpdate(QModelIndex index)
         {
             m_indexToSelectAfterUpdate = index;
+        }
+
+        void AssetBrowserTreeView::SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView)
+        {
+            m_attachedThumbnailView = thumbnailView;
+        }
+
+        void AssetBrowserTreeView::SetAttachedExpandedTableView(AssetBrowserExpandedTableView* tableView)
+        {
+            m_attachedExpandedTableView = tableView;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

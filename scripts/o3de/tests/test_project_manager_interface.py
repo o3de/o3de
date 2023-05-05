@@ -352,33 +352,45 @@ def test_edit_project_properties():
 # manifest interface
 def test_refresh_repo():
     sig = signature(repo.refresh_repo)
-    assert len(sig.parameters) >= 1
+    assert len(sig.parameters) >= 3
 
-    repo_uri = list(sig.parameters.values())[0]
-    assert repo_uri.name == 'repo_uri'
-    assert repo_uri.annotation == str
+    parameters = list(sig.parameters.values())
+
+    assert parameters[0].name == 'repo_uri'
+    assert parameters[0].annotation == str
+
+    assert parameters[1].name == 'repo_set'
+    assert parameters[1].annotation == set
+
+    assert parameters[2].name == 'download_missing_files_only'
+    assert parameters[2].annotation == bool
 
     assert sig.return_annotation == int
 
 def test_refresh_repos():
     sig = signature(repo.refresh_repos)
+    assert len(sig.parameters) >= 1
+    parameters = list(sig.parameters.values())
+
+    assert parameters[0].name == 'download_missing_files_only'
+    assert parameters[0].annotation == bool
 
     assert sig.return_annotation == int
 
-def test_get_gem_json_paths_from_cached_repo():
-    sig = signature(repo.get_gem_json_paths_from_cached_repo)
+def test_get_gem_json_data_from_cached_repo():
+    sig = signature(repo.get_gem_json_data_from_cached_repo)
     assert len(sig.parameters) >= 1
 
     repo_uri = list(sig.parameters.values())[0]
     assert repo_uri.name == 'repo_uri'
     assert repo_uri.annotation == str
 
-    assert sig.return_annotation == set
+    assert sig.return_annotation == list 
 
 def test_get_gem_json_paths_from_all_cached_repos():
-    sig = signature(repo.get_gem_json_paths_from_all_cached_repos)
+    sig = signature(repo.get_gem_json_data_from_all_cached_repos)
 
-    assert sig.return_annotation == set
+    assert sig.return_annotation == list
 
 # download interface
 def test_download_gem():

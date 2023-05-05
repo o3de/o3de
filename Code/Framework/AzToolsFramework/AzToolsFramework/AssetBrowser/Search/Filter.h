@@ -230,23 +230,25 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // AssetPathFilter
+        // EngineFilter
         //////////////////////////////////////////////////////////////////////////
-        class AssetPathFilter : public AssetBrowserEntryFilter
+        //! EngineFilter filters assets in the engine directory, excluding project directory
+        class EngineFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
-            AssetPathFilter();
-            ~AssetPathFilter() override = default;
+            EngineFilter();
+            ~EngineFilter() override = default;
 
-            void SetAssetPath(AZ::IO::Path path);
+            void SetEngineAndProject(AZ::IO::Path enginePath, AZ::IO::Path projectPath);
 
         protected:
             QString GetNameInternal() const override;
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
 
         private:
-            AZ::IO::Path m_assetPath;
+            AZ::IO::Path m_enginePath;
+            AZ::IO::Path m_projectPath;
         };
 
         //////////////////////////////////////////////////////////////////////////

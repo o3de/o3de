@@ -44,8 +44,8 @@ FLEET_CONFIGURATIONS = [
             'build_path': '<build path>',
             # (Conditional) The operating system that the game server binaries are built to run on.
             # This parameter is required if the parameter build_path is defined.
-            # Choose from AMAZON_LINUX or WINDOWS_2012.
-            'operating_system': 'WINDOWS_2012'
+            # Choose from AMAZON_LINUX_2 | WINDOWS_2016 as latest OS's supported by GameLift
+            'operating_system': 'WINDOWS_2016'
         },
         # (Optional) Information about the use of a TLS/SSL certificate for a fleet.
         'certificate_configuration': {

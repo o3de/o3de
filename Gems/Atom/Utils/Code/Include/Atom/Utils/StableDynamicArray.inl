@@ -283,6 +283,12 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
+    size_t StableDynamicArray<T, ElementsPerPage, Allocator>::GetPageIndex(const Handle& handle) const
+    {
+        return static_cast<Page*>(handle.m_page)->m_pageIndex;
+    }
+
+    template<typename T, size_t ElementsPerPage, class Allocator>
     auto StableDynamicArray<T, ElementsPerPage, Allocator>::AddPage()->Page*
     {
         void* pageMemory = m_allocator.allocate(sizeof(Page), AZStd::alignment_of<Page>::value);
@@ -581,6 +587,12 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
+    size_t StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::GetPageIndex() const
+    {
+        return m_page->m_pageIndex;
+    }
+
+    template<typename T, size_t ElementsPerPage, class Allocator>
     void StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::SkipEmptyBitGroups()
     {
         // skip the next bit group in the page until one is found with entries
@@ -656,6 +668,12 @@ namespace AZ
     bool StableDynamicArrayWeakHandle<ValueType>::operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
     {
         return !operator==(rhs);
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator<(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return m_data < rhs.m_data;
     }
 
     // StableDynamicArray::Handle

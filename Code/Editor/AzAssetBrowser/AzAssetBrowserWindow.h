@@ -38,6 +38,13 @@ namespace AzToolsFramework
             ListViewMode,
             Invalid
         };
+
+        enum class AssetBrowserMode : int
+        {
+            ThumbnailView,
+            TableView,
+            ListView
+        };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
@@ -57,6 +64,9 @@ public:
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
     bool ViewWidgetBelongsTo(QWidget* viewWidget);
+
+    AzToolsFramework::AssetBrowser::AssetBrowserMode GetCurrentMode() const;
+    void SetCurrentMode(const AzToolsFramework::AssetBrowser::AssetBrowserMode mode);
 
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
@@ -89,7 +99,7 @@ private:
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
-
+    AzToolsFramework::AssetBrowser::AssetBrowserMode m_currentMode = AzToolsFramework::AssetBrowser::AssetBrowserMode::ThumbnailView;
 
     //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
     //! relative path of the first folder parent of the passed entry.
