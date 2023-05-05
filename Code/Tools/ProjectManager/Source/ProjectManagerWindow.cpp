@@ -48,12 +48,13 @@ namespace O3DE::ProjectManager
 
         setCentralWidget(screensCtrl);
 
-        // always push the projects screen first so we have something to come back to
+        // Projects is the default first screen because it is first in the above order
         if (startScreen != ProjectManagerScreen::Projects)
         {
+            // always push the projects screen first so we have something to come back to
             screensCtrl->ForceChangeToScreen(ProjectManagerScreen::Projects);
+            screensCtrl->ForceChangeToScreen(startScreen);
         }
-        screensCtrl->ForceChangeToScreen(startScreen);
 
         if (!projectPath.empty())
         {

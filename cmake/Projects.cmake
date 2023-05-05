@@ -229,6 +229,9 @@ foreach(project ${LY_PROJECTS})
     file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
     string(SHA256 full_directory_hash ${full_directory_path})
 
+    # Set the project normalized path into the global O3DE_PROJECTS_PATHS property
+    set_property(GLOBAL APPEND PROPERTY O3DE_PROJECTS_PATHS ${full_directory_path})
+
     # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
     # when the external subdirectory contains relative paths of significant length
     string(SUBSTRING ${full_directory_hash} 0 8 full_directory_hash)

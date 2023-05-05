@@ -86,8 +86,7 @@ namespace AzToolsFramework
                      if (auto index = m_expandedTableViewWidget->indexAt(pos); index.isValid())
                      {
                          QMenu menu(this);
-                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                         AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                         AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
                          AssetBrowserInteractionNotificationBus::Broadcast(
                              &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
 
@@ -267,15 +266,18 @@ namespace AzToolsFramework
 
         AZStd::vector<const AssetBrowserEntry*> AssetBrowserExpandedTableView::GetSelectedAssets() const
         {
-            // There are no product assets in the expanded table view, just get the first item selected
+            // No need to check for product assets since they do not appear in the table view
             AZStd::vector<const AssetBrowserEntry*> entries;
             if (m_expandedTableViewWidget->selectionModel())
             {
-                auto index = m_expandedTableViewWidget->selectionModel()->selectedIndexes()[0];
-                const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                if (item)
+                auto indexes = m_expandedTableViewWidget->selectionModel()->selectedRows();
+                for (const auto index : indexes)
                 {
-                    entries.push_back(item);
+                    const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    if (item)
+                    {
+                        entries.push_back(item);
+                    }
                 }
             }
             return entries;
@@ -287,7 +289,7 @@ namespace AzToolsFramework
 
             if (proxyIndex.isValid())
             {
-                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
                 m_expandedTableViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
@@ -312,6 +314,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedExpandedTableView(this);
 
             if (!m_assetTreeView)
             {
@@ -354,6 +357,29 @@ namespace AzToolsFramework
         QAbstractItemView::SelectionMode AssetBrowserExpandedTableView::selectionMode() const
         {
             return m_expandedTableViewWidget->selectionMode();
+        }
+
+        void AssetBrowserExpandedTableView::SelectEntry(QString assetName)
+        {
+            QModelIndex rootIndex = m_expandedTableViewProxyModel->GetRootIndex();
+
+            auto model = GetExpandedTableViewWidget()->model();
+
+            for (int rowIndex = 0; rowIndex < model->rowCount(rootIndex); rowIndex++)
+            {
+                auto index = model->index(rowIndex, 0, rootIndex);
+                if (!index.isValid())
+                {
+                    continue;
+                }
+
+                auto str = index.data().toString();
+                if (assetName == str)
+                {
+                    m_expandedTableViewWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    m_expandedTableViewWidget->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtCenter);
+                }
+            }
         }
 
         void AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
@@ -453,7 +479,6 @@ namespace AzToolsFramework
                     if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
                     {
                         icon.addFile(path, iconSize, QIcon::Normal, QIcon::Off);
-                        AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
                         icon.paint(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter);
                     }
                     else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())

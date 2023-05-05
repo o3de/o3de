@@ -60,6 +60,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ParentValue);
 
         system->RegisterNode<Container>();
         system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);

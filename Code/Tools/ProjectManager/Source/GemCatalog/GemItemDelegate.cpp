@@ -172,7 +172,9 @@ namespace O3DE::ProjectManager
             gemVersionRect = painter->boundingRect(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
             painter->drawText(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
 
-            if (GemModel::HasUpdates(modelIndex))
+            GemSortFilterProxyModel* proxyModel = reinterpret_cast<GemSortFilterProxyModel*>(m_model);
+            bool showCompatibleUpdatesOnly = proxyModel ? proxyModel->GetCompatibleFilterFlag() : true;
+            if (GemModel::HasUpdates(modelIndex, showCompatibleUpdatesOnly))
             {
                 painter->drawPixmap(gemVersionRect.left() - s_statusButtonSpacing - m_updatePixmap.width(),
                                     contentRect.center().y() - m_updatePixmap.height() / 2,

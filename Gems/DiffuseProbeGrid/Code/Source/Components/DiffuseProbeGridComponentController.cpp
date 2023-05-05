@@ -24,6 +24,7 @@
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <DiffuseProbeGrid_Traits_Platform.h>
 
 namespace AZ
 {
@@ -102,6 +103,11 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::Activate(AZ::EntityId entityId)
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
             m_entityId = entityId;
 
             TransformNotificationBus::Handler::BusConnect(m_entityId);
@@ -222,6 +228,11 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::Deactivate()
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveProbeGrid(m_handle);

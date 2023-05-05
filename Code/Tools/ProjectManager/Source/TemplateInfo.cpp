@@ -17,6 +17,7 @@ namespace O3DE::ProjectManager
 
     bool TemplateInfo::IsValid() const
     {
-        return !m_path.isEmpty() && !m_name.isEmpty();
+        // remote templates may have empty paths until they are downloaded
+        return ((!m_isRemote && !m_path.isEmpty()) || m_isRemote) && !m_name.isEmpty();
     }
 } // namespace O3DE::ProjectManager

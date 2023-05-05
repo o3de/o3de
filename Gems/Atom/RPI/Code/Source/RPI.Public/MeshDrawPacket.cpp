@@ -322,6 +322,9 @@ namespace AZ
                     RPI::ShaderOptionValue& value = meshShaderOption.second;
 
                     ShaderOptionIndex index = shaderOptions.FindShaderOptionIndex(name);
+
+                    // Shader options will be applied to any shader item that supports it, even if
+                    // not all the shader items in the draw packet support it
                     if (index.IsValid())
                     {
                         shaderOptions.SetValue(name, value);
@@ -399,8 +402,11 @@ namespace AZ
                         "MeshDrawPacket",
                         (!m_rootConstantsLayout && !HasRootConstants(rootConstantsLayout)) ||
                         (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
+                        "Shader %s has mis-matched root constant layout in material %s. "
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
-                        "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.");
+                        "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.",
+                        shaderItem.GetShaderAsset()->GetName().GetCStr(),
+                        m_material->GetAsset().ToString<AZStd::string>().c_str());
                 }
 
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;

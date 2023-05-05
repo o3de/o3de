@@ -12,6 +12,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/DocumentPropertyEditor/AggregateAdapter.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -59,13 +60,17 @@ namespace AzToolsFramework
         Q_OBJECT;
     public:
         using VisitComponentAdapterContentsCallback = AZStd::function<void(const AZ::Dom::Value&)>;
+        using ComponentAdapterFactory = AZStd::function<AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>()>;
 
         explicit ComponentEditor(
             AZ::SerializeContext* context,
             IPropertyEditorNotify* notifyTarget = nullptr,
             QWidget* parent = nullptr,
-            bool replaceRPE = false,
-            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> customDpeComponentAdapter = nullptr);
+            ComponentAdapterFactory adapterFactory =
+                []() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
+            {
+                return nullptr;
+            });
         ~ComponentEditor();
 
         void AddInstance(AZ::Component* componentInstance, AZ::Component* aggregateInstance, AZ::Component* compareInstance);
@@ -162,8 +167,10 @@ namespace AzToolsFramework
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
 
+        ComponentAdapterFactory m_adapterFactory;
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> m_adapter;
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringFilter> m_filterAdapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter> m_aggregateAdapter;
         DocumentPropertyEditor* m_dpe = nullptr;
 
         AZ::SerializeContext* m_serializeContext = nullptr;
