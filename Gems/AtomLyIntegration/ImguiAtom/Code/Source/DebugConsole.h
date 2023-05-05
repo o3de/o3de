@@ -20,7 +20,6 @@
 #ifdef IMGUI_ENABLED
 #   include <imgui/imgui.h>
 #   include <ImGuiBus.h>
-#   include <LYImGuiUtils/HistogramContainer.h>
 #endif
 
 struct ImGuiInputTextCallbackData;
