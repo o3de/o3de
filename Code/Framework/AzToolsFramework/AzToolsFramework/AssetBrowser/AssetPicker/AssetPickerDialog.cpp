@@ -289,8 +289,7 @@ namespace AzToolsFramework
 
         void AssetPickerDialog::UpdatePreview() const
         {
-            auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible()
-                ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
+            auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
                                                                                   : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
             ;
             if (selectedAssets.size() != 1)
