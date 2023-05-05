@@ -434,12 +434,17 @@ namespace AZ::Reflection
                 if (parentValue && !parentValue->IsNull())
                 {
                     Dom::Value* existingValue = nullptr;
-                    for (auto it = nodeData->m_cachedAttributes.begin(); !existingValue && it != nodeData->m_cachedAttributes.end(); ++it)
-                    {
-                        if (it->m_name == changeNotifyName)
+                    auto it = AZStd::find_if(
+                        nodeData->m_cachedAttributes.begin(),
+                        nodeData->m_cachedAttributes.end(),
+                        [&changeNotifyName](const AttributeData& attributeData)
                         {
-                            existingValue = &it->m_value;
-                        }
+                            return (attributeData.m_name == changeNotifyName);
+                        });
+
+                    if (it != nodeData->m_cachedAttributes.end())
+                    {
+                        existingValue = &it->m_value;
                     }
 
                     auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
@@ -455,25 +460,19 @@ namespace AZ::Reflection
                         }
                     };
 
+                    // calling order matters! Add parent's attributes first then existing attribute
                     if (existingValue)
                     {
-                        if (!existingValue->IsArray())
-                        {
-                            Dom::Value arrayValue;
-                            arrayValue.SetArray();
-                            arrayValue.ArrayPushBack(*existingValue);
-                            *existingValue = arrayValue;
-                        }
-                        // existing value is an array, add parents changeNotify to it
-                        addValueToArray(*parentValue, *existingValue);
+                        Dom::Value newChangeNotifyValue;
+                        newChangeNotifyValue.SetArray();
+                        addValueToArray(*parentValue, newChangeNotifyValue);
+                        addValueToArray(*existingValue, newChangeNotifyValue);
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotifyName, newChangeNotifyValue });
                     }
                     else
                     {
                         // no existing changeNotify, so let's just inherit the parent's one
-                        Dom::Value arrayValue;
-                        arrayValue.SetArray();
-                        addValueToArray(*parentValue, arrayValue);
-                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotifyName, arrayValue });
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
                     }
                 }
 
