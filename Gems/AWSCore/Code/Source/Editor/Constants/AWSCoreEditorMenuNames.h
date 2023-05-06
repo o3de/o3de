@@ -22,7 +22,7 @@ namespace AWSCore
         "Getting started with AWS?",
         "o3de.menu.editor.aws.newtoaws",
         ":/Notifications/link.svg",
-        "https://o3de.org/docs/user-guide/gems/reference/aws/"
+        "https://www.o3de.org/docs/user-guide/gems/reference/aws/"
     };
 
     static constexpr const char* AWSAndO3DEGlobalDocs[] =
@@ -38,7 +38,7 @@ namespace AWSCore
         "Getting started",
         "o3de.menu.editor.aws.getting_started",
         ":/Notifications/link.svg",
-        "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/getting-started/"
+        "https://www.o3de.org/docs/user-guide/gems/reference/aws/aws-core/getting-started/"
     };
 
     static constexpr const char* AWSCredentialConfiguration[] =
@@ -46,7 +46,7 @@ namespace AWSCore
         "AWS credential configuration",
         "o3de.menu.editor.aws.aws_credential_configuration",
         ":/Notifications/link.svg",
-        "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/"
+        "https://www.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/"
     };
 
     static constexpr const char* AWSAndO3DEMappingsFile[] =
@@ -54,7 +54,7 @@ namespace AWSCore
         "Use AWS resources in O3DE",
         "o3de.menu.editor.aws.use_aws_resources_in_o3de",
         ":/Notifications/link.svg",
-        "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/resource-mapping-files/"
+        "https://www.o3de.org/docs/user-guide/gems/reference/aws/aws-core/resource-mapping-files/"
     };
 
     static constexpr const char* AWSAndO3DEMappingsTool[] =
@@ -62,7 +62,7 @@ namespace AWSCore
         "Building a resource mappings file",
         "o3de.menu.editor.aws.building_a_resource_mappings_file",
         ":/Notifications/link.svg",
-        "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/resource-mapping-tool/"
+        "https://www.o3de.org/docs/user-guide/gems/reference/aws/aws-core/resource-mapping-tool/"
     };
 
     static constexpr const char* AWSAndO3DEScripting[] =
@@ -70,7 +70,7 @@ namespace AWSCore
         "Scripting reference",
         "o3de.menu.editor.aws.scripting_reference",
         ":/Notifications/link.svg",
-        "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/scripting/"
+        "https://www.o3de.org/docs/user-guide/gems/reference/aws/aws-core/scripting/"
     };
 
     static constexpr const char* O3DEAndAWS[] =
