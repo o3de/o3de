@@ -42,7 +42,7 @@ namespace AZ
                 if (EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorAreaLightComponent>(
-                        "Light", "A light which emits from a point or goemetric shape.")
+                        "Light", "A light which emits from a point or geometric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
