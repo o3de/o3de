@@ -10,7 +10,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/EBus/Event.h>
-#include <AzCore/Interface/Interface.h>
 
 // Forward Declares
 struct ImVec2;
