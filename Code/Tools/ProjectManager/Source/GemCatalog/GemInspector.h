@@ -69,15 +69,17 @@ namespace O3DE::ProjectManager
 
     signals:
         void TagClicked(const Tag& tag);
-        void UpdateGem(const QModelIndex& modelIndex);
+        void UpdateGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         void UninstallGem(const QModelIndex& modelIndex, const QString& path = "");
         void EditGem(const QModelIndex& modelIndex, const QString& path = "");
         void DownloadGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
+        void ShowToastNotification(const QString& notification);
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnVersionChanged(int index);
         void OnDirSizeSet(QString size);
+        void OnCopyDownloadLinkClicked();
 
     private:
         void InitMainWidget();
@@ -105,6 +107,9 @@ namespace O3DE::ProjectManager
         // Requirements
         QLabel* m_requirementsTextLabel = nullptr;
 
+        // Compatibility
+        QLabel* m_compatibilityTextLabel = nullptr;
+
         // Depending gems
         GemsSubWidget* m_dependingGems = nullptr;
         QSpacerItem* m_dependingGemsSpacer = nullptr;
@@ -117,6 +122,7 @@ namespace O3DE::ProjectManager
         QLabel* m_enginesLabel = nullptr;
         QLabel* m_lastUpdatedLabel = nullptr;
         QLabel* m_binarySizeLabel = nullptr;
+        LinkLabel* m_copyDownloadLinkLabel = nullptr;
 
         QPushButton* m_updateVersionButton = nullptr;
         QPushButton* m_updateGemButton = nullptr;

@@ -119,6 +119,9 @@ namespace AZ
         iterator end();
         const_iterator cend() const;
 
+        /// Returns the page index for the given handle
+        size_t GetPageIndex(const Handle& handle) const;
+
     private:
 
         /// Adds a page and returns its pointer
@@ -261,6 +264,8 @@ namespace AZ
         this_type& operator++();
         this_type operator++(int);
 
+        size_t GetPageIndex() const;
+
     private:
 
         void SkipEmptyBitGroups();
@@ -296,6 +301,8 @@ namespace AZ
 
         bool operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         bool operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
+        bool operator<(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
+
         
     private:
         StableDynamicArrayWeakHandle(ValueType* data);

@@ -8,6 +8,8 @@
     "copyright_year": @O3DE_COPYRIGHT_YEAR@,
     "build": @O3DE_INSTALL_BUILD_VERSION@,
     "external_subdirectories": [@O3DE_INSTALL_EXTERNAL_SUBDIRS@],
+    "gem_names": [@O3DE_INSTALL_ENGINE_GEMS@],
     "projects": [@O3DE_INSTALL_PROJECTS@],
+    "repos": [@O3DE_INSTALL_REPOS@],
     "templates": [@O3DE_INSTALL_TEMPLATES@]
 }

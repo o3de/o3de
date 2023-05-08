@@ -935,21 +935,22 @@ void QtViewPaneManager::CloseAllNonStandardPanes()
 
 void QtViewPaneManager::TogglePane(const QString& name)
 {
-    QtViewPane* pane = GetPane(name);
-    if (!pane)
+    // Find the first pane with this name, or an enumerated instance.
+    QtViewPane* pane = GetFirstVisiblePaneMatching(name);
+    if (pane)
     {
-        Q_ASSERT(false);
+        ClosePane(pane->m_name);
         return;
     }
 
-    if (pane->IsVisible())
+    pane = GetPane(name);
+    if (!pane)
     {
-        ClosePane(name);
+        Q_ASSERT_X(false, "QtViewPaneManager", ("Failed to open pane " + name).toUtf8().data());
+        return;
     }
-    else
-    {
-        OpenPane(name);
-    }
+
+    OpenPane(name);
 }
 
 QWidget* QtViewPaneManager::CreateWidget(const QString& paneName)
@@ -1658,6 +1659,39 @@ QtViewPane* QtViewPaneManager::GetPane(const QString& name)
     return foundPane;
 }
 
+QtViewPane* QtViewPaneManager::GetFirstVisiblePaneMatching(const QString& name)
+{
+    QString baseName = name;
+
+    // Strip away any enumeration.
+    baseName = baseName.remove(QRegExp("\\([0-9]+\\)$"));
+
+    // Build a regexp which will match just the name, or the name followed by a number in parentheses.
+    QRegExp pattern(name + "([ ]*\\([0-9]+\\))*");
+
+    auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
+            [pattern](const QtViewPane& pane)
+        {
+            return pattern.exactMatch(pane.m_name) && pane.IsVisible();
+        });
+
+    QtViewPane* foundPane = ((it == m_registeredPanes.end()) ? nullptr : it);
+
+    if (foundPane == nullptr)
+    {
+        // if we couldn't find the pane based on the name (which will be the title), look it up by saveKeyName next
+        auto optionsIt = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
+            [pattern](const QtViewPane& pane)
+        {
+            return pattern.exactMatch(pane.m_options.saveKeyName) && pane.IsVisible();
+        });
+
+        foundPane = ((optionsIt == m_registeredPanes.end()) ? nullptr : optionsIt);
+    }
+
+    return foundPane;
+}
+
 QtViewPane* QtViewPaneManager::GetViewportPane(int viewportType)
 {
     auto it = std::find_if(m_registeredPanes.begin(), m_registeredPanes.end(),
@@ -1676,6 +1710,12 @@ bool QtViewPaneManager::IsVisible(const QString& name)
 {
     QtViewPane* view = GetPane(name);
     return view && view->IsVisible();
+}
+
+bool QtViewPaneManager::IsEnumeratedInstanceVisible(const QString& name)
+{
+    // Returns true is panel "name" is visible or "name (1)" etc.
+    return GetFirstVisiblePaneMatching(name);
 }
 
 bool QtViewPaneManager::IsPaneRegistered(const QString& name) const

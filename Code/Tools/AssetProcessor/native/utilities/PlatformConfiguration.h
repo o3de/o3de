@@ -242,7 +242,7 @@ namespace AssetProcessor
         QString GetOverridingFile(QString relativeName, QString scanFolderName) const;
 
         //! given a relative name, loop over folders and resolve it to a full path with the first existing match.
-        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false) const;
+        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false, const AssetProcessor::ScanFolderInfo** scanFolderInfo = nullptr) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
         QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
@@ -300,7 +300,7 @@ namespace AssetProcessor
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
 
         // uses const + mutability since its a cache.
-        void CacheIntermediateAssetsScanFolderId() const; 
+        void CacheIntermediateAssetsScanFolderId() const;
         AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
         void ReadMetaDataFromSettingsRegistry();
 

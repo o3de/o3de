@@ -206,6 +206,7 @@ foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_EXE_LINKER_FLAGS_${UCONF} CACHE STRING "Flags to pass to the linker when creating an executable for ${conf}")
 endforeach()
 
-# flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>.cmake
+# flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>(_<platformarchitecture>).cmake
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
-include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}${LY_HOST_ARCHITECTURE_NAME_EXTENSION}.cmake)
+

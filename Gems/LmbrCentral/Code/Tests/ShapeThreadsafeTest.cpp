@@ -31,6 +31,14 @@ namespace UnitTest
         // always be 10.  (The shape extends 10 above and 10 below the origin, so 20 above origin is 10 above the shape)
         constexpr float ExpectedDistance = 10.0f;
 
+        // Comparing floats needs a tolerance based on whether we are using NEON or not
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        constexpr float compareTolerance = 1.0e-4;
+        #else
+        constexpr float compareTolerance = 1.0e-6;
+        #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+
+
         AZ::EntityId shapeEntityId = shapeEntity.GetId();
 
         // Pick an arbitrary number of threads and iterations that are large enough to demonstrate thread safety problems.
@@ -64,7 +72,7 @@ namespace UnitTest
                         // You can put a breakpoint on the ASSERT_EQ line to see the current state of things in the failure case.
                         if (distance != ExpectedDistance)
                         {
-                            ASSERT_EQ(distance, ExpectedDistance);
+                            ASSERT_NEAR(distance, ExpectedDistance, compareTolerance);
                         }
                     }
                 });

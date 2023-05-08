@@ -570,8 +570,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Exit";
-        actionProperties.m_description = "Open a different project in the Project Manager.";
-        actionProperties.m_category = "Project";
+        actionProperties.m_description = "Exit the Editor";
+        actionProperties.m_category = "Editor";
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -2595,7 +2595,7 @@ void EditorActionsHandler::RefreshToolActions()
                 },
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]() -> bool
                 {
-                    return viewpaneManager->IsVisible(viewpaneName);
+                    return viewpaneManager->IsEnumeratedInstanceVisible(viewpaneName);
                 }
             );
 
