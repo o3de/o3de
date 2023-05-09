@@ -23,7 +23,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_Feature_Common.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static
-            PRIVATE
     )
 
     ly_add_target(
@@ -41,4 +40,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::EditorModeFeedback.Editor.Static
     )
+
+    ly_create_alias(NAME EditorModeFeedback.Tools NAMESPACE Gem TARGETS Gem::EditorModeFeedback.Editor)
+    ly_create_alias(NAME EditorModeFeedback.Builders NAMESPACE Gem TARGETS Gem::EditorModeFeedback.Editor)
 endif()
