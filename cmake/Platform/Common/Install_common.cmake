@@ -403,6 +403,7 @@ endif()
     #    that will declare the target and configure it
     ly_setup_subdirectory_create_alias("${absolute_target_source_dir}" CREATE_ALIASES_PLACEHOLDER)
     ly_setup_subdirectory_set_gem_variant_to_load("${absolute_target_source_dir}" GEM_VARIANT_TO_LOAD_PLACEHOLDER)
+    ly_setup_add_variant_dependencies_for_gem_dependencies("${absolute_target_source_dir}" O3DE_ADD_VARIANT_DEPS_FOR_GEM_DEPS)
     ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
     ly_setup_subdirectory_install_code("${absolute_target_source_dir}" O3DE_INSTALL_CODE_PLACEHOLDER)
 
@@ -414,6 +415,7 @@ endif()
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
         "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
+        "${O3DE_ADD_VARIANT_DEPS_FOR_GEM_DEPS}"
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
@@ -838,6 +840,27 @@ function(ly_setup_assets)
 
 endfunction()
 
+#! ly_setup_add_variant_dependencies_for_gem_dependencies: Replicates the call to
+#!  the `o3de_add_variant_dependencies_for_gem_dependencies` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_add_variant_dependencies_for_gem_dependencies absolute_target_source_dir output_script)
+    # Replicate the create_alias() calls made in the SOURCE_DIR into the generated CMakeLists.txt
+    string(JOIN "\n" add_variant_dependencies_for_gem_dependencies_template
+        "o3de_add_variant_dependencies_for_gem_dependencies(@add_variant_dependencies_for_gem_dependencies_args@)"
+        "")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(add_variant_dependencies_for_gem_dependencies_args_list
+        DIRECTORY ${absolute_target_source_dir}
+        PROPERTY O3DE_ADD_VARIANT_DEPENDENCIES_FOR_GEM_DEPENDENCIES_ARGUMENTS)
+
+    unset(add_variant_dependencies_for_gem_dependencies_calls)
+    foreach(add_variant_dependencies_for_gem_dependencies_args IN LISTS add_variant_dependencies_for_gem_dependencies_args_list)
+        string(CONFIGURE "${add_variant_dependencies_for_gem_dependencies_template}" add_variant_dependencies_for_gem_dependencies_command @ONLY)
+        string(APPEND add_variant_dependencies_for_gem_dependencies_calls ${add_variant_dependencies_for_gem_dependencies_command})
+    endforeach()
+    set(${output_script} ${add_variant_dependencies_for_gem_dependencies_calls} PARENT_SCOPE)
+endfunction()
 
 #! ly_setup_subdirectory_create_alias: Replicates the call to the `ly_create_alias` function
 #! within the generated CMakeLists.txt in the same relative install layout directory
