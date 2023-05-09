@@ -237,7 +237,7 @@ namespace AZ
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const ImageView* const> imageViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
             
             //! Update the indirect buffer view with the indices of all the buffer views which reside in the global gpu heap.
@@ -246,7 +246,7 @@ namespace AZ
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const BufferView* const> bufferViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
 
             //! Get the size of the bindless view map
