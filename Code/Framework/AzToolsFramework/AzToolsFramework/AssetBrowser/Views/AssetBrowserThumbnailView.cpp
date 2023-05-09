@@ -15,7 +15,6 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
@@ -52,7 +51,10 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    }
                     emit entryClicked(indexData);
                 });
 
@@ -76,7 +78,7 @@ namespace AzToolsFramework
                     {
                         QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                        AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
                             auto action = menu.addAction(tr("Show In Folder"));

@@ -19,7 +19,7 @@
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
@@ -39,7 +39,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AzAssetBrowser/ui_AzAssetBrowserWindow.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
-AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
+AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserListView);
 
 AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
 
@@ -102,7 +102,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
-    , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserTableModel(parent))
+    , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserListModel(parent))
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true);
@@ -117,7 +117,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
 
-    m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+    m_ui->m_assetBrowserListViewWidget->setVisible(false);
     m_ui->m_toolsMenuButton->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
 
@@ -128,7 +128,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserFavoritesWidget->SetSearchWidget(m_ui->m_searchWidget);
 
-    if (ed_useNewAssetBrowserTableView)
+    if (ed_useNewAssetBrowserListView)
     {
         m_ui->m_toolsMenuButton->setVisible(true);
         m_ui->m_toolsMenuButton->setEnabled(true);
@@ -138,7 +138,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_tableModel->setFilterRole(Qt::DisplayRole);
         m_tableModel->setSourceModel(m_filterModel.data());
         m_tableModel->setDynamicSortFilter(true);
-        m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.data());
+        m_ui->m_assetBrowserListViewWidget->setModel(m_tableModel.data());
 
         m_createMenu = new QMenu("Create New Asset Menu", this);
         m_ui->m_createButton->setMenu(m_createMenu);
@@ -157,11 +157,11 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged,
             this, &AzAssetBrowserWindow::UpdateWidgetAfterFilter);
 
-        connect(m_ui->m_assetBrowserTableViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
+        connect(m_ui->m_assetBrowserListViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
             this, &AzAssetBrowserWindow::CurrentIndexChangedSlot);
 
         connect(
-            m_ui->m_assetBrowserTableViewWidget->selectionModel(),
+            m_ui->m_assetBrowserListViewWidget->selectionModel(),
             &QItemSelectionModel::selectionChanged,
             this,
             [this](const QItemSelection& selected, const QItemSelection& deselected)
@@ -173,16 +173,16 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
                 }
             });
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked,
+        connect(m_ui->m_assetBrowserListViewWidget, &QAbstractItemView::doubleClicked,
             this, &AzAssetBrowserWindow::DoubleClickedItem);
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter,
+        connect(m_ui->m_assetBrowserListViewWidget, &AzAssetBrowser::AssetBrowserListView::ClearStringFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearStringFilter);
 
-        connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter,
+        connect(m_ui->m_assetBrowserListViewWidget, &AzAssetBrowser::AssetBrowserListView::ClearTypeFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-        m_ui->m_assetBrowserTableViewWidget->SetIsAssetBrowserMainView();
+        m_ui->m_assetBrowserListViewWidget->SetIsAssetBrowserMainView();
 
         connect(
             m_ui->m_thumbnailView,
@@ -224,7 +224,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             });
     }
 
-    connect(m_ui->m_expandedTableView, &AssetBrowserExpandedTableView::entryDoubleClicked,
+    connect(m_ui->m_tableView, &AssetBrowserTableView::entryDoubleClicked,
         this,
         [this](const AssetBrowserEntry* entry)
         {
@@ -237,7 +237,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_middleStackWidget->hide();
         m_ui->m_treeViewButton->hide();
         m_ui->m_thumbnailViewButton->hide();
-        m_ui->m_expandedTableViewButton->hide();
+        m_ui->m_tableViewButton->hide();
         m_ui->m_createButton->hide();
         m_ui->m_addToFavoritesButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -246,7 +246,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->horizontalLayout->setAlignment(m_ui->m_toolsMenuButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_treeViewButton, Qt::AlignTop);
-    m_ui->horizontalLayout->setAlignment(m_ui->m_expandedTableViewButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_tableViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
@@ -270,12 +270,12 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     });
 
     connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::ThumbnailView); });
-    connect(m_ui->m_expandedTableViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::TableView); });
+    connect(m_ui->m_tableViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::TableView); });
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::ListView); });
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
     m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
-    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
+    m_ui->m_tableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -286,7 +286,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
             const bool selectFirstFilteredIndex = false;
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
-            m_ui->m_expandedTableViewButton->setDisabled(hasFilter);
+            m_ui->m_tableViewButton->setDisabled(hasFilter);
         });
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
@@ -314,8 +314,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget,
         &QAbstractItemView::clicked,
         this,
-        [this](const QModelIndex&)
+        [this](const QModelIndex& idx)
         {
+            using namespace AzToolsFramework::AssetBrowser;
+            auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+            {
+                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+            }
             m_ui->m_searchWidget->ClearStringFilter();
         });
 
@@ -337,19 +343,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             {
                 m_ui->m_thumbnailView->OpenItemForEditing(index);
             }
-            else if (m_ui->m_expandedTableView->GetExpandedTableViewActive())
+            else if (m_ui->m_tableView->GetTableViewActive())
             {
-                m_ui->m_expandedTableView->OpenItemForEditing(index);
+                m_ui->m_tableView->OpenItemForEditing(index);
             }
             m_ui->m_assetBrowserTreeViewWidget->OpenItemForEditing(index);
         });
 
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
+        m_ui->m_assetBrowserListViewWidget, &AzAssetBrowser::AssetBrowserListView::UpdateSizeSlot);
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
     m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
-    m_ui->m_expandedTableView->SetIsAssetBrowserMainView();
+    m_ui->m_tableView->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -364,7 +370,7 @@ void AzAssetBrowserWindow::AddCreateMenu()
     m_createMenu->clear();
 
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                                                                                 : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+                                                                                 : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
     const AssetBrowserEntry* entry = selectedAssets.empty() ? nullptr : selectedAssets.front();
     if (!entry || selectedAssets.size() != 1)
     {
@@ -420,9 +426,6 @@ void AzAssetBrowserWindow::RegisterViewClass()
     options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
 
-    options.preferedDockingArea = Qt::BottomDockWidgetArea;
-    AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
-
     options.showInMenu = false;
     const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(name), LyViewPane::CategoryTools, options);
@@ -439,9 +442,9 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
 {
     return m_ui->m_assetBrowserTreeViewWidget == viewWidget ||
-        m_ui->m_assetBrowserTableViewWidget == viewWidget ||
+        m_ui->m_assetBrowserListViewWidget == viewWidget ||
         m_ui->m_thumbnailView == viewWidget ||
-        m_ui->m_expandedTableView == viewWidget;
+        m_ui->m_tableView == viewWidget;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
@@ -516,7 +519,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_ui->m_searchWidget->AddFolderFilter();
 
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
-        m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+        m_ui->m_assetBrowserListViewWidget->setVisible(false);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
     }
@@ -600,9 +603,9 @@ void AzAssetBrowserWindow::SetTreeViewMode()
 
     m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::TreeViewMode;
 
-    if (m_ui->m_assetBrowserTableViewWidget->isVisible())
+    if (m_ui->m_assetBrowserListViewWidget->isVisible())
     {
-        m_ui->m_assetBrowserTableViewWidget->setVisible(false);
+        m_ui->m_assetBrowserListViewWidget->setVisible(false);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
     }
 }
@@ -623,7 +626,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
     if (m_assetBrowserDisplayState == AzAssetBrowser::AssetBrowserDisplayState::ListViewMode)
     {
-        m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
+        m_ui->m_assetBrowserListViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
     }
 
@@ -633,7 +636,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             m_ui->m_assetBrowserTreeViewWidget->model()->index(0, 0, {}), QItemSelectionModel::ClearAndSelect);
     }
 
-    if (ed_useNewAssetBrowserTableView)
+    if (ed_useNewAssetBrowserListView)
     {
         if (hasFilter)
         {
@@ -642,7 +645,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             {
                 thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
             }
-            auto expandedTableWidget = m_ui->m_expandedTableView->GetExpandedTableViewWidget();
+            auto expandedTableWidget = m_ui->m_tableView->GetExpandedTableViewWidget();
             if (expandedTableWidget)
             {
                 expandedTableWidget->setRootIndex(expandedTableWidget->model()->index(0, 0, {}));
@@ -677,8 +680,8 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
         return;
     }
 
-    auto* expandedTableView = qobject_cast<AssetBrowserExpandedTableView*>(viewToShow);
-    if (expandedTableView && m_ui->m_expandedTableView->GetExpandedTableViewActive())
+    auto* tableView = qobject_cast<AssetBrowserTableView*>(viewToShow);
+    if (tableView && m_ui->m_tableView->GetTableViewActive())
     {
         return;
     }
@@ -690,20 +693,20 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     if (thumbnailView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
-        m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+        m_ui->m_tableView->SetTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
     }
-    else if (expandedTableView)
+    else if (tableView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
-        m_ui->m_expandedTableView->SetExpandedTableViewActive(true);
+        m_ui->m_tableView->SetTableViewActive(true);
         m_ui->m_searchWidget->setDisabled(true);
     }
 }
 
 void AzAssetBrowserWindow::SetOneColumnMode()
 {
-    if (m_ui->m_thumbnailView->GetThumbnailActiveView() || m_ui->m_expandedTableView->GetExpandedTableViewActive())
+    if (m_ui->m_thumbnailView->GetThumbnailActiveView() || m_ui->m_tableView->GetTableViewActive())
     {
         m_ui->m_middleStackWidget->hide();
         m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
@@ -713,7 +716,7 @@ void AzAssetBrowserWindow::SetOneColumnMode()
             m_ui->m_assetBrowserTreeViewWidget->expand(m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows()[0]);
         }
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
-        m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+        m_ui->m_tableView->SetTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
     }
 }
@@ -742,6 +745,8 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
 
     if (entryType == AssetBrowserEntry::AssetEntryType::Folder)
     {
+        m_ui->m_searchWidget->ClearStringFilter();
+
         auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
         auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
 
@@ -754,6 +759,14 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
             targetIndexAncestor = targetIndexAncestor.parent();
         }
 
+        if (m_ui->m_thumbnailView->GetThumbnailActiveView())
+        {
+            m_ui->m_thumbnailView->GetThumbnailViewWidget()->selectionModel()->clearSelection();
+        }
+        else if (m_ui->m_tableView->GetTableViewActive())
+        {
+            m_ui->m_tableView->GetExpandedTableViewWidget()->selectionModel()->clearSelection();
+        }
         m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
     else if (entryType == AssetBrowserEntry::AssetEntryType::Product || entryType == AssetBrowserEntry::AssetEntryType::Source)
@@ -871,7 +884,6 @@ void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
     auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
     UpdateBreadcrumbs(entry);
-    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
 }
 
 // while its tempting to use Activated here, we don't actually want it to count as activation
@@ -881,7 +893,7 @@ void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex&
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
     const auto& selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible() ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                                                                                 : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+                                                                                 : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
 
     for (const AzAssetBrowser::AssetBrowserEntry* entry : selectedAssets)
     {
@@ -946,7 +958,7 @@ void AzAssetBrowserWindow::SetCurrentMode(const AssetBrowserMode mode)
         switch (mode)
         {
         case AssetBrowserMode::TableView:
-            SetTwoColumnMode(m_ui->m_expandedTableView);
+            SetTwoColumnMode(m_ui->m_tableView);
             break;
         case AssetBrowserMode::ListView:
             SetOneColumnMode();
