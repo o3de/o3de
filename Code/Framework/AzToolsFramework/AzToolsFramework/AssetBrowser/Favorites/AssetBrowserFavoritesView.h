@@ -22,6 +22,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserFavoritesModel;
+        class AssetBrowserTreeView;
         class FavoritesEntryDelegate;
         class SearchWidget;
 
@@ -35,12 +36,11 @@ namespace AzToolsFramework
 
             void SetSearchWidget(SearchWidget* searchWidget);
 
-            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
-
             void AfterRename(QString newName);
 
         protected:
             // Qt overrides
+            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void dragMoveEvent(QDragMoveEvent* event) override;
 
         private:

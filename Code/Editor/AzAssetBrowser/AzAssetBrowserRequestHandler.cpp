@@ -34,6 +34,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
@@ -443,7 +444,13 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser |= expandedTableView->GetIsAssetBrowserMainView();
     }
 
-    if (!treeView && !tableView && !thumbnailView && !expandedTableView)
+    AssetBrowserFavoritesView* favoritesView = qobject_cast<AssetBrowserFavoritesView*>(caller);
+    if (favoritesView)
+    {
+        calledFromAssetBrowser = false;
+    }
+
+    if (!treeView && !tableView && !thumbnailView && !expandedTableView && !favoritesView)
     {
         return;
     }
@@ -1201,4 +1208,51 @@ bool AzAssetBrowserRequestHandler::OpenWithOS(const AZStd::string& fullEntryPath
     }
 
     return openedSuccessfully;
+}
+
+AzAssetBrowserWindow* AzAssetBrowserRequestHandler::FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget)
+{
+    AzAssetBrowserWindow* targetAssetBrowserWindow = nullptr;
+    QWidget* candidate = widget;
+    while (!targetAssetBrowserWindow)
+    {
+        targetAssetBrowserWindow = qobject_cast<AzAssetBrowserWindow*>(candidate);
+        if (targetAssetBrowserWindow)
+        {
+            return targetAssetBrowserWindow;
+        }
+
+        if (!candidate->parentWidget())
+        {
+            return nullptr;
+        }
+
+        candidate = candidate->parentWidget();
+    }
+
+    return nullptr;
+}
+
+void AzAssetBrowserRequestHandler::SelectAsset(QWidget* caller, const AZStd::string& fullFilePath)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
+
+    if (!assetBrowserWindow)
+    {
+        return;
+    }
+
+    assetBrowserWindow->SelectAsset(fullFilePath.c_str(), false);
+}
+
+void AzAssetBrowserRequestHandler::SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
+
+    if (!assetBrowserWindow)
+    {
+        return;
+    }
+
+    assetBrowserWindow->SelectAsset(fullFolderPath.c_str(), true);
 }

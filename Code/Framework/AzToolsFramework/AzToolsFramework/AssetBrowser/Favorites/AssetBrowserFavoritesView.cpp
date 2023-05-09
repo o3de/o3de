@@ -21,6 +21,8 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        constexpr int MinimumHeight = 25;
+
         AssetBrowserFavoritesView::AssetBrowserFavoritesView(QWidget* parent)
             : QTreeViewWithStateSaving(parent)
             , m_favoritesModel(new AzToolsFramework::AssetBrowser::AssetBrowserFavoritesModel(parent))
@@ -30,7 +32,7 @@ namespace AzToolsFramework
             setItemDelegate(m_delegate.data());
             setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
             setContextMenuPolicy(Qt::CustomContextMenu);
-
+            setMinimumHeight(MinimumHeight);
             setDragEnabled(true);
             setAcceptDrops(true);
             setDragDropMode(QAbstractItemView::DropOnly);
@@ -40,8 +42,6 @@ namespace AzToolsFramework
             m_delegate.data()->SetShowFavoriteIcons(true);
 
             header()->hide();
-
-            m_favoritesModel->
 
             connect(m_delegate.data(), &EntryDelegate::RenameEntry, this, &AssetBrowserFavoritesView::AfterRename);
             connect(this, &QTreeView::customContextMenuRequested, this, &AssetBrowserFavoritesView::OnContextMenu);
@@ -84,23 +84,26 @@ namespace AzToolsFramework
             AssetBrowserFavoriteItem::FavoriteType favoriteType = favoriteItem->GetFavoriteType();
             QMenu menu(this);
 
-            menu.addAction(
-                QObject::tr("Select"),
-                [this, selected]()
-                {
-                    m_favoritesModel->Select(selected);
-                });
-
-            menu.addAction(
-                QIcon(QStringLiteral(":/Gallery/Favorites.svg")),
-                QObject::tr("Remove from Favorites"),
-                [favoriteItem]()
-                {
-                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveFromFavorites, favoriteItem);
-                });
-
-            if (favoriteType == AssetBrowserFavoriteItem::FavoriteType::Search)
+            if (favoriteType == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
             {
+                AZStd::vector<const AssetBrowserEntry*> selectedEntries;
+
+                EntryAssetBrowserFavoriteItem* favoriteEntry = static_cast<EntryAssetBrowserFavoriteItem*>(favoriteItem);
+                selectedEntries.push_back(favoriteEntry->GetEntry());
+
+                AssetBrowserInteractionNotificationBus::Broadcast(
+                    &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, selectedEntries);
+            }
+            else
+            {
+                menu.addAction(
+                    QObject::tr("Remove from Favorites"),
+                    [favoriteItem]()
+                    {
+                        AssetBrowserFavoriteRequestBus::Broadcast(
+                            &AssetBrowserFavoriteRequestBus::Events::RemoveFromFavorites, favoriteItem);
+                    });
+
                 menu.addAction(
                     QObject::tr("Rename"),
                     [this, selected]()

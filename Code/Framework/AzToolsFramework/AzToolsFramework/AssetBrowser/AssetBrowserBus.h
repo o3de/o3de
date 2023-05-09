@@ -263,6 +263,12 @@ namespace AzToolsFramework
                 return SourceFileDetails();
             }
 
+            //! Selects the asset identified by the path in the AzAssetBrowser identified by caller.
+            virtual void SelectAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFilePath) {};
+
+            //! Selects the folder identified by the path in the AzAssetBrowser identified by caller.
+            virtual void SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath){};
+
             //! required in order to sort the busses.
             inline bool Compare(const AssetBrowserInteractionNotifications* other) const
             {

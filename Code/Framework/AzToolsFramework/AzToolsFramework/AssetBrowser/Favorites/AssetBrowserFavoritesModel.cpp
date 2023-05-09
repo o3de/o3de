@@ -252,7 +252,6 @@ namespace AzToolsFramework
             LoadFavorites();
         }
 
-
         void AssetBrowserFavoritesModel::AddFavoriteItem(AssetBrowserFavoriteItem* item)
         {
             int rowCount = aznumeric_cast<int>(m_favorites.size());
@@ -341,37 +340,27 @@ namespace AzToolsFramework
                 return;
             }
 
+            QWidget* parentWidget = m_searchWidget->parentWidget();
+
             AssetBrowserFavoriteItem* favoriteItem = static_cast<AssetBrowserFavoriteItem*>(favorite.internalPointer());
             if (favoriteItem->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
             {
                 EntryAssetBrowserFavoriteItem* favoriteEntry = static_cast<EntryAssetBrowserFavoriteItem*>(favoriteItem);
 
                 const AssetBrowserEntry* selectedEntry = favoriteEntry->GetEntry();
-                if (selectedEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
-                {
-                    AssetBrowserViewRequestBus::Broadcast(
-                        &AssetBrowserViewRequestBus::Events::SelectProduct,
-                        static_cast<const ProductAssetBrowserEntry*>(selectedEntry)->GetAssetId());
-                    
-                }
-                if (selectedEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                {
-                    //TODO - neeeds to go to correct view.
-                    AZStd::string fullPath = static_cast<const SourceAssetBrowserEntry*>(selectedEntry)->GetFullPath();
 
-                    AssetBrowserViewRequestBus::Broadcast(
-                        &AssetBrowserViewRequestBus::Events::SelectFileAtPath,
-                        AZ::IO::PathView(fullPath.data()).LexicallyNormal().String());
-                }
+                AZStd::string fullPath = static_cast<const SourceAssetBrowserEntry*>(selectedEntry)->GetFullPath();
+
                 if (selectedEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
                 {
-                    AZStd::string fullPath = static_cast<const FolderAssetBrowserEntry*>(selectedEntry)->GetFullPath();
-
-                    AssetBrowserViewRequestBus::Broadcast(
-                        &AssetBrowserViewRequestBus::Events::SelectFileAtPath,
-                        AZ::IO::PathView(fullPath.data()).LexicallyNormal().String());
+                    AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::SelectFolderAsset, parentWidget, fullPath);
                 }
-                    
+                else
+                {
+                    AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::SelectAsset, parentWidget, fullPath);
+                }
             }
 
             if (favoriteItem->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)

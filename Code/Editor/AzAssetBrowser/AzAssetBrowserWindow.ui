@@ -125,7 +125,6 @@
            </property>
           </widget>
          </item>
-         
          <item>
           <widget class="Line" name="line_2">
            <property name="orientation">

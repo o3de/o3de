@@ -57,7 +57,7 @@ public:
     explicit AzAssetBrowserWindow(QWidget* parent = nullptr);
     virtual ~AzAssetBrowserWindow();
 
-    void SelectAsset(const QString& assetPath);
+    void SelectAsset(const QString& assetPath, bool assetIsFolder = false);
 
     static void RegisterViewClass();
 

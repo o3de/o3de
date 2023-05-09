@@ -250,6 +250,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->m_addToFavoritesButton, Qt::AlignTop);
 
     m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createSeparator());
     m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createBackForwardToolBar());
@@ -810,19 +811,26 @@ static void ExpandTreeToIndex(QTreeView* treeView, const QModelIndex& index)
     }
 }
 
-void AzAssetBrowserWindow::SelectAsset(const QString& assetPath)
+void AzAssetBrowserWindow::SelectAsset(const QString& assetPath, bool assetIsFolder)
 {
     if (ed_useWIPAssetBrowserDesign)
     {
         QTimer::singleShot(
             0,
             this,
-            [this, assetPath]
+            [this, assetPath, assetIsFolder]
             {
                 m_ui->m_searchWidget->ClearTextFilter();
                 m_ui->m_searchWidget->ClearTypeFilter();
 
-                m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPathAfterUpdate(assetPath.toUtf8().data());
+                if (assetIsFolder)
+                {
+                    m_ui->m_assetBrowserTreeViewWidget->SelectFolder(assetPath.toUtf8().data());
+                }
+                else
+                {
+                    m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPathAfterUpdate(assetPath.toUtf8().data());
+                }
             });
     }
     else
