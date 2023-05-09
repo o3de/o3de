@@ -200,6 +200,11 @@ namespace AZ::DocumentPropertyEditor
             {
                 return AZ::Reflection::ReadGenericAttributeToDomValue(instance, attribute).value_or(AZ::Dom::Value());
             }
+            // Handle the attribute providing an invokable function instead of the value directly
+            else if (attribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
+            {
+                return attribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+            }
             else
             {
                 AZ::AttributeReader reader(instance, attribute);
