@@ -139,7 +139,7 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
     inspectorOptions.isDisabledInImGuiMode = false;
 
     RegisterViewPane<QComponentEntityEditorInspectorWindow>(
-        LyViewPane::EntityInspector,
+        LyViewPane::Inspector,
         LyViewPane::CategoryTools,
         inspectorOptions);
 
@@ -223,7 +223,7 @@ void ComponentEntityEditorPlugin::Release()
     {
         using namespace AzToolsFramework;
 
-        UnregisterViewPane(LyViewPane::EntityInspector);
+        UnregisterViewPane(LyViewPane::Inspector);
         UnregisterViewPane(LyViewPane::EntityOutliner);
         UnregisterViewPane(LyViewPane::EntityInspectorPinned);
 

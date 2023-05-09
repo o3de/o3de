@@ -45,12 +45,6 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::Serialize(char& value, [[maybe_unused]] const char* name, [[maybe_unused]] char minValue, [[maybe_unused]] char maxValue)
-    {
-        m_hash = AZ::TypeHash64(value, m_hash);
-        return true;
-    }
-
     bool HashSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, [[maybe_unused]] int8_t minValue, [[maybe_unused]] int8_t maxValue)
     {
         m_hash = AZ::TypeHash64(value, m_hash);

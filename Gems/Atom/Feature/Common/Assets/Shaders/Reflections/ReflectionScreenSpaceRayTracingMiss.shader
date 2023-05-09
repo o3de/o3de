@@ -17,11 +17,23 @@
         ]
     },
 
+    "DisabledRHIBackends": ["metal"],
+
     "Supervariants":
     [
         {
             "Name": "",
             "RemoveBuildArguments": 
+            {
+                "azslc": ["--strip-unused-srgs"]
+            }
+        },
+        {
+            "Name": "NoMSAA",
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            },
+            "RemoveBuildArguments" :
             {
                 "azslc": ["--strip-unused-srgs"]
             }

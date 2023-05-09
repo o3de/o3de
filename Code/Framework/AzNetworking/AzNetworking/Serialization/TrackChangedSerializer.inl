@@ -34,15 +34,6 @@ namespace AzNetworking
     }
 
     template <typename BASE_TYPE>
-    bool TrackChangedSerializer<BASE_TYPE>::Serialize(char& value, const char* name, char minValue, char maxValue)
-    {
-        const char cached = value;
-        const bool result = BASE_TYPE::Serialize(value, name, minValue, maxValue);
-        m_hasChanged |= (cached != value);
-        return result;
-    }
-
-    template <typename BASE_TYPE>
     bool TrackChangedSerializer<BASE_TYPE>::Serialize(int8_t& value, const char* name, int8_t minValue, int8_t maxValue)
     {
         const int8_t cached = value;

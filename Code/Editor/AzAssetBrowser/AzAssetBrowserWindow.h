@@ -27,7 +27,7 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserFilterModel;
-        class AssetBrowserTableModel;
+        class AssetBrowserListModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
         class AssetBrowserTreeView;
@@ -37,6 +37,13 @@ namespace AzToolsFramework
             TreeViewMode,
             ListViewMode,
             Invalid
+        };
+
+        enum class AssetBrowserMode : int
+        {
+            ThumbnailView,
+            TableView,
+            ListView
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
@@ -57,6 +64,9 @@ public:
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
     bool ViewWidgetBelongsTo(QWidget* viewWidget);
+
+    AzToolsFramework::AssetBrowser::AssetBrowserMode GetCurrentMode() const;
+    void SetCurrentMode(const AzToolsFramework::AssetBrowser::AssetBrowserMode mode);
 
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
@@ -81,7 +91,7 @@ protected slots:
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
-    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
+    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserListModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     QMenu* m_toolsMenu = nullptr;
     QMenu* m_createMenu = nullptr;
@@ -89,7 +99,7 @@ private:
     QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
-
+    AzToolsFramework::AssetBrowser::AssetBrowserMode m_currentMode = AzToolsFramework::AssetBrowser::AssetBrowserMode::ThumbnailView;
 
     //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
     //! relative path of the first folder parent of the passed entry.

@@ -290,6 +290,8 @@ set(FILES
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
     AzAssetBrowser/AzAssetBrowserRequestHandler.h
+    AzAssetBrowser/AzAssetBrowserMultiWindow.cpp
+    AzAssetBrowser/AzAssetBrowserMultiWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.cpp
     AzAssetBrowser/AzAssetBrowserWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.ui

@@ -428,14 +428,51 @@ namespace AZ::Reflection
                 // Cache attributes for the current node. Attribute data will be used in ReflectionAdapter.
                 CacheAttributes();
 
-                // Inherit the change notify attribute from our parent
-                const Name changeNotify = Name("ChangeNotify");
-                if (auto changeNotifyValue = Find(changeNotify); !changeNotifyValue || changeNotifyValue->IsNull())
+                // Inherit the change notify attribute from our parent, if it exists
+                const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
+                auto parentValue = Find(Name(), changeNotifyName, parentData);
+                if (parentValue && !parentValue->IsNull())
                 {
-                    changeNotifyValue = Find(Name(), changeNotify, parentData);
-                    if (changeNotifyValue && !changeNotifyValue->IsNull())
+                    Dom::Value* existingValue = nullptr;
+                    auto it = AZStd::find_if(
+                        nodeData->m_cachedAttributes.begin(),
+                        nodeData->m_cachedAttributes.end(),
+                        [&changeNotifyName](const AttributeData& attributeData)
+                        {
+                            return (attributeData.m_name == changeNotifyName);
+                        });
+
+                    if (it != nodeData->m_cachedAttributes.end())
                     {
-                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, *changeNotifyValue });
+                        existingValue = &it->m_value;
+                    }
+
+                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
+                    {
+                        if (source.IsArray())
+                        {
+                            auto& destinationArray = destination.GetMutableArray();
+                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
+                        }
+                        else
+                        {
+                            destination.ArrayPushBack(source);
+                        }
+                    };
+
+                    // calling order matters! Add parent's attributes first then existing attribute
+                    if (existingValue)
+                    {
+                        Dom::Value newChangeNotifyValue;
+                        newChangeNotifyValue.SetArray();
+                        addValueToArray(*parentValue, newChangeNotifyValue);
+                        addValueToArray(*existingValue, newChangeNotifyValue);
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotifyName, newChangeNotifyValue });
+                    }
+                    else
+                    {
+                        // no existing changeNotify, so let's just inherit the parent's one
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
                     }
                 }
 
@@ -851,6 +888,13 @@ namespace AZ::Reflection
                 {
                     nodeData.m_cachedAttributes.push_back(
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
+                }
+
+                // RpePropertyHandlerWrapper would cache the parent info from which a wrapped handler may retrieve the parent instance.
+                if (nodeData.m_parentInstance)
+                {
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, PropertyEditor::ParentValue.GetName(), Dom::Utils::ValueFromType<void*>(nodeData.m_parentInstance) });
                 }
 
                 // Calculate our visibility, going through parent nodes in reverse order to see if we should be hidden

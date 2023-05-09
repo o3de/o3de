@@ -604,7 +604,7 @@ void CGameEngine::HandleQuitRequest(IConsoleCmdArgs* /*args*/)
     }
     else
     {
-        MainWindow::instance()->GetActionManager()->GetAction(ID_APP_EXIT)->trigger();
+        MainWindow::instance()->window()->close();
     }
 }
 
