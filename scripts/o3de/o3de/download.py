@@ -209,12 +209,14 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
                 return 1
 
     if not skip_auto_register:
+        # force register with the o3de_manifest to prevent accidentally registering 
+        # to a gem.json that was previously downloaded in some parent folder
         if object_type == 'gem':
-            return register.register(gem_path=dest_path)
+            return register.register(gem_path=dest_path, force_register_with_o3de_manifest=True)
         elif object_type == 'project':
-            return register.register(project_path=dest_path)
+            return register.register(project_path=dest_path, force_register_with_o3de_manifest=True)
         elif object_type == 'template':
-            return register.register(template_path=dest_path)
+            return register.register(template_path=dest_path, force_register_with_o3de_manifest=True)
 
     return 0
 
