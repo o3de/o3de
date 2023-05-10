@@ -296,6 +296,8 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, &GetButtonText)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
+                        ->UIElement(AZ::Edit::UIHandlers::Label, "")
+                        ->Attribute(AZ::Edit::Attributes::ValueText, "<h2>Label UIElement</h2>This is a test of a UIElement label<br>that can handle multiple lines of text that also can be wrapped onto newlines<br>and can also support <a href='https://doc.qt.io/qt-5/richtext-html-subset.html'>rich text</a>")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)

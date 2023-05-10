@@ -49,6 +49,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
+        system->RegisterNodeAttribute<Label>(Label::ValueText);
 
         system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
