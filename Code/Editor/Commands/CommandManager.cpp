@@ -15,7 +15,6 @@
 
 // Editor
 #include "QtViewPaneManager.h"
-#include "Include/IIconManager.h"
 
 // AzToolsFramework
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -181,11 +180,6 @@ bool CEditorCommandManager::AttachUIInfo(const char* fullCmdName, const CCommand
     }
 
     m_uiCommands.insert(UICommandTable::value_type(pCommand->m_uiInfo.commandId, pCommand));
-
-    if (uiInfo.iconFilename.empty() == false)
-    {
-        GetIEditor()->GetIconManager()->RegisterCommandIcon(uiInfo.iconFilename.c_str(), pCommand->m_uiInfo.commandId);
-    }
 
     return true;
 }

@@ -104,7 +104,11 @@ namespace
             {
                 case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
+                        auto resultCheck = relocationInterface->Move(
+                            messageData.m_message->m_fromPath,
+                            messageData.m_message->m_toPath,
+                            RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag |
+                                RelocationParameters_UpdateReferencesFlag | RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
@@ -117,21 +121,34 @@ namespace
                     metadataUpdates->PrepareForFileMove(messageData.m_message->m_fromPath.c_str(), messageData.m_message->m_toPath.c_str());
 
                     auto resultMove = relocationInterface->Move(
-                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
+                        messageData.m_message->m_fromPath,
+                        messageData.m_message->m_toPath,
+                        RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag |
+                            RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultMove, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag);
+                    auto flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_AllowDependencyBreakingFlag);
+                    int flags = RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;

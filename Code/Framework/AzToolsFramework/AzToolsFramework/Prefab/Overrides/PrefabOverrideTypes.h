@@ -16,7 +16,7 @@ namespace AzToolsFramework
         {
             Add,
             Remove,
-            Edit
+            Edit // Replace
         };
 
         enum class OverrideType

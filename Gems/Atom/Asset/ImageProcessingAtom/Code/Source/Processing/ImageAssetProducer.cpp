@@ -21,6 +21,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -40,13 +41,15 @@ namespace ImageProcessingAtom
         const Data::AssetId& sourceAssetId,
         AZStd::string_view fileName,
         uint8_t numResidentMips,
-        uint32_t subId)
+        uint32_t subId,
+        AZStd::set<AZStd::string> tags)
         : m_imageObject(imageObject)
         , m_productFolder(saveFolder)
         , m_sourceAssetId(sourceAssetId)
         , m_fileName(fileName)
         , m_numResidentMips(numResidentMips)
         , m_subId(subId)
+        , m_tags(AZStd::move(tags))
     {
         AZ_Assert(imageObject, "Input imageObject can't be empty");
         AZ_Assert(sourceAssetId.IsValid(), "The source asset Id is not valid");
@@ -192,6 +195,11 @@ namespace ImageProcessingAtom
 
         builder.SetAverageColor(m_imageObject->GetAverageColor());
 
+        for (const AZStd::string& tag : m_tags)
+        {
+            builder.AddTag(AZ::Name{ tag });
+        }
+
         product.m_dependenciesHandled = true; // We've output the dependencies immediately above so it's OK to tell the AP we've handled dependencies
 
         bool result = false;
@@ -218,6 +226,27 @@ namespace ImageProcessingAtom
                 // The Asset system can be modified to solve the problem so the order doesn't matter.
                 // The task is tracked in ATOM-242
                 m_jobProducts.push_back(AZStd::move(product));
+
+                auto& imageDescriptor = imageAsset->GetImageDescriptor();
+
+                AZStd::string folder;
+                AZStd::string jsonName;
+                folder = AZStd::string::format("%s/%s.abdata.json", m_productFolder.c_str(), m_fileName.c_str());
+
+                AssetBuilderSDK::CreateABDataFile(folder,
+                    [imageDescriptor](rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+                {
+                    writer.Key("dimension");
+                    writer.StartArray();
+                    writer.Double(imageDescriptor.m_size.m_width);
+                    writer.Double(imageDescriptor.m_size.m_height);
+                    writer.Double(imageDescriptor.m_size.m_depth);
+                    writer.EndArray();
+                });
+
+                AssetBuilderSDK::JobProduct jsonProduct(folder);
+                jsonProduct.m_productSubID = product.m_productSubID + 1;
+                m_jobProducts.push_back(AZStd::move(jsonProduct));
             }
         }
 

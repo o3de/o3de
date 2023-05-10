@@ -34,6 +34,7 @@
 #include <PhysX/MeshAsset.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
+#include <Source/Articulation/ArticulationLinkConfiguration.h>
 #include <Source/SystemComponent.h>
 #include <Source/Collision.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -1800,10 +1801,14 @@ namespace PhysX
             D6JointLimitConfiguration::Reflect(context);
             JointGenericProperties::Reflect(context);
             JointLimitProperties::Reflect(context);
+            JointMotorProperties::Reflect(context);
             FixedJointConfiguration::Reflect(context);
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
             PrismaticJointConfiguration::Reflect(context);
+            ArticulationSensorConfiguration::Reflect(context);
+            ArticulationJointMotorProperties::Reflect(context);
+            ArticulationLinkConfiguration::Reflect(context);
 
             MaterialConfiguration::Reflect(context);
         }

@@ -21,8 +21,8 @@ namespace AZ::Reflection
         using IterationCallback =
             AZStd::function<void(Name group, Name name, const AttributeDataType& attribute)>;
 
-        virtual AttributeDataType Find(Name name) const = 0;
-        virtual AttributeDataType Find(Name group, Name name) const = 0;
+        virtual const AttributeDataType* Find(Name name) const = 0;
+        virtual const AttributeDataType* Find(Name group, Name name) const = 0;
         virtual void ListAttributes(const IterationCallback& callback) const = 0;
     };
 }

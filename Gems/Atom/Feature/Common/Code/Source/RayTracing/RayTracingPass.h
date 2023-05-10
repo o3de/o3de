@@ -35,10 +35,13 @@ namespace AZ
             //! Creates a RayTracingPass
             static RPI::Ptr<RayTracingPass> Create(const RPI::PassDescriptor& descriptor);
 
+            void SetMaxRayLength(float maxRayLength) { m_maxRayLength = maxRayLength; }
+
         protected:
             RayTracingPass(const RPI::PassDescriptor& descriptor);
 
             // Pass overrides
+            bool IsEnabled() const override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions
@@ -75,6 +78,7 @@ namespace AZ
             bool m_requiresSceneSrg = false;
             bool m_requiresRayTracingMaterialSrg = false;
             bool m_requiresRayTracingSceneSrg = false;
+            float m_maxRayLength = 1e27f;
         };
     }   // namespace RPI
 }   // namespace AZ

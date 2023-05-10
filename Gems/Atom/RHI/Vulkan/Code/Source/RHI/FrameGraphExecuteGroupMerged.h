@@ -61,6 +61,8 @@ namespace AZ
             RHI::Ptr<CommandList> m_commandList;
             // List of renderpasses and framebuffers used by the scopes in the group.
             AZStd::span<const RenderPassContext> m_renderPassContexts;
+            // Name used by the command list encoding the work for this group
+            const AZ::Name m_mergedCommandListName{ "Merged" };
         };
     }
 }

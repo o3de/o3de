@@ -710,8 +710,8 @@ namespace
                         pBuf = drawBatch.text.data() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
                         assert(*pBuf == '\n');
                         pChar = Utf8::Unchecked::octet_iterator(pBuf); // pChar once again points inside the target string, at the current character
-                        assert(*pChar == ch);
                         ++pChar;
+                        assert(*pChar == ch);
                         ++curChar;
                         ++batchCurChar;
 
@@ -4092,6 +4092,12 @@ void UiTextComponent::RenderDrawBatchLines(
                         cacheBatch->m_position.GetX(), cacheBatch->m_position.GetY(), 1.0f, cacheBatch->m_text.c_str(), true, fontContext);
 
                     AZ_Assert(numQuadsWritten <= numQuads, "value returned from WriteTextQuadsToBuffers is larger than size allocated");
+
+                    if (numQuadsWritten == 0)
+                    {
+                        delete cacheBatch;
+                        continue;
+                    }
 
                     int numVertices = numQuadsWritten * 4;
                     FontVertexToUiVertex(vertices.data(), cacheBatch->m_cachedPrimitive.m_vertices, numVertices);

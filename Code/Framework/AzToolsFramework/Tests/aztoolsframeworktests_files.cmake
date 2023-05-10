@@ -29,6 +29,8 @@ set(FILES
     ComponentModeTestFixture.h
     ComponentModeTests.cpp
     ComponentModeSwitcherTests.cpp
+    CustomSerializeContextTestFixture.cpp
+    CustomSerializeContextTestFixture.h
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
@@ -111,6 +113,7 @@ set(FILES
     Prefab/PrefabDetachPrefabTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
+    Prefab/PrefabEditorEntityNotificationTests.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.h
     Prefab/PrefabInstanceDomGeneratorTests.cpp
@@ -134,13 +137,17 @@ set(FILES
     Prefab/PrefabUndoAddEntityTestFixture.cpp
     Prefab/PrefabUndoAddEntityTestFixture.h
     Prefab/PrefabUndoAddEntityTests.cpp
-    Prefab/PrefabUndoEditEntityTests.cpp
+    Prefab/PrefabUndoComponentPropertyOverrideTests.cpp
+    Prefab/PrefabUndoComponentPropertyTestFixture.cpp
+    Prefab/PrefabUndoComponentPropertyTestFixture.h
     Prefab/PrefabUndoDeleteTests.cpp
+    Prefab/PrefabUndoEditEntityTests.cpp
     Prefab/PrefabUndoLinkTests.cpp
     Prefab/PrefabUndoTests.cpp
     Prefab/PrefabUpdateInstancesTests.cpp
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
+    Prefab/Serialization/PrefabComponentAliasTests.cpp
     Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/Spawnable/SpawnableTestFixture.h
     Prefab/Spawnable/SpawnableTestFixture.cpp

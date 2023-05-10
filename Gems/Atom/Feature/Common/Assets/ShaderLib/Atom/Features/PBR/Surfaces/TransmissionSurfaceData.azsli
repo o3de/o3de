@@ -12,41 +12,41 @@
 
 class TransmissionSurfaceData
 {
-    float3 tint;
-    float thickness;                 //!< pre baked local thickness, used for transmission
-    float4 transmissionParams;       //!< parameters: thick mode->(attenuation coefficient, power, distortion, scale), thin mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
-    float3 scatterDistance;          //!< scatter distance (same as in MaterialSrg) > 
+    real3 tint;
+    real thickness;                 //!< pre baked local thickness, used for transmission
+    real4 transmissionParams;       //!< parameters: thick mode->(attenuation coefficient, power, distortion, scale), thin mode:  (shrinkFactor, transmissionNdLBias, distanceAttenuation, scale)
+    real3 scatterDistance;          //!< scatter distance (same as in MaterialSrg) > 
 
     void InitializeToZero();
 
     // ----- Thick mode getters -----
 
-    float GetAttenuationCoefficient() { return transmissionParams.x; }
-    float GetPower() { return transmissionParams.y; }
-    float GetDistortion() { return transmissionParams.z; }
+    real GetAttenuationCoefficient() { return transmissionParams.x; }
+    real GetPower() { return transmissionParams.y; }
+    real GetDistortion() { return transmissionParams.z; }
 
     // ----- Thin mode getters -----
 
     // Shrink (absolute) offset towards the normal opposite direction to ensure correct shadow map projection
-    float GetShrinkFactor() { return transmissionParams.x; }
+    real GetShrinkFactor() { return transmissionParams.x; }
 
     // (N . L) to accept below (N . L = 0) in scattering through thin objects
-    float GetTransmissionNdLBias() { return transmissionParams.y; }
+    real GetTransmissionNdLBias() { return transmissionParams.y; }
 
     // Attenuation applied to hide artifacts due to low-res shadow maps 
-    float GetDistanceAttenuation() { return transmissionParams.z; }
+    real GetDistanceAttenuation() { return transmissionParams.z; }
 
     // ----- Common getters -----
 
-    float GetScale() { return transmissionParams.w; }
+    real GetScale() { return transmissionParams.w; }
 };
 
 void TransmissionSurfaceData::InitializeToZero()
 {
-    tint = float3(0.0f, 0.0f, 0.0f);
+    tint = real3(0.0, 0.0, 0.0);
     thickness = 0.0f;
-    transmissionParams = float4(0.0f, 0.0f, 0.0f, 0.0f);
-    scatterDistance = float3(0.0f, 0.0f, 0.0f);
+    transmissionParams = real4(0.0, 0.0, 0.0, 0.0);
+    scatterDistance = real3(0.0, 0.0, 0.0);
 }
 
 #endif

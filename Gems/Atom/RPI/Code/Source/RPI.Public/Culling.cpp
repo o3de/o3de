@@ -156,12 +156,15 @@ namespace AZ
             const Scene* m_scene = nullptr;
             View* m_view = nullptr;
             Frustum m_frustum;
+            Frustum m_excludeFrustum;
             AZ::Job* m_parentJob = nullptr;
             AZ::TaskGraphEvent* m_taskGraphEvent = nullptr;
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
 #endif
+            bool m_hasExcludeFrustum = false;
 #ifdef AZ_CULL_DEBUG_ENABLED
+
             AuxGeomDrawPtr GetAuxGeomPtr()
             {
                 if (m_debugCtx->m_debugDraw && (m_view->GetName() == m_debugCtx->m_currentViewSelectionName))
@@ -234,7 +237,8 @@ namespace AZ
             {
                 AzFramework::VisibilityEntry* visibleEntry = entries[i];
 
-                if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                    visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                 {
                     Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
 
@@ -255,6 +259,13 @@ namespace AZ
                         }
                     }
 
+                    if (worklistData->m_hasExcludeFrustum &&
+                        ShapeIntersection::Classify(worklistData->m_excludeFrustum, c->m_cullData.m_boundingSphere) == IntersectResult::Interior)
+                    {
+                        // Skip item contained in exclude frustum.
+                        continue;
+                    }
+
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
                     if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
@@ -262,8 +273,8 @@ namespace AZ
                         // There are ways to write this without [[maybe_unused]], but they are brittle.
                         // For example, using #else could cause a bug where the function's parameter
                         // is changed in #ifdef but not in #else.
-                        [[maybe_unused]]
-                        const uint32_t drawPacketCount = AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
+                        [[maybe_unused]] const uint32_t drawPacketCount = AddLodDataToView(
+                            c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view, visibleEntry->m_typeFlags);
                         c->m_isVisible = true;
                         worklistData->m_view->ApplyFlags(c->m_flags);
 
@@ -284,7 +295,8 @@ namespace AZ
                 {
                     for (AzFramework::VisibilityEntry* visibleEntry : entries)
                     {
-                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                         {
                             Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
                             if (worklistData->m_debugCtx->m_drawBoundingBoxes)
@@ -569,6 +581,12 @@ namespace AZ
             AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, taskGraphEvent);
             static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
 
+            if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
+            {
+                worklistData->m_hasExcludeFrustum = true;
+                worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
+            }
+            
             auto nodeVisitorLambda = [worklistData, taskGraph, parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
                 auto entriesInNode = nodeData.m_entries.size();
@@ -613,7 +631,14 @@ namespace AZ
 
             if (m_debugCtx.m_enableFrustumCulling)
             {
-                m_visScene->Enumerate(frustum, nodeVisitorLambda);
+                if (worklistData->m_hasExcludeFrustum)
+                {
+                    m_visScene->Enumerate(frustum, worklistData->m_excludeFrustum, nodeVisitorLambda);
+                }
+                else
+                {
+                    m_visScene->Enumerate(frustum, nodeVisitorLambda);
+                }
             }
             else
             {
@@ -661,6 +686,12 @@ namespace AZ
             AZStd::shared_ptr<EntryListType> entryList = AZStd::make_shared<EntryListType>();
             entryList->m_entries.reserve(r_numEntriesPerCullingJob);
             AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, nullptr);
+
+            if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
+            {
+                worklistData->m_hasExcludeFrustum = true;
+                worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
+            }
 
             auto nodeVisitorLambda = [worklistData, parentJob, &entryList](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
@@ -736,7 +767,8 @@ namespace AZ
             ProcessCullables(scene, view, nullptr, &taskGraph, &taskGraphEvent);
         }
 
-        uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view)
+        uint32_t AddLodDataToView(
+            const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view, AzFramework::VisibilityEntry::TypeFlags typeFlags)
         {
 #ifdef AZ_CULL_PROFILE_DETAILED
             AZ_PROFILE_SCOPE(RPI, "AddLodDataToView");
@@ -750,9 +782,20 @@ namespace AZ
                 AZ_PROFILE_SCOPE(RPI, "add draw packets: %zu", lod.m_drawPackets.size());
 #endif
                 numVisibleDrawPackets += static_cast<uint32_t>(lod.m_drawPackets.size());   //don't want to pay the cost of aznumeric_cast<> here so using static_cast<> instead
-                for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
+                if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                 {
-                    view.AddDrawPacket(drawPacket, pos);
+                    view.AddVisibleObject(lod.m_visibleObjectUserData, pos);
+                }
+                else if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                {
+                    for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
+                    {
+                        view.AddDrawPacket(drawPacket, pos);
+                    }
+                }
+                else
+                {
+                    AZ_Assert(false, "Invalid cullable type flags.")
                 }
             };
 
@@ -761,7 +804,8 @@ namespace AZ
                 case Cullable::LodType::SpecificLod:
                     if (lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
                     {
-                        addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
+                    addLodToDrawPacket(
+                        lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
                     }
                     break;
                 case Cullable::LodType::ScreenCoverage:
@@ -777,9 +821,10 @@ namespace AZ
                     const float approxScreenPercentage =
                         ModelLodUtils::ApproxScreenPercentage(pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
 
-                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
+                    for (uint32_t lodIndex = 0; lodIndex < static_cast<uint32_t>(lodData.m_lods.size()); ++lodIndex)
                     {
-                        // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
+                        const Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
+                        // Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
                             addLodToDrawPacket(lod);
@@ -927,7 +972,8 @@ namespace AZ
                 {
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                     {
-                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                         {
                             ++numObjects;
                         }

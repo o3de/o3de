@@ -134,7 +134,8 @@ endfunction()
 #! of the engine.json, project.json, o3de_manifest.json and any gem.json files found visiting
 function(get_all_external_subdirectories output_subdirs)
     # Gather user supplied external subdirectories via the Cache Variable
-    get_property(all_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS)
+    get_property(o3de_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
+    list(APPEND all_external_subdirs ${o3de_external_subdirs})
     get_property(manifest_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
     list(APPEND all_external_subdirs ${manifest_external_subdirs})
     get_property(engine_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_ENGINE)
@@ -201,8 +202,12 @@ function(resolve_gem_dependencies object_type object_path)
 
     set(ENV{PYTHONNOUSERSITE} 1)
     string(TOLOWER ${object_type} object_type_lower)
+    get_property(user_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
+    if(user_external_subdirs)
+        set(user_external_subdir_option -ed "${user_external_subdirs}")
+    endif()
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}"
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" --engine-path "${LY_ROOT_FOLDER}" ${user_external_subdir_option}
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}
         RESULT_VARIABLE O3DE_CLI_RESULT
         OUTPUT_VARIABLE resolved_gem_dependency_output 
@@ -210,7 +215,7 @@ function(resolve_gem_dependencies object_type object_path)
         )
 
     if(O3DE_CLI_RESULT)
-        message(WARNING "Dependecy resolution failed\n  Error: ${O3DE_CLI_OUT}")
+        message(WARNING "Dependecy resolution failed.\n  If needed, set the O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION variable to bypass dependency resolution.\n  Error: ${O3DE_CLI_OUT}")
         return()
     endif()
 
@@ -231,6 +236,20 @@ function(resolve_gem_dependencies object_type object_path)
                 cmake_path(SET current_gem_path "${current_gem_path}")
                 cmake_path(COMPARE "${gem_path}" NOT_EQUAL "${current_gem_path}" paths_are_different)
                 if (paths_are_different)
+
+                    if (PAL_HOST_PLATFORM_NAME_LOWERCASE STREQUAL "windows")
+                        # Changing the case can cause problems on Windows where the drive
+                        # letter can be upper or lower case in CMake 
+                        string(TOLOWER "${current_gem_path}" current_gem_path_lower)
+                        string(TOLOWER "${gem_path}" gem_path_lower)
+
+                        if(current_gem_path_lower STREQUAL gem_path_lower)
+                            message(VERBOSE "Not replacing existing path '${current_gem_path}' with different case '${gem_path}'")
+                            unset(gem_name)
+                            continue()
+                        endif()
+                    endif()
+
                     message(VERBOSE "Multiple paths were found for the same gem '${gem_name}'.\n  Current:'${current_gem_path}'\n  New:'${gem_path}'")
                 endif()
             else()
@@ -337,8 +356,18 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
         resolve_gem_dependencies(${object_type} "${object_path}")
     endif()
 
-    foreach(gem_name_with_version_specifier IN LISTS initial_gem_names)
+    # Cache the "gem_names" field entries as read from the <o3de_object>.json file
+    # This will be used in the Install code to generate an "engine.json" with the same
+    # set of active gems into its "gem_names" field
+    get_property(explicit_active_gems GLOBAL PROPERTY "O3DE_EXPLICIT_ACTIVE_GEMS_${object_type}")
+    # Append to any existing active gems mapped using the ${object_type} key
+    list(APPEND explicit_active_gems ${initial_gem_names})
+    # Make the list of active gems unique
+    list(REMOVE_DUPLICATES explicit_active_gems)
+    # Update the ${object_type} -> active gem GLOBAL property
+    set_property(GLOBAL PROPERTY "O3DE_EXPLICIT_ACTIVE_GEMS_${object_type}" "${explicit_active_gems}")
 
+    foreach(gem_name_with_version_specifier IN LISTS initial_gem_names)
         # Use the ERROR_VARIABLE to catch the common case when it's a simple string and not a json type.
         string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name_with_version_specifier})
         set(gem_optional FALSE)
@@ -359,19 +388,21 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
 
     # Ensure all gems from "gem_names" are included in the settings registry 
     # file used to load runtime gems libraries
-    ly_enable_gems(GEMS ${gem_names} PROJECT_NAME ${object_name})
+    if(gem_names)
+        ly_enable_gems(GEMS ${gem_names} PROJECT_NAME ${object_name})
 
-    add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
-    list(APPEND subdirs_for_object ${object_gem_reference_dirs})
+        add_registered_gems_to_external_subdirs(object_gem_reference_dirs "${gem_names}")
+        list(APPEND subdirs_for_object ${object_gem_reference_dirs})
 
-    # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"
-    # field
-    foreach(gem_name_with_version_specifier IN LISTS gem_names)
-        # Remove any version specifier from the gem name e.g. 'atom>=1.2.3' becomes 'atom'
-        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
-        get_property(gem_real_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${gem_name})
-        list(APPEND subdirs_for_object ${gem_real_external_subdirs})
-    endforeach()
+        # Also append the array the "external_subdirectories" from each gem referenced through the "gem_names"
+        # field
+        foreach(gem_name_with_version_specifier IN LISTS gem_names)
+            # Remove any version specifier from the gem name e.g. 'atom>=1.2.3' becomes 'atom'
+            o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
+            get_property(gem_real_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_GEM_${gem_name})
+            list(APPEND subdirs_for_object ${gem_real_external_subdirs})
+        endforeach()
+    endif()
 
     # Append the list of external_subdirectories that come with the object
     if(NOT object_name STREQUAL "")
@@ -407,14 +438,14 @@ function(get_external_subdirectories_in_use output_subdirs)
     get_all_external_subdirectories_for_o3de_object(engine_external_subdirs "ENGINE" "" ${LY_ROOT_FOLDER} "engine.json")
     list(APPEND all_external_subdirs ${engine_external_subdirs})
 
-    # Visit each LY_PROJECTS entry and append the external subdirectories
+    # Visit each O3DE_PROJECTS_PATHS entry and append the external subdirectories
     # the project provides and references
     get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
-    foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
-        file(REAL_PATH ${project_path} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    get_property(O3DE_PROJECTS_PATHS GLOBAL PROPERTY O3DE_PROJECTS_PATHS)
+    foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME O3DE_PROJECTS_PATHS)
         # Append the project root path to the list of external subdirectories so that it is visited
         list(APPEND all_external_subdirs ${project_path})
-        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" ${full_directory_path} "project.json")
+        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" "${project_path}" "project.json")
         list(APPEND all_external_subdirs ${external_subdirs})
     endforeach()
 

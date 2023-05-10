@@ -26,8 +26,6 @@
 #include "DisplaySettings.h"
 #include "Undo/Undo.h"
 #include "UsedResources.h"
-#include "GizmoManager.h"
-#include "Include/IIconManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
@@ -415,7 +413,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         OnSetValues();
     }
 
-    m_nTextureIcon = m_classDesc->GetTextureIconId();
     if (m_classDesc->RenderTextureOnTop())
     {
         SetFlags(OBJFLAG_SHOW_ICONONTOP);
@@ -1933,18 +1930,6 @@ void CBaseObject::UpdateVisibility(bool bVisible)
         NotifyListeners(ON_VISIBILITY);
 
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::AddGizmo(CGizmo* gizmo)
-{
-    GetObjectManager()->GetGizmoManager()->AddGizmo(gizmo);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::RemoveGizmo(CGizmo* gizmo)
-{
-    GetObjectManager()->GetGizmoManager()->RemoveGizmo(gizmo);
 }
 
 //////////////////////////////////////////////////////////////////////////

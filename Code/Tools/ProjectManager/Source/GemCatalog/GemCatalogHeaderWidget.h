@@ -37,7 +37,6 @@ namespace O3DE::ProjectManager
 
     public:
         GemCartWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
-        ~GemCartWidget();
 
     public slots:
         void ObjectDownloadAdded(const QString& gemName, DownloadController::DownloadObjectType objectType);
@@ -110,7 +109,7 @@ namespace O3DE::ProjectManager
         void AddGem();
         void CreateGem();
         void OpenGemsRepo();
-        void RefreshGems();
+        void RefreshGems(bool refreshRemoteRepos);
         void UpdateGemCart(QWidget* gemCart);
 
     protected slots:

@@ -218,7 +218,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 
     GetIEditor()->RegisterNotifyListener(this);
 
-    m_displayContext.pIconManager = GetIEditor()->GetIconManager();
     GetIEditor()->GetUndoManager()->AddListener(this);
 
     // The renderer requires something, so don't allow us to shrink to absolutely nothing
@@ -603,6 +602,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 }
 
                 m_preGameModeViewTM = GetViewTM();
+
                 // this should only occur for the main viewport and no others.
                 ShowCursor();
 
@@ -891,6 +891,13 @@ void EditorViewportWidget::SetViewportId(int id)
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
+    UpdateScene();
+
+    if (m_pPrimaryViewport == this)
+    {
+        SetAsActiveViewport();
+    }
+
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
     m_editorModularViewportCameraComposer =
@@ -899,13 +906,6 @@ void EditorViewportWidget::SetViewportId(int id)
 
     m_editorViewportSettings.Connect(AzFramework::ViewportId(id));
 
-    UpdateScene();
-
-    if (m_pPrimaryViewport == this)
-    {
-        SetAsActiveViewport();
-    }
-
     m_editorViewportSettingsCallbacks = SandboxEditor::CreateEditorViewportSettingsCallbacks();
 
     m_gridShowingHandler = SandboxEditor::GridShowingChangedEvent::Handler(
@@ -913,8 +913,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridShowingChanged, showing);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetGridShowingChangedEvent(m_gridShowingHandler);
 
     m_gridSnappingHandler = SandboxEditor::GridSnappingChangedEvent::Handler(
@@ -922,8 +921,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingChanged, snapping);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
 
     m_angleSnappingHandler = SandboxEditor::AngleSnappingChangedEvent::Handler(
@@ -931,8 +929,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnAngleSnappingChanged, snapping);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 
     m_cameraSpeedScaleHandler = SandboxEditor::CameraSpeedScaleChangedEvent::Handler(
@@ -940,8 +937,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnCameraSpeedScaleChanged, scale);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetCameraSpeedScaleChangedEvent(m_cameraSpeedScaleHandler);
 
     m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
@@ -962,16 +958,14 @@ void EditorViewportWidget::SetViewportId(int id)
         [this]([[maybe_unused]] float nearPlaneDistance)
         {
             OnDefaultCameraNearFarChanged();
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearPlaneDistanceHandler);
 
     m_farPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
         [this]([[maybe_unused]] float farPlaneDistance)
         {
             OnDefaultCameraNearFarChanged();
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_farPlaneDistanceHandler);
 }
 

@@ -82,19 +82,27 @@ namespace AssetProcessor
         RelocationParameters_RemoveEmptyFoldersFlag = 1 << 1,
         RelocationParameters_AllowDependencyBreakingFlag = 1 << 2,
         RelocationParameters_UpdateReferencesFlag = 1 << 3,
-        RelocationParameters_ExcludeMetaDataFilesFlag = 1 << 4
+        RelocationParameters_ExcludeMetaDataFilesFlag = 1 << 4,
+        RelocationParameters_AllowNonDatabaseFilesFlag = 1 << 5
     };
 
     static constexpr int SourceFileRelocationInvalidIndex = -1;
 
     struct SourceFileRelocationInfo
     {
-        SourceFileRelocationInfo(AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry, AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products, const AZStd::string& oldRelativePath, const ScanFolderInfo* scanFolder)
-            : m_sourceEntry(AZStd::move(sourceEntry)),
-            m_products(AZStd::move(products)),
-            m_oldRelativePath(oldRelativePath)
+        SourceFileRelocationInfo(
+            AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry,
+            AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> products,
+            const AZStd::string& oldRelativePath,
+            const ScanFolderInfo* scanFolder,
+            bool isMetadataEnabledType)
+            : m_sourceEntry(AZStd::move(sourceEntry))
+            , m_products(AZStd::move(products))
+            , m_oldRelativePath(oldRelativePath)
+            , m_isMetadataEnabledType(isMetadataEnabledType)
         {
-            AzFramework::StringFunc::Path::ConstructFull(scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
+            AzFramework::StringFunc::Path::ConstructFull(
+                scanFolder->ScanPath().toUtf8().constData(), m_oldRelativePath.c_str(), m_oldAbsolutePath, false);
             m_oldAbsolutePath = AssetUtilities::NormalizeFilePath(m_oldAbsolutePath.c_str()).toUtf8().constData();
         }
 
@@ -118,7 +126,10 @@ namespace AssetProcessor
         AZStd::string m_newAbsolutePath;
         bool m_hasPathDependencies = false;
         SourceFileRelocationStatus m_operationStatus = SourceFileRelocationStatus::None;
-        bool m_isMetaDataFile = false;
+        // If >= 0, this is a metadata file.  This is the index into the
+        // PlatformConfiguration metadata list (use with GetMetaDataFileTypeAt)
+        int m_metadataIndex = SourceFileRelocationInvalidIndex;
+        bool m_isMetadataEnabledType = false; // Indicates if this file uses metadata relocation
         // This is a cached index of the SourceFile in the SourceFileRelocationContainer.
         // This is only used by the metadata file to determine the destination path if needed.
         int m_sourceFileIndex = AssetProcessor::SourceFileRelocationInvalidIndex;
@@ -208,7 +219,11 @@ namespace AssetProcessor
         AZ::Outcome<void, AZStd::string> ComputeDestination(SourceFileRelocationContainer& relocationContainer, const ScanFolderInfo* sourceScanFolder, const AZStd::string& source, AZStd::string destination, const ScanFolderInfo*& destinationScanFolderOut) const;
 
         // Takes a QStringList of paths and populates sources with all the corresponding source database entries
-        QHash<QString, int> GetSources(QStringList pathMatches, const ScanFolderInfo* scanFolderInfo, SourceFileRelocationContainer& sources) const;
+        QHash<QString, int> GetSources(
+            QStringList pathMatches,
+            const ScanFolderInfo* scanFolderInfo,
+            SourceFileRelocationContainer& sources,
+            bool allowNonDatabaseFiles = false) const;
 
         // Takes a QStringList of paths and populates metadata files.
         void HandleMetaDataFiles(QStringList pathMatches, QHash<QString, int>& pathIndexMap, const ScanFolderInfo* scanFolderInfo, SourceFileRelocationContainer& metadataFiles, bool excludeMetaDataFiles) const;
@@ -216,7 +231,12 @@ namespace AssetProcessor
         // Returns a map of SubId -> ProductEntry for all the products of a source
         AZStd::unordered_map<int, AzToolsFramework::AssetDatabase::ProductDatabaseEntry> GetProductMapForSource(AZ::s64 sourceId) const;
 
-        bool GetFilesFromSourceControl(SourceFileRelocationContainer& sources, const ScanFolderInfo* scanFolderInfo, QString absolutePath, bool excludeMetaDataFiles = false) const;
+        bool GetFilesFromSourceControl(
+            SourceFileRelocationContainer& sources,
+            const ScanFolderInfo* scanFolderInfo,
+            QString absolutePath,
+            bool excludeMetaDataFiles = false,
+            bool allowNonDatabaseFiles = false) const;
 
         // Populates a relocation set with all direct source and product dependency database entries for every file
         void PopulateDependencies(SourceFileRelocationContainer& relocationContainer) const;
@@ -225,7 +245,7 @@ namespace AssetProcessor
         AZ::Outcome<void, AZStd::string> GetScanFolderAndRelativePath(const AZStd::string& normalizedSource, bool allowNonexistentPath, const ScanFolderInfo*& scanFolderInfo, AZStd::string& relativePath) const;
 
         // Given a path, populates a relocation set with all source files that match.  Will fail if a scanfolder itself is selected or the source string matches files from multiple scanfolders
-        AZ::Outcome<void, AZStd::string> GetSourcesByPath(const AZStd::string& normalizedSource, SourceFileRelocationContainer& sources, const ScanFolderInfo*& scanFolderInfoOut, bool excludeMetaDataFiles = false) const;
+        AZ::Outcome<void, AZStd::string> GetSourcesByPath(const AZStd::string& normalizedSource, SourceFileRelocationContainer& sources, const ScanFolderInfo*& scanFolderInfoOut, bool excludeMetaDataFiles = false, bool allowNonDatabaseFiles = false) const;
 
         int DoSourceControlMoveFiles(AZStd::string normalizedSource, AZStd::string normalizedDestination, SourceFileRelocationContainer& relocationContainer, const ScanFolderInfo* sourceScanFolderInfo, const ScanFolderInfo* destinationScanFolderInfo, bool removeEmptyFolders) const;
         int DoSourceControlDeleteFiles(AZStd::string normalizedSource, SourceFileRelocationContainer& relocationContainer, const ScanFolderInfo* sourceScanFolderInfo, bool removeEmptyFolders) const;

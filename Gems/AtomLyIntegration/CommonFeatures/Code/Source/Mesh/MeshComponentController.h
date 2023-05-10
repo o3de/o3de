@@ -8,25 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/ComponentBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
-
-#include <AtomCore/Instance/InstanceDatabase.h>
-
-#include <AzFramework/Render/GeometryIntersectionBus.h>
-#include <AzFramework/Visibility/BoundsBus.h>
-
-#include <Atom/RPI.Public/Model/Model.h>
-
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
-
+#include <Atom/RPI.Public/Model/Model.h>
+#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
-#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Render/GeometryIntersectionBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
 namespace AZ
 {
@@ -155,6 +150,7 @@ namespace AZ
 
             // MaterialComponentNotificationBus::Handler overrides ...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override;
 
             //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
             //! @param modelAsset The model asset to check.
@@ -164,6 +160,7 @@ namespace AZ
             static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
             void HandleModelChange(Data::Instance<RPI::Model> model);
+            void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
             void RegisterModel();
             void UnregisterModel();
             void RefreshModelRegistration();
@@ -185,6 +182,11 @@ namespace AZ
             MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
             {
                 [&](Data::Instance<RPI::Model> model) { HandleModelChange(model); }
+            };
+            
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            {
+                [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
             };
 
             AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler

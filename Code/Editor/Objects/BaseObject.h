@@ -29,7 +29,6 @@
 // forward declarations.
 class CUndoBaseObject;
 class CObjectManager;
-class CGizmo;
 class CObjectArchive;
 struct SRayHitInfo;
 class CPopupMenuItem;
@@ -546,10 +545,6 @@ protected:
     virtual bool HitHelperTestForChildObjects([[maybe_unused]] HitContext& hc) { return false; }
 
     CBaseObject* FindObject(REFGUID id) const;
-
-    // Helper gizmo functions.
-    void AddGizmo(CGizmo* gizmo);
-    void RemoveGizmo(CGizmo* gizmo);
 
     //! Notify all listeners about event.
     void NotifyListeners(EObjectListenerEvent event);

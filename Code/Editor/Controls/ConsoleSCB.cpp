@@ -375,12 +375,6 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->lineEdit, &ConsoleLineEdit::variableEditorRequested, this, &CConsoleSCB::showVariableEditor);
 
-    if (GetIEditor()->IsInConsolewMode())
-    {
-        // Attach / register edit box
-        //CLogFile::AttachEditBox(m_edit.GetSafeHwnd()); // FIXME
-    }
-
     AzToolsFramework::EditorPreferencesNotificationBus::Handler::BusConnect();
 }
 
@@ -1200,7 +1194,7 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
                 }
             }
 
-            if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
+            if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceCVarEditor())
             {
                 OnVariableUpdated(changedCVar);
             }

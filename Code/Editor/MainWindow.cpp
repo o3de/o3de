@@ -312,6 +312,9 @@ MainWindow::MainWindow(QWidget* parent)
         m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
         m_toolbarManager = new ToolbarManager(m_actionManager, this);
         m_levelEditorMenuHandler = new LevelEditorMenuHandler(this, m_viewPaneManager);
+        connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
+            m_assetImporterManager->Exec();
+        });
     }
 
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
@@ -334,10 +337,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     AssetImporterDragAndDropHandler* assetImporterDragAndDropHandler = new AssetImporterDragAndDropHandler(this, m_assetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManager, this, &MainWindow::OnOpenAssetImporterManager);
-
-    connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
-        m_assetImporterManager->Exec();
-    });
 
     setFocusPolicy(Qt::StrongFocus);
 
@@ -686,9 +685,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
     }
 
-    am->AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS, tr("Export Selected &Objects"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-    am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
 #ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
@@ -1017,12 +1013,6 @@ void MainWindow::InitActions()
     {
         am->AddAction(ID_VIEW_CONFIGURELAYOUT, tr("Configure Layout..."));
     }
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    am->AddAction(ID_VIEW_CYCLE2DVIEWPORT, tr("Cycle Viewports"))
-        .SetShortcut(tr("Ctrl+Tab"))
-        .SetStatusTip(tr("Cycle 2D Viewport"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
-#endif
     am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
         .SetShortcut(tr("Ctrl+Space"))
         .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))

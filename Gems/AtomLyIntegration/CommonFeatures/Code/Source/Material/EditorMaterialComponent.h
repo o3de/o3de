@@ -49,7 +49,10 @@ namespace AZ
 
             //! MaterialComponentNotificationBus::Handler overrides...
             void OnMaterialSlotLayoutChanged() override;
-            void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
+            void OnMaterialsCreated(const MaterialAssignmentMap& materials) override;
+
+            // AzToolsFramework::EditorEntityVisibilityNotificationBus::Handler overrides
+            void OnEntityVisibilityChanged(bool visibility) override;
 
             // Regenerates the editor component material slots based on the material and
             // LOD mapping from the model or other consumer of materials.

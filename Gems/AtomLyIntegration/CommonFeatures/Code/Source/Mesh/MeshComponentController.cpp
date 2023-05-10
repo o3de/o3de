@@ -359,7 +359,15 @@ namespace AZ
         {
             if (m_meshFeatureProcessor)
             {
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, materials);
+                m_meshFeatureProcessor->SetCustomMaterials(m_meshHandle, ConvertToCustomMaterialMap(materials));
+            }
+        }
+
+        void MeshComponentController::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        {
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetRayTracingDirty(m_meshHandle);
             }
         }
 
@@ -400,6 +408,11 @@ namespace AZ
             }
         }
 
+        void MeshComponentController::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
+        {
+            MeshComponentNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+        }
+
         void MeshComponentController::RegisterModel()
         {
             if (m_meshFeatureProcessor && m_configuration.m_modelAsset.GetId().IsValid())
@@ -417,8 +430,9 @@ namespace AZ
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
                 meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
                 meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials));
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
+                m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(m_meshHandle, m_objectSrgCreatedHandler);
 
                 const AZ::Transform& transform =
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();

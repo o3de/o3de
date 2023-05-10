@@ -239,7 +239,15 @@ namespace AZ::Render
     {
         if (m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetMaterialAssignmentMap(*m_meshHandle, materials);
+            m_meshFeatureProcessor->SetCustomMaterials(*m_meshHandle, ConvertToCustomMaterialMap(materials));
+        }
+    }
+
+    void AtomActorInstance::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+    {
+        if (m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetRayTracingDirty(*m_meshHandle);
         }
     }
 
@@ -671,7 +679,8 @@ namespace AZ::Render
             meshDescriptor.m_excludeFromReflectionCubeMaps = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials)));
+            m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(*m_meshHandle, m_objectSrgCreatedHandler);
         }
 
         // If render proxies already exist, they will be auto-freed
@@ -798,6 +807,11 @@ namespace AZ::Render
                 }
             }
         }
+    }
+
+    void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
+    {
+        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
     }
 
     const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const

@@ -44,8 +44,6 @@ namespace AzToolsFramework
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
-            void HideProductAssets(bool checked);
-
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
             void SetName(const QString& name);
             QString& GetName();
@@ -63,6 +61,8 @@ namespace AzToolsFramework
 
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;
+
+            void SelectEntry(QString assetName);
 
         signals:
             void entryClicked(const AssetBrowserEntry* entry);

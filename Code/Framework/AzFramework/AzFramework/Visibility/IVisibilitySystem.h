@@ -35,7 +35,8 @@ namespace AzFramework
         {
             TYPE_None = 0,
             TYPE_Entity = 1 << 0,      // All entities
-            TYPE_RPI_Cullable = 1 << 2 // Cullable by the render system
+            TYPE_RPI_Cullable = 1 << 2, // Cullable by the render system
+            TYPE_RPI_VisibleObjectList = 1 << 3 // Culled by the render system, then output to a a list of visible objects
         };
 
         AZ::Aabb m_boundingVolume = AZ::Aabb::CreateNull();
@@ -102,6 +103,13 @@ namespace AzFramework
         //! @param frustum the frustum to test against
         //! @param callback the callback to invoke when a node is visible
         virtual void Enumerate(const AZ::Frustum& frustum, const EnumerateCallback& callback) const = 0;
+
+        //! Intersects a frustum against the visibility system, but rejects everything entirely contained inside the excludeFrustum.
+        //! This is useful for cascade shadows where a larger cascade need not render things completely covered by a smaller cascade.
+        //! @param includeFrustum the frustum to test against for inclusion
+        //! @param excludeFrustum the frustum to test against for exclusion
+        //! @param callback the callback to invoke when a node is visible
+        virtual void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const = 0;
 
         //! Enumerate *all* OctreeNodes that have any entries in them (without any culling).
         //! @param callback the callback to invoke when a node is visible

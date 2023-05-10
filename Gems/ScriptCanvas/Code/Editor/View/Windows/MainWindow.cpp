@@ -146,11 +146,11 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 ////
 
+#include <ScriptCanvasContextIdentifiers.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -443,11 +443,9 @@ namespace ScriptCanvasEditor
 
         if (AzToolsFramework::IsNewActionManagerEnabled())
         {
-            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
-
             if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
             {
-                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasActionContextIdentifier, this);
+                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
             }
         }
 
@@ -688,11 +686,9 @@ namespace ScriptCanvasEditor
 
         if (AzToolsFramework::IsNewActionManagerEnabled())
         {
-            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
-
             if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
             {
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasActionContextIdentifier, this);
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
             }
         }
 
@@ -715,9 +711,11 @@ namespace ScriptCanvasEditor
         // File menu
         connect(ui->action_New_Script, &QAction::triggered, this, &MainWindow::OnFileNew);
         ui->action_New_Script->setShortcut(QKeySequence(QKeySequence::New));
+        addAction(ui->action_New_Script);
 
         connect(ui->action_Open, &QAction::triggered, this, &MainWindow::OnFileOpen);
         ui->action_Open->setShortcut(QKeySequence(QKeySequence::Open));
+        addAction(ui->action_Open);
 
         connect(ui->action_UpgradeTool, &QAction::triggered, this, &MainWindow::RunUpgradeTool);
         ui->action_UpgradeTool->setVisible(true);

@@ -861,11 +861,11 @@ namespace EMotionFX
             using namespace AzToolsFramework::AssetBrowser;
             if (AZStd::wildcard_match("*.motionset", fullSourceFileName))
             {
-                return SourceFileDetails("Editor/Images/AssetBrowser/MotionSet_16.svg");
+                return SourceFileDetails("Editor/Images/AssetBrowser/MotionSet_80.svg");
             }
             else if (AZStd::wildcard_match("*.animgraph", fullSourceFileName))
             {
-                return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_16.svg");
+                return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_80.svg");
             }
             return SourceFileDetails(); // no result
         }

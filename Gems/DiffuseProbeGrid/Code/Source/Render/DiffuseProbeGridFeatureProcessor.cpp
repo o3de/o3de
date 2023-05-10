@@ -17,6 +17,7 @@
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/PipelineState.h>
@@ -124,7 +125,7 @@ namespace AZ
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
                 m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
                     "Models/DiffuseProbeSphere.azmodel",
-                    AZ::RPI::AssetUtils::TraceLevel::Assert);
+                    AZ::RPI::AssetUtils::TraceLevel::Warning);
 
                 if (!m_visualizationModelAsset.IsReady())
                 {
@@ -137,6 +138,14 @@ namespace AZ
             // query buffer attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
             m_queryBufferAttachmentId = AZStd::string::format("DiffuseProbeGridQueryBuffer_%s", uuidString.c_str());
+
+            // cache the SpecularReflectionsFeatureProcessor and SSR RayTracing state
+            m_specularReflectionsFeatureProcessor = GetParentScene()->GetFeatureProcessor<SpecularReflectionsFeatureProcessorInterface>();
+            if (m_specularReflectionsFeatureProcessor)
+            {
+                const SSROptions& ssrOptions = m_specularReflectionsFeatureProcessor->GetSSROptions();
+                m_ssrRayTracingEnabled = ssrOptions.m_rayTracing;
+            }
 
             EnableSceneNotification();
         }
@@ -229,6 +238,23 @@ namespace AZ
                 AZ_Assert(diffuseProbeGrid.use_count() > 1, "DiffuseProbeGrid found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 diffuseProbeGrid->Simulate(probeGridIndex);
+            }
+
+            if (m_specularReflectionsFeatureProcessor)
+            {
+                const SSROptions& ssrOptions = m_specularReflectionsFeatureProcessor->GetSSROptions();
+                if (m_ssrRayTracingEnabled != ssrOptions.m_rayTracing)
+                {
+                    m_ssrRayTracingEnabled = ssrOptions.m_rayTracing;
+
+                    AZStd::vector<Name> passHierarchy = { Name("ReflectionScreenSpacePass"), Name("DiffuseProbeGridQueryFullscreenWithAlbedoPass") };
+                    RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchy);
+                    RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                        {
+                            pass->SetEnabled(m_ssrRayTracingEnabled);
+                            return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                        });
+                }
             }
         }
 
@@ -771,8 +797,12 @@ namespace AZ
 
             if (!diffuseProbeGridUpdatePass)
             {
-                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridPreparePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DiffuseProbeGridPreparePass");
                 AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridRenderPassRequest.azasset", "ForwardSubsurface");
+
+                // add the fullscreen query pass for SSR raytracing fallback color
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridScreenSpaceReflectionsQueryPassRequest.azasset", "ReflectionScreenSpaceRayTracingPass");
 
                 // only add the visualization pass if there's an AuxGeom pass in the pipeline
                 RPI::PassFilter auxGeomPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("AuxGeomPass"), renderPipeline);

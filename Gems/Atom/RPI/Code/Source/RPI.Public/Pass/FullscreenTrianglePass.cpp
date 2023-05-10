@@ -53,12 +53,17 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
-            UpdateSrgs();
+            LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
-            UpdateSrgs();
+            LoadShader();
+        }
+
+        void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
+        {
+            LoadShader();
         }
 
         void FullscreenTrianglePass::LoadShader()
@@ -138,7 +143,11 @@ namespace AZ
             const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
             m_drawShaderResourceGroup = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
-            m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+            // It is valid for there to be no draw srg if there are no shader options, so check to see if it is null.
+            if (m_drawShaderResourceGroup)
+            {
+                m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+            }
         }
 
         void FullscreenTrianglePass::BuildDrawItem()

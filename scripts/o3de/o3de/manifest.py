@@ -25,7 +25,12 @@ logger.setLevel(logging.INFO)
 # Directory methods
 
 def get_this_engine_path() -> pathlib.Path:
-    return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
+    # When running from SNAP, __file__ was returning an incorrect (temporary) folder so
+    # we manually build the correct path from env variables here when running from snap
+    if "SNAP" in os.environ:
+        return pathlib.Path(os.environ.get('SNAP')) / os.environ.get('SNAP_BUILD')
+    else:
+        return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()
 
 
 def get_home_folder() -> pathlib.Path:
@@ -260,9 +265,31 @@ def get_manifest_restricted() -> list:
     return json_data['restricted'] if 'restricted' in json_data else []
 
 
-def get_manifest_repos() -> list:
-    json_data = load_o3de_manifest()
-    return json_data['repos'] if 'repos' in json_data else []
+def get_manifest_repos(project_path: pathlib.Path = None) -> list:
+    repos = set()
+
+    if project_path:
+        project_json_data = get_project_json_data(project_path=project_path)
+        if project_json_data:
+            repos.update(set(project_json_data.get('repos', [])))
+
+        # if a project is provided we only want the repos from the project's engine
+        engine_path = get_project_engine_path(project_path=project_path)
+    else:
+        # no project path provided, use the current engine's repos
+        engine_path = get_this_engine_path()
+
+    if engine_path:
+        engine_json_data = get_engine_json_data(engine_path=engine_path)
+        if engine_json_data:
+            repos.update(set(engine_json_data.get('repos', [])))
+
+    manifest_json_data = load_o3de_manifest()
+    if manifest_json_data:
+        repos.update(set(manifest_json_data.get('repos', [])))
+
+
+    return list(repos)
 
 
 # engine.json queries
@@ -275,8 +302,20 @@ def get_engine_projects(engine_path:pathlib.Path = None) -> list:
     return []
 
 
-def get_engine_gems(engine_path:pathlib.Path = None) -> list:
-    return get_gems_from_external_subdirectories(get_engine_external_subdirectories(engine_path))
+def get_engine_gems(engine_path:pathlib.Path = None, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
+    """
+    Get gems from the external subdirectories in engine.json
+    :param engine_path: the path to the engine
+    :param recurse: whether to include gems in gems or not
+    :param gems_json_data_by_path: optional dictionary of known gem json data by path to use instead of opening files
+    :return: list of engine gem paths
+    """
+    engine_gem_paths = get_gems_from_external_subdirectories(get_engine_external_subdirectories(engine_path))
+    if recurse:
+        for path in engine_gem_paths:
+            engine_gem_paths.extend(get_gem_external_subdirectories(path, list(), gems_json_data_by_path))
+    
+    return engine_gem_paths
 
 
 def get_engine_external_subdirectories(engine_path:pathlib.Path = None) -> list:
@@ -298,8 +337,20 @@ def get_engine_templates() -> list:
 
 
 # project.json queries
-def get_project_gems(project_path: pathlib.Path) -> list:
-    return get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
+def get_project_gems(project_path:pathlib.Path, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
+    """
+    Get gems from the external subdirectories in project.json
+    :param project_path: the path to the project
+    :param recurse: whether to include gems in gems or not
+    :param gems_json_data_by_path: optional dictionary of known gem json data by path to use instead of opening files
+    :return: list of project gem paths
+    """
+    project_gem_paths = get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
+    if recurse:
+        for path in project_gem_paths:
+            project_gem_paths.extend(get_gem_external_subdirectories(path, list(), gems_json_data_by_path))
+    
+    return project_gem_paths
 
 def get_enabled_gem_cmake_file(project_name: str = None,
                                 project_path: str or pathlib.Path = None,
@@ -391,6 +442,10 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
     gems listed in project.json and the deprecated enabled_gems.json
     """
     project_json_data = get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f"Failed to get project json data for the project at '{project_path}'")
+        return None
+
     active_gem_names = project_json_data.get('gem_names',[])
     enabled_gems_file = get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
@@ -449,7 +504,7 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
             gem_name = gem.gem_json_data['gem_name']
             gem_name_with_specifier = gem_names_with_version_specifiers.get(gem_name,gem_name)
             if gem_name_with_specifier in result or include_dependencies:
-                result[gem_name_with_specifier] = gem.gem_json_data['path'].as_posix()
+                result[gem_name_with_specifier] = gem.gem_json_data['path'].as_posix() if gem.gem_json_data['path'] else None
     else:
         # Likely there is no resolution because gems are missing or wrong version
         # Provide the paths for the gems that are available
@@ -625,19 +680,15 @@ def remove_non_dependency_gem_json_data(gem_names:list, gems_json_data_by_name:d
         del gems_json_data_by_name[gem_name]
 
 
-def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
+def get_gems_json_data_by_path(engine_path:pathlib.Path = None, 
                                project_path: pathlib.Path = None, 
                                include_manifest_gems: bool = False,
                                include_engine_gems: bool = False,
                                external_subdirectories: list = None) -> dict:
     """
-    Create a dictionary of gem.json data with gem names as keys based on the provided list of
+    Create a dictionary of gem.json data with gem paths as keys based on the provided list of
     external subdirectories, engine_path or project_path.  Optionally, include gems
     found using the o3de manifest.
-
-    It's often more efficient to open all gem.json files instead of 
-    looking up each by name, which will load many gem.json files multiple times
-    It takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
 
     param: engine_path optional engine path
     param: project_path optional project path
@@ -646,7 +697,7 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
     will use the current engine if no engine_path is provided and none can be deduced from
     the project_path
     param: external_subdirectories optional external_subdirectories to include
-    return: a dictionary of gem_name -> gem.json data
+    return: a dictionary of gem_path -> gem.json data
     """
     all_gems_json_data = {}
 
@@ -673,6 +724,38 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
     gem_paths = get_gems_from_external_subdirectories(external_subdirectories)
     for gem_path in gem_paths:
         get_gem_external_subdirectories(gem_path, list(), all_gems_json_data)
+    
+    return all_gems_json_data
+
+def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
+                               project_path: pathlib.Path = None, 
+                               include_manifest_gems: bool = False,
+                               include_engine_gems: bool = False,
+                               external_subdirectories: list = None) -> dict:
+                        
+    """
+    Create a dictionary of gem.json data with gem names as keys based on the provided list of
+    external subdirectories, engine_path or project_path.  Optionally, include gems
+    found using the o3de manifest.
+
+    It's often more efficient to open all gem.json files instead of 
+    looking up each by name, which will load many gem.json files multiple times
+    It takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
+
+    param: engine_path optional engine path
+    param: project_path optional project path
+    param: include_manifest_gems if True, include gems found using the o3de manifest 
+    param: include_engine_gems if True, include gems found using the engine, 
+    will use the current engine if no engine_path is provided and none can be deduced from
+    the project_path
+    param: external_subdirectories optional external_subdirectories to include
+    return: a dictionary of gem_name -> gem.json data
+    """
+    all_gems_json_data = get_gems_json_data_by_path(engine_path, 
+                                                    project_path, 
+                                                    include_manifest_gems, 
+                                                    include_engine_gems, 
+                                                    external_subdirectories)
 
     # convert from being keyed on gem_path to gem_name and store the paths
     # resulting dictionary format will look like
@@ -840,7 +923,11 @@ def get_project_json_data(project_name: str = None,
         project_path = get_registered(project_name=project_name)
 
     if pathlib.Path(project_path).is_file():
-        return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
+        if user:
+            # skip validation because a user project.json is only for overrides and can be empty
+            return get_json_data_file(project_path, 'project', validation.always_valid)
+        else:
+            return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
     elif user:
         # create the project user folder if it doesn't exist
         user_project_folder = pathlib.Path(project_path) / 'user'
@@ -952,6 +1039,47 @@ def get_most_compatible_gem(gem_name: str,
 
 
 def get_most_compatible_object(object_name: str, 
+                              name_key: str, 
+                              objects: list) -> dict or None:
+    """
+    Looks for the most compatible object based on object_name which may contain a version specifier.
+    Example: o3de>=1.2.3
+
+    :param object_name: Name of the object with optional version specifier 
+    :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
+    :param objects: List of object json data to consider 
+    :return the most compatible object json data dict or None
+    """
+    most_compatible_version = Version('0.0.0')
+    object_name, version_specifier = utils.get_object_name_and_optional_version_specifier(object_name)
+    most_compatible_object = None
+
+    def update_most_compatible(candidate_version:str, json_data:dict):
+        nonlocal most_compatible_object
+        nonlocal most_compatible_version
+
+        if not most_compatible_object:
+            most_compatible_object = json_data 
+            most_compatible_version = Version(candidate_version)
+        elif Version(candidate_version) > most_compatible_version:
+            most_compatible_object = json_data 
+            most_compatible_version = Version(candidate_version)
+
+    for json_data in objects:
+        candidate_name = json_data.get(name_key,'')
+        if candidate_name != object_name:
+            continue
+
+        candidate_version = json_data.get('version','0.0.0')
+        if version_specifier:
+            if compatibility.has_compatible_version([object_name + version_specifier], candidate_name, candidate_version):
+                update_most_compatible(candidate_version, json_data)
+        else:
+            update_most_compatible(candidate_version, json_data)
+
+    return most_compatible_object
+
+def get_most_compatible_object_path(object_name: str, 
                               object_typename: str, 
                               object_validator: callable, 
                               name_key: str, 
@@ -965,7 +1093,7 @@ def get_most_compatible_object(object_name: str,
     :param object_validator: Validator to use for json file 
     :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
     :param objects: List of paths to search
-    :param gem_json_data_by_name
+    :return the most compatible object path or None
     """
     matching_paths = deque()
     most_compatible_version = Version('0.0.0')
@@ -1036,10 +1164,10 @@ def get_registered(engine_name: str = None,
     json_data = load_o3de_manifest()
 
     if isinstance(engine_name, str):
-        return get_most_compatible_object(engine_name, 'engine', validation.valid_o3de_engine_json, 'engine_name', get_manifest_engines())
+        return get_most_compatible_object_path(engine_name, 'engine', validation.valid_o3de_engine_json, 'engine_name', get_manifest_engines())
 
     elif isinstance(project_name, str):
-        return get_most_compatible_object(project_name, 'project', validation.valid_o3de_project_json, 'project_name', get_all_projects())
+        return get_most_compatible_object_path(project_name, 'project', validation.valid_o3de_project_json, 'project_name', get_all_projects())
 
     elif isinstance(gem_name, str):
         gems = []
@@ -1056,7 +1184,7 @@ def get_registered(engine_name: str = None,
                 for registered_project_path in registered_project_paths:
                     gems.extend(get_all_gems(registered_project_path))
                 gems = list(dict.fromkeys(gems))
-        return get_most_compatible_object(gem_name, 'gem', validation.valid_o3de_gem_json, 'gem_name', gems)
+        return get_most_compatible_object_path(gem_name, 'gem', validation.valid_o3de_gem_json, 'gem_name', gems)
 
     elif isinstance(template_name, str):
         templates = []

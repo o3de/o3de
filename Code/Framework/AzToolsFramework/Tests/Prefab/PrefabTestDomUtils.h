@@ -156,7 +156,7 @@ namespace UnitTest
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases);
 
-        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, AZ::u64 componentId);
+        void ValidateComponentsDomHasId(const PrefabDomValue& componentsDom, const char* componentName, AZ::u64 componentId);
 
         //! Serializes Dom into a string
         AZStd::string DomToString(const AzToolsFramework::Prefab::PrefabDom& dom);
