@@ -515,13 +515,15 @@ namespace AWSGameLift
                 // If ProcessId isn't defined, provide a unique string by default.
                 AZStd::string defaultProcessId = AZStd::string::format("ProcessId_%i", std::time(nullptr));
                 serverParameters.SetProcessId(defaultProcessId.c_str());
+                AZ_TracePrintf(
+                    AWSGameLiftServerManagerName, "Generated default Amazon GameLift ProcessId value: %s\n", defaultProcessId.c_str());
             }
         }
 
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...\n");
         // Pass a default-constructed ServerParameters object for Amazon GameLift managed EC2 initialization.
         Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK(serverParameters);
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.");
+        AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.\n");
 
         m_serverSDKInitialized = initOutcome.IsSuccess();
 
