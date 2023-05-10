@@ -22,15 +22,15 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserTableModel
+        class AssetBrowserListModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
         {
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserTableModel, AZ::SystemAllocator);
-            explicit AssetBrowserTableModel(QObject* parent = nullptr);
+            AZ_CLASS_ALLOCATOR(AssetBrowserListModel, AZ::SystemAllocator);
+            explicit AssetBrowserListModel(QObject* parent = nullptr);
 
             ////////////////////////////////////////////////////////////////////
             // QSortFilterProxyModel

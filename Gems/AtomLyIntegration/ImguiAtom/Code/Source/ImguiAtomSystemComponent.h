@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <OtherActiveImGuiBus.h>
 #include <DebugConsole.h>
 
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -25,8 +24,6 @@ namespace AZ
         //! Note: The LY ImGui gem only supports a single ImGui context, so Atom must have a single ImGui pass marked as the default.
         class ImguiAtomSystemComponent final
             : public AZ::Component
-            , public ImGui::OtherActiveImGuiRequestBus::Handler
-            // The Imgui Gem's ImGuiManager can handle this directly when engine is fully switched to Atom Renderer
             , public AZ::RPI::ViewportContextNotificationBus::Handler
         {
         public:
@@ -45,9 +42,6 @@ namespace AZ
 
         private:
             void InitializeViewportSizeIfNeeded();
-
-            // OtherActiveImGuiRequestBus overrides ...
-            void RenderImGuiBuffers(const ImDrawData& drawData) override;
 
             // ViewportContextNotificationBus overrides...
             void OnRenderTick() override;

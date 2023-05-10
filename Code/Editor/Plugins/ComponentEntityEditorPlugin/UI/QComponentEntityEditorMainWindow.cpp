@@ -11,7 +11,6 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 
@@ -20,15 +19,21 @@
 QComponentEntityEditorInspectorWindow::QComponentEntityEditorInspectorWindow(QWidget* parent)
     : QMainWindow(parent)
     , m_propertyEditor(nullptr)
+    , m_assetBrowserInspector(nullptr)
+    , m_inspectorWidgetStack(nullptr)
 {
     setObjectName("InspectorMainWindow");
     gEnv->pSystem->GetISystemEventDispatcher()->RegisterListener(this);
+    AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
+    AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler::BusConnect();
 
     Init();
 }
 
 QComponentEntityEditorInspectorWindow::~QComponentEntityEditorInspectorWindow()
 {
+    AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler::BusDisconnect();
+    AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
     gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
 }
 
@@ -36,12 +41,34 @@ void QComponentEntityEditorInspectorWindow::OnSystemEvent([[maybe_unused]] ESyst
 {
 }
 
+void QComponentEntityEditorInspectorWindow::AfterEntitySelectionChanged(
+    [[maybe_unused]] const AzToolsFramework::EntityIdList& newlySelectedEntities,
+    [[maybe_unused]] const AzToolsFramework::EntityIdList& newlyDeselectedEntities)
+{
+    if (m_inspectorWidgetStack->currentWidget() != m_propertyEditor && !m_propertyEditor->IsLockedToSpecificEntities())
+    {
+        m_inspectorWidgetStack->setCurrentIndex(m_inspectorWidgetStack->indexOf(m_propertyEditor));
+    }
+}
+
+void QComponentEntityEditorInspectorWindow::PreviewAsset([[maybe_unused]] const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
+{
+    if (m_inspectorWidgetStack->currentWidget() != m_assetBrowserInspector && !m_propertyEditor->IsLockedToSpecificEntities())
+    {
+        m_inspectorWidgetStack->setCurrentIndex(m_inspectorWidgetStack->indexOf(m_assetBrowserInspector));
+    }
+}
+
 void QComponentEntityEditorInspectorWindow::Init()
 {
     QVBoxLayout* layout = new QVBoxLayout();
 
+    m_inspectorWidgetStack = new QStackedWidget();
     m_propertyEditor = new AzToolsFramework::EntityPropertyEditor(this);
-    layout->addWidget(m_propertyEditor);
+    m_assetBrowserInspector = new AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget(this);
+    m_inspectorWidgetStack->addWidget(m_propertyEditor);
+    m_inspectorWidgetStack->addWidget(m_assetBrowserInspector);
+    layout->addWidget(m_inspectorWidgetStack);
 
     QWidget* window = new QWidget();
     window->setLayout(layout);

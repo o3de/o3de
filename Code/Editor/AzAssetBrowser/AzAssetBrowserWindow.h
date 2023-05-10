@@ -27,7 +27,7 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserFilterModel;
-        class AssetBrowserTableModel;
+        class AssetBrowserListModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
         class AssetBrowserTreeView;
@@ -91,7 +91,7 @@ protected slots:
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
-    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
+    QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserListModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
     QMenu* m_toolsMenu = nullptr;
     QMenu* m_createMenu = nullptr;
