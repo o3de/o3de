@@ -790,9 +790,10 @@ namespace AzQtComponents
         auto idx = indexAtPos(p);
         if (idx.isValid())
         {
+            bool isRightClick = event->button() == Qt::RightButton;
             if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ControlModifier)
             {
-                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::Toggle);
+                (isRightClick ? selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::Select) : selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::Toggle));
             }
             else if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ShiftModifier)
             {
@@ -814,11 +815,12 @@ namespace AzQtComponents
                                                            : QItemSelectionModel::SelectionFlag::Select);
                     for (auto index : indexRange.indexes())
                     {
-                        selectionModel()->select(index, selectionFlag);
+                        (isRightClick ? selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select)
+                                      : selectionModel()->select(index, selectionFlag));
                     }
                 }
             }
-            else
+            else if (!selectionModel()->isSelected(idx))
             {
                 selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
             }
