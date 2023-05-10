@@ -793,7 +793,8 @@ namespace AzQtComponents
             bool isRightClick = event->button() == Qt::RightButton;
             if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ControlModifier)
             {
-                (isRightClick ? selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::Select) : selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::Toggle));
+                auto selectionFlag = isRightClick ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Toggle;
+                selectionModel()->select(idx, selectionFlag);
             }
             else if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ShiftModifier)
             {
@@ -810,13 +811,18 @@ namespace AzQtComponents
                 }
                 if (!indexRange.isEmpty())
                 {
-                    auto selectionFlag =
-                        (selectionModel()->isSelected(idx) ? QItemSelectionModel::SelectionFlag::Deselect
-                                                           : QItemSelectionModel::SelectionFlag::Select);
+                    QItemSelectionModel::SelectionFlag selectionFlag;
+                    if (selectionModel()->isSelected(idx) && !isRightClick)
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Deselect;
+                    }
+                    else
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Select;
+                    }
                     for (auto index : indexRange.indexes())
                     {
-                        (isRightClick ? selectionModel()->select(index, QItemSelectionModel::SelectionFlag::Select)
-                                      : selectionModel()->select(index, selectionFlag));
+                        selectionModel()->select(index, selectionFlag);
                     }
                 }
             }
