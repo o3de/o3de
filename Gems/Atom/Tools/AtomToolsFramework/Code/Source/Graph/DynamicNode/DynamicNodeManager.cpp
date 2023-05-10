@@ -76,7 +76,7 @@ namespace AtomToolsFramework
     void DynamicNodeManager::LoadConfigFiles(const AZStd::string& extension)
     {
         // Load and register all discovered dynamic node configuration
-        for (const auto& configPath : GetPathsInSourceFoldersMatchingWildcard(AZStd::string::format("*.%s", extension.c_str())))
+        for (const auto& configPath : GetPathsInSourceFoldersMatchingExtension(extension))
         {
             DynamicNodeConfig config;
             if (config.Load(configPath))
