@@ -14,16 +14,8 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        SearchAssetBrowserFavoriteItem::SearchAssetBrowserFavoriteItem(SearchWidget* searchWidget)
+        SearchAssetBrowserFavoriteItem::SearchAssetBrowserFavoriteItem()
         {
-            int numTypeFilters = searchWidget->GetTypeFilterCount();
-
-            m_typeFilters.reserve(numTypeFilters);
-
-            for (int index = 0; index < numTypeFilters; index++)
-            {
-                m_typeFilters.append(aznew SavedTypeFilter());
-            }
         }
 
         SearchAssetBrowserFavoriteItem::~SearchAssetBrowserFavoriteItem()
@@ -57,10 +49,15 @@ namespace AzToolsFramework
 
             int numTypeFilters = searchWidget->GetTypeFilterCount();
 
+            qDeleteAll(m_typeFilters.begin(), m_typeFilters.end());
+            m_typeFilters.clear();
+            m_typeFilters.reserve(numTypeFilters);
+
             for (int typeIndex = 0; typeIndex < numTypeFilters; typeIndex++)
             {
-                SavedTypeFilter* typeFilter = m_typeFilters.at(typeIndex);
+                SavedTypeFilter* typeFilter = aznew SavedTypeFilter();
                 searchWidget->GetTypeFilterDetails(typeIndex, typeFilter->categoryKey, typeFilter->displayName, typeFilter->enabled);
+                m_typeFilters.append(typeFilter);
             }
         }
 
@@ -96,13 +93,19 @@ namespace AzToolsFramework
 
             int filterCount = settings.beginReadArray("typeFilters");
 
+            qDeleteAll(m_typeFilters.begin(), m_typeFilters.end());
+            m_typeFilters.clear();
+            m_typeFilters.reserve(filterCount);
+
             for (int index = 0; index < filterCount; index++)
             {
-                SavedTypeFilter* typeFilter = m_typeFilters.at(index);
-
+                SavedTypeFilter* typeFilter = aznew SavedTypeFilter();
+                
                 typeFilter->categoryKey = settings.value("categoryKey").toString();
                 typeFilter->displayName = settings.value("displayName").toString();
                 typeFilter->enabled = settings.value("enabled").toBool();
+
+                m_typeFilters.append(typeFilter);
             }
 
             settings.endArray();

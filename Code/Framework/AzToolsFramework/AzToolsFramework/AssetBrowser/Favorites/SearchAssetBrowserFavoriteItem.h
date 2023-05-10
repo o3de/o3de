@@ -35,7 +35,7 @@ namespace AzToolsFramework
             AZ_RTTI(SearchAssetBrowserFavoriteItem, "{1897792D-7ACD-4366-B813-C076C74FB316}");
             AZ_CLASS_ALLOCATOR(SearchAssetBrowserFavoriteItem, AZ::SystemAllocator);
 
-            explicit SearchAssetBrowserFavoriteItem(SearchWidget* searchWidget);
+            explicit SearchAssetBrowserFavoriteItem();
             ~SearchAssetBrowserFavoriteItem();
 
             void SetName(const QString name);

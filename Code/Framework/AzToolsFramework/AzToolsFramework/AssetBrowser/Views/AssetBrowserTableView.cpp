@@ -317,6 +317,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedTableView(this);
 
             if (!m_assetTreeView)
             {

@@ -28,13 +28,12 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserFavoriteItem;
+        class AssetBrowserFavoritesView;
         class EntryAssetBrowserFavoriteItem;
 
         class AssetBrowserFavoritesModel
             : public QAbstractItemModel
-            , private AzFramework::AssetCatalogEventBus::Handler
-            , private AssetBrowserFavoriteRequestBus::Handler
-            , private AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler
+            , private AssetBrowserFavoritesNotificationBus::Handler
         {
             Q_OBJECT
         public:
@@ -43,13 +42,13 @@ namespace AzToolsFramework
             explicit AssetBrowserFavoritesModel(QObject* parent = nullptr);
             ~AssetBrowserFavoritesModel();
 
+            void LoadFavorites();
+            
             void SetSearchWidget(SearchWidget* searchWidget);
 
-            void ClearFavorites();
-            void LoadFavorites();
-            void SaveFavorites();
-
             void Select(const QModelIndex& favorite);
+
+            void SetParentView(AssetBrowserFavoritesView* parentView);
 
             //////////////////////////////////////////////////////////////////////////
             // QAbstractItemModel overrides
@@ -66,23 +65,9 @@ namespace AzToolsFramework
             QStringList mimeTypes() const override;
 
             //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserModelRequestBus overrides
+            // AssetBrowserFavoritesNotificationBus overrides
             //////////////////////////////////////////////////////////////////////////
-            void AddFavoriteAsset(const AssetBrowserEntry* favorite) override;
-            void AddFavoriteSearchFromWidget(SearchWidget* searchWidget) override;
-            void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) override;
-            void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) override;
-            bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) override;
-
-            //////////////////////////////////////////////////////////////////////////
-            // AssetBrowserComponentNotificationBus::Handler overrides
-            //////////////////////////////////////////////////////////////////////////
-            void OnAssetBrowserComponentReady() override;
-
-            //////////////////////////////////////////////////////////////////////////
-            // AssetCatalogBus::Handler overrides
-            //////////////////////////////////////////////////////////////////////////
-            void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
+            void FavoritesChanged() override;
 
         private:
             AZStd::vector<AssetBrowserFavoriteItem*> m_favorites;
@@ -92,12 +77,12 @@ namespace AzToolsFramework
 
             SearchWidget* m_searchWidget = nullptr;
 
-            bool m_loading = false;
+            AssetBrowserFavoritesView* m_parentView = nullptr;
 
-            AZStd::unordered_map<const AssetBrowserEntry*, AssetBrowserFavoriteItem*> m_favoriteEntriesCache;
+            bool m_loading = false;
+            bool m_modifying = false;
 
             QString GetProjectName();
-            void AddFavoriteItem(AssetBrowserFavoriteItem* item);
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

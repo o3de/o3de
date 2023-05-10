@@ -25,7 +25,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
-
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
 #include <QVariant>
 
 namespace AzToolsFramework
@@ -36,6 +36,7 @@ namespace AzToolsFramework
             : AssetBrowserEntry()
         {
             EntryCache::CreateInstance();
+            AssetBrowserFavoritesManager::CreateInstance();
         }
 
         AssetBrowserEntry::AssetEntryType RootAssetBrowserEntry::GetEntryType() const

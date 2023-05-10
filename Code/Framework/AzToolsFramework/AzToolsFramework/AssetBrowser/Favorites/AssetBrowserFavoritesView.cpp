@@ -39,6 +39,8 @@ namespace AzToolsFramework
             setDropIndicatorShown(true);
             setContextMenuPolicy(Qt::CustomContextMenu);
 
+            m_favoritesModel->SetParentView(this);
+
             m_delegate.data()->SetShowFavoriteIcons(true);
 
             header()->hide();
@@ -100,8 +102,7 @@ namespace AzToolsFramework
                     QObject::tr("Remove from Favorites"),
                     [favoriteItem]()
                     {
-                        AssetBrowserFavoriteRequestBus::Broadcast(
-                            &AssetBrowserFavoriteRequestBus::Events::RemoveFromFavorites, favoriteItem);
+                        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveFromFavorites, favoriteItem);
                     });
 
                 menu.addAction(
@@ -134,7 +135,8 @@ namespace AzToolsFramework
                 SearchAssetBrowserFavoriteItem* searchItem = static_cast<SearchAssetBrowserFavoriteItem*>(favoriteItem);
                 searchItem->SetName(newName);
 
-                m_favoritesModel.data()->SaveFavorites();
+                AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::SaveFavorites);
+
             }
         }
 

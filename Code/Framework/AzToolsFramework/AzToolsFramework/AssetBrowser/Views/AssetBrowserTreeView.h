@@ -30,6 +30,7 @@ namespace AzToolsFramework
     namespace AssetBrowser
     {
         class AssetBrowserEntry;
+        class AssetBrowserListView;
         class AssetBrowserModel;
         class AssetBrowserTableView;
         class AssetBrowserFilterModel;
@@ -143,7 +144,7 @@ namespace AzToolsFramework
 
             AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
             AssetBrowserTableView* m_attachedTableView = nullptr;
-
+            
             QString m_name;
 
             QModelIndex m_indexToSelectAfterUpdate;

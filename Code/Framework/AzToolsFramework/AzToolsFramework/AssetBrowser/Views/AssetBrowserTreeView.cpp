@@ -277,7 +277,7 @@ namespace AzToolsFramework
             // If we're in the thumbnail or table view, the actual asset will not appear in this treeview.
             // Trying to find the file in the treeview will fail, so don't search to the end.
             if ((m_attachedThumbnailView && m_attachedThumbnailView->GetThumbnailActiveView()) ||
-                (m_attachedExpandedTableView && m_attachedExpandedTableView->GetExpandedTableViewActive()))
+                (m_attachedTableView && m_attachedTableView->GetTableViewActive()))
             {
                 lastEntry = entries.size() - 2;
             }

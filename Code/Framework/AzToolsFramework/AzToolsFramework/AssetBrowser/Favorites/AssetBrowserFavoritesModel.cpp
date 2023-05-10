@@ -20,6 +20,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
@@ -38,9 +39,7 @@ namespace AzToolsFramework
             , m_favoritesFolderEntry(aznew FolderAssetBrowserEntry)
             , m_favoriteFolderContainer(aznew EntryAssetBrowserFavoriteItem)
         {
-            AssetBrowserFavoriteRequestBus::Handler::BusConnect();
-            AssetBrowserComponentNotificationBus::Handler::BusConnect();
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
+            AssetBrowserFavoritesNotificationBus::Handler::BusConnect();
 
             m_favoritesFolderEntry->SetDisplayName(QObject::tr("Favorites"));
             m_favoritesFolderEntry->SetIconPath(IconPath);
@@ -50,9 +49,7 @@ namespace AzToolsFramework
 
         AssetBrowserFavoritesModel ::~AssetBrowserFavoritesModel()
         {
-            AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-            AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
-            AssetBrowserFavoriteRequestBus::Handler::BusDisconnect();
+            AssetBrowserFavoritesNotificationBus::Handler::BusDisconnect();
         }
         
         QModelIndex AssetBrowserFavoritesModel::index(int row, int column, const QModelIndex& parent) const
@@ -207,7 +204,7 @@ namespace AzToolsFramework
                     if (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()) ||
                          entry->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()))
                     {
-                        AddFavoriteAsset(entry);
+                        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
                     }
                 }
                 return true;
@@ -252,85 +249,14 @@ namespace AzToolsFramework
             LoadFavorites();
         }
 
-        void AssetBrowserFavoritesModel::AddFavoriteItem(AssetBrowserFavoriteItem* item)
+        void AssetBrowserFavoritesModel::FavoritesChanged()
         {
-            int rowCount = aznumeric_cast<int>(m_favorites.size());
-
-            beginInsertRows(createIndex(0, 0), rowCount, rowCount);
-
-            m_favorites.push_back(item);
-
-            endInsertRows();
-
-            SaveFavorites();
-        }
-
-        void AssetBrowserFavoritesModel::AddFavoriteAsset(const AssetBrowserEntry* favorite)
-        {
-            if (GetIsFavoriteAsset(favorite))
+            if (m_modifying)
             {
                 return;
             }
 
-            EntryAssetBrowserFavoriteItem* item = aznew EntryAssetBrowserFavoriteItem();
-            item->SetEntry(favorite);
-
-            AddFavoriteItem(item);
-
-            m_favoriteEntriesCache[favorite] = item;
-        }
-
-        void AssetBrowserFavoritesModel::AddFavoriteSearchFromWidget(SearchWidget* searchWidget)
-        {
-            SearchAssetBrowserFavoriteItem* item = aznew SearchAssetBrowserFavoriteItem(searchWidget);
-            item->SetupFromSearchWidget(searchWidget);
-            item->SetName(QObject::tr("New Saved Search"));
-
-            AddFavoriteItem(item);
-        }
-
-        void AssetBrowserFavoritesModel::RemoveEntryFromFavorites(const AssetBrowserEntry* item)
-        {
-            const auto favoriteIt = m_favoriteEntriesCache.find(item);
-            if (favoriteIt != m_favoriteEntriesCache.end() || !favoriteIt->second)
-            {
-                auto removeIt = AZStd::find(m_favorites.begin(), m_favorites.end(), favoriteIt->second);
-
-                if (removeIt == m_favorites.end())
-                {
-                    AZ_Assert(false, "Unknown favorite item");
-                    return;
-                }
-
-                m_favorites.erase(removeIt);
-                m_favoriteEntriesCache.erase(favoriteIt);
-            }
-        }
-
-        void AssetBrowserFavoritesModel::RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite)
-        {
-            if (favorite->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
-            {
-                const EntryAssetBrowserFavoriteItem* entryItem = static_cast<const EntryAssetBrowserFavoriteItem*>(favorite);
-                RemoveEntryFromFavorites(entryItem->GetEntry());
-                return;
-            }
-
-            auto removeIt = AZStd::find(m_favorites.begin(), m_favorites.end(), favorite);
-
-            if (removeIt == m_favorites.end())
-            {
-                AZ_Assert(false, "Unknown favorite item");
-                return;
-            }
-
-            m_favorites.erase(removeIt);
-        }
-
-        bool AssetBrowserFavoritesModel::GetIsFavoriteAsset(const AssetBrowserEntry* entry)
-        {
-            const auto it = m_favoriteEntriesCache.find(entry);
-            return (it != m_favoriteEntriesCache.end());
+            LoadFavorites();
         }
 
         void AssetBrowserFavoritesModel::Select(const QModelIndex& favorite)
@@ -371,6 +297,11 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserFavoritesModel::SetParentView(AssetBrowserFavoritesView* parentView)
+        {
+            m_parentView = parentView;
+        }
+
         QString AssetBrowserFavoritesModel::GetProjectName()
         {
             AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
@@ -382,142 +313,19 @@ namespace AzToolsFramework
             return "unknown";
         }
 
-        void AssetBrowserFavoritesModel::ClearFavorites()
-        {
-            if (m_favorites.empty())
-            {
-                return;
-            }
-
-            beginRemoveRows(createIndex(0, 0), 0, aznumeric_cast<int>(m_favorites.size()));
-
-            m_favoriteEntriesCache.clear();
-
-            m_favorites.erase(m_favorites.begin(), m_favorites.end());
-
-            endRemoveRows();
-        }
-
         void AssetBrowserFavoritesModel::LoadFavorites()
         {
             m_loading = true;
 
             beginResetModel();
 
-            ClearFavorites();
-
-            QSettings settings;
-            settings.beginGroup("AssetBrowserFavorites");
-
-            QString projectName = GetProjectName();
-            if (projectName.length() > 0)
-            {
-                settings.beginGroup(GetProjectName());
-            }
-
-            int size = settings.beginReadArray("Items");
-
-            for (int index = 0; index < size; index++)
-            {
-                settings.setArrayIndex(index);
-
-                QString path = settings.value("entryPath", "").toString();
-                if (!path.isEmpty())
-                {
-                    AZStd::string filePath = AZ::IO::PathView(path.toUtf8().data()).LexicallyNormal().String();
-
-                    const auto itFile = EntryCache::GetInstance()->m_absolutePathToFileId.find(filePath);
-                    if (itFile == EntryCache::GetInstance()->m_absolutePathToFileId.end())
-                    {
-                        continue;
-                    }
-
-                    const auto itABEntry = EntryCache::GetInstance()->m_fileIdMap.find(itFile->second);
-                    if (itABEntry == EntryCache::GetInstance()->m_fileIdMap.end())
-                    {
-                        continue;
-                    }
-
-                    AddFavoriteAsset(itABEntry->second);
-                }
-
-                bool isSearch = settings.value("favoriteSearch", false).toBool();
-                if (isSearch)
-                {
-                    SearchAssetBrowserFavoriteItem* search = aznew SearchAssetBrowserFavoriteItem(m_searchWidget);
-                    search->LoadSettings(settings);
-                    AddFavoriteItem(search);
-                }
-            }
+            AssetBrowserFavoriteRequestBus::BroadcastResult(m_favorites, &AssetBrowserFavoriteRequestBus::Events::GetFavorites);
                 
             endResetModel();
 
             m_loading = false;
-        }
 
-        void AssetBrowserFavoritesModel::SaveFavorites()
-        {
-            if (m_loading)
-            {
-                return;
-            }
-
-            QSettings settings;
-            settings.beginGroup("AssetBrowserFavorites");
-
-            QString projectName = GetProjectName();
-            if (projectName.length() > 0)
-            {
-                // Clear the group
-                settings.beginGroup(projectName);
-                settings.remove("");
-                settings.endGroup();
-
-                settings.beginGroup(projectName);
-            }
-
-            settings.remove("");
-            settings.beginWriteArray("Items");
-
-            for (size_t index = 0; index < m_favorites.size(); index++)
-            {
-                AssetBrowserFavoriteItem* entry = m_favorites.at(index);
-
-                settings.setArrayIndex(aznumeric_cast<int>(index));
-
-                if (entry->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
-                {
-                    EntryAssetBrowserFavoriteItem* entryItem = static_cast<EntryAssetBrowserFavoriteItem*>(entry);
-                    settings.setValue("entryPath", entryItem->GetEntry()->GetFullPath().data());
-                }
-                else if (entry->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)
-                {
-                    SearchAssetBrowserFavoriteItem* searchItem = static_cast<SearchAssetBrowserFavoriteItem*>(entry);
-                    settings.setValue("favoriteSearch", true);
-                    searchItem->SaveSettings(settings);
-                }
-            }
-
-            settings.endArray();
-        }
-
-        void AssetBrowserFavoritesModel::OnAssetBrowserComponentReady()
-        {
-            LoadFavorites();
-        }
-
-        void AssetBrowserFavoritesModel::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
-        {
-            // Find the source entry for this asset.
-            const auto sourceIt = EntryCache::GetInstance()->m_sourceUuidMap.find(assetId.m_guid);
-            if (sourceIt == EntryCache::GetInstance()->m_sourceUuidMap.end())
-            {
-                return;
-            }
-
-            AssetBrowserEntry* entry = sourceIt->second;
-
-            RemoveEntryFromFavorites(entry);
+            m_parentView->expand(createIndex(0, 0));
         }
 
     } // namespace AssetBrowser

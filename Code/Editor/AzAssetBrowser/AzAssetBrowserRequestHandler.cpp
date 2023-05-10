@@ -554,7 +554,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             if (isFavorite)
             {
                 menu->addAction(
-                    QIcon(QStringLiteral(":/Gallery/Favorites.svg")),
                     QObject::tr("Remove from Favorites"),
                     [entry]()
                     {
@@ -564,7 +563,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
             else
             {
                 menu->addAction(
-                    QIcon(QStringLiteral(":/Gallery/Favorites.svg")),
                     QObject::tr("Add to Favorites"),
                     [entry]()
                     {
@@ -777,7 +775,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 if (isFavorite)
                 {
                     menu->addAction(
-                        QIcon(QStringLiteral(":/AssetBrowser/Favorites.svg")),
                         QObject::tr("Remove from Favorites"),
                         [entry]()
                         {
@@ -787,7 +784,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 else
                 {
                     menu->addAction(
-                        QIcon(QStringLiteral(":/AssetBrowser/Favorites.svg")),
                         QObject::tr("Add to favorites"),
                         [entry]()
                         {

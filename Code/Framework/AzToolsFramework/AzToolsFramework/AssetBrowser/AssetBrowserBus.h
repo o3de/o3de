@@ -423,8 +423,22 @@ namespace AzToolsFramework
 
             virtual void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) = 0;
             virtual void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) = 0;
+
+            virtual void SaveFavorites() = 0;
+
+            virtual AZStd::vector<AssetBrowserFavoriteItem*> GetFavorites() = 0;
         };
         using AssetBrowserFavoriteRequestBus = AZ::EBus<AssetBrowserFavoriteRequests>;
+
+        //! Used for sending/receiving notifications about changes in the favorites system.
+        class AssetBrowserFavoritesNotifications : public AZ::EBusTraits
+        {
+        public:
+            virtual void FavoritesChanged() {}
+        protected:
+            ~AssetBrowserFavoritesNotifications() = default;
+        };
+        using AssetBrowserFavoritesNotificationBus = AZ::EBus<AssetBrowserFavoritesNotifications>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
