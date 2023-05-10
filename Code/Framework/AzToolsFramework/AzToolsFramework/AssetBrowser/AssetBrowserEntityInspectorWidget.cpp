@@ -15,6 +15,8 @@
 #include <QLayout>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
 
 namespace AzToolsFramework
 {
@@ -26,6 +28,26 @@ namespace AzToolsFramework
             setLayout(new QVBoxLayout);
             m_previewerFrame = new PreviewerFrame;
             layout()->addWidget(m_previewerFrame);
+
+            auto secondary = new AzQtComponents::Card();
+            secondary->setTitle("Secondary Details");
+            secondary->header()->setHasContextMenu(false);
+            secondary->hideFrame();
+            layout()->addWidget(secondary);
+
+            auto dependent = new AzQtComponents::Card();
+            dependent->setTitle("Dependent Assets");
+            dependent->header()->setHasContextMenu(false);
+            dependent->hideFrame();
+            layout()->addWidget(dependent);
+
+            auto advanced = new AzQtComponents::Card();
+            advanced->setTitle("Advanced Options");
+            advanced->header()->setHasContextMenu(false);
+            advanced->hideFrame();
+            layout()->addWidget(advanced);
+
+            layout()->addItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding));
 
             AssetBrowserPreviewRequestBus::Handler::BusConnect();
         }
