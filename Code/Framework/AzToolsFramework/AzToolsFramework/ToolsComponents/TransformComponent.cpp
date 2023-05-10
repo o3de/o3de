@@ -28,10 +28,10 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
@@ -950,24 +950,9 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("You cannot set an entity's parent to itself."));
             }
 
-            // Prevent parenting to a different owning prefab instance.
-            // Note: The logic should be the same as defined in EntityOutlinerListModel::CanReparentEntities()
-            if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
+            if (!EntitiesBelongToSamePrefab(EntityIdList{ selectedEntityId }, newParentId))
             {
-                AZ::EntityId selectedContainerId = prefabPublicInterface->GetInstanceContainerEntityId(selectedEntityId);
-                AZ::EntityId newParentContainerId = prefabPublicInterface->GetInstanceContainerEntityId(newParentId);
-                 
-                // If the selected entity id is a container entity id, then we need to get its parent owning instance.
-                // This is because a container entity is actually owned by the prefab instance itself.
-                if (selectedContainerId == selectedEntityId && !prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntityId))
-                {
-                    selectedContainerId = prefabPublicInterface->GetInstanceContainerEntityId(GetParentId());
-                }
-
-                if (selectedContainerId != newParentContainerId)
-                {
-                    return AZ::Failure(AZStd::string("You cannot set an entity to be a child of an entity owned by a different prefab."));
-                }
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of an entity owned by a different prefab."));
             }
 
             // Don't allow the change if it will result in a cycle hierarchy

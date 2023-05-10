@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -1256,6 +1257,41 @@ namespace AzToolsFramework
         }
 
         return culledEntities;
+    }
+
+    bool EntitiesBelongToSamePrefab(const EntityIdList& selectedEntityIds, const AZ::EntityId newParentId)
+    {
+        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+        AZ_Assert(prefabPublicInterface, "EditorEntityHelpers::EntitiesBelongToSamePrefab - Could not get the prefab public interface.");
+
+        // Only allow reparenting the selected entities if they are all under the same instance.
+        // We check the parent entity separately because it may be a container entity and
+        // container entities consider their owning instance to be the parent instance.
+        if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
+        {
+            return false;
+        }
+
+        // Prevent parenting to a different owning prefab instance.
+        AZ::EntityId selectedEntityId = selectedEntityIds.front();
+        AZ::EntityId selectedContainerId = prefabPublicInterface->GetInstanceContainerEntityId(selectedEntityId);
+        AZ::EntityId newParentContainerId = prefabPublicInterface->GetInstanceContainerEntityId(newParentId);
+
+        // If the selected entity id is a container entity id, then we need to get its parent owning instance.
+        // This is because a container entity is actually owned by the prefab instance itself.
+        if (selectedContainerId == selectedEntityId && !prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntityId))
+        {
+            AZ::EntityId parentOfSelectedContainer;
+            AZ::TransformBus::EventResult(parentOfSelectedContainer, selectedContainerId, &AZ::TransformBus::Events::GetParentId);
+            selectedContainerId = prefabPublicInterface->GetInstanceContainerEntityId(parentOfSelectedContainer);
+        }
+
+        if (selectedContainerId != newParentContainerId)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     namespace Internal
