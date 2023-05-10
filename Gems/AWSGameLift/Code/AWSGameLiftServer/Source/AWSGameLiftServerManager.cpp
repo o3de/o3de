@@ -510,6 +510,12 @@ namespace AWSGameLift
             {
                 serverParameters.SetProcessId(processId.c_str());
             }
+            else
+            {
+                // If ProcessId isn't defined, provide a unique string by default.
+                AZStd::string defaultProcessId = AZStd::string::format("ProcessId_%i", std::time(nullptr));
+                serverParameters.SetProcessId(defaultProcessId.c_str());
+            }
         }
 
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
