@@ -195,7 +195,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QToolButton" name="m_expandedTableViewButton">
+          <widget class="QToolButton" name="m_tableViewButton">
            <property name="text">
             <string>...</string>
            </property>
@@ -321,7 +321,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget">
+            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserListView" name="m_assetBrowserListViewWidget">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -383,7 +383,7 @@
            </size>
           </property>
           <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView"/>
-          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserExpandedTableView" name="m_expandedTableView">
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
             <property name="spacing">
              <number>0</number>
@@ -412,14 +412,14 @@
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserListView</class>
    <extends>QTableView</extends>
-   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h</header>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::AssetBrowserExpandedTableView</class>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
    <extends>AzQtComponents::TableView</extends>
-   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h</header>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
   <customwidget>
    <class>AzQtComponents::BreadCrumbs</class>

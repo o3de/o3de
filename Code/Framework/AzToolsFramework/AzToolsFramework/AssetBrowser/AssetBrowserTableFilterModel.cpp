@@ -14,7 +14,7 @@
 #include <AzCore/Console/IConsole.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
-#include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 
 #include <QSharedPointer>
@@ -28,7 +28,7 @@ namespace AzToolsFramework
     {
         //////////////////////////////////////////////////////////////////////////
         //AssetBrowserFilterModel
-        AssetBrowserExpandedFilterModel::AssetBrowserExpandedFilterModel(QObject* parent)
+        AssetBrowserTableFilterModel::AssetBrowserTableFilterModel(QObject* parent)
             : AssetBrowserFilterModel(parent)
         {
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Type));
@@ -38,7 +38,14 @@ namespace AzToolsFramework
             // The below isn't used at present but will be needed in future
             // m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));
         }
+
+        bool AssetBrowserTableFilterModel::filterAcceptsRow(
+            [[maybe_unused]] int source_row, [[maybe_unused]] const QModelIndex& source_parent) const
+        {
+            return true;
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
-#include "AssetBrowser/moc_AssetBrowserExpandedFilterModel.cpp"
+#include "AssetBrowser/moc_AssetBrowserTableFilterModel.cpp"
