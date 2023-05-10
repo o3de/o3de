@@ -718,11 +718,10 @@ namespace AtomToolsFramework
     {
         const auto& scanFolders = GetNonCacheSourceFolders();
 
-        AZStd::mutex resultsMutex;
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
 
-        AZ::parallel_for_each(
+        AZStd::for_each(
             scanFolders.begin(),
             scanFolders.end(),
             [&](const AZStd::string& scanFolder)
@@ -733,7 +732,6 @@ namespace AtomToolsFramework
                     {
                         if (!filterFn || filterFn(path))
                         {
-                            AZStd::scoped_lock lock(resultsMutex);
                             results.emplace_back(path);
                         }
                         return true;
