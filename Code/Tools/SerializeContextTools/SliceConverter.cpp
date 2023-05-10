@@ -34,7 +34,15 @@
 #include <SliceConverter.h>
 #include <SliceConverterEditorEntityContextComponent.h>
 #include <Utilities.h>
-
+#include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 // SliceConverter reads in a slice file (saved in an ObjectStream format), instantiates it, creates a prefab out of the data,
 // and saves the prefab in a JSON format.  This can be used for one-time migrations of slices or slice-based levels to prefabs.
@@ -96,6 +104,9 @@ namespace AZ
             // This prevents a lot of error messages and crashes during conversion due to lack of full environment and subsystem setup.
             AzToolsFramework::SliceConverterEditorEntityContextComponent::DisableOnContextEntityLogic();
 
+            auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+            AZ_Assert(prefabLoaderInterface, "SliceConverter - Could not get PrefabLoaderInterface.");
+
             // Loop through the list of requested files and convert them.
             AZStd::vector<AZStd::string> fileList = Utilities::ReadFileListFromCommandLine(application, "files");
             for (AZStd::string& filePath : fileList)
@@ -116,6 +127,265 @@ namespace AZ
 
             DisconnectFromAssetProcessor();
             return result;
+        }
+
+        bool SliceConverter::PatchMaterials(Application& application)
+        {
+            using namespace AZ::JsonSerializationResult;
+
+            const AZ::CommandLine* commandLine = application.GetAzCommandLine();
+            if (!commandLine)
+            {
+                AZ_Error("SerializeContextTools", false, "Command line not available.");
+                return false;
+            }
+
+            JsonSerializerSettings convertSettings;
+            convertSettings.m_keepDefaults = commandLine->HasSwitch("keepdefaults");
+            convertSettings.m_registrationContext = application.GetJsonRegistrationContext();
+            convertSettings.m_serializeContext = application.GetSerializeContext();
+            if (!convertSettings.m_serializeContext)
+            {
+                AZ_Error("Convert-Slice", false, "No serialize context found.");
+                return false;
+            }
+            if (!convertSettings.m_registrationContext)
+            {
+                AZ_Error("Convert-Slice", false, "No json registration context found.");
+                return false;
+            }
+
+            // Connect to the Asset Processor so that we can get the correct source path to any nested slice references.
+            if (!ConnectToAssetProcessor())
+            {
+                AZ_Error("Convert-Slice", false, "  Failed to connect to the Asset Processor.\n");
+                return false;
+            }
+
+            AZStd::string logggingScratchBuffer;
+            SetupLogging(logggingScratchBuffer, convertSettings.m_reporting, *commandLine);
+
+            JsonDeserializerSettings verifySettings;
+            verifySettings.m_registrationContext = application.GetJsonRegistrationContext();
+            verifySettings.m_serializeContext = application.GetSerializeContext();
+            SetupLogging(logggingScratchBuffer, verifySettings.m_reporting, *commandLine);
+
+            bool result = true;
+            rapidjson::StringBuffer scratchBuffer;
+
+            // For slice conversion, disable the EditorEntityContextComponent logic that activates entities on creation.
+            // This prevents a lot of error messages and crashes during conversion due to lack of full environment and subsystem setup.
+            AzToolsFramework::SliceConverterEditorEntityContextComponent::DisableOnContextEntityLogic();
+
+            auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+            AZ_Assert(prefabLoaderInterface, "SliceConverter - Could not get PrefabLoaderInterface.");
+
+            // Loop through the list of requested files and convert them.
+            AZStd::vector<AZStd::string> fileList = Utilities::ReadFileListFromCommandLine(application, "files");
+            for (AZStd::string& filePath : fileList)
+            {
+                AZ::IO::Path prefabPath = filePath;
+                prefabPath.ReplaceExtension("prefab");
+
+                AZStd::vector<AZ::IO::Path> nestedPrefabPaths;
+                nestedPrefabPaths.push_back(prefabLoaderInterface->GenerateRelativePath(prefabPath));
+                GetAllNestedPrefabs(nestedPrefabPaths[0], nestedPrefabPaths);
+                for (auto const& path : nestedPrefabPaths)
+                {
+                    PatchPrefabs(path);
+                }
+                // Clear out all registered prefab templates between each top-level file that gets processed.
+                auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+                for (auto templateId : m_createdTemplateIds)
+                {
+                    // We don't just want to call RemoveAllTemplates() because the root template should remain between file conversions.
+                    prefabSystemComponentInterface->RemoveTemplate(templateId);
+                }
+                m_aliasIdMapper.clear();
+                m_createdTemplateIds.clear();
+            }
+
+            DisconnectFromAssetProcessor();
+            return result;
+        }
+
+        void SliceConverter::GetAllNestedPrefabs(AZ::IO::PathView const& prefabPath, AZStd::vector<AZ::IO::Path>& nestedPrefabPaths)
+        {
+            auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+            AZ_Assert(prefabLoaderInterface, "SliceConverter - Could not get PrefabLoaderInterface.");
+            auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+            AZ_Assert(prefabSystemComponentInterface, "SliceConverter - Could not get PrefabSystemComponentInterface.");
+
+            auto templateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabPath);
+            if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
+            {
+                templateId = prefabLoaderInterface->LoadTemplateFromFile(prefabPath);
+                AZ_Assert(templateId != AzToolsFramework::Prefab::InvalidTemplateId, "Template with source path %.*s couldn't be loaded correctly.", prefabPath);
+            }
+            AzToolsFramework::Prefab::PrefabDom& templateDom = prefabSystemComponentInterface->FindTemplateDom(templateId);
+            auto rootInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
+            AzToolsFramework::EntityList newEntities;
+            if (!AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*rootInstance, newEntities, templateDom, AzToolsFramework::Prefab::PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
+            {
+                AZ_Error("Convert-Slice", false, "  Could not instantiate prefab: %s.\n", prefabPath);
+            }
+            rootInstance->GetTemplateSourcePath();
+            rootInstance->GetNestedInstances(
+                [&](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance)
+                {
+                    auto const& nestedPrefabPath = instance->GetTemplateSourcePath();
+                    nestedPrefabPaths.push_back(nestedPrefabPath);
+                    GetAllNestedPrefabs(nestedPrefabPath, nestedPrefabPaths);
+                });
+        }
+
+        void SliceConverter::PatchPrefabs(AZ::IO::PathView const& prefabPath)
+        {
+            auto prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+            AZ_Assert(prefabLoaderInterface, "SliceConverter - Could not get PrefabLoaderInterface.");
+            auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+            AZ_Assert(prefabSystemComponentInterface, "SliceConverter - Could not get PrefabSystemComponentInterface.");
+            auto prefabPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabPublicInterface>::Get();
+            AZ_Assert(prefabPublicInterface, "SliceConverter - Could not get PrefabPublicInterface on PrefabIntegrationManager construction.");
+
+            auto templateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(prefabPath);
+            if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
+            {
+                templateId = prefabLoaderInterface->LoadTemplateFromFile(prefabPath);
+                AZ_Assert(templateId != AzToolsFramework::Prefab::InvalidTemplateId, "Template with source path %.*s couldn't be loaded correctly.", prefabPath);
+            }
+            AzToolsFramework::Prefab::PrefabDom& templateDom = prefabSystemComponentInterface->FindTemplateDom(templateId);
+            auto rootInstance = AZStd::make_unique<AzToolsFramework::Prefab::Instance>();
+            AzToolsFramework::EntityList newEntities;
+            if (!AzToolsFramework::Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(*rootInstance, newEntities, templateDom,
+                    AzToolsFramework::Prefab::PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
+            {
+                AZ_Error("Convert-Slice", false, "  Could not instantiate prefab: %s.\n", prefabPath);
+            }
+            const AZ::IO::PathView matBaseName = prefabPath.Filename().Stem();
+            PatchMaterials(rootInstance, matBaseName);
+
+            AzToolsFramework::SliceConverterEditorEntityContextComponent::DisableOnContextEntityLogic();
+            if (!prefabLoaderInterface->SaveTemplate(templateId))
+            {
+                AZ_Error("Convert-Slice", false, "  Could not save prefab: %s.\n", prefabPath);
+            }
+        }
+
+        void SliceConverter::PatchMaterials(AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& rootInstance, AZ::IO::PathView const& matBaseName)
+        {
+            rootInstance->GetNestedInstances(
+                [&](AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& instance)
+                {
+                    auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+                    instance->GetAllEntitiesInHierarchy(
+                        [&matBaseName, & rootInstance, &instance, &prefabSystemComponentInterface](AZStd::unique_ptr<AZ::Entity>& entity)
+                        {
+                            auto instanceToTemplateInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceToTemplateInterface>::Get();
+                            AZ_Assert(instanceToTemplateInterface, "SliceConverter - Could not get InstanceToTemplateInterface.");
+                            auto instanceDomGeneratorInterface =
+                                AZ::Interface<AzToolsFramework::Prefab::InstanceDomGeneratorInterface>::Get();
+                            AZ_Assert(
+                                instanceDomGeneratorInterface,
+                                "SliceConverter - PrefabPublicHandler - Could not get InstanceDomGeneratorInterface.");
+                            AzToolsFramework::Prefab::PrefabDom beforeState;
+                            instanceDomGeneratorInterface->GetEntityDomFromTemplate(beforeState, *(entity.get()));
+                            entity->Init();
+                            entity->InvalidateDependencies();
+                            entity->Activate();
+                            Data::AssetId modelAssetId;
+                            AZ::Render::MeshComponentRequestBus::EventResult(modelAssetId, entity->GetId(), &AZ::Render::MeshComponentRequests::GetModelAssetId);
+                            if (modelAssetId.IsValid())
+                            {
+                                Data::Asset<AZ::RPI::ModelAsset> modelAsset;
+                                modelAsset.Create(modelAssetId);
+                                modelAsset.QueueLoad();
+                                if (modelAsset.IsLoading())
+                                {
+                                    modelAsset.BlockUntilLoadComplete();
+                                }
+                                AZ::Render::MaterialAssignmentMap assignedMaterials =
+                                    AZ::Render::GetDefautMaterialMapFromModelAsset(modelAsset);
+                                AZ::IO::Path path = modelAsset.GetHint();
+                                auto slotLabels = AZ::Render::GetMaterialSlotLabelsFromModelAsset(modelAsset);
+                                for (auto& [slot, material] : assignedMaterials)
+                                {
+                                    path.ReplaceFilename(AZ::IO::PathView(matBaseName.String() + "_" + slotLabels[slot] + ".azmaterial"));
+                                    AZ::Render::MaterialComponentRequestBus::Event(
+                                        entity->GetId(),
+                                        &Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
+                                        slot,
+                                        AZ::RPI::AssetUtils::GetAssetIdForProductPath(path.c_str()));
+                                }
+                                AzToolsFramework::Prefab::PrefabDom afterState;
+                                instanceToTemplateInterface->GenerateEntityDomBySerializing(afterState, *(entity.get()));
+                                AzToolsFramework::Prefab::PrefabDom patch;
+                                instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
+                                instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entity->GetId());
+                                if (patch.IsArray() && !patch.Empty())
+                                {
+                                    auto linkRef = prefabSystemComponentInterface->FindLink(instance->GetLinkId());
+                                    if (linkRef.has_value())
+                                    {
+                                        AzToolsFramework::Prefab::PrefabDomValueReference instanceDomRef =
+                                            linkRef->get().GetLinkedInstanceDom();
+                                        AZ_Assert(instanceDomRef.has_value(), "SliceConverter - Linked Instance DOM not found");
+                                        AzToolsFramework::Prefab::PrefabDom instanceDom;
+                                        instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
+                                        AzToolsFramework::Prefab::PrefabDomUtils::ApplyPatches(
+                                            instanceDom, instanceDom.GetAllocator(), patch);
+                                        AzToolsFramework::Prefab::PrefabDom overridePatches;
+                                        overridePatches.SetArray();
+                                        AzToolsFramework::Prefab::InstanceClimbUpResult climbUpResult =
+                                            AzToolsFramework::Prefab::PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(
+                                                *rootInstance, instance.get());
+                                        const AZStd::string overridePatchPathToOwningInstance =
+                                            AzToolsFramework::Prefab::PrefabInstanceUtils::GetRelativePathFromClimbedInstances(
+                                                climbUpResult.m_climbedInstances, true); // skip top instance
+                                        const AZStd::string entityAliasPath =
+                                            instanceToTemplateInterface->GenerateEntityAliasPath(entity->GetId());
+                                        const AZStd::string entityPathFromTopInstance = overridePatchPathToOwningInstance + entityAliasPath;
+                                        AzToolsFramework::Prefab::PrefabDom entityDomAfterUpdate;
+                                        instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfterUpdate, *entity);
+                                        const AzToolsFramework::Prefab::TemplateId topTemplateId = linkRef->get().GetSourceTemplateId();
+                                        const AzToolsFramework::Prefab::PrefabDom& topTemplateDom =
+                                            prefabSystemComponentInterface->FindTemplateDom(topTemplateId);
+                                        AzToolsFramework::Prefab::PrefabDomPath entityDomPathFromTopInstance(
+                                            entityPathFromTopInstance.c_str());
+                                        const AzToolsFramework::Prefab::PrefabDomValue* entityDomInTopTemplate =
+                                            entityDomPathFromTopInstance.Get(topTemplateDom);
+                                        if (entityDomInTopTemplate)
+                                        {
+                                            AzToolsFramework::Prefab::PrefabDom newPatches(&(overridePatches.GetAllocator()));
+                                            instanceToTemplateInterface->GeneratePatch(
+                                                newPatches, *entityDomInTopTemplate, entityDomAfterUpdate);
+                                            instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(newPatches, entityAliasPath);
+                                            for (auto& newPatch : newPatches.GetArray())
+                                            {
+                                                overridePatches.PushBack(newPatch.Move(), overridePatches.GetAllocator());
+                                            }
+                                        }
+                                        else
+                                        {
+                                            AZ_Warning(
+                                                "Prefab",
+                                                false,
+                                                "SliceConverter - Entity ('%s') is not present in template for override editing. Skipping "
+                                                "it.",
+                                                entity->GetName().c_str());
+                                            return true;
+                                        }
+                                        linkRef->get().AddOverrides(overridePatches);
+                                        linkRef->get().UpdateTarget();
+                                        prefabSystemComponentInterface->SetTemplateDirtyFlag(linkRef->get().GetTargetTemplateId(), true);
+                                        prefabSystemComponentInterface->PropagateTemplateChanges(linkRef->get().GetTargetTemplateId());
+                                    }
+                                }
+                            }
+                            entity->Deactivate();
+                            return true;
+                        });
+                });
         }
 
         bool SliceConverter::ConvertSliceFile(AZ::SerializeContext* serializeContext, const AZStd::string& slicePath, bool isDryRun)

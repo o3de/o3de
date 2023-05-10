@@ -37,6 +37,11 @@ namespace AzToolsFramework
             m_enableOnContextEntityLogic = false;
         }
 
+        static inline void EnableOnContextEntityLogic()
+        {
+            m_enableOnContextEntityLogic = true;
+        }
+
     protected:
 
         void OnContextEntitiesAdded([[maybe_unused]] const EntityList& entities) override

@@ -36,6 +36,7 @@ namespace AZ
         {
         public:
             bool ConvertSliceFiles(Application& application);
+            bool PatchMaterials(Application& application);
 
         private:
             // When converting slice entities, especially for nested slices, we need to keep track of the original
@@ -88,6 +89,10 @@ namespace AZ
                 AzToolsFramework::Prefab::Instance* nestedInstance,
                 SliceComponent::InstantiatedContainer* instantiatedEntities,
                 SerializeContext* context);
+
+            void GetAllNestedPrefabs(AZ::IO::PathView const& prefabPath, AZStd::vector<AZ::IO::Path>& nestedPrefabPaths);
+            void PatchPrefabs(AZ::IO::PathView const& filePath);
+            void PatchMaterials(AZStd::unique_ptr<AzToolsFramework::Prefab::Instance>& rootInstance, AZ::IO::PathView const& matBaseName);
 
             // Track all of the entity IDs created and associate them with enough conversion information to know how to place the
             // entities in the correct place in the prefab hierarchy and fix up parent entity ID mappings to work with the nested
