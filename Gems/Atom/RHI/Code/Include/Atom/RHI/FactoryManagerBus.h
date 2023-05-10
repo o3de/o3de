@@ -43,7 +43,8 @@ namespace AZ
             /// Enumerate the list of factories that exist in the Factory Manager.
             /// @param callback - The function that will get called for each factory that exists.
             /// The callback should return 'true' to continue enumerating or 'false' to stop enumerating.
-            virtual void EnumerateFactories(AZStd::function<bool(Factory* factory)> callback) = 0;
+            using FactoryVisitCallback = AZStd::function<bool(Factory* factory)>;
+            virtual void EnumerateFactories(FactoryVisitCallback callback) = 0;
         public:
 
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
