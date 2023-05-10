@@ -75,6 +75,8 @@ namespace AtomToolsFramework
 
     void DynamicNodeManager::LoadConfigFiles(const AZStd::string& extension)
     {
+        AZ_TracePrintf("DynamicNodeManager", "Load %s config files started.", extension.c_str());
+
         // Load and register all discovered dynamic node configuration
         for (const auto& configPath : GetPathsInSourceFoldersMatchingExtension(extension))
         {
@@ -89,6 +91,8 @@ namespace AtomToolsFramework
                 RegisterConfig(config);
             }
         }
+
+        AZ_TracePrintf("DynamicNodeManager", "Load %s config files finished.", extension.c_str());
     }
 
     bool DynamicNodeManager::RegisterConfig(const DynamicNodeConfig& config)
