@@ -592,13 +592,18 @@ namespace O3DELauncher
         }
     #endif // !defined(_RELEASE)
 
+        // The order of operations here is to delete CrySystem, stop the game application, then unload the CrySystem dll.
+        // If we unloaded the CrySystem dll before stopping the game application, we can potentially have crashes
+        // if the CrySystem dll created any EBus contexts, since those contexts would get destroyed before subsystems could
+        // disconnect from the buses.
         SAFE_DELETE(systemInitParams.pSystem);
+        gameApplication.Stop();
         crySystemLibrary.reset(nullptr);
     #else
         SAFE_DELETE(systemInitParams.pSystem);
-    #endif // !defined(AZ_MONOLITHIC_BUILD)
-
         gameApplication.Stop();
+#endif // !defined(AZ_MONOLITHIC_BUILD)
+
         AZ::Debug::Trace::Instance().Destroy();
 
         return status;

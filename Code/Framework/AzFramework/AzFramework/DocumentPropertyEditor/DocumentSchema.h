@@ -206,7 +206,15 @@ namespace AZ::DocumentPropertyEditor
                 AttributeType value;
                 if (!reader.Read<AttributeType>(value))
                 {
-                    return AZ::Dom::Value();
+                    // Handle the attribute providing an invokable function instead of the value directly
+                    if (attribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
+                    {
+                        return attribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                    }
+                    else
+                    {
+                        return AZ::Dom::Value();
+                    }
                 }
                 return ValueToDom(value);
             }
@@ -550,8 +558,18 @@ namespace AZ::DocumentPropertyEditor
                     }
                 }
             }
-
-            if (!value.IsOpaqueValue())
+            else if (value.IsArray())
+            {
+                typename CallbackTraits::ResultType overallResult;
+                for (size_t valueIndex = 0, numValues = value.ArraySize(); valueIndex < numValues; ++valueIndex)
+                {
+                    // Note: Currently, last result wins. If different behavior is desirable in the future,
+                    // we can parameterize this function
+                    overallResult = InvokeOnDomValue(value[valueIndex], args...);
+                }
+                return overallResult;
+            }
+            else if (!value.IsOpaqueValue())
             {
                 // CallbackAttributes that return a value may be bound to a simple value of that type
                 // In that case, ignore our parameters and simply return the value
