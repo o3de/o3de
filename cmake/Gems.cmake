@@ -236,6 +236,7 @@ function(ly_enable_gems)
 
     # Remove any version specifiers before looking for variants
     # e.g. "Atom==1.2.3" becomes "Atom"
+    unset(GEM_NAMES)
     foreach(gem_name_with_version_specifier IN LISTS ly_enable_gems_GEMS)
         o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
         list(APPEND GEM_NAMES "${gem_name}")
