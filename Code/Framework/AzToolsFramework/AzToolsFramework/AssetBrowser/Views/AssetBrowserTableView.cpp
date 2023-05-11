@@ -114,11 +114,7 @@ namespace AzToolsFramework
 
               if (AzToolsFramework::IsNewActionManagerEnabled())
               {
-                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                {
-                    // Assign this widget to the Editor Asset Browser Action Context.
-                    hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                }
+                AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
               }
 
               QAction* deleteAction = new QAction("Delete Action", this);
@@ -186,11 +182,7 @@ namespace AzToolsFramework
         {
             if (AzToolsFramework::IsNewActionManagerEnabled())
             {
-                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                {
-                    hotKeyManagerInterface->RemoveWidgetFromActionContext(
-                        EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                }
+                RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
             }
         }
 
@@ -292,7 +284,7 @@ namespace AzToolsFramework
 
             if (proxyIndex.isValid())
             {
-                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::Rows);
 
                 m_expandedTableViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
