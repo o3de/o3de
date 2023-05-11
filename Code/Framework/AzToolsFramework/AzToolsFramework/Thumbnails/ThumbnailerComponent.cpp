@@ -26,7 +26,7 @@ namespace AzToolsFramework
             : m_missingThumbnail(new MissingThumbnail())
             , m_loadingThumbnail(new LoadingThumbnail())
             , m_currentJobsCount(0)
-            , m_maxThumbnailJobs(std::thread::hardware_concurrency())
+            , m_maxThumbnailJobs(AZStd::thread::hardware_concurrency())
         {
             // Increase the maximum number of QThreads to support the number of
             // concurrent jobs needed here.
