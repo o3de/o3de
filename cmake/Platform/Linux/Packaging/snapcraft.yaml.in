@@ -30,6 +30,7 @@ parts:
      - libcurl4-openssl-dev
      - libsdl2-dev
      - zlib1g-dev
+     - mesa-common-dev
      - libssl-dev
      - libffi8
      - libxcb-icccm4
