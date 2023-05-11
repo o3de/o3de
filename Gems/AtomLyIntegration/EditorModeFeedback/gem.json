@@ -15,10 +15,9 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [
-        "Atom",
         "Atom_Feature_Common",
         "Atom_RPI",
         "Atom_RHI",
-        "Atom_Bootstrap"
+        "CommonFeaturesAtom"
     ]
 }

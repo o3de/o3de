@@ -47,7 +47,7 @@ ly_add_target(
         PRIVATE
             Gem::LyShine.Static
             Legacy::CryCommon
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
         PUBLIC
             Gem::Atom_RHI.Reflect
             Gem::Atom_RPI.Public
@@ -91,18 +91,15 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::EditorCore
                 Gem::LyShine.Static
                 Legacy::CryCommon
-                Gem::LmbrCentral.Editor
-                Gem::TextureAtlas.Editor
+                Gem::LmbrCentral.Editor.Static
+                Gem::TextureAtlas.Static
                 Gem::AtomToolsFramework.Static
-                Gem::AtomToolsFramework.Editor
                 ${additional_dependencies}
             PUBLIC
                 Gem::Atom_RPI.Public
                 Gem::Atom_Utils.Static
                 Gem::AtomLyIntegration_CommonFeatures.Static
                 Gem::Atom_Bootstrap.Headers
-        RUNTIME_DEPENDENCIES
-            Gem::TextureAtlas.Editor
     )
 
     ly_add_target(
@@ -124,8 +121,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 Gem::LyShine.Tools.Static
-                Gem::LmbrCentral.Editor
-                Gem::TextureAtlas.Editor
+                Gem::LmbrCentral.Editor.Static
+                Gem::TextureAtlas.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
             Gem::TextureAtlas.Editor
@@ -184,8 +181,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::CryCommon
                 AZ::AssetBuilderSDK
                 Gem::LyShine.Builders.Static
-                Gem::LmbrCentral.Editor
-                Gem::TextureAtlas.Editor
+                Gem::LmbrCentral.Editor.Static
+                Gem::TextureAtlas.Static
         RUNTIME_DEPENDENCIES
             Gem::UiBasics.Builders
     )
@@ -214,7 +211,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::LyShine.Static
                 Legacy::CryCommon
-                Gem::LmbrCentral
+                Gem::LmbrCentral.API
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
             Gem::TextureAtlas
@@ -251,8 +248,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzToolsFrameworkTestCommon
                     Gem::LyShine.Tools.Static
                     Gem::LyShine.Builders.Static
-                    Gem::LmbrCentral.Editor
-                    Gem::TextureAtlas
+                    Gem::LmbrCentral.Editor.Static
+                    Gem::TextureAtlas.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor
                 Gem::TextureAtlas.Editor

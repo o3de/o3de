@@ -134,8 +134,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 $<TARGET_OBJECTS:Gem::${gem_name}.Private.Object>
                 Gem::Atom_Utils.Static
-                Gem::Atom_Feature_Common
-                Gem::AtomLyIntegration_CommonFeatures.Static                
+                Gem::Atom_Feature_Common.Static
+                Gem::AtomLyIntegration_CommonFeatures.Static
     )
 
     ly_add_target(

@@ -45,7 +45,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::DiffuseProbeGrid.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )

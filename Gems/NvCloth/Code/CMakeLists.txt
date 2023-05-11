@@ -50,7 +50,7 @@ ly_add_target(
         PRIVATE
             Gem::NvCloth.Static
     RUNTIME_DEPENDENCIES
-        Gem::AtomLyIntegration_CommonFeatures
+        Gem::CommonFeaturesAtom.Clients
 )
 
 # use the NvCloth module in clients and servers:
@@ -97,7 +97,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::NvCloth.Editor.Static
         RUNTIME_DEPENDENCIES
-            Gem::AtomLyIntegration_CommonFeatures.Editor
+            Gem::CommonFeaturesAtom.Editor
     )
 
     # use the NvCloth.Editor module in dev tools:
