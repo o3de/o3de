@@ -148,6 +148,18 @@ namespace AzToolsFramework
             }
             event->accept();
         }
+
+        void AssetBrowserFavoritesView::SetSearchDisabled(bool disabled)
+        {
+            if (disabled)
+            {
+                m_favoritesModel->DisableSeachItems();
+            }
+            else
+            {
+                m_favoritesModel->EnableSearchItems();
+            }
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

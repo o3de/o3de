@@ -100,7 +100,14 @@ namespace AzToolsFramework
                     AssetBrowserFavoriteItem* item = m_favorites.at(index.row());
                     if (item->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)
                     {
-                        defaultFlags |= Qt::ItemIsEditable;
+                        if (m_searchDisabled)
+                        {
+                            defaultFlags &= ~Qt::ItemIsEnabled;
+                        }
+                        else
+                        {
+                            defaultFlags |= Qt::ItemIsEditable;
+                        }
                     }
                     if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) ||
                         item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
@@ -300,6 +307,16 @@ namespace AzToolsFramework
         void AssetBrowserFavoritesModel::SetParentView(AssetBrowserFavoritesView* parentView)
         {
             m_parentView = parentView;
+        }
+
+        void AssetBrowserFavoritesModel::EnableSearchItems()
+        {
+            m_searchDisabled = true;
+        }
+
+        void AssetBrowserFavoritesModel::DisableSeachItems()
+        {
+            m_searchDisabled = false;
         }
 
         QString AssetBrowserFavoritesModel::GetProjectName()

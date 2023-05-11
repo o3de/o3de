@@ -38,6 +38,7 @@ namespace AzToolsFramework
 
             void AfterRename(QString newName);
 
+            void SetSearchDisabled(bool disabled);
         protected:
             // Qt overrides
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;

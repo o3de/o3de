@@ -50,6 +50,8 @@ namespace AzToolsFramework
 
             void SetParentView(AssetBrowserFavoritesView* parentView);
 
+            void EnableSearchItems();
+            void DisableSeachItems();
             //////////////////////////////////////////////////////////////////////////
             // QAbstractItemModel overrides
             //////////////////////////////////////////////////////////////////////////
@@ -81,6 +83,7 @@ namespace AzToolsFramework
 
             bool m_loading = false;
             bool m_modifying = false;
+            bool m_searchDisabled = false;
 
             QString GetProjectName();
         };

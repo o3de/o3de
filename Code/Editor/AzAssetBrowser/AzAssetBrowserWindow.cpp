@@ -690,6 +690,8 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
     m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->AddFolderFilter();
+    m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
+    m_ui->m_addToFavoritesButton->setEnabled(true);
     if (thumbnailView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
@@ -701,6 +703,8 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(true);
         m_ui->m_searchWidget->setDisabled(true);
+        m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(true);
+        m_ui->m_addToFavoritesButton->setDisabled(true);
     }
 }
 
@@ -718,6 +722,8 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
+        m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
+        m_ui->m_addToFavoritesButton->setEnabled(true);
     }
 }
 
