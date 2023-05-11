@@ -29,7 +29,7 @@ AZ_CVAR(
     false,
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "Enable GameLift Anywhere for the AWSGameLift Server Manager."
+    "Enable GameLift Anywhere support for server testing."
 );
 
 AZ_CVAR(
@@ -38,7 +38,7 @@ AZ_CVAR(
     "",
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "WebSocketUrl setting for GameLift Anywhere."
+    "WebSocketUrl to the Anywhere fleet. Required if GameLift Anywhere support is enabled."
 );
 
 AZ_CVAR(
@@ -47,7 +47,7 @@ AZ_CVAR(
     "",
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "AuthToken setting for GameLift Anywhere."
+    "AuthToken of the Compute the server is running on. Required if GameLift Anywhere support is enabled."
 );
 
 AZ_CVAR(
@@ -57,6 +57,7 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
     "FleetId setting for GameLift Anywhere."
+    "FleetId of the Anywhere fleet. Required if GameLift Anywhere support is enabled."
 );
 
 AZ_CVAR(
@@ -65,8 +66,7 @@ AZ_CVAR(
     "",
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "HostId setting for GameLift Anywhere."
-);
+    "HostId (ComputeId) of the Compute the server is running on. Required if GameLift Anywhere support is enabled.");
 
 AZ_CVAR(
     AZ::CVarFixedString,
@@ -74,7 +74,7 @@ AZ_CVAR(
     "",
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "ProcessId setting for GameLift Anywhere."
+    "Unique string to ."
 );
 
 namespace AWSGameLift
@@ -521,7 +521,6 @@ namespace AWSGameLift
         }
 
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...\n");
-        // Pass a default-constructed ServerParameters object for Amazon GameLift managed EC2 initialization.
         Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK(serverParameters);
         AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.\n");
 
