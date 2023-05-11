@@ -23,7 +23,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            Gem::AtomLyIntegration_CommonFeatures.Static
 )
 
 ly_add_target(
@@ -39,7 +38,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            Gem::AtomLyIntegration_CommonFeatures.Static
             $<TARGET_OBJECTS:SerializeContextTools.Object>
 )
 
@@ -59,7 +57,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzTest
-                Gem::AtomLyIntegration_CommonFeatures.Static
                 $<TARGET_OBJECTS:SerializeContextTools.Object>
     )
 

@@ -160,11 +160,6 @@ namespace SerializeContextTools
             {
                 result = Dumper::CreateType(application);
             }
-            else if (AZ::StringFunc::Equal("patch-materials", action))
-            {
-                SliceConverter sliceConverter;
-                result = sliceConverter.PatchMaterials(application);
-            }
             else
             {
                 commandExecuted = false;
