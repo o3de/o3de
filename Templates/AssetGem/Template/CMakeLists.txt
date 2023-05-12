@@ -20,5 +20,9 @@ endif()
 # to see the gem as active
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem)
-    ly_create_alias(NAME ${gem_name}.Tool NAMESPACE Gem)
+    ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem)
+
+    # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+    # for the Tools and Builders gem variants
+    o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
 endif()

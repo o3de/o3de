@@ -84,6 +84,10 @@ ly_create_alias(NAME ${gem_name}.Clients  NAMESPACE Gem TARGETS Gem::${gem_name}
 ly_create_alias(NAME ${gem_name}.Servers  NAMESPACE Gem TARGETS Gem::${gem_name})
 ly_create_alias(NAME ${gem_name}.Unified  NAMESPACE Gem TARGETS Gem::${gem_name})
 
+# Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+# for the primary gem variants used in most o3de applications
+o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Builders Tools Clients Servers Unified)
+
 ################################################################################
 # Gem dependencies
 ################################################################################

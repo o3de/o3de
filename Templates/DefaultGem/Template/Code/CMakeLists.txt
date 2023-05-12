@@ -90,6 +90,10 @@ ly_create_alias(NAME ${gem_name}.Clients.API NAMESPACE Gem TARGETS Gem::${gem_na
 ly_create_alias(NAME ${gem_name}.Servers.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 ly_create_alias(NAME ${gem_name}.Unified.API NAMESPACE Gem TARGETS Gem::${gem_name}.API)
 
+# Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+# for the Clients, Servers, Unified gem variants
+o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Clients Servers Unified)
+
 # If we are on a host platform, we want to add the host tools targets like the ${gem_name}.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # The ${gem_name}.Editor.API target can be used by other gems that want to interact with the ${gem_name}.Editor module
@@ -155,6 +159,9 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
     ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
+    # Add in CMake dependencies for each gem dependency listed in this gem's gem.json file
+    # for the Tools and Builders gem variants
+    o3de_add_variant_dependencies_for_gem_dependencies(GEM_NAME ${gem_name} VARIANTS Tools Builders)
 endif()
 
 ################################################################################
