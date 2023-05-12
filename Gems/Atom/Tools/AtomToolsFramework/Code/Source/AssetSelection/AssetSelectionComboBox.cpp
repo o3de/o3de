@@ -77,10 +77,15 @@ namespace AtomToolsFramework
         }
 
         const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!QFileInfo::exists(pathWithoutAlias.c_str()))
+        {
+            return;
+        }
+
         const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         if (const int index = findData(pathItemData); index < 0)
         {
-            const auto& pathWithoutAlias = GetPathWithoutAlias(path);
             const auto& title = GetDisplayNameFromPath(pathWithoutAlias);
 
             // Compare the item title against all other items and append a suffix until the new title is unique
