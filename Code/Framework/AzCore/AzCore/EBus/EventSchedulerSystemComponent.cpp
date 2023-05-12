@@ -56,6 +56,12 @@ namespace AZ
     void EventSchedulerSystemComponent::Deactivate()
     {
         TickBus::Handler::BusDisconnect();
+
+        // Clear all of these on Deactivate() so that they're properly deallocated before reaching the destructor.
+        m_ownedEvents.clear();
+        m_freeEvents.clear();
+        m_handles.clear();
+        m_freeHandles.clear();
     }
 
     void EventSchedulerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)

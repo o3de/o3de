@@ -40,6 +40,11 @@ namespace AZ
             /// e.g. whether Vulkan or D3D should activate their debug layers and to what extent
             virtual AZ::RHI::ValidationMode DetermineValidationMode() const = 0;
 
+            /// Enumerate the list of factories that exist in the Factory Manager.
+            /// @param callback - The function that will get called for each factory that exists.
+            /// The callback should return 'true' to continue enumerating or 'false' to stop enumerating.
+            using FactoryVisitCallback = AZStd::function<bool(Factory* factory)>;
+            virtual void EnumerateFactories(FactoryVisitCallback callback) = 0;
         public:
 
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;

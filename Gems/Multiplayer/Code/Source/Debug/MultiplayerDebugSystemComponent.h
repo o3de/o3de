@@ -14,7 +14,6 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <Debug/MultiplayerDebugNetworkMetrics.h>
 #include <Debug/MultiplayerDebugMultiplayerMetrics.h>
 #include <Multiplayer/IMultiplayerDebug.h>
@@ -91,8 +90,6 @@ namespace Multiplayer
 
         bool m_displayNetAuditTrail = false;
         AZStd::unique_ptr<MultiplayerDebugAuditTrail> m_auditTrail;
-
-        AzFramework::SystemCursorState m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown; //! The last system cursor state.
 
         AZStd::string m_lastFilter;
         AZStd::deque<AuditTrailInput> m_auditTrailElems;

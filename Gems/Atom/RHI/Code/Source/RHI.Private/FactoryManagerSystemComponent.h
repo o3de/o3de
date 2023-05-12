@@ -50,6 +50,7 @@ namespace AZ
             void UnregisterFactory(Factory* factory) override;
             void FactoryRegistrationFinalize() override;
             AZ::RHI::ValidationMode DetermineValidationMode() const override;
+            void EnumerateFactories(AZStd::function<bool(Factory* factory)> callback) override;
 
         private:
             FactoryManagerSystemComponent(const FactoryManagerSystemComponent&) = delete;
