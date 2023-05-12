@@ -125,12 +125,22 @@ namespace AzToolsFramework::Prefab
                     m_currentUndoBatch,
                     &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
                     m_currentUndoBatch,
-                    "Modify Entity Property");
+                    "Modify Component Property");
             }
             else
             {
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
+                if (!m_currentUndoBatch)
+                {
+                    AZ_Warning(
+                        "Prefab",
+                        false,
+                        "New undo batch is being created in PrefabComponentAdapter. This is unusual. An undo batch should already have "
+                        "existed by this point.");
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Component Property");
+                }
             }
 
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
@@ -185,8 +195,6 @@ namespace AzToolsFramework::Prefab
                     NotifyContentsChanged(patches);
                 }
             }
-
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
         }
         else if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
         {
