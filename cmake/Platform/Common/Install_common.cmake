@@ -481,15 +481,41 @@ function(ly_setup_cmake_install)
             list(APPEND relative_external_subdirs "\"${engine_rel_external_subdir}\"")
         endif()
     endforeach()
+    # Sort the external subdirectories before joining them with commas
+    list(SORT relative_external_subdirs CASE INSENSITIVE)
     list(JOIN relative_external_subdirs ",\n${indent}" O3DE_INSTALL_EXTERNAL_SUBDIRS)
+
+    # Use the cache list of "gem_names" from the engine.json to populate
+    # the generated engine.json file
+    # The O3DE_INSTALL_ENGINE_GEMS is the configure placeholder that needs to be set
+    # at the end
+    get_property(active_engine_gems GLOBAL PROPERTY "O3DE_EXPLICIT_ACTIVE_GEMS_ENGINE")
+    if (active_engine_gems)
+        foreach(active_engine_gem IN LISTS active_engine_gems)
+            list(APPEND quoted_active_engine_gems "\"${active_engine_gem}\"")
+        endforeach()
+        list(SORT quoted_active_engine_gems CASE INSENSITIVE)
+        list(JOIN quoted_active_engine_gems ",\n${indent}" O3DE_INSTALL_ENGINE_GEMS)
+    endif()
 
     # Read the "templates" key from the source engine.json
     o3de_read_json_array(engine_templates ${LY_ROOT_FOLDER}/engine.json "templates")
     if(engine_templates)
-        foreach(template_path ${engine_templates})
+        foreach(template_path IN LISTS engine_templates)
             list(APPEND relative_templates "\"${template_path}\"")
         endforeach()
+        list(SORT relative_templates CASE INSENSITIVE)
         list(JOIN relative_templates ",\n${indent}" O3DE_INSTALL_TEMPLATES)
+    endif()
+
+    # Read the "repos" key from the source engine.json
+    o3de_read_json_array(engine_repos ${LY_ROOT_FOLDER}/engine.json "repos")
+    if(engine_repos)
+        foreach(repo_uri ${engine_repos})
+            list(APPEND repos "\"${repo_uri}\"")
+        endforeach()
+        list(SORT repos CASE INSENSITIVE)
+        list(JOIN repos ",\n${indent}" O3DE_INSTALL_REPOS)
     endif()
 
     # Read the "api_versions" key from the source engine.json

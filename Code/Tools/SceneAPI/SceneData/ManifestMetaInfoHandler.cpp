@@ -28,6 +28,7 @@
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/UVsRule.h>
 
 namespace AZ
 {
@@ -84,6 +85,10 @@ namespace AZ
                     if (existingRules.find(azrtti_typeid<CoordinateSystemRule>()) == existingRules.end())
                     {
                         modifiers.push_back(azrtti_typeid<CoordinateSystemRule>());
+                    }
+                    if (existingRules.find(SceneData::UVsRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(SceneData::UVsRule::TYPEINFO_Uuid());
                     }
                     if (existingRules.find(SceneData::TangentsRule::TYPEINFO_Uuid()) == existingRules.end())
                     {

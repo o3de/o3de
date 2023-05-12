@@ -28,7 +28,7 @@ if __name__ == '__main__':
         version="1.0.0",
         description='O3DE editor Python bindings test tools',
         long_description=long_description,
-        packages=find_packages(where='o3de', exclude=['tests']),
+        packages=find_packages(where='.', include=['o3de'], exclude=['tests']),
         install_requires=[
         ],
         tests_require=[

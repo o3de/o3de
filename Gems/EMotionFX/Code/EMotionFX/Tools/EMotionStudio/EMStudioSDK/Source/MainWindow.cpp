@@ -54,10 +54,10 @@
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -186,19 +186,13 @@ namespace EMStudio
         m_saveWorkspaceCallback          = nullptr;
 
         // Register this window as the widget for the Animation Editor Action Context.
-        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-        {
-            hotKeyManagerInterface->AssignWidgetToActionContext(AnimationEditorActionContextIdentifier, this);
-        }
+        AzToolsFramework::AssignWidgetToActionContextHelper(AnimationEditorActionContextIdentifier, this);
     }
 
     MainWindow::~MainWindow()
     {
         // Unregister this window as the widget for the Animation Editor Action Context.
-        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-        {
-            hotKeyManagerInterface->RemoveWidgetFromActionContext(AnimationEditorActionContextIdentifier, this);
-        }
+        AzToolsFramework::RemoveWidgetFromActionContextHelper(AnimationEditorActionContextIdentifier, this);
 
         DisableUpdatingPlugins();
 

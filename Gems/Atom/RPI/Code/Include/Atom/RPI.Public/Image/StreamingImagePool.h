@@ -98,9 +98,6 @@ namespace AZ
 
             // The controller used to manage streaming events on the pool.
             AZStd::unique_ptr<StreamingImageController> m_controller;
-
-            // The streamable image count
-            AZStd::atomic_uint m_streamableImageCount = 0;
         };
     }
 }
