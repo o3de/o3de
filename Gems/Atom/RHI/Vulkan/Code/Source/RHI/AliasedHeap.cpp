@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/Vulkan.h>
 #include <RHI/AliasedHeap.h>
 #include <RHI/AliasingBarrierTracker.h>
 #include <RHI/Image.h>

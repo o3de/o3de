@@ -7,6 +7,7 @@
  */
 
 #include <RHI/MemoryAllocation.h>
+#include <RHI/Device.h>
 
 namespace AZ
 {

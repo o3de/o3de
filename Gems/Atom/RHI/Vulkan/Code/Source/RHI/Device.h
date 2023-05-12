@@ -107,7 +107,7 @@ namespace AZ
 
             BindlessDescriptorPool& GetBindlessDescriptorPool();
 
-            RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment = 2^0);
+            RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment = 1);
 
             void QueueForRelease(RHI::Ptr<RHI::Object> object);
 

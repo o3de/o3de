@@ -6,10 +6,6 @@
  *
  */
 
-#define VMA_IMPLEMENTATION
-
-#include <vma/vk_mem_alloc.h>
-
 #include <RHI/Vulkan.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
@@ -23,6 +19,10 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+
+#define VMA_IMPLEMENTATION
+
+#include <vma/vk_mem_alloc.h>
 
 namespace AZ
 {
