@@ -33,6 +33,9 @@ namespace AZ
             //! Add/Update a read only image pointer to the global bindless heap 
             uint32_t AttachReadImage(ImageView& imageView);
 
+            //! Add/Update a read only cubemap image descriptor to the global bindless heap
+            uint32_t AttachReadCubeMapImage(ImageView& view);
+            
             //! Add/Update a read write image pointer to the global bindless heap 
             uint32_t AttachReadWriteImage(ImageView& imageView);
 
@@ -45,6 +48,9 @@ namespace AZ
             //! Remove the index associated with a read only image descriptor from the free list allocator
             void DetachReadImage(uint32_t index);
 
+            //! Remove the index associated with a read only cubemapimage descriptor from the free list allocator
+            void DetachReadCubeMapImage(uint32_t index);
+            
             //! Remove the index associated with a read write image descriptor from the free list allocator
             void DetachReadWriteImage(uint32_t index);
 
@@ -86,6 +92,7 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> m_rootArgBuffer;
             RHI::Ptr<ArgumentBuffer> m_bindlessTextureArgBuffer;
             RHI::Ptr<ArgumentBuffer> m_bindlessRWTextureArgBuffer;
+            RHI::Ptr<ArgumentBuffer> m_bindlessCubeTextureArgBuffer;
             RHI::Ptr<ArgumentBuffer> m_bindlessBufferArgBuffer;
             RHI::Ptr<ArgumentBuffer> m_bindlessRWBufferArgBuffer;
 

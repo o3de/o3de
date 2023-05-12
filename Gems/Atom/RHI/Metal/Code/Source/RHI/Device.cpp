@@ -54,6 +54,11 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            return m_bindlessArgumentBuffer.Init(this, bindlessSrgDesc);
+        }
+    
         RHI::ResultCode Device::InitializeLimits()
         {
             {
@@ -90,7 +95,6 @@ namespace AZ
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
-            m_bindlessArgumentBuffer.Init(this);
             return RHI::ResultCode::Success;
         }
     
@@ -379,6 +383,7 @@ namespace AZ
             m_features.m_occlusionQueryPrecise = true;
             
             m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
+            m_features.m_unboundedArrays = false; //Remove this when unbounded array support is added to spirv-cross
             
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;

@@ -273,8 +273,10 @@ namespace AZ
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
                 uint32_t slotIndex = static_cast<uint32_t>(pipelineLayout->GetIndexBySlot(slot));
  
-                //Check explicitly for Bindless SRG. This needs to be data driven (todo)
-                if (slotIndex == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
+                //Check explicitly for Bindless SRG.
+                if (slot == m_device->GetBindlessArgumentBuffer().GetBindlessSrgBindingSlot() &&
+                    slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax &&
+                    shaderResourceGroup == nullptr)
                 {
                     //Skip if the global static bindless heap is already bound
                     if (m_state.m_bindBindlessHeap)
@@ -432,6 +434,7 @@ namespace AZ
             switch(resourceType)
             {
                 case BindlessResourceType::m_Texture2D:
+                case BindlessResourceType::m_TextureCube:
                 {
                     isReadOnlyResource = true;
                 }
@@ -507,7 +510,7 @@ namespace AZ
                     }
                     else
                     {
-                        untrackedResourcesGfxReadWrite[RHI::ShaderStageVertex].insert(resourceInfo.second);
+                        //For RW resources we do not call UseResouce for vertex shader as that causes a gpu crash
                         untrackedResourcesGfxReadWrite[RHI::ShaderStageFragment].insert(resourceInfo.second);
                     }
                 }
