@@ -168,6 +168,13 @@ namespace Multiplayer
         ;
     }
 
+    NetBindComponent::~NetBindComponent()
+    {
+        // If the entity is initialized but never activated, then it's possible to still be in a registered state.
+        // Make sure that the entity is unregistered from the NetworkEntityManager and NetworkEntityTracker before destruction.
+        Unregister();
+    }
+
     void NetBindComponent::Init()
     {
         auto* netEntityManager = AZ::Interface<INetworkEntityManager>::Get();
@@ -189,8 +196,33 @@ namespace Multiplayer
         }
     }
 
+    void NetBindComponent::Register(AZ::Entity* entity)
+    {
+        if (!m_isRegistered)
+        {
+            GetNetworkEntityTracker()->RegisterNetBindComponent(entity, this);
+            m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, entity);
+            m_isRegistered = true;
+        }
+    }
+
+    void NetBindComponent::Unregister()
+    {
+        if (m_isRegistered)
+        {
+            GetNetworkEntityTracker()->UnregisterNetBindComponent(this);
+            GetNetworkEntityManager()->RemoveEntityFromEntityMap(m_netEntityId);
+            m_netEntityHandle = {};
+            m_isRegistered = false;
+        }
+    }
+
     void NetBindComponent::Activate()
     {
+        // If this entity has been activated and deactivated multiple times since creation, we might need to re-register
+        // with the NetworkEntityTracker and NetworkEntityManager.
+        Register(GetEntity());
+
         m_needsToBeStopped = true;
         if (m_netEntityRole == NetEntityRole::Authority)
         {
@@ -222,8 +254,8 @@ namespace Multiplayer
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
         }
 
-        GetNetworkEntityTracker()->UnregisterNetBindComponent(this);
-        GetNetworkEntityManager()->RemoveEntityFromEntityMap(m_netEntityId);
+        // Remove this entity from the NetworkEntityTracker and NetworkEntityManager.
+        Unregister();
     }
 
     NetEntityRole NetBindComponent::GetNetEntityRole() const
@@ -658,9 +690,8 @@ namespace Multiplayer
         m_netEntityRole = netEntityRole;
         m_prefabEntityId = prefabEntityId;
 
-        GetNetworkEntityTracker()->RegisterNetBindComponent(entity, this);
-
-        m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, entity);
+        // Register the entity with the NetworkEntityTracker and NetworkEntityManager.
+        Register(entity);
 
         for (AZ::Component* component : entity->GetComponents())
         {
