@@ -589,6 +589,7 @@ namespace AtomToolsFramework
         AZ::Job* job = AZ::CreateJobFunction(
             [toolId = m_toolId]()
             {
+                AZ_TracePrintf("EntityPreviewViewportSettingsSystem", "Enumerating presets started.");
                 auto filterFn = [](const AZStd::string& path)
                 {
                     return
@@ -598,6 +599,8 @@ namespace AtomToolsFramework
                 };
 
                 const auto& paths = GetPathsInSourceFoldersMatchingFilter(filterFn);
+                AZ_TracePrintf("EntityPreviewViewportSettingsSystem", "Enumerating presets finished.");
+
                 AZ::TickBus::QueueFunction(
                     [toolId, paths]()
                     {

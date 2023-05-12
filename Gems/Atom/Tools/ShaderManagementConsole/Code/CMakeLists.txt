@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_SHADER_MANAGEMENT_CONSOLE_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME ShaderManagementConsole EXECUTABLE
+    NAME ShaderManagementConsole APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC

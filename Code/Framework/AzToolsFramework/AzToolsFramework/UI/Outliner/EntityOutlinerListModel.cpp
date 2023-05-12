@@ -47,8 +47,6 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
@@ -853,37 +851,10 @@ namespace AzToolsFramework
         {
             return false;
         }
-        
-        // Only allow reparenting the selected entities if they are all under the same instance.
-        // We check the parent entity separately because it may be a container entity and
-        // container entities consider their owning instance to be the parent instance
-        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-        AZ_Assert(prefabPublicInterface, "EntityOutlinerListModel requires a PrefabPublicInterface instance on Initialize.");
-        if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
+
+        if (!EntitiesBelongToSamePrefab(selectedEntityIds, newParentId))
         {
             return false;
-        }
-
-        // Disable parenting to a different owning instance
-        auto instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
-        if (instanceEntityMapperInterface)
-        {
-            auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
-
-            AZ::EntityId firstSelectedEntityId = selectedEntityIds.front();
-            auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(firstSelectedEntityId);
-            // If the selected entity id is a container entity id, then we need get its parent owning instance.
-            // This is because containers, despite representing the nested instance in the parent, are owned by the child.
-            if ((selectedInstanceReference->get().GetContainerEntityId() == firstSelectedEntityId) &&
-                !prefabPublicInterface->IsLevelInstanceContainerEntity(firstSelectedEntityId))
-            {
-                selectedInstanceReference = selectedInstanceReference->get().GetParentInstance();
-            }
-
-            if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
-            {
-                return false;
-            }
         }
 
         // Ignore entities not owned by the editor context. It is assumed that all entities belong

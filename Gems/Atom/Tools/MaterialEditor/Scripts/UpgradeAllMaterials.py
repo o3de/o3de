@@ -12,7 +12,7 @@ import azlmbr.paths
 import collections
 
 def main():
-    paths = azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingWildcard('*.material')
+    paths = azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingExtension('material')
     for path in paths.copy():
         if 'cache' in path.lower():
             paths.remove(path)

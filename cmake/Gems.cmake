@@ -234,6 +234,15 @@ function(ly_enable_gems)
         set(ENABLED_GEMS ${store_temp}) # restore value of ENABLED_GEMS just in case...
     endif()
 
+    # Remove any version specifiers before looking for variants
+    # e.g. "Atom==1.2.3" becomes "Atom"
+    unset(GEM_NAMES)
+    foreach(gem_name_with_version_specifier IN LISTS ly_enable_gems_GEMS)
+        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
+        list(APPEND GEM_NAMES "${gem_name}")
+    endforeach()
+    set(ly_enable_gems_GEMS ${GEM_NAMES})
+
     # all the actual work has to be done later.
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_ENABLE_GEMS "${ly_enable_gems_PROJECT_NAME}")
     define_property(GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${ly_enable_gems_PROJECT_NAME}"
