@@ -748,7 +748,42 @@ namespace AZ
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) 
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            physicalDevice.CompileMemoryStatistics(m_context, builder);
+            const auto& memProps = physicalDevice.GetMemoryProperties();
+            VmaBudget budgets[VK_MAX_MEMORY_HEAPS];
+            vmaGetHeapBudgets(GetVmaAllocator(), budgets);
+
+            VmaTotalStatistics detailStats;
+            bool detail = builder.GetReportFlags() == RHI::MemoryStatisticsReportFlags::Detail;
+            if (detail)
+            {
+                vmaCalculateStatistics(GetVmaAllocator(), &detailStats);
+            }
+
+            for (uint32_t i = 0; i < memProps.memoryHeapCount; ++i)
+            {
+                RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
+                heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
+                heapStats->m_heapMemoryType =
+                    RHI::CheckBitsAll(memProps.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT))
+                    ? RHI::HeapMemoryLevel::Device
+                    : RHI::HeapMemoryLevel::Host;
+                heapStats->m_memoryUsage.m_budgetInBytes = budgets[i].budget;
+                heapStats->m_memoryUsage.m_totalResidentInBytes = budgets[i].usage;
+                heapStats->m_memoryUsage.m_usedResidentInBytes = budgets[i].statistics.allocationBytes;
+
+                if (detail)
+                {
+                    const VmaStatistics& stats = budgets[i].statistics;
+                    VkDeviceSize unusedBytes = stats.blockBytes - stats.allocationBytes;
+                    heapStats->m_memoryUsage.m_fragmentation =
+                        unusedBytes > 0 ? 1.0f - (detailStats.memoryHeap[i].unusedRangeSizeMax / float(unusedBytes)) : 1.0f;
+
+                    char* jsonString = nullptr;
+                    vmaBuildStatsString(GetVmaAllocator(), &jsonString, true);
+                    heapStats->m_memoryUsage.m_extraStats = jsonString;
+                    vmaFreeStatsString(GetVmaAllocator(), jsonString);
+                }
+            }
         }
 
         void Device::UpdateCpuTimingStatisticsInternal() const
@@ -1206,7 +1241,7 @@ namespace AZ
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
             allocatorInfo.device = m_nativeDevice;
             allocatorInfo.instance = instance.GetNativeInstance();
-            // 1.2 is our current version for glad function pointers. Update this value when updaring GLAD
+            // 1.2 is our current version for glad function pointers. Update this value when updating GLAD
             allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_2);
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();

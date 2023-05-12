@@ -79,8 +79,11 @@ namespace AZ
             // It may not exceed the total resident.
             AZStd::atomic_size_t m_usedResidentInBytes{ 0 };
 
-            // Number of bytes used by Unique Allocations
+            // Number of bytes used by Unique Allocations.
             AZStd::atomic_size_t m_uniqueAllocationBytes{ 0 };
+
+            // Platform specific allocator statistics in a JSON format.
+            AZStd::string m_extraStats;
         };
 
         //!

@@ -206,8 +206,9 @@ namespace AZ
             CommandListAllocator m_commandListAllocator;
             SemaphoreAllocator m_semaphoreAllocator;
 
-            // New VkImageUsageFlags are query in a lazy way (only when they are not already in the map)
-            // so we make the map mutable to keep the constness of the query function.
+            // New VkImageUsageFlags are inserted in the map in a lazy way.
+            // Because of this, the map containing the usages per formar is mutable to keep the
+            // constness of the GetImageUsageFromFormat function.
             mutable AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;

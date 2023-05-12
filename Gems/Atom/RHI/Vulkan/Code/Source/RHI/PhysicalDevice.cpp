@@ -343,30 +343,6 @@ namespace AZ
             return filteredOptionalExtensions;
         }
 
-        void PhysicalDevice::CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const
-        {
-            if (VK_DEVICE_EXTENSION_SUPPORTED(context, KHR_get_physical_device_properties2) && VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget))
-            {
-                VkPhysicalDeviceMemoryBudgetPropertiesEXT budget = {};
-                budget.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_BUDGET_PROPERTIES_EXT;
-
-                VkPhysicalDeviceMemoryProperties2 properties = {};
-                properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2;
-                properties.pNext = &budget;
-                Instance::GetInstance().GetContext().GetPhysicalDeviceMemoryProperties2KHR(m_vkPhysicalDevice, &properties);
-
-                for (uint32_t i = 0; i < properties.memoryProperties.memoryHeapCount; ++i)
-                {
-                    RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
-                    heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
-                    heapStats->m_heapMemoryType = RHI::CheckBitsAll(properties.memoryProperties.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)) ? RHI::HeapMemoryLevel::Device : RHI::HeapMemoryLevel::Host;
-                    heapStats->m_memoryUsage.m_budgetInBytes = budget.heapBudget[i];
-                    heapStats->m_memoryUsage.m_totalResidentInBytes = budget.heapUsage[i];
-                    heapStats->m_memoryUsage.m_usedResidentInBytes = 0;
-                }
-            }
-        }
-
         void PhysicalDevice::Init(VkPhysicalDevice vkPhysicalDevice)
         {
             m_vkPhysicalDevice = vkPhysicalDevice;
