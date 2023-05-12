@@ -39,9 +39,10 @@ namespace AzToolsFramework
             void AfterRename(QString newName);
 
             void SetSearchDisabled(bool disabled);
+
+            AssetBrowserFavoritesModel* GetModel();
         protected:
             // Qt overrides
-            void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
             void dragMoveEvent(QDragMoveEvent* event) override;
 
         private:

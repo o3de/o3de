@@ -462,6 +462,39 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         return;
     }
 
+    if (favoritesView)
+    {
+        bool isFavorite = false;
+        AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
+
+        menu->addAction(
+            QObject::tr("View in Asset Browser"),
+            [favoritesView, entry]()
+            {
+                AssetBrowserFavoriteRequestBus::Broadcast(
+                    &AssetBrowserFavoriteRequestBus::Events::ViewEntryInAssetBrowser, favoritesView, entry);
+            });
+
+        if (isFavorite)
+        {
+            menu->addAction(
+                QObject::tr("Remove from Favorites"),
+                [entry]()
+                {
+                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
+                });
+        }
+        else
+        {
+            menu->addAction(
+                QObject::tr("Add to Favorites"),
+                [entry]()
+                {
+                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
+                });
+        }
+    }
+
     size_t numOfEntries = entries.size();
 
     AZStd::string fullFilePath;
@@ -545,28 +578,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     [fullFilePath]()
                     {
                         OpenWithOS(fullFilePath);
-                    });
-            }
-
-            bool isFavorite = false;
-            AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
-
-            if (isFavorite)
-            {
-                menu->addAction(
-                    QObject::tr("Remove from Favorites"),
-                    [entry]()
-                    {
-                        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
-                    });
-            }
-            else
-            {
-                menu->addAction(
-                    QObject::tr("Add to Favorites"),
-                    [entry]()
-                    {
-                        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
                     });
             }
            
@@ -768,28 +779,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
                 action->setShortcut(Qt::Key_F2);
                 action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-
-                bool isFavorite = false;
-                AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
-
-                if (isFavorite)
-                {
-                    menu->addAction(
-                        QObject::tr("Remove from Favorites"),
-                        [entry]()
-                        {
-                            AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
-                        });
-                }
-                else
-                {
-                    menu->addAction(
-                        QObject::tr("Add to favorites"),
-                        [entry]()
-                        {
-                            AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
-                        });
-                }
 
                 // Add Delete option
                 action = menu->addAction(

@@ -25,6 +25,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
         class AssetBrowserFavoriteItem;
         class EntryAssetBrowserFavoriteItem;
+        class AssetBrowserFavoritesView;
 
         class AssetBrowserFavoritesManager
             : private AzFramework::AssetCatalogEventBus::Handler
@@ -51,6 +52,7 @@ namespace AzToolsFramework
             void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) override;
             void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) override;
             bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) override;
+            void ViewEntryInAssetBrowser(AssetBrowserFavoritesView* targetWindow, const AssetBrowserEntry* favorite) override;
             AZStd::vector<AssetBrowserFavoriteItem*> GetFavorites() override;
             void SaveFavorites() override;
 

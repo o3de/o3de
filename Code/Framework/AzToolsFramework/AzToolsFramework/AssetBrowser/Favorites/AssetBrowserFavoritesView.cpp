@@ -35,7 +35,7 @@ namespace AzToolsFramework
             setMinimumHeight(MinimumHeight);
             setDragEnabled(true);
             setAcceptDrops(true);
-            setDragDropMode(QAbstractItemView::DropOnly);
+            setDragDropMode(QAbstractItemView::DragDrop);
             setDropIndicatorShown(true);
             setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -52,16 +52,6 @@ namespace AzToolsFramework
         void AssetBrowserFavoritesView::SetSearchWidget(SearchWidget* searchWidget)
         {
             m_favoritesModel.data()->SetSearchWidget(searchWidget);
-        }
-
-        void AssetBrowserFavoritesView::selectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
-        {
-            if (selected.isEmpty())
-            {
-                return;
-            }
-
-            m_favoritesModel->Select(selected.indexes().at(0));
         }
 
         void AssetBrowserFavoritesView::OnContextMenu([[maybe_unused]] const QPoint& point)
@@ -98,6 +88,15 @@ namespace AzToolsFramework
             }
             else
             {
+                if (!m_favoritesModel.data()->GetIsSearchDisabled())
+                {
+                    menu.addAction(
+                        QObject::tr("Apply to Asset Browser"),
+                        [this, favoriteItem]()
+                        {
+                            m_favoritesModel.data()->Select(favoriteItem);
+                        });
+                }
                 menu.addAction(
                     QObject::tr("Remove from Favorites"),
                     [favoriteItem]()
@@ -153,13 +152,19 @@ namespace AzToolsFramework
         {
             if (disabled)
             {
-                m_favoritesModel->DisableSeachItems();
+                m_favoritesModel->DisableSearchItems();
             }
             else
             {
                 m_favoritesModel->EnableSearchItems();
             }
         }
+
+        AssetBrowserFavoritesModel* AssetBrowserFavoritesView::GetModel()
+        {
+            return m_favoritesModel.data();
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

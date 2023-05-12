@@ -100,19 +100,18 @@ namespace AzToolsFramework
                     AssetBrowserFavoriteItem* item = m_favorites.at(index.row());
                     if (item->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::Search)
                     {
-                        if (m_searchDisabled)
-                        {
-                            defaultFlags &= ~Qt::ItemIsEnabled;
-                        }
-                        else
-                        {
-                            defaultFlags |= Qt::ItemIsEditable;
-                        }
+                        defaultFlags |= Qt::ItemIsEditable;
                     }
-                    if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) ||
-                        item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
+                    else
                     {
-                        return Qt::ItemIsDragEnabled | defaultFlags;
+                        EntryAssetBrowserFavoriteItem* favoriteItem = static_cast<EntryAssetBrowserFavoriteItem*>(item);
+                        const AssetBrowserEntry* entry = favoriteItem->GetEntry();
+
+                        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product ||
+                            entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            return Qt::ItemIsDragEnabled | defaultFlags;
+                        }
                     }
                 }
             }
@@ -236,10 +235,16 @@ namespace AzToolsFramework
             {
                 if (index.isValid())
                 {
-                    const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(index.internalPointer());
-                    if (item)
+                    const AssetBrowserFavoriteItem* item = static_cast<const AssetBrowserFavoriteItem*>(index.internalPointer());
+                    if (item->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
                     {
-                        collected.push_back(item);
+                        const EntryAssetBrowserFavoriteItem* favoriteItem = static_cast<const EntryAssetBrowserFavoriteItem*>(item);
+                        const AssetBrowserEntry* entry = favoriteItem->GetEntry();
+                        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product ||
+                            entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
+                        {
+                            collected.push_back(entry);
+                        }
                     }
                 }
             }
@@ -266,16 +271,10 @@ namespace AzToolsFramework
             LoadFavorites();
         }
 
-        void AssetBrowserFavoritesModel::Select(const QModelIndex& favorite)
+        void AssetBrowserFavoritesModel::Select(AssetBrowserFavoriteItem* favoriteItem)
         {
-            if (!favorite.internalPointer())
-            {
-                return;
-            }
-
             QWidget* parentWidget = m_searchWidget->parentWidget();
 
-            AssetBrowserFavoriteItem* favoriteItem = static_cast<AssetBrowserFavoriteItem*>(favorite.internalPointer());
             if (favoriteItem->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
             {
                 EntryAssetBrowserFavoriteItem* favoriteEntry = static_cast<EntryAssetBrowserFavoriteItem*>(favoriteItem);
@@ -300,8 +299,22 @@ namespace AzToolsFramework
             {
                 SearchAssetBrowserFavoriteItem* searchItem = static_cast<SearchAssetBrowserFavoriteItem*>(favoriteItem);
 
+                m_searchWidget->ClearTextFilter();
+                m_searchWidget->ClearTypeFilter();
+
                 searchItem->WriteToSearchWidget(m_searchWidget);
             }
+        }
+
+        void AssetBrowserFavoritesModel::Select(const QModelIndex& favorite)
+        {
+            if (!favorite.internalPointer())
+            {
+                return;
+            }
+
+            AssetBrowserFavoriteItem* favoriteItem = static_cast<AssetBrowserFavoriteItem*>(favorite.internalPointer());
+            Select(favoriteItem);
         }
 
         void AssetBrowserFavoritesModel::SetParentView(AssetBrowserFavoritesView* parentView)
@@ -311,12 +324,17 @@ namespace AzToolsFramework
 
         void AssetBrowserFavoritesModel::EnableSearchItems()
         {
+            m_searchDisabled = false;
+        }
+
+        void AssetBrowserFavoritesModel::DisableSearchItems()
+        {
             m_searchDisabled = true;
         }
 
-        void AssetBrowserFavoritesModel::DisableSeachItems()
+        bool AssetBrowserFavoritesModel::GetIsSearchDisabled()
         {
-            m_searchDisabled = false;
+            return m_searchDisabled;
         }
 
         QString AssetBrowserFavoritesModel::GetProjectName()

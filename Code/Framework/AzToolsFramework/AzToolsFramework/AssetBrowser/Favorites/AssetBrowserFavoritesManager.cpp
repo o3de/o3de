@@ -23,6 +23,8 @@
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h>
 #include <AzToolsFramework/AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesModel.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
@@ -98,6 +100,19 @@ namespace AzToolsFramework
                 m_favoriteEntriesCache.erase(favoriteIt);
 
                 SaveFavorites();
+            }
+        }
+
+        void AssetBrowserFavoritesManager::ViewEntryInAssetBrowser(AssetBrowserFavoritesView* targetWindow, const AssetBrowserEntry* favorite)
+        {
+            const auto favoriteIt = m_favoriteEntriesCache.find(favorite);
+            if (favoriteIt != m_favoriteEntriesCache.end() || !favoriteIt->second)
+            {
+                AssetBrowserFavoritesModel* model = targetWindow->GetModel();
+                if (model)
+                {
+                    model->Select(favoriteIt->second);
+                }
             }
         }
 

@@ -46,12 +46,15 @@ namespace AzToolsFramework
             
             void SetSearchWidget(SearchWidget* searchWidget);
 
+            void Select(AssetBrowserFavoriteItem* favoriteItem);
             void Select(const QModelIndex& favorite);
 
             void SetParentView(AssetBrowserFavoritesView* parentView);
 
             void EnableSearchItems();
-            void DisableSeachItems();
+            void DisableSearchItems();
+            bool GetIsSearchDisabled();
+
             //////////////////////////////////////////////////////////////////////////
             // QAbstractItemModel overrides
             //////////////////////////////////////////////////////////////////////////

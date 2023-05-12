@@ -45,6 +45,7 @@ namespace AzToolsFramework
         class AssetBrowserModel;
         class AssetBrowserEntry;
         class AssetBrowserFavoriteItem;
+        class AssetBrowserFavoritesView; 
         class SearchWidget;
 
         //////////////////////////////////////////////////////////////////////////
@@ -423,6 +424,8 @@ namespace AzToolsFramework
 
             virtual void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) = 0;
             virtual void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) = 0;
+
+            virtual void ViewEntryInAssetBrowser(AssetBrowserFavoritesView* targetWindow, const AssetBrowserEntry* favorite) = 0;
 
             virtual void SaveFavorites() = 0;
 
