@@ -123,6 +123,7 @@
         "Templates/DefaultGem",
         "Templates/DefaultProject",
         "Templates/GemRepo",
+        "Templates/GraphicsGems",
         "Templates/MinimalProject",
         "Templates/PrebuiltGem",
         "Templates/PythonToolGem",
