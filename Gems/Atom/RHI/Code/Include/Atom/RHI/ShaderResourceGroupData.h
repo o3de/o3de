@@ -232,6 +232,9 @@ namespace AZ
             uint32_t GetUpdateMask() const;
             
             //! Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
+            //! Ideally higher level code can access bindless heap indices directly from the view and populate any indirect
+            //! buffer directly. This API is present in case we want RHI to track bindless resources which may be needed for
+            //! backends like the metal.
             void SetBindlessViews(
                 ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
@@ -241,6 +244,9 @@ namespace AZ
                 uint32_t arrayIndex = 0);
             
             //! Update the indirect buffer view with the indices of all the buffer views which reside in the global gpu heap.
+            //! Ideally higher level code can access bindless heap indices directly from the view and populate any indirect
+            //! buffer directly. This API is present in case we want RHI to track bindless resources which may be needed for
+            //! backends like the metal.
             void SetBindlessViews(
                 ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,

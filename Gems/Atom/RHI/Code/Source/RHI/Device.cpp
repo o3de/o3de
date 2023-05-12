@@ -365,6 +365,7 @@ namespace AZ
             }
             else
             {
+                //If Unbounded array support is not present we can simulate it via bounding the array. This is currently the case for metal backend.
                 for (const RHI::ShaderInputImageDescriptor& shaderInputImageUnboundedArray : bindlessSrgLayout->GetShaderInputListForImages())
                 {
                     if (strstr(shaderInputImageUnboundedArray.m_name.GetCStr(), ToString(BindlessResourceType::m_Texture2D).data()))
