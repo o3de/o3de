@@ -23,8 +23,6 @@ namespace ScriptCanvas
     static constexpr int MaxMessageLength = 4096;
     static constexpr const char ScriptCanvasAutoGenRegistrationWarningMessage[] = "[Warning] Registry name %s is occupied already, ignore AutoGen registry registration.\n";
 
-    static AZ::EnvironmentVariable<AutoGenRegistryManager> g_autogenRegistry;
-
     void ScriptCanvasRegistry::ReleaseDescriptors()
     {
         for (AZ::ComponentDescriptor* descriptor : m_cachedDescriptors)
@@ -36,11 +34,30 @@ namespace ScriptCanvas
 
     AutoGenRegistryManager::~AutoGenRegistryManager()
     {
+        // If any registries still exist at this point, make sure they get released. Otherwise, they can cause a crash on shutdown.
+
+        AZ_Error("AutoGen", m_registries.empty(),
+            "Auto-registered registries still exist on shutdown. This isn't harmful, but there is a programming or linking error causing "
+            "destruction of the registries to happen in the wrong order relative to the AutoGenRegistryManager.");
+
+        for (auto& registry : m_registries)
+        {
+            registry.second->ReleaseDescriptors();
+        }
+        
         m_registries.clear();
     }
 
     AutoGenRegistryManager* AutoGenRegistryManager::GetInstance()
     {
+        // This needs to be declared inside of GetInstance() to ensure proper construction / destruction order relative to any
+        // static registries. What happens is that inside the constructor of the first static registry loaded and processed, it
+        // will call GetInstance(), which will construct this static variable. Since this variable finishes constructing before
+        // the first static registry finishes, it won't be destroyed until *after* that registry is destroyed on shutdown.
+        // If this were declared outside of the GetInstance() call, its construction order would be non-deterministic relative
+        // to the static registries in this DLL and so it could potentially get destroyed too soon.
+        static AZ::EnvironmentVariable<AutoGenRegistryManager> g_autogenRegistry;
+
         // Look up variable in AZ::Environment first
         // This is need if the Environment variable was already created
         if (!g_autogenRegistry)
@@ -171,6 +188,8 @@ namespace ScriptCanvas
     {
         if (m_registries.find(registryName) != m_registries.end())
         {
+            // This can happen if multiple Gems link to ScriptCanvas, since the ScriptCanvas registries will try to
+            // register themselves with each Gem that loads, causing redundant registration requests.
             AZ::Debug::Platform::OutputToDebugger(
                 ScriptCanvasAutoGenRegistryName,
                 AZStd::fixed_string<MaxMessageLength>::format(ScriptCanvasAutoGenRegistrationWarningMessage, registryName).c_str());

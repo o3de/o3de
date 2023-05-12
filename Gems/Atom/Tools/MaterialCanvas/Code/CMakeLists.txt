@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_MATERIAL_CANVAS_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME MaterialCanvas EXECUTABLE
+    NAME MaterialCanvas APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
