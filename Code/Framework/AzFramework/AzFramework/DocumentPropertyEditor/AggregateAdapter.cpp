@@ -235,7 +235,7 @@ namespace AZ::DocumentPropertyEditor
                                 {
                                     // TODO: no longer the same row, check for a matching sibling,
                                     // and if there isn't one, split off a new node
-                                    //AZ_Assert(0, "replace operation morphing node is not supported yet!");
+                                    AZ_Assert(0, "replace operation morphing node is not supported yet!");
                                 }
                             }
                             else
@@ -243,7 +243,7 @@ namespace AZ::DocumentPropertyEditor
                                 // TODO: handle case where there's only one entry in this node, but it might've changed.
                                 // need to check if it has changed to match a parallel node, in which case it should join
                                 // that node, and this one should be destroyed.
-                                //AZ_Assert(0, "replace operation changing value of single entry node is not supported yet!");
+                                AZ_Assert(0, "replace operation changing value of single entry node is not supported yet!");
                             }
                         }
                     }
@@ -273,7 +273,7 @@ namespace AZ::DocumentPropertyEditor
                         {
                             // the aggregate node that this add affected is now complete
                             NotifyContentsChanged(
-                                { Dom::PatchOperation::AddOperation(GetPathForNode(aggregateNode), GetValueForNode(aggregateNode)) });
+                                { Dom::PatchOperation::AddOperation(GetPathForNode(aggregateNode), GetValueHierarchyForNode(aggregateNode)) });
                         }
                     }
                     else
@@ -473,6 +473,38 @@ namespace AZ::DocumentPropertyEditor
                                                                     : GenerateValuesDifferRow(aggregateNode));
     }
 
+    Dom::Value RowAggregateAdapter::GetValueHierarchyForNode(AggregateNode* aggregateNode)
+    {
+        Dom::Value returnValue;
+
+        // only create a value if this node is represented by all member adapters
+        if (aggregateNode->EntryCount() == m_adapters.size())
+        {
+            // create a row value for this node
+            returnValue = Dom::Value::CreateNode(Nodes::Row::Name);
+
+            /* add all row children first (before any labels or PropertyHandlers in this row),
+                so that functions like GetPathForNode can make simplifying assumptions */
+            for (auto& currChild : aggregateNode->m_childRows)
+            {
+                Dom::Value childValue = GetValueHierarchyForNode(currChild.get());
+
+                if (!childValue.IsNull())
+                {
+                    returnValue.ArrayPushBack(childValue);
+                }
+            }
+            // row children have been added, now add the actual label/PropertyEditor children
+            auto childlessRow = GetValueForNode(aggregateNode);
+            if (!childlessRow.IsArrayEmpty())
+            {
+                returnValue.ArrayReserve(returnValue.ArraySize() + childlessRow.ArraySize());
+                AZStd::move(childlessRow.MutableArrayBegin(), childlessRow.MutableArrayEnd(), AZStd::back_inserter(returnValue.GetMutableArray()));
+            }
+        }
+        return returnValue;
+    }
+
     void RowAggregateAdapter::PopulateNodesForAdapter(size_t adapterIndex)
     {
         auto sourceAdapter = m_adapters[adapterIndex]->adapter;
@@ -539,35 +571,17 @@ namespace AZ::DocumentPropertyEditor
         m_builder.BeginAdapter();
         m_builder.EndAdapter();
         Dom::Value contents = m_builder.FinishAndTakeResult();
-        const size_t numAdapters = m_adapters.size();
-        auto AddChildrenToValue = [=](AggregateNode* parentNode, Dom::Value& value, auto&& AddChildrenToValue) -> void
+
+        // root node is not a row, so cannot generate a value directly. Instead, iterate its children for values
+        for (auto& topLevelRow : m_rootNode->m_childRows)
         {
-            for (auto& currChild : parentNode->m_childRows)
+            Dom::Value childValue = GetValueHierarchyForNode(topLevelRow.get());
+            if (!childValue.IsNull())
             {
-                if (currChild->EntryCount() == numAdapters)
-                {
-                    /* add all row children first (before any labels or PropertyHandlers in this row),
-                    so that functions like GetPathForNode can make simplifying assumptions */
-                    auto aggregateRow = Dom::Value::CreateNode(Nodes::Row::Name);
-                    AddChildrenToValue(currChild.get(), aggregateRow, AddChildrenToValue);
-
-                    // row children have been added, now add the actual label/PropertyEditor children
-                    auto generatedValue = GetValueForNode(currChild.get());
-
-                    // move all the non-row items that were generated for the standalone row to this new full row
-                    auto& aggregateRowArray = aggregateRow.GetMutableArray();
-                    auto& generatedValueArray = generatedValue.GetArray();
-                    aggregateRowArray.insert(
-                        aggregateRowArray.end(),
-                        AZStd::make_move_iterator(generatedValueArray.begin()),
-                        AZStd::make_move_iterator(generatedValueArray.end()));
-
-                    value.ArrayPushBack(aggregateRow);
-                }
+                contents.ArrayPushBack(childValue);
             }
-        };
+        }
 
-        AddChildrenToValue(m_rootNode.get(), contents, AddChildrenToValue);
         return contents;
     }
 

@@ -87,8 +87,11 @@ namespace AZ::DocumentPropertyEditor
         //! get a Dom Value representing the given node by asking the first valid adapter that isn't at omitAdapterIndex
         Dom::Value GetComparisonRow(AggregateNode* aggregateNode, size_t omitAdapterIndex = AggregateNode::InvalidEntry);
 
-        //! generates a Dom::Value for this node for use in GenerateContents or patch operations
+        //! generates a Dom::Value for this node (not including row descendents) for use in GenerateContents or patch operations
         Dom::Value GetValueForNode(AggregateNode* aggregateNode);
+
+        //! generates a Dom::Value for this node and its descendents for use in GenerateContents or patch operations
+        Dom::Value GetValueHierarchyForNode(AggregateNode* aggregateNode);
 
         //! gets the node at the given path relative to this adapter, if it exists
         AggregateNode* GetNodeAtPath(const Dom::Path& aggregatePath);
