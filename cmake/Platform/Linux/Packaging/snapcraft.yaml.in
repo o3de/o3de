@@ -42,6 +42,10 @@ parts:
      - pkg-config
      - libc-dev
      - libstdc++-12-dev
+     - libpng16-16
+     - libsm6
+     - libdbus-1-3
+     - libzstd-dev
 
   patch-o3de:
     plugin: nil
