@@ -59,8 +59,6 @@ function(ly_copy source_files target_directory)
         
         # If target_directory is a bundle
         if("${target_directory}" MATCHES "\\.app/Contents/MacOS")
-
-            set(target_is_bundle TRUE)
             if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
 
                 if(NOT @LY_BUILD_FIXUP_BUNDLE@)
@@ -113,13 +111,19 @@ function(ly_copy source_files target_directory)
                 set(local_plugin_dirs ${plugin_dirs})
                 list(APPEND local_plugin_dirs "${target_directory}")
                 set(plugin_dirs ${local_plugin_dirs} PARENT_SCOPE)
+                # Invoke fixup bundle on the dylib added to the bundle as well
+                # This is needed for Gem Modules dylibs as they can depend on the
+                # the libO3DEKernel.dylib and libAzQtComponents.dylib via
+                # static linking
+                set(local_plugin_libs ${plugin_libs})
+                list(APPEND local_plugin_libs "${target_directory}/${target_filename}")
+                set(plugin_libs ${local_plugin_libs} PARENT_SCOPE)
 
             endif()
         
         else()
             
             # target is not a bundle
-            set(target_is_bundle FALSE)
             if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
 
                 # fixup origin to copy the whole Framework folder
