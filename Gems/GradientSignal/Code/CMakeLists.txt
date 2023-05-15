@@ -40,7 +40,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
         PUBLIC
             AZ::AzCore
             Gem::GradientSignal.Static
@@ -85,8 +85,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::GradientSignal.Static
                 Gem::SurfaceData
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
+                Gem::LmbrCentral.Editor.Static
     )
 
     ly_add_target(
@@ -102,7 +101,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::GradientSignal.Editor.Static
-                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
