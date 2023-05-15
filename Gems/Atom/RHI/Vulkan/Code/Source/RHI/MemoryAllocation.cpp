@@ -66,7 +66,7 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
             if (hostAccess == RHI::HostMemoryAccess::Write)
             {
-                VkResult result = vmaFlushAllocation(device.GetVmaAllocator(), m_vmaAllocation, offset, VK_WHOLE_SIZE);
+                [[maybe_unused]] VkResult result = vmaFlushAllocation(device.GetVmaAllocator(), m_vmaAllocation, offset, VK_WHOLE_SIZE);
                 AZ_Error("RHI", result == VK_SUCCESS, "Failed to flush vma allocations, error = %s", GetResultString(result));
             }
 
