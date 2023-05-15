@@ -122,7 +122,7 @@ UiTransform2dComponent::UiTransform2dComponent()
     , m_rotation(0.0f)
     , m_scale(AZ::Vector2(1.0f, 1.0f))
 
-    // carbonated begin (alukyanov)
+    // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
     , m_isFlooringOffsets(false)
 #endif
@@ -241,7 +241,7 @@ void UiTransform2dComponent::SetPivotY(float pivot)
     return SetPivot(AZ::Vector2(m_pivot.GetX(), pivot));
 }
 
-// carbonated begin (alukyanov)
+// carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiTransform2dComponent::GetIsFlooringOffsets()
@@ -791,7 +791,7 @@ void UiTransform2dComponent::SetRecomputeFlags(Recompute recompute)
         return;
     }
 
-    // carbonated begin (alukyanov)
+    // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
     if (m_isFlooringOffsets && (recompute == Recompute::RectOnly || recompute == Recompute::RectAndTransform))
     {
@@ -1229,7 +1229,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
     {
         serializeContext->Class<UiTransform2dComponent, AZ::Component>()
 
-            // carbonated begin (alukyanov)
+            // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
             ->Version(4, &VersionConverter)
 #else
@@ -1243,7 +1243,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
             ->Field("Rotation", &UiTransform2dComponent::m_rotation)
             ->Field("Scale", &UiTransform2dComponent::m_scale)
 
-            // carbonated begin (alukyanov)
+            // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
             ->Field("IsFlooringOffsets", &UiTransform2dComponent::m_isFlooringOffsets)
 #endif
@@ -1323,7 +1323,7 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
 
-            // carbonated begin (alukyanov)
+            // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
             editInfo->DataElement(
                 AZ::Edit::UIHandlers::CheckBox,

@@ -176,7 +176,7 @@ public: // member functions
     //! between the authored canvas size and the actual viewport size.
     virtual void SetScaleToDeviceMode(ScaleToDeviceMode scaleToDeviceMode) = 0;
 
-    // carbonated begin (alukyanov)
+    // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
     //! Get whether the element's offsets should be floored when changed
     virtual bool GetIsFlooringOffsets() = 0;

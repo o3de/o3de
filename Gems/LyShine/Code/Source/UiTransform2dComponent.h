@@ -54,7 +54,7 @@ public: // member functions
     ScaleToDeviceMode GetScaleToDeviceMode() override;
     void SetScaleToDeviceMode(ScaleToDeviceMode scaleToDeviceMode) override;
 
-    // carbonated begin (alukyanov)
+    // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
     bool GetIsFlooringOffsets() override;
     void SetIsFlooringOffsets(bool isFlooringOffsets) override;
@@ -254,7 +254,7 @@ private: // data
     float m_rotation;
     AZ::Vector2 m_scale;
 
-    // carbonated begin (alukyanov)
+    // carbonated begin (alukyanov/lyshine-related)
 #if defined(CARBONATED)
     bool m_isFlooringOffsets;
 #endif
