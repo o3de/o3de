@@ -344,15 +344,15 @@ namespace O3DE::ProjectManager
         connect(m_filterProxyModel, &GemSortFilterProxyModel::OnInvalidated, this, &GemFilterWidget::OnFilterProxyInvalidated);
     }
 
-    void ClearButtonCheckBoxes(FilterCategoryWidget* widget)
+    void ResetButtonCheckBoxes(FilterCategoryWidget* widget)
     {
         for (const auto& button : widget->GetButtonGroup()->buttons())
         {
-            button->setChecked(false);
+            button->setChecked(button->property("selected_by_default").isValid());
         }
     }
 
-    void GemFilterWidget::UpdateAllFilters(bool clearCheckBoxes)
+    void GemFilterWidget::UpdateAllFilters(bool resetCheckBoxes)
     {
         UpdateGemStatusFilter();
         UpdateVersionsFilter();
@@ -361,35 +361,78 @@ namespace O3DE::ProjectManager
         UpdateFeatureFilter();
         UpdatePlatformFilter();
 
-        if (clearCheckBoxes)
+        if (resetCheckBoxes)
         {
-            ClearButtonCheckBoxes(m_statusFilter);
-            ClearButtonCheckBoxes(m_versionsFilter);
-            ClearButtonCheckBoxes(m_originFilter);
-            ClearButtonCheckBoxes(m_typeFilter);
-            ClearButtonCheckBoxes(m_featureFilter);
-            ClearButtonCheckBoxes(m_platformFilter);
+            ResetButtonCheckBoxes(m_statusFilter);
+            ResetButtonCheckBoxes(m_versionsFilter);
+            ResetButtonCheckBoxes(m_originFilter);
+            ResetButtonCheckBoxes(m_typeFilter);
+            ResetButtonCheckBoxes(m_featureFilter);
+            ResetButtonCheckBoxes(m_platformFilter);
         }
     }
 
     void GemFilterWidget::UpdateVersionsFilter()
     {
         int numGemsWithUpdates = 0;
-        for (int i = 0; i < m_gemModel->rowCount(); ++i)
+        int numCompatibleGems = 0;
+
+        // check the state of the compatible filter to see if we should be
+        // including updates for incompatible versions
+        bool compatibleUpdatesOnly = true; // on by default
+        QList<QAbstractButton*> buttons = m_versionsFilter->GetButtonGroup()->buttons();
+        if (buttons.count() >= 2)
         {
-            numGemsWithUpdates += GemModel::HasUpdates(m_gemModel->index(i, 0)) ? 1 : 0;
+            const QAbstractButton* compatibleButton = buttons[1];
+            compatibleUpdatesOnly = compatibleButton->isChecked();
         }
 
-        m_versionsFilter->SetElements({ "Update Available" }, { numGemsWithUpdates });
+        for (int i = 0; i < m_gemModel->rowCount(); ++i)
+        {
+            numGemsWithUpdates += GemModel::HasUpdates(m_gemModel->index(i, 0), compatibleUpdatesOnly) ? 1 : 0;
+            numCompatibleGems += GemModel::IsCompatible(m_gemModel->index(i, 0)) ? 1 : 0;
+        }
+
+        m_versionsFilter->SetElements({ "Update Available", "Compatible" }, { numGemsWithUpdates, numCompatibleGems });
+
+        if (buttons.isEmpty())
+        {
+            // buttons were just created so make sure to set the selected_by_default property
+            // for the checkboxes we want to be on by default
+            buttons = m_versionsFilter->GetButtonGroup()->buttons();
+            QAbstractButton* compatibleButton = buttons[1];
+            compatibleButton->setProperty("selected_by_default", true);
+        }
     }
 
-    void GemFilterWidget::OnUpdateFilterToggled([[maybe_unused]] QAbstractButton* button, bool checked)
+    void GemFilterWidget::OnUpdateFilterToggled(QAbstractButton* button, bool checked)
     {
-        // for now we just have the one filter
-        m_filterProxyModel->SetUpdateAvailable(checked);
+        const QList<QAbstractButton*> buttons = m_versionsFilter->GetButtonGroup()->buttons();
+
+        if(button == buttons[0])
+        {
+            m_filterProxyModel->SetUpdateAvailable(checked);
+        }
+
+        if(button == buttons[1])
+        {
+            if(checked)
+            {
+                // have the gem model update the current gems with compatible
+                // versions in case the user was looking at incompatible gems
+                // and compatible gems exist
+                m_gemModel->ShowCompatibleGems();
+            }
+
+            // when the compatibility filter is changed we need to update the
+            // counts for the "Updates Available"
+            UpdateVersionsFilter();
+
+            m_filterProxyModel->SetCompatibleFilterFlag(checked);
+        }
     }
 
-    void GemFilterWidget::OnStatusFilterToggled([[maybe_unused]] QAbstractButton* button, [[maybe_unused]] bool checked)
+    void GemFilterWidget::OnStatusFilterToggled(QAbstractButton* button, bool checked)
     {
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
         QAbstractButton* selectedButton = buttons[0];
@@ -428,6 +471,12 @@ namespace O3DE::ProjectManager
         {
             m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::NoFilter);
         }
+
+        // Missing
+        if (button == buttons[4])
+        {
+            m_filterProxyModel->SetGemMissing(checked);
+        }
     }
 
     void GemFilterWidget::UpdateGemStatusFilter()
@@ -460,6 +509,14 @@ namespace O3DE::ProjectManager
         elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Inactive));
         elementCounts.push_back(totalGems - enabledGemTotal);
 
+        elementNames.push_back(tr("Missing"));
+        int numMissingGems = 0;
+        for (int i = 0; i < m_gemModel->rowCount(); ++i)
+        {
+            numMissingGems += GemModel::IsAddedMissing(m_gemModel->index(i, 0)) ? 1 : 0;
+        }
+        elementCounts.push_back(numMissingGems);
+
         m_statusFilter->SetElements(elementNames, elementCounts);
 
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
@@ -472,6 +529,9 @@ namespace O3DE::ProjectManager
         QAbstractButton* inactiveButton = buttons[3];
         activeButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Active);
         inactiveButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Inactive);
+
+        QAbstractButton* missingButton = buttons[4];
+        missingButton->setChecked(m_filterProxyModel->GetMissingActive());
     }
 
     void GemFilterWidget::UpdateGemOriginFilter()

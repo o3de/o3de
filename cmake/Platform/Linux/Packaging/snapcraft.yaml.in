@@ -12,55 +12,72 @@ parts:
     plugin: dump
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
+    build-attributes:
+     - enable-patchelf
     stage-packages:
-     - clang
+     - cmake
+     - clang-14
      - ninja-build
-     - libatomic1
-     - libfreetype6
-     - libpng16-16
-     - libgl1
+     - libglu1-mesa-dev
+     - libxcb-xinerama0
+     - libxcb-xinput0
+     - libxcb-xinput-dev
+     - libxcb-xfixes0-dev
+     - libxcb-xkb-dev
+     - libxkbcommon-dev
+     - libxkbcommon-x11-dev
+     - libfontconfig1-dev
+     - libcurl4-openssl-dev
+     - libsdl2-dev
+     - zlib1g-dev
+     - mesa-common-dev
+     - libssl-dev
+     - libffi8
      - libxcb-icccm4
      - libxcb-image0
      - libxcb-keysyms1
      - libxcb-randr0
      - libxcb-render-util0
-     - libxcb-render0
-     - libxcb-shape0
-     - libxcb-xinerama0
-     - libxcb-xinput0
-     - libxcb-xkb1
-     - libxkbcommon-x11-0
-     - libxkbcommon0
-     - libpcre2-16-0
-     - libopengl0
-     - libice6
-     - libsm6
-     - libcurl4
-     - libfontconfig1
      - libunwind-dev
-    stage-snaps:
-     - cmake
+     - pkg-config
+     - libc-dev
+     - libstdc++-12-dev
 
-layout:
-  /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
-    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/downloaded_packages
-  /etc/o3de/${CPACK_PACKAGE_VERSION}/runtime:
-    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/runtime
+  patch-o3de:
+    plugin: nil
+    after: [o3de]
+    build-packages: [patchelf]
+    override-stage: |
+      snapcraftctl stage
+      find $SNAPCRAFT_STAGE/usr/bin/ -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} \;
+      find $SNAPCRAFT_STAGE/usr/lib/ -type f -executable -exec patchelf --set-interpreter /snap/core22/current/lib64/ld-linux-x86-64.so.2 {} \;
+      find $SNAPCRAFT_STAGE/usr/bin/ -type f -executable -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {})':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      find $SNAPCRAFT_STAGE/usr/lib/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {})':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      find $SNAPCRAFT_STAGE/lib/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {} )':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      find $SNAPCRAFT_STAGE/lib32/ -type f -exec patchelf --force-rpath --set-rpath $(patchelf --print-rpath {} )':/snap/core22/current/lib/x86_64-linux-gnu:/snap/core22/current/usr/lib/x86_64-linux-gnu' {} \;
+      echo -e "/* GNU ld script\n   Use the shared library, but some functions are only in\n   the static library, so try that secondarily.  */\nOUTPUT_FORMAT(elf64-x86-64)\nGROUP ( /snap/core22/current/lib/x86_64-linux-gnu/libc.so.6 /snap/o3de/current/usr/lib/x86_64-linux-gnu/libc.a /usr/lib/x86_64-linux-gnu/libc_nonshared.a  AS_NEEDED ( /snap/core22/current/usr/lib64/ld-linux-x86-64.so.2 ) )\n" > $SNAPCRAFT_STAGE/usr/lib/x86_64-linux-gnu/libc.so
 
 apps:
   o3de:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/o3de
     environment:
       LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      PKG_CONFIG: $SNAP/usr/bin/pkg-config --define-variable=libdir=$SNAP/usr/lib/x86_64-linux-gnu
       DISABLE_WAYLAND: 1
   editor:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/Editor
     environment:
       LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
       DISABLE_WAYLAND: 1
   assetprocessor:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/AssetProcessor
     environment:
       LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
       DISABLE_WAYLAND: 1
     

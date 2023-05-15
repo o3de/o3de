@@ -12,7 +12,7 @@ Contains functions for the project manager to call that gather data from o3de sc
 import logging
 import pathlib
 
-from o3de import manifest, utils, compatibility, enable_gem, register, project_properties
+from o3de import manifest, utils, compatibility, enable_gem, register, project_properties, repo
 
 logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -309,6 +309,14 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     # because the project might be using a different engine than the one Project Manager is
     # running out of
     engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+    if not engine_path:
+        logger.error("Failed to get engine path for gem info retrieval")
+        return [] 
+
+    engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
+    if not engine_json_data:
+        logger.error("Failed to get engine json data for gem info retrieval")
+        return [] 
 
     # get all gem json data by path so we can use it for detecting engine and project gems
     # without re-opening and parsing gem.json files again
@@ -326,17 +334,27 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
 
     # flatten into a single list
-    all_gem_json_data = [gem_json_data for gem_versions in all_gem_json_data.values() for gem_json_data in gem_versions]
+    all_gem_json_data_list = [gem_json_data for gem_versions in all_gem_json_data.values() for gem_json_data in gem_versions]
 
-    for i, gem_json_data in enumerate(all_gem_json_data):
+    for i, gem_json_data in enumerate(all_gem_json_data_list):
         if project_path:
             if gem_json_data['path'] in project_gem_paths:
-                all_gem_json_data[i]['project_gem'] = True
+                all_gem_json_data_list[i]['project_gem'] = True
         
         if gem_json_data['path'] in engine_gem_paths:
-            all_gem_json_data[i]['engine_gem'] = True
+            all_gem_json_data_list[i]['engine_gem'] = True
+        else:
+            # gather general incompatibility information
+            incompatible_engine =  compatibility.get_incompatible_objects_for_engine(gem_json_data, engine_json_data)
+            if incompatible_engine:
+                all_gem_json_data_list[i]['incompatible_engine'] = incompatible_engine
 
-    return all_gem_json_data
+            incompatible_gem_dependencies = compatibility.get_incompatible_gem_dependencies(gem_json_data, all_gem_json_data)
+            if incompatible_gem_dependencies:
+                all_gem_json_data_list[i]['incompatible_gem_dependencies'] = incompatible_gem_dependencies
+        
+
+    return all_gem_json_data_list
 
 def download_gem(gem_name: str, force_overwrite: bool = False, progress_callback = None):
     """
@@ -405,8 +423,7 @@ def get_gem_infos_from_repo(repo_uri: str) -> list:
     """
     return list()
 
-
-def get_gem_infos_from_all_repos() -> list:
+def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:bool = True) -> list:
     """
         Call get_gem_json_paths_from_all_cached_repos
 
@@ -414,7 +431,42 @@ def get_gem_infos_from_all_repos() -> list:
 
         :return list of dicts containing gem infos.
     """
-    return list()
+    remote_gem_json_data_list = repo.get_gem_json_data_from_all_cached_repos(enabled_only)
+    if not remote_gem_json_data_list:
+        return list()
+
+    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+    if not engine_path:
+        logger.error("Failed to get engine path for remote gem compatibility checks")
+        return list() 
+
+    engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
+    if not engine_json_data:
+        logger.error("Failed to get engine json data remote gem compatibility checks")
+        return list() 
+
+    # get all gem json data by path so we can use it for detecting engine and project gems
+    # without re-opening and parsing gem.json files again
+    all_gem_json_data = manifest.get_gems_json_data_by_path(engine_path=engine_path,
+                                                            project_path=project_path,
+                                                            include_engine_gems=True,
+                                                            include_manifest_gems=True)
+
+    # first add all the known gems together before checking compatibility and dependencies
+    for i, gem_json_data in enumerate(remote_gem_json_data_list):
+        all_gem_json_data[i] = gem_json_data
+    
+    # do general compatibility checks - dependency resolution is too slow for now
+    for i, gem_json_data in enumerate(remote_gem_json_data_list):
+        incompatible_engine =  compatibility.get_incompatible_objects_for_engine(gem_json_data, engine_json_data)
+        if incompatible_engine:
+            remote_gem_json_data_list[i]['incompatible_engine_dependencies'] = incompatible_engine
+
+        incompatible_gem_dependencies = compatibility.get_incompatible_gem_dependencies(gem_json_data, all_gem_json_data)
+        if incompatible_gem_dependencies:
+            remote_gem_json_data_list[i]['incompatible_gem_dependencies'] = incompatible_gem_dependencies
+
+    return remote_gem_json_data_list
 
 
 def refresh_gem_repo(repo_uri: str):
@@ -430,3 +482,9 @@ def refresh_all_gem_repos():
         Call refresh_repos
     """
     pass
+
+def set_repo_enabled(repo_uri: str, enabled: bool) -> int:
+    """
+        Call set_repo_enabled 
+    """
+    return repo.set_repo_enabled(repo_uri, enabled)

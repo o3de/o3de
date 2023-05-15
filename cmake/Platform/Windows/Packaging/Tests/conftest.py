@@ -54,10 +54,10 @@ class SessionContext:
         self.project_bin_path = self.project_build_path / 'bin/profile'
 
         # start a log reader thread to print the output to screen
+        self.log_reader_shutdown = False
         self.log_reader = io.open(self.temp_file.name, 'r', buffering=1)
         self.log_reader_thread = threading.Thread(target=self._tail_log, daemon=True)
         self.log_reader_thread.start()
-        self.log_reader_shutdown = False
     
     def _tail_log(self):
         """ Tail the log file and print to screen for easy viewing in Jenkins. """

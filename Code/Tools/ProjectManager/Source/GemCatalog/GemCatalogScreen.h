@@ -47,19 +47,18 @@ namespace O3DE::ProjectManager
 
         void AddToGemModel(const GemInfo& gemInfo);
 
-        void ShowStandardToastNotification(const QString& notification);
-
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
     public slots:
+        void ShowStandardToastNotification(const QString& notification);
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnDependencyGemStatusChanged(const QString& gemName);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
         void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
-        void Refresh();
-        void UpdateGem(const QModelIndex& modelIndex);
+        void Refresh(bool refreshRemoteRepos = false);
+        void UpdateGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
         void UninstallGem(const QModelIndex& modelIndex, const QString& path);
         void DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
         void HandleGemCreated(const GemInfo& gemInfo);
@@ -105,6 +104,7 @@ namespace O3DE::ProjectManager
         bool m_notificationsEnabled = true;
         QString m_projectPath;
         bool m_readOnly;
+        bool m_needRefresh = false;
 
         QModelIndex m_curEditedIndex;
 

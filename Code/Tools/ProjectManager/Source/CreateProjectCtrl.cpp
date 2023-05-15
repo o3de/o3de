@@ -57,7 +57,6 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_stack);
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
-        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
         connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyProjectRemoved, m_projectGemCatalogScreen, &GemCatalogScreen::NotifyProjectRemoved);
 
 
@@ -224,6 +223,11 @@ namespace O3DE::ProjectManager
             if(auto outcome = CurrentScreenIsValid(); outcome.IsSuccess())
             {
                 m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
+                ScreenWidget* currentScreen = static_cast<ScreenWidget*>(m_stack->currentWidget());
+                if (currentScreen)
+                {
+                    currentScreen->NotifyCurrentScreen();
+                }
                 Update();
             }
             else if (!outcome.GetError().isEmpty())
@@ -243,6 +247,11 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() > 0)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            ScreenWidget* currentScreen = static_cast<ScreenWidget*>(m_stack->currentWidget());
+            if (currentScreen)
+            {
+                currentScreen->NotifyCurrentScreen();
+            }
             Update();
         }
     }
@@ -276,29 +285,35 @@ namespace O3DE::ProjectManager
             ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
             QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
 
-            auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
-            if (result.IsSuccess())
+            // create in 2 steps for better error handling
+            auto createResult = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo, /*registerProject*/false);
+            if (!createResult)
             {
-                // don't need to register here, the project is already registered in CreateProject()
-
-                const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
-                if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
-                {
-                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
-                }
-                if (gemResult != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
-                {
-                    return;
-                }
-
-                projectInfo.m_needsBuild = true;
-                emit NotifyBuildProject(projectInfo);
-                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+                const IPythonBindings::ErrorPair& error = createResult.GetError();
+                ProjectUtils::DisplayDetailedError(tr("Failed to create project"), error.first, error.second, this);
+                return;
             }
-            else
+
+            // RegisterProject will check compatibility and prompt user to continue if issues found
+            // it will also handle detailed error messaging
+            if(!ProjectUtils::RegisterProject(projectInfo.m_path, this))
             {
-                QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
+                return;
             }
+
+            const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
+            if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
+            {
+                QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+            }
+            if (gemResult != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
+            {
+                return;
+            }
+
+            projectInfo.m_needsBuild = true;
+            emit NotifyBuildProject(projectInfo);
+            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
         else
         {

@@ -131,6 +131,8 @@ namespace AzToolsFramework
             m_hotKeyManager = AZStd::make_unique<HotKeyManager>();
             m_menuManager = AZStd::make_unique<MenuManager>(m_defaultParentObject);
             m_toolBarManager = AZStd::make_unique<ToolBarManager>(m_defaultParentObject);
+
+            m_hotKeyWidgetRegistrationHelper = AZStd::make_unique<HotKeyWidgetRegistrationHelper>();
         }
     }
 

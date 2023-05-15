@@ -1801,6 +1801,7 @@ namespace PhysX
             D6JointLimitConfiguration::Reflect(context);
             JointGenericProperties::Reflect(context);
             JointLimitProperties::Reflect(context);
+            JointMotorProperties::Reflect(context);
             FixedJointConfiguration::Reflect(context);
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);

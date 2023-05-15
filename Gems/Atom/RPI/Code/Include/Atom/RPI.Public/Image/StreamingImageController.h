@@ -34,6 +34,7 @@ namespace AZ
         {
             friend class StreamingImagePool;
             friend class StreamingImage;
+            friend class StreamingImageContext;
 
         public:
             //! Create a StreamingImageController
@@ -63,6 +64,9 @@ namespace AZ
             //! Returns the number of images which are expanding their mipmaps
             uint32_t GetExpandingImageCount() const;
 
+            //! Returns the number of streamable images attached to this controller
+            uint32_t GetStreamableImageCount() const;
+
             //! Set mipmap bias to streaming images's streaming target
             //! For example, if the streaming image's streaming target is 0, and mipmap bias is 1, then the actual streaming target is 0+1
             //! The mipBias can be a negative value.
@@ -70,7 +74,7 @@ namespace AZ
             void SetMipBias(int16_t mipBias);
 
             int16_t GetMipBias() const;
-
+            
             //! Returns a streaming image's target mip level (with the global mip bias)
             uint16_t GetImageTargetMip(const StreamingImage* image) const;
 
@@ -87,24 +91,21 @@ namespace AZ
             // Stream in one mip chain for the streaming image with highest priority
             bool ExpandOneMipChain();
 
-            // For all the streaming images, evict mipmaps which are not needed (mips which have higher details than target mip level)
-            void EvictUnusedMips();
-
             // Evict mipmaps for specific image
             // Return true if any mipmaps were evicted
             bool EvictUnusedMips(StreamingImage* image);
 
-            // Called when the RHI::StreamingImagePool is low on memory for new allocation
-            bool OnHandleLowMemory();
+            // A callback function to release memory until the StreamingImagePool's device memory usage is same or less than the input number
+            bool ReleaseMemory(size_t targetMemoryUsage);
 
             // Get gpu memory usage of the streaming image pool
             size_t GetPoolMemoryUsage();
 
-            // Update image's priority
-            void UpdateImagePriority(StreamingImage* image);
+            // Insert image to expandable and evictable lists
+            void ReinsertImageToLists(StreamingImage* image);
 
-            // Calculate image's streaming priority value
-            StreamingImage::Priority CalculateImagePriority(StreamingImage* image) const;
+            // Called when the expanding of an image is finished or canceled
+            void EndExpandImage(StreamingImage* image);
 
             // Return whether an image need to expand its mipmap
             bool NeedExpand(const StreamingImage* image) const;
@@ -130,18 +131,36 @@ namespace AZ
             AZStd::mutex m_mipExpandMutex;
             AZStd::queue<StreamingImageContextPtr> m_mipExpandQueue;
 
-            // A sorted list of streaming images which mips can be streamed in/out.
-            // The images are sorted by their priority key, last access timestamp and their address (so there won't be same key from different images)
-            struct ImagePriorityComparator
+            // All the images which are managed by StreamingImageController
+            AZStd::set<StreamingImage*> m_streamableImages;
+
+            // All the images which are managed by StreamingImageController can be in one or few of the following lists
+            // m_expandableImages, m_evictableImages or m_expandingImages
+            // - When an image hasn't reached its target mipmap level, it will be in the m_expandableImages list
+            // - When an image has mipmaps that can be evicted, it's in m_evictableImages list
+            // - When an image is in the process of expanding, it will be removed from m_expandableImages and added to m_expandingImages list
+            // - It's possible for an image to be in both m_expandableImages and m_evictableImages list.
+            // - Expanding will be canceled when memory is low
+            // - When an image is done expanding or evicted, they will get re-inserted back into m_expandableImages and m_evictableImages list
+            
+            // A list of expandable images which are sorted by their expanding priority
+            struct ExpandPriorityComparator
             {
                 bool operator()(const StreamingImage* lhs, const StreamingImage* rhs) const;
             };
-            AZStd::set<StreamingImage*, ImagePriorityComparator> m_streamableImages;
-            // mutex for access the m_streamableImages
-            AZStd::mutex m_imageListAccessMutex;
+            AZStd::set<StreamingImage*, ExpandPriorityComparator> m_expandableImages;
+            // A list of images which have evictable mipmap. They are sorted by their evicting priority.
+            struct EvictPriorityComparator
+            {
+                bool operator()(const StreamingImage* lhs, const StreamingImage* rhs) const;
+            };
+
+            AZStd::set<StreamingImage*, EvictPriorityComparator> m_evictableImages;
+            // mutex for access the image lists
+            AZStd::recursive_mutex m_imageListAccessMutex;
 
             // The images which are expanding will be added to this list and removed from m_streamableImages list.
-            // Once their expanding are finished, they would be removed from this list and added back to m_streamableImages list
+            // Once their expansion is finished, they would be removed from this list and added back to m_evictableImages or/and m_expandableImages list
             AZStd::unordered_set<StreamingImage*> m_expandingImages;
 
             // A monotonically increasing counter used to track image mip requests. Useful for sorting contexts by LRU.

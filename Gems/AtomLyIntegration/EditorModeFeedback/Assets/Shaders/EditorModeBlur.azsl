@@ -7,16 +7,6 @@
  */
 
 #include <EditorModeCommon.azsli>
-#include <EditorModeDepthTransition.azsli>
-
-partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
-{
-    //! Width of kernel to apply box blur effect.
-    float m_kernelHalfWidth;
-
-    //! The direction to perform the blur (0 = horizontal, 1 = vertical).
-    uint m_direction;
-}
 
 //! Applies a box blur of the specified kernel width in the specified direction.
 float3 Blur(const float2 uv, const float2 uvDir, const float kernelHalfWidth)

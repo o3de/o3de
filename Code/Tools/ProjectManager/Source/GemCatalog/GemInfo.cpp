@@ -26,7 +26,16 @@ namespace O3DE::ProjectManager
     
     bool GemInfo::IsValid() const
     {
-        return !m_name.isEmpty() && !m_path.isEmpty();
+        // remote gems may not have a path because they haven't been downloaded
+        const bool isValidRemoteGem = (m_gemOrigin == Remote && m_downloadStatus == NotDownloaded);
+        return !m_name.isEmpty() && (!m_path.isEmpty() || isValidRemoteGem);
+    }
+
+    bool GemInfo::IsCompatible() const
+    {
+        const bool hasNoIncompatibleDependencies = m_incompatibleEngineDependencies.isEmpty()
+                                                && m_incompatibleGemDependencies.isEmpty();
+        return m_isEngineGem || hasNoIncompatibleDependencies;
     }
 
     QString GemInfo::GetPlatformString(Platform platform)

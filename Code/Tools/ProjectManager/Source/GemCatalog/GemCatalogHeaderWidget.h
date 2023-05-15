@@ -109,7 +109,7 @@ namespace O3DE::ProjectManager
         void AddGem();
         void CreateGem();
         void OpenGemsRepo();
-        void RefreshGems();
+        void RefreshGems(bool refreshRemoteRepos);
         void UpdateGemCart(QWidget* gemCart);
 
     protected slots:

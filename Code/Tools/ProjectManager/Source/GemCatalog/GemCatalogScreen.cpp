@@ -19,6 +19,7 @@
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <GemCatalog/GemItemDelegate.h>
+#include <GemRepo/GemRepoScreen.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>
@@ -79,7 +80,11 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        SetUpScreensControl(parent);
+        ScreensCtrl* screensCtrl = GetScreensCtrl(this);
+        if (screensCtrl)
+        {
+            connect(screensCtrl, &ScreensCtrl::NotifyRemoteContentRefreshed, [this]() { m_needRefresh = true; });
+        }
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -101,6 +106,7 @@ namespace O3DE::ProjectManager
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
         connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleEditGem);
         connect(m_gemInspector, &GemInspector::DownloadGem, this, &GemCatalogScreen::DownloadGem);
+        connect(m_gemInspector, &GemInspector::ShowToastNotification, this, &GemCatalogScreen::ShowStandardToastNotification);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(sidePanelWidth);
@@ -123,7 +129,7 @@ namespace O3DE::ProjectManager
         constexpr int minHeaderSectionWidth = AZStd::min(previewWidth, AZStd::min(versionWidth, statusWidth));
 
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
-            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Version"), tr("Status") },
+            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Latest Version"), tr("Status") },
             QVector<int>{ previewWidth,
                           GemItemDelegate::s_defaultSummaryStartX - previewWidth,
                           0, // Section is set to stretch to fit
@@ -159,9 +165,10 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(m_rightPanelStack);
         m_rightPanelStack->addWidget(m_gemInspector);
 
-        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
+        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC_CE("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
         m_notificationsView->SetMaxQueuedNotifications(1);
+        m_notificationsView->SetRejectDuplicates(false); // we want to show notifications if a user repeats actions
     }
 
     void GemCatalogScreen::SetUpScreensControl(QWidget* parent)
@@ -192,8 +199,13 @@ namespace O3DE::ProjectManager
             // init the read only catalog the first time it is shown
             ReinitForProject(m_projectPath);
         }
+        else if (m_needRefresh)
+        {
+            // generally we need to refresh because remote repos were updated
+            m_needRefresh = false;
+            Refresh();
+        }
     }
-
 
     void GemCatalogScreen::NotifyProjectRemoved(const QString& projectPath)
     {
@@ -294,7 +306,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::Refresh()
+    void GemCatalogScreen::Refresh(bool refreshRemoteRepos)
     {
         QSet<QPersistentModelIndex> validIndexes;
 
@@ -302,6 +314,11 @@ namespace O3DE::ProjectManager
         {
             const auto& indexes = m_gemModel->AddGems(outcome.GetValue(), /*updateExisting=*/true);
             validIndexes = QSet(indexes.cbegin(), indexes.cend());
+        }
+
+        if(refreshRemoteRepos)
+        {
+            PythonBindingsInterface::Get()->RefreshAllGemRepos();
         }
 
         if (const auto& outcome = PythonBindingsInterface::Get()->GetGemInfosForAllRepos(); outcome.IsSuccess())
@@ -355,7 +372,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
     {
-        if (m_notificationsEnabled)
+        if (m_notificationsEnabled && !m_readOnly)
         {
             auto modelIndex = m_gemModel->FindIndexByNameString(gemName);
             bool added = GemModel::IsAdded(modelIndex);
@@ -375,6 +392,7 @@ namespace O3DE::ProjectManager
                 const QString& newVersion = GemModel::GetNewVersion(modelIndex);
                 const QString& version = newVersion.isEmpty() ? gemInfo.m_version : newVersion;
 
+
                 // avoid showing the version twice if it's already in the display name
                 if (gemInfo.m_isEngineGem || (version.isEmpty() || gemInfo.m_displayName.contains(version) || version.contains("Unknown", Qt::CaseInsensitive)))
                 {
@@ -389,11 +407,25 @@ namespace O3DE::ProjectManager
                 {
                     notification += tr(" and ");
                 }
-                if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
-                    (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
+
+                if (added)
                 {
-                    m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "", DownloadController::DownloadObjectType::Gem);
-                    GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
+                    if (newVersion.isEmpty() && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
+                        (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
+                    {
+                        // download the current version
+                        DownloadGem(modelIndex, gemInfo.m_version, gemInfo.m_path);
+                    }
+                    else if (!newVersion.isEmpty())
+                    {
+                        const GemInfo& newVersionGemInfo = GemModel::GetGemInfo(modelIndex, newVersion);
+                        if (newVersionGemInfo.m_downloadStatus == GemInfo::DownloadStatus::NotDownloaded ||
+                            GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed)
+                        {
+                            // download the new version
+                            DownloadGem(modelIndex, newVersionGemInfo.m_version, newVersionGemInfo.m_path);
+                        }
+                    }
                 }
             }
 
@@ -451,9 +483,9 @@ namespace O3DE::ProjectManager
         ShowInspector();
     }
 
-    void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
+    void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
-        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex);
+        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, version, path);
 
         if (!gemInfo.m_repoUri.isEmpty())
         {
@@ -486,21 +518,30 @@ namespace O3DE::ProjectManager
             }
         }
 
+        // include the version if valid
+        auto outcome = AZ::SemanticVersion::ParseFromString(version.toUtf8().constData());
+        const QString gemName = outcome ? QString("%1==%2").arg(gemInfo.m_name, version) : gemInfo.m_name;
+
         // Check if there is an update avaliable now that repo is refreshed
-        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemInfo.m_name, gemInfo.m_lastUpdatedDate);
+        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemName, gemInfo.m_lastUpdatedDate);
 
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(gemInfo.m_name, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddObjectDownload(gemInfo.m_name, "" , DownloadController::DownloadObjectType::Gem);
+            DownloadGem(modelIndex, version, path);
         }
     }
 
     void GemCatalogScreen::DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
-        const QString gemDisplayName = m_gemModel->GetDisplayName(modelIndex);
         const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, version, path);
-        m_downloadController->AddObjectDownload(gemInfo.m_name, "" , DownloadController::DownloadObjectType::Gem);
+
+        // include the version if valid
+        auto outcome = AZ::SemanticVersion::ParseFromString(version.toUtf8().constData());
+        const QString gemName = outcome ? QString("%1==%2").arg(gemInfo.m_name, version) : gemInfo.m_name;
+        m_downloadController->AddObjectDownload(gemName, "" , DownloadController::DownloadObjectType::Gem);
+
+        GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
     }
 
     void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex, const QString& path)
@@ -629,7 +670,7 @@ namespace O3DE::ProjectManager
         {
             m_gemModel->AddGems(allGemInfosResult.GetValue());
 
-            const auto& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
+            const auto& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos(projectPath);
             if (allRepoGemInfosResult.IsSuccess())
             {
                 m_gemModel->AddGems(allRepoGemInfosResult.GetValue());
@@ -716,7 +757,8 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnGemDownloadResult(const QString& gemName, bool succeeded)
     {
-        const auto index = m_gemModel->FindIndexByNameString(gemName);
+        QString gemNameWithoutVersionSpecifier =  ProjectUtils::GetDependencyName(gemName);
+        const auto index = m_gemModel->FindIndexByNameString(gemNameWithoutVersionSpecifier);
         if (succeeded)
         {
             Refresh();

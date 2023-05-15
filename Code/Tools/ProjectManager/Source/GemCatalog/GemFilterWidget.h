@@ -90,7 +90,7 @@ namespace O3DE::ProjectManager
         explicit GemFilterWidget(GemSortFilterProxyModel* filterProxyModel, QWidget* parent = nullptr);
         ~GemFilterWidget() = default;
 
-        void UpdateAllFilters(bool clearCheckBoxes = true);
+        void UpdateAllFilters(bool resetCheckBoxes = true);
 
     private slots:
         void OnStatusFilterToggled(QAbstractButton* button, bool checked);

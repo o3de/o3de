@@ -57,7 +57,10 @@ namespace O3DE::ProjectManager
         QString m_license;
         QStringList m_userTags;
 
-        //! Used as temp variable for replace images
+        QStringList m_requiredGemDependencies;
+        QStringList m_optionalGemDependencies;
+
+        // Used as temp variable for replace images
         QString m_newPreviewImagePath;
         QString m_newBackgroundImagePath;
 

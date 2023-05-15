@@ -17,6 +17,7 @@
 #include <DownloadController.h>
 
 #include <QQueue>
+#include <QVector>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPaintEvent)
@@ -77,9 +78,11 @@ namespace O3DE::ProjectManager
         QFrame* CreateFirstTimeContent();
         QFrame* CreateProjectsContent();
         ProjectButton* CreateProjectButton(const ProjectInfo& project, const EngineInfo& engine);
-        void ResetProjectsContent();
-        bool ShouldDisplayFirstTimeContent();
-        bool RemoveInvalidProjects();
+        QVector<ProjectInfo> GetAllProjects();
+        void UpdateWithProjects(const QVector<ProjectInfo>& projects);
+        void UpdateIfCurrentScreen();
+        bool ShouldDisplayFirstTimeContent(bool projectsFound);
+        void RemoveProjectButtonsFromFlowLayout(const QVector<ProjectInfo>& projectsToKeep);
 
         bool StartProjectBuild(const ProjectInfo& projectInfo);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);

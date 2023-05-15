@@ -67,6 +67,8 @@ set(FILES
     Rules/SkinRule.cpp
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
+    Rules/UVsRule.h
+    Rules/UVsRule.cpp
     Rules/UnmodifiableRule.h
     Rules/UnmodifiableRule.cpp
     GraphData/CustomPropertyData.h

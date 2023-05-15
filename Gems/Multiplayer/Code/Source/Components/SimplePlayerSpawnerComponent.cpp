@@ -88,7 +88,17 @@ namespace Multiplayer
         }
 
         const AZ::EntityId spawnPointEntityId = m_spawnPoints[m_spawnIndex];
-        AZ::Transform spawnPointTransform;
+
+        if (!spawnPointEntityId.IsValid())
+        {
+            AZ_Assert(
+                false,
+                "Empty spawner entry at m_spawnIndex %i. Please ensure spawn index is always valid.",
+                m_spawnIndex);
+            return AZ::Transform::Identity();
+        }
+
+        AZ::Transform spawnPointTransform = AZ::Transform::Identity();
         AZ::TransformBus::EventResult(spawnPointTransform, spawnPointEntityId, &AZ::TransformInterface::GetWorldTM);
         return spawnPointTransform;
     }

@@ -312,6 +312,9 @@ MainWindow::MainWindow(QWidget* parent)
         m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
         m_toolbarManager = new ToolbarManager(m_actionManager, this);
         m_levelEditorMenuHandler = new LevelEditorMenuHandler(this, m_viewPaneManager);
+        connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
+            m_assetImporterManager->Exec();
+        });
     }
 
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
@@ -334,10 +337,6 @@ MainWindow::MainWindow(QWidget* parent)
 
     AssetImporterDragAndDropHandler* assetImporterDragAndDropHandler = new AssetImporterDragAndDropHandler(this, m_assetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManager, this, &MainWindow::OnOpenAssetImporterManager);
-
-    connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
-        m_assetImporterManager->Exec();
-    });
 
     setFocusPolicy(Qt::StrongFocus);
 

@@ -14,6 +14,7 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManager.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManager.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManager.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManager.h>
 
@@ -46,6 +47,8 @@ namespace AzToolsFramework
         AZStd::unique_ptr<HotKeyManager> m_hotKeyManager = nullptr;
         AZStd::unique_ptr<MenuManager> m_menuManager = nullptr;
         AZStd::unique_ptr<ToolBarManager> m_toolBarManager = nullptr;
+
+        AZStd::unique_ptr<HotKeyWidgetRegistrationHelper> m_hotKeyWidgetRegistrationHelper = nullptr;
 
         QWidget* m_defaultParentObject = nullptr;
     };
