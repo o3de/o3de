@@ -208,7 +208,8 @@ namespace AzToolsFramework
                         continue;
                     }
                     if (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()) ||
-                         entry->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()))
+                        entry->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) ||
+                        entry->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
                     {
                         AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
                     }
@@ -315,6 +316,13 @@ namespace AzToolsFramework
 
             AssetBrowserFavoriteItem* favoriteItem = static_cast<AssetBrowserFavoriteItem*>(favorite.internalPointer());
             Select(favoriteItem);
+        }
+
+        void AssetBrowserFavoritesModel::UpdateSearchItem(SearchAssetBrowserFavoriteItem* searchItem)
+        {
+            searchItem->SetupFromSearchWidget(m_searchWidget);
+
+            AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::SaveFavorites);
         }
 
         void AssetBrowserFavoritesModel::SetParentView(AssetBrowserFavoritesView* parentView)

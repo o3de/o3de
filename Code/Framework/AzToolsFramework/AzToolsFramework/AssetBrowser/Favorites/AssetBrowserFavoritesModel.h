@@ -30,6 +30,7 @@ namespace AzToolsFramework
         class AssetBrowserFavoriteItem;
         class AssetBrowserFavoritesView;
         class EntryAssetBrowserFavoriteItem;
+        class SearchAssetBrowserFavoriteItem;
 
         class AssetBrowserFavoritesModel
             : public QAbstractItemModel
@@ -48,6 +49,8 @@ namespace AzToolsFramework
 
             void Select(AssetBrowserFavoriteItem* favoriteItem);
             void Select(const QModelIndex& favorite);
+
+            void UpdateSearchItem(SearchAssetBrowserFavoriteItem* searchItem);
 
             void SetParentView(AssetBrowserFavoritesView* parentView);
 

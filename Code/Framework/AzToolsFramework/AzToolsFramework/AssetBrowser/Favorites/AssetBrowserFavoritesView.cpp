@@ -96,6 +96,13 @@ namespace AzToolsFramework
                         {
                             m_favoritesModel.data()->Select(favoriteItem);
                         });
+                    menu.addAction(
+                        QObject::tr("Update"),
+                        [this, favoriteItem]()
+                        {
+                            SearchAssetBrowserFavoriteItem* searchFavorite = static_cast<SearchAssetBrowserFavoriteItem*>(favoriteItem);
+                            m_favoritesModel.data()->UpdateSearchItem(searchFavorite);
+                        });
                 }
                 menu.addAction(
                     QObject::tr("Remove from Favorites"),
@@ -141,7 +148,8 @@ namespace AzToolsFramework
 
         void AssetBrowserFavoritesView::dragMoveEvent(QDragMoveEvent* event)
         {
-            if (event->mimeData()->hasFormat(AssetBrowserEntry::GetMimeType()))
+            if (event->mimeData()->hasFormat(AssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(FolderAssetBrowserEntry::GetMimeType()))
             {
                 return;
             }
