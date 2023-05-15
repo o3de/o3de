@@ -165,6 +165,7 @@ namespace AzToolsFramework
     protected:
         // we automatically take care of the rest:
         // --------------------- Internal Implementation ------------------------------
+        virtual void ResetGUIToDefaults_Internal(QWidget* widget) = 0;
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* attrValue) = 0;
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         virtual void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) = 0;
@@ -326,6 +327,12 @@ namespace AzToolsFramework
                 }
             }
 
+            if (m_widget)
+            {
+                // Reset existing widget attributes and properties before reuse
+                m_rpeHandler.ResetGUIToDefaults_Internal(m_widget);
+            }
+
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
 
@@ -405,6 +412,12 @@ namespace AzToolsFramework
     public:
         typedef WidgetType widget_t;
 
+        // resets widget attributes and properties for reuse
+        virtual void ResetGUIToDefaults(WidgetType* widget)
+        {
+            (void)widget;
+        }
+
         // this will be called in order to initialize your gui.  Your class will be fed one attribute at a time
         // you can interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
         // all attributes can either be a flat value, or a function which returns that same type.  In the case of the function
@@ -449,6 +462,12 @@ namespace AzToolsFramework
 
     protected:
         // ---------------- INTERNAL -----------------------------
+        virtual void ResetGUIToDefaults_Internal(QWidget* widget) override
+        {
+            WidgetType* wid = static_cast<WidgetType*>(widget);
+            ResetGUIToDefaults(wid);
+        }
+
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* dataNode) override;
 
         virtual QWidget* GetFirstInTabOrder_Internal(QWidget* widget) override

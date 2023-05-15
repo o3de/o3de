@@ -85,9 +85,9 @@ namespace AzToolsFramework
         m_pSpinBox->setValue(value);
         m_pSpinBox->blockSignals(false);
 
-        //the value didn't change, so don't send a notify
-        if (!AZ::ClampIfCloseMag(value, oldValue) && notifyLater)
+        if (notifyLater)
         {
+            // Send a change notification for value being clamped to min/max
             float newValue = static_cast<float>(m_pSpinBox->value());
             // queue an invocation of value changed next tick after everything is good.)
             QTimer::singleShot(0, this, [this, newValue]() { Q_EMIT valueChanged(newValue); });
@@ -339,6 +339,20 @@ namespace AzToolsFramework
         newCtrl->setMaximum(std::numeric_limits<float>::max());
 
         return newCtrl;
+    }
+
+    void doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    {
+        GUI->setMinimum(-DBL_MAX);
+        GUI->setMaximum(DBL_MAX);
+        GUI->setStep(1);
+    }
+
+    void floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    {
+        GUI->setMinimum(std::numeric_limits<float>::lowest());
+        GUI->setMaximum(std::numeric_limits<float>::max());
+        GUI->setStep(1);
     }
 
     void doublePropertySpinboxHandler::ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)
