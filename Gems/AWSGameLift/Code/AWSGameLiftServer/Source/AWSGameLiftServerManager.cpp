@@ -74,7 +74,7 @@ AZ_CVAR(
     "",
     nullptr,
     AZ::ConsoleFunctorFlags::DontReplicate,
-    "Unique string to ."
+    "Unique string to indentify the process. Defaults to a string generated from the current timestamp."
 );
 
 namespace AWSGameLift
