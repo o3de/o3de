@@ -121,6 +121,13 @@ UiTransform2dComponent::UiTransform2dComponent()
     : m_pivot(AZ::Vector2(0.5f, 0.5f))
     , m_rotation(0.0f)
     , m_scale(AZ::Vector2(1.0f, 1.0f))
+
+    // carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+    , m_isFlooringOffsets(false)
+#endif
+    // carbonated end
+
     , m_scaleToDeviceMode(ScaleToDeviceMode::None)
     , m_recomputeTransformToViewport(true)
     , m_recomputeTransformToCanvasSpace(true)
@@ -233,6 +240,26 @@ void UiTransform2dComponent::SetPivotY(float pivot)
 {
     return SetPivot(AZ::Vector2(m_pivot.GetX(), pivot));
 }
+
+// carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+bool UiTransform2dComponent::GetIsFlooringOffsets()
+{
+    return m_isFlooringOffsets;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiTransform2dComponent::SetIsFlooringOffsets(bool isFlooringOffsets)
+{
+    if (m_isFlooringOffsets != isFlooringOffsets)
+    {
+        m_isFlooringOffsets = isFlooringOffsets;
+        SetRecomputeFlags(UiTransformInterface::Recompute::RectOnly);
+    }
+}
+#endif
+// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiTransform2dComponent::ScaleToDeviceMode UiTransform2dComponent::GetScaleToDeviceMode()
@@ -764,6 +791,18 @@ void UiTransform2dComponent::SetRecomputeFlags(Recompute recompute)
         return;
     }
 
+    // carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+    if (m_isFlooringOffsets && (recompute == Recompute::RectOnly || recompute == Recompute::RectAndTransform))
+    {
+        m_offsets.m_right = floorf(m_offsets.m_right);
+        m_offsets.m_left = floorf(m_offsets.m_left);
+        m_offsets.m_top = floorf(m_offsets.m_top);
+        m_offsets.m_bottom = floorf(m_offsets.m_bottom);
+    }
+#endif
+    // carbonated end
+
     if (recompute == Recompute::RectOnly && HasScaleOrRotation())
     {
         // if this element has scale or rotation then a rect change will require the transforms to be recomputed
@@ -1189,12 +1228,27 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiTransform2dComponent, AZ::Component>()
+
+            // carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+            ->Version(4, &VersionConverter)
+#else
             ->Version(3, &VersionConverter)
+#endif
+            // carbonated end
+
             ->Field("Anchors", &UiTransform2dComponent::m_anchors)
             ->Field("Offsets", &UiTransform2dComponent::m_offsets)
             ->Field("Pivot", &UiTransform2dComponent::m_pivot)
             ->Field("Rotation", &UiTransform2dComponent::m_rotation)
             ->Field("Scale", &UiTransform2dComponent::m_scale)
+
+            // carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+            ->Field("IsFlooringOffsets", &UiTransform2dComponent::m_isFlooringOffsets)
+#endif
+            // carbonated end
+
             ->Field("ScaleToDevice", &UiTransform2dComponent::m_scaleToDeviceMode);
 
         // EditContext. Note that the Transform component is unusual in that we want to hide the
@@ -1268,6 +1322,16 @@ void UiTransform2dComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiTransform2dComponent::OnTransformPropertyChanged)
                 ->Attribute(AZ::Edit::Attributes::Min, -AZ::Constants::MaxFloatBeforePrecisionLoss)
                 ->Attribute(AZ::Edit::Attributes::Max, AZ::Constants::MaxFloatBeforePrecisionLoss);
+
+            // carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+            editInfo->DataElement(
+                AZ::Edit::UIHandlers::CheckBox,
+                &UiTransform2dComponent::m_isFlooringOffsets,
+                "Floor offsets",
+                "When checked, this element's offsets are floored");
+#endif
+            // carbonated end
 
             editInfo->DataElement(AZ::Edit::UIHandlers::ComboBox, &UiTransform2dComponent::m_scaleToDeviceMode, "Scale to device",
                 "Controls how this element and all its children will be scaled to allow for\n"

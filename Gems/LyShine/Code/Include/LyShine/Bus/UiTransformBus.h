@@ -176,6 +176,16 @@ public: // member functions
     //! between the authored canvas size and the actual viewport size.
     virtual void SetScaleToDeviceMode(ScaleToDeviceMode scaleToDeviceMode) = 0;
 
+    // carbonated begin (alukyanov/lyshine-related)
+#if defined(CARBONATED)
+    //! Get whether the element's offsets should be floored when changed
+    virtual bool GetIsFlooringOffsets() = 0;
+
+    //! Set whether the element's offsets should be floored when changed
+    virtual void SetIsFlooringOffsets(bool isFlooringOffsets) = 0;
+#endif
+    // carbonated end
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     // Methods to get data in viewport space
     //
