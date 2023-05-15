@@ -248,7 +248,6 @@ bool UiTransform2dComponent::GetIsFlooringOffsets()
 {
     return m_isFlooringOffsets;
 }
-// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTransform2dComponent::SetIsFlooringOffsets(bool isFlooringOffsets)
@@ -260,6 +259,7 @@ void UiTransform2dComponent::SetIsFlooringOffsets(bool isFlooringOffsets)
     }
 }
 #endif
+// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 UiTransform2dComponent::ScaleToDeviceMode UiTransform2dComponent::GetScaleToDeviceMode()
