@@ -8,6 +8,12 @@
 
 cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of "if(NOT ${same_location})"
 
+cmake_path(SET target_file_dir "@target_file_dir@")
+set(target_copy_dependencies "@target_copy_dependencies)
+set(target_target_dependencies "@target_target_dependencies)
+set(target_link_dependencies "@target_link_dependencies)
+set(target_imported_dependencies "@target_imported_dependencies)
+
 function(ly_copy source_files target_directory)
     foreach(source_file IN LISTS source_files)
         cmake_path(GET source_file FILENAME target_filename)

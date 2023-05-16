@@ -695,11 +695,21 @@ endfunction()"
 
         # runtime dependencies that need to be copied to the output
         set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
-        ly_get_runtime_dependencies(runtime_dependencies ${target})
-        foreach(runtime_dependency ${runtime_dependencies})
+        unset(target_copy_dependencies)
+        unset(target_target_dependencies)
+        unset(target_link_dependencies)
+        unset(target_imported_dependencies)
+        o3de_get_dependencies_for_target(
+            TARGET "${target}"
+            COPY_DEPENDENCIES_VAR target_copy_dependencies
+            TARGET_DEPENDENCIES_VAR target_target_dependencies
+            LINK_DEPENDENCIES_VAR target_link_dependencies
+            IMPORTED_DEPENDENCIES_VAR target_imported_dependencies
+        )
+        foreach(runtime_dependency IN_LISTS target_copy_dependencies target_target_dependencies
+            target_link_dependencies target_imported_dependencies)
             unset(runtime_command)
-            unset(runtime_depend) # unused, but required to be passed to ly_get_runtime_dependency_command
-            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
+            o3de_get_command_for_dependency(COMMAND_VAR runtime_command DEPENDENCY ${runtime_dependency})
             string(CONFIGURE "${runtime_command}" runtime_command @ONLY)
             list(APPEND runtime_commands ${runtime_command})
         endforeach()
