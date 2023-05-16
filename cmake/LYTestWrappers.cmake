@@ -66,14 +66,14 @@ function(ly_strip_target_namespace)
     set(${ly_strip_target_namespace_OUTPUT_VARIABLE} ${stripped_target} PARENT_SCOPE)
 endfunction()
 
-#! ly_add_test: Adds a new RUN_TEST using for the specified target using the supplied command
+#! ly_add_test: Adds a new RUN_TEST for the specified target using the supplied command
 #
-# \arg:NAME - Name to for the test run target
+# \arg:NAME - Name of the test run target
 # \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "benchmark" or "sandbox" or "awsi" - prevents the test from running normally
-#      and instead places it a special suite of tests that only run when requested.
+#      and instead places it in a special suite of tests that only run when requested.
 #      Otherwise, do not specify a TEST_SUITE value and the default ("main") will apply.
 #      "smoke" is tiny, quick tests of fundamental operation (tests with no suite marker will also execute here in CI)
 #      "periodic" is low-priority verification, which should not block code submission
@@ -95,6 +95,10 @@ endfunction()
 #      ly_add_* function below, not by user code
 # sets LY_ADDED_TEST_NAME to the fully qualified name of the test, in parent scope
 function(ly_add_test)
+    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        return()
+    endif()
+
     set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
     set(one_value_args NAME PARENT_NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
     set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
