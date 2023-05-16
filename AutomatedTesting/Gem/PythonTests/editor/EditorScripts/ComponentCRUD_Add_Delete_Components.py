@@ -114,7 +114,7 @@ def ComponentCRUD_Add_Delete_Components():
 
         # 4) Add/verify Box Shape Component
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         add_comp_btn = entity_inspector.findChild(QtWidgets.QPushButton, "m_addComponentButton")
         await add_component("Box Shape")
         Report.result(Tests.box_component_added, hydra.has_components(entity_id, ['Box Shape']))

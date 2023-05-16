@@ -25,7 +25,7 @@ endfunction()
 #! read_json_array
 #  Reads the a json array field into a cmake list variable
 function(o3de_read_json_array read_output_array input_json_path array_key)
-    ly_file_read(${input_json_path} manifest_json_data)
+    o3de_file_read_cache(${input_json_path} manifest_json_data)
     string(JSON array_count ERROR_VARIABLE manifest_json_error
         LENGTH ${manifest_json_data} ${array_key})
     if(manifest_json_error)

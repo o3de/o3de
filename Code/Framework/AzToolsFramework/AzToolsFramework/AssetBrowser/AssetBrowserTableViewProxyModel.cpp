@@ -7,7 +7,7 @@
  */
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
@@ -16,14 +16,14 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        AssetBrowserExpandedTableViewProxyModel::AssetBrowserExpandedTableViewProxyModel(QObject* parent)
+        AssetBrowserTableViewProxyModel::AssetBrowserTableViewProxyModel(QObject* parent)
             : QIdentityProxyModel(parent)
         {
         }
 
-        AssetBrowserExpandedTableViewProxyModel::~AssetBrowserExpandedTableViewProxyModel() = default;
+        AssetBrowserTableViewProxyModel::~AssetBrowserTableViewProxyModel() = default;
 
-        QVariant AssetBrowserExpandedTableViewProxyModel::data(const QModelIndex& index, int role) const
+        QVariant AssetBrowserTableViewProxyModel::data(const QModelIndex& index, int role) const
         {
             auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
             AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
@@ -96,7 +96,7 @@ namespace AzToolsFramework
             return QAbstractProxyModel::data(index, role);
         }
 
-        QVariant AssetBrowserExpandedTableViewProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
+        QVariant AssetBrowserTableViewProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
             switch (role)
             {
@@ -117,7 +117,7 @@ namespace AzToolsFramework
             return QVariant();
         }
 
-        bool AssetBrowserExpandedTableViewProxyModel::hasChildren(const QModelIndex& parent) const
+        bool AssetBrowserTableViewProxyModel::hasChildren(const QModelIndex& parent) const
         {
             if (parent != m_rootIndex)
             {
@@ -126,27 +126,27 @@ namespace AzToolsFramework
             return true;
         }
 
-        int AssetBrowserExpandedTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const
+        int AssetBrowserTableViewProxyModel::columnCount([[maybe_unused]]const QModelIndex& parent) const
         {
             return ColumnCount;
         }
 
-        void AssetBrowserExpandedTableViewProxyModel::SetRootIndex(const QModelIndex& index)
+        void AssetBrowserTableViewProxyModel::SetRootIndex(const QModelIndex& index)
         {
             m_rootIndex = index;
         }
 
-        const QModelIndex AssetBrowserExpandedTableViewProxyModel::GetRootIndex() const
+        const QModelIndex AssetBrowserTableViewProxyModel::GetRootIndex() const
         {
             return m_rootIndex;
         }
 
-        bool AssetBrowserExpandedTableViewProxyModel::GetShowSearchResultsMode() const
+        bool AssetBrowserTableViewProxyModel::GetShowSearchResultsMode() const
         {
             return m_searchResultsMode;
         }
 
-        void AssetBrowserExpandedTableViewProxyModel::SetShowSearchResultsMode(bool searchMode)
+        void AssetBrowserTableViewProxyModel::SetShowSearchResultsMode(bool searchMode)
         {
             if (m_searchResultsMode != searchMode)
             {
@@ -160,7 +160,7 @@ namespace AzToolsFramework
             return AZStd::hash<AZStd::string_view>{}(AZStd::string_view{ str, len });
         }
 
-        const AZStd::string AssetBrowserExpandedTableViewProxyModel::ExtensionToType(AZStd::string_view str) const
+        const AZStd::string AssetBrowserTableViewProxyModel::ExtensionToType(AZStd::string_view str) const
         {
             switch (AZStd::hash<AZStd::string_view>{}(str))
             {

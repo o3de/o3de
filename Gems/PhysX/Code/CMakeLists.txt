@@ -47,7 +47,7 @@ ly_add_target(
             AZ::AzFramework
             Legacy::CryCommon
         PRIVATE
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
 )
 
 ly_add_target(
@@ -67,7 +67,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::PhysX.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -140,8 +140,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::PhysX.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
     )
 
     # use the PhysX.Editor module in dev tools:

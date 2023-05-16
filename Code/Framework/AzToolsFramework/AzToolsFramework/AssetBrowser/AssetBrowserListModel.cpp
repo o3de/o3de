@@ -6,7 +6,7 @@
  *
  */
 #include <AssetBrowser/AssetBrowserFilterModel.h>
-#include <AssetBrowser/AssetBrowserTableModel.h>
+#include <AssetBrowser/AssetBrowserListModel.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -17,28 +17,28 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        AssetBrowserTableModel::AssetBrowserTableModel(QObject* parent /* = nullptr */)
+        AssetBrowserListModel::AssetBrowserListModel(QObject* parent /* = nullptr */)
             : QSortFilterProxyModel(parent)
         {
         }
 
-        void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
+        void AssetBrowserListModel::setSourceModel(QAbstractItemModel* sourceModel)
         {
             m_filterModel = qobject_cast<AssetBrowserFilterModel*>(sourceModel);
             AZ_Assert(
                 m_filterModel,
-                "Error in AssetBrowserTableModel initialization, class expects source model to be an AssetBrowserFilterModel.");
+                "Error in AssetBrowserListModel initialization, class expects source model to be an AssetBrowserFilterModel.");
 
             QSortFilterProxyModel::setSourceModel(sourceModel);
 
-            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
-            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
-            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserTableModel::StartUpdateModelMapTimer);
-            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserTableModel::UpdateTableModelMaps);
-            connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserTableModel::SourceDataChanged);
+            connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserListModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserListModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserListModel::StartUpdateModelMapTimer);
+            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserListModel::UpdateTableModelMaps);
+            connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserListModel::SourceDataChanged);
         }
 
-        QModelIndex AssetBrowserTableModel::mapToSource(const QModelIndex& proxyIndex) const
+        QModelIndex AssetBrowserListModel::mapToSource(const QModelIndex& proxyIndex) const
         {
             Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() == this);
             if (!proxyIndex.isValid() || !m_indexMap.contains(proxyIndex.row()))
@@ -48,7 +48,7 @@ namespace AzToolsFramework
             return m_indexMap[proxyIndex.row()];
         }
 
-        QModelIndex AssetBrowserTableModel::mapFromSource(const QModelIndex& sourceIndex) const
+        QModelIndex AssetBrowserListModel::mapFromSource(const QModelIndex& sourceIndex) const
         {
             Q_ASSERT(!sourceIndex.isValid() || sourceIndex.model() == sourceModel());
             if (!sourceIndex.isValid() || !m_rowMap.contains(sourceIndex))
@@ -59,12 +59,12 @@ namespace AzToolsFramework
             return createIndex(m_rowMap[sourceIndex], sourceIndex.column());
         }
 
-        bool AssetBrowserTableModel::filterAcceptsRow(int source_row, [[maybe_unused]] const QModelIndex& source_parent) const
+        bool AssetBrowserListModel::filterAcceptsRow(int source_row, [[maybe_unused]] const QModelIndex& source_parent) const
         {
             return m_indexMap.contains(source_row);
         }
 
-        QVariant AssetBrowserTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+        QVariant AssetBrowserListModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
             if (role == Qt::DisplayRole && orientation == Qt::Horizontal)
             {
@@ -73,24 +73,24 @@ namespace AzToolsFramework
             return QSortFilterProxyModel::headerData(section, orientation, role);
         }
 
-        QVariant AssetBrowserTableModel::data(const QModelIndex& index, int role) const
+        QVariant AssetBrowserListModel::data(const QModelIndex& index, int role) const
         {
             Q_ASSERT(index.isValid() && index.model() == this);
             return sourceModel()->data(mapToSource(index), role);
         }
 
-        QModelIndex AssetBrowserTableModel::parent([[maybe_unused]] const QModelIndex& child) const
+        QModelIndex AssetBrowserListModel::parent([[maybe_unused]] const QModelIndex& child) const
         {
             return QModelIndex();
         }
 
-        QModelIndex AssetBrowserTableModel::sibling(
+        QModelIndex AssetBrowserListModel::sibling(
             [[maybe_unused]] int row, [[maybe_unused]] int column, [[maybe_unused]] const QModelIndex& idx) const
         {
             return QModelIndex();
         }
 
-        void AssetBrowserTableModel::SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
+        void AssetBrowserListModel::SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight)
         {
             for (int row = topLeft.row(); row <= bottomRight.row(); ++row)
             {
@@ -102,26 +102,26 @@ namespace AzToolsFramework
             }
         }
 
-        QModelIndex AssetBrowserTableModel::index(int row, int column, const QModelIndex& parent) const
+        QModelIndex AssetBrowserListModel::index(int row, int column, const QModelIndex& parent) const
         {
             Q_ASSERT(!parent.isValid());
 
             return parent.isValid() ? QModelIndex() : createIndex(row, column, m_indexMap[row].internalPointer());
         }
 
-        int AssetBrowserTableModel::rowCount(const QModelIndex& parent) const
+        int AssetBrowserListModel::rowCount(const QModelIndex& parent) const
         {
             return !parent.isValid() ? m_indexMap.size() : 0;
         }
 
-        void AssetBrowserTableModel::timerEvent([[maybe_unused]] QTimerEvent* event)
+        void AssetBrowserListModel::timerEvent([[maybe_unused]] QTimerEvent* event)
         {
             killTimer(m_updateModelMapTimerId);
             m_updateModelMapTimerId = 0;
             UpdateTableModelMaps();
         }
 
-        void AssetBrowserTableModel::StartUpdateModelMapTimer()
+        void AssetBrowserListModel::StartUpdateModelMapTimer()
         {
             constexpr int ModelRefreshWaitTimeMS = 250;
             if (m_updateModelMapTimerId > 0)
@@ -131,7 +131,7 @@ namespace AzToolsFramework
             m_updateModelMapTimerId = startTimer(ModelRefreshWaitTimeMS);
         }
 
-        int AssetBrowserTableModel::BuildTableModelMap(
+        int AssetBrowserListModel::BuildTableModelMap(
             const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
         {
             int rows = model ? model->rowCount(parent) : 0;
@@ -176,7 +176,7 @@ namespace AzToolsFramework
             return row;
         }
 
-        AssetBrowserEntry* AssetBrowserTableModel::GetAssetEntry(QModelIndex index) const
+        AssetBrowserEntry* AssetBrowserListModel::GetAssetEntry(QModelIndex index) const
         {
             if (!index.isValid())
             {
@@ -186,7 +186,7 @@ namespace AzToolsFramework
             return static_cast<AssetBrowserEntry*>(index.internalPointer());
         }
 
-        void AssetBrowserTableModel::UpdateTableModelMaps()
+        void AssetBrowserListModel::UpdateTableModelMaps()
         {
             beginResetModel();
             emit layoutAboutToBeChanged();
@@ -203,12 +203,12 @@ namespace AzToolsFramework
             endResetModel();
         }
         
-        Qt::DropActions AssetBrowserTableModel::supportedDropActions() const
+        Qt::DropActions AssetBrowserListModel::supportedDropActions() const
         {
             return Qt::CopyAction | Qt::MoveAction;
         }
 
-        Qt::ItemFlags AssetBrowserTableModel::flags(const QModelIndex& index) const
+        Qt::ItemFlags AssetBrowserListModel::flags(const QModelIndex& index) const
         {
             Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 
@@ -233,7 +233,7 @@ namespace AzToolsFramework
             return defaultFlags;
         }
 
-        bool AssetBrowserTableModel::dropMimeData(
+        bool AssetBrowserListModel::dropMimeData(
             const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {
             if (action == Qt::IgnoreAction)
@@ -279,7 +279,7 @@ namespace AzToolsFramework
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
         }
 
-        QMimeData* AssetBrowserTableModel::mimeData(const QModelIndexList& indexes) const
+        QMimeData* AssetBrowserListModel::mimeData(const QModelIndexList& indexes) const
         {
             QMimeData* mimeData = new QMimeData;
 
@@ -303,7 +303,7 @@ namespace AzToolsFramework
             return mimeData;
         }
 
-        QStringList AssetBrowserTableModel::mimeTypes() const
+        QStringList AssetBrowserListModel::mimeTypes() const
         {
             QStringList list = QAbstractItemModel::mimeTypes();
             list.append(AssetBrowserEntry::GetMimeType());
@@ -311,4 +311,4 @@ namespace AzToolsFramework
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-#include "AssetBrowser/moc_AssetBrowserTableModel.cpp"
+#include "AssetBrowser/moc_AssetBrowserListModel.cpp"

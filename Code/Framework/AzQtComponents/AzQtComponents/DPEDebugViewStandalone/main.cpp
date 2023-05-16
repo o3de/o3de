@@ -60,6 +60,11 @@ namespace DPEDebugView
         return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
+    AZStd::string GetButtonText()
+    {
+        return "Button 2 (should be at bottom)";
+    }
+
     class TestContainer
     {
     public:
@@ -155,9 +160,11 @@ namespace DPEDebugView
             return enumValuesList;
         }
 
+        bool m_toggle = false;
         int m_simpleInt = 5;
         int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
+        AZStd::string m_simpleString = "test";
         AZStd::vector<AZStd::string> m_vector;
         AZStd::vector<AZStd::vector<int>> m_vectorOfVectors;
         AZStd::map<AZStd::string, float> m_map;
@@ -183,13 +190,20 @@ namespace DPEDebugView
             return true;
         }
 
+        AZ::Crc32 IsToggleEnabled() const
+        {
+            return m_toggle ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        }
+
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<TestContainer>()
+                    ->Field("toggle", &TestContainer::m_toggle)
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
+                    ->Field("simpleString", &TestContainer::m_simpleString)
                     ->Field("vector", &TestContainer::m_vector)
                     ->Field("vectorOfVectors", &TestContainer::m_vectorOfVectors)
                     ->Field("map", &TestContainer::m_map)
@@ -222,8 +236,12 @@ namespace DPEDebugView
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button1)
                         ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 1 (should be at top)")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Simple Types")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_toggle, "toggle switch", "")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleInt, "simple int", "")
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &TestContainer::m_doubleSlider, "double slider", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_simpleString, "simple string", "")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &TestContainer::IsToggleEnabled)
                         ->Attribute(AZ::Edit::Attributes::Min, -10.0)
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
@@ -276,8 +294,10 @@ namespace DPEDebugView
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_entityId, "entityId", "")
                         ->UIElement(AZ::Edit::UIHandlers::Button, "")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &Button2)
-                        ->Attribute(AZ::Edit::Attributes::ButtonText, "Button 2 (should be at bottom)")
+                        ->Attribute(AZ::Edit::Attributes::ButtonText, &GetButtonText)
                         ->Attribute(AZ::Edit::Attributes::AcceptsMultiEdit, true)
+                        ->UIElement(AZ::Edit::UIHandlers::Label, "")
+                        ->Attribute(AZ::Edit::Attributes::ValueText, "<h2>Label UIElement</h2>This is a test of a UIElement label<br>that can handle multiple lines of text that also can be wrapped onto newlines<br>and can also support <a href='https://doc.qt.io/qt-5/richtext-html-subset.html'>rich text</a>")
                         ->ClassElement(AZ::Edit::ClassElements::Group, "ReadOnly")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_readOnlyInt, "readonly int", "")
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &TestContainer::IsDataReadOnly)

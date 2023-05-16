@@ -296,9 +296,9 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
         # 16. Set Mesh component Add Material Component and confirm a Material component added
         # Make sure the Entity Inspector is open and trigger the "Add Material Component" button
-        general.open_pane("Entity Inspector")
+        general.open_pane("Inspector")
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         add_material_component_button = pyside_utils.find_child_by_pattern(entity_inspector, "Add Material Component")
         add_material_component_button.click()
         Report.result(Tests.has_material, mesh_entity.has_component(AtomComponentProperties.material()))

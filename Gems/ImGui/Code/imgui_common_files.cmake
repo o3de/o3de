@@ -9,7 +9,6 @@
 set(FILES
     Include/ImGuiBus.h
     Include/ImGuiContextScope.h
-    Include/OtherActiveImGuiBus.h
     Source/ImGuiColorDefines.h
     Source/ImGuiManager.h
     Source/ImGuiManager.cpp
