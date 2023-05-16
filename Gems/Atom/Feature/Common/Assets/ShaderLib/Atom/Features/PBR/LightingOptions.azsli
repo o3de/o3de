@@ -26,6 +26,10 @@
 #define ENABLE_LIGHT_CULLING              1
 #endif
 
+#ifndef ENABLE_DECALS
+#define ENABLE_DECALS              1
+#endif
+
 #ifndef ENABLE_AREA_LIGHT_VALIDATION
 #define ENABLE_AREA_LIGHT_VALIDATION    1
 #endif

@@ -405,26 +405,28 @@ set(FILES
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
+    UI/DocumentPropertyEditor/GenericButtonHandler.cpp
+    UI/DocumentPropertyEditor/GenericButtonHandler.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
+    UI/DocumentPropertyEditor/KeyQueryDPE.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
-    UI/DocumentPropertyEditor/IPropertyEditor.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
-    UI/DocumentPropertyEditor/KeyQueryDPE.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/SettingsRegistrar.cpp
     UI/DocumentPropertyEditor/SettingsRegistrar.h
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
@@ -702,14 +704,14 @@ set(FILES
     AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
-    AssetBrowser/AssetBrowserExpandedFilterModel.cpp
-    AssetBrowser/AssetBrowserExpandedFilterModel.h
+    AssetBrowser/AssetBrowserTableFilterModel.cpp
+    AssetBrowser/AssetBrowserTableFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
-    AssetBrowser/AssetBrowserTableModel.cpp
-    AssetBrowser/AssetBrowserTableModel.h
-    AssetBrowser/AssetBrowserExpandedTableViewProxyModel.cpp
-    AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h
+    AssetBrowser/AssetBrowserListModel.cpp
+    AssetBrowser/AssetBrowserListModel.h
+    AssetBrowser/AssetBrowserTableViewProxyModel.cpp
+    AssetBrowser/AssetBrowserTableViewProxyModel.h
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp
@@ -724,10 +726,10 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTreeView.h
     AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
+    AssetBrowser/Views/AssetBrowserListView.cpp
+    AssetBrowser/Views/AssetBrowserListView.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
-    AssetBrowser/Views/AssetBrowserExpandedTableView.cpp
-    AssetBrowser/Views/AssetBrowserExpandedTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp
     AssetBrowser/Views/AssetBrowserThumbnailView.h
     AssetBrowser/Views/AssetBrowserViewUtils.cpp

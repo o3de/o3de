@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
@@ -1168,7 +1169,7 @@ namespace AZ
                 // remove some of them and try again.
                 memoryFlags = RHI::ResetBits(memoryFlags, filterFlags[filterIndex]);
             }
-
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(false);
             AZ_Assert(memory, "Failed to allocate memory size %llu bytes with flags %u, and memory types %u", static_cast<unsigned long long>(sizeInBytes), flags, memoryTypeMask);
             return memory;
         }

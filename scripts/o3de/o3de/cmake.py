@@ -98,6 +98,7 @@ def remove_gem_dependency(cmake_file: pathlib.Path,
 def resolve_gem_dependency_paths(
         engine_path:pathlib.Path,
         project_path:pathlib.Path,
+        external_subdirectories:str or list or None,
         resolved_gem_dependencies_output_path:pathlib.Path or None):
     """
     Resolves gem dependencies for the given engine and project and
@@ -158,7 +159,8 @@ def resolve_gem_dependency_paths(
     all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path, 
                                                              project_path=project_path, 
                                                              include_manifest_gems=True, 
-                                                             include_engine_gems=True)
+                                                             include_engine_gems=True,
+                                                             external_subdirectories=external_subdirectories.split(';') if isinstance(external_subdirectories, str) else external_subdirectories)
 
     # First try to resolve with optional gems
     results, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems, 
@@ -199,6 +201,7 @@ def _resolve_gem_dependency_paths(args: argparse) -> int:
     return resolve_gem_dependency_paths(
                             engine_path=args.engine_path,
                             project_path=args.project_path,
+                            external_subdirectories=args.external_subdirectories,
                             resolved_gem_dependencies_output_path=args.gem_paths_output_file
                              )
 
@@ -208,6 +211,8 @@ def add_parser_args(parser):
                        help='The path to the project.')
     group.add_argument('-ep', '--engine-path', type=pathlib.Path, required=False,
                        help='The path to the engine.')
+    group.add_argument('-ed', '--external-subdirectories', type=str, required=False, nargs='*',
+                       help='Additional list of subdirectories.')
     group.add_argument('-gpof', '--gem-paths-output-file', type=pathlib.Path, required=False,
                        help='The path to the resolved gem paths output file. If not provided, the list will be output to STDOUT.')
     parser.set_defaults(func=_resolve_gem_dependency_paths)

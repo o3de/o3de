@@ -57,6 +57,14 @@
                 link->get().UpdateTarget();
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+
+                // Queue a refresh of the property display in case the overrides contain only default values.
+                // Otherwise, when overrides don't trigger changes in the template dom, the entity won't be
+                // recreated on propagation and the inspector won't be updated to reflect override icon changes
+                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
+                    AzToolsFramework::Refresh_AttributesAndValues);
+
                 return true;
             }
             return false;

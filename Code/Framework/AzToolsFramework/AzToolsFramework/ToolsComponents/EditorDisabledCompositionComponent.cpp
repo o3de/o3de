@@ -67,6 +67,13 @@ namespace AzToolsFramework
             }
         };
 
+        bool EditorDisabledCompositionComponent::IsComponentDisabled(const AZ::Component* component)
+        {
+            AZ_Assert(component, "Unable to check a component that is nullptr");
+            return component &&
+                AZStd::find(m_disabledComponents.begin(), m_disabledComponents.end(), component) != m_disabledComponents.end();
+        }
+
         EditorDisabledCompositionComponent::~EditorDisabledCompositionComponent()
         {
             for (auto disabledComponent : m_disabledComponents)

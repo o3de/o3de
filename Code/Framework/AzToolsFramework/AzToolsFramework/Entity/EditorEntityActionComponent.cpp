@@ -326,7 +326,7 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::EnableComponents(const AZStd::vector<AZ::Component*>& components)
         {
-            ScopedUndoBatch undoBatch("Enabling components.");
+            ScopedUndoBatch undoBatch("Enable Component(s)");
 
             // Enable all the components requested
             for (auto component : components)
@@ -383,7 +383,7 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::DisableComponents(const AZStd::vector<AZ::Component*>& components)
         {
-            ScopedUndoBatch undoBatch("Disabling components.");
+            ScopedUndoBatch undoBatch("Disable Component(s)");
 
             // Disable all the components requested
             for (auto component : components)
@@ -442,7 +442,7 @@ namespace AzToolsFramework
         {
             EntityToRemoveComponentsResultMap resultMap;
             {
-                ScopedUndoBatch undoBatch("Removing components.");
+                ScopedUndoBatch undoBatch("Remove Component(s)");
 
                 // Only remove, do not delete components until we know it was successful
                 AZStd::vector<AZ::Component*> removedComponents;
@@ -580,7 +580,7 @@ namespace AzToolsFramework
                 componentsToAddClassData.push_back(componentClassData);
             }
 
-            ScopedUndoBatch undo("Adding components to entity");
+            ScopedUndoBatch undo("Add Component(s) to Entity");
             EntityToAddedComponentsMap entityToAddedComponentsMap;
             {
                 for (auto& entityId : entityIds)
@@ -644,7 +644,7 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Null entity provided to AddExistingComponentsToEntity"));
             }
 
-            ScopedUndoBatch undo("Add existing components to entity");
+            ScopedUndoBatch undo("Add Existing Component(s) to Entity");
 
             AddComponentsResults addComponentsResults;
 

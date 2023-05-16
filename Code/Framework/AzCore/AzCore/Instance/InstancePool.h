@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Module/Environment.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -149,8 +150,7 @@ namespace AZ
             typename InstancePool<T>::ResetInstance resetFunc = [](T&){}, 
             typename InstancePool<T>::CreateInstance createFunc = []() { return new T{}; })
         {
-            const char* name = AZ::AzTypeInfo<T>::Name();
-            return CreatePool<T>(AZ::Name(name), resetFunc);
+            return CreatePool<T>(GetDefaultName<T>(), resetFunc);
         }
 
         // returns the pool with the specified name
@@ -170,11 +170,21 @@ namespace AZ
         template<class T>
         AZStd::shared_ptr<InstancePool<T>> GetPool()
         {
-            const char* name = AZ::AzTypeInfo<T>::Name();
-            return GetPool<T>(AZ::Name(name));
+            return GetPool<T>(GetDefaultName<T>());
         }
 
     private:
+
+        template<class T>
+        AZ::Name GetDefaultName()
+        {
+            const char* name = AZ::AzTypeInfo<T>::Name();
+            auto moduleId = Environment::GetModuleId();
+
+            auto defaultName = AZStd::fixed_string<256>::format("%s%p", name, moduleId);
+            return AZ::Name(defaultName);
+        }
+
         AZStd::unordered_map<AZ::Name, AZStd::weak_ptr<InstancePoolBase>> m_nameToInstancePool;
     };
 } // namespace AZ

@@ -54,19 +54,34 @@ namespace AZ
         {
         }
 
-        void GemTestEnvironment::AddDynamicModulePaths(const AZStd::vector<AZStd::string>& dynamicModulePaths)
+        void GemTestEnvironment::AddDynamicModulePaths(AZStd::span<AZStd::string_view const> dynamicModulePaths)
+        {
+            m_parameters->m_dynamicModulePaths.insert(m_parameters->m_dynamicModulePaths.end(),
+                dynamicModulePaths.begin(), dynamicModulePaths.end());
+        }
+        void GemTestEnvironment::AddDynamicModulePaths(AZStd::initializer_list<AZStd::string_view const> dynamicModulePaths)
         {
             m_parameters->m_dynamicModulePaths.insert(m_parameters->m_dynamicModulePaths.end(),
                 dynamicModulePaths.begin(), dynamicModulePaths.end());
         }
 
-        void GemTestEnvironment::AddComponentDescriptors(const AZStd::vector<AZ::ComponentDescriptor*>& componentDescriptors)
+        void GemTestEnvironment::AddComponentDescriptors(AZStd::span<AZ::ComponentDescriptor* const> componentDescriptors)
+        {
+            m_parameters->m_componentDescriptors.insert(m_parameters->m_componentDescriptors.end(),
+                componentDescriptors.begin(), componentDescriptors.end());
+        }
+        void GemTestEnvironment::AddComponentDescriptors(AZStd::initializer_list<AZ::ComponentDescriptor* const> componentDescriptors)
         {
             m_parameters->m_componentDescriptors.insert(m_parameters->m_componentDescriptors.end(),
                 componentDescriptors.begin(), componentDescriptors.end());
         }
 
-        void GemTestEnvironment::AddRequiredComponents(const AZStd::vector<AZ::TypeId>& requiredComponents)
+        void GemTestEnvironment::AddRequiredComponents(AZStd::span<AZ::TypeId const> requiredComponents)
+        {
+            m_parameters->m_requiredComponents.insert(m_parameters->m_requiredComponents.end(),
+                requiredComponents.begin(), requiredComponents.end());
+        }
+        void GemTestEnvironment::AddRequiredComponents(AZStd::initializer_list<AZ::TypeId const> requiredComponents)
         {
             m_parameters->m_requiredComponents.insert(m_parameters->m_requiredComponents.end(),
                 requiredComponents.begin(), requiredComponents.end());

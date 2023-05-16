@@ -35,12 +35,6 @@ namespace AzNetworking
         return ProcessData(name, value);
     }
 
-    bool StringifySerializer::Serialize(char& value, const char* name, char, char)
-    {
-        const int val = value; // Print chars as integers
-        return ProcessData(name, val);
-    }
-
     bool StringifySerializer::Serialize(int8_t& value, const char* name, int8_t, int8_t)
     {
         return ProcessData(name, value);

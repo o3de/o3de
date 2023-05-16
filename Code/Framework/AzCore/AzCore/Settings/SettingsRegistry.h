@@ -368,20 +368,57 @@ namespace AZ
         //! @return True if the command line argument could be parsed, otherwise false.
         virtual bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey = "",
             const CommandLineArgumentSettings& commandLineSettings = {}) = 0;
+
+        //! List of possible return codes from MergeSettings/MergeSettingsFolder
+        //! The unset value is always 0
+        //! Failure values should be < 0 and success values > 0
+        enum class MergeSettingsReturnCode
+        {
+            Unset = 0,
+            Success = 1,
+            PartialSuccess,
+            Failure = -1,
+        };
+
+        //! Encapsulates the result of a JSON Patch or JSON Merge Patch opreations
+        //! into the Settings Registry
+        struct MergeSettingsResult
+        {
+            explicit operator bool() const;
+
+            // Combine MergeSettingsResult together by concatenating the
+            // operation messages and updating the return code based on the
+            // success and failure enum values of both results
+            // Chaining can be performed on a non-const lvalue reference
+            MergeSettingsResult& Combine(MergeSettingsResult otherResult) &;
+            // rvalue reference of combine returns a copy
+            MergeSettingsResult Combine(MergeSettingsResult otherResult) &&;
+
+            // Return a reference to the operation messages string
+            const AZStd::string& GetMessages() const;
+
+            MergeSettingsReturnCode m_returnCode{ MergeSettingsReturnCode::Unset };
+            AZStd::string m_operationMessages;
+        };
+
         //! Merges the json data provided into the settings registry.
         //! @param data The json data stored in a string.
         //! @param format The format of the provided data.
         //! @param anchorKey The key where the merged json content will be anchored under.
-        //! @return True if the data was successfully merged, otherwise false.
-        virtual bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") = 0;
+        //! @return MergeSettingsResult value that is convertible to bool(true) if the data was successfully merged.
+        //!         If the json string was not merged successfully, the `MergeSettingsResult::GetMessages()` function
+        //!         contains messages around why the operation has failed.
+        virtual MergeSettingsResult MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") = 0;
         //! Loads a settings file and merges it into the registry.
         //! @param path The path to the registry file.
         //! @param format The format of the text data in the file at the provided path.
         //! @param anchorKey The key where the content of the settings file will be anchored.
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
-        //! @return An AZ::Success if the registry file was successfully merged, or AZ::Failure with an error message.
-        virtual AZ::Outcome<void, AZStd::string> MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
+        //! @return MergeSettingsResult value that is convertible to bool(true) if the registry file was successfully merged.
+        //!         If the file is is not merged successfully the MergeSettingsResult messages structure will be populated
+        //!         with error messages of why the operation failed
+        virtual MergeSettingsResult MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) = 0;
         //! Loads all settings files in a folder and merges them into the registry.
         //!     With the specializations "a" and "b" and platform "c" the files would be loaded in the order:
@@ -399,8 +436,8 @@ namespace AZ
         //! @param anchorKey The registry path location where the settings will be anchored
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
-        //! @return True if the registry folder was successfully merged, otherwise false.
-        virtual bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
+        //! @return MergeSettingsResult value that is convertible to bool(true) if the registry folder was successfully merged.
+        virtual MergeSettingsResult MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform = {}, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
 
         //! Indicates whether the Merge functions should send notification events for individual operations

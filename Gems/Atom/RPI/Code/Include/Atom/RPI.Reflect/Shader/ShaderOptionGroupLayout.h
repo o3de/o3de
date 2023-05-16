@@ -154,6 +154,9 @@ namespace AZ
             //! Gets the name for the option value.
             Name GetValueName(ShaderOptionValue value) const;
 
+            //! Gets the name for the option value.
+            Name GetValueName(uint32_t valueIndex) const;
+
             bool operator == (const ShaderOptionDescriptor&) const;
             bool operator != (const ShaderOptionDescriptor&) const;
 

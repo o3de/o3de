@@ -53,6 +53,12 @@ namespace AzToolsFramework::Prefab
             AZ::Dom::Path relativePathFromOwningPrefab,
             const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo);
 
+        //! Checks if the component is disabled.
+        static bool IsComponentDisabled(const AZ::Component* component);
+
+        //! Checks if the component is pending.
+        static bool IsComponentPending(const AZ::Component* component);
+
         AZStd::string m_entityAlias;
         AZStd::string m_componentAlias;
 

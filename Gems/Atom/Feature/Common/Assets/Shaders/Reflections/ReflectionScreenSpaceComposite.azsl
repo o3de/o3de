@@ -44,8 +44,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 float3 SampleReflection(float2 reflectionUV, float depth, float3 normal, uint2 invDimensions)
 {  
     const float DepthTolerance = 0.001f;

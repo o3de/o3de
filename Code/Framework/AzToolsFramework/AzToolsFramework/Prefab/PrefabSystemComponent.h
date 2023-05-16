@@ -221,7 +221,7 @@ namespace AzToolsFramework
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
             * these entities and instances.
             * @param entities A vector of entities that will be used in the new instance. May be empty.
-            * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
+            * @param nestedInstances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
             *                  May be empty.
             * @param filePath The path to associate the template of the new instance to.
             * @param containerEntity The container entity for the prefab to be created. It will be created if a nullptr is provided.
@@ -231,9 +231,17 @@ namespace AzToolsFramework
             * @return A pointer to the newly created instance. nullptr on failure.
             */
             AZStd::unique_ptr<Instance> CreatePrefab(
-                const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
+
+            AZStd::unique_ptr<Instance> CreatePrefabWithCustomEntityAliases(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
+                AZ::IO::PathView filePath,
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                bool shouldCreateLinks = true) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
@@ -263,15 +271,16 @@ namespace AzToolsFramework
             * Builds a new Prefab Template out of entities and instances and returns the first instance comprised of
             * these entities and instances.
             * @param entities A vector of entities that will be used in the new instance. May be empty.
-            * @param instances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
+            * @param nestedInstances A vector of Prefab Instances that will be nested in the new instance, will be consumed and moved.
             *                  May be empty.
             * @param filePath The path to associate the template of the new instance to.
             * @param instance Reference of a pointer to the newly created instance which needs initiation.
             * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
             *        and its nested instances.
             */
-            void CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+            void CreatePrefab(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<Instance>& instance, bool shouldCreateLinks);
 
             /**

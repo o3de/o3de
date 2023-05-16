@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_PASS_CANVAS_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME PassCanvas EXECUTABLE
+    NAME PassCanvas APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC
@@ -38,7 +38,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AtomLyIntegration_CommonFeatures.Static
-            Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor

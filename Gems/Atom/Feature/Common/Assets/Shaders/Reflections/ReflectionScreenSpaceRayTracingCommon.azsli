@@ -116,7 +116,7 @@ bool CheckLightVisibility(RayTracingLightingData lightingData, float3 dirToLight
     return (payload.m_hitT < 0.0f);
 }
 
-void ApplyDirectionalLight(RayTracingSceneSrg::DirectionalLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplyDirectionalLight(RayTracingSceneSrg::DirectionalLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {   
     float3 dirToLight = normalize(-light.m_direction);
 
@@ -142,7 +142,7 @@ void ApplyDirectionalLight(RayTracingSceneSrg::DirectionalLight light, RayTracin
     }
 }
 
-void ApplySimplePointLight(RayTracingSceneSrg::SimplePointLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplySimplePointLight(RayTracingSceneSrg::SimplePointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float3 dirToLight = normalize(posToLight);
@@ -175,7 +175,7 @@ void ApplySimplePointLight(RayTracingSceneSrg::SimplePointLight light, RayTracin
     }
 }
 
-void ApplySimpleSpotLight(RayTracingSceneSrg::SimpleSpotLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplySimpleSpotLight(RayTracingSceneSrg::SimpleSpotLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float3 dirToLight = normalize(posToLight);
@@ -213,7 +213,7 @@ void ApplySimpleSpotLight(RayTracingSceneSrg::SimpleSpotLight light, RayTracingL
     }
 }
 
-void ApplyPointLight(RayTracingSceneSrg::PointLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplyPointLight(RayTracingSceneSrg::PointLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float3 dirToLight = normalize(posToLight);
@@ -246,7 +246,7 @@ void ApplyPointLight(RayTracingSceneSrg::PointLight light, RayTracingLightingDat
     }
 }
 
-void ApplyDiskLight(RayTracingSceneSrg::DiskLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplyDiskLight(RayTracingSceneSrg::DiskLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 posToLight = light.m_position - lightingData.m_worldPosition;
     float d2 = dot(posToLight, posToLight); // light distance squared
@@ -310,7 +310,7 @@ float GetIntensityAdjustedByRadiusAndRoughness(float roughnessA, float radius, f
     return intensityNormalization * intensityNormalization;
 }
 
-void ApplyCapsuleLight(RayTracingSceneSrg::CapsuleLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplyCapsuleLight(RayTracingSceneSrg::CapsuleLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float lightLength = light.m_length;
     float3 startPoint = light.m_startPoint;
@@ -496,7 +496,7 @@ float3 ClosestPointRect(in float3 pos, in float3 planeOrigin, in float3 left, in
     return planeOrigin + dist2D.x * left + dist2D.y * up;
 }
 
-void ApplyQuadLight(RayTracingSceneSrg::QuadLight light, RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplyQuadLight(RayTracingSceneSrg::QuadLight light, RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     float3 lightDirection = cross(light.m_leftDir, light.m_upDir); // left and up are already normalized
 
@@ -605,7 +605,7 @@ void ApplyQuadLight(RayTracingSceneSrg::QuadLight light, RayTracingLightingData 
     }
 }
 
-void ApplyDirectLighting(RayTracingLightingData lightingData, bool applySpecular, out float3 diffuse, out float3 specular)
+void ApplyDirectLighting(RayTracingLightingData lightingData, bool applySpecular, inout float3 diffuse, inout float3 specular)
 {
     uint index = 0;
 

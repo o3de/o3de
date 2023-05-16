@@ -30,5 +30,15 @@
                 "type": "Fragment"
             }
         ]
-    }
+    },
+	
+    "Supervariants":
+    [
+        {
+            "Name": "NoMSAA",
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
+        }
+    ]  
 }

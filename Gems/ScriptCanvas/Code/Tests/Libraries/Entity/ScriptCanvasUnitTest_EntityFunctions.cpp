@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
 #include <Libraries/Entity/EntityFunctions.h>
 
@@ -90,21 +91,33 @@ namespace ScriptCanvasUnitTest
     {
         float scale = 123.f;
         auto actualResult = EntityFunctions::GetEntityRight(m_id, scale);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(scale, 0, 0)));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3(scale, 0, 0));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestEntityFunctions, GetEntityForward_Call_GetExpectedResult)
     {
         float scale = 123.f;
         auto actualResult = EntityFunctions::GetEntityForward(m_id, scale);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(0, scale, 0)));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3(0, scale, 0));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestEntityFunctions, GetEntityUp_Call_GetExpectedResult)
     {
         float scale = 123.f;
         auto actualResult = EntityFunctions::GetEntityUp(m_id, scale);
+#if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(0, 0, scale)));
+#else
         EXPECT_EQ(actualResult, AZ::Vector3(0, 0, scale));
+#endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
     }
 
     TEST_F(ScriptCanvasUnitTestEntityFunctions, Rotate_Call_GetExpectedResult)

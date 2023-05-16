@@ -11,13 +11,17 @@
 #include <Atom/RPI/Math.azsli>
 
 //! Transform cubemap coordinates to the expected cubemap orientation
+half3 GetCubemapCoords(half3 original)
+{
+    return half3(-original.x, original.z, -original.y);
+}
 float3 GetCubemapCoords(float3 original)
 {
     return float3(-original.x, original.z, -original.y);
 }
 
 //! Compute multiscatter compensation multiplier
-float3 GetMultiScatterCompensation(float3 specularF0, float2 brdf, bool enabled)
+real3 GetMultiScatterCompensation(real3 specularF0, real2 brdf, bool enabled)
 {
     if (!enabled)
     {
@@ -34,15 +38,20 @@ float3 GetMultiScatterCompensation(float3 specularF0, float2 brdf, bool enabled)
     // which is the integral of microfacet BRDF by assuming fresnel term F == 1 that represents total single scattering reflectance
     // for more information about compensation term please see:
     // https://blog.selfshadow.com/publications/turquin/ms_comp_final.pdf
-    float3 compensation = specularF0 * ((1.0 / (brdf.x + brdf.y)) - 1.0);
+    real3 compensation = specularF0 * ((1.0 / (brdf.x + brdf.y)) - 1.0);
     return compensation + 1.0;
 }
 
 // returns the UV coordinates for the BRDF texture
 float2 GetBRDFTexCoords(float roughness, float NdotV)
 {
-    float smoothness = 1.0f - roughness;
+    float smoothness = 1.0 - roughness;
     return float2(saturate(NdotV), smoothness);
+}
+half2 GetBRDFTexCoords(half roughness, half NdotV)
+{
+    half smoothness = 1.0 - roughness;
+    return half2(saturate(NdotV), smoothness);
 }
 
 // returns the roughess mip for sampling the convolved specular cubemap
@@ -51,33 +60,38 @@ float GetRoughnessMip(float roughness)
     const float maxRoughnessMip = 5;
     return roughness * maxRoughnessMip;
 }
+half GetRoughnessMip(half roughness)
+{
+    const half maxRoughnessMip = 5;
+    return roughness * maxRoughnessMip;
+}
 
 // compute parallax corrected reflection vector, AABB version
 // we do this by finding the intersection with the volume and adjusting the reflection vector for the surface position 
 // https://seblagarde.wordpress.com/2012/09/29/image-based-lighting-approaches-and-parallax-corrected-cubemap/
-float3 ApplyParallaxCorrectionAABB(float3 aabbMin, float3 aabbMax, float3 aabbPos, float3 positionWS, float3 reflectDir)
+real3 ApplyParallaxCorrectionAABB(real3 aabbMin, real3 aabbMax, real3 aabbPos, real3 positionWS, real3 reflectDir)
 {
-    float3 rcpReflectDir = 1.0f / reflectDir;
-    float3 intersectA = (aabbMax - positionWS) * rcpReflectDir;
-    float3 intersectB = (aabbMin - positionWS) * rcpReflectDir;
-    float3 furthestIntersect = max(intersectA, intersectB);
-    float distance = min(min(furthestIntersect.x, furthestIntersect.y), furthestIntersect.z);
-    float3 intersectPos = reflectDir * distance + positionWS;
+    real3 rcpReflectDir = 1.0 / reflectDir;
+    real3 intersectA = (aabbMax - positionWS) * rcpReflectDir;
+    real3 intersectB = (aabbMin - positionWS) * rcpReflectDir;
+    real3 furthestIntersect = max(intersectA, intersectB);
+    real distance = min(min(furthestIntersect.x, furthestIntersect.y), furthestIntersect.z);
+    real3 intersectPos = reflectDir * distance + positionWS;
     return (intersectPos - aabbPos);
 }
 
 // compute parallax corrected reflection vector, OBB version
-float3 ApplyParallaxCorrectionOBB(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 positionWS, float3 reflectDir)
+real3 ApplyParallaxCorrectionOBB(real4x4 obbTransformInverse, real3 obbHalfExtents, float3 positionWS, real3 reflectDir)
 {
     // Convert point and reflection direction to object space (object here being the reflection probe)
-    float3 p = mul(obbTransformInverse, float4(positionWS, 1.0f)).xyz;
-    float3 r = mul(obbTransformInverse, float4(reflectDir, 0.0f)).xyz;
+    real3 p = mul(obbTransformInverse, real4(positionWS, 1.0f)).xyz;
+    real3 r = mul(obbTransformInverse, real4(reflectDir, 0.0f)).xyz;
 
     // Apply parallax correction in object aligned space
-    r = ApplyParallaxCorrectionAABB(-obbHalfExtents, obbHalfExtents, float3(0.0f, 0.0f, 0.0f), p, r);
+    r = ApplyParallaxCorrectionAABB(-obbHalfExtents, obbHalfExtents, real3(0.0, 0.0, 0.0), p, r);
 
     // Rotate the result back to world space
-    float3x3 probeToWorldRotation = transpose(ExtractFloat3x3(obbTransformInverse));
+    real3x3 probeToWorldRotation = transpose(ExtractFloat3x3(obbTransformInverse));
     r = mul(probeToWorldRotation, r);
 
     return normalize(r);

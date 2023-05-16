@@ -31,6 +31,7 @@ namespace AzToolsFramework
             void GetPendingComponents(AZStd::vector<AZ::Component*>& components) override;
             void AddPendingComponent(AZ::Component* componentToAdd) override;
             void RemovePendingComponent(AZ::Component* componentToRemove) override;
+            bool IsComponentPending(const AZ::Component* component) override;
             ////////////////////////////////////////////////////////////////////
 
             ~EditorPendingCompositionComponent() override;

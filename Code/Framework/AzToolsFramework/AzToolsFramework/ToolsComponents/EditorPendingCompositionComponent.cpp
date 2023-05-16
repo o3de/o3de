@@ -80,6 +80,13 @@ namespace AzToolsFramework
             }
         };
 
+        bool EditorPendingCompositionComponent::IsComponentPending(const AZ::Component* component)
+        {
+            AZ_Assert(component, "Unable to check a component that is nullptr");
+            return component &&
+                AZStd::find(m_pendingComponents.begin(), m_pendingComponents.end(), component) != m_pendingComponents.end();
+        }
+
         EditorPendingCompositionComponent::~EditorPendingCompositionComponent()
         {
             for (auto pendingComponent : m_pendingComponents)

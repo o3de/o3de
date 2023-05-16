@@ -23,6 +23,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/MemoryUsage.h>
 
 #include <CryCommon/ISystem.h>
@@ -286,7 +287,13 @@ namespace AZ::Render
             return;
         }
 
-        const RHI::MemoryStatistics* stats = rhi->GetMemoryStatistics();
+        RHI::RHIMemoryStatisticsInterface* rhiMemStats = RHI::RHIMemoryStatisticsInterface::Get();
+        if (!rhiMemStats)
+        {
+            return;
+        }
+
+        const RHI::MemoryStatistics* stats = rhiMemStats->GetMemoryStatistics();
         if (!stats)
         {
             return;

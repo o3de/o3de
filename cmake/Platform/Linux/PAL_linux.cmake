@@ -59,6 +59,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/OpenSSL_linux.cmake)
 # Use system default libunwind  instead of maintaining an O3DE version for Linux
 include(${CMAKE_CURRENT_LIST_DIR}/libunwind_linux.cmake)
 
+# Use system default libzstd instead of maintaining an O3DE version for Linux
+include(${CMAKE_CURRENT_LIST_DIR}/libzstd_linux.cmake)
+
 if ("${OPENSSL_VERSION}" STREQUAL "")
     message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required for O3DE")
 endif()

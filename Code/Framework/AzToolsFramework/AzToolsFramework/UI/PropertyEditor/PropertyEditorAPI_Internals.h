@@ -233,11 +233,28 @@ namespace AzToolsFramework
             for (auto attributeIt = node.MemberBegin(); attributeIt != node.MemberEnd(); ++attributeIt)
             {
                 const AZ::Name& name = attributeIt->first;
+
                 if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
                     name == PropertyEditor::ValueType.GetName())
                 {
                     continue;
                 }
+                else if (name == PropertyEditor::ParentValue.GetName())
+                {
+                    auto parentValue = PropertyEditor::ParentValue.ExtractFromDomNode(node);
+                    if (parentValue.has_value())
+                    {
+                        auto parentValuePtr = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentValue.value());
+                        AZ_Assert(parentValuePtr, "Parent instance was nullptr when attempting to add to instance list.");
+
+                        m_proxyParentNode.m_instances.push_back(parentValuePtr);
+
+                        // Set up the reference to parent node only if a parent value is available.
+                        m_proxyNode.m_parent = &m_proxyParentNode;
+                    }
+                    continue;
+                }
+
                 AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
 
                 AZStd::shared_ptr<AZ::Attribute> marshalledAttribute;
@@ -274,8 +291,34 @@ namespace AzToolsFramework
                 }
                 else
                 {
+                    // Assign a custom reporting callback to ignore unregistered types
+                    AZ::JsonDeserializerSettings settings;
+                    AZStd::string scratchBuffer;
+                    settings.m_reporting = [&scratchBuffer](
+                        AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) -> auto
+                    {
+                        // Unregistered types are acceptable and do not require a warning
+                        if (result.GetTask() != AZ::JsonSerializationResult::Tasks::RetrieveInfo ||
+                            result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Unknown)
+                        {
+                            // Default Json serialization issue reporting
+                            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
+                            {
+                                scratchBuffer.append(message.begin(), message.end());
+                                scratchBuffer.append("\n    Reason: ");
+                                result.AppendToString(scratchBuffer, path);
+                                scratchBuffer.append(".");
+                                AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                                scratchBuffer.clear();
+                            }
+                        }
+
+                        return result;
+                    };
+
                     AZ::JsonSerializationResult::ResultCode loadResult =
-                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value());
+                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value(), settings);
                     if (loadResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
                     {
                         m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);
@@ -349,6 +392,7 @@ namespace AzToolsFramework
         AZ::Dom::Value m_domNode;
         QPointer<QWidget> m_widget;
         InstanceDataNode m_proxyNode;
+        InstanceDataNode m_proxyParentNode;
         AZ::SerializeContext::ClassData m_proxyClassData;
         AZ::SerializeContext::ClassElement m_proxyClassElement;
         WrappedType m_proxyValue;

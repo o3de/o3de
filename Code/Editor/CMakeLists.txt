@@ -114,14 +114,12 @@ ly_add_target(
             Gem::Atom_Feature_Common.Static
             Gem::AtomToolsFramework.Static
             Gem::AtomViewportDisplayInfo
-            Gem::EditorModeFeedback.Editor
+            Gem::EditorModeFeedback.Editor.Static
             ${additional_dependencies}
         PUBLIC
             3rdParty::Qt::Network
             Legacy::EditorCore
     RUNTIME_DEPENDENCIES
-        Gem::AtomViewportDisplayInfo
-        Gem::EditorModeFeedback.Editor
         Legacy::EditorCommon
 )
 ly_add_source_properties(
@@ -215,6 +213,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Legacy::EditorCore.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_target(
@@ -251,6 +250,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

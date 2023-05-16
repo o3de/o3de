@@ -36,12 +36,14 @@ namespace AZ
             {
                 serializeContext->Class<HashedVariantInfoSourceData>()
                     ->Version(1)
+                    ->Field("ShaderPath", &HashedVariantInfoSourceData::m_shaderPath)
                     ->Field("VariantInfo", &HashedVariantInfoSourceData::m_variantInfo)
                     ->Field("Hash", &HashedVariantInfoSourceData::m_hash)
                     ;
 
                 serializeContext->Class<HashedVariantListSourceData>()
                     ->Version(1)
+                    ->Field("ShaderPath", &HashedVariantListSourceData::m_shaderPath)
                     ->Field("HashedVariants", &HashedVariantListSourceData::m_hashedVariants)
                     ;
             }
@@ -145,14 +147,11 @@ namespace AZ
             }
             AZ_Trace(ShaderVariantListBuilderName, "For shader [%s], Scan folder full path [%s], relative file path [%s]", shaderAbsolutePath.c_str(), scanFolderFullPath.c_str(), shaderProductFileRelativePath.c_str());
 
-            AZStd::string shaderVariantListFileRelativePath = shaderProductFileRelativePath;
-            AZ::StringFunc::Path::ReplaceExtension(shaderVariantListFileRelativePath, ShaderVariantListBuilder::Extension);// Will be RPI::ShaderVariantListSourceData::Extension);
-
             AZ::IO::FixedMaxPath gameProjectPath = AZ::Utils::GetProjectPath();
 
             auto expectedHigherPrecedenceFileFullPath = (gameProjectPath
                 / RPI::ShaderVariantTreeAsset::CommonSubFolder / shaderProductFileRelativePath).LexicallyNormal();
-            expectedHigherPrecedenceFileFullPath.ReplaceExtension(ShaderVariantListBuilder::Extension);// Will be AZ::RPI::ShaderVariantListSourceData::Extension);
+            expectedHigherPrecedenceFileFullPath.ReplaceExtension(RPI::ShaderVariantListSourceData::Extension);
 
             auto normalizedShaderVariantListFileFullPath = AZ::IO::FixedMaxPath(shaderVariantListAbsolutePath).LexicallyNormal();
 
@@ -190,7 +189,7 @@ namespace AZ
             {
                 AZ_Error(ShaderVariantListBuilderName, false, "For shader file at path [%s], the shader variant list [%s] is expected to be located at [%s.%s] or [%s]"
                     , normalizedShaderFileFullPath.c_str(), normalizedShaderVariantListFileFullPath.c_str(),
-                    normalizedShaderFileFullPathWithoutExtension.c_str(), ShaderVariantListBuilder::Extension, // Will be RPI::ShaderVariantListSourceData::Extension,
+                    normalizedShaderFileFullPathWithoutExtension.c_str(), RPI::ShaderVariantListSourceData::Extension,
                     expectedHigherPrecedenceFileFullPath.c_str());
                 return false;
             }
@@ -419,6 +418,16 @@ namespace AZ
             }
             variantListFullPath = jobParameters.at(ShaderVariantListAbsolutePathJobParam);
 
+            //ShaderAbsolutePathJobParam
+            AZStd::string shaderFullPath;
+            if (!jobParameters.contains(ShaderAbsolutePathJobParam))
+            {
+                AZ_Error(ShaderVariantListBuilderName, false, "Missing job Parameter: ShaderAbsolutePathJobParam");
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                return;
+            }
+            shaderFullPath = jobParameters.at(ShaderAbsolutePathJobParam);
+
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
             if (jobCancelListener.IsCancelled())
             {
@@ -447,6 +456,7 @@ namespace AZ
             // content but have different StableIds. If two variants with different StableId has the same content this will be an error.
             AZStd::unordered_map<size_t, uint32_t> hashToStableIdMap;
             HashedVariantListSourceData hashedVariantList;
+            hashedVariantList.m_shaderPath = shaderFullPath;
             for (const auto& variantInfo : shaderVariantList.m_shaderVariants)
             {
                 size_t optionValuesHash = HashedVariantInfoSourceData::HashCombineShaderOptionValues(0, variantInfo.m_options);
@@ -460,6 +470,7 @@ namespace AZ
                 hashToStableIdMap.emplace(optionValuesHash, variantInfo.m_stableId);
             
                 HashedVariantInfoSourceData hashedVariantInfo;
+                hashedVariantInfo.m_shaderPath = shaderFullPath;
                 hashedVariantInfo.m_variantInfo = variantInfo;
                 hashedVariantInfo.CalculateHash(optionValuesHash);
                 hashedVariantList.m_hashedVariants.emplace_back(AZStd::move(hashedVariantInfo));

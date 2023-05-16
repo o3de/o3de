@@ -875,10 +875,6 @@ namespace AzToolsFramework
 
         /// Clears current redo stack
         virtual void ClearRedoStack() {}
-        
-        /// Return the icon texture id (from internal IconManager) for a given entity icon path.
-        /// This can be passed to DrawTextureLabel to draw an entity icon.
-        virtual int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) = 0;
     };
 
     using EditorRequestBus = AZ::EBus<EditorRequests>;

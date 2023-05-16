@@ -12,9 +12,7 @@
 
 namespace AzToolsFramework::Prefab
 {
-    class InstanceEntityMapperInterface;
-
-    //! Undo class for handling updating component properties of the focused prefab.
+    //! Undo class for handling updating component properties of the focused prefab (which is also the owning prefab).
     class PrefabUndoComponentPropertyEdit : public PrefabUndoBase
     {
     public:
@@ -24,17 +22,18 @@ namespace AzToolsFramework::Prefab
         explicit PrefabUndoComponentPropertyEdit(const AZStd::string& undoOperationName);
 
         void Capture(
-            const PrefabDomValue& initialState,
-            const PrefabDomValue& endState,
-            AZ::EntityId entityId,
-            AZStd::string_view pathToComponentProperty,
+            Instance& owningInstance,
+            const AZStd::string& pathToPropertyFromOwningPrefab,
+            const PrefabDomValue& afterStateOfComponentProperty,
             bool updateCache = true);
 
+        bool Changed() const override;
         void Undo() override;
         void Redo() override;
         void Redo(InstanceOptionalConstReference instanceToExclude) override;
 
     private:
-        InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+        // Set to true if property value is changed compared to last edit.
+        bool m_changed;
     };
 } // namespace AzToolsFramework::Prefab

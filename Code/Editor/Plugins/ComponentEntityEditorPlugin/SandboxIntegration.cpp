@@ -84,7 +84,6 @@
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
-#include <Editor/IconManager.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
@@ -1183,11 +1182,6 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     return AZ::Vector3::CreateZero();
 }
 
-int SandboxIntegrationManager::GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath)
-{
-    return GetIEditor()->GetIconManager()->GetIconTexture(entityIconPath.c_str());
-}
-
 void SandboxIntegrationManager::ClearRedoStack()
 {
     // We have two separate undo systems that are assumed to be kept in sync,
@@ -1391,7 +1385,7 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
 }
 
-void SandboxIntegrationManager::OnContextReset()
+void SandboxIntegrationManager::OnPrepareForContextReset()
 {
     // Deselect everything.
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(

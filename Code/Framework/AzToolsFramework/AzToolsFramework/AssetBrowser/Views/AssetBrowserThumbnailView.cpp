@@ -51,7 +51,10 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    }
                     emit entryClicked(indexData);
                 });
 
@@ -75,7 +78,7 @@ namespace AzToolsFramework
                     {
                         QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                        AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
                             auto action = menu.addAction(tr("Show In Folder"));
@@ -283,6 +286,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedThumbnailView(this);
 
             if (!m_assetTreeView)
             {
@@ -413,6 +417,29 @@ namespace AzToolsFramework
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
 
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+        }
+
+        void AssetBrowserThumbnailView::SelectEntry(QString assetName)
+        {
+            QModelIndex rootIndex = m_thumbnailViewProxyModel->GetRootIndex();
+
+            auto model = GetThumbnailViewWidget()->model();
+
+            for (int rowIndex = 0; rowIndex < model->rowCount(rootIndex); rowIndex++)
+            {
+                auto index = model->index(rowIndex, 0, rootIndex);
+                if (!index.isValid())
+                {
+                    continue;
+                }
+
+                auto str = index.data().toString();
+                if (assetName == str)
+                {
+                    m_thumbnailViewWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    m_thumbnailViewWidget->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtCenter);
+                }
+            }
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

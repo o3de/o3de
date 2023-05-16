@@ -391,7 +391,8 @@ namespace PhysX
 
 #if (PX_PHYSICS_VERSION_MAJOR < 5)
             // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
-            if (platformIdentifier == "android" || platformIdentifier == "ios")
+            // Also fall back to 3.3 for Linux, since linux may support both x86 and arm64, and ARM64 does not support SSE2. 
+            if (platformIdentifier == "android" || platformIdentifier == "ios" || platformIdentifier == "linux")
             {
                 ret = physx::PxMeshMidPhase::eBVH33;
             }

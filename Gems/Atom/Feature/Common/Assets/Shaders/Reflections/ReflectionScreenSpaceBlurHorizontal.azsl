@@ -22,8 +22,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     float m_outputScale;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 // Pixel Shader
 PSOutput MainPS(VSOutput IN)
 {

@@ -414,7 +414,7 @@ namespace AZ
                     !m_database.contains(id),
                     "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
                     "This asset might be erroneously referencing itself as a dependent asset.",
-                    id.ToString<AZStd::fixed_string<64>>().c_str());
+                    asset.GetHint().c_str());
 
                 instance->m_id = id;
                 instance->m_parentDatabase = this;

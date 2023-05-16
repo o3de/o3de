@@ -64,23 +64,26 @@ namespace AzToolsFramework
 
     bool DocumentPropertyEditorSettings::LoadExpanderStates()
     {
+        bool loaded = false;
         auto loadOutcome = m_settingsRegistrar.LoadSettingsFromFile(m_settingsFilepath);
         if (loadOutcome.IsSuccess())
         {
             auto getOutcome = m_settingsRegistrar.GetObjectSettings(this, m_fullSettingsRegistryPath);
-            if (!getOutcome.IsSuccess())
+            if (getOutcome.IsSuccess())
+            {
+                loaded = getOutcome.GetValue();   
+            }
+            else
             {
                 AZ_Warning("DocumentPropertyEditorSettings", false, getOutcome.GetError().c_str());
-                return false;
             }
         }
         else
         {
             AZ_Warning("DocumentPropertyEditorSettings", false, loadOutcome.GetError().c_str());
-            return false;
         }
 
-        return true;
+        return loaded;
     }
 
     void DocumentPropertyEditorSettings::SaveAndCleanExpanderStates()

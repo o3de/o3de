@@ -22,4 +22,5 @@ libxcb-xinput-dev                       # For mouse input
 zlib1g-dev
 mesa-common-dev
 libunwind-dev
+libzstd-dev
 pkg-config

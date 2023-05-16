@@ -57,6 +57,9 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
 
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
 
+    class test_InputBindings_Add_Remove_Input_Events(EditorBatchedTest):
+        from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
+
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
@@ -72,6 +75,9 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_AssetBrowser_TreeNavigation(EditorBatchedTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
 
+    class test_ComponentCRUD_Add_Delete_Components(EditorSingleTest):
+        from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
+
     @pytest.mark.REQUIRES_gpu
     class test_Docking_BasicDockedTools(EditorSingleTest):
         from .EditorScripts import Docking_BasicDockedTools as test_module
@@ -84,6 +90,9 @@ class TestAutomationAutoTestMode(EditorTestSuite):
 
     class test_Menus_EditMenuOptions_Work(EditorBatchedTest):
         from .EditorScripts import Menus_EditMenuOptions as test_module
+
+    class test_Menus_FileMenuOptions_Work(EditorBatchedTest):
+        from .EditorScripts import Menus_FileMenuOptions as test_module
 
     class test_Menus_ViewMenuOptions_Work(EditorBatchedTest):
         from .EditorScripts import Menus_ViewMenuOptions as test_module

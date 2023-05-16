@@ -25,10 +25,13 @@
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 //////////////////////////////////////////////////////////////////////////
 
-#include <xxhash/xxhash.h>
-
 namespace AssetBuilderSDK
 {
+    // Defined XXH_INLINE_ALL and include <xxhash/xxhash.h> inside the AssetBuilderSDK namespace to prevent any possible
+    // symbol collision outside of this module
+    #define XXH_INLINE_ALL
+    #include <xxhash/xxhash.h>
+
     const char* const ErrorWindow = "Error"; //Use this window name to log error messages.
     const char* const WarningWindow = "Warning"; //Use this window name to log warning messages.
     const char* const InfoWindow = "Info"; //Use this window name to log info messages.
@@ -1162,11 +1165,12 @@ namespace AssetBuilderSDK
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ProcessJobResponse>()->
-                Version(2)->
+                Version(3)->
                 Field("Output Products", &ProcessJobResponse::m_outputProducts)->
                 Field("Result Code", &ProcessJobResponse::m_resultCode)->
                 Field("Requires SubId Generation", &ProcessJobResponse::m_requiresSubIdGeneration)->
-                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess);
+                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess)->
+                Field("Keep Temp Folder", &ProcessJobResponse::m_keepTempFolder);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -1178,6 +1182,7 @@ namespace AssetBuilderSDK
                 ->Property("resultCode", BehaviorValueProperty(&ProcessJobResponse::m_resultCode))
                 ->Property("requiresSubIdGeneration", BehaviorValueProperty(&ProcessJobResponse::m_requiresSubIdGeneration))
                 ->Property("sourcesToReprocess", BehaviorValueProperty(&ProcessJobResponse::m_sourcesToReprocess))
+                ->Property("keepTempFolder", BehaviorValueProperty(&ProcessJobResponse::m_keepTempFolder))
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Success)>("Success")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Failed)>("Failed")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Crashed)>("Crashed")
@@ -1433,7 +1438,8 @@ namespace AssetBuilderSDK
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
-                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce");
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce")
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnly)>("OrderOnly");
         }
     }
 

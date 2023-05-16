@@ -52,8 +52,8 @@ namespace AZ
             static constexpr AZ::u32 ProductSubID = 0; //Reserved for ShaderVariantTreeAssets.
 
             //! See comments in ValidateShaderVariantListLocation() inside ShaderVariantAssetBuilder.cpp
-            static constexpr const char* CommonSubFolder = "ShaderVariants";
-            static constexpr const char* CommonSubFolderLowerCase = "shadervariants";
+            static constexpr char CommonSubFolder[] = "ShaderVariants";
+            static constexpr char CommonSubFolderLowerCase[] = "shadervariants";
 
             ShaderVariantTreeAsset() = default;
             ~ShaderVariantTreeAsset() = default;

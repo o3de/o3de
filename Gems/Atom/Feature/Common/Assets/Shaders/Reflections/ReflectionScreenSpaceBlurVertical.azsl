@@ -20,8 +20,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     float m_invOutputScale;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 // Pixel Shader
 struct PSOutput
 {    

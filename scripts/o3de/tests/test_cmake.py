@@ -206,7 +206,8 @@ class TestResolveGemDependencyPaths:
                 patch('pathlib.Path.open', side_effect=lambda mode: StringBufferIOWrapper()) as pathlib_open_mock:
             result = cmake.resolve_gem_dependency_paths(
                                         engine_path=engine_path if engine_gem_names else None, 
-                                        project_path=project_path if project_gem_names else None, 
+                                        project_path=project_path if project_gem_names else None,
+                                        external_subdirectories=None,
                                         resolved_gem_dependencies_output_path=pathlib.Path('out'))
 
         assert result == expected_result

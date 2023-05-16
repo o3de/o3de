@@ -380,6 +380,9 @@ namespace AZ
                     case RHI::ShaderInputBufferType::Typed:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
                         break;
+                    case RHI::ShaderInputBufferType::AccelerationStructure:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+                        break;
                     default:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         break;

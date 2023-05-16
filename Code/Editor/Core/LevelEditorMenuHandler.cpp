@@ -599,12 +599,6 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
         gameMenu.AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE);
     }
 
-    // Export Selected Objects
-    gameMenu.AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS);
-
-    // Export Occlusion Mesh
-    gameMenu.AddAction(ID_FILE_EXPORTOCCLUSIONMESH);
-
     gameMenu.AddSeparator();
 
     // Synchronize Player with Camera
@@ -643,11 +637,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // minimize window - Ctrl+M
     // Zoom - Ctrl+Plus(+) -> Need the inverse too?
 
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    // Cycle Viewports
-    viewMenu.AddAction(ID_VIEW_CYCLE2DVIEWPORT);
-#endif
-
     // Center on Selection
     viewMenu.AddAction(ID_MODIFY_GOTO_SELECTION);
 
@@ -667,21 +656,6 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
 
     // Viewport
     auto viewportViewsMenuWrapper = viewMenu.AddMenu(tr("Viewport"));
-
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    auto viewportTypesMenuWrapper = viewportViewsMenuWrapper.AddMenu(tr("Viewport Type"));
-
-    m_viewportViewsMenu = viewportViewsMenuWrapper;
-    connect(viewportTypesMenuWrapper, &QMenu::aboutToShow, this, &LevelEditorMenuHandler::UpdateOpenViewPaneMenu);
-
-    InitializeViewPaneMenu(m_actionManager, viewportTypesMenuWrapper, [](const QtViewPane& view)
-        {
-            return view.IsViewportPane();
-        });
-
-    viewportViewsMenuWrapper.AddSeparator();
-
-#endif
 
     if (CViewManager::IsMultiViewportEnabled())
     {

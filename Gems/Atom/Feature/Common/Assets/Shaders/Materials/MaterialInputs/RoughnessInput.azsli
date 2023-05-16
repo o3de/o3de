@@ -26,7 +26,7 @@ uint        prefix##m_roughnessMapUvIndex;
 #define COMMON_OPTIONS_ROUGHNESS(prefix) \
 option bool prefix##o_roughness_useTexture; 
 
-float GetRoughnessInput(Texture2D map, sampler mapSampler, float2 uv, float factor, float roughnessLowerBound, float roughnessUpperBound, bool useTexture)
+real GetRoughnessInput(Texture2D map, sampler mapSampler, float2 uv, real factor, real roughnessLowerBound, real roughnessUpperBound, bool useTexture)
 {
     if(OverrideRoughnessEnabled())
     {
@@ -36,7 +36,7 @@ float GetRoughnessInput(Texture2D map, sampler mapSampler, float2 uv, float fact
     // [GFX TODO][ATOM-1793]: Figure out how we want our base material to expect channels to be encoded, and apply that to the way we pack roughness.
     if (useTexture)
     {
-        float sampledValue = map.Sample(mapSampler, uv).r;
+        real sampledValue = real(map.Sample(mapSampler, uv).r);
         return lerp(roughnessLowerBound, roughnessUpperBound, sampledValue);
     }
     else

@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -169,6 +170,7 @@ namespace AZ
         MemoryView Device::CreateInternalImageCommitted(MTLTextureDescriptor* mtlTextureDesc)
         {
             id<MTLTexture> mtlTexture = [m_metalDevice newTextureWithDescriptor : mtlTextureDesc];
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(mtlTexture != nil);
             AZ_Assert(mtlTexture, "Failed to create texture");
             
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlTexture, ResourceType::MtlTextureType});
@@ -241,6 +243,7 @@ namespace AZ
             ResourceDescriptor resourceDesc = ConvertBufferDescriptor(bufferDescriptor, heapMemoryLevel);
             MTLResourceOptions resOptions = CovertToResourceOptions(resourceDesc.m_mtlStorageMode, resourceDesc.m_mtlCPUCacheMode, resourceDesc.m_mtlHazardTrackingMode);
             mtlBuffer = [m_metalDevice newBufferWithLength:resourceDesc.m_width options:resOptions];
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(mtlBuffer != nil);
             AZ_Assert(mtlBuffer, "Failed to create the buffer");
             
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlBuffer, ResourceType::MtlBufferType});

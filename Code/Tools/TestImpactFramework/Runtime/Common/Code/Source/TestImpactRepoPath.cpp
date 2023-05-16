@@ -52,7 +52,6 @@ namespace TestImpact
     AZ::IO::PathView RepoPath::RootName() const { return m_path.RootName(); }
     AZ::IO::PathView RepoPath::RelativePath() const { return m_path.RelativePath(); }
 
-
     RepoPath& RepoPath::operator=(const string_type& other) noexcept
     {
         m_path = AZ::IO::Path(other).MakePreferred();

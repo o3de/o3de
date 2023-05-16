@@ -79,10 +79,10 @@ namespace AZ
 
         bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey,
             const CommandLineArgumentSettings& commandLineSettings) override;
-        bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") override;
-        AZ::Outcome<void, AZStd::string> MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
+        MergeSettingsResult MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") override;
+        MergeSettingsResult MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) override;
-        bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
+        MergeSettingsResult MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) override;
 
         void SetNotifyForMergeOperations(bool notify) override;
@@ -111,10 +111,10 @@ namespace AZ
             const rapidjson::Value& value) const;
 
         // Compares if lhs is less than rhs in terms of processing order. This can also detect and report conflicts.
-        bool IsLessThan(bool& collisionFound, const RegistryFile& lhs, const RegistryFile& rhs, const Specializations& specializations,
+        bool IsLessThan(MergeSettingsResult& collisionFoundResult, const RegistryFile& lhs, const RegistryFile& rhs, const Specializations& specializations,
             const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath);
         bool ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations);
-        AZ::Outcome<void, AZStd::string> MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
+        MergeSettingsResult MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
 
         void SignalNotifier(AZStd::string_view jsonPath, SettingsType type);
 

@@ -157,10 +157,6 @@ namespace UnitTest
         void BrowseForAssets([[maybe_unused]] AzToolsFramework::AssetBrowser::AssetSelectionModel& selection) override
         {
         }
-        int GetIconTextureIdFromEntityIconPath([[maybe_unused]] const AZStd::string& entityIconPath) override
-        {
-            return 0;
-        }
         //! @}
 
         // Prefab interfaces

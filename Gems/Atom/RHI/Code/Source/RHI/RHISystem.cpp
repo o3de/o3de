@@ -32,9 +32,15 @@ namespace AZ
             return Interface<RHISystemInterface>::Get();
         }
 
+        RHIMemoryStatisticsInterface* RHIMemoryStatisticsInterface::Get()
+        {
+            return Interface<RHIMemoryStatisticsInterface>::Get();
+        }
+
         ResultCode RHISystem::InitDevice()
         {
             Interface<RHISystemInterface>::Register(this);
+            Interface<RHIMemoryStatisticsInterface>::Register(this);
             return InitInternalDevices();
         }
     
@@ -281,15 +287,6 @@ namespace AZ
             return m_frameScheduler.GetCpuFrameTime();
         }
 
-        const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const
-        {
-            return m_frameScheduler.GetTransientAttachmentStatistics();
-        }
-
-        const RHI::MemoryStatistics* RHISystem::GetMemoryStatistics() const
-        {
-            return m_frameScheduler.GetMemoryStatistics();
-        }
 
         const AZ::RHI::TransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
         {
@@ -337,5 +334,39 @@ namespace AZ
         {
             return m_xrSystem;
         }
+
+        /////////////////////////////////////////////////////////////////////////////
+        // RHIMemoryStatisticsInterface overrides
+        const RHI::TransientAttachmentStatistics* RHISystem::GetTransientAttachmentStatistics() const
+        {
+            return m_frameScheduler.GetTransientAttachmentStatistics();
+        }
+
+        const RHI::MemoryStatistics* RHISystem::GetMemoryStatistics() const
+        {
+            return m_frameScheduler.GetMemoryStatistics();
+        }
+        
+        void RHISystem::WriteResourcePoolInfoToJson(
+            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            rapidjson::Document& doc) const
+        {
+            AZ::RHI::WritePoolsToJson(pools, doc);
+        }
+
+        AZ::Outcome<void, AZStd::string> RHISystem::LoadResourcePoolInfoFromJson(
+            AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
+            rapidjson::Document& doc, 
+            const AZStd::string& fileName) const
+        {
+            return AZ::RHI::LoadPoolsFromJson(pools, heaps, doc, fileName);
+        }
+
+        void RHISystem::TriggerResourcePoolAllocInfoDump() const
+        {
+            AZ::RHI::DumpPoolInfoToJson();
+        }
+        /////////////////////////////////////////////////////////////////////////////
     } //namespace RPI
 } //namespace AZ

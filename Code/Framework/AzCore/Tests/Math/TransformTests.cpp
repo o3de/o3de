@@ -403,7 +403,9 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew AZ::ComponentApplication);
-            m_app->Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app->Create(desc, startupParameters);
         }
 
         void TearDown() override

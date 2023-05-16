@@ -11,6 +11,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 #include <random>
 
@@ -404,5 +405,66 @@ namespace UnitTest
 
         // Expect all the entries to be in the scene
         ValidateEntryCountEqualsExpectedCount(m_octreeScene, static_cast<uint32_t>(visEntries.size()));
+    }
+
+    TEST_F(OctreeTests, ExcludeFrustumTest)
+    {
+        // This test is made to be similar to EnumerateMultipleEntriesHelper, however needs to be
+        // separate due to a different function signature. 
+
+        AZStd::vector<VisibilityEntry*> gatheredEntries;
+        auto gatherEntries = [&](const AzFramework::IVisibilityScene::NodeData& nodeData)
+        {
+            AppendEntries(gatheredEntries, nodeData);
+        };
+
+        AzFramework::VisibilityEntry visEntry[3];
+        visEntry[0].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.9f), AZ::Vector3(-0.6f));
+        visEntry[1].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.1f), AZ::Vector3(0.4f));
+        visEntry[2].m_boundingVolume = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.6f), AZ::Vector3(0.9f));
+
+        m_octreeScene->InsertOrUpdateEntry(visEntry[0]);
+        m_octreeScene->InsertOrUpdateEntry(visEntry[1]);
+        m_octreeScene->InsertOrUpdateEntry(visEntry[2]);
+
+        {
+            // Covers entire -1 to 1 region of the octree
+            AZ::Vector3 frustumOrigin = AZ::Vector3(0.0f, -2.0f, 0.0f);
+            AZ::Quaternion frustumDirection = AZ::Quaternion::CreateIdentity();
+            AZ::Transform frustumTransform = AZ::Transform::CreateFromQuaternionAndTranslation(frustumDirection, frustumOrigin);
+            AZ::Frustum include = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(2.0f), 1.0f, 5.0f));
+            AZ::Frustum exclude = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(0.5f), 3.0f, 5.0f));
+
+            m_octreeScene->Enumerate(include, exclude, gatherEntries);
+            EXPECT_EQ(gatheredEntries.size(), 3);
+            gatheredEntries.clear();
+        }
+
+        {
+            // Covers only on -y side
+            AZ::Vector3 frustumOrigin = AZ::Vector3(0.0f, -2.0f, 0.0f);
+            AZ::Quaternion frustumDirection = AZ::Quaternion::CreateIdentity();
+            AZ::Transform frustumTransform = AZ::Transform::CreateFromQuaternionAndTranslation(frustumDirection, frustumOrigin);
+            AZ::Frustum include = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(2.0f), 1.0f, 5.0f));
+            AZ::Frustum exclude = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(0.5f), 2.0f, 5.0f));
+
+            m_octreeScene->Enumerate(include, exclude, gatherEntries);
+            EXPECT_EQ(gatheredEntries.size(), 1);
+            gatheredEntries.clear();
+        }
+
+        {
+            // Entire world inside exclusion frustum
+            AZ::Vector3 frustumOrigin = AZ::Vector3(0.0f, -2.0f, 0.0f);
+            AZ::Quaternion frustumDirection = AZ::Quaternion::CreateIdentity();
+            AZ::Transform frustumTransform = AZ::Transform::CreateFromQuaternionAndTranslation(frustumDirection, frustumOrigin);
+            AZ::Frustum include = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(2.0f), 1.0f, 5.0f));
+            AZ::Frustum exclude = AZ::Frustum(AZ::ViewFrustumAttributes(frustumTransform, 1.0f, 2.0f * atanf(1.0f), 0.5f, 4.0f));
+
+            m_octreeScene->Enumerate(include, exclude, gatherEntries);
+            EXPECT_EQ(gatheredEntries.size(), 0);
+            gatheredEntries.clear();
+        }
+
     }
 }

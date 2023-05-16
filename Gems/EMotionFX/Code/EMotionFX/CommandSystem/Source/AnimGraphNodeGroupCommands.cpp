@@ -330,8 +330,7 @@ namespace CommandSystem
         animGraph->AddNodeGroup(nodeGroup);
 
         // give the node group a random color
-        const AZ::Color color = MCore::EmfxColorToAzColor(MCore::RGBAColor(MCore::GenerateColor()));
-        nodeGroup->SetColor(color.ToU32());
+        nodeGroup->SetColor(EMotionFX::AnimGraph::RandomGraphColor().ToU32());
 
         // save the current dirty flag and tell the anim graph that something got changed
         m_oldDirtyFlag   = animGraph->GetDirtyFlag();

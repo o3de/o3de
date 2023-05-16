@@ -25,7 +25,7 @@ void Miss(inout PayloadData payload)
     if (RayTracingGlobalSrg::m_rayTraceFallbackData)
     {
         // query mip0 of the global cubemap for the fallback color
-        float3 sampleDir = mul(WorldRayDirection(), SceneSrg::m_cubemapRotationMatrix);
+        float3 sampleDir = mul(WorldRayDirection(), (float3x3)SceneSrg::m_cubemapRotationMatrix);
         payload.m_fallbackColor = SceneSrg::m_specularEnvMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(sampleDir), 0.0f).rgb;
     
         // apply exposure

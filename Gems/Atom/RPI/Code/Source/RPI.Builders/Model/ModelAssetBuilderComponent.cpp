@@ -37,6 +37,7 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkinRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IClothRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/ITagRule.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -384,6 +385,16 @@ namespace AZ
             
             ModelAssetCreator modelAssetCreator;
             modelAssetCreator.Begin(modelAssetId);
+
+            AZStd::shared_ptr<const SceneAPI::DataTypes::ITagRule> tagRule = context.m_group.GetRuleContainerConst().FindFirstByType<SceneAPI::DataTypes::ITagRule>();
+            if (tagRule)
+            {
+                for (AZStd::string tag : tagRule->GetTags())
+                {
+                    AZStd::to_lower(tag.begin(), tag.end());
+                    modelAssetCreator.AddTag(AZ::Name{ tag });
+                }
+            }
 
             uint32_t lodIndex = 0;
             for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)

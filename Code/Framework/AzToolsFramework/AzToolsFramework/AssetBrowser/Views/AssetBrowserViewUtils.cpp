@@ -222,12 +222,17 @@ namespace AzToolsFramework
                 return;
             }
 
-            bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
-            if (isFolder && entries.size() != 1)
+            if (entries.size() > 1)
             {
-                return;
+                for (auto assetEntry : entries)
+                {
+                    if (assetEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        return;
+                    }
+                }
             }
-
+            bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             if (isFolder && IsEngineOrProjectFolder(entries[0]->GetFullPath()))
             {
                 return;
@@ -342,12 +347,19 @@ namespace AzToolsFramework
             {
                 return;
             }
-            bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
-            if (isFolder && entries.size() != 1)
-            {
-                return;
-            }
 
+            if (entries.size() > 1)
+            {
+                for (auto assetEntry : entries)
+                {
+                    if (assetEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        return;
+                    }
+                    
+                }
+            }
+            bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             if (isFolder && IsEngineOrProjectFolder(entries[0]->GetFullPath()))
             {
                 return;
@@ -393,6 +405,7 @@ namespace AzToolsFramework
                                         AZStd::string::format("%.*s/%.*s", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
                                     AZ::IO::SystemFile::CreateDir(toPath.c_str());
                                     AZ::IO::SystemFile::DeleteDir(fromPath.c_str());
+                                    return;
                                 }
                                 else
                                 {
