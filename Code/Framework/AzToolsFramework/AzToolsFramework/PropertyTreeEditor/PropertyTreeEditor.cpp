@@ -392,6 +392,11 @@ namespace AzToolsFramework
         }
 
         AZ_Warning("PropertyTreeEditor", false, "SetProperty - value type cannot be converted to the property's type.");
+        auto valRepr = value.type().ToFixedString();
+        AZ_Warning("PropertyTreeEditor", false, "SetProperty - value type %s", valRepr.c_str());
+        auto propRepr = pteNode.m_nodePtr->GetClassMetadata()->m_typeId.ToFixedString();
+        AZ_Warning("PropertyTreeEditor", false, "SetProperty - property's type %s", propRepr.c_str());
+
         return PropertyAccessOutcome{ AZStd::unexpect, PropertyAccessOutcome::ErrorType("SetProperty - value type cannot be converted to the property's type.") };
 
     }
@@ -801,6 +806,13 @@ namespace AzToolsFramework
         {
             AZ::s64 value = *static_cast<const AZ::s64*>(sourceValuePtr);
             return HandleTypeConversion(value, toType, convertedValue);
+        }
+
+        if (fromType == AZ::AzTypeInfo<AZStd::string_view>::Uuid() && toType == AZ::AzTypeInfo<AZStd::string>::Uuid())
+        {
+            AZStd::string_view value = *static_cast<const AZStd::string_view*>(sourceValuePtr);
+            convertedValue = AZStd::string{ value };
+            return &convertedValue;
         }
 
         return nullptr;
