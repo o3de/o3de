@@ -139,7 +139,11 @@ namespace AZ
 
         void DiffuseProbeGridRayTracingPass::BuildInternal()
         {
-            CreateRayTracingPipelineState();
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+            if (device->GetFeatures().m_rayTracing)
+            {
+                CreateRayTracingPipelineState();
+            }
         }
 
         void DiffuseProbeGridRayTracingPass::FrameBeginInternal(FramePrepareParams params)
