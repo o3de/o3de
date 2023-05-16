@@ -184,9 +184,20 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
         {
-            AzToolsFramework::UndoSystem::URSequencePoint* undoBatch = nullptr;
-            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                undoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Property");
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch,
+                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                    m_currentUndoBatch,
+                    "Modify Property");
+            }
+            else
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Property");
+            }
+
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
@@ -197,7 +208,12 @@ namespace AzToolsFramework
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
-            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
+
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
+                m_currentUndoBatch = nullptr;
+            }
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)

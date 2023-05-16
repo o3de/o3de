@@ -119,28 +119,17 @@ namespace AzToolsFramework::Prefab
                 instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
             }
 
-            if (m_currentUndoBatch)
+            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
+            if (!m_currentUndoBatch)
             {
+                AZ_Warning(
+                    "Prefab",
+                    false,
+                    "New undo batch is being created in PrefabComponentAdapter. This is unusual. An undo batch should already have "
+                    "existed by this point.");
                 AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch,
-                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                    m_currentUndoBatch,
-                    "Modify Component Property");
-            }
-            else
-            {
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetCurrentUndoBatch);
-                if (!m_currentUndoBatch)
-                {
-                    AZ_Warning(
-                        "Prefab",
-                        false,
-                        "New undo batch is being created in PrefabComponentAdapter. This is unusual. An undo batch should already have "
-                        "existed by this point.");
-                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                        m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Component Property");
-                }
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Component Property");
             }
 
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
