@@ -478,7 +478,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value returnValue;
 
         // only create a value if this node is represented by all member adapters
-        if (aggregateNode->EntryCount() == m_adapters.size())
+        if (aggregateNode && aggregateNode->EntryCount() == m_adapters.size())
         {
             // create a row value for this node
             returnValue = Dom::Value::CreateNode(Nodes::Row::Name);
