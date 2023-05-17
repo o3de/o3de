@@ -10,15 +10,17 @@
 
 namespace AZ::IO::Posix
 {
-    //! Turns of Virtual Terminal Processing on Windows
+    //! Enables Virtual Terminal Processing on Windows for th specified file descriptor
     //! This allows ANSI escapes to be supported
     //! https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
     void EnableVirtualTerminalProcessing(int fileDescriptor);
+
     //! return true the terminal supports color ANSI escape codes
     bool TerminalSupportsColor();
-    //! return if the open file descriptor is a terminal
+
+    //! return true if the open file descriptor is a terminal
     bool IsAtty(int fileDescriptor);
-    //! return true if the file descriptor represents a terminal
-    //! and it supports ANSI escapes
+
+    //! return true if the file descriptor supports ANSI escape sequences
     bool SupportsAnsiEscapes(int fileDescriptor);
 }

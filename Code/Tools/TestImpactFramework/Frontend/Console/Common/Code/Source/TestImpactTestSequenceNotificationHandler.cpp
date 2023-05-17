@@ -45,7 +45,7 @@ namespace TestImpact
                 }
                 else
                 {
-                    std::cout << "There are 0 total test\n";
+                    std::cout << "There are 0 total tests\n";
                 }
             }
 
