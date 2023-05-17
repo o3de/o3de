@@ -37,8 +37,8 @@ namespace AZ::IO::Posix
         return false;
     }
     // return true if the file descriptor is referring to a terminal
-    bool IsAtty(int fileDescriptor)
+    bool IsATty(int fileDescriptor)
     {
-        return is_atty(fileDescriptor);
+        return isatty(fileDescriptor);
     }
 }

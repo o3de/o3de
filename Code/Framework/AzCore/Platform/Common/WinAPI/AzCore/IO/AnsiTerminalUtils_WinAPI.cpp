@@ -11,7 +11,7 @@
 
 namespace AZ::IO::Posix
 {
-    void EnableVirtualConsoleProcessing(int fileDescriptor)
+    void EnableVirtualTerminalProcessing(int fileDescriptor)
     {
         const auto fileHandle = reinterpret_cast<HANDLE>(_get_osfhandle(fileDescriptor));
         DWORD currentMode{};
@@ -26,7 +26,7 @@ namespace AZ::IO::Posix
         return true;
     }
     // return true if the file descriptor is refering to a terminal
-    bool IsAtty(int fileDescriptor)
+    bool IsATty(int fileDescriptor)
     {
         return _isatty(fileDescriptor);
     }

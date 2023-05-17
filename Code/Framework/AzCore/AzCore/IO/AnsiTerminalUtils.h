@@ -19,7 +19,7 @@ namespace AZ::IO::Posix
     bool TerminalSupportsColor();
 
     //! return true if the open file descriptor is a terminal
-    bool IsAtty(int fileDescriptor);
+    bool IsATty(int fileDescriptor);
 
     //! return true if the file descriptor supports ANSI escape sequences
     bool SupportsAnsiEscapes(int fileDescriptor);

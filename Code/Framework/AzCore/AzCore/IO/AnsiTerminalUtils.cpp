@@ -12,6 +12,6 @@ namespace AZ::IO::Posix
 {
     bool SupportsAnsiEscapes(int fileDescriptor)
     {
-        return IsAtty(fileDescriptor) && TerminalSupportsColor();
+        return IsATty(fileDescriptor) && TerminalSupportsColor();
     }
 }
