@@ -417,9 +417,8 @@ namespace AzToolsFramework
 
         // Resets widget attributes and properties for reuse if the handler supports it.
         // Returns true if the handler was able to reset to defaults, false otherwise.
-        virtual bool ResetGUIToDefaults(WidgetType* widget)
+        virtual bool ResetGUIToDefaults([[maybe_unused]] WidgetType* widget)
         {
-            (void)widget;
             return false;
         }
 
