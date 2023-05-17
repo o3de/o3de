@@ -5,24 +5,24 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
 
-# Install source control apps 
+Write-Host "Install source control apps"
 choco install -y git
 choco install -y git-lfs
 
-# Install Java (for Jenkins)
+Write-Host "Install Java (for Jenkins)"
 choco install corretto11jdk -y --ia INSTALLDIR="c:\jdk11" # Custom directory to handle cases where whitespace in the path is not quote wrapped
 
-# Install Java (for Android)
+Write-Host "Install Java (for Android)"
 choco install corretto8jdk -y --ia INSTALLDIR="c:\jdk8" # Custom directory to handle cases where whitespace in the path is not quote wrapped
 
-# Set JDK_PATH for Android
+Write-Host "Set JDK_PATH for Android"
 [Environment]::SetEnvironmentVariable("JDK_PATH", "c:\jdk8", [EnvironmentVariableTarget]::Machine)
     
-# Set Java path for Jenkins node agent
+Write-Host "Set Java path for Jenkins node agent"
 [Environment]::SetEnvironmentVariable("JENKINS_JAVA_CMD", "c:\jdk11", [EnvironmentVariableTarget]::Machine)
 
-# Install CMake
+Write-Host "Install CMake"
 choco install cmake --version=3.24.0 -y --installargs 'ADD_CMAKE_TO_PATH=System'
 
-# Install Windows Installer XML toolkit (WiX)
+Write-Host "Install Windows Installer XML toolkit (WiX)"
 choco install wixtoolset -y

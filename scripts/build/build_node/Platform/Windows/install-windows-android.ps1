@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 #>
 
+Write-Host "Installing Android SDK"
 choco install -y android-sdk
 
 $Env:ANDROID_HOME = "C:\Android\android-sdk"
@@ -20,13 +21,14 @@ $gradle_checksum = '81003F83B0056D20EEDF48CDDD4F52A9813163D4BA185BCF8ABD34B8EEEA
 
 $ninja_version = 1.10.0
 
+Write-Host "Installing Android SDK packages"
 $sdkmanager = "C:\Android\android-sdk\tools\bin\sdkmanager.bat"
 Start-Process -FilePath $sdkmanager -ArgumentList $android_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $googleplay_packages -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $build_tools -NoNewWindow -Wait
 Start-Process -FilePath $sdkmanager -ArgumentList $ndk -NoNewWindow -Wait
 
-Write-Host "Installing Gradle and Ninja"
+Write-Host "Installing Gradle"
 Import-Module C:\ProgramData\chocolatey\helpers\chocolateyInstaller.psm1 #Grade needs a custom installer due to being hardcoded to C:\Programdata in Chocolatey
 $packageName = 'gradle'
 $url = "https://services.gradle.org/distributions/gradle-$gradle_version-all.zip"
@@ -35,7 +37,7 @@ $installDir = "C:\Gradle"
 Install-ChocolateyZipPackage $packageName $url $installDir -Checksum $gradle_checksum -ChecksumType 'sha256'
 
 $gradle_home = Join-Path $installDir "$packageName-$version"
+[Environment]::SetEnvironmentVariable("GRADLE_BUILD_HOME", $gradle_home, [EnvironmentVariableTarget]::Machine)
 
-Install-ChocolateyEnvironmentVariable "GRADLE_BUILD_HOME" $gradle_home 'Machine'
-
+Write-Host "Installing Ninja"
 choco install -y ninja --version=1.10.0 --package-parameters="/installDir:C:\Ninja"
