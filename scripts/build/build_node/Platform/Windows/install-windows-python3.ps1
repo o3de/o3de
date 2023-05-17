@@ -15,4 +15,4 @@ Write-Host "Ensure Python paths are set"
     [EnvironmentVariableTarget]::Machine)
 
 Write-Host "Installing packages" # requirements.txt hould be in the "Platforms\Common" folder
-pip3 install -r ..\requirements.txt
+pip3 install -r "$pwd\requirements.txt"
