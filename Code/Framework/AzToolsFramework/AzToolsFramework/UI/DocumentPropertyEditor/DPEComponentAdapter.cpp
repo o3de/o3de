@@ -95,7 +95,12 @@ namespace AZ::DocumentPropertyEditor
         if (m_entityId.IsValid())
         {
             const Entity* entity = AzToolsFramework::GetEntity(m_entityId);
-            AZ_Assert(entity, "ComponentAdapter::IsComponentValid - Entity is nullptr.");
+
+            // Since DoRefresh() gets called on the next tick, the entity and its components could have been destroyed by then.
+            if (entity == nullptr)
+            {
+                return false;
+            }
 
             bool isEntityActive = entity->GetState() == AZ::Entity::State::Active;
             return isEntityActive && entity->FindComponent(m_componentId) != nullptr;
@@ -168,10 +173,14 @@ namespace AZ::DocumentPropertyEditor
         ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
     }
 
-    void ComponentAdapter::OnEntityDestroyed(const AZ::EntityId& entityId)
+    void ComponentAdapter::OnEntityDestruction(const AZ::EntityId& entityId)
     {
         if (entityId == m_entityId)
         {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
+            AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusDisconnect();
+            AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusDisconnect(m_entityId);
+            
             m_entityId.SetInvalid();
             AZ::EntitySystemBus::Handler::BusDisconnect();
         }

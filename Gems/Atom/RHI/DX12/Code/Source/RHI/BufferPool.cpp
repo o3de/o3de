@@ -56,12 +56,12 @@ namespace AZ
                 AZ_PROFILE_FUNCTION(RHI);
 
                 MemoryView stagingMemory = m_device->AcquireStagingMemory(request.m_byteCount, Alignment::Buffer);
+                if (!stagingMemory.IsValid())
+                {
+                    return nullptr;
+                }
 
-                m_uploadPacketsLock.lock();
-
-                // Acquire a staging upload packet from the fill queue.
-                m_uploadPackets.emplace_back();
-                BufferUploadPacket& uploadRequest = m_uploadPackets.back();
+                BufferUploadPacket uploadRequest;
                 
                 // Fill the packet with the source and destination regions for copy.
                 Buffer* buffer = static_cast<Buffer*>(request.m_buffer);
@@ -72,9 +72,14 @@ namespace AZ
                 uploadRequest.m_memoryByteOffset    = buffer->GetMemoryView().GetOffset() + request.m_byteOffset;
                 uploadRequest.m_sourceMemory        = stagingMemory;
 
+                auto address = uploadRequest.m_sourceMemory.Map(RHI::HostMemoryAccess::Write);
+
+                // Once the uploadRequest has been processed, add it to the uploadPackets queue.
+                m_uploadPacketsLock.lock();
+                m_uploadPackets.emplace_back(AZStd::move(uploadRequest));
                 m_uploadPacketsLock.unlock();
 
-                return uploadRequest.m_sourceMemory.Map(RHI::HostMemoryAccess::Write);
+                return address;
             }
 
             void Compile(Scope& scope) override

@@ -57,7 +57,8 @@ namespace AZ::DocumentPropertyEditor
         //! @param serializedPath The serialized path to use to check whether an override is present corresponding to it.
         void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
 
-        void OnEntityDestroyed(const AZ::EntityId&) override;
+        //! Gets notification from the EntitySystemBus before destroying an entity.
+        void OnEntityDestruction(const AZ::EntityId&) override;
 
     private:
         //! Checks if the component is still valid in the entity.
