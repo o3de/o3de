@@ -377,8 +377,8 @@ namespace AzToolsFramework
 
     bool doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
     {
-        GUI->setMinimum(-DBL_MAX);
-        GUI->setMaximum(DBL_MAX);
+        GUI->setMinimum(AZStd::numeric_limits<double>::lowest());
+        GUI->setMaximum(AZStd::numeric_limits<double>::max());
         ResetGUIToDefaultsCommon(GUI);
 
         return true;
@@ -386,8 +386,8 @@ namespace AzToolsFramework
 
     bool floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
     {
-        GUI->setMinimum(std::numeric_limits<float>::lowest());
-        GUI->setMaximum(std::numeric_limits<float>::max());
+        GUI->setMinimum(AZStd::numeric_limits<float>::lowest());
+        GUI->setMaximum(AZStd::numeric_limits<float>::max());
         doublePropertySpinboxHandler::ResetGUIToDefaultsCommon(GUI);
 
         return true;
