@@ -88,6 +88,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "Label";
         static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
+        static constexpr auto ValueText = AttributeDefinition<AZStd::string_view>("ValueText");
     };
 
     //! Specifies types describing a value change's state.

@@ -28,10 +28,10 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponentSerializer.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
@@ -934,36 +934,30 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Trying to set an entity ID to something that isn't an entity ID."));
             }
 
-            AZ::EntityId actualValue = static_cast<AZ::EntityId>(*((AZ::EntityId*)newValue));
+            AZ::EntityId newParentId = static_cast<AZ::EntityId>(*((AZ::EntityId*)newValue));
 
-            if (!actualValue.IsValid())
+            if (!newParentId.IsValid())
             {
                 // Handled by the calling code.
                 return AZ::Success();
             }
 
-            // Only allow reparenting the selected entities if they are all under the same instance.
-            // We check the parent entity separately because it may be a container entity and
-            // container entities consider their owning instance to be the parent instance
-            EntityIdList entitiesToCheck;
-            entitiesToCheck.reserve(2);
-            entitiesToCheck.push_back(actualValue);
-            entitiesToCheck.push_back(GetEntityId());
-            const Prefab::PrefabPublicInterface* prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-            if (prefabPublicInterface && !prefabPublicInterface->EntitiesBelongToSameInstance(entitiesToCheck))
-            {
-                return AZ::Failure(AZStd::string("An entity in one prefab cannot be a child to an entity in another prefab"));
-            }
+            AZ::EntityId selectedEntityId = GetEntityId();
 
             // Prevent setting the parent to the entity itself.
-            if (actualValue == GetEntityId())
+            if (newParentId == selectedEntityId)
             {
                 return AZ::Failure(AZStd::string("You cannot set an entity's parent to itself."));
             }
 
+            if (!EntitiesBelongToSamePrefab(EntityIdList{ selectedEntityId }, newParentId))
+            {
+                return AZ::Failure(AZStd::string("You cannot set an entity to be a child of an entity owned by a different prefab."));
+            }
+
             // Don't allow the change if it will result in a cycle hierarchy
-            auto potentialParentTransformComponent = GetTransformComponent(actualValue);
-            if (potentialParentTransformComponent && potentialParentTransformComponent->IsEntityInHierarchy(GetEntityId()))
+            auto potentialParentTransformComponent = GetTransformComponent(newParentId);
+            if (potentialParentTransformComponent && potentialParentTransformComponent->IsEntityInHierarchy(selectedEntityId))
             {
                 return AZ::Failure(AZStd::string("You cannot set an entity to be a child of one of its own children."));
             }
@@ -971,20 +965,20 @@ namespace AzToolsFramework
             // Don't allow read-only entities to be re-parented at all.
             // Also don't allow entities to be parented under read-only entities.
             if (auto readOnlyEntityPublicInterface = AZ::Interface<ReadOnlyEntityPublicInterface>::Get();
-                readOnlyEntityPublicInterface->IsReadOnly(GetEntityId()) || readOnlyEntityPublicInterface->IsReadOnly(actualValue))
+                readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId) || readOnlyEntityPublicInterface->IsReadOnly(newParentId))
             {
                 return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a read-only entity."));
             }
 
             // Don't allow entities to be parented under closed containers.
             if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
-                !containerEntityInterface->IsContainerOpen(actualValue))
+                !containerEntityInterface->IsContainerOpen(newParentId))
             {
                 return AZ::Failure(AZStd::string("You cannot set an entity to be a child of a closed container."));
             }
 
             // Don't allow entities to be parented outside their container.
-            if (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(actualValue))
+            if (m_focusModeInterface && !m_focusModeInterface->IsInFocusSubTree(newParentId))
             {
                 return AZ::Failure(AZStd::string("You can only set a parent as one of the entities belonging to the focused prefab."));
             }

@@ -119,7 +119,9 @@ endif()
 ly_delayed_generate_runtime_dependencies()
 
 # 6. Perform test impact framework post steps once all of the targets have been enumerated
-ly_test_impact_post_step()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_test_impact_post_step()
+endif()
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(LY_INSTALL_ENABLED)

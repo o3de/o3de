@@ -25,6 +25,11 @@ ly_add_target(
             Gem::Atom_RPI.Public
 )
 
+ly_create_alias(NAME AtomViewportDisplayInfo.Clients NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+ly_create_alias(NAME AtomViewportDisplayInfo.Tools NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+ly_create_alias(NAME AtomViewportDisplayInfo.Servers NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+ly_create_alias(NAME AtomViewportDisplayInfo.Unified NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+
 ################################################################################
 # Tests
 ################################################################################

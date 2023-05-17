@@ -206,7 +206,15 @@ namespace AZ::DocumentPropertyEditor
                 AttributeType value;
                 if (!reader.Read<AttributeType>(value))
                 {
-                    return AZ::Dom::Value();
+                    // Handle the attribute providing an invokable function instead of the value directly
+                    if (attribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
+                    {
+                        return attribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                    }
+                    else
+                    {
+                        return AZ::Dom::Value();
+                    }
                 }
                 return ValueToDom(value);
             }

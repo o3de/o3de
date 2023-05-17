@@ -91,6 +91,11 @@ namespace AtomToolsFramework
 
         const auto& pathWithAlias = GetPathWithAlias(path);
         const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!QFileInfo::exists(pathWithoutAlias.c_str()))
+        {
+            return;
+        }
+
         const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         const QString title(GetDisplayNameFromPath(pathWithAlias).c_str());
 
