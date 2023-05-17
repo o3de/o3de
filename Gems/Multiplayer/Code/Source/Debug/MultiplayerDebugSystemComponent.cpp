@@ -256,25 +256,8 @@ namespace Multiplayer
         bool displaying = m_displayNetworkingStats || m_displayMultiplayerStats || m_displayPerEntityStats || m_displayHierarchyDebugger ||
             m_displayNetAuditTrail;
 
-        // Get the default ImGui pass.
-        AZ::Render::ImGuiPass* defaultImGuiPass = nullptr;
-        AZ::Render::ImGuiSystemRequestBus::BroadcastResult(
-            defaultImGuiPass, &AZ::Render::ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-        if (displaying && defaultImGuiPass)
+        if (displaying)
         {
-            if (m_previousSystemCursorState == AzFramework::SystemCursorState::Unknown)
-            {
-                AzFramework::InputSystemCursorRequestBus::EventResult(
-                    m_previousSystemCursorState, AzFramework::InputDeviceMouse::Id,
-                    &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::UnconstrainedAndVisible);
-            }
-
-            // Create an ImGui context scope using the default ImGui pass context.
-            ImGui::ImGuiContextScope contextScope(defaultImGuiPass->GetContext());
-
             if (m_displayNetworkingStats)
             {
                 if (ImGui::Begin("Networking Stats", &m_displayNetworkingStats, ImGuiWindowFlags_None))
@@ -374,13 +357,6 @@ namespace Multiplayer
                     m_auditTrail.reset();
                 }
             }
-        }
-        else if (m_previousSystemCursorState != AzFramework::SystemCursorState::Unknown)
-        {
-            AzFramework::InputSystemCursorRequestBus::Event(
-                AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                m_previousSystemCursorState);
-            m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
         }
     }
 

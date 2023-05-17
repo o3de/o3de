@@ -23,7 +23,7 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
@@ -277,9 +277,9 @@ namespace AzToolsFramework
             {
                 m_attachedThumbnailView->SelectEntry(entries.back().data());
             }
-            if (m_attachedExpandedTableView)
+            if (m_attachedTableView)
             {
-                m_attachedExpandedTableView->SelectEntry(entries.back().data());
+                m_attachedTableView->SelectEntry(entries.back().data());
             }
 
             SelectEntry(QModelIndex(), entries);
@@ -698,9 +698,9 @@ namespace AzToolsFramework
             m_attachedThumbnailView = thumbnailView;
         }
 
-        void AssetBrowserTreeView::SetAttachedExpandedTableView(AssetBrowserExpandedTableView* tableView)
+        void AssetBrowserTreeView::SetAttachedTableView(AssetBrowserTableView* tableView)
         {
-            m_attachedExpandedTableView = tableView;
+            m_attachedTableView = tableView;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

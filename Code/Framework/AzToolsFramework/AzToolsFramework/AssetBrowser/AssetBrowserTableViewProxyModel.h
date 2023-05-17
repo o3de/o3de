@@ -15,14 +15,14 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class AssetBrowserExpandedTableViewProxyModel
+        class AssetBrowserTableViewProxyModel
             : public QIdentityProxyModel
         {
             Q_OBJECT
 
         public:
-            explicit AssetBrowserExpandedTableViewProxyModel(QObject* parent = nullptr);
-            ~AssetBrowserExpandedTableViewProxyModel() override;
+            explicit AssetBrowserTableViewProxyModel(QObject* parent = nullptr);
+            ~AssetBrowserTableViewProxyModel() override;
 
             enum
             {

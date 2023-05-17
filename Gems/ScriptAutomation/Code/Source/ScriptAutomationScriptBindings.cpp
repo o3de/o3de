@@ -10,6 +10,8 @@
 
 #include <ScriptAutomationScriptBindings.h>
 
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -20,20 +22,79 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/IO/Path/Path.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
+#include <ScriptAutomation_Traits.h>
+
+AZ_CVAR(AZ::CVarFixedString, sa_image_compare_app_path, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_PATH, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare app path");
+AZ_CVAR(AZ::CVarFixedString, sa_image_compare_arguments, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_ARGUMENTS, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare arguments");
+AZ_CVAR(bool, sa_launch_image_compare_for_failed_baseline_compare, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should ScriptAutomation launch an image compare for every failed screenshot baseline compare");
+/* sa_launch_image_compare_for_failed_baseline_compare can be set to true for local work by adding a setreg file containing the below json
+ * {
+ *      "Amazon": {
+ *          "AzCore": {
+ *              "Runtime": {
+ *                  "ConsoleCommands": {
+ *                      "sa_launch_image_compare_for_failed_baseline_compare": 1
+ *                  }
+ *              }
+ *          }
+ *      }
+ *  }
+ */
+namespace AZ::Platform
+{
+    bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments);
+}
+
 namespace AZ::ScriptAutomation
 {
-    namespace Utils
+    static constexpr char NewScreenshotPlaceholder[] = "{NewScreenshotPath}";
+    static constexpr char ExpectedScreenshotPlaceholder[] = "{ExpectedScreenshotPath}";
+    static constexpr char TestNamePlaceholder[] = "{TestName}";
+    static constexpr char ImageNamePlaceholder[] = "{ImageName}";
+    static constexpr char PlaceholderEndChar[] = "}";
+
+   namespace Utils
     {
+        void ReplacePlaceholder(AZStd::string& string, const char* placeholderName, const AZStd::string& newValue)
+        {
+            for (auto index = string.find(placeholderName); index != AZStd::string::npos; index = string.find(placeholderName))
+            {
+                auto endIndex = string.find(PlaceholderEndChar, index);
+                string.erase(index, endIndex - index + 1);
+                string.insert(index, newValue);
+            }
+        }
+        void RunImageDiff(
+            const AZStd::string& newImagePath, 
+            const AZStd::string& compareImagePath, 
+            const AZStd::string& testName,
+            const AZStd::string& imageName)
+        {
+            AZStd::string appPath = static_cast<AZStd::string_view>(static_cast<AZ::CVarFixedString>(sa_image_compare_app_path));
+            AZStd::string arguments = static_cast<AZStd::string_view>(static_cast<AZ::CVarFixedString>(sa_image_compare_arguments));
+            ReplacePlaceholder(arguments, NewScreenshotPlaceholder, newImagePath);
+            ReplacePlaceholder(arguments, ExpectedScreenshotPlaceholder, compareImagePath);
+            ReplacePlaceholder(arguments, TestNamePlaceholder, testName);
+            ReplacePlaceholder(arguments, ImageNamePlaceholder, imageName);
+
+            if (!Platform::LaunchProgram(appPath, arguments))
+            {
+                AZ_Error("ScriptAutomation", false, "Failed to launch image diff - \"%s %s\"", appPath.c_str(), arguments.c_str());
+            }
+        }
+
         bool SupportsResizeClientAreaOfDefaultWindow()
         {
             return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
@@ -184,6 +245,33 @@ namespace AZ::ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
+        void SetCamera(const AZStd::string& entityName)
+        {
+            auto operation = [entityName]()
+            {
+                // Find all Component Entity Cameras
+                AZ::EBusAggregateResults<AZ::EntityId> cameraComponentEntities;
+                Camera::CameraBus::BroadcastResult(cameraComponentEntities, &Camera::CameraRequests::GetCameras);
+
+                // add names of all found entities with Camera Components
+                for (int i = 0; i < cameraComponentEntities.values.size(); i++)
+                {
+                    AZ::Entity* entity = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraComponentEntities.values[i]);
+                    if (entity)
+                    {
+                        if (entity->GetName() == entityName)
+                        {
+                            Camera::CameraRequestBus::Event(cameraComponentEntities.values[i], &Camera::CameraRequestBus::Events::MakeActiveView);
+                        }
+                    }
+                }            
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+
         void CapturePassTimestamp(const AZStd::string& outputFilePath)
         {
             auto operation = [outputFilePath]()
@@ -260,6 +348,17 @@ namespace AZ::ScriptAutomation
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        AZStd::vector<AZStd::string> SplitStringImmediate(const AZStd::string& source, const AZStd::string& delimiter)
+        {
+            AZStd::vector<AZStd::string> splitStringList;
+            auto SplitString = [&splitStringList](AZStd::string_view token)
+            {
+                splitStringList.emplace_back(token);
+            };
+            AZ::StringFunc::TokenizeVisitor(source, SplitString, delimiter, false, false);
+            return splitStringList;
         }
 
         AZStd::string ResolvePath(const AZStd::string& path)
@@ -716,7 +815,10 @@ namespace AZ::ScriptAutomation
                             toleranceLevel->m_name.c_str()
                         );
 
-                        // TODO: open image compare app if CVAR is set
+                        if (sa_launch_image_compare_for_failed_baseline_compare)
+                        {
+                            Utils::RunImageDiff(screenshotFilePath, baselineFilePath, compareName, imageName);
+                        }
                     }
                     else
                     {
@@ -751,7 +853,9 @@ namespace AZ::ScriptAutomation
         behaviorContext->Method("IdleFrames", &Bindings::IdleFrames);
         behaviorContext->Method("IdleSeconds", &Bindings::IdleSeconds);
         behaviorContext->Method("ResizeViewport", &Bindings::ResizeViewport);
+        behaviorContext->Method("SetCamera", &Bindings::SetCamera);
 
+        behaviorContext->Method("SplitString", &Bindings::SplitStringImmediate);
         behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
         behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
         behaviorContext->Method("DegToRad", &AZ::DegToRad);

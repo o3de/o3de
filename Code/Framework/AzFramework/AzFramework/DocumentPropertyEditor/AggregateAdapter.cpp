@@ -159,8 +159,8 @@ namespace AZ::DocumentPropertyEditor
                     (void)rowParentNode;
                     /* TODO:
                     - see if the entry for rowParentNode at adapterIndex still is SameRow (NB: if adapterIndex is 0, you need to use
-                      a different GetComparisonRow), if not, remove it and place it where it actually goes. If yes, update the node's "values
-                      differ" status
+                      a different GetComparisonRow), if not, remove it and place it where it actually goes. If yes, update the node's
+                    "values differ" status
                     - Suggestion: it's almost certainly simpler to remove this parent node and repopulate to see if it ends up in the same
                       bucket, but need to track exactly what's been updated since last frame for patching purposes */
                 }
@@ -233,7 +233,8 @@ namespace AZ::DocumentPropertyEditor
                                 }
                                 else
                                 {
-                                    // TODO: no longer the same row, check for a matching sibling, and if there isn't one, split off a new node
+                                    // TODO: no longer the same row, check for a matching sibling,
+                                    // and if there isn't one, split off a new node
                                     AZ_Assert(0, "replace operation morphing node is not supported yet!");
                                 }
                             }
@@ -259,9 +260,9 @@ namespace AZ::DocumentPropertyEditor
         }
 
         /* TODO: adds or removes cause all subsequent entries to change index. Update m_pathIndexToChildMaps of parent *and* m_pathEntries
-           of child. Note! We need to only change out column children when swapping "values differ" state, so that we don't have to cull and re-add all
-           row children <apm> it's possible / likely that a node may be removed then added in very quick succession, as more than one
-           adapter adds or removes children */
+           of child. Note! We need to only change out column children when swapping "values differ" state, so that we don't have to cull and
+           re-add all row children. It's possible / likely that a node may be removed then added in very quick succession, as more than
+           one adapter adds or removes children */
     }
 
     void RowAggregateAdapter::HandleDomMessage(
@@ -544,44 +545,60 @@ namespace AZ::DocumentPropertyEditor
             AZ_Assert(messageNode, "can't find node for given AdapterMessage!");
 
             // it's a forwarded message, we need to look up the original handler for each adapter and call them individually
-            AZ::Dom::Value retval;
             for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
             {
                 auto attributePath = messageNode->GetPathForAdapter(adapterIndex) / originalColumn / message.m_messageName;
                 auto attributeValue = m_adapters[adapterIndex]->adapter->GetContents()[attributePath];
                 AZ_Assert(!attributeValue.IsNull(), "function attribute should exist for each adapter!");
-                auto adapterFunction = BoundAdapterMessage::TryMarshalFromDom(attributeValue);
 
-                if (adapterFunction.has_value())
+                auto invokeDomValueFunction = [&message](const Dom::Value& functionValue, auto&& invokeDomValueFunction) -> Dom::Value
                 {
-                    // it's a bound adapter message, just call it, hooray!
-                    messageResult = adapterFunction.value()(message.m_messageParameters);
-                }
-                else if (attributeValue.IsObject())
-                {
-                    // it's an object, it should be a callable attribute
-                    auto typeField = attributeValue.FindMember(AZ::Attribute::GetTypeField());
-                    if (typeField != attributeValue.MemberEnd() && typeField->second.IsString() &&
-                        typeField->second.GetString() == Attribute::GetTypeName())
+                    Dom::Value result;
+                    auto adapterFunction = BoundAdapterMessage::TryMarshalFromDom(functionValue);
+
+                    if (adapterFunction.has_value())
                     {
-                        // last chance! Check if it's an invokable Attribute
-                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(attributeValue[AZ::Attribute::GetInstanceField()]);
-                        AZ::Attribute* attribute =
-                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(attributeValue[AZ::Attribute::GetAttributeField()]);
-
-                        const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
-                        AZ_Assert(canInvoke, "message attribute is not invokable!");
-                        if (canInvoke)
+                        // it's a bound adapter message, just call it, hooray!
+                        result = adapterFunction.value()(message.m_messageParameters);
+                    }
+                    else if (functionValue.IsObject())
+                    {
+                        // it's an object, it should be a callable attribute
+                        auto typeField = functionValue.FindMember(AZ::Attribute::GetTypeField());
+                        if (typeField != functionValue.MemberEnd() && typeField->second.IsString() &&
+                            typeField->second.GetString() == Attribute::GetTypeName())
                         {
-                            messageResult = attribute->DomInvoke(instance, message.m_messageParameters);
+                            // last chance! Check if it's an invokable Attribute
+                            void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(functionValue[AZ::Attribute::GetInstanceField()]);
+                            AZ::Attribute* attribute =
+                                AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(functionValue[AZ::Attribute::GetAttributeField()]);
+
+                            const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
+                            AZ_Assert(canInvoke, "message attribute is not invokable!");
+                            if (canInvoke)
+                            {
+                                result = attribute->DomInvoke(instance, message.m_messageParameters);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    // it's not a function object, it's most likely a pass-through Value, so pass it through
-                    messageResult = attributeValue;
-                }
+                    else if (functionValue.IsArray())
+                    {
+                        for (auto arrayIter = functionValue.ArrayBegin(), endIter = functionValue.ArrayEnd(); arrayIter != endIter;
+                             ++arrayIter)
+                        {
+                            // Note: currently last call in the array wins. This could be parameterized in the future if
+                            // a different result is desired
+                            result = invokeDomValueFunction(*arrayIter, invokeDomValueFunction);
+                        }
+                    }
+                    else
+                    {
+                        // it's not a function object, it's most likely a pass-through Value, so pass it through
+                        result = functionValue;
+                    }
+                    return result;
+                };
+                messageResult = invokeDomValueFunction(attributeValue, invokeDomValueFunction);
             }
         }
         else
