@@ -10,14 +10,107 @@ Contains methods for query CMake gem target information
 """
 
 import argparse
+import enum
+import json
 import logging
 import pathlib
+import string
 import sys
+from typing import Tuple
 
 from o3de import manifest, utils, compatibility
 
 logger = logging.getLogger('o3de.cmake')
 logging.basicConfig(format=utils.LOG_FORMAT)
+
+TEMPLATE_CMAKE_PRESETS_INCLUDE_JSON = """
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "include": [
+        "${CMakePresetsInclude}"
+    ]
+}
+"""
+
+class UpdatePresetResult(enum.Enum):
+    EnginePathAdded = 0
+    EnginePathAlreadyIncluded = 1
+    Error = 2
+
+def update_cmake_presets_for_project(preset_path: pathlib.PurePath, engine_name: str,
+                                     engine_version: str) -> UpdatePresetResult:
+    """
+    Updates a cmake-presets formated JSON file with an include that points
+    to the root CMakePresets.json inside the registered engine
+    :param preset_path: path to the file to update with cmake-preset formatted json
+    :param engine_name: name of the engine
+    :param engine_version: version specifier for the engine.
+           if empty string it is not used
+    :return: UpdatePresetResult enum with value EnginePathAdded or EnginePathAlreadyIncluded
+             if successful
+    """
+    engine_with_specifier = f'{engine_name}=={engine_version}' if engine_version else engine_name
+    engine_path = manifest.get_registered(engine_name=engine_with_specifier)
+    if not engine_path:
+        logger.error(f'Engine with identifier {engine_with_specifier} is not registered.\n' \
+                     f'The cmake-presets file at {preset_path} will not be modified')
+        return UpdatePresetResult.Error
+
+    engine_cmake_presets_path = engine_path / "CMakePresets.json"
+    preset_json = {}
+    # Convert the path to a concrete Path option
+    preset_path = pathlib.Path(preset_path)
+    try:
+        with preset_path.open('r') as preset_fp:
+            try:
+                preset_json = json.load(preset_fp)
+            except json.JSONDecodeError as e:
+                logger.warning(f'Cannot parse JSON data from cmake-presets file at path "{preset_path}".\n'
+                            'The JSON content in the file will be reset to only include the path to the registered engine:\n'
+                            f'{str(e)}')
+    except OSError as e:
+        # It is OK if the preset_path file does not exist
+        pass
+
+    # Update an existing preset file if it exist
+    if preset_json:
+        preset_include_list = preset_json.get('include', [])
+        if engine_cmake_presets_path in map(lambda preset_json_include: pathlib.PurePath(preset_json_include), preset_include_list):
+            # If the engine_path is already included in the preset file, return without writing to the file
+            return UpdatePresetResult.EnginePathAlreadyIncluded
+        
+        # Replace all "include" paths in the existing preset file
+        # The reason this occurs is to prevent a scenario where previously registered engines
+        # are being referenced by this preset file
+        preset_json['include'] = [ engine_cmake_presets_path.as_posix() ]
+    else:
+        try:
+            preset_json = json.loads(string.Template(TEMPLATE_CMAKE_PRESETS_INCLUDE_JSON).safe_substitute(
+                CMakePresetsInclude=engine_cmake_presets_path.as_posix()))
+        except json.JSONDecodeError as e:
+            logger.error(f'Failed to substitute engine path {engine_path} into project CMake Presets template')
+            return UpdatePresetResult.Error
+
+    result = UpdatePresetResult.EnginePathAdded
+    # Write the updated cmake-presets json to the preset_path file
+    try:
+        preset_path.parent.mkdir(parents=True, exist_ok=True)
+        with preset_path.open('w') as preset_fp:
+            try:
+                preset_fp.write(json.dumps(preset_json, indent=4) + '\n')
+                return result
+            except OSError as e:
+                logger.error(f'Failed to write "{preset_path}" to filesystem: {str(e)}')
+                return UpdatePresetResult.Error
+    except OSError as e:
+        logger.error(f'Failed to open {preset_path} for write: {str(e)}')
+        return UpdatePresetResult.Error
+
 
 enable_gem_start_marker = 'set(ENABLED_GEMS'
 enable_gem_end_marker = ')'
@@ -105,9 +198,9 @@ def resolve_gem_dependency_paths(
     writes the output to the path provided.  This is used during CMake
     configuration because writing a CMake depencency resolver would be
     difficult and Python already has a solver with unit tests.
-    :param engine_path: optional path to the engine, if not provided, the project's engine will be determined 
+    :param engine_path: optional path to the engine, if not provided, the project's engine will be determined
     :param project_path: optional path to the project, if not provided the engine path must be provided
-    :param resolved_gem_dependencies_output_path: optional path to a file that will be written 
+    :param resolved_gem_dependencies_output_path: optional path to a file that will be written
         containing a CMake list of gem names and paths.  If not provided, the list is written to STDOUT.
     :return: 0 for success or non 0 failure code
     """
@@ -127,7 +220,7 @@ def resolve_gem_dependency_paths(
 
             logger.warning('Failed to determine the correct engine for the project at '
                            f'"{project_path}", falling back to this engine at {engine_path}.')
-    
+
     engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
     if not engine_json_data:
         logger.error('Failed to retrieve engine json data for the engine at '
@@ -147,7 +240,7 @@ def resolve_gem_dependency_paths(
     else:
         active_gem_names = engine_json_data.get('gem_names',[])
 
-    # some gem name entries will be dictionaries - convert to a set of strings 
+    # some gem name entries will be dictionaries - convert to a set of strings
     gem_names_with_optional_gems = utils.get_gem_names_set(active_gem_names, include_optional=True)
     if not gem_names_with_optional_gems:
         logger.info(f'No gem names were found to use as input to resolve gem dependencies.')
@@ -156,24 +249,24 @@ def resolve_gem_dependency_paths(
                 output.write('')
         return 0
 
-    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path, 
-                                                             project_path=project_path, 
-                                                             include_manifest_gems=True, 
+    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path=engine_path,
+                                                             project_path=project_path,
+                                                             include_manifest_gems=True,
                                                              include_engine_gems=True,
                                                              external_subdirectories=external_subdirectories.split(';') if isinstance(external_subdirectories, str) else external_subdirectories)
 
     # First try to resolve with optional gems
-    results, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems, 
-                                                             all_gems_json_data, 
-                                                             engine_json_data, 
+    results, errors = compatibility.resolve_gem_dependencies(gem_names_with_optional_gems,
+                                                             all_gems_json_data,
+                                                             engine_json_data,
                                                              include_optional=True)
     if errors:
         logger.warning('Failed to resolve dependencies with optional gems, trying without optional gems.')
 
         # Try without optional gems
         gem_names_without_optional = utils.get_gem_names_set(active_gem_names, include_optional=False)
-        results, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional, 
-                                                                 all_gems_json_data, 
+        results, errors = compatibility.resolve_gem_dependencies(gem_names_without_optional,
+                                                                 all_gems_json_data,
                                                                  engine_json_data,
                                                                  include_optional=False)
 

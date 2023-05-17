@@ -6,6 +6,6 @@
         "patch": 0
     },
     "include": [
-        "user/cmake/engine/CMakePresets.json"
+        "../CMakePresets.json"
     ]
 }
