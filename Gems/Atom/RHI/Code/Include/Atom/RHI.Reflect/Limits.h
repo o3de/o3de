@@ -88,7 +88,13 @@ namespace AZ
 
         namespace MultiDevice
         {
-            constexpr int DefaultDeviceIndex = 0;
+            enum class DeviceMask : uint32_t
+            {
+            };
+            constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(-1) };
+            constexpr DeviceMask DefaultDevice{ 1u };
+
+            constexpr int DefaultDeviceIndex { 0 };
         }
     }
 }

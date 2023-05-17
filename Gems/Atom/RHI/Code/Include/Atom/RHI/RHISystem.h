@@ -31,7 +31,7 @@ namespace AZ
         public:
             //! This function just initializes the native device and RHI::Device as a result.
             //! We can use this device to then query for device capabilities.
-            ResultCode InitDevice();
+            ResultCode InitDevices(bool initializeMultiDevice = false);
 
             //! This function initializes the rest of the RHI/RHI backend. 
             void Init();
@@ -83,7 +83,7 @@ namespace AZ
         private:
 
             //Enumerates the Physical devices and picks one to be used to initialize the RHI::Device with
-            ResultCode InitInternalDevices();
+            ResultCode InitInternalDevices(bool initializeMultiDevice);
 
             AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
             RHI::FrameScheduler m_frameScheduler;

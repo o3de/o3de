@@ -37,11 +37,11 @@ namespace AZ
             return Interface<RHIMemoryStatisticsInterface>::Get();
         }
 
-        ResultCode RHISystem::InitDevice()
+        ResultCode RHISystem::InitDevices(bool initializeMultiDevice)
         {
             Interface<RHISystemInterface>::Register(this);
             Interface<RHIMemoryStatisticsInterface>::Register(this);
-            return InitInternalDevices();
+            return InitInternalDevices(initializeMultiDevice);
         }
     
         void RHISystem::Init()
@@ -94,7 +94,7 @@ namespace AZ
             m_frameScheduler.Init(*m_devices[MultiDevice::DefaultDeviceIndex], frameSchedulerDescriptor);
         }
 
-        ResultCode RHISystem::InitInternalDevices()
+        ResultCode RHISystem::InitInternalDevices(bool initializeMultiDevice)
         {
             RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
 
@@ -106,12 +106,9 @@ namespace AZ
                 return ResultCode::Fail;
             }
 
-            static const char* MultiGPUCommandLineOption = "rhi-multiple-devices";
-            AZStd::string multipleDevicesValue = RHI::GetCommandLineValue(MultiGPUCommandLineOption);
-
             RHI::PhysicalDeviceList usePhysicalDevices;
 
-            if (AzFramework::StringFunc::Equal(multipleDevicesValue.c_str(), "enable"))
+            if (initializeMultiDevice)
             {
                 AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 
