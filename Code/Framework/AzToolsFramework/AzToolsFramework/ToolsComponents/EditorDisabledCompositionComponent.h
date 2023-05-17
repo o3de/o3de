@@ -31,7 +31,7 @@ namespace AzToolsFramework
             void GetDisabledComponents(AZStd::vector<AZ::Component*>& components) override;
             void AddDisabledComponent(AZ::Component* componentToAdd) override;
             void RemoveDisabledComponent(AZ::Component* componentToRemove) override;
-            bool IsComponentDisabled(const AZ::Component* component) override;
+            bool IsComponentDisabled(const AZ::Component* componentToCheck) override;
             ////////////////////////////////////////////////////////////////////
 
             ~EditorDisabledCompositionComponent() override;
@@ -43,7 +43,8 @@ namespace AzToolsFramework
             void Deactivate() override;
             ////////////////////////////////////////////////////////////////////
 
-            AZStd::vector<AZ::Component*> m_disabledComponents;
+            // Map that stores a pair of component alias (serialized identifier) and component pointer.
+            AZStd::unordered_map<AZStd::string, AZ::Component*> m_disabledComponents;
         };
     } // namespace Components
 } // namespace AzToolsFramework

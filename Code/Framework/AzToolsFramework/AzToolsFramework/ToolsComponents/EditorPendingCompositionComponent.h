@@ -31,7 +31,7 @@ namespace AzToolsFramework
             void GetPendingComponents(AZStd::vector<AZ::Component*>& components) override;
             void AddPendingComponent(AZ::Component* componentToAdd) override;
             void RemovePendingComponent(AZ::Component* componentToRemove) override;
-            bool IsComponentPending(const AZ::Component* component) override;
+            bool IsComponentPending(const AZ::Component* componentToCheck) override;
             ////////////////////////////////////////////////////////////////////
 
             ~EditorPendingCompositionComponent() override;
@@ -43,7 +43,8 @@ namespace AzToolsFramework
             void Deactivate() override;
             ////////////////////////////////////////////////////////////////////
 
-            AZStd::vector<AZ::Component*> m_pendingComponents;
+            // Map that stores a pair of component alias (serialized identifier) and component pointer.
+            AZStd::unordered_map<AZStd::string, AZ::Component*> m_pendingComponents;
         };
     } // namespace Components
 } // namespace AzToolsFramework

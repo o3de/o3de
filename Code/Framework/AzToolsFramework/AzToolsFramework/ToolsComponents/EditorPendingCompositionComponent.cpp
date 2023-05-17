@@ -19,6 +19,7 @@ namespace AzToolsFramework
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorPendingCompositionComponent, EditorComponentBase>()
+                    ->Version(1)
                     ->Field("PendingComponents", &EditorPendingCompositionComponent::m_pendingComponents)
                     ;
 
@@ -47,15 +48,26 @@ namespace AzToolsFramework
 
         void EditorPendingCompositionComponent::GetPendingComponents(AZStd::vector<AZ::Component*>& components)
         {
-            components.insert(components.end(), m_pendingComponents.begin(), m_pendingComponents.end());
+            for (auto const& pair : m_pendingComponents)
+            {
+                components.insert(components.end(), pair.second);
+            }
         }
 
         void EditorPendingCompositionComponent::AddPendingComponent(AZ::Component* componentToAdd)
         {
-            AZ_Assert(componentToAdd, "Unable to add a pending component that is nullptr");
-            if (componentToAdd && AZStd::find(m_pendingComponents.begin(), m_pendingComponents.end(), componentToAdd) == m_pendingComponents.end())
+            AZ_Assert(componentToAdd, "Unable to add a pending component that is nullptr.");
+
+            AZStd::string componentAlias = componentToAdd->GetSerializedIdentifier();
+            AZ_Assert(!componentAlias.empty(), "Unable to add a pending component that has an empty component alias.");
+
+            bool found = m_pendingComponents.find(componentAlias) != m_pendingComponents.end();
+            AZ_Assert(!found, "Unable to add a pending component that was added already.");
+
+            if (componentToAdd && !found)
             {
-                m_pendingComponents.push_back(componentToAdd);
+                m_pendingComponents.emplace(AZStd::move(componentAlias), componentToAdd);
+
                 bool isDuringUndo = false;
                 AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequestBus::Events::IsDuringUndoRedo);
                 if (isDuringUndo)
@@ -67,10 +79,18 @@ namespace AzToolsFramework
 
         void EditorPendingCompositionComponent::RemovePendingComponent(AZ::Component* componentToRemove)
         {
-            AZ_Assert(componentToRemove, "Unable to remove a pending component that is nullptr");
-            if (componentToRemove)
+            AZ_Assert(componentToRemove, "Unable to remove a pending component that is nullptr.");
+
+            AZStd::string componentAlias = componentToRemove->GetSerializedIdentifier();
+            AZ_Assert(!componentAlias.empty(), "Unable to remove a pending component that has an empty component alias.");
+
+            bool found = m_pendingComponents.find(componentAlias) != m_pendingComponents.end();
+            AZ_Assert(found, "Unable to remove a pending component that has not been added.");
+
+            if (componentToRemove && found)
             {
-                m_pendingComponents.erase(AZStd::remove(m_pendingComponents.begin(), m_pendingComponents.end(), componentToRemove), m_pendingComponents.end());
+                m_pendingComponents.erase(componentAlias);
+
                 bool isDuringUndo = false;
                 AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(isDuringUndo, &AzToolsFramework::ToolsApplicationRequestBus::Events::IsDuringUndoRedo);
                 if (isDuringUndo)
@@ -80,18 +100,32 @@ namespace AzToolsFramework
             }
         };
 
-        bool EditorPendingCompositionComponent::IsComponentPending(const AZ::Component* component)
+        bool EditorPendingCompositionComponent::IsComponentPending(const AZ::Component* componentToCheck)
         {
-            AZ_Assert(component, "Unable to check a component that is nullptr");
-            return component &&
-                AZStd::find(m_pendingComponents.begin(), m_pendingComponents.end(), component) != m_pendingComponents.end();
+            AZ_Assert(componentToCheck, "Unable to check a component that is nullptr.");
+
+            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
+            AZ_Assert(!componentAlias.empty(), "Unable to check a component that has an empty component alias.");
+
+            auto componentIt = m_pendingComponents.find(componentAlias);
+
+            if (componentIt != m_pendingComponents.end())
+            {
+                bool sameComponent = componentIt->second == componentToCheck;
+                AZ_Assert(sameComponent, "The component to check shares the same alias but is a different object "
+                    "compared to the one referenced in the composition component.");
+
+                return sameComponent;
+            }
+
+            return false;
         }
 
         EditorPendingCompositionComponent::~EditorPendingCompositionComponent()
         {
-            for (auto pendingComponent : m_pendingComponents)
+            for (auto& pair : m_pendingComponents)
             {
-                delete pendingComponent;
+                delete pair.second;
             }
             m_pendingComponents.clear();
 
@@ -108,12 +142,19 @@ namespace AzToolsFramework
             // This is a special case for certain EditorComponents only!
             EditorPendingCompositionRequestBus::Handler::BusConnect(GetEntityId());
 
-            // Set the entity* for each pending component
-            for (auto pendingComponent : m_pendingComponents)
+            // Set the entity for each pending component.
+            for (auto const& [componentAlias, pendingComponent] : m_pendingComponents)
             {
-                auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(pendingComponent);
-                AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
-                editorComponentBaseComponent->SetEntity(GetEntity());
+                // It's possible to get null components in the list if errors occur during serialization.
+                // Guard against that case so that the code won't crash.
+                if (pendingComponent)
+                {
+                    auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(pendingComponent);
+                    AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
+
+                    editorComponentBaseComponent->SetEntity(GetEntity());
+                    editorComponentBaseComponent->SetSerializedIdentifier(componentAlias);
+                }
             }
         }
 

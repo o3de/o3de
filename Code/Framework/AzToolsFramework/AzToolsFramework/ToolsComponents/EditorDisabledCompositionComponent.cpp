@@ -18,6 +18,7 @@ namespace AzToolsFramework
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDisabledCompositionComponent, EditorComponentBase>()
+                    ->Version(1)
                     ->Field("DisabledComponents", &EditorDisabledCompositionComponent::m_disabledComponents)
                     ;
 
@@ -46,39 +47,70 @@ namespace AzToolsFramework
 
         void EditorDisabledCompositionComponent::GetDisabledComponents(AZStd::vector<AZ::Component*>& components)
         {
-            components.insert(components.end(), m_disabledComponents.begin(), m_disabledComponents.end());
+            for (auto const& pair : m_disabledComponents)
+            {
+                components.insert(components.end(), pair.second);
+            }
         }
 
         void EditorDisabledCompositionComponent::AddDisabledComponent(AZ::Component* componentToAdd)
         {
-            AZ_Assert(componentToAdd, "Unable to add a disabled component that is nullptr");
-            if (componentToAdd && AZStd::find(m_disabledComponents.begin(), m_disabledComponents.end(), componentToAdd) == m_disabledComponents.end())
+            AZ_Assert(componentToAdd, "Unable to add a disabled component that is nullptr.");
+
+            AZStd::string componentAlias = componentToAdd->GetSerializedIdentifier();
+            AZ_Assert(!componentAlias.empty(), "Unable to add a disabled component that has an empty component alias.");
+
+            bool found = m_disabledComponents.find(componentAlias) != m_disabledComponents.end();
+            AZ_Assert(!found, "Unable to add a disabled component that was added already.");
+
+            if (componentToAdd && !found)
             {
-                m_disabledComponents.push_back(componentToAdd);
+                m_disabledComponents.emplace(AZStd::move(componentAlias), componentToAdd);
             }
         }
 
         void EditorDisabledCompositionComponent::RemoveDisabledComponent(AZ::Component* componentToRemove)
         {
-            AZ_Assert(componentToRemove, "Unable to remove a disabled component that is nullptr");
-            if (componentToRemove)
+            AZ_Assert(componentToRemove, "Unable to remove a disabled component that is nullptr.");
+
+            AZStd::string componentAlias = componentToRemove->GetSerializedIdentifier();
+            AZ_Assert(!componentAlias.empty(), "Unable to add a disabled component that has an empty component alias.");
+
+            bool found = m_disabledComponents.find(componentAlias) != m_disabledComponents.end();
+            AZ_Assert(found, "Unable to remove a disabled component that has not been added.");
+
+            if (componentToRemove && found)
             {
-                m_disabledComponents.erase(AZStd::remove(m_disabledComponents.begin(), m_disabledComponents.end(), componentToRemove), m_disabledComponents.end());
+                m_disabledComponents.erase(componentAlias);
             }
         };
 
-        bool EditorDisabledCompositionComponent::IsComponentDisabled(const AZ::Component* component)
+        bool EditorDisabledCompositionComponent::IsComponentDisabled(const AZ::Component* componentToCheck)
         {
-            AZ_Assert(component, "Unable to check a component that is nullptr");
-            return component &&
-                AZStd::find(m_disabledComponents.begin(), m_disabledComponents.end(), component) != m_disabledComponents.end();
+            AZ_Assert(componentToCheck, "Unable to check a component that is nullptr.");
+
+            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
+            AZ_Assert(!componentAlias.empty(), "Unable to check a component that has an empty component alias.");
+
+            auto componentIt = m_disabledComponents.find(componentAlias);
+
+            if (componentIt != m_disabledComponents.end())
+            {
+                bool sameComponent = componentIt->second == componentToCheck;
+                AZ_Assert(sameComponent, "The component to check shares the same alias but is a different object "
+                    "compared to the one referenced in the composition component.");
+
+                return sameComponent;
+            }
+
+            return false;
         }
 
         EditorDisabledCompositionComponent::~EditorDisabledCompositionComponent()
         {
-            for (auto disabledComponent : m_disabledComponents)
+            for (auto& pair : m_disabledComponents)
             {
-                delete disabledComponent;
+                delete pair.second;
             }
             m_disabledComponents.clear();
 
@@ -95,8 +127,8 @@ namespace AzToolsFramework
             // This is a special case for certain EditorComponents only!
             EditorDisabledCompositionRequestBus::Handler::BusConnect(GetEntityId());
 
-            // Set the entity* for each disabled component
-            for (auto disabledComponent : m_disabledComponents)
+            // Set the entity for each disabled component.
+            for (auto const& [componentAlias, disabledComponent] : m_disabledComponents)
             {
                 // It's possible to get null components in the list if errors occur during serialization.
                 // Guard against that case so that the code won't crash.
@@ -104,7 +136,9 @@ namespace AzToolsFramework
                 {
                     auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(disabledComponent);
                     AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
+
                     editorComponentBaseComponent->SetEntity(GetEntity());
+                    editorComponentBaseComponent->SetSerializedIdentifier(componentAlias);
                 }
             }
         }
