@@ -165,7 +165,7 @@ namespace AzToolsFramework
     protected:
         // we automatically take care of the rest:
         // --------------------- Internal Implementation ------------------------------
-        virtual bool ResetGUIToDefaults_Internal(QWidget* widget) = 0;
+        virtual void ResetGUIToDefaults_Internal(QWidget* widget) = 0;
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* attrValue) = 0;
         virtual void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* t) = 0;
         virtual void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) = 0;
@@ -327,6 +327,12 @@ namespace AzToolsFramework
                 }
             }
 
+            if (m_widget)
+            {
+                // Reset widget's attributes before reading in new values
+                m_rpeHandler.ResetGUIToDefaults_Internal(m_widget);
+            }
+
             m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
             m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
 
@@ -335,14 +341,7 @@ namespace AzToolsFramework
 
         void PrepareWidgetForReuse() override
         {
-            // Reset existing widget attributes and properties before reuse. If the handler
-            // does not support reuse, a new widget will be created
-            if (m_widget && !m_rpeHandler.ResetGUIToDefaults_Internal(m_widget))
-            {
-                IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
-                delete m_widget;
-                m_widget = nullptr;
-            }
+            // No action is needed because the widget already gets reset each time a value is set from DOM
         }
 
         QWidget* GetFirstInTabOrder() override
@@ -418,12 +417,8 @@ namespace AzToolsFramework
     public:
         typedef WidgetType widget_t;
 
-        // Resets widget attributes and properties for reuse if the handler supports it.
-        // Returns true if the handler was able to reset to defaults, false otherwise.
-        virtual bool ResetGUIToDefaults([[maybe_unused]] WidgetType* widget)
-        {
-            return false;
-        }
+        // Resets widget attributes for reuse.
+        virtual void ResetGUIToDefaults([[maybe_unused]] WidgetType* widget) {}
 
         // this will be called in order to initialize your gui.  Your class will be fed one attribute at a time
         // you can interpret the attributes as you wish - use attrValue->Read<int>() for example, to interpret it as an int.
@@ -469,10 +464,10 @@ namespace AzToolsFramework
 
     protected:
         // ---------------- INTERNAL -----------------------------
-        virtual bool ResetGUIToDefaults_Internal(QWidget* widget) override
+        virtual void ResetGUIToDefaults_Internal(QWidget* widget) override
         {
             WidgetType* wid = static_cast<WidgetType*>(widget);
-            return ResetGUIToDefaults(wid);
+            ResetGUIToDefaults(wid);
         }
 
         virtual void ConsumeAttributes_Internal(QWidget* widget, InstanceDataNode* dataNode) override;

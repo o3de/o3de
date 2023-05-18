@@ -375,22 +375,18 @@ namespace AzToolsFramework
         return newCtrl;
     }
 
-    bool doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    void doublePropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
     {
         GUI->setMinimum(AZStd::numeric_limits<double>::lowest());
         GUI->setMaximum(AZStd::numeric_limits<double>::max());
         ResetGUIToDefaultsCommon(GUI);
-
-        return true;
     }
 
-    bool floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
+    void floatPropertySpinboxHandler::ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI)
     {
         GUI->setMinimum(AZStd::numeric_limits<float>::lowest());
         GUI->setMaximum(AZStd::numeric_limits<float>::max());
         doublePropertySpinboxHandler::ResetGUIToDefaultsCommon(GUI);
-
-        return true;
     }
 
     void doublePropertySpinboxHandler::ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName)

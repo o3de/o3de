@@ -33,8 +33,7 @@ namespace AzToolsFramework
         //! Sets up the widget provided by GetWidget to reflect the values provided by a given DOM node.
         //! This should consume both the property value (if applicable) and any attributes, including OnChange.
         virtual void SetValueFromDom(const AZ::Dom::Value& node) = 0;
-        //! Gives the handler an opportunity to reset its widget's existing attributes and properties before being recycled.
-        //! Alternately, the handler can delete the widget to be recreated later if resetting is not supported.
+        //! Resets the widget's attributes for reuse.
         virtual void PrepareWidgetForReuse() {}
         //! Returns the first widget in the tab order for this property editor, i.e. the widget that should be selected
         //! when the user hits tab on the widget immediately prior to this.
