@@ -285,7 +285,7 @@ foreach(project ${LY_PROJECTS})
     # Append the project external directory to LY_EXTERNAL_SUBDIR_${project_name} property
     add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
-    # Use the install(CODE) command to add cmake command to archive the project cache
+    # Use the install(CODE) command to archive the project cache
     # directory assets for use in a proejct relase layout
     install_project_asset_artifacts(${full_directory_path})
 
