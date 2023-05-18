@@ -25,6 +25,41 @@ namespace AZ::Utils
 
     void NativeErrorMessageBox(const char*, const char*) {}
 
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface* settingsRegistry)
+    {
+        constexpr AZStd::string_view overrideHomeDirKey = "/Amazon/Settings/override_home_dir";
+        AZ::IO::FixedMaxPathString overrideHomeDir;
+        if (settingsRegistry == nullptr)
+        {
+            settingsRegistry = AZ::SettingsRegistry::Get();
+        }
+
+        if (settingsRegistry != nullptr)
+        {
+            if (settingsRegistry->Get(overrideHomeDir, overrideHomeDirKey))
+            {
+                AZ::IO::FixedMaxPath path{overrideHomeDir};
+                return path.Native();
+            }
+        }
+
+        // Try reading the $HOME environment variable
+        AZ::IO::FixedMaxPathString homePath;
+        auto StoreHomeEnv = [](char* buffer, size_t size)
+        {
+            auto getEnvOutcome = GetEnv(AZStd::span(buffer, size), "HOME");
+            return getEnvOutcome ? getEnvOutcome.GetValue().size() : 0U;
+        };
+
+        if (homePath.resize_and_overwrite(homePath.capacity(), StoreHomeEnv);
+            !homePath.empty())
+        {
+            return homePath;
+        }
+
+        return {};
+    }
+
     GetExecutablePathReturnType GetExecutablePath(char* exeStorageBuffer, size_t exeStorageSize)
     {
         GetExecutablePathReturnType result;
