@@ -10,7 +10,8 @@ if (NOT PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     return()
 endif()
 
-o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
+o3de_pal_dir(pal_source_dir "${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME}" "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 

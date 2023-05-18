@@ -82,13 +82,7 @@ namespace AWSGameLift
         }
 
         // Set up client endpoint or region
-        AZStd::string localEndpoint = "";
-        if (!localEndpoint.empty())
-        {
-            // The attribute needs to override to interact with GameLiftLocal
-            clientConfig.endpointOverride = localEndpoint.c_str();
-        }
-        else if (!region.empty())
+        if (!region.empty())
         {
             clientConfig.region = region.c_str();
         }

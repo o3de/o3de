@@ -465,7 +465,7 @@ namespace AWSGameLift
     }
 
     AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
-    {   
+    {
         auto certificateOutcome = m_gameLiftServerSDKWrapper->GetComputeCertificate();
         if (certificateOutcome.IsSuccess())
         {
@@ -473,7 +473,15 @@ namespace AWSGameLift
         }
         else
         {
-            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstanceCertificateErrorMessage);
+            AZ_Error(
+                AWSGameLiftServerManagerName,
+                false,
+                AZStd::string::format(
+                    "%s - %s",
+                    AWSGameLiftServerInstanceCertificateErrorMessage, 
+                    certificateOutcome.GetError().GetErrorMessage().c_str()
+                ).c_str()
+            );
             return AZ::IO::Path();
         }
     }
@@ -515,14 +523,21 @@ namespace AWSGameLift
                 // If ProcessId isn't defined, provide a unique string by default.
                 AZStd::string defaultProcessId = AZStd::string::format("ProcessId_%i", aznumeric_cast<int>(std::time(nullptr)));
                 serverParameters.SetProcessId(defaultProcessId.c_str());
-                AZ_TracePrintf(
-                    AWSGameLiftServerManagerName, "Generated default Amazon GameLift ProcessId value: %s\n", defaultProcessId.c_str());
+                AZ_Trace(
+                    AWSGameLiftServerManagerName, "Generated default AWS GameLift ProcessId value: %s\n", defaultProcessId.c_str());
             }
         }
 
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...\n");
+        AZ_Trace(AWSGameLiftServerManagerName, "Initiating AWS GameLift Server SDK ...\n");
         Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK(serverParameters);
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.\n");
+        if (initOutcome.IsSuccess())
+        {
+            AZ_Trace(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.\n");
+        }
+        else
+        {
+            AZ_Trace(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service failed.\n");
+        }
 
         m_serverSDKInitialized = initOutcome.IsSuccess();
 
