@@ -541,7 +541,7 @@ def register_project_path(json_data: dict,
         if not dry_run:
             # If the project.json engine is being updated, also update the user/engine/CMakePresets.json
             # file to include the location CMakePresets.json in the engine for the local user
-            cmake.update_cmake_presets_for_project(preset_path=project_path / 'user/cmake/engine/CMakePresets.json',
+            cmake.update_cmake_presets_for_project(preset_path=project_path / cmake.PROJECT_ENGINE_PRESET_RELATIVE_PATH,
                                                    engine_name=project_json_data['engine'],
                                                    engine_version=project_json_data['engine_version'])
 
