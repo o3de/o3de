@@ -7,12 +7,79 @@
  */
 #include "EditorDisabledCompositionComponent.h"
 
+#include <AzCore/Component/EntityUtils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
 namespace AzToolsFramework
 {
     namespace Components
     {
+        AZ_CLASS_ALLOCATOR_IMPL(EditorDisabledCompositionComponentSerializer, AZ::SystemAllocator);
+
+        AZ::JsonSerializationResult::Result EditorDisabledCompositionComponentSerializer::Load(
+            void* outputValue,
+            [[maybe_unused]] const AZ::Uuid& outputValueTypeId,
+            const rapidjson::Value& inputValue,
+            AZ::JsonDeserializerContext& context)
+        {
+            namespace JSR = AZ::JsonSerializationResult;
+
+            AZ_Assert(
+                azrtti_typeid<EditorDisabledCompositionComponent>() == outputValueTypeId,
+                "Unable to deserialize EditorDisabledCompositionComponent from JSON because the provided type is %s.",
+                outputValueTypeId.ToString<AZStd::string>().c_str());
+
+            auto componentInstance = reinterpret_cast<EditorDisabledCompositionComponent*>(outputValue);
+            AZ_Assert(componentInstance, "Output value for EditorDisabledCompositionComponentSerializer can't be null.");
+
+            JSR::ResultCode result(JSR::Tasks::ReadField);
+            {
+                JSR::ResultCode disabledComponentsResult(JSR::Tasks::ReadField);
+
+                AZStd::unordered_map<AZStd::string, AZ::Component*> componentMap;
+
+                auto disabledComponentsIter = inputValue.FindMember("DisabledComponents");
+                if (disabledComponentsIter != inputValue.MemberEnd())
+                {
+                    if (disabledComponentsIter->value.IsArray())
+                    {
+                        // If the serialized data is an array type, then convert the data to a map.
+                        AZStd::vector<AZ::Component*> componentVector;
+                        disabledComponentsResult = ContinueLoadingFromJsonObjectField(
+                            &componentVector, azrtti_typeid<decltype(componentVector)>(), inputValue, "DisabledComponents", context);
+
+                        AZ::EntityUtils::ConvertComponentVectorToMap(componentVector, componentMap);
+                    }
+                    else
+                    {
+                        disabledComponentsResult = ContinueLoadingFromJsonObjectField(
+                            &componentMap, azrtti_typeid<decltype(componentMap)>(), inputValue, "DisabledComponents", context);
+                    }
+
+                    static AZ::TypeId genericComponentWrapperTypeId = azrtti_typeid<GenericComponentWrapper>();
+
+                    for (auto& [componentKey, component] : componentMap)
+                    {
+                        // If the component didn't serialize (i.e. is null) or the underlying type is GenericComponentWrapper,
+                        // the template is null and the component should not be added.
+                        if (component && component->GetUnderlyingComponentType() != genericComponentWrapperTypeId)
+                        {
+                            componentInstance->m_disabledComponents.emplace(componentKey, component);
+                        }
+                    }
+                }
+
+                result.Combine(disabledComponentsResult);
+            }
+
+            return context.Report(
+                result,
+                result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded EditorDisabledCompositionComponent information."
+                                                                  : "Failed to load EditorDisabledCompositionComponent information.");
+        }
+
         void EditorDisabledCompositionComponent::Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -32,6 +99,11 @@ namespace AzToolsFramework
                             ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::HideOnAdd | AZ::Edit::SliceFlags::PushWhenHidden)
                         ;
                 }
+            }
+
+            if (auto jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+            {
+                jsonRegistration->Serializer<EditorDisabledCompositionComponentSerializer>()->HandlesType<EditorDisabledCompositionComponent>();
             }
         }
 
@@ -138,7 +210,6 @@ namespace AzToolsFramework
                     AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
 
                     editorComponentBaseComponent->SetEntity(GetEntity());
-                    editorComponentBaseComponent->SetSerializedIdentifier(componentAlias);
                 }
             }
         }
