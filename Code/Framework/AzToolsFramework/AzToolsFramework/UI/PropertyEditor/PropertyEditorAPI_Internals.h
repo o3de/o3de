@@ -327,19 +327,22 @@ namespace AzToolsFramework
                 }
             }
 
+            m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
+            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
+
+            m_domNode = node;
+        }
+
+        void PrepareWidgetForReuse() override
+        {
             // Reset existing widget attributes and properties before reuse. If the handler
             // does not support reuse, a new widget will be created
             if (m_widget && !m_rpeHandler.ResetGUIToDefaults_Internal(m_widget))
             {
                 IndividualPropertyHandlerEditNotifications::Bus::Handler::BusDisconnect();
                 delete m_widget;
-                m_widget = nullptr;                
+                m_widget = nullptr;
             }
-
-            m_rpeHandler.ConsumeAttributes_Internal(GetWidget(), &m_proxyNode);
-            m_rpeHandler.ReadValuesIntoGUI_Internal(GetWidget(), &m_proxyNode);
-
-            m_domNode = node;
         }
 
         QWidget* GetFirstInTabOrder() override
