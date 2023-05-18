@@ -513,7 +513,7 @@ namespace AWSGameLift
             else
             {
                 // If ProcessId isn't defined, provide a unique string by default.
-                AZStd::string defaultProcessId = AZStd::string::format("ProcessId_%i", std::time(nullptr));
+                AZStd::string defaultProcessId = AZStd::string::format("ProcessId_%i", aznumeric_cast<int>(std::time(nullptr)));
                 serverParameters.SetProcessId(defaultProcessId.c_str());
                 AZ_TracePrintf(
                     AWSGameLiftServerManagerName, "Generated default Amazon GameLift ProcessId value: %s\n", defaultProcessId.c_str());
