@@ -91,8 +91,9 @@ namespace AZ
             return m_swapChainsData[swapChainIndex].m_scissor;  
         }
 
-        void WindowContext::OnWindowResized(uint32_t width, uint32_t height)
+        void WindowContext::OnResolutionChanged(uint32_t width, uint32_t height)
         {
+            AZ_TracePrintf("OnResolutionChanged", "Width: %d, Height: %d'\n", width, height);
             RHI::Ptr<RHI::SwapChain> defaultSwapChain = GetSwapChain(ViewType::Default);
             const AZ::RHI::SwapChainDimensions& currentDimensions = defaultSwapChain->GetDescriptor().m_dimensions;
             if (width != currentDimensions.m_imageWidth || height != currentDimensions.m_imageHeight)
@@ -156,7 +157,7 @@ namespace AZ
             AzFramework::WindowRequestBus::EventResult(
                 windowSize,
                 m_windowHandle,
-                &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                &AzFramework::WindowRequestBus::Events::GetRenderResolution);
 
             uint32_t width = AZStd::max(windowSize.m_width, 1u);
             uint32_t height = AZStd::max(windowSize.m_height, 1u);

@@ -322,40 +322,40 @@ namespace AzFramework
             // Alt-tabbing out of the app while it is in a full screen state does not
             // work unless we explicitly exit the full screen state upon deactivation,
             // in which case we want to enter full screen state again upon activation.
-            const bool windowIsNowInactive = (LOWORD(wParam) == WA_INACTIVE);
-            const bool windowFullScreenState = nativeWindowImpl->GetFullScreenState();
+            //const bool windowIsNowInactive = (LOWORD(wParam) == WA_INACTIVE);
+            //const bool windowFullScreenState = nativeWindowImpl->GetFullScreenState();
 
-            if (windowIsNowInactive)
-            {
-                if (windowFullScreenState)
-                {
-                    nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = true;
-                    nativeWindowImpl->SetFullScreenState(false);
-                }
+            //if (windowIsNowInactive)
+            //{
+            //    if (windowFullScreenState)
+            //    {
+            //        nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = true;
+            //        nativeWindowImpl->SetFullScreenState(false);
+            //    }
 
-                // When becoming inactive, transition from TOPMOST to NOTOPMOST.
-                SetWindowPos(nativeWindowImpl->m_win32Handle,
-                    HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
-            }
-            else
-            {
-                // When running in Windowed mode, we might want either NOTOPMOST or TOPMOST, depending on whether or not a debugger is attached.
-                HWND windowPriority = GetWindowedPriority();
+            //    // When becoming inactive, transition from TOPMOST to NOTOPMOST.
+            //    SetWindowPos(nativeWindowImpl->m_win32Handle,
+            //        HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+            //}
+            //else
+            //{
+            //    // When running in Windowed mode, we might want either NOTOPMOST or TOPMOST, depending on whether or not a debugger is attached.
+            //    HWND windowPriority = GetWindowedPriority();
 
-                if (!windowFullScreenState && nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate)
-                {
-                    nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
-                    nativeWindowImpl->SetFullScreenState(true);
+            //    if (!windowFullScreenState && nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate)
+            //    {
+            //        nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
+            //        nativeWindowImpl->SetFullScreenState(true);
 
-                    // If we're going to fullscreen, then we presumably want to be TOPMOST whether or not a debugger is attached.
-                    windowPriority = HWND_TOPMOST;
-                }
+            //        // If we're going to fullscreen, then we presumably want to be TOPMOST whether or not a debugger is attached.
+            //        windowPriority = HWND_TOPMOST;
+            //    }
 
-                // When becoming active again, transition from NOTOPMOST to TOPMOST. (Or stay NOTOPMOST if a debugger is attached)
-                SetWindowPos(
-                    nativeWindowImpl->m_win32Handle,
-                    windowPriority, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
-            }
+            //    // When becoming active again, transition from NOTOPMOST to TOPMOST. (Or stay NOTOPMOST if a debugger is attached)
+            //    SetWindowPos(
+            //        nativeWindowImpl->m_win32Handle,
+            //        windowPriority, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+            //}
             break;
         }
         case WM_SYSKEYDOWN:
@@ -426,6 +426,10 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
+                if (!m_enableCustomizedResolution)
+                {
+                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
+                }
             }
         }
     }

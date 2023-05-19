@@ -725,7 +725,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
     m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
 
-void ImGuiManager::OnWindowResized(uint32_t width, uint32_t height)
+void ImGuiManager::OnResolutionChanged(uint32_t width, uint32_t height)
 {
     m_windowSize.m_width = width;
     m_windowSize.m_height = height;
@@ -742,7 +742,7 @@ void ImGuiManager::InitWindowSize()
 
         if (windowHandle)
         {
-            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
             AzFramework::WindowNotificationBus::Handler::BusConnect(windowHandle);
         }
     }

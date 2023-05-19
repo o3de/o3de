@@ -79,7 +79,7 @@ namespace AZ
             void CreateChildPassesInternal() final;
 
             // WindowNotificationBus::Handler overrides ...
-            void OnWindowResized(uint32_t width, uint32_t height) override;
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
 
         private:
             void ConfigureDisplayParameters();

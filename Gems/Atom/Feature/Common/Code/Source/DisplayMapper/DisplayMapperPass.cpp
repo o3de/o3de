@@ -63,7 +63,7 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusDisconnect();
         }
 
-        void DisplayMapperPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
+        void DisplayMapperPass::OnResolutionChanged([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
             // Need to invalidate the CopyToSwapChain pass so that it updates the pipeline state in the event that 
             // the swapchain format changed (for example, moving from LDR to HDR display)

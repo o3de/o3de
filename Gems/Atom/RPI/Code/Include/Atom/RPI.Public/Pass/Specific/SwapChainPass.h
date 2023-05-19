@@ -55,7 +55,7 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override final;
             
             // WindowNotificationBus::Handler overrides ...
-            void OnWindowResized(uint32_t width, uint32_t height) override;
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
 
         private:
             // Sets up a swap chain PassAttachment using the swap chain id from the window context 

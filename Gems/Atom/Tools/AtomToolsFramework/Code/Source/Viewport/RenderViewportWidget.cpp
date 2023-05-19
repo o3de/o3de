@@ -447,6 +447,26 @@ namespace AtomToolsFramework
         // The RenderViewportWidget does not currently support full screen.
     }
 
+    void RenderViewportWidget::SetEnableCustomizedResolution([[maybe_unused]]bool enable)
+    {
+        // The RenderViewportWidget does not currently support customized render resolution.
+    }
+
+    bool RenderViewportWidget::IsCustomizedResolutionEnabled()
+    {
+        return false;
+    }
+
+    AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
+    {
+        return GetClientAreaSize();
+    }
+
+    void RenderViewportWidget::SetRenderResolution([[maybe_unused]]AzFramework::WindowSize resolution)
+    {
+        // The RenderViewportWidget does not currently support customized render resolution.
+    }
+
     float RenderViewportWidget::GetDpiScaleFactor() const
     {
         return aznumeric_cast<float>(devicePixelRatioF());

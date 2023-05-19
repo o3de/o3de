@@ -73,7 +73,7 @@ namespace AZ
         private:
 
             // WindowNotificationBus::Handler overrides ...
-            void OnWindowResized(uint32_t width, uint32_t height) override;
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
             void OnWindowClosed() override;
             void OnVsyncIntervalChanged(uint32_t interval) override;
 

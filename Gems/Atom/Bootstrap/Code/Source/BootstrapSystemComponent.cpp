@@ -53,6 +53,7 @@ AZ_CVAR(AZ::CVarFixedString, r_default_openxr_right_pipeline_name, "passes/XRRig
 AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
+AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render solution same as window client area size, 1: render solution use a specified resolution");
 
 namespace AZ
 {
@@ -178,6 +179,24 @@ namespace AZ
                     }
                 }
 
+                const AZStd::string resolutionModeCvarName("r_resolutionMode");
+                if (pCmdLine->HasSwitch(resolutionModeCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(resolutionModeCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(resolutionModeCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto resolutionMode = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (resolutionMode >= 0)
+                            {
+                                r_resolutionMode = resolutionMode;
+                            }
+                        }
+                    }
+                }
+
             }
 
             void BootstrapSystemComponent::Activate()
@@ -230,6 +249,15 @@ namespace AZ
                         if (m_nativeWindow)
                         {
                             // wait until swapchain has been created before setting fullscreen state
+                            if ((uint32_t)r_resolutionMode > 0)
+                            {
+                                m_nativeWindow->SetEnableCustomizedResolution(true);
+                                m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
+                            }
+                            else
+                            {
+                                m_nativeWindow->SetEnableCustomizedResolution(false);
+                            }
                             m_nativeWindow->SetFullScreenState(r_fullscreen);
                         }
                     });
