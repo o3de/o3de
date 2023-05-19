@@ -168,7 +168,7 @@ function(o3de_get_dependencies_for_target)
                 list(APPEND all_target_dependencies ${dependent_target_dependencies})
                 list(APPEND all_link_dependencies ${dependent_link_dependencies})
                 list(APPEND all_imported_dependencies ${dependent_imported_dependencies})
-                
+
                 # Append the current manuallly added dependency to the end
                 list(APPEND all_target_dependencies ${manual_dependency})
             endif()
@@ -320,6 +320,11 @@ function(o3de_get_command_for_dependency)
             file(RELATIVE_PATH target_directory ${CMAKE_RUNTIME_OUTPUT_DIRECTORY} ${runtime_directory})
         endif()
 
+        # Query the SOURCE TYPE from the Target and pass it to the ly_copy command below
+        get_property(source_type TARGET ${dependency} PROPERTY TYPE)
+        # Also query if the source target is a gem module as well
+        get_property(source_gem_module TARGET ${dependency} PROPERTY GEM_MODULE)
+
     else()
 
         string(REGEX MATCH "^([^\n]*)[\n]?(.*)$" target_file_regex "${dependency}")
@@ -330,31 +335,14 @@ function(o3de_get_command_for_dependency)
         set(target_directory ${CMAKE_MATCH_2})
 
     endif()
-    if(target_directory)
-        string(PREPEND target_directory /)
-    endif()
 
     # Some notes on the generated command:
     # To support platforms where the binaries end in different places, we are going to assume that all dependencies,
     # including the ones we are building, need to be copied over. However, we add a check to prevent copying something
     # over itself. This detection cannot happen now because the target we are copying for varies.
-    set(runtime_command "ly_copy(\"${source_file}\" \"@target_file_dir@${target_directory}\")\n")
-
-    # Tentative optimization: this is an attempt to solve the first "if" at generation time, making the runtime_dependencies
-    # file smaller and faster to run. In platforms where the built target and the dependencies targets end up in the same
-    # place, we end up with a lot of dependencies that dont need to copy anything.
-    # However, the generation expression ends up being complicated and the parser seems to get really confused. My hunch
-    # is that the string we are pasting has generation expressions, and those commas confuse the "if" generator expression.
-    # Leaving the attempt here commented out until I can get back to it.
-#    set(generated_command "
-#if(NOT EXISTS \"$<TARGET_FILE_DIR:@target@>${target_directory}\")
-#    file(MAKE_DIRECTORY \"$<TARGET_FILE_DIR:@target@>${target_directory}\")
-#endif()
-#if(\"${source_file}\" IS_NEWER_THAN \"$<TARGET_FILE_DIR:@target@>${target_directory}/${target_filename}\")
-#    file(COPY \"${source_file}\" DESTINATION \"$<TARGET_FILE_DIR:@target@>${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-#endif()
-#")
-#    set(runtime_command "$<IF:$<STREQUAL:$<GENEX_EVAL:\"${source_file}\">,$<GENEX_EVAL:\"$<TARGET_FILE_DIR:@target@>${target_directory}/${target_filename}>\">>,\"\",\"$<GENEX_EVAL:${generated_command}>\">")
+    unset(runtime_command)
+    string(APPEND runtime_command "ly_copy(\"${source_file}\" \"${target_directory}\" TARGET_FILE_DIR \"@target_file_dir@\""
+        " SOURCE_TYPE \"${source_type}\" SOURCE_GEM_MODULE \"${source_gem_module}\")\n")
 
     set_property(GLOBAL PROPERTY O3DE_COMMAND_FOR_DEPENDENCY_${dependency} "${runtime_command}")
     set(${command_var} ${runtime_command} PARENT_SCOPE)
@@ -365,6 +353,64 @@ function(o3de_get_command_for_dependency)
         set(${file_dependency_var} "${source_file}" PARENT_SCOPE)
     endif()
 
+endfunction()
+
+#! Extracts the source file tied to the dependency
+#! The dependency can be a TARGET or a file
+function(o3de_get_file_from_dependency)
+    set(options)
+    set(oneValueArgs SOURCE_FILE_VAR DEPENDENCY)
+    set(multiValueArgs)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(dependency "${${CMAKE_CURRENT_FUNCTION}_DEPENDENCY}")
+    set(source_file_var "${${CMAKE_CURRENT_FUNCTION}_SOURCE_FILE_VAR}")
+    # Clear the variable pointed to by the source_file_var in the PARENT_SCOPE
+    unset("${source_file_var}" PARENT_SCOPE)
+
+    unset(source_file)
+    if(TARGET ${dependency})
+        get_property(target_type TARGET ${dependency} PROPERTY TYPE)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+            return()
+        endif()
+
+        set(source_file $<TARGET_FILE:${dependency}>)
+    else()
+        string(REGEX MATCH "^([^\n]*)[\n]?(.*)$" file_regex "${dependency}")
+        if(NOT file_regex)
+            message(FATAL_ERROR "Cannot parse source file from \"${dependency}\" using regular expression")
+        endif()
+        cmake_path(SET source_file NORMALIZE ${CMAKE_MATCH_1})
+    endif()
+
+    if (source_file)
+        set("${source_file_var}" "${source_file}" PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(o3de_transform_dependencies_to_files)
+    set(options)
+    set(oneValueArgs FILES_VAR)
+    set(multiValueArgs DEPENDENCIES)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(dependencies "${${CMAKE_CURRENT_FUNCTION}_DEPENDENCIES}")
+    set(files_var "${${CMAKE_CURRENT_FUNCTION}_FILES_VAR}")
+    # Clear the variable output list variable in the PARENT_SCOPE
+    unset("${files_var}" PARENT_SCOPE)
+
+    unset(files)
+    foreach(dependency IN LISTS dependencies)
+        unset(source_file)
+        o3de_get_file_from_dependency(
+            SOURCE_FILE_VAR source_file
+            DEPENDENCY "${dependency}"
+        )
+        list(APPEND files "${source_file}")
+    endforeach()
+
+    if(files)
+        set("${files_var}" "${files}" PARENT_SCOPE)
+    endif()
 endfunction()
 
 function(ly_delayed_generate_runtime_dependencies)
@@ -386,7 +432,7 @@ function(ly_delayed_generate_runtime_dependencies)
 
         unset(LY_COPY_COMMANDS)
         unset(runtime_depends)
-        
+
         unset(target_copy_dependencies)
         unset(target_target_dependencies)
         unset(target_link_dependencies)
@@ -398,21 +444,56 @@ function(ly_delayed_generate_runtime_dependencies)
             LINK_DEPENDENCIES_VAR target_link_dependencies
             IMPORTED_DEPENDENCIES_VAR target_imported_dependencies
         )
-        foreach(runtime_dependency ${runtime_dependencies})
+
+        # Convert dependencies to files or generator expressions that can transform to files
+        o3de_transform_dependencies_to_files(FILES_VAR target_copy_files
+            DEPENDENCIES "${target_copy_dependencies}")
+        o3de_transform_dependencies_to_files(FILES_VAR target_target_files
+            DEPENDENCIES "${target_target_dependencies}")
+        o3de_transform_dependencies_to_files(FILES_VAR target_link_files
+            DEPENDENCIES "${target_link_dependencies}")
+        o3de_transform_dependencies_to_files(FILES_VAR target_imported_files
+            DEPENDENCIES "${target_imported_dependencies}")
+
+
+        message(DEBUG "TARGET \"${target}\" has the following file dependencies:\n"
+            "copy files -> \"${target_copy_files}\""
+            "target files -> \"${target_target_files}\""
+            "link files -> \"${target_copy_files}\""
+            "imported files -> \"${target_copy_files}\"")
+
+        foreach(dependency_for_target IN LISTS target_copy_dependencies
+            target_link_dependencies
+            target_target_dependencies
+            target_imported_dependencies)
             unset(runtime_command)
             unset(runtime_depend)
 
-            o3de_get_command_for_dependency(COMMAND_VAR runtime_command FILE_DEPENDENCY_VAR runtime_depend DEPENDENCY "${runtime_dependency}")
+            o3de_get_command_for_dependency(COMMAND_VAR runtime_command
+                FILE_DEPENDENCY_VAR runtime_depend
+                DEPENDENCY "${dependency_for_target}")
             string(APPEND LY_COPY_COMMANDS ${runtime_command})
             list(APPEND runtime_depends ${runtime_depend})
         endforeach()
 
         # Generate the output file, note the STAMP_OUTPUT_FILE need to match with the one defined in LYWrappers.cmake
         set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.stamp)
+
+        unset(target_file_dir)
+        unset(target_bundle_dir)
+        unset(target_bundle_content_dir)
         # UTILITY type targets does not have a target file, so the CMAKE_RUNTIME_OUTPUT_DIRECTORY is used
         if (NOT target_type STREQUAL UTILITY)
             set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
             set(target_file "$<TARGET_FILE:${target}>")
+
+            # If the target is a bundle, configure the TARGET_BUNDLE_DIR
+            # into the generated cmake file with runtime dependencies
+            get_property(is_bundle TARGET ${target} PROPERTY MACOSX_BUNDLE)
+            if(is_bundle)
+                set(target_bundle_dir "$<TARGET_BUNDLE_DIR:${target}>")
+                set(target_bundle_content_dir "$<TARGET_BUNDLE_CONTENT_DIR:${target}>")
+            endif()
         else()
             set(target_file_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
             unset(target_file)
