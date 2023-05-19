@@ -108,7 +108,6 @@ namespace AzToolsFramework
             captureExistingIdentifiersFunc(disabledComponents);
 
             // Generates a component typename string and updates its suffix count to avoid duplication.
-            // For example, if 'EditorCommentComponent' exists, it generates 'EditorCommentComponent_2', 'EditorCommentComponent_3', and so on.
             const AZStd::string componentTypeName = GetNameFromComponentClassData(this);
             AZStd::string serializedIdentifier = componentTypeName;
             AZ::u64 suffixOfNewComponent = 1;
