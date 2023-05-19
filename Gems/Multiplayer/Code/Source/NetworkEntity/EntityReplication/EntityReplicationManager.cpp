@@ -559,15 +559,10 @@ namespace Multiplayer
         {
             if (entityReplicator->IsMarkedForRemoval())
             {
-                AZStd::string entityName = "<Entity Name Unknown>";
-                if (AZ::Entity* entity = entityReplicator->GetEntityHandle().GetEntity())
-                {
-                    entityName = entity->GetName();
-                }
-
+                const AZ::Entity* entity = entityReplicator->GetEntityHandle().GetEntity();
                 AZLOG_WARN("Entity replicator for id %llu (%s) is already marked for deletion on remote host %s",
                     static_cast<AZ::u64>(updateMessage.GetEntityId()),
-                    entityName.c_str(),
+                    entity ? entity->GetName().c_str() : "<Entity Name Unknown>",
                     GetRemoteHostId().GetString().c_str());
                 return true;
             }
