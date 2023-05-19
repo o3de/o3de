@@ -9,8 +9,13 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QDockWidget>
+#include <QFormLayout>
+#include <QLabel>
+#include <QLayout>
+#include <QStackedLayout>
+#include <QWidget>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #endif
 
 namespace AzToolsFramework
@@ -27,10 +32,23 @@ namespace AzToolsFramework
             explicit AssetBrowserEntityInspectorWidget(QWidget *parent = nullptr);
             ~AssetBrowserEntityInspectorWidget();
         private:
+            // AssetBrowserPreviewRequestBus overrides ...
             void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
+            void ClearPreview() override;
 
-        private:
-            PreviewerFrame* m_previewerFrame = nullptr;
+            QLabel* m_previewImage = nullptr;
+            QStackedLayout* m_layoutSwitcher = nullptr;
+            QWidget* m_emptyLayoutWidget = nullptr;
+            QWidget* m_populatedLayoutWidget = nullptr;
+            QFormLayout* m_assetDetailLayout = nullptr;
+            AzQtComponents::ElidingLabel* m_nameLabel = nullptr;
+            AzQtComponents::ElidingLabel* m_locationLabel = nullptr;
+            AzQtComponents::ElidingLabel* m_fileTypeLabel = nullptr;
+            AzQtComponents::ElidingLabel* m_assetTypeLabel = nullptr;
+            AzQtComponents::ElidingLabel* m_diskSizeLabel = nullptr;
+            AzQtComponents::ElidingLabel* m_dimensionLabel = nullptr;
+            AzQtComponents::ElidingLabel* m_verticesLabel = nullptr;
+
         };
 
     } // namespace AssetBrowser

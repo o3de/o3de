@@ -45,9 +45,11 @@ namespace AzQtComponents
     void AssetFolderTableView::mousePressEvent(QMouseEvent* event)
     {
         const auto p = event->pos();
-        if (auto idx = indexAt(p); !idx.isValid())
+        auto idx = indexAt(p);
+        if (!idx.isValid() && selectionModel()->hasSelection())
         {
             selectionModel()->clear();
+            emit rowDeselected();
         }
         else
         {
