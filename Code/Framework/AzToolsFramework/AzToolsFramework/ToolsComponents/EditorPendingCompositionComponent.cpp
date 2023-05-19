@@ -75,6 +75,12 @@ namespace AzToolsFramework
                 result.Combine(pendingComponentsResult);
             }
 
+            {
+                JSR::ResultCode componentIdResult = ContinueLoadingFromJsonObjectField(
+                    &componentInstance->m_id, azrtti_typeid<decltype(componentInstance->m_id)>(), inputValue, "Id", context);
+                result.Combine(componentIdResult);
+            }
+
             return context.Report(
                 result,
                 result.GetProcessing() != JSR::Processing::Halted ? "Successfully loaded EditorPendingCompositionComponent information."
