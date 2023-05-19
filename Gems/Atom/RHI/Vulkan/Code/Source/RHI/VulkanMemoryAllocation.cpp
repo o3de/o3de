@@ -6,37 +6,37 @@
  *
  */
 
-#include <RHI/MemoryAllocation.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <RHI/Device.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
-        RHI::Ptr<MemoryAllocation> MemoryAllocation::Create()
+        RHI::Ptr<VulkanMemoryAllocation> VulkanMemoryAllocation::Create()
         {
-            return aznew MemoryAllocation();
+            return aznew VulkanMemoryAllocation();
         }
 
-        void MemoryAllocation::Init(Device& device, const VmaAllocation& alloc)
+        void VulkanMemoryAllocation::Init(Device& device, const VmaAllocation& alloc)
         {
             RHI::DeviceObject::Init(device);
             m_vmaAllocation = alloc;
             m_size = GetAllocationInfo().size;
         }
 
-        size_t MemoryAllocation::GetOffset() const
+        size_t VulkanMemoryAllocation::GetOffset() const
         {
             // Need to get the allocation info in case the offset has changed since initial allocation
             return GetAllocationInfo().offset;
         }
 
-        size_t MemoryAllocation::GetSize() const
+        size_t VulkanMemoryAllocation::GetSize() const
         {
             return m_size;
         }
 
-        CpuVirtualAddress MemoryAllocation::Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess)
+        CpuVirtualAddress VulkanMemoryAllocation::Map(size_t offset, size_t size, RHI::HostMemoryAccess hostAccess)
         {
             Device& device = static_cast<Device&>(GetDevice());
             void* mappedPtr;
@@ -61,7 +61,7 @@ namespace AZ
             return static_cast<CpuVirtualAddress>(mappedPtr) + offset;
         }
 
-        void MemoryAllocation::Unmap(size_t offset, RHI::HostMemoryAccess hostAccess)
+        void VulkanMemoryAllocation::Unmap(size_t offset, RHI::HostMemoryAccess hostAccess)
         {
             Device& device = static_cast<Device&>(GetDevice());
             if (hostAccess == RHI::HostMemoryAccess::Write)
@@ -73,29 +73,29 @@ namespace AZ
             vmaUnmapMemory(device.GetVmaAllocator(), m_vmaAllocation);
         }
 
-        VmaAllocation MemoryAllocation::GetVmaAllocation() const
+        VmaAllocation VulkanMemoryAllocation::GetVmaAllocation() const
         {
             return m_vmaAllocation;
         }
 
-        VkDeviceMemory MemoryAllocation::GetNativeDeviceMemory() const
+        VkDeviceMemory VulkanMemoryAllocation::GetNativeDeviceMemory() const
         {
             return GetAllocationInfo().deviceMemory;
         }
 
-        void MemoryAllocation::SetNameInternal(const AZStd::string_view& name)
+        void VulkanMemoryAllocation::SetNameInternal(const AZStd::string_view& name)
         {
             auto& device = static_cast<Device&>(GetDevice());
             vmaSetAllocationName(device.GetVmaAllocator(), m_vmaAllocation, name.data());
         }
 
-        void MemoryAllocation::Shutdown()
+        void VulkanMemoryAllocation::Shutdown()
         {
             auto& device = static_cast<Device&>(GetDevice());
             vmaFreeMemory(device.GetVmaAllocator(), m_vmaAllocation);
         }
 
-        VmaAllocationInfo MemoryAllocation::GetAllocationInfo() const
+        VmaAllocationInfo VulkanMemoryAllocation::GetAllocationInfo() const
         {
             auto& device = static_cast<Device&>(GetDevice());
             VmaAllocationInfo info;

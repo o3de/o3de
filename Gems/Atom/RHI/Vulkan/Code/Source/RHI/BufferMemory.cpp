@@ -67,7 +67,7 @@ namespace AZ
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            RHI::Ptr<MemoryAllocation> alloc = MemoryAllocation::Create();
+            RHI::Ptr<VulkanMemoryAllocation> alloc = VulkanMemoryAllocation::Create();
             alloc->Init(device, vmaAlloc);
             m_memoryView = MemoryView(alloc);
             return RHI::ResultCode::Success;

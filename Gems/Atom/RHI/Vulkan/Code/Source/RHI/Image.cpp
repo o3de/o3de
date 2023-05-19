@@ -568,7 +568,7 @@ namespace AZ
                 // create non-sparse if failed to create sparse image
                 RHI::ResultCode result = BuildNativeImage();
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }            
+            }
 
             OnPostInit();
             return RHI::ResultCode::Success;
@@ -577,10 +577,9 @@ namespace AZ
         RHI::ResultCode Image::Init(
             Device& device,
             const RHI::ImageDescriptor& descriptor,
-            const MemoryView& memoryView,
-            const Image::InitFlags flags)
+            const MemoryView& memoryView)
         {
-            OnPreInit(device, descriptor, flags);
+            OnPreInit(device, descriptor, InitFlags::None);
             RHI::ResultCode result = BuildNativeImage(&memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             OnPostInit();
@@ -716,34 +715,6 @@ namespace AZ
                 m_residentSizeInBytes = m_sparseImageInfo->GetRequiredMemorySize(m_highestMipLevel);
                 device.GetAsyncUploadQueue().QueueBindSparse(bindSparseInfo);
             }
-            else 
-            {
-                RHI::Ptr<MemoryAllocation> alloc = imagePool.AllocateMemory(m_memoryRequirements);
-                if (!alloc)
-                {
-                    return RHI::ResultCode::OutOfMemory;
-                }
-
-                VkResult vkResult = device.GetContext().BindImageMemory(
-                    device.GetNativeDevice(),
-                    m_vkImage,
-                    alloc->GetNativeDeviceMemory(),
-                    alloc->GetOffset());
-
-                AssertSuccess(vkResult);
-                result = ConvertResult(vkResult);
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-
-                if (result != RHI::ResultCode::Success)
-                {
-                    imagePool.DeAllocateMemory(alloc);
-                    return result;
-                }
-
-                m_memoryView = MemoryView(alloc);
-                SetResidentSizeInBytes(m_memoryRequirements.size);
-                m_highestMipLevel = 0;
-            }
 
             return RHI::ResultCode::Success;
         }
@@ -831,14 +802,6 @@ namespace AZ
                     m_highestMipLevel = 0;
                 }
             }
-            else if (RHI::CheckBitsAll(m_initFlags, InitFlags::DontAllocate))
-            {
-                result = device.GetContext().CreateImage(
-                    device.GetNativeDevice(),
-                    &createInfo.m_vkCreateInfo,
-                    VkSystemAllocator::Get(),
-                    &m_vkImage);
-            }
             else
             {
                 VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
@@ -854,7 +817,7 @@ namespace AZ
 
                 if (result == VK_SUCCESS)
                 {
-                    RHI::Ptr<MemoryAllocation> alloc = MemoryAllocation::Create();
+                    RHI::Ptr<VulkanMemoryAllocation> alloc = VulkanMemoryAllocation::Create();
                     alloc->Init(device, vmaAlloc);
                     m_memoryView = MemoryView(alloc);
                     SetResidentSizeInBytes(m_memoryView.GetSize());
@@ -882,7 +845,8 @@ namespace AZ
             {
                 if (m_memoryView.IsValid())
                 {
-                    imagePool.DeAllocateMemory(m_memoryView.GetAllocation());
+                    AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>> blocks{ m_memoryView.GetAllocation() };
+                    imagePool.DeAllocateMemoryBlocks(blocks);
                     m_memoryView = MemoryView{ };
                 }
             }

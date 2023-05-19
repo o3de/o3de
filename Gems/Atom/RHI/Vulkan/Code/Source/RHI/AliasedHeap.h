@@ -19,7 +19,7 @@ namespace AZ
         class Scope;
         class Buffer;
         class Image;
-        class MemoryAllocation;
+        class VulkanMemoryAllocation;
 
         class AliasedHeap final
             : public RHI::AliasedHeap
@@ -61,7 +61,7 @@ namespace AZ
 
             Descriptor m_descriptor;
 
-            RHI::Ptr<MemoryAllocation> m_heapMemory;
+            RHI::Ptr<VulkanMemoryAllocation> m_heapMemory;
         };
     }
 }

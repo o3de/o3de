@@ -187,9 +187,9 @@ namespace AZ
             VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
             // Initialize the VMA allocator for this device
-            RHI::ResultCode InitVulkanAllocator(RHI::PhysicalDevice& physicalDevice);
+            RHI::ResultCode InitVmaAllocator(RHI::PhysicalDevice& physicalDevice);
             // Shutdown VMA allocator of this device
-            void ShutdownVulkanAllocator();
+            void ShutdownVmaAllocator();
 
             VkImageUsageFlags CalculateImageUsageFlags(const RHI::ImageDescriptor& descriptor) const;
             VkImageCreateFlags CalculateImageCreateFlags(const RHI::ImageDescriptor& descriptor) const;

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <RHI/MemoryAllocation.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <RHI/MemoryTypeView.h>
 
 namespace AZ
@@ -15,9 +15,9 @@ namespace AZ
     namespace Vulkan
     {
         class MemoryView :
-            public MemoryTypeView<MemoryAllocation>
+            public MemoryTypeView<VulkanMemoryAllocation>
         {
-            using Base = MemoryTypeView<MemoryAllocation>;
+            using Base = MemoryTypeView<VulkanMemoryAllocation>;
 
         public:
             MemoryView() = default;
@@ -26,7 +26,7 @@ namespace AZ
                 : Base(memoryView)
             {}
 
-            MemoryView(RHI::Ptr<MemoryAllocation> memory, size_t offset, size_t size)
+            MemoryView(RHI::Ptr<VulkanMemoryAllocation> memory, size_t offset, size_t size)
                 : Base(memory, offset, size)
             {}
 

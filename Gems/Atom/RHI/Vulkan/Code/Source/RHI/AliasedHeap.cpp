@@ -13,7 +13,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Scope.h>
-#include <RHI/MemoryAllocation.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
@@ -49,7 +49,7 @@ namespace AZ
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            m_heapMemory = MemoryAllocation::Create();
+            m_heapMemory = VulkanMemoryAllocation::Create();
             m_heapMemory->Init(device, vmaAllocation);
 
             return RHI::ResultCode::Success;
@@ -89,8 +89,7 @@ namespace AZ
                 image->Init(
                     GetVulkanRHIDevice(),
                     imageDescriptor,
-                    MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes),
-                    Image::InitFlags::None);
+                    MemoryView(m_heapMemory, heapOffset, memoryRequirements.m_sizeInBytes));
 
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             image->SetResidentSizeInBytes(memoryRequirements.m_sizeInBytes);

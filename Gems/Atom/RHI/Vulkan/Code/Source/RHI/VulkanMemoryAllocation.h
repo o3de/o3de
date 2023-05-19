@@ -19,12 +19,12 @@ namespace AZ
 
         //! Represents a VMA memory allocation.
         //! The allocation may be part of a larger memory block (sub allocated) or be a dedicated memory block.
-        class MemoryAllocation :
+        class VulkanMemoryAllocation :
             public RHI::DeviceObject 
         {
         public:
             //! Creates a memory allocation object
-            static RHI::Ptr<MemoryAllocation> Create();
+            static RHI::Ptr<VulkanMemoryAllocation> Create();
 
             //! Initialize a memmory allocation from a VMA allocation.
             void Init(Device& device, const VmaAllocation& alloc);
@@ -48,7 +48,7 @@ namespace AZ
             VkDeviceMemory GetNativeDeviceMemory() const;
 
         private:
-            MemoryAllocation() = default;
+            VulkanMemoryAllocation() = default;
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object

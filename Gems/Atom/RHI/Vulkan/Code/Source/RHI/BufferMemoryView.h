@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI/MemoryAllocation.h>
 #include <RHI/BufferMemory.h>
 #include <RHI/MemoryTypeView.h>
 

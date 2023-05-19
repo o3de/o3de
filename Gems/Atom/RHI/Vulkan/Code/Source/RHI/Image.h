@@ -17,7 +17,7 @@
 #include <AzCore/std/sort.h>
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
-#include <RHI/MemoryAllocation.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <Atom/RHI/AsyncWorkQueue.h>
 
 namespace AZ
@@ -59,7 +59,7 @@ namespace AZ
             uint32_t m_mipTailBlockCount;
 
             // Memory binding data for one non-tail mip
-            using MultiHeapTiles = AZStd::vector<RHI::Ptr<MemoryAllocation>>; 
+            using MultiHeapTiles = AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>; 
             using MemoryViews = AZStd::vector<MemoryView>;
             using MipMemoryBinds = AZStd::vector<VkSparseImageMemoryBind>;
             struct NonTailMipInfo
@@ -170,8 +170,7 @@ namespace AZ
             enum class InitFlags : uint32_t
             {
                 None = 0,
-                TrySparse = AZ_BIT(0),  // Try to create a sparse image first
-                DontAllocate = AZ_BIT(1)// Do not allocate or bind memory
+                TrySparse = AZ_BIT(0)  // Try to create a sparse image first
             };
 
         private:
@@ -179,7 +178,7 @@ namespace AZ
 
             RHI::ResultCode Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor); // It is internally used to handle Swapchain images as Vulkan::Image class.
             RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const InitFlags flags);
-            RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const MemoryView& memoryView, const InitFlags flags);
+            RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const MemoryView& memoryView);
 
             //! Common initialization for all Init functions (init variables, set desciptor, set initflags, init DeviceObject, etc)
             void OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, InitFlags flags);

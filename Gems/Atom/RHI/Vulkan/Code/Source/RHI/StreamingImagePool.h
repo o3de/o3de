@@ -30,21 +30,15 @@ namespace AZ
             ~StreamingImagePool() = default;
 
         protected:
-            // Allocate non-tiled memory with specified size and alignment
-            // via the m_memoryAllocator
-            RHI::Ptr<MemoryAllocation> AllocateMemory(const VkMemoryRequirements& memReq);
-            // Deallocate a non-tiled memory
-            void DeAllocateMemory(RHI::Ptr<MemoryAllocation> memoryAlloc);
-
             //! Allocate multiple memory blocks.
             //! All allocations use the same memory requeriments
             RHI::ResultCode AllocateMemoryBlocks(
                 uint32_t blockCount,
                 const VkMemoryRequirements& memReq,
-                AZStd::vector<RHI::Ptr<MemoryAllocation>>& outAllocatedBlocks);
+                AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>& outAllocatedBlocks);
 
             //! DeAllocate memory blocks
-            void DeAllocateMemoryBlocks(AZStd::vector<RHI::Ptr<MemoryAllocation>>& blocks);
+            void DeAllocateMemoryBlocks(AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>& blocks);
 
         private:
             StreamingImagePool() = default;

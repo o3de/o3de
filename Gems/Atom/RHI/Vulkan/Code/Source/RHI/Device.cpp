@@ -341,7 +341,7 @@ namespace AZ
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures(m_context);
 
-            RHI::ResultCode resultCode = InitVulkanAllocator(physicalDeviceBase);
+            RHI::ResultCode resultCode = InitVmaAllocator(physicalDeviceBase);
             if (resultCode != RHI::ResultCode::Success)
             {
                 return resultCode;
@@ -677,7 +677,7 @@ namespace AZ
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
 
-            ShutdownVulkanAllocator();
+            ShutdownVmaAllocator();
 
             // Only destroy VkDevice if created locally and not passed in by a XR module
             if (!m_isXrNativeDevice)
@@ -1200,7 +1200,7 @@ namespace AZ
             return bufferUsageFlags;
         }
 
-        RHI::ResultCode Device::InitVulkanAllocator(RHI::PhysicalDevice & physicalDeviceBase)
+        RHI::ResultCode Device::InitVmaAllocator(RHI::PhysicalDevice & physicalDeviceBase)
         {
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
             const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
@@ -1273,7 +1273,7 @@ namespace AZ
             return ConvertResult(errorCode);
         }
 
-        void Device::ShutdownVulkanAllocator()
+        void Device::ShutdownVmaAllocator()
         {
             if (m_vmaAllocator != VK_NULL_HANDLE)
             {

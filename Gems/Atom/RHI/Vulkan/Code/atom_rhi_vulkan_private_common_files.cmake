@@ -87,8 +87,8 @@ set(FILES
     Source/RHI/ResourcePoolResolver.h
     Source/RHI/MemoryView.h
     Source/RHI/MemoryTypeView.h
-    Source/RHI/MemoryAllocation.cpp
-    Source/RHI/MemoryAllocation.h
+    Source/RHI/VulkanMemoryAllocation.cpp
+    Source/RHI/VulkanMemoryAllocation.h
     Source/RHI/Instance.cpp
     Source/RHI/Instance.h
     Source/RHI/PhysicalDevice.cpp

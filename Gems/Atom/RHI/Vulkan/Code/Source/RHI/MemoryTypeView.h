@@ -9,7 +9,7 @@
 
 #include <Atom/RHI.Reflect/MemoryEnums.h>
 #include <Atom/RHI/DeviceObject.h>
-#include <RHI/MemoryAllocation.h>
+#include <RHI/VulkanMemoryAllocation.h>
 
 namespace AZ
 {
