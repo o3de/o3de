@@ -101,11 +101,7 @@ namespace AWSGameLift
         // Fetch AWS credential for client
         AWSCore::AWSCredentialResult credentialResult;
         AWSCore::AWSCredentialRequestBus::BroadcastResult(credentialResult, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
-        if (!localEndpoint.empty())
-        {
-            credentialResult.result = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
-        }
-        else if (!credentialResult.result)
+        if (!credentialResult.result)
         {
             AZ_Error(AWSGameLiftClientManagerName, false, AWSGameLiftClientCredentialMissingErrorMessage);
             return false;
