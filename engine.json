@@ -105,8 +105,10 @@
     "gem_names": [
         "Atom_Bootstrap",
         "AtomShader",
+        "AtomViewportDisplayInfo",
         "Camera",
         "CommonFeaturesAtom",
+        "EditorModeFeedback",
         "Maestro",
         "PrefabBuilder",
         "SceneProcessing"
@@ -121,6 +123,7 @@
         "Templates/DefaultGem",
         "Templates/DefaultProject",
         "Templates/GemRepo",
+        "Templates/GraphicsGems",
         "Templates/MinimalProject",
         "Templates/PrebuiltGem",
         "Templates/PythonToolGem",

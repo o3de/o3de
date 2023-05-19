@@ -29,17 +29,19 @@ namespace AZ
             RHI::Ptr<Buffer> stagingBuffer = m_device.AcquireStagingBuffer(request.m_byteCount);
             if (stagingBuffer)
             {
-                m_uploadPacketsLock.lock();
-                m_uploadPackets.emplace_back();
-                BufferUploadPacket& uploadRequest = m_uploadPackets.back();
-                m_uploadPacketsLock.unlock();
-
+                BufferUploadPacket uploadRequest;
                 uploadRequest.m_attachmentBuffer = buffer;
                 uploadRequest.m_byteOffset = request.m_byteOffset;
                 uploadRequest.m_stagingBuffer = stagingBuffer;
                 uploadRequest.m_byteSize = request.m_byteCount;
 
-                return stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
+                auto address = stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write);
+
+                m_uploadPacketsLock.lock();
+                m_uploadPackets.emplace_back(AZStd::move(uploadRequest));
+                m_uploadPacketsLock.unlock();
+
+                return address;
             }
 
             return nullptr;
