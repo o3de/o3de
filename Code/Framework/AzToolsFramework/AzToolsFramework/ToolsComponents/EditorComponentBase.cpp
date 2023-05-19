@@ -53,7 +53,11 @@ namespace AzToolsFramework
 
         void EditorComponentBase::OnAfterEntitySet()
         {
-            AZ_Assert(m_entity, "OnAfterEntitySet - Entity should not be nullptr.");
+            if (!m_entity)
+            {
+                AZ_Assert(false, "OnAfterEntitySet - Entity should not be nullptr.");
+                return;
+            }
 
             // Sets up only if the component alias is empty to avoid setting the alias twice.
             // For a component added as a pending component, there are two places trying to call this function to set up the alias:
@@ -68,7 +72,11 @@ namespace AzToolsFramework
 
         AZStd::string EditorComponentBase::GenerateComponentSerializedIdentifier()
         {
-            AZ_Assert(m_entity, "GenerateComponentSerializedIdentifier - Entity should not be nullptr.");
+            if (!m_entity)
+            {
+                AZ_Assert(false, "GenerateComponentSerializedIdentifier - Entity should not be nullptr.");
+                return {};
+            }
 
             AZStd::unordered_set<AZStd::string> existingSerializedIdentifiers;
 

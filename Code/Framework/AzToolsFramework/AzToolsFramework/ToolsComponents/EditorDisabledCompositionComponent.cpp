@@ -133,15 +133,15 @@ namespace AzToolsFramework
 
         void EditorDisabledCompositionComponent::AddDisabledComponent(AZ::Component* componentToAdd)
         {
-            AZ_Assert(componentToAdd, "Unable to add a disabled component that is nullptr.");
+            if (!componentToAdd)
+            {
+                AZ_Assert(false, "Unable to add a disabled component that is nullptr.");
+                return;
+            }
 
             AZStd::string componentAlias = componentToAdd->GetSerializedIdentifier();
-            AZ_Assert(!componentAlias.empty(), "Unable to add a disabled component that has an empty component alias.");
 
-            bool found = m_disabledComponents.find(componentAlias) != m_disabledComponents.end();
-            AZ_Assert(!found, "Unable to add a disabled component that was added already.");
-
-            if (componentToAdd && !found)
+            if (!componentAlias.empty() && m_disabledComponents.find(componentAlias) == m_disabledComponents.end())
             {
                 m_disabledComponents.emplace(AZStd::move(componentAlias), componentToAdd);
             }
@@ -149,15 +149,15 @@ namespace AzToolsFramework
 
         void EditorDisabledCompositionComponent::RemoveDisabledComponent(AZ::Component* componentToRemove)
         {
-            AZ_Assert(componentToRemove, "Unable to remove a disabled component that is nullptr.");
+            if (!componentToRemove)
+            {
+                AZ_Assert(false, "Unable to remove a disabled component that is nullptr.");
+                return;
+            }
 
             AZStd::string componentAlias = componentToRemove->GetSerializedIdentifier();
-            AZ_Assert(!componentAlias.empty(), "Unable to add a disabled component that has an empty component alias.");
 
-            bool found = m_disabledComponents.find(componentAlias) != m_disabledComponents.end();
-            AZ_Assert(found, "Unable to remove a disabled component that has not been added.");
-
-            if (componentToRemove && found)
+            if (!componentAlias.empty())
             {
                 m_disabledComponents.erase(componentAlias);
             }
@@ -165,23 +165,21 @@ namespace AzToolsFramework
 
         bool EditorDisabledCompositionComponent::IsComponentDisabled(const AZ::Component* componentToCheck)
         {
-            AZ_Assert(componentToCheck, "Unable to check a component that is nullptr.");
-
-            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
-            AZ_Assert(!componentAlias.empty(), "Unable to check a component that has an empty component alias.");
-
-            auto componentIt = m_disabledComponents.find(componentAlias);
-
-            if (componentIt != m_disabledComponents.end())
+            if (!componentToCheck)
             {
-                bool sameComponent = componentIt->second == componentToCheck;
-                AZ_Assert(sameComponent, "The component to check shares the same alias but is a different object "
-                    "compared to the one referenced in the composition component.");
-
-                return sameComponent;
+                AZ_Assert(false, "Unable to check a component that is nullptr.");
+                return false;
             }
 
-            return false;
+            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
+
+            if (componentAlias.empty())
+            {
+                return false;
+            }
+
+            auto componentIt = m_disabledComponents.find(componentAlias);
+            return componentIt != m_disabledComponents.end() && componentIt->second == componentToCheck;
         }
 
         EditorDisabledCompositionComponent::~EditorDisabledCompositionComponent()

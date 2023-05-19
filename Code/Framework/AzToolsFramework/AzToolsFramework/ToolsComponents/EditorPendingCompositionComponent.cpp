@@ -134,15 +134,15 @@ namespace AzToolsFramework
 
         void EditorPendingCompositionComponent::AddPendingComponent(AZ::Component* componentToAdd)
         {
-            AZ_Assert(componentToAdd, "Unable to add a pending component that is nullptr.");
+            if (!componentToAdd)
+            {
+                AZ_Assert(false, "Unable to add a pending component that is nullptr.");
+                return;
+            }
 
             AZStd::string componentAlias = componentToAdd->GetSerializedIdentifier();
-            AZ_Assert(!componentAlias.empty(), "Unable to add a pending component that has an empty component alias.");
 
-            bool found = m_pendingComponents.find(componentAlias) != m_pendingComponents.end();
-            AZ_Assert(!found, "Unable to add a pending component that was added already.");
-
-            if (componentToAdd && !found)
+            if (!componentAlias.empty() && m_pendingComponents.find(componentAlias) == m_pendingComponents.end())
             {
                 m_pendingComponents.emplace(AZStd::move(componentAlias), componentToAdd);
 
@@ -157,15 +157,15 @@ namespace AzToolsFramework
 
         void EditorPendingCompositionComponent::RemovePendingComponent(AZ::Component* componentToRemove)
         {
-            AZ_Assert(componentToRemove, "Unable to remove a pending component that is nullptr.");
+            if (!componentToRemove)
+            {
+                AZ_Assert(false, "Unable to remove a pending component that is nullptr.");
+                return;
+            }
 
             AZStd::string componentAlias = componentToRemove->GetSerializedIdentifier();
-            AZ_Assert(!componentAlias.empty(), "Unable to remove a pending component that has an empty component alias.");
 
-            bool found = m_pendingComponents.find(componentAlias) != m_pendingComponents.end();
-            AZ_Assert(found, "Unable to remove a pending component that has not been added.");
-
-            if (componentToRemove && found)
+            if (!componentAlias.empty())
             {
                 m_pendingComponents.erase(componentAlias);
 
@@ -180,23 +180,21 @@ namespace AzToolsFramework
 
         bool EditorPendingCompositionComponent::IsComponentPending(const AZ::Component* componentToCheck)
         {
-            AZ_Assert(componentToCheck, "Unable to check a component that is nullptr.");
-
-            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
-            AZ_Assert(!componentAlias.empty(), "Unable to check a component that has an empty component alias.");
-
-            auto componentIt = m_pendingComponents.find(componentAlias);
-
-            if (componentIt != m_pendingComponents.end())
+            if (!componentToCheck)
             {
-                bool sameComponent = componentIt->second == componentToCheck;
-                AZ_Assert(sameComponent, "The component to check shares the same alias but is a different object "
-                    "compared to the one referenced in the composition component.");
-
-                return sameComponent;
+                AZ_Assert(false, "Unable to check a component that is nullptr.");
+                return false;
             }
 
-            return false;
+            AZStd::string componentAlias = componentToCheck->GetSerializedIdentifier();
+
+            if (componentAlias.empty())
+            {
+                return false;
+            }
+            
+            auto componentIt = m_pendingComponents.find(componentAlias);
+            return componentIt != m_pendingComponents.end() && componentIt->second == componentToCheck;
         }
 
         EditorPendingCompositionComponent::~EditorPendingCompositionComponent()
