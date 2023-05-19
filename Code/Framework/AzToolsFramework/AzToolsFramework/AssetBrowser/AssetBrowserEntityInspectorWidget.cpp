@@ -16,6 +16,7 @@
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
+#include <AzCore/Asset/AssetTypeInfoBus.h>
 
 #include <QPixmap>
 
@@ -62,15 +63,15 @@ namespace AzToolsFramework
 
             // Create a two column layout for the labels and data inside of the asset details card
             auto assetDetailWidget = new QWidget(assetDetails);
-            m_assetDetailLayout = new QFormLayout;
+            m_assetDetailLayout = new QFormLayout(assetDetailWidget);
             m_assetDetailLayout->setLabelAlignment(Qt::AlignRight);
-            m_nameLabel = new AzQtComponents::ElidingLabel;
-            m_locationLabel = new AzQtComponents::ElidingLabel;
-            m_fileTypeLabel = new AzQtComponents::ElidingLabel;
-            m_assetTypeLabel = new AzQtComponents::ElidingLabel;
-            m_diskSizeLabel = new AzQtComponents::ElidingLabel;
-            m_dimensionLabel = new AzQtComponents::ElidingLabel;
-            m_verticesLabel = new AzQtComponents::ElidingLabel;
+            m_nameLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
+            m_locationLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
+            m_fileTypeLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
+            m_assetTypeLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
+            m_diskSizeLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
+            m_dimensionLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
+            m_verticesLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
             m_assetDetailLayout->addRow(QObject::tr("Name:"), m_nameLabel);
             m_assetDetailLayout->addRow(QObject::tr("Location:"), m_locationLabel);
             m_assetDetailLayout->addRow(QObject::tr("File Type:"), m_fileTypeLabel);
@@ -129,48 +130,47 @@ namespace AzToolsFramework
                 m_previewImage->setText(QObject::tr("No preview image avaialble."));
             }
 
-            if (!m_assetDetailLayout->isEmpty())
-            {
-                const auto rowCount = m_assetDetailLayout->count();
-                for (int rowIndex = 0; rowIndex < rowCount; ++rowIndex)
-                {
-                    m_assetDetailLayout->removeRow(rowIndex);
-                }
-            }
-
-            QString name = selectedEntry->GetDisplayName();
+            const QString name = selectedEntry->GetDisplayName();
             m_nameLabel->setText(name);
 
-            auto fullPath = selectedEntry->GetFullPath();
-            auto location = QString::fromUtf8(fullPath.c_str(), fullPath.size());
+            const auto fullPath = selectedEntry->GetFullPath();
+            const auto location = QString::fromUtf8(fullPath.c_str(), fullPath.size());
             m_locationLabel->setText(location);
 
             QString fileType;
             QString assetEntryType;
             if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
             {
-                auto extension = sourceEntry->GetExtension();
+                const auto extension = sourceEntry->GetExtension();
                 fileType = QString::fromUtf8(extension.c_str(), extension.size());
                 assetEntryType = QObject::tr("Source");
             }
             else if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(selectedEntry))
             {
-                auto assetType = productEntry->GetAssetTypeString();
-                fileType = QString::fromUtf8(assetType.c_str(), assetType.size());
+                AZ::AssetTypeInfoBus::EventResult(fileType, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
                 assetEntryType = QObject::tr("Product");
             }
             m_fileTypeLabel->setText(fileType);
             m_assetTypeLabel->setText(assetEntryType);
 
-            auto diskSize = selectedEntry->GetDiskSize();
-            m_diskSizeLabel->setText(QString::number(diskSize));
+            const float diskSize = selectedEntry->GetDiskSize();
+            m_diskSizeLabel->setText(QString::number(diskSize / 1000));
 
-            auto dimension = selectedEntry->GetDimension();
-            auto dimensionString = QString::number(dimension.GetX()) + QObject::tr(" x ") + QString::number(dimension.GetY()) +
-                QObject::tr(" x ") + QString::number(dimension.GetZ());
+            const AZ::Vector3 dimension = selectedEntry->GetDimension();
+            QString dimensionString;
+            if (AZStd::isnan(dimension.GetX()) || AZStd::isnan(dimension.GetY()) || AZStd::isnan(dimension.GetZ()))
+            {
+                dimensionString = QObject::tr("0 x 0 x 0");
+            }
+            else
+            {
+                dimensionString = QString::number(dimension.GetX()) +
+                    QObject::tr(" x ") + QString::number(dimension.GetY()) +
+                    QObject::tr(" x ") + QString::number(dimension.GetZ());
+            }
             m_dimensionLabel->setText(dimensionString);
 
-            auto vertices = selectedEntry->GetNumVertices();
+            const auto vertices = selectedEntry->GetNumVertices();
             m_verticesLabel->setText(QString::number(vertices));
         }
 
