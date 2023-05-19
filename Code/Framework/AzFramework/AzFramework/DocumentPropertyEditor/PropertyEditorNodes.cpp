@@ -49,6 +49,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
+        system->RegisterNodeAttribute<Label>(Label::ValueText);
 
         system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
@@ -60,6 +61,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ParentValue);
 
         system->RegisterNode<Container>();
         system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);

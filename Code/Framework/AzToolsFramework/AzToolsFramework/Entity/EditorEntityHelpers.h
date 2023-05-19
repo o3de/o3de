@@ -216,4 +216,7 @@ namespace AzToolsFramework
     /// e.g. This is useful for getting a concise set of entities that need to be duplicated.
     EntityIdSet GetCulledEntityHierarchy(const EntityIdList& entities);
 
+    /// Checks if the selected entities and the new parent entity belong to the same prefab.
+    bool EntitiesBelongToSamePrefab(const EntityIdList& selectedEntities, const AZ::EntityId newParentId);
+
 }; // namespace AzToolsFramework

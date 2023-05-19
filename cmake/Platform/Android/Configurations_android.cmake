@@ -20,7 +20,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     ly_append_configurations_options(
         DEFINES
             LINUX64
-            __ARM_NEON__
             _LINUX
             LINUX
             ANDROID

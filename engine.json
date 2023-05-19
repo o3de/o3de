@@ -4,7 +4,7 @@
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
     "display_version": "00.00",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "api_versions": {
         "editor": "1.0.0",
         "framework": "1.1.0",
@@ -105,8 +105,10 @@
     "gem_names": [
         "Atom_Bootstrap",
         "AtomShader",
+        "AtomViewportDisplayInfo",
         "Camera",
         "CommonFeaturesAtom",
+        "EditorModeFeedback",
         "Maestro",
         "PrefabBuilder",
         "SceneProcessing"
@@ -121,6 +123,7 @@
         "Templates/DefaultGem",
         "Templates/DefaultProject",
         "Templates/GemRepo",
+        "Templates/GraphicsGems",
         "Templates/MinimalProject",
         "Templates/PrebuiltGem",
         "Templates/PythonToolGem",

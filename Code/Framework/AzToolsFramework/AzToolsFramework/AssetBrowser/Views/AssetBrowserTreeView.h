@@ -31,7 +31,7 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserModel;
-        class AssetBrowserExpandedTableView;
+        class AssetBrowserTableView;
         class AssetBrowserFilterModel;
         class AssetBrowserThumbnailView;
         class EntryDelegate;
@@ -108,7 +108,7 @@ namespace AzToolsFramework
             void SetShowIndexAfterUpdate(QModelIndex index);
 
             void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
-            void SetAttachedExpandedTableView(AssetBrowserExpandedTableView* tableView);
+            void SetAttachedTableView(AssetBrowserTableView* tableView);
 
             void SetApplySnapshot(bool applySnapshot);
 
@@ -142,7 +142,7 @@ namespace AzToolsFramework
             const int m_scUpdateInterval = 100;
 
             AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
-            AssetBrowserExpandedTableView* m_attachedExpandedTableView = nullptr;
+            AssetBrowserTableView* m_attachedTableView = nullptr;
 
             QString m_name;
 

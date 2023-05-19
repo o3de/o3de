@@ -88,6 +88,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "Label";
         static constexpr auto Value = AttributeDefinition<AZStd::string_view>("Value");
+        static constexpr auto ValueText = AttributeDefinition<AZStd::string_view>("ValueText");
     };
 
     //! Specifies types describing a value change's state.
@@ -123,6 +124,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Value = AttributeDefinition<AZ::Dom::Value>("Value");
         static constexpr auto ValueType = TypeIdAttributeDefinition("ValueType");
         static constexpr auto ValueHashed = AttributeDefinition<AZ::Uuid>("ValueHashed");
+        static constexpr auto ParentValue = AttributeDefinition<AZ::Dom::Value>("ParentValue");
 
         //! If set to true, specifies that this PropertyEditor shouldn't be allocated its own column, but instead appended
         //! to the previous column in the layout, creating a SharedColumn that can hold many PropertyEditors.

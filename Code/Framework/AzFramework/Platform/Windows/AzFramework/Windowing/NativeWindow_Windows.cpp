@@ -33,6 +33,7 @@ namespace AzFramework
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
 
+        WindowSize GetMaximumClientAreaSize() const override;
         void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
@@ -42,6 +43,9 @@ namespace AzFramework
         uint32_t GetDisplayRefreshRate() const override;
 
     private:
+        RECT GetMonitorRect() const;
+        static HWND GetWindowedPriority();
+
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
         static LRESULT CALLBACK WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
@@ -55,6 +59,8 @@ namespace AzFramework
         HWND m_win32Handle = nullptr;
         RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
         UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
+        UINT m_windowExtendedStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
+
         bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
         bool m_shouldEnterFullScreenStateOnActivate = false; //!< Should we enter full screen state when the window is activated?
 
@@ -185,12 +191,71 @@ namespace AzFramework
         return m_win32Handle;
     }
 
+    HWND NativeWindowImpl_Win32::GetWindowedPriority()
+    {
+        // If a debugger is attached and we're running in Windowed mode instead of Fullscreen mode,
+        // don't make the window TOPMOST. Otherwise, the window will stay on top of the debugger window
+        // at every breakpoint, crash, etc, making it extremely difficult to debug when working on a single monitor system.
+        return AZ::Debug::Trace::Instance().IsDebuggerPresent() ? HWND_NOTOPMOST : HWND_TOPMOST;
+    }
+
     void NativeWindowImpl_Win32::SetWindowTitle(const AZStd::string& title)
     {
         AZStd::wstring titleW;
         AZStd::to_wstring(titleW, title);
         SetWindowTextW(m_win32Handle, titleW.c_str());
     }
+
+    RECT NativeWindowImpl_Win32::GetMonitorRect() const
+    {
+        // Get the monitor on which the window is currently displayed.
+        HMONITOR monitor = MonitorFromWindow(m_win32Handle, MONITOR_DEFAULTTONEAREST);
+        if (!monitor)
+        {
+            AZ_Warning("NativeWindowImpl_Win32::GetMonitorRect", false, "Could not find any monitor.");
+            return { 0, 0, 0, 0 };
+        }
+
+        // Get the dimensions of the display device on which the window is currently displayed.
+        MONITORINFO monitorInfo;
+        memset(&monitorInfo, 0, sizeof(MONITORINFO)); // C4701 potentially uninitialized local variable 'monitorInfo' used
+        monitorInfo.cbSize = sizeof(MONITORINFO);
+        if (!GetMonitorInfo(monitor, &monitorInfo))
+        {
+            AZ_Warning("NativeWindowImpl_Win32::GetMonitorRect", false, "Could not get monitor info.");
+            return { 0, 0, 0, 0 };
+        }
+
+        // This is the full dimensions of the monitor, including the task bar area.
+        // Since we keep our window as "TOPMOST" when it's active, it can draw over the task bar.
+        return monitorInfo.rcMonitor;
+    }
+
+    WindowSize NativeWindowImpl_Win32::GetMaximumClientAreaSize() const
+    {
+        // Calculate the size of the entire monitor that the window is currently on.
+        RECT monitorRect = GetMonitorRect();
+        WindowSize monitorSize = { aznumeric_cast<uint32_t>(monitorRect.right - monitorRect.left),
+                                   aznumeric_cast<uint32_t>(monitorRect.bottom - monitorRect.top) };
+
+        // Using that size as a client area, calculate how much bigger the full window would be with the current style
+        RECT fullWindowRect = monitorRect;
+        const UINT currentWindowStyle = GetWindowLong(m_win32Handle, GWL_STYLE);
+        AdjustWindowRect(&fullWindowRect, currentWindowStyle, false);
+        WindowSize fullWindowSize = 
+        {
+            aznumeric_cast<uint32_t>(fullWindowRect.right - fullWindowRect.left),
+            aznumeric_cast<uint32_t>(fullWindowRect.bottom - fullWindowRect.top)
+        };
+
+        // Subtract the additional overhead of the borders and title bar from the monitor size to get the maximum client area.
+        return
+        {
+            monitorSize.m_width - (fullWindowSize.m_width - monitorSize.m_width),
+            monitorSize.m_height - (fullWindowSize.m_height - monitorSize.m_height)
+        };
+    }
+
 
     DWORD NativeWindowImpl_Win32::ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks)
     {
@@ -259,18 +324,37 @@ namespace AzFramework
             // in which case we want to enter full screen state again upon activation.
             const bool windowIsNowInactive = (LOWORD(wParam) == WA_INACTIVE);
             const bool windowFullScreenState = nativeWindowImpl->GetFullScreenState();
-            if (windowIsNowInactive &&
-                windowFullScreenState)
+
+            if (windowIsNowInactive)
             {
-                nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = true;
-                nativeWindowImpl->SetFullScreenState(false);
+                if (windowFullScreenState)
+                {
+                    nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = true;
+                    nativeWindowImpl->SetFullScreenState(false);
+                }
+
+                // When becoming inactive, transition from TOPMOST to NOTOPMOST.
+                SetWindowPos(nativeWindowImpl->m_win32Handle,
+                    HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
             }
-            else if (!windowIsNowInactive &&
-                     !windowFullScreenState &&
-                     nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate)
+            else
             {
-                nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
-                nativeWindowImpl->SetFullScreenState(true);
+                // When running in Windowed mode, we might want either NOTOPMOST or TOPMOST, depending on whether or not a debugger is attached.
+                HWND windowPriority = GetWindowedPriority();
+
+                if (!windowFullScreenState && nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate)
+                {
+                    nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
+                    nativeWindowImpl->SetFullScreenState(true);
+
+                    // If we're going to fullscreen, then we presumably want to be TOPMOST whether or not a debugger is attached.
+                    windowPriority = HWND_TOPMOST;
+                }
+
+                // When becoming active again, transition from NOTOPMOST to TOPMOST. (Or stay NOTOPMOST if a debugger is attached)
+                SetWindowPos(
+                    nativeWindowImpl->m_win32Handle,
+                    windowPriority, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
             }
             break;
         }
@@ -301,11 +385,22 @@ namespace AzFramework
         }
         case WM_WINDOWPOSCHANGED:
         {
-            DEVMODE DisplayConfig;
-            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-            uint32_t refreshRate = DisplayConfig.dmDisplayFrequency;
-            WindowNotificationBus::Event(
-                nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnRefreshRateChanged, refreshRate);
+            // Any time the window position has changed, there's a possibility that it has moved to a different monitor
+            // with a different refresh rate. Get the refresh rate and send out a notification that it changed.
+            // It appears this notification also triggers even if you change the refresh rate on the same monitor and don't
+            // actually change the window position at all.
+            DEVMODE displayConfig;
+            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &displayConfig);
+            if (displayConfig.dmDisplayFrequency != nativeWindowImpl->m_mainDisplayRefreshRate)
+            {
+                nativeWindowImpl->m_mainDisplayRefreshRate = displayConfig.dmDisplayFrequency;
+                WindowNotificationBus::Event(
+                    nativeWindowImpl->GetWindowHandle(),
+                    &WindowNotificationBus::Events::OnRefreshRateChanged,
+                    displayConfig.dmDisplayFrequency);
+            }
+
+            // Don't mark this event as handled since we aren't actually processing the window positional change itself.
             shouldBubbleEventUp = true;
             break;
         }
@@ -337,14 +432,34 @@ namespace AzFramework
 
     void NativeWindowImpl_Win32::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
+        // Get the coordinates of the window's current client area.
+        // We'll use this to keep the left and top coordinates pinned to the same spot
+        // and just resize by changing the bottom right corner.
         RECT rect = {};
         GetClientRect(m_win32Handle, &rect);
+
+        // Change the bottom right corner to reflect the new desired client area size.
         rect.right = rect.left + clientAreaSize.m_width;
         rect.bottom = rect.top + clientAreaSize.m_height;
+
+        // Given a desired client area rectangle, calculate the rectangle needed to support that client area,
+        // taking into account the title bar and window border.
         AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
 
-        UINT flag = SWP_NOMOVE | (options.m_ignoreScreenSizeLimit ? SWP_NOSENDCHANGING : 0);
-        SetWindowPos(m_win32Handle, HWND_TOP, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flag);
+        // By default, SetWindowPos() will clamp the size of the window to the maximum size of the screen.
+        // This doesn't take window positioning into account, so it's not clamping the window to be fully visible,
+        // it's just clamping it to a maximum *possible* visible size.
+        // If we want to circumvent this behavior, the solution is to add the flag SWP_NOSENDCHANGING
+        // when setting the new window pos. Without this flag, Windows will send out the WM_WINDOWPOSCHANGING message
+        // and then the WM_GETMINMAXINFO message, so that the window size will be clipped to the screen max size.
+        // https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-windowposchanging
+        // https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-getminmaxinfo
+        const UINT flag = SWP_NOMOVE | (options.m_ignoreScreenSizeLimit ? SWP_NOSENDCHANGING : 0);
+
+        // When running in Windowed mode, we might want either NOTOPMOST or TOPMOST, depending on whether or not a debugger is attached.
+        const HWND windowPriority = GetWindowedPriority();
+
+        SetWindowPos(m_win32Handle, windowPriority, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flag);
     }
 
     bool NativeWindowImpl_Win32::GetFullScreenState() const
@@ -430,46 +545,32 @@ namespace AzFramework
             return;
         }
 
-        // Get the monitor on which the window is currently displayed.
-        HMONITOR monitor = MonitorFromWindow(m_win32Handle, MONITOR_DEFAULTTONEAREST);
-        if (!monitor)
-        {
-            AZ_Warning("NativeWindowImpl_Win32::EnterBorderlessWindowFullScreen", false,
-                       "Could not find any monitor.");            
-            return;
-        }
+        // Set this first so that any calls to GetFullscreenState() that occur during any window notifications
+        // caused by the window state changes below will return the correct state.
+        m_isInBorderlessWindowFullScreenState = true;
 
         // Get the dimensions of the display device on which the window is currently displayed.
-        MONITORINFO monitorInfo;
-        memset(&monitorInfo, 0, sizeof(MONITORINFO)); // C4701 potentially uninitialized local variable 'monitorInfo' used
-        monitorInfo.cbSize = sizeof(MONITORINFO);
-        const BOOL success = monitor ? GetMonitorInfo(monitor, &monitorInfo) : FALSE;
-        if (!success)
-        {
-            AZ_Warning("NativeWindowImpl_Win32::SetFullScreenState", false,
-                       "Could not get monitor info.");            
-            return;
-        }
+        const RECT fullScreenWindowRect = GetMonitorRect();
 
         // Store the current window rect and style so we can restore them when exiting full screen.
         GetWindowRect(m_win32Handle, &m_windowRectToRestoreOnFullScreenExit);
         const UINT currentWindowStyle = GetWindowLong(m_win32Handle, GWL_STYLE);
         m_windowStyleToRestoreOnFullScreenExit = currentWindowStyle;
+        m_windowExtendedStyleToRestoreOnFullScreenExit = GetWindowLong(m_win32Handle, GWL_EXSTYLE);
 
         // Style, resize, and position the window such that it fills the entire screen.
-        const RECT fullScreenWindowRect = monitorInfo.rcMonitor;
         const UINT fullScreenWindowStyle = currentWindowStyle & ~(WS_CAPTION | WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU | WS_THICKFRAME);
         SetWindowLong(m_win32Handle, GWL_STYLE, fullScreenWindowStyle);
         SetWindowPos(m_win32Handle,
                         HWND_TOPMOST,
                         fullScreenWindowRect.left,
                         fullScreenWindowRect.top,
-                        fullScreenWindowRect.right,
-                        fullScreenWindowRect.bottom,
+                        fullScreenWindowRect.right - fullScreenWindowRect.left,
+                        fullScreenWindowRect.bottom - fullScreenWindowRect.top,
                         SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ShowWindow(m_win32Handle, SW_MAXIMIZE);
 
-        m_isInBorderlessWindowFullScreenState = true;
+        WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnFullScreenModeChanged, true);
     }
 
     void NativeWindowImpl_Win32::ExitBorderlessWindowFullScreen()
@@ -479,10 +580,15 @@ namespace AzFramework
             return;
         }
 
+        // Set this first so that any calls to GetFullscreenState() that occur during any window notifications
+        // caused by the window state changes below will return the correct state.
+        m_isInBorderlessWindowFullScreenState = false;
+
         // Restore the style, size, and position of the window.
         SetWindowLong(m_win32Handle, GWL_STYLE, m_windowStyleToRestoreOnFullScreenExit);
+        SetWindowLong(m_win32Handle, GWL_EXSTYLE, m_windowExtendedStyleToRestoreOnFullScreenExit);
         SetWindowPos(m_win32Handle,
-                        HWND_NOTOPMOST,
+                        GetWindowedPriority(),
                         m_windowRectToRestoreOnFullScreenExit.left,
                         m_windowRectToRestoreOnFullScreenExit.top,
                         m_windowRectToRestoreOnFullScreenExit.right - m_windowRectToRestoreOnFullScreenExit.left,
@@ -490,6 +596,11 @@ namespace AzFramework
                         SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ShowWindow(m_win32Handle, SW_NORMAL);
 
-        m_isInBorderlessWindowFullScreenState = false;
+        // Sometimes, the above code doesn't set the window above the taskbar, even though other times it does.
+        // This might be a bug in the Windows SDK?
+        // By setting topmost a second time with ASYNCWINDOWPOS, the topmost setting seems to apply correctly 100% of the time.
+        SetWindowPos(m_win32Handle, GetWindowedPriority(), 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
+
+        WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnFullScreenModeChanged, false);
     }
 } // namespace AzFramework

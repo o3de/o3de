@@ -54,7 +54,6 @@ namespace AZ
 
             static void D3d12maRelease(D3D12MA::Allocation& allocation)
             {
-                allocation.GetResource()->Release();
                 allocation.Release();
             }
         }

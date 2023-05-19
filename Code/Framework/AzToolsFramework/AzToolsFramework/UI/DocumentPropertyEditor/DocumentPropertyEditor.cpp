@@ -1350,6 +1350,24 @@ namespace AzToolsFramework
         m_rootNode = nullptr;
     }
 
+    void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
+    {
+        m_allowVerticalScroll = allowVerticalScroll;
+        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+        auto existingPolicy = sizePolicy();
+        setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
+    }
+
+    QSize DocumentPropertyEditor::sizeHint() const
+    {
+        auto hint = QScrollArea::sizeHint();
+        if (!m_allowVerticalScroll)
+        {
+            hint.setHeight(m_layout->sizeHint().height());
+        }
+        return hint;
+    }
+
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
     {
         if (precursor == m_rootNode)
@@ -1657,6 +1675,7 @@ namespace AzToolsFramework
                 AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
                 {
                     DetachAndHide(handler.GetWidget());
+                    handler.PrepareWidgetForReuse();
                 };
 
                 AZStd::function<PropertyHandlerWidgetInterface*()> createHandler = [handlerId]()

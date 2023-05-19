@@ -32,7 +32,7 @@
       "test_profile_nounity"
     ]
   },
-  "profile_ubuntu22_arm64_nounity_pipe": {
+  "profile_ubuntu22_arm64_unity_pipe": {
     "TAGS": [
       "periodic-incremental-daily-internal",
       "periodic-clean-weekly-internal"
@@ -41,9 +41,9 @@
       "NODE_LABEL":"linux-ubuntu-22-arm"
     },
     "steps": [
-      "profile_nounity",
-      "asset_profile_nounity",
-      "test_profile_nounity"
+      "profile_unity",
+      "asset_profile_unity",
+      "test_profile_unity_arm64"
     ]
   },
   "metrics": {
@@ -116,7 +116,21 @@
       "CMAKE_TARGET": "all",
       "LY_MIN_MEMORY_PER_CORE": "2097152"
     }
- },
+  },
+  "profile_unity": {
+    "TAGS": [
+      "daily-pipeline-metrics",
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all"
+    }
+  },
   "profile_nounity": {
     "TAGS": [
       "daily-pipeline-metrics",
@@ -180,6 +194,20 @@
       "TEST_RESULTS": "True"
     }
   },
+  "test_profile_unity_arm64": {
+    "TAGS": [],
+    "COMMAND": "build_test_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "all",
+      "CTEST_OPTIONS": "-E (Gem::EMotionFX.Tests|AZ::AssetProcessor.Tests|AZ::AzToolsFramework.Tests) -L (SUITE_smoke|SUITE_main) -LE (REQUIRES_gpu) --no-tests=error -T Test --timeout 2500",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
   "asset_profile": {
     "TAGS": [
       "weekly-build-metrics",
@@ -208,6 +236,23 @@
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "AssetProcessorBatch",
+      "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
+      "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError",
+      "ASSET_PROCESSOR_PLATFORMS": "linux,server"
+    }
+  },
+  "asset_profile_unity": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "build_asset_linux.sh",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -361,7 +406,7 @@
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
         "O3DE_PACKAGE_TYPE": "DEB",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=${INSTALLER_DOWNLOAD_URL} -DLY_INSTALLER_LICENSE_URL=${INSTALLER_DOWNLOAD_URL}/license",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
         "CMAKE_TARGET": "all"
@@ -380,7 +425,7 @@
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
         "O3DE_PACKAGE_TYPE": "SNAP",
-        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_STRIP_DEBUG_SYMBOLS=TRUE",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=${CPACK_UPLOAD_URL}",
         "CMAKE_TARGET": "all"
     }

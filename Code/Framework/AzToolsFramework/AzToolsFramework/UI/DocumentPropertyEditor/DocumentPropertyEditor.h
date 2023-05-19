@@ -177,6 +177,13 @@ namespace AzToolsFramework
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
 
+        /*! Sets whether this DPE should allow vertical scrolling and show a scrollbar, or just take up
+            the full space that its contents requests.
+            This is typically used when a DPE is going into another scroll area and it is undesirable
+            for the DPE to provide its own vertical scrollbar */
+        void SetAllowVerticalScroll(bool allowVerticalScroll);
+        virtual QSize sizeHint() const override;
+
         auto GetAdapter()
         {
             return m_adapter;
@@ -249,6 +256,7 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
+
         QWidget* GetWidgetAtPath(const AZ::Dom::Path& path);
 
         void HandleReset();
@@ -261,6 +269,7 @@ namespace AzToolsFramework
         AZ::DocumentPropertyEditor::DocumentAdapter::MessageEvent::Handler m_domMessageHandler;
 
         QVBoxLayout* m_layout = nullptr;
+        bool m_allowVerticalScroll = true;
 
         AZStd::unique_ptr<DocumentPropertyEditorSettings> m_dpeSettings;
         bool m_isRecursiveExpansionOngoing = false;

@@ -21,11 +21,11 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
-            Gem::Atom_Feature_Common
+            Gem::Atom_Feature_Common.Static
             Gem::AtomLyIntegration_CommonFeatures.Static
-            Gem::GradientSignal
-            Gem::SurfaceData
-            Gem::LmbrCentral
+            Gem::GradientSignal.Static
+            Gem::SurfaceData.Static
+            Gem::LmbrCentral.API
 )
 
 ly_add_target(
@@ -41,7 +41,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Terrain.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -74,8 +74,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GradientSignal.Editor.Static
             PUBLIC
                 AZ::AzToolsFramework
-                Gem::GradientSignal
-                Gem::LmbrCentral
+                Gem::GradientSignal.Static
+                Gem::LmbrCentral.API
                 Gem::Terrain.Static
     )
 

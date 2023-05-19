@@ -2595,7 +2595,7 @@ void EditorActionsHandler::RefreshToolActions()
                 },
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]() -> bool
                 {
-                    return viewpaneManager->IsVisible(viewpaneName);
+                    return viewpaneManager->IsEnumeratedInstanceVisible(viewpaneName);
                 }
             );
 

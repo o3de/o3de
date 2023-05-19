@@ -13,6 +13,7 @@
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
@@ -164,7 +165,6 @@ namespace AzQtComponents
             if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
             {
                 icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
-                AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
                 icon.paint(painter, imageRect);
             }
             else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
@@ -412,7 +412,7 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
-
+        setSelectionMode(ExtendedSelection);
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -755,7 +755,6 @@ namespace AzQtComponents
         const auto p = event->pos() + QPoint{horizontalOffset(), verticalOffset()};
 
         // check the expand/collapse buttons on one of the top level items was clicked
-
         {
             auto it = std::find_if(
                 m_itemGeometry.keyBegin(),
@@ -791,8 +790,46 @@ namespace AzQtComponents
         auto idx = indexAtPos(p);
         if (idx.isValid())
         {
-            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-            emit clicked(idx);
+            bool isRightClick = event->button() == Qt::RightButton;
+            if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ControlModifier)
+            {
+                auto selectionFlag = isRightClick ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Toggle;
+                selectionModel()->select(idx, selectionFlag);
+            }
+            else if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ShiftModifier)
+            {
+                auto selectedIndex =
+                    (selectionModel()->hasSelection() ? selectionModel()->currentIndex() : model()->index(0, 0, rootIndex()));
+                QItemSelectionRange indexRange;
+                if (selectedIndex.row() < idx.row())
+                {
+                    indexRange = QItemSelectionRange(selectedIndex, idx);
+                }
+                else if (selectedIndex.row() > idx.row())
+                {
+                    indexRange = QItemSelectionRange(idx, selectedIndex);
+                }
+                if (!indexRange.isEmpty())
+                {
+                    QItemSelectionModel::SelectionFlag selectionFlag;
+                    if (selectionModel()->isSelected(idx) && !isRightClick)
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Deselect;
+                    }
+                    else
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Select;
+                    }
+                    for (auto index : indexRange.indexes())
+                    {
+                        selectionModel()->select(index, selectionFlag);
+                    }
+                }
+            }
+            else if (!selectionModel()->isSelected(idx))
+            {
+                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            }
             update();
             // Pass event to base class to enable drag/drop selections.
             QAbstractItemView::mousePressEvent(event);
