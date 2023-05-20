@@ -15,6 +15,23 @@ function(gp_resolve_item_override context item exepath dirs resolved_item_var re
         set(qt_framework_subpath ${CMAKE_MATCH_2})
         string(REGEX REPLACE "(.*)/(Qt[^\\.]+\\.framework)/(.*)" "\\1/\\2/${qt_framework_subpath}" new_resolved_item "${${resolved_item_var}}")
         set(${resolved_item_var} ${new_resolved_item} PARENT_SCOPE)
+    elseif(NOT ${resolved_var})
+        cmake_path(GET item FILENAME source_filename)
+        cmake_path(COMPARE "${source_filename}" EQUAL "libdxcompiler.3.7.dylib" is_libdirectx_shader_compiler)
+        cmake_path(COMPARE "${source_filename}" EQUAL "Python" is_python)
+        if(is_libdirectx_shader_compiler)
+            unset(resolved_filepath)
+            cmake_path(APPEND resolved_filepath "${target_file_dir}" "Builders/DirectXShaderCompiler/bin/dxc-3.7")
+            set(${resolved_item_var} "${resolved_filepath}" PARENT_SCOPE)
+            set(${resolved_var} TRUE PARENT_SCOPE)
+            message(STATUS "Custom resolving file ${item} -> ${resolved_filepath}")
+        elseif(is_python)
+            unset(resolved_filepath)
+            cmake_path(APPEND resolved_filepath "${target_bundle_framework_dir}" "Python.framework/Versions/3.10/Python")
+            set(${resolved_item_var} "${resolved_filepath}" PARENT_SCOPE)
+            set(${resolved_var} TRUE PARENT_SCOPE)
+            message(STATUS "Custom resolving file ${item} -> ${resolved_filepath}")
+        endif()
     endif()
 endfunction()
 
@@ -23,6 +40,9 @@ include(BundleUtilities)
 cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of the LY_BUILD_FIXUP_BUNDLE expansion
 cmake_policy(SET CMP0009 NEW) # do not traverse symlinks on GLOB_RECURSE
 
+# Stores a set of executable, dylib and frameworks to ignore for fixup bundle
+set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY BUNDLE_IGNORE_FILES
+    "Python;python3.10m;python3.10;dxc-3.7;dxc;libdxcompiler.3.7.dylib;libdxcompiler.dylib")
 
 # Values configured for the output locations of the target
 # Gathered from the generator expression for TARGET_FILE_DIR, TARGET_BUNDLE_DIR
@@ -38,6 +58,12 @@ set(target_copy_files $<FILTER:$<REMOVE_DUPLICATES:"@target_copy_files@">,EXCLUD
 set(target_target_files $<FILTER:$<REMOVE_DUPLICATES:"@target_target_files@">,EXCLUDE,"^$">)
 set(target_link_files $<FILTER:$<REMOVE_DUPLICATES:"@target_link_files@">,EXCLUDE,"^$">)
 set(target_imported_files $<FILTER:$<REMOVE_DUPLICATES:"@target_imported_files@">,EXCLUDE,"^$">)
+
+# Set the Frameworks directory using the <bundle-content-dir> as the root
+unset(target_bundle_framework_dir)
+cmake_path(APPEND target_bundle_framework_dir "${target_bundle_content_dir}" "Frameworks")
+unset(target_bundle_plugins_dir)
+cmake_path(APPEND target_bundle_plugins_dir "${target_bundle_content_dir}" "PlugIns")
 
 find_program(LY_INSTALL_NAME_TOOL install_name_tool)
 if (NOT LY_INSTALL_NAME_TOOL)
@@ -78,11 +104,6 @@ function(o3de_copy_file_to_bundle)
     # Use the final component of the source file has the target_filename
     cmake_path(GET source_file FILENAME target_filename)
 
-    # Set the Frameworks directory using the <bundle-content-dir> as the root
-    unset(target_bundle_framework_dir)
-    cmake_path(APPEND target_bundle_framework_dir "${target_bundle_content_dir}" "Frameworks")
-    cmake_path(APPEND target_bundle_plugins_dir "${target_bundle_content_dir}" "PlugIns")
-
     if("${source_file}" MATCHES "qt/translations")
         # Do not copy QT translation files to bundle
         return()
@@ -95,11 +116,17 @@ function(o3de_copy_file_to_bundle)
         set(source_framework_directory ${CMAKE_MATCH_1})
     endif()
 
+    string(REGEX MATCH "qt/plugins" is_qt_plugin "${source_file}")
+    # Option to indicate if a manual copy to the bundle should take place
+    set(explicit_copy_to_bundle TRUE)
+
     ## Get the full target path based on the dependency type
     # Link time dylib dependencies should go into the Contents/Frameworks folder according to the
     # Apple Placing Content in a Bundle page
     # https://developer.apple.com/documentation/bundleresources/placing_content_in_a_bundle#3875930
-    if("${source_file}" MATCHES "qt/plugins")
+    if(is_qt_plugin)
+        # Plugins need to be copied into the bundle "PlugIns" before running fixup_bundle on them
+        # https://cmake.org/cmake/help/latest/module/BundleUtilities.html?highlight=bundleutilities#bundleutilities
         unset(target_file)
         # set the target file QT plugins to be inside <bundle-content-dir>/PlugIns directory
         cmake_path(APPEND target_file "${target_bundle_plugins_dir}" "${relative_target_directory}" "${target_filename}")
@@ -113,7 +140,10 @@ function(o3de_copy_file_to_bundle)
         # copy the entire Python.framework folder to the <bundle-app/Conents/Frameworks directory
         cmake_path(COMPARE "${source_framework_filename}" EQUAL "Python.framework" is_python_framework)
         if(is_python_framework)
-            set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" APPEND PROPERTY DEPENDS_ON_PYTHON TRUE)
+            set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY DEPENDS_ON_PYTHON TRUE)
+        else()
+            # Do not copy other Frameworks to the bundle manually
+            set(explicit_copy_to_bundle FALSE)
         endif()
     elseif("${source_file}" IN_LIST target_copy_files OR "${source_file}" IN_LIST target_imported_files)
         unset(target_file)
@@ -121,7 +151,9 @@ function(o3de_copy_file_to_bundle)
         # imported dependencies refer to the IMPORTED_LOCATION property of the TARGET, so those
         # should also be copied to the <bundle-dir>/Content/MacOS if they are not a dylib
         if(is_dylib)
-            cmake_path(APPEND target_file "${target_bundle_framework_dir}" "${relative_target_directory}" "${target_filename}")
+            # fixup bundle expects raw .dylib files to be directly under the <bundle-app>/Content/Framework folder
+            # So don't add relative_target_directory as part of the target file path
+            cmake_path(APPEND target_file "${target_bundle_framework_dir}" "${target_filename}")
         else()
             cmake_path(APPEND target_file "${target_file_dir}" "${relative_target_directory}" "${target_filename}")
         endif()
@@ -133,47 +165,58 @@ function(o3de_copy_file_to_bundle)
         unset(target_file)
         # copy the target dependencies to the directory containing the bundle
         cmake_path(APPEND target_file "${target_bundle_parent_dir}" "${relative_target_directory}" "${target_filename}")
+        if(is_dylib)
+            # These are dynamic load dependencies that are triggered by the application,
+            # they should not be copied to the bundle
+            set(explicit_copy_to_bundle FALSE)
+        endif()
     endif()
 
     # Set the target directory to be the parent of the target_file
     cmake_path(GET target_file PARENT_PATH target_directory)
 
-    ## Fixup source file to copy
-    if("${source_file}" MATCHES "\\.[Ff]ramework[^\\.]")
-        # fixup origin to copy the whole Framework folder and change destination to Contents/Frameworks
-        string(REGEX REPLACE "(.*\\.[Ff]ramework)(/.*|$)" "\\1" source_file "${source_file}")
-        cmake_path(GET source_file PARENT_PATH source_file_folder)
-    endif()
+    # Any ignored files are skipped from the bundle
+    get_property(bundle_files_to_ignore SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY BUNDLE_IGNORE_FILES)
 
-    # dylibs and frameworks ared passed to fixup bundle
-    if(is_dylib OR is_framework )
+    # dylibs and frameworks are passed to fixup bundle
+    # Ignored files are based only on the filename path segment and not the full path
+    # So the ${target_filename} variable is the one being checked in this case
+    if((is_dylib OR is_framework) AND NOT "${target_filename}" IN_LIST bundle_files_to_ignore)
         # Invoke fixup bundle on copy dependencies, link dependencies and imported dependencies
-        # Fixup bundle should not be invoked to target dependencies.
+        # Fixup bundle should not be invoked on target dependencies.
         # target dependencies can be dynamically loaded libraries via `dlopen`
         # or dependencies that need to build before the current target and are used
         # in some way that is only in the runtime
-        # This is needed for Gem Modules dylibs as they can depend on the
-        # the libO3DEKernel.dylib and libAzQtComponents.dylib via
-        # static linking
-        # Also skip adding symlinks to the list of libraries to fix up
-        if(NOT IS_SYMLINK "${source_file}" AND NOT "${source_file}" IN_LIST target_target_files)
-            # Append to the SOURCE file property target file path if the target_file is a dylib
-            # otherwise the target_file is within a Mac framework so append to the bundle directory property
-            if(is_dylib)
+        # Ex. Gem Modules such as libPrefabBuilder.Builders.dylib should not be added to the bundle
+
+        # Append to the SOURCE file property target file path if the target_file is a dylib
+        # otherwise the target_file is within a Mac framework so append to the bundle directory property
+        if(is_dylib)
+            # Also skip adding symlinks to the list of libraries to fix up
+            if(NOT "${source_file}" IN_LIST target_target_files AND NOT IS_SYMLINK "${source_file}")
                 set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" APPEND PROPERTY BUNDLE_LIBS "${target_file}")
-            else()
-                set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" APPEND PROPERTY BUNDLE_DIRS "${target_directory}")
             endif()
+        else()
+            # For frameworks fixup_bundle is used copy them to the output bundle
+            # Therefore the source framework directory into the BUNDLE_DIRS
+            set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" APPEND PROPERTY BUNDLE_DIRS "${source_framework_directory}")
         endif()
     endif()
 
+    # For frameworks copy the entire framework to the bundle
+    if(is_framework)
+        set(source_file "${source_framework_directory}")
+    endif()
+
     # invoke o3de_copy_file_to_filesystem to copy the files to the bundle
-    o3de_copy_file_to_filesystem(
-        SOURCE_FILE "${source_file}"
-        SOURCE_TYPE "${source_type}"
-        SOURCE_GEM_MODULE "${source_is_gem}"
-        TARGET_FILE "${target_file}"
-    )
+    if(explicit_copy_to_bundle)
+        o3de_copy_file_to_filesystem(
+            SOURCE_FILE "${source_file}"
+            SOURCE_TYPE "${source_type}"
+            SOURCE_GEM_MODULE "${source_is_gem}"
+            TARGET_FILE "${target_file}"
+        )
+    endif()
 endfunction()
 
 function(o3de_copy_file_to_filesystem)
@@ -273,18 +316,10 @@ if(target_bundle_content_dir)
         ly_is_newer_than(${target_bundle_dir} ${fixup_timestamp_file} anything_new)
     endif()
     if(anything_new)
-        unset(fixup_bundle_ignore)
-        # LYN-4505: Patch dxc, is configured in the wrong folder in 3p
-        if(EXISTS ${target_file_dir}/Builders/DirectXShaderCompiler/bin/dxc-3.7)
-            #message(STATUS "Ignore \"${target_file_dir}/Builders/DirectXShaderCompiler/bin/dxc-3.7\" ...")
-            #list(APPEND fixup_bundle_ignore dxc-3.7)
-        endif()
         # LYN-4502: Patch python bundle, it contains some windows executables, some files that fixup_bundle doesnt like and has
         # other issues that produce signature problems
         if(depends_on_python)
-            cmake_path(APPEND target_bundle_framework_dir "${target_bundle_content_dir}" "Frameworks")
             message(STATUS "Fixing ${target_bundle_framework_dir}/Python.framework...")
-            list(APPEND fixup_bundle_ignore Python python3.10m python3.10)
             file(REMOVE_RECURSE
                 "${target_bundle_framework_dir}/Python.framework/Versions/Current"
                 "${target_bundle_framework_dir}/Python.framework/Versions/3.10/Headers"
@@ -299,16 +334,10 @@ if(target_bundle_content_dir)
             if(exe_file_list)
                 file(REMOVE_RECURSE ${exe_file_list})
             endif()
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink include/python3.10m Headers
-                WORKING_DIRECTORY "${target_bundle_framework_dir}/Python.framework/Versions/3.10"
-            )
             execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink 3.10 Current
                 WORKING_DIRECTORY "${target_bundle_framework_dir}/Python.framework/Versions/"
             )
             execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Python Python
-                WORKING_DIRECTORY "${target_bundle_framework_dir}/Python.framework"
-            )
-            execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Headers Headers
                 WORKING_DIRECTORY "${target_bundle_framework_dir}/Python.framework"
             )
             execute_process(COMMAND "${CMAKE_COMMAND}" -E create_symlink Versions/Current/Resources Resources
@@ -318,13 +347,29 @@ if(target_bundle_content_dir)
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
             )
         endif()
+
+        # Read the source property with the list of files to ignore for bundling
+        get_property(fixup_bundle_ignore SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY BUNDLE_IGNORE_FILES)
         list(REMOVE_DUPLICATES plugin_libs)
         list(REMOVE_DUPLICATES plugin_dirs)
         fixup_bundle("${target_bundle_dir}" "${plugin_libs}" "${plugin_dirs}" IGNORE_ITEM ${fixup_bundle_ignore})
 
-        # fixup bundle ends up removing the rpath of dxc (despite we exclude it)
-        if(EXISTS "${target_file_dir}//Builders/DirectXShaderCompiler/bin/dxc-3.7")
-            execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}" -add_rpath @executable_path/../lib ${target_file_dir}/Builders/DirectXShaderCompiler/bin/dxc-3.7)
+        # fix the rpath for the DirectXShaderCompiler `dxc-3.7` to point at
+        # <bundle-app>/Contents/Frameworks/libDirectXShaderCompiler.dylib
+        #
+        # The proper fix is to update the
+        # https://github.com/o3de/3p-package-source/blob/main/package-system/DirectXShaderCompiler/FindDirectXShaderCompilerDxc.cmake.Mac
+        # file to make an IMPORTED SHARED target for the library file and to add an IMPORTED executable for the application
+        # That way the dxc executable and library will be copied through the link dependencies correctly
+        # The [ly_add_target_files](https://github.com/o3de/3p-package-source/blob/main/package-system/DirectXShaderCompiler/FindDirectXShaderCompilerDxc.cmake.Mac#L24)
+        # calls in that file should be removed as part resolving issue https://github.com/o3de/3p-package-source/issues/201
+        # Furthermore the ly_add_target_files method would benefit from an rpath change argument
+        # to allow authors to correct the rpath after a copy
+        cmake_path(SET dxc_path "${target_file_dir}/Builders/DirectXShaderCompiler/bin/dxc-3.7")
+        if(EXISTS "${dxc_path}")
+            execute_process(COMMAND "${LY_INSTALL_NAME_TOOL}"
+                -add_rpath "@executable_path/../../../../Frameworks"
+                "${dxc_path}")
         endif()
 
         # misplaced .DS_Store files can cause signing to fail
@@ -334,7 +379,17 @@ if(target_bundle_content_dir)
             "${target_bundle_dir}/**/*.cstemp"
         )
         if(remove_file_list)
-            file(REMOVE_RECURSE "${remove_file_list}")
+            message(STATUS "Cleaning up .DS_store *.cstemp files: ${remove_file_list}")
+            file(REMOVE "${remove_file_list}")
+
+            unset(remove_file_list)
+            file(GLOB_RECURSE remove_file_list
+                "${target_bundle_dir}/**/.DS_Store"
+                "${target_bundle_dir}/**/*.cstemp"
+            )
+            if(remove_file_list)
+                message(STATUS "Removal of files has failed: ${remove_file_list}")
+            endif()
         endif()
 
         file(TOUCH "${target_bundle_dir}")
