@@ -289,6 +289,8 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, windowSize.width(), windowSize.height());
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
