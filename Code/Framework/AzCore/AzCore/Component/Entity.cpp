@@ -341,7 +341,8 @@ namespace AZ
         }
         component->SetEntity(this);
 
-        component->OnPrepareForAdditionToEntity(this);
+        component->OnAfterEntitySet();
+
         m_components.push_back(component);
 
         if (m_state == State::Init)
