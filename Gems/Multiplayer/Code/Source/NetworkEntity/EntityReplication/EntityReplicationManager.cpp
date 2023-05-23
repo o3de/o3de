@@ -26,8 +26,6 @@
 
 AZ_DECLARE_BUDGET(MULTIPLAYER);
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     // Current max size for a UdpPacketHeader is 11 bytes
@@ -1462,5 +1460,3 @@ namespace Multiplayer
         }
     }
 } // namespace Multiplayer
-
-#pragma optimize("", on)

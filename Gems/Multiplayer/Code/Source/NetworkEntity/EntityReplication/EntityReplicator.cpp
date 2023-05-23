@@ -28,8 +28,6 @@
 
 #include <AzFramework/Components/TransformComponent.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     void SyncActivatingEntityTransform(AZ::Entity* entity)
@@ -694,6 +692,9 @@ namespace Multiplayer
     void EntityReplicator::OnEntityRemovedEvent()
     {
         MarkForRemoval();
+
+        // The net bind component won't be valid after this event completes, so clear it out.
+        m_netBindComponent = nullptr;
     }
 
     void EntityReplicator::OnProxyRemovalTimedEvent()
@@ -905,5 +906,3 @@ namespace Multiplayer
         return false;
     }
 } // namespace Multiplayer
-
-#pragma optimize("", on)

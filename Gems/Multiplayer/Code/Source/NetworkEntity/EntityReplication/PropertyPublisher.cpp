@@ -230,7 +230,6 @@ namespace Multiplayer
 
     bool PropertyPublisher::RequiresSerialization()
     {
-
         // Send our entity replication update
 
         switch (m_replicatorState)
