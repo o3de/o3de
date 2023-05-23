@@ -37,14 +37,6 @@ namespace Multiplayer
         : public AZ::EntityBus::Handler
     {
     public:
-        enum class DeletionState
-        {
-            NoDeleteRequested,      // entity is pre-initialized, initialized, or active
-            PendingRemoval,         // delete is requested but hasn't happened yet
-            MarkedForRemoval,       // delete is in process. The entity is deleted locally, delete message is created and possibly sent.
-            DeleteAcknowledged      // delete message has been received remotely and acknowledged.
-        };
-
         EntityReplicator(EntityReplicationManager& replicationManager, AzNetworking::IConnection* connection, NetEntityRole remoteNetworkRole, const ConstNetworkEntityHandle& entityHandle);
         ~EntityReplicator() override;
 
@@ -161,7 +153,6 @@ namespace Multiplayer
         // and then keep it around until it's requested.
         NetworkEntityUpdateMessage m_cachedDeleteMessage;
 
-        DeletionState m_deletionState = DeletionState::NoDeleteRequested; // Track delete status.
         bool m_wasMigrated = false;
         bool m_isForwardingRpc = false;
         bool m_prefabEntityIdSet = false;

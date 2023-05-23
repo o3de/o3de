@@ -99,7 +99,6 @@ namespace Multiplayer
         m_propertyPublisher = nullptr;
         m_propertySubscriber = nullptr;
 
-        m_deletionState = DeletionState::NoDeleteRequested;
         m_wasMigrated = false;
 
         m_onSendRpcHandler.Disconnect();
@@ -112,9 +111,6 @@ namespace Multiplayer
     void EntityReplicator::Initialize(const ConstNetworkEntityHandle& entityHandle)
     {
         AZ_Assert(entityHandle, "Empty handle passed to Initialize");
-        AZ_Assert(
-            m_deletionState == DeletionState::NoDeleteRequested,
-            "Reinitializing on an entity replicator with a deleted state. Maybe Reset() was never called?");
 
         m_entityHandle = entityHandle;
         if (m_entityHandle.GetEntity())
@@ -185,7 +181,6 @@ namespace Multiplayer
         AZ_Assert(m_remoteNetworkRole != NetEntityRole::InvalidRole, "Trying to add an entity replicator with the remote role as invalid");
         AZ_Assert(m_boundLocalNetworkRole != NetEntityRole::InvalidRole, "Trying to add an entity replicator with the bound local role as invalid");
 
-        m_deletionState = DeletionState::NoDeleteRequested;
         m_wasMigrated = false;
     }
 
@@ -269,7 +264,7 @@ namespace Multiplayer
 
     void EntityReplicator::ActivateNetworkEntityInternal()
     {
-        AZ_Assert(m_deletionState == DeletionState::NoDeleteRequested, "Unexpectedly activating a deleted entity.");
+        AZ_Assert(!m_propertyPublisher || !m_propertyPublisher->IsDeleting(), "Unexpectedly activating a deleted entity.");
 
         AZ::EntityBus::Handler::BusDisconnect();
 
@@ -334,16 +329,6 @@ namespace Multiplayer
         // NOTE: It's possible that heading into this function, m_entityHandle is already invalid if this was triggered
         // via OnEntityRemoved.
 
-        // We don't need to remove the same entity multiple times.
-        if ((m_deletionState == DeletionState::MarkedForRemoval) || (m_deletionState == DeletionState::DeleteAcknowledged))
-        {
-            AZLOG_WARN(
-                "Trying to delete the same entity multiple times (%llu - %s)",
-                static_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()),
-                GetEntityHandle().GetEntity() ? GetEntityHandle().GetEntity()->GetName().c_str() : "<Unknown>");
-            return;
-        }
-
         AZLOG(NET_RepDeletes, "Marking entity %llu for removal.", (AZ::u64)m_entityHandle.GetNetEntityId());
 
         AZ::EntityBus::Handler::BusDisconnect();
@@ -357,6 +342,13 @@ namespace Multiplayer
 
         if (m_propertyPublisher)
         {
+            // We don't need to remove the same entity multiple times.
+            if (m_propertyPublisher->IsDeleting())
+            {
+                AZLOG_WARN("Trying to delete entity %llu multiple times", static_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()));
+                return;
+            }
+
             m_propertyPublisher->SetDeleting();
             m_onEntityDirtiedHandler.Disconnect();
 
@@ -395,6 +387,13 @@ namespace Multiplayer
         }
         else if (m_propertySubscriber)
         {
+            // We don't need to remove the same entity multiple times.
+            if (m_propertySubscriber->IsDeleting())
+            {
+                AZLOG_WARN("Trying to delete entity %llu multiple times", static_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()));
+                return;
+            }
+
             m_propertySubscriber->SetDeleting();
             m_replicationManager.AddReplicatorToPendingRemoval(*this);
         }
@@ -403,7 +402,6 @@ namespace Multiplayer
         m_onForwardAutonomousRpcHandler.Disconnect();
 
         m_onEntityStopHandler.Disconnect();
-        m_deletionState = DeletionState::MarkedForRemoval;
     }
 
     bool EntityReplicator::IsMarkedForRemoval() const
@@ -422,25 +420,22 @@ namespace Multiplayer
 
     void EntityReplicator::SetPendingRemoval(AZ::TimeMs pendingRemovalTimeMs)
     {
-        // Don't set a pending removal on an entity that's already been removed.
-        if (m_deletionState != DeletionState::NoDeleteRequested)
-        {
-            AZLOG(NET_RepDeletes, "Skipping pending removal on entity %llu, current state = %u.",
-                (AZ::u64)m_entityHandle.GetNetEntityId(),
-                (uint32_t)(m_deletionState));
+        AZ_Assert(m_propertyPublisher, "Only valid if we are publishing updates");
 
+        // Don't set a pending removal on an entity that's already been removed.
+        if (m_propertyPublisher->IsDeleting())
+        {
             return;
         }
 
-        AZLOG(
-            NET_RepDeletes,
-            "Setting pending removal for entity %llu with time %llu ms.",
-            (AZ::u64)m_entityHandle.GetNetEntityId(),
-            (uint64_t)(pendingRemovalTimeMs));
-
-        AZ_Assert(m_propertyPublisher, "Only valid if we are publishing updates");
         if (pendingRemovalTimeMs > AZ::Time::ZeroTimeMs)
         {
+            AZLOG(
+                NET_RepDeletes,
+                "Setting pending removal for entity %llu with time %llu ms.",
+                (AZ::u64)m_entityHandle.GetNetEntityId(),
+                (uint64_t)(pendingRemovalTimeMs));
+
             if (!IsPendingRemoval())
             {
                 m_proxyRemovalEvent.Enqueue(pendingRemovalTimeMs);
