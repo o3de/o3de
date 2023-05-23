@@ -153,7 +153,6 @@ namespace Multiplayer
                 (
                     GetRemoteNetworkRole(),
                     !RemoteManagerOwnsEntityLifetime() ? PropertyPublisher::OwnsLifetime::True : PropertyPublisher::OwnsLifetime::False,
-                    m_netBindComponent,
                     *m_connection
                 );
             m_onEntityDirtiedHandler.Disconnect();
@@ -364,7 +363,7 @@ namespace Multiplayer
             m_onEntityDirtiedHandler.Disconnect();
 
             // Cache the delete packet here, since the data will no longer be available after this point.
-            if (m_propertyPublisher->PrepareSerialization())
+            if (m_propertyPublisher->PrepareSerialization(m_netBindComponent))
             {
                 AZLOG(NET_RepDeletes, "Caching delete message for entity %llu.", (AZ::u64)m_entityHandle.GetNetEntityId());
 
@@ -578,7 +577,7 @@ namespace Multiplayer
 
         InputSerializer inputSerializer(
             updateMessage.ModifyData().GetBuffer(), static_cast<uint32_t>(updateMessage.ModifyData().GetCapacity()));
-        m_propertyPublisher->UpdateSerialization(inputSerializer);
+        m_propertyPublisher->UpdateSerialization(inputSerializer, m_netBindComponent);
         updateMessage.ModifyData().Resize(inputSerializer.GetSize());
 
         return updateMessage;
@@ -605,18 +604,10 @@ namespace Multiplayer
         m_propertyPublisher->SetRebasing();
     }
 
-    void EntityReplicator::GenerateRecord()
-    {
-        AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
-        AZ_Assert(m_netBindComponent == m_entityHandle.GetNetBindComponent(), "NetBindComponent pointer changed?");
-
-        m_propertyPublisher->GenerateRecord();
-    }
-
     bool EntityReplicator::UpdateSerialization(AzNetworking::ISerializer& serializer)
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
-        return m_propertyPublisher->UpdateSerialization(serializer);
+        return m_propertyPublisher->UpdateSerialization(serializer, m_netBindComponent);
     }
 
     bool EntityReplicator::IsPacketIdValid(AzNetworking::PacketId packetId) const
@@ -642,15 +633,18 @@ namespace Multiplayer
     bool EntityReplicator::PrepareSerialization()
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
-        // If the remote replicator is not established, we need to take ownership of the entity
-        const bool isDeleted = IsMarkedForRemoval() && OwnsReplicatorLifetime();
 
-        if (isDeleted)
+        // If this replicator owns the lifetime and the entity is deleted, then use the cached delete message
+        // to determine whether or not there is any data that needs to be serialized and sent.
+        if (IsMarkedForRemoval() && OwnsReplicatorLifetime())
         {
             return m_cachedDeleteMessage.GetIsDelete();
         }
 
-        return m_propertyPublisher->PrepareSerialization();
+        // Otherwise, let the property publisher determine if any data should be sent.
+        AZ_Assert(m_netBindComponent == m_entityHandle.GetNetBindComponent(), "NetBindComponent pointer changed?");
+        m_propertyPublisher->GenerateRecord(m_netBindComponent);
+        return m_propertyPublisher->PrepareSerialization(m_netBindComponent);
     }
 
     void EntityReplicator::FinalizeSerialization(AzNetworking::PacketId sentId)
@@ -692,7 +686,7 @@ namespace Multiplayer
         AZ_Assert(m_propertyPublisher, "Expected to have a publisher, did we forget to disconnect?");
         if (m_propertyPublisher != nullptr)
         {
-            m_propertyPublisher->GenerateRecord();
+            m_propertyPublisher->GenerateRecord(m_netBindComponent);
             m_replicationManager.AddReplicatorToPendingSend(*this);
         }
     }

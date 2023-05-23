@@ -1302,7 +1302,6 @@ namespace Multiplayer
             // Gather the most recent network property state, including authoritative only network properties for migration
             {
                 // Send an update packet if it needs one
-                replicator->GenerateRecord();
                 bool needsNetworkPropertyUpdate = replicator->PrepareSerialization();
                 InputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
                 if (needsNetworkPropertyUpdate)

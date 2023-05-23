@@ -82,7 +82,6 @@ namespace Multiplayer
         bool PrepareSerialization();
         bool RequiresSerialization();
         void SetRebasing();
-        void GenerateRecord();
         bool UpdateSerialization(AzNetworking::ISerializer& serializer);
 
 

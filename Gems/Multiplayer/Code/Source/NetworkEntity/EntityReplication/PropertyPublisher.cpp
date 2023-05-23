@@ -11,15 +11,12 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
-#pragma optimize("", off)
-
 namespace Multiplayer
 {
     AZ_CVAR(uint32_t, net_EntityReplicatorRecordsMax, 45, nullptr, AZ::ConsoleFunctorFlags::Null, "Number of allowed outstanding entity records");
 
-    PropertyPublisher::PropertyPublisher(NetEntityRole remoteNetworkRole, OwnsLifetime ownsLifetime, NetBindComponent* netBindComponent, AzNetworking::IConnection& connection)
+    PropertyPublisher::PropertyPublisher(NetEntityRole remoteNetworkRole, OwnsLifetime ownsLifetime, AzNetworking::IConnection& connection)
         : m_ownsLifetime(ownsLifetime)
-        , m_netBindComponent(netBindComponent)
         , m_connection(connection)
         , m_pendingRecord(remoteNetworkRole)
         , m_sentRecords(net_EntityReplicatorRecordsMax)
@@ -27,12 +24,12 @@ namespace Multiplayer
         if ( ownsLifetime == OwnsLifetime::False )
         {
             // This entity is owned by some other authority; this publisher will only be used for updating (not creating).
-            // Since this replicator does not own it's lifetime, the remote replicator must exist (otherwise, we would never have created a replicator that doesn't own its lifetime).
+            // Since this replicator does not own its lifetime, the remote replicator must exist
+            // (otherwise, we would never have created a replicator that doesn't own its lifetime).
             m_remoteReplicatorEstablished = true;
             m_replicatorState = EntityReplicatorState::Updating;
         }
 
-        AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
         m_pendingRecord.SetRemoteNetworkRole(remoteNetworkRole);
     }
 
@@ -78,10 +75,10 @@ namespace Multiplayer
         m_replicatorState = EntityReplicatorState::Rebasing;
     }
 
-    void PropertyPublisher::GenerateRecord()
+    void PropertyPublisher::GenerateRecord(NetBindComponent* netBindComponent)
     {
-        AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
-        m_netBindComponent->FillReplicationRecord(m_pendingRecord);
+        AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
+        netBindComponent->FillReplicationRecord(m_pendingRecord);
     }
 
     bool PropertyPublisher::HasEntityChangesToSend()
@@ -114,38 +111,40 @@ namespace Multiplayer
         return true;
     }
 
-    bool PropertyPublisher::PrepareAddEntityRecord()
+    bool PropertyPublisher::PrepareAddEntityRecord(NetBindComponent* netBindComponent)
     {
+        AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
+
         // On an "Add", create a change record that contains all the serialized fields for the entity.
         m_sentRecords.clear();
-        m_netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
+        netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
         m_sentRecords.push_front(m_pendingRecord);
         return true;
     }
 
-    bool PropertyPublisher::PrepareRebaseEntityRecord()
+    bool PropertyPublisher::PrepareRebaseEntityRecord(NetBindComponent* netBindComponent)
     {
-        AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
+        AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
 
         // This is basically an Add record, but we don't want to send back predictable values
         m_sentRecords.clear();
-        m_netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
+        netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
         // Don't send predictable properties back to the Autonomous unless we correct them
         if (m_pendingRecord.GetRemoteNetworkRole() == NetEntityRole::Autonomous)
         {
-            m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
+            m_pendingRecord.Subtract(netBindComponent->GetPredictableRecord());
         }
         m_sentRecords.push_front(m_pendingRecord);
         return true;
     }
 
-    bool PropertyPublisher::PrepareUpdateEntityRecord()
+    bool PropertyPublisher::PrepareUpdateEntityRecord(NetBindComponent* netBindComponent)
     {
         bool didPrepare = true;
         if (m_sentRecords.size() >= net_EntityReplicatorRecordsMax)
         {
             // If we reach the maximum outstanding records, reset the replication state by creating an "Add" record.
-            didPrepare = PrepareAddEntityRecord();
+            didPrepare = PrepareAddEntityRecord(netBindComponent);
         }
         else
         {
@@ -165,13 +164,13 @@ namespace Multiplayer
         // Don't send predictable properties back to the Autonomous unless we correct them
         if (m_pendingRecord.GetRemoteNetworkRole() == NetEntityRole::Autonomous)
         {
-            m_pendingRecord.Subtract(m_netBindComponent->GetPredictableRecord());
+            m_pendingRecord.Subtract(netBindComponent->GetPredictableRecord());
         }
 
         return didPrepare;
     }
 
-    bool PropertyPublisher::PrepareDeleteEntityRecord()
+    bool PropertyPublisher::PrepareDeleteEntityRecord(NetBindComponent* netBindComponent)
     {
         if (IsDeleted())
         {
@@ -187,27 +186,20 @@ namespace Multiplayer
             return false;
         }
 
-        GenerateRecord();
+        GenerateRecord(netBindComponent);
 
         // A delete entity record looks the same as an update but will have an extra deletion flag on it.
         // This ensures that the replicated entity has correct and consistent state at the point of deletion.
-        return PrepareUpdateEntityRecord();
+        return PrepareUpdateEntityRecord(netBindComponent);
     }
 
-    bool PropertyPublisher::SerializeUpdateEntityRecord(AzNetworking::ISerializer &serializer)
+    bool PropertyPublisher::SerializeEntityRecord(AzNetworking::ISerializer& serializer, NetBindComponent* netBindComponent)
     {
-        AZ_Assert(m_netBindComponent, "NetBindComponent is nullptr");
+        AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
         m_pendingRecord.ResetConsumedBits();
         m_pendingRecord.Serialize(serializer);
-        m_netBindComponent->SerializeStateDeltaMessage(m_pendingRecord, serializer);
+        netBindComponent->SerializeStateDeltaMessage(m_pendingRecord, serializer);
         return serializer.IsValid();
-    }
-
-    bool PropertyPublisher::SerializeDeleteEntityRecord(AzNetworking::ISerializer &serializer)
-    {
-        // On deletion, we still want to serialize any state deltas that exist.
-        bool success = SerializeUpdateEntityRecord(serializer);
-        return success;
     }
 
     void PropertyPublisher::FinalizeUpdateEntityRecord(AzNetworking::PacketId packetId)
@@ -271,7 +263,7 @@ namespace Multiplayer
         }
     }
 
-    bool PropertyPublisher::PrepareSerialization()
+    bool PropertyPublisher::PrepareSerialization(NetBindComponent* netBindComponent)
     {
         if (m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared)
         {
@@ -292,25 +284,25 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Creating:
             if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
             {
-                needsUpdate = PrepareAddEntityRecord();
+                needsUpdate = PrepareAddEntityRecord(netBindComponent);
             }
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
             break;
 
         case PropertyPublisher::EntityReplicatorState::Rebasing:
             AZ_Assert(m_ownsLifetime == PropertyPublisher::OwnsLifetime::True, "Expected to own our lifetime if we rebase");
-            needsUpdate = PrepareRebaseEntityRecord();
+            needsUpdate = PrepareRebaseEntityRecord(netBindComponent);
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
             break;
 
         case PropertyPublisher::EntityReplicatorState::Updating:
-            needsUpdate = PrepareUpdateEntityRecord();
+            needsUpdate = PrepareUpdateEntityRecord(netBindComponent);
             break;
 
         case PropertyPublisher::EntityReplicatorState::Deleting:
             if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
             {
-                needsUpdate = PrepareDeleteEntityRecord();
+                needsUpdate = PrepareDeleteEntityRecord(netBindComponent);
             }
             break;
 
@@ -324,7 +316,7 @@ namespace Multiplayer
     }
 
 
-    bool PropertyPublisher::UpdateSerialization(AzNetworking::ISerializer& serializer)
+    bool PropertyPublisher::UpdateSerialization(AzNetworking::ISerializer& serializer, NetBindComponent* netBindComponent)
     {
         bool success(true);
         switch (m_replicatorState)
@@ -334,15 +326,10 @@ namespace Multiplayer
             break;
         case PropertyPublisher::EntityReplicatorState::Creating:
         case PropertyPublisher::EntityReplicatorState::Updating:
-        {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
-            success = SerializeUpdateEntityRecord(serializer);
-        }
-        break;
         case PropertyPublisher::EntityReplicatorState::Deleting:
         {
             AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
-            success = SerializeDeleteEntityRecord(serializer);
+            success = SerializeEntityRecord(serializer, netBindComponent);
         }
         break;
         default:
@@ -385,5 +372,3 @@ namespace Multiplayer
         m_serializationPhase = PropertyPublisher::EntityReplicatorSerializationPhase::Ready;
     }
 }
-
-#pragma optimize("", on)
