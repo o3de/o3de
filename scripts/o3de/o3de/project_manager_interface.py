@@ -456,6 +456,9 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:
     for i, gem_json_data in enumerate(remote_gem_json_data_list):
         all_gem_json_data[i] = gem_json_data
     
+    # convert all_gem_json_data to have gem names as keys with values that are gem version lists
+    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+
     # do general compatibility checks - dependency resolution is too slow for now
     for i, gem_json_data in enumerate(remote_gem_json_data_list):
         incompatible_engine =  compatibility.get_incompatible_objects_for_engine(gem_json_data, engine_json_data)

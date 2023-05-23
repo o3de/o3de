@@ -484,13 +484,6 @@ namespace Multiplayer
                     AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
                     console->PerformCommand(commandString.c_str());
                 }
-
-                AZ::CVarFixedString externalKeyPath = AZ::CVarFixedString(sessionProviderHandler->GetExternalSessionPrivateKey().c_str());
-                if (!externalKeyPath.empty())
-                {
-                    AZ::CVarFixedString commandString = "net_SslExternalPrivateKeyFile " + externalKeyPath;
-                    console->PerformCommand(commandString.c_str());
-                }
             }
         }
 

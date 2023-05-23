@@ -80,7 +80,6 @@ namespace AWSGameLift
             m_gameLiftServerManager->InitializeGameLiftServerSDK();
             m_gameLiftServerManager->ActivateManager();
         }
-        
     }
 
     void AWSGameLiftServerSystemComponent::Deactivate()

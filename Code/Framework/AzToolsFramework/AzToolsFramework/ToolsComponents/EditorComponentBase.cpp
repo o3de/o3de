@@ -12,6 +12,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 
 DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
 
@@ -49,45 +51,81 @@ namespace AzToolsFramework
             m_transform = nullptr;
         }
 
-        void EditorComponentBase::OnPrepareForAdditionToEntity(AZ::Entity* entity)
+        void EditorComponentBase::OnAfterEntitySet()
         {
-            if (entity && m_alias.empty())
+            if (!m_entity)
             {
-                AZStd::unordered_set<AZStd::string> serializedIdentifiersMatchingType;
-
-                for (const AZ::Component* componentInEntity : entity->GetComponents())
-                {
-                    if (componentInEntity == this)
-                    {
-                        // If the alias is not empty and the component is already added to the entity, there's nothing to do here.
-                        return;
-                    }
-                    if (RTTI_GetType() == componentInEntity->RTTI_GetType())
-                    {
-                        serializedIdentifiersMatchingType.emplace(componentInEntity->GetSerializedIdentifier());
-                    }
-                }
-
-                AZStd::string typeName = GetNameFromComponentClassData(this);
-
-                AZStd::string serializedIdentifier;
-                if (serializedIdentifiersMatchingType.size() == 0)
-                {
-                    serializedIdentifier = typeName;
-                }
-                else
-                {
-                    AZ::u64 suffixOfNewComponent = serializedIdentifiersMatchingType.size() + 1;
-                    serializedIdentifier = AZStd::string::format("%s_%llu", typeName.c_str(), suffixOfNewComponent);
-                    while (serializedIdentifiersMatchingType.find(serializedIdentifier) != serializedIdentifiersMatchingType.end())
-                    {
-                        suffixOfNewComponent++;
-                        serializedIdentifier = AZStd::string::format("%s_%llu", typeName.c_str(), suffixOfNewComponent);
-                    }
-                }
-
-                SetSerializedIdentifier(AZStd::move(serializedIdentifier));
+                AZ_Assert(false, "OnAfterEntitySet - Entity should not be nullptr.");
+                return;
             }
+
+            // Sets up only if the component alias is empty to avoid setting the alias twice.
+            // For a component added as a pending component, there are two places trying to call this function to set up the alias:
+            // - EditorEntityActionComponent::AddExistingComponentsToEntityById()
+            // - Entity::AddComponent()
+            if (m_alias.empty())
+            {
+                AZStd::string newIdentifier = GenerateComponentSerializedIdentifier();
+                SetSerializedIdentifier(AZStd::move(newIdentifier));
+            }
+        }
+
+        AZStd::string EditorComponentBase::GenerateComponentSerializedIdentifier()
+        {
+            if (!m_entity)
+            {
+                AZ_Assert(false, "GenerateComponentSerializedIdentifier - Entity should not be nullptr.");
+                return {};
+            }
+
+            AZStd::unordered_set<AZStd::string> existingSerializedIdentifiers;
+
+            // Defines the function to add existing serialized identifiers from a given component list.
+            auto captureExistingIdentifiersFunc =
+                [&existingSerializedIdentifiers, this](const AZStd::vector<AZ::Component*>& componentsToCapture)
+            {
+                for (const AZ::Component* component : componentsToCapture)
+                {                    
+                    AZ_Assert(
+                        component != this,
+                        "GenerateComponentSerializedIdentifier - "
+                        "Attempting to generate an identifier for a component that is already owned by the entity. ");
+
+                    AZStd::string existingIdentifier = component->GetSerializedIdentifier();
+
+                    if (!existingIdentifier.empty() && RTTI_GetType() == component->RTTI_GetType())
+                    {
+                        existingSerializedIdentifiers.emplace(AZStd::move(existingIdentifier));
+                    }
+                }
+            };
+
+            // Checks all components of the entity, including pending components and disabled components.
+            captureExistingIdentifiersFunc(m_entity->GetComponents());
+
+            AZStd::vector<AZ::Component*> pendingComponents;
+            AzToolsFramework::EditorPendingCompositionRequestBus::Event(
+                m_entity->GetId(), &AzToolsFramework::EditorPendingCompositionRequests::GetPendingComponents, pendingComponents);
+
+            captureExistingIdentifiersFunc(pendingComponents);
+
+            AZStd::vector<AZ::Component*> disabledComponents;
+            AzToolsFramework::EditorDisabledCompositionRequestBus::Event(
+                m_entity->GetId(), &AzToolsFramework::EditorDisabledCompositionRequests::GetDisabledComponents, disabledComponents);
+
+            captureExistingIdentifiersFunc(disabledComponents);
+
+            // Generates a component typename string and updates its suffix count to avoid duplication.
+            const AZStd::string componentTypeName = GetNameFromComponentClassData(this);
+            AZStd::string serializedIdentifier = componentTypeName;
+            AZ::u64 suffixOfNewComponent = 1;
+
+            while (existingSerializedIdentifiers.find(serializedIdentifier) != existingSerializedIdentifiers.end())
+            {
+                serializedIdentifier = AZStd::string::format("%s_%llu", componentTypeName.c_str(), ++suffixOfNewComponent);
+            }
+
+            return serializedIdentifier;
         }
 
         void EditorComponentBase::SetDirty()
