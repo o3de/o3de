@@ -620,7 +620,7 @@ namespace Multiplayer
         NetEntityRole localNetworkRole,
         AzNetworking::ISerializer& serializer,
         const PrefabEntityId& prefabEntityId,
-        bool isDeleted
+        [[maybe_unused]] bool isDeleted
     )
     {
         ConstNetworkEntityHandle replicatorEntity = GetNetworkEntityManager()->GetEntity(netEntityId);
@@ -628,20 +628,20 @@ namespace Multiplayer
         const bool createEntity = (replicatorEntity == nullptr);
         const bool notifySerializationChanges = (replicatorEntity && replicatorEntity.GetEntity()->GetState() == AZ::Entity::State::Active);
 
-        // If the entity doesn't exist yet and we're about to delete it, don't create the entity and ignore the property changes.
-        // Just return immediately.
-        if (createEntity && isDeleted)
-        {
-            AZLOG(
-                NET_RepDeletes,
-                "Skip creation of entity id %llu because it is also being deleted in this message.",
-                static_cast<AZ::u64>(netEntityId));
-            return true;
-        }
-
         // Create an entity if we don't have one and we're not immediately deleting it.
         if (createEntity)
         {
+            // If the entity doesn't exist yet and we're about to delete it, don't create the entity only to apply property changes
+            // and delete it. Just return immediately and skip both creation and deletion.
+            if (isDeleted)
+            {
+                AZLOG(
+                    NET_RepDeletes,
+                    "Skip creation of entity id %llu because it is also being deleted in this message.",
+                    static_cast<AZ::u64>(netEntityId));
+                return true;
+            }
+
             INetworkEntityManager::EntityList entityList = GetNetworkEntityManager()->CreateEntitiesImmediate(
                 prefabEntityId, netEntityId, localNetworkRole, AutoActivate::DoNotActivate, AZ::Transform::Identity());
 
@@ -821,16 +821,38 @@ namespace Multiplayer
             break;
         case Mode::LocalClientToRemoteServer:
             {
-                if ((!entityReplicator || entityReplicator->IsMarkedForRemoval()) && updateMessage.GetIsDelete())
+                // By default, trust everything from the server
+                result = UpdateValidationResult::HandleMessage;
+
+                // For delete messages, we can potentially skip processing them if the entity hasn't been created or has already
+                // been deleted.
+                if (updateMessage.GetIsDelete())
                 {
-                    // If we've never replicated this entity prior to the delete message or we've already marked
-                    // the entity for deletion, just drop the delete message and never create or delete the entity.
-                    result = UpdateValidationResult::DropMessage;
-                }
-                else
-                {
-                    // Trust everything from the server
-                    result = UpdateValidationResult::HandleMessage;
+                    if (!entityReplicator)
+                    {
+                        // If the entity hasn't been created (or has already been deleted), drop the delete message.
+                        // We won't create or delete the entity. If we tried to handle the message, we would end up both
+                        // creating and deleting the entity in the same frame from this message. The entity would never even
+                        // have a chance to activate, so there's no real value in processing it.
+                        result = UpdateValidationResult::DropMessage;
+
+                        AZLOG(
+                            NET_RepDeletes,
+                            "Dropping message that would both add and delete entity id %llu from remote host %s",
+                            (AZ::u64)updateMessage.GetEntityId(),
+                            GetRemoteHostId().GetString().c_str());
+                    }
+                    else if (entityReplicator && entityReplicator->IsMarkedForRemoval())
+                    {
+                        // If the entity is already marked for deletion, we can drop the redundant delete message.
+                        result = UpdateValidationResult::DropMessage;
+
+                        AZLOG(
+                            NET_RepDeletes,
+                            "Dropping redundant client message to delete entity id %llu from remote host %s",
+                            (AZ::u64)updateMessage.GetEntityId(),
+                            GetRemoteHostId().GetString().c_str());
+                    }
                 }
             }
             break;
@@ -873,7 +895,7 @@ namespace Multiplayer
     {
         if (updateMessage.GetIsDelete())
         {
-            AZLOG(NET_RepDeletes, "Handling entity change/delete message for entity %llu.", (AZ::u64)updateMessage.GetEntityId());
+            AZLOG(NET_RepDeletes, "Handling entity delete message for entity %llu.", (AZ::u64)updateMessage.GetEntityId());
         }
 
         // May still be nullptr

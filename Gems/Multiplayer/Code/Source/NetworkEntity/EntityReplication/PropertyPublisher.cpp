@@ -180,9 +180,15 @@ namespace Multiplayer
         if (m_sentRecords.empty() && (!m_remoteReplicatorEstablished))
         {
             // If the entity add has never been sent (no sent records waiting for acknowledgement and
-            // no acknowledged sends), then don't bother sending a delete.
-            // If there are sent records, there might be an unacknowledged entity add that's been sent,
-            // so we'll still need to send a delete record just in case.
+            // no acknowledged sends), then don't send a delete. It would cause the receiving end to create and delete
+            // the entity in the same frame, which would be unnecessarily wasteful for both bandwidth and processing.
+
+            // Note that if at least one record has been sent, even if it hasn't been acknowledged yet,
+            // the entity creation might still get received, so in that case we'll still send a delete record.
+            AZLOG(
+                NET_RepDeletes,
+                "Skipping delete replication for entity %llu because no create has been sent yet.",
+                (AZ::u64)netBindComponent->GetNetEntityId());
             return false;
         }
 
