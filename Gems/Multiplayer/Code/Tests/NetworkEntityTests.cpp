@@ -332,10 +332,10 @@ namespace Multiplayer
         // Test ctors, assignment and comparisons (const and non const versions)
         message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, true, false);
         EXPECT_EQ(m_root->m_netId, message.GetEntityId());
-        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, false, false);
         EXPECT_EQ(message.GetNetworkRole(), NetEntityRole::Authority);
-        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, prefabId);
+        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, false, false);
         AzNetworking::PacketEncodingBuffer buffer;
+        message.SetPrefabEntityId(prefabId);
         EXPECT_NE(message.GetPrefabEntityId().m_prefabName.GetCStr(), "");
         message.SetData(buffer);
         NetworkEntityUpdateMessage message2(AZStd::move(message));

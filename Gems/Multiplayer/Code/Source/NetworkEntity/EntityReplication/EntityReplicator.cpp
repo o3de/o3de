@@ -334,6 +334,9 @@ namespace Multiplayer
 
     void EntityReplicator::MarkForRemoval()
     {
+        // NOTE: It's possible that heading into this function, m_entityHandle is already invalid if this was triggered
+        // via OnEntityRemoved.
+
         // We don't need to remove the same entity multiple times.
         if ((m_deletionState == DeletionState::MarkedForRemoval) || (m_deletionState == DeletionState::DeleteAcknowledged))
         {
@@ -357,9 +360,6 @@ namespace Multiplayer
 
         if (m_propertyPublisher)
         {
-            AZ_Assert(m_netBindComponent == m_entityHandle.GetNetBindComponent(), "NetBindComponent pointer changed?");
-
-
             m_propertyPublisher->SetDeleting();
             m_onEntityDirtiedHandler.Disconnect();
 
@@ -547,7 +547,7 @@ namespace Multiplayer
     NetworkEntityUpdateMessage EntityReplicator::GenerateUpdatePacket()
     {
         NetBindComponent* netBindComponent = GetNetBindComponent();
-        const bool sendSliceName = !m_propertyPublisher->IsRemoteReplicatorEstablished();
+        const bool sendPrefabId = !m_propertyPublisher->IsRemoteReplicatorEstablished();
 
         // If the remote replicator is not established, we need to take ownership of the entity
         const bool isDeleted = IsMarkedForRemoval() && OwnsReplicatorLifetime();
@@ -565,7 +565,11 @@ namespace Multiplayer
         }
 
         NetworkEntityUpdateMessage updateMessage(GetRemoteNetworkRole(), GetEntityHandle().GetNetEntityId(), isDeleted, WasMigrated());
-        if (sendSliceName)
+
+        // Only set the prefab id if the remote replicator hasn't been established yet. Once the remote replicator has been established
+        // it has received a copy of the prefab id. Sending it again would be redundant and wasted bandwidth since it doesn't change
+        // over the entity's lifetime.
+        if (sendPrefabId)
         {
             updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }

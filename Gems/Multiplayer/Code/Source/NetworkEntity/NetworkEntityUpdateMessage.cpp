@@ -47,15 +47,6 @@ namespace Multiplayer
         ;
     }
 
-    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityRole networkRole, NetEntityId entityId, const PrefabEntityId& prefabEntityId)
-        : m_networkRole(networkRole)
-        , m_entityId(entityId)
-        , m_hasValidPrefabId(true)
-        , m_prefabEntityId(prefabEntityId)
-    {
-        ;
-    }
-
     NetworkEntityUpdateMessage& NetworkEntityUpdateMessage::operator =(NetworkEntityUpdateMessage&& rhs)
     {
         m_networkRole = rhs.m_networkRole;
