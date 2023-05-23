@@ -38,7 +38,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::AtomLyIntegration_CommonFeatures.Static
-            Gem::AtomToolsFramework.Editor
             Gem::AtomToolsFramework.Static
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor

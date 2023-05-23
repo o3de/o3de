@@ -34,7 +34,7 @@ namespace UnitTest
             GenericOutcome successOutcome(nullptr);
             Server::InitSDKOutcome sdkOutcome(nullptr);
 
-            ON_CALL(*this, InitSDK()).WillByDefault(Return(sdkOutcome));
+            ON_CALL(*this, InitSDK(_)).WillByDefault(Return(sdkOutcome));
             ON_CALL(*this, ProcessReady(_)).WillByDefault(Invoke(this, &GameLiftServerSDKWrapperMock::ProcessReadyMock));
             ON_CALL(*this, ProcessEnding()).WillByDefault(Return(successOutcome));
         }
@@ -43,11 +43,11 @@ namespace UnitTest
         MOCK_METHOD0(ActivateGameSession, GenericOutcome());
         MOCK_METHOD1(DescribePlayerSessions, DescribePlayerSessionsOutcome(
             const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest&));
-        MOCK_METHOD0(InitSDK, Server::InitSDKOutcome());
+        MOCK_METHOD1(InitSDK, Server::InitSDKOutcome(Server::Model::ServerParameters));
         MOCK_METHOD1(ProcessReady, GenericOutcome(const Server::ProcessParameters& processParameters));
         MOCK_METHOD0(ProcessEnding, GenericOutcome());
         MOCK_METHOD1(RemovePlayerSession, GenericOutcome(const AZStd::string& playerSessionId));
-        MOCK_METHOD0(GetInstanceCertificate, Aws::GameLift::GetInstanceCertificateOutcome());
+        MOCK_METHOD0(GetComputeCertificate, Aws::GameLift::GetComputeCertificateOutcome());
         MOCK_METHOD0(GetTerminationTime, AZStd::string());
         MOCK_METHOD1(StartMatchBackfill, StartMatchBackfillOutcome(
             const Aws::GameLift::Server::Model::StartMatchBackfillRequest&));

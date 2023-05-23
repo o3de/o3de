@@ -240,9 +240,8 @@ namespace AZ
          */
         virtual void SetEntity(Entity* entity);
 
-        //! Function to call before adding this component to the provided entity.
-        //! @param entity The entity to add the component to.
-        virtual void OnPrepareForAdditionToEntity(Entity* entity);
+        //! Function to call after setting the entity in this component.
+        virtual void OnAfterEntitySet();
 
         /**
          * Reflects the Component class.

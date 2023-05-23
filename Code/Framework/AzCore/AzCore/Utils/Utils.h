@@ -167,7 +167,8 @@ namespace AZ
         enum class GetEnvErrorCode
         {
             EnvNotSet = 1,
-            BufferTooSmall
+            BufferTooSmall,
+            NotImplemented
         };
 
         //! Return result from GetEnv when an environment variable value
