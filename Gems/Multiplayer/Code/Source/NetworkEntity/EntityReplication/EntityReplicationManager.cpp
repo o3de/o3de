@@ -134,11 +134,11 @@ namespace Multiplayer
             );
 
             {
-                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - PrepareSerialization");
+                AZ_PROFILE_SCOPE(MULTIPLAYER, "EntityReplicationManager: SendUpdates - PrepareToGenerateUpdatePacket");
                 // Prep a replication record for send, at this point, everything needs to be sent
                 for (EntityReplicator* replicator : toSendList)
                 {
-                    replicator->PrepareSerialization();
+                    replicator->PrepareToGenerateUpdatePacket();
                 }
             }
 
@@ -191,7 +191,7 @@ namespace Multiplayer
             if (EntityReplicator* replicator = GetEntityReplicator(*iter))
             {
                 NetEntityId entityId = replicator->GetEntityHandle().GetNetEntityId();
-                if (replicator->IsReadyForSerialization())
+                if (replicator->IsReadyToPublish())
                 {
                     // don't have too many replicators pending creation outstanding at a time
                     bool canSend = true;
@@ -209,7 +209,7 @@ namespace Multiplayer
                         m_remoteEntitiesPendingCreation.erase(*iter);
                     }
 
-                    if (canSend && replicator->RequiresSerialization())
+                    if (canSend && replicator->HasChangesToPublish())
                     {
                         clearPendingSend = false;
                         if (!replicator->IsRemoteReplicatorEstablished())
@@ -292,7 +292,7 @@ namespace Multiplayer
             // Update the sent things with the packet id
             for (EntityReplicator* replicator : replicatorUpdatedList)
             {
-                replicator->FinalizeSerialization(sentId);
+                replicator->RecordSentPacketId(sentId);
             }
         }
         else
@@ -1248,7 +1248,7 @@ namespace Multiplayer
         if (entityReplicator && entityReplicator->GetBoundLocalNetworkRole() == NetEntityRole::Authority)
         {
             isMarkedForRemoval = entityReplicator->IsMarkedForRemoval(); // Make sure we aren't telling the other side to remove the replicator
-            AZ_Assert(entityReplicator->IsReadyForSerialization(), "Expected to be ready for serialization");
+            AZ_Assert(entityReplicator->IsReadyToPublish(), "Expected to be ready to publish");
             isRemoteReplicatorEstablished =
                 entityReplicator->IsRemoteReplicatorEstablished(); // Make sure they are setup to receive the replicator
         }
@@ -1307,11 +1307,6 @@ namespace Multiplayer
                 netBindComponent->NotifyServerMigration(GetRemoteHostId());
             }
 
-            [[maybe_unused]] bool didSucceed = true;
-            EntityMigrationMessage message;
-            message.m_netEntityId = replicator->GetEntityHandle().GetNetEntityId();
-            message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();
-
             if (localEnt->GetState() == AZ::Entity::State::Active)
             {
                 netBindComponent->DeactivateControllers(EntityIsMigrating::True);
@@ -1319,20 +1314,7 @@ namespace Multiplayer
 
             netBindComponent->DestructControllers();
 
-            // Gather the most recent network property state, including authoritative only network properties for migration
-            {
-                // Send an update packet if it needs one
-                bool needsNetworkPropertyUpdate = replicator->PrepareSerialization();
-                InputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
-                if (needsNetworkPropertyUpdate)
-                {
-                    // Write out entity state into the buffer
-                    replicator->UpdateSerialization(inputSerializer);
-                }
-                didSucceed &= inputSerializer.IsValid();
-                message.m_propertyUpdateData.Resize(inputSerializer.GetSize());
-            }
-            AZ_Assert(didSucceed, "Failed to migrate entity from server");
+            EntityMigrationMessage message = replicator->GenerateMigrationPacket();
 
             m_sendMigrateEntityEvent.Signal(m_connection, message);
             AZLOG(NET_RepDeletes, "Migration packet sent %llu to remote host %s", static_cast<AZ::u64>(netEntityId), GetRemoteHostId().GetString().c_str());

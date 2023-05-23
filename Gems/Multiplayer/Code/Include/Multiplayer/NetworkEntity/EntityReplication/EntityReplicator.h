@@ -68,22 +68,21 @@ namespace Multiplayer
         // If an entity is part of a network hierarchy then it is only ready to activate when its direct parent entity is active.
         bool IsReadyToActivate() const;
 
-        // Interface for ReplicationManager to manage entity serialization
-        bool IsReadyForSerialization() const;
-        bool IsRemoteReplicatorEstablished() const;
-        bool PrepareSerialization();
-        bool RequiresSerialization();
+        // Interface for ReplicationManager to manage publishing entity changes
         void SetRebasing();
-        bool UpdateSerialization(AzNetworking::ISerializer& serializer);
+        bool IsReadyToPublish() const;
+        bool IsRemoteReplicatorEstablished() const;
+        bool HasChangesToPublish();
+        bool PrepareToGenerateUpdatePacket();
+        NetworkEntityUpdateMessage GenerateUpdatePacket();
+        EntityMigrationMessage GenerateMigrationPacket();
+        void RecordSentPacketId(AzNetworking::PacketId sentId);
 
-
-        // Interface for ReplicationManager to manage subscriber information
+        // Interface for ReplicationManager to manage receiving entity changes
         bool HandlePropertyChangeMessage(AzNetworking::PacketId packetId, AzNetworking::ISerializer* serializer, bool notifyChanges);
         bool IsPacketIdValid(AzNetworking::PacketId packetId) const;
         AzNetworking::PacketId GetLastReceivedPacketId() const;
 
-        NetworkEntityUpdateMessage GenerateUpdatePacket();
-        void FinalizeSerialization(AzNetworking::PacketId sentId);
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
 

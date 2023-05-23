@@ -340,7 +340,7 @@ namespace Multiplayer
         message.SetData(buffer);
         NetworkEntityUpdateMessage message2(AZStd::move(message));
         EXPECT_EQ(message, message2);
-        EXPECT_TRUE(m_root->m_replicator->PrepareSerialization());
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
         const NetworkEntityUpdateMessage constMessage = m_root->m_replicator->GenerateUpdatePacket();
         EXPECT_TRUE(message != constMessage);
         message = constMessage;

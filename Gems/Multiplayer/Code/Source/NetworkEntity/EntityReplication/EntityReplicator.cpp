@@ -576,7 +576,32 @@ namespace Multiplayer
         return updateMessage;
     }
 
-    bool EntityReplicator::IsReadyForSerialization() const
+    EntityMigrationMessage EntityReplicator::GenerateMigrationPacket()
+    {
+        AZ_Assert(m_netBindComponent, "Trying to migrate when NetBindComponent is null.");
+
+        EntityMigrationMessage message;
+        message.m_netEntityId = GetEntityHandle().GetNetEntityId();
+        message.m_prefabEntityId = m_netBindComponent->GetPrefabEntityId();
+
+        // Gather the most recent network property state, including authoritative only network properties for migration
+
+        // Send an update packet if it needs one
+        bool needsNetworkPropertyUpdate = PrepareToGenerateUpdatePacket();
+        InputSerializer inputSerializer(
+            message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
+        if (needsNetworkPropertyUpdate)
+        {
+            // Write out entity state into the buffer
+            m_propertyPublisher->UpdateSerialization(inputSerializer, m_netBindComponent);
+        }
+        AZ_Assert(inputSerializer.IsValid(), "Failed to migrate entity from server");
+        message.m_propertyUpdateData.Resize(inputSerializer.GetSize());
+
+        return message;
+    }
+
+    bool EntityReplicator::IsReadyToPublish() const
     {
         return (m_propertyPublisher != nullptr);
     }
@@ -586,7 +611,7 @@ namespace Multiplayer
         return m_propertyPublisher->IsRemoteReplicatorEstablished();
     }
 
-    bool EntityReplicator::RequiresSerialization()
+    bool EntityReplicator::HasChangesToPublish()
     {
         return m_propertyPublisher->RequiresSerialization();
     }
@@ -595,12 +620,6 @@ namespace Multiplayer
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
         m_propertyPublisher->SetRebasing();
-    }
-
-    bool EntityReplicator::UpdateSerialization(AzNetworking::ISerializer& serializer)
-    {
-        AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
-        return m_propertyPublisher->UpdateSerialization(serializer, m_netBindComponent);
     }
 
     bool EntityReplicator::IsPacketIdValid(AzNetworking::PacketId packetId) const
@@ -623,7 +642,7 @@ namespace Multiplayer
     }
 
 
-    bool EntityReplicator::PrepareSerialization()
+    bool EntityReplicator::PrepareToGenerateUpdatePacket()
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
 
@@ -640,7 +659,7 @@ namespace Multiplayer
         return m_propertyPublisher->PrepareSerialization(m_netBindComponent);
     }
 
-    void EntityReplicator::FinalizeSerialization(AzNetworking::PacketId sentId)
+    void EntityReplicator::RecordSentPacketId(AzNetworking::PacketId sentId)
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
         m_propertyPublisher->FinalizeSerialization(sentId);
