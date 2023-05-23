@@ -30,7 +30,7 @@ namespace AzToolsFramework
             static bool IsFolderEmpty(AZStd::string_view path);
             static bool IsEngineOrProjectFolder(AZStd::string_view path);
 
-            static QVariant GetThumbnail(const AssetBrowserEntry* entry);
+            static QVariant GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon = false);
         };
     } // namespace AssetBrowser
 
