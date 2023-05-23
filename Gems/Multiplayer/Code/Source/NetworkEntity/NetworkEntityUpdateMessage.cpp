@@ -194,15 +194,14 @@ namespace Multiplayer
         // This ensures that we have consistent entity data at the point of deletion in case any
         // network properties are used during deactivation / deletion logic execution.
 
-        // We only transmit sliceEntryId's and property data globs if we're not deleting the entity
         if (m_hasValidPrefabId)
         {
-            // Only serialize the sliceEntryId if one was provided to the update message constructor
-            // otherwise a remote replicator should be set up and the sliceEntryId would be redundant
+            // Only serialize the prefabEntityId if one was provided.
+            // Otherwise, a remote replicator is expected to be set up and the prefabEntityId would be redundant
             serializer.Serialize(m_prefabEntityId, "PrefabEntityId");
         }
 
-        // m_data should never be nullptr unless this is a delete packet
+        // m_data should never be nullptr
         if (m_data == nullptr)
         {
             m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
