@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <Source/EditorBallJointComponent.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
@@ -221,35 +222,31 @@ namespace PhysX
         }
 
         const AZ::EntityId entityId = GetEntityId();
-
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
-
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(localTransform,
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue, 
-            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();
 
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
+        debugDisplay.PushMatrix(jointWorldTransform);
 
-        const float xAxisArrowLength = 2.0f;
+        const float xAxisArrowLength = 2.0f * scaleMultiply;
         debugDisplay.SetColor(AZ::Color(1.0f, 0.0f, 0.0f, 1.0f));
-        debugDisplay.DrawArrow(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisArrowLength, 0.0f, 0.0f));
+        debugDisplay.DrawArrow(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisArrowLength, 0.0f, 0.0f), scaleMultiply);
 
         AngleLimitsFloatPair yzSwingAngleLimits(m_swingLimit.m_limitY, m_swingLimit.m_limitZ);
 
         const AZ::u32 numEllipseSamples = 16;
         AZ::Vector3 ellipseSamples[numEllipseSamples];
-        float coneHeight = 3.0f;
+        float coneHeight = 3.0f * scaleMultiply;
 
         // Draw inverted cone if angles are larger than 90 deg.
         if (yzSwingAngleLimits.first > 90.0f || yzSwingAngleLimits.second > 90.0f)
         {
-            coneHeight = -3.0f;
+            coneHeight = -3.0f * scaleMultiply;
         }
 
         const float coney = tan(AZ::DegToRad(yzSwingAngleLimits.first)) * coneHeight;
@@ -273,8 +270,7 @@ namespace PhysX
             debugDisplay.DrawTri(AZ::Vector3(0.0f, 0.0f, 0.0f), ellipseSamples[i], ellipseSamples[nextIndex]);
         }
 
-        debugDisplay.PopMatrix();//pop local transform
-        debugDisplay.PopMatrix();//pop world transform
+        debugDisplay.PopMatrix();//pop joint world transform
 
         debugDisplay.SetState(stateBefore);
     }

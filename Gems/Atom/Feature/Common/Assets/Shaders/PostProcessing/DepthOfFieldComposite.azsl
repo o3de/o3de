@@ -63,6 +63,7 @@ inline float3 ConvertDebugColor(float3 color, float3 debugColor)
             return color * debugColor;
         }
     }
+    return color;
 }
 
 PSOutput MainPS(VSOutput IN)

@@ -57,6 +57,75 @@ function(o3de_find_ancestor_gem_root output_gem_module_root output_gem_name sour
     endif()
 endfunction()
 
+# o3de_add_variant_dependencies_for_gem_dependencies
+#
+# For the specified gem, creates cmake TARGET dependencies using
+# the gem's "dependencies" field as a prefix for each gem variant supplied to this function
+# \arg:GEM_NAME(STRING) - Gem name whose "dependencies" will be queried from its gem.json
+# \arg:VARIANTS(LIST) - List of Gem variants which will be suffixed to the input gem name and
+#      its gem dependencies
+function(o3de_add_variant_dependencies_for_gem_dependencies)
+    set(options)
+    set(oneValueArgs GEM_NAME)
+    set(multiValueArgs VARIANTS)
+
+    cmake_parse_arguments(o3de_add_variant_dependencies_for_gem_dependencies "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(gem_name ${o3de_add_variant_dependencies_for_gem_dependencies_GEM_NAME})
+    set(gem_variants ${o3de_add_variant_dependencies_for_gem_dependencies_VARIANTS})
+    if(NOT gem_name OR NOT gem_variants)
+        return() # Nothing to do
+    endif()
+
+    # Get the gem path using the gem name as a key
+    get_property(gem_path GLOBAL PROPERTY "@GEMROOT:${gem_name}@")
+    if(NOT gem_path)
+        message(FATAL_ERROR "Unable to locate gem path for Gem \"${gem_name}\"."
+        " Is the gem registered in either the ~/.o3de/o3de_manifest.json, ${LY_ROOT_FOLDER}/engine.json,"
+        " any project.json or any gem.json which itself is registered?")
+    endif()
+
+     # Open gem.json and read "dependencies" array
+     unset(gem_dependencies)
+     o3de_read_json_array(gem_dependencies "${gem_path}/gem.json" "dependencies")
+
+    foreach(variant IN LISTS gem_variants)
+        set(gem_variant_target "${gem_name}.${variant}")
+        # Continue to the next variant if the gem didn't specify
+        # a CMake target for the current variant
+        if(NOT TARGET ${gem_variant_target})
+            continue()
+        endif()
+
+        # Append to the list of target dependencies for the current list
+        # CMake targets that actually exists
+        unset(target_dependencies_for_variant)
+        foreach(gem_dependency IN LISTS gem_dependencies)
+            set(gem_dependency_variant_target "${gem_dependency}.${variant}")
+            if(TARGET ${gem_dependency_variant_target})
+                list(APPEND target_dependencies_for_variant ${gem_dependency_variant_target})
+            endif()
+        endforeach()
+        # Validate that there is at least one dependency being added
+        if(target_dependencies_for_variant)
+            ly_add_dependencies(${gem_variant_target} ${target_dependencies_for_variant})
+            message(VERBOSE "Adding target dependencies for Gem \"${gem_name}\" by appending variant \"${variant}\""
+                " to gem names found in this gem's \"dependencies\" field\n"
+                "${gem_variant_target} -> ${gem_dependencies_for_variant}")
+        endif()
+    endforeach()
+
+    # Store of the arguments used to invoke this function in order to replicate the call
+    # in the SDK install layout
+    unset(add_variant_dependencies_for_gem_dependencies_args)
+    list(APPEND add_variant_dependencies_for_gem_dependencies_args
+        GEM_NAME ${gem_name}
+        VARIANTS ${gem_variants})
+    # Replace the list separator with space to have it be stored as a single property element
+    list(JOIN add_variant_dependencies_for_gem_dependencies_args " " add_variant_dependencies_for_gem_dependencies_args)
+    set_property(DIRECTORY APPEND PROPERTY O3DE_ADD_VARIANT_DEPENDENCIES_FOR_GEM_DEPENDENCIES_ARGUMENTS
+        "${add_variant_dependencies_for_gem_dependencies_args}")
+endfunction()
+
 # ly_create_alias
 # given an alias to create, and a list of one or more targets,
 # this creates an alias that depends on all of the given targets.
@@ -126,7 +195,7 @@ function(ly_create_alias)
     # This will be used to re-create the calls in the generated CMakeLists.txt in the INSTALL step
     # Replace the CMake list separator with a space to replicate the space separated arguments
     # A single create_alias_args variable encodes two values. The alias NAME used to check if the target exists
-    # and the ly_create_alias arguments to replace this function call
+    # and the ly_create_alias arguments to replicate this function call
     unset(create_alias_args)
     list(APPEND create_alias_args "${ly_create_alias_NAME},"
         NAME ${ly_create_alias_NAME}
@@ -234,6 +303,15 @@ function(ly_enable_gems)
         set(ENABLED_GEMS ${store_temp}) # restore value of ENABLED_GEMS just in case...
     endif()
 
+    # Remove any version specifiers before looking for variants
+    # e.g. "Atom==1.2.3" becomes "Atom"
+    unset(GEM_NAMES)
+    foreach(gem_name_with_version_specifier IN LISTS ly_enable_gems_GEMS)
+        o3de_get_name_and_version_specifier(${gem_name_with_version_specifier} gem_name spec_op spec_version)
+        list(APPEND GEM_NAMES "${gem_name}")
+    endforeach()
+    set(ly_enable_gems_GEMS ${GEM_NAMES})
+
     # all the actual work has to be done later.
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_ENABLE_GEMS "${ly_enable_gems_PROJECT_NAME}")
     define_property(GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${ly_enable_gems_PROJECT_NAME}"
@@ -294,7 +372,8 @@ function(ly_add_gem_dependencies_to_project_variants)
             ly_add_target_dependencies(
                 ${PREFIX_CLAUSE}
                 TARGETS ${ly_add_gem_dependencies_TARGET}
-                DEPENDENT_TARGETS ${dealiased_gem_target})
+                DEPENDENT_TARGETS ${dealiased_gem_target}
+                GEM_VARIANT ${ly_add_gem_dependencies_VARIANT})
         else()
             message(VERBOSE "Gem \"${gem_name}\" does not expose a variant of ${ly_add_gem_dependencies_VARIANT}")
         endif()
@@ -340,11 +419,13 @@ function(ly_enable_gems_delayed)
                     # cmake_dependencies.*.setreg file for the (project, target) tuple to be regenerated
                     # This is needed if the ENABLED_GEMS list for a project goes from >0 to 0. In this case
                     # the cmake_dependencies would have a stale list of gems to load unless it is regenerated
-                    get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${project},${target}" SET)
-                    if(NOT delayed_load_target_set)
-                        set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${project},${target}")
-                        set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${project},${target}" "")
-                    endif()
+                    foreach(variant IN LISTS target_gem_variants)
+                        get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${project},${target},${variant}" SET)
+                        if(NOT delayed_load_target_set)
+                            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${project},${target},${variant}")
+                            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${project},${target},${variant}" "")
+                        endif()
+                    endforeach()
                 endif()
                 # Continue to the next iteration loop regardless as there are no gem dependencies
                 continue()
@@ -352,7 +433,7 @@ function(ly_enable_gems_delayed)
 
             # Gather the Gem variants associated with this target and iterate over them to combine them with the enabled
             # gems for the each project
-            foreach(variant ${target_gem_variants})
+            foreach(variant IN LISTS target_gem_variants)
                 ly_add_gem_dependencies_to_project_variants(
                     PROJECT_NAME ${project}
                     TARGET ${target}

@@ -17,10 +17,9 @@
 
 namespace GraphModelIntegration
 {
-    void GraphCanvasMetadata::Reflect(AZ::ReflectContext* reflectContext)
+    void GraphCanvasMetadata::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-        if (serializeContext)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<GraphCanvasMetadata>()
                 ->Version(0)
@@ -29,4 +28,14 @@ namespace GraphModelIntegration
                 ;
         }
     }
-} // namespace ShaderCanvas
+
+    void GraphCanvasSelectionData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<GraphCanvasSelectionData, GraphCanvas::ComponentSaveData>()
+                ->Version(0)
+                ->Field("selected", &GraphCanvasSelectionData::m_selected);
+        }
+    }
+} // namespace GraphModelIntegration

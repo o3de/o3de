@@ -49,6 +49,13 @@ TEST_PROJECT_JSON_PAYLOAD = '''
     "icon_path": "preview.png",
     "engine": "o3de-install",
     "restricted_name": "projects",
+    "gem_names": [
+        "ExistingGemA",
+        {
+            "name":"ExistingGemB",
+            "optional": true
+        }
+    ],
     "external_subdirectories": [
         "D:/TestGem"
     ]
@@ -86,7 +93,18 @@ class TestEditProjectProperties:
                     'ProjNameA1', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
-                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'GemA GemB GemB', ['GemA'], None, ['ExistingGemA',{'name':'ExistingGemB','optional':True},'GemB'],
+                    'NewEngineName',
+                    'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
+                    ['editor==2.3.4'], None, None, ['framework==1.2.3','editor==2.3.4'],
+                    False, True, pathlib.Path('D:/TestEngine'), pathlib.Path('cmake/CustomEngineFinder.cmake'),
+                    0),
+        # when adding the same gem with a different version, expect only the final gem version remains
+        pytest.param(pathlib.Path('E:/TestProject'),
+                    'ProjNameA1', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A B C', 'B', 'D E F', ['D','E','F'],
+                    'ExistingGemA==1.0.0 GemB', None, None, ['ExistingGemA==1.0.0',{'name':'ExistingGemB','optional':True},'GemB'],
                     'NewEngineName',
                     'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
                     ['editor==2.3.4'], None, None, ['framework==1.2.3','editor==2.3.4'],
@@ -96,7 +114,7 @@ class TestEditProjectProperties:
                     'ProjNameA2', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
-                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB','ExistingGemA',{'name':'ExistingGemB','optional':True}],
                     'o3de-sdk',
                     'c==4.3.2.1', None, 'a>=0.1 b==1.0,==2.0', ['a>=0.1', 'b==1.0,==2.0'],
                     ['launcher==3.4.5'], ['framework==1.2.3'], None, ['launcher==3.4.5'],
@@ -106,7 +124,7 @@ class TestEditProjectProperties:
                     'ProjNameA3', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
-                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB','ExistingGemA',{'name':'ExistingGemB','optional':True}],
                     'o3de-install',
                     None, 'o3de-sdk==2205.01', None, [],
                     None, None, ['framework==9.8.7'], ['framework==9.8.7'],
@@ -116,7 +134,7 @@ class TestEditProjectProperties:
                     'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
-                    None, None, '', [],
+                    None, None, '', ['ExistingGemA',{'name':'ExistingGemB','optional':True}],
                     'o3de-custom==1.0.0',
                     None, None, [], [],
                     None, None, [], [],
@@ -126,7 +144,7 @@ class TestEditProjectProperties:
                     'ProjNameA5', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
-                    'GemA GemB GemB', ['GemA'], None, ['GemB'],
+                    'GemA GemB GemB', ['GemA'], None, ['GemB','ExistingGemA',{'name':'ExistingGemB','optional':True}],
                     None,
                     None, None, 'invalid', ['b==1.0,==2.0'], # invalid version
                     None, None, None, ['framework==1.2.3'],
@@ -136,7 +154,7 @@ class TestEditProjectProperties:
                     'ProjNameA6', 'ProjNameB', 'IDB', 'OriginB', 
                     'DisplayB', 'SummaryB', 'IconB', '1.0.0.0',
                     'A B C', 'B', 'D E F', ['D','E','F'],
-                    ['GemA','GemB'], None, ['GemC'], ['GemC'],
+                    ['GemA','GemB'], None, ['GemC'], ['GemC','ExistingGemA',{'name':'ExistingGemB','optional':True}],
                     None,
                     None, None, 'o3de-sdk==2205.1', ['o3de-sdk==2205.1'],
                     None, None, None, ['framework==1.2.3'],
@@ -147,7 +165,7 @@ class TestEditProjectProperties:
                     'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A', None, None, ['A', 'TestProject'],
-                    ['GemA'], None, '', [{'name':'GemA','optional':True}],
+                    ['GemA'], None, '', ['ExistingGemA',{'name':'ExistingGemB','optional':True},{'name':'GemA','optional':True}],
                     'o3de~=1.2',
                     None, None, [], [],
                     None, None, [], [],
@@ -234,7 +252,7 @@ class TestEditProjectProperties:
                 assert set(self.project_json.data.get('user_tags', [])) == set(expected_tags)
 
                 for gem in self.project_json.data.get('gem_names', []):
-                    assert(gem in expected_gem_names)
+                    assert gem in expected_gem_names
 
                 assert set(self.project_json.data.get('compatible_engines', [])) == set(expected_compatible_engines)
                 assert set(self.project_json.data.get('engine_api_dependencies', [])) == set(expected_engine_api_dependencies)

@@ -124,7 +124,11 @@ namespace AZ
             m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
             m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
-            if (m_context.CreateInstance(&m_instanceCreateInfo, VkSystemAllocator::Get(), &m_instance) != VK_SUCCESS)
+
+            //For instance creation/destruction use nullptr for VkAllocationCallbacks* as using VkSystemAllocator::Get() crashes RenderDoc when used with openxr
+            //enabled projects. We think its because RenderDoc maybe injecting something when doing allocations. Using nullptr when USE_RENDERDOC or enableRenderDoc
+            //is enabled is another option but it will not work for Android easily and will require further work, not to mention manually enabling this for Android renderdoc. 
+            if (m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
                 return false;
@@ -167,7 +171,8 @@ namespace AZ
                 }
                 m_supportedDevices.clear();
 
-                m_context.DestroyInstance(m_instance, VkSystemAllocator::Get());
+                //Using use nullptr for VkAllocationCallbacks*. Please see comments above related to Instance creation
+                m_context.DestroyInstance(m_instance, nullptr);
                 m_instance = VK_NULL_HANDLE;
             }
         }

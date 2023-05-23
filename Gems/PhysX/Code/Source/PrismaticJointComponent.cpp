@@ -11,6 +11,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/PhysicsScene.h>

@@ -37,7 +37,9 @@ namespace AzToolsFramework
         //! Loads settings from the provided '.setreg' file and merges settings into the SettingsRegistry
         //! at the given anchor key.
         //! The path passed to this function is expected to be relative to the project root.
-        AZ::Outcome<void, AZStd::string> LoadSettingsFromFile(
+        //! Succeeds if the file was loaded or if the file does not exist.
+        //! Upon success, returns whether the file exists or not.
+        AZ::Outcome<bool, AZStd::string> LoadSettingsFromFile(
             AZ::IO::PathView relativeFilepath,
             AZStd::string_view anchorKey = {},
             AZ::SettingsRegistryInterface* registry = nullptr,
@@ -46,8 +48,10 @@ namespace AzToolsFramework
         //! Attempts to retrieve settings stored at the given registry path and put them in the provided object.
         //! The provided object is expected to be intialized before being passed to this function and it must
         //! be AZ_RTTI enabled.
+        //! Succeeds if the given entry was read or if it does not exist.
+        //! Upon success, returns whether the given settings entry exists or not.
         template<typename AzRttiEnabled_T>
-        AZ::Outcome<void, AZStd::string> GetObjectSettings(
+        AZ::Outcome<bool, AZStd::string> GetObjectSettings(
             AzRttiEnabled_T* outSettingsObject,
             AZStd::string_view registryPath,
             AZ::SettingsRegistryInterface* registry = nullptr) const
@@ -58,14 +62,14 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string::format("Failed to access global settings registry for data retrieval"));
             }
 
-            if (registry->GetObject(*outSettingsObject, registryPath))
-            {
-                return AZ::Success();
-            }
-            else
+            bool entryExists = registry->GetType(registryPath) != AZ::SettingsRegistryInterface::Type::NoType;
+
+            if (entryExists && !registry->GetObject(*outSettingsObject, registryPath))
             {
                 return AZ::Failure(AZStd::string::format("Failed to retrieve settings at path '%s'", registryPath.data()));
             }
+
+            return AZ::Success(entryExists);
         }
 
         //! Attempts to store reflected properties of the given AZ_RTTI enabled object at the given registry path.

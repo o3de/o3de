@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/Math/Vector3.h>
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -70,6 +71,11 @@ namespace AzToolsFramework
                 AssetType,
                 ClassID,
                 DisplayName,
+                Type,
+                DiskSize,
+                Vertices,
+                ApproxSize,
+                SourceControlStatus,
                 Count
             };
 
@@ -108,6 +114,12 @@ namespace AzToolsFramework
             //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
             //! any aliases.
             const AZStd::string GetFullPath() const;
+            //! Return the size on disk of the asset
+            const size_t GetDiskSize() const;
+            //! Returns the dimension of the model
+            const AZ::Vector3& GetDimension() const;
+            //! Returns the number of vertices in the model
+            const uint32_t GetNumVertices() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -140,6 +152,9 @@ namespace AzToolsFramework
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
+            size_t m_diskSize;
+            AZ::Vector3 m_dimension{ NAN, NAN, NAN };
+            uint32_t m_vertices{ 0 };
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;
 

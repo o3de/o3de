@@ -25,6 +25,14 @@
 
 namespace Terrain
 {
+    // Due to the EditorTerrainMacroMaterialComponent having a member where it passes itself as the type below
+    // `PaintableImageAssetHelper<EditorTerrainMacroMaterialComponent, EditorTerrainMacroMaterialComponentMode>`
+    // The AzTypeInfo can't be queried due to EditorImageGradientComponent still be defined
+    // So define AzTypeInfo using a forward declaration
+    // Then use the AZ_RTTI_NO_TYPE_INFO_DECL/AZ_RTTI_NO_TYPE_INFO_IMPL to add Rtti
+    class EditorTerrainMacroMaterialComponent;
+    AZ_TYPE_INFO_SPECIALIZE(EditorTerrainMacroMaterialComponent, "{24D87D5F-6845-4F1F-81DC-05B4CEBA3EF4}");
+
     class EditorTerrainMacroMaterialComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EditorVisibilityNotificationBus::Handler
@@ -33,10 +41,10 @@ namespace Terrain
         , protected TerrainMacroMaterialNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(
-            EditorTerrainMacroMaterialComponent,
-            "{24D87D5F-6845-4F1F-81DC-05B4CEBA3EF4}",
-            AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorTerrainMacroMaterialComponent);
+        AZ_COMPONENT_BASE(EditorTerrainMacroMaterialComponent);
+        AZ_RTTI_NO_TYPE_INFO_DECL()
+
         static void Reflect(AZ::ReflectContext* context);
 
         static constexpr const char* const s_categoryName = "Terrain";

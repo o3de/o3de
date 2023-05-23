@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/MultisampleState.h>
 #include <Atom/RHI.Reflect/Size.h>

@@ -10,6 +10,7 @@
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <GraphModel/Model/Graph.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/Slot.h>
@@ -86,8 +87,7 @@ namespace AtomToolsFramework
         for (const auto& slotConfig : m_config.m_propertySlots)
         {
             // Property slots only support one data type. Search for the first valid supported data type.
-            GraphModel::DataTypePtr dataType = slotConfig.GetDefaultDataType();
-            if (!dataType)
+            if (!slotConfig.GetDefaultDataType())
             {
                 AZ_Error(
                     "DynamicNode",
@@ -99,8 +99,7 @@ namespace AtomToolsFramework
             }
 
             // Assigning the default value from the slot configuration or the first data type
-            const AZStd::any& defaultValue = slotConfig.GetDefaultValue();
-            if (defaultValue.empty())
+            if (slotConfig.GetDefaultValue().empty())
             {
                 AZ_Error(
                     "DynamicNode",
@@ -111,13 +110,15 @@ namespace AtomToolsFramework
                 continue;
             }
 
-            RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
+            RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Property,
                 slotConfig.m_name,
                 slotConfig.m_displayName,
-                dataType,
-                defaultValue,
                 slotConfig.m_description,
-                nullptr,
+                slotConfig.GetSupportedDataTypes(),
+                slotConfig.GetDefaultValue(),
+                1, 1, "", "",
                 slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode && enablePropertyEditingOnNodeUI));
@@ -128,8 +129,7 @@ namespace AtomToolsFramework
         {
             // Input slots support incoming connections from multiple data types. We must build a container of all of the data type objects
             // for all of the supported types to create the input slot.
-            const GraphModel::DataTypeList dataTypes = slotConfig.GetSupportedDataTypes();
-            if (dataTypes.empty())
+            if (slotConfig.GetSupportedDataTypes().empty())
             {
                 AZ_Error(
                     "DynamicNode",
@@ -141,8 +141,7 @@ namespace AtomToolsFramework
             }
 
             // Assigning the default value from the slot configuration or the first data type
-            const AZStd::any& defaultValue = slotConfig.GetDefaultValue();
-            if (defaultValue.empty())
+            if (slotConfig.GetDefaultValue().empty())
             {
                 AZ_Error(
                     "DynamicNode",
@@ -153,13 +152,15 @@ namespace AtomToolsFramework
                 continue;
             }
 
-            RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+            RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+                GraphModel::SlotDirection::Input,
+                GraphModel::SlotType::Data,
                 slotConfig.m_name,
                 slotConfig.m_displayName,
-                dataTypes,
-                defaultValue,
                 slotConfig.m_description,
-                nullptr,
+                slotConfig.GetSupportedDataTypes(),
+                slotConfig.GetDefaultValue(),
+                1, 1, "", "",
                 slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode && enablePropertyEditingOnNodeUI));
@@ -168,8 +169,7 @@ namespace AtomToolsFramework
         for (const auto& slotConfig : m_config.m_outputSlots)
         {
             // Output slots only support one data type. Search for the first valid supported data type.
-            GraphModel::DataTypePtr dataType = slotConfig.GetDefaultDataType();
-            if (!dataType)
+            if (!slotConfig.GetDefaultDataType())
             {
                 AZ_Error(
                     "DynamicNode",
@@ -180,12 +180,15 @@ namespace AtomToolsFramework
                 continue;
             }
 
-            RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+            RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+                GraphModel::SlotDirection::Output,
+                GraphModel::SlotType::Data,
                 slotConfig.m_name,
                 slotConfig.m_displayName,
-                dataType,
                 slotConfig.m_description,
-                nullptr,
+                slotConfig.GetSupportedDataTypes(),
+                slotConfig.GetDefaultValue(),
+                1, 1, "", "",
                 slotConfig.m_enumValues,
                 slotConfig.m_visibleOnNode,
                 slotConfig.m_editableOnNode && enablePropertyEditingOnNodeUI));

@@ -41,7 +41,6 @@ namespace Terrain
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
         void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
-        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         SurfaceData::SurfaceTag m_surfaceTag;
         AZ::Data::Asset<Physics::MaterialAsset> m_materialAsset;
@@ -56,8 +55,6 @@ namespace Terrain
         AZ_CLASS_ALLOCATOR(TerrainPhysicsColliderConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}");
         static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         AZ::Data::Asset<Physics::MaterialAsset> m_defaultMaterialAsset;
         AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;

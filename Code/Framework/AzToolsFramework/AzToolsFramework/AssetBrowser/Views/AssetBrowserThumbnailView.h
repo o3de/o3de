@@ -9,9 +9,11 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <QItemSelection>
 #include <QWidget>
+#include <QMenu>
 #include <QAbstractItemView>
 
 #endif
@@ -30,7 +32,8 @@ namespace AzToolsFramework
         class AssetBrowserThumbnailViewProxyModel;
         class AssetBrowserEntry;
 
-        class AssetBrowserThumbnailView : public QWidget
+        class AssetBrowserThumbnailView
+            : public QWidget
         {
             Q_OBJECT
         public:
@@ -41,12 +44,25 @@ namespace AzToolsFramework
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
-            void HideProductAssets(bool checked);
-
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
+            void SetName(const QString& name);
+            QString& GetName();
+            void SetIsAssetBrowserMainView();
+            bool GetIsAssetBrowserMainView();
+            void SetThumbnailActiveView(bool isActiveView);
+            bool GetThumbnailActiveView();
+
+            void DuplicateEntries();
+            void MoveEntries();
+            void DeleteEntries();
+            void RenameEntry();
+            void AfterRename(QString newVal);
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;
+
+            void SelectEntry(QString assetName);
 
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
@@ -54,16 +70,17 @@ namespace AzToolsFramework
             void showInFolderTriggered(const AssetBrowserEntry* entry);
 
         public Q_SLOTS:
-            void UpdateThumbnailview();
+            void OpenItemForEditing(const QModelIndex &index);
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
             AzQtComponents::AssetFolderThumbnailView* m_thumbnailViewWidget = nullptr;
             AssetBrowserThumbnailViewProxyModel* m_thumbnailViewProxyModel = nullptr;
             AssetBrowserFilterModel* m_assetFilterModel = nullptr;
-
             void HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
             void UpdateFilterInLocalFilterModel();
+            QString m_name;
+            bool m_isActiveView = false;
         };
 
     } // namespace AssetBrowser

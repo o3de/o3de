@@ -8,7 +8,9 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
 #include <QTimer>
 
@@ -166,6 +168,8 @@ namespace AzToolsFramework::Prefab
 
         PrefabFocusNotificationBus::Handler::BusConnect(m_editorEntityContextId);
         ViewportEditorModeNotificationsBus::Handler::BusConnect(m_editorEntityContextId);
+
+        Refresh();
     }
 
     PrefabFocusPathWidget::~PrefabFocusPathWidget()
@@ -209,6 +213,18 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusPathWidget::Refresh()
     {
+        auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+
+        AZ::EntityId levelEntityId = prefabPublicInterface->GetLevelInstanceContainerEntityId();
+        AZStd::size_t childCount = 0;
+
+        EditorEntityInfoRequestBus::EventResult(childCount, levelEntityId, &EditorEntityInfoRequestBus::Events::GetChildCount);
+        // Ignore the refresh if there isn't a level loaded yet
+        if (childCount == 0)
+        {
+            return;
+        }
+        
         // Push new Path
         pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
 

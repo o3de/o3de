@@ -6,7 +6,8 @@
                     "CommonSrgsShaderAssetPath": "shaders/sceneandviewsrgs.azshader",
                     "ImageSystemDescriptor": {
                         "SystemStreamingImagePoolSize": 0,
-                        "SystemAttachmentImagePoolSize": 0 
+                        "SystemStreamingImagePoolMipBias": 0,
+                        "SystemAttachmentImagePoolSize": 0
                     },
                     "GpuQuerySystemDescriptor": {
                         "OcclusionQueryCount": 128,

@@ -127,7 +127,7 @@ namespace LocalUser
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void LocalUserSystemComponent::Activate()
     {
-        m_pimpl.reset(Implementation::Create(*this));
+        m_pimpl.reset(Implementation::Create());
         LocalUserRequestBus::Handler::BusConnect();
     }
 

@@ -28,10 +28,19 @@ namespace AzToolsFramework
             // Used to keep track of the root index on the view consuming this model, so that the model
             // can generate extra data such as whether an entry is on the top level.
             void SetRootIndex(const QModelIndex& index);
+            const QModelIndex GetRootIndex() const;
 
             bool GetShowSearchResultsMode() const;
             void SetShowSearchResultsMode(bool searchMode);
 
+             //////////////////////////////////////////////////////////////////////////
+            // QAbstractTableModel
+            //////////////////////////////////////////////////////////////////////////
+            Qt::DropActions supportedDropActions() const override;
+            Qt::ItemFlags flags(const QModelIndex& index) const override;
+            bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+            QMimeData* mimeData(const QModelIndexList& indexes) const override;
+            QStringList mimeTypes() const override;
         private:
             QPersistentModelIndex m_rootIndex;
             bool m_searchResultsMode;

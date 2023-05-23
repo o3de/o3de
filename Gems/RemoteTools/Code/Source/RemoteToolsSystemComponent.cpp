@@ -94,7 +94,6 @@ namespace RemoteTools
 
     void RemoteToolsSystemComponent::Activate()
     {
-        m_outboxThread = AZStd::make_unique<RemoteToolsOutboxThread>(remote_outbox_interval);
         m_joinThread = AZStd::make_unique<RemoteToolsJoinThread>(remote_join_interval, this);
         AZ::SystemTickBus::Handler::BusConnect();
     }
@@ -103,7 +102,6 @@ namespace RemoteTools
     {
         AZ::SystemTickBus::Handler::BusDisconnect();
         m_joinThread = nullptr;
-        m_outboxThread = nullptr;
         if (AzNetworking::INetworking* networking = AZ::Interface<AzNetworking::INetworking>::Get())
         {
             for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
@@ -140,7 +138,7 @@ namespace RemoteTools
             netInterface->SetTimeoutMs(AZ::TimeMs(0));
         }
 
-        if (!m_joinThread->IsRunning())
+        if (m_joinThread && !m_joinThread->IsRunning())
         {
             m_joinThread->Join();
             m_joinThread->Start();
@@ -363,17 +361,31 @@ namespace RemoteTools
         AzNetworking::INetworkInterface* networkInterface =
             AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(
                 AZ::Name(m_entryRegistry[target.GetPersistentId()].m_name));
-        
-        OutboundToolingDatum datum;
-        datum.first = target.GetPersistentId();
-        datum.second.swap(msgBuffer);
-        m_outboxThread->PushOutboxMessage(
-            networkInterface, static_cast<AzNetworking::ConnectionId>(target.GetNetworkId()), AZStd::move(datum));
-        if (!m_outboxThread->IsRunning())
+
+        auto connectionId = static_cast<AzNetworking::ConnectionId>(target.GetNetworkId());
+        const uint8_t* outBuffer = reinterpret_cast<const uint8_t*>(msgBuffer.data());
+        const size_t totalSize = msgBuffer.size();
+        size_t outSize = totalSize;
+        while (outSize > 0 && networkInterface != nullptr)
         {
-            m_outboxThread->Join();
-            m_outboxThread->Start();
+            // Fragment the message into RemoteToolsMessageBuffer packet sized chunks and send
+            size_t bufferSize = AZStd::min(outSize, aznumeric_cast<size_t>(RemoteToolsBufferSize));
+            RemoteToolsPackets::RemoteToolsMessage tmPacket;
+            tmPacket.SetPersistentId(target.GetPersistentId());
+            tmPacket.SetSize(aznumeric_cast<uint32_t>(totalSize));
+            RemoteToolsMessageBuffer encodingBuffer;
+            encodingBuffer.CopyValues(outBuffer + (totalSize - outSize), bufferSize);
+            tmPacket.SetMessageBuffer(encodingBuffer);
+
+            if (!networkInterface->SendReliablePacket(connectionId, tmPacket))
+            {
+                AZ_Error("RemoteToolsSystemComponent", false, "SendReliablePacket failed with remaining bytes %zu of %zu.\n", outSize, totalSize);
+                break;
+            }
+
+            outSize -= bufferSize;
         }
+
     }
 
     void RemoteToolsSystemComponent::OnMessageParsed(
@@ -550,20 +562,6 @@ namespace RemoteTools
         {
             m_joinThread->Join();
             m_joinThread->Start();
-        }
-
-        // Check if there are any active connections, if not stop the outbox thread
-        bool hasActiveConnection = false;
-        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
-        {
-            hasActiveConnection =
-                AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(registryIt->second.m_name) != nullptr;
-        }
-
-        if (!hasActiveConnection)
-        {
-            m_outboxThread->Stop();
-            m_outboxThread->Join();
         }
     }
 

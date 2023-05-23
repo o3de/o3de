@@ -75,7 +75,7 @@ namespace PhysX::Pipeline
 
     const char* HeightFieldAssetHandler::GetBrowserIcon() const
     {
-        return "Icons/Components/ColliderMesh.svg";
+        return "Icons/Components/PhysXHeightfieldCollider.svg";
     }
 
     const char* HeightFieldAssetHandler::GetGroup() const

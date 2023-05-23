@@ -26,29 +26,29 @@ namespace PhysX
             [this]()
             {
                 float capsuleRadius = 0.0f;
-                EditorColliderComponentRequestBus::EventResult(
-                    capsuleRadius, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCapsuleRadius);
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleRadius, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetCapsuleRadius);
                 return capsuleRadius;
             });
         m_capsuleViewportEdit->InstallGetCapsuleHeight(
             [this]()
             {
                 float capsuleHeight = 0.0f;
-                EditorColliderComponentRequestBus::EventResult(
-                    capsuleHeight, m_entityComponentIdPair, &EditorColliderComponentRequests::GetCapsuleHeight);
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleHeight, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetCapsuleHeight);
                 return capsuleHeight;
             });
         m_capsuleViewportEdit->InstallSetCapsuleRadius(
             [this](float radius)
             {
-                EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCapsuleRadius, radius);
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetCapsuleRadius, radius);
             });
         m_capsuleViewportEdit->InstallSetCapsuleHeight(
             [this](float height)
             {
-                EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetCapsuleHeight, height);
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetCapsuleHeight, height);
             });
         m_capsuleViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_capsuleViewportEdit->AddEntityComponentIdPair(idPair);

@@ -14,7 +14,7 @@ ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
     // This SRG is unique per draw packet
     uint m_uvStreamTangentBitmask;
-    
+
     uint GetTangentAtUv(uint uvIndex)
     {
         return (m_uvStreamTangentBitmask >> (4 * uvIndex)) & 0xF;

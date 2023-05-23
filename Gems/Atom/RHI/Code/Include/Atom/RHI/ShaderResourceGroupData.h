@@ -212,6 +212,7 @@ namespace AZ
                 ReadWriteTexture,
                 ReadBuffer,
                 ReadWriteBuffer,
+                ReadTextureCube,
                 Count
             };
 

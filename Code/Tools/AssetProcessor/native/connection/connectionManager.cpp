@@ -451,6 +451,15 @@ void ConnectionManager::removeConnection(const QModelIndex& index)
 
     removeConnection(key);
 
+    // Normally, removing a connection will cause RemoveConnectionFromMap to be called
+    // later, when the connection is fully removed. However, SaveConnections stores all
+    // user created connections, so this connection needs to be removed early.
+    // RemoveConnectionFromMap doesn't call SaveConnections because asset builders connect
+    // and disconnection shouldn't cause the settings to get saved constantly.
+    // This does mean RemoveConnectionFromMap is called twice, but that's OK because it won't find
+    // the key and it will safely handle that situation.
+    RemoveConnectionFromMap(key);
+
     SaveConnections();
 }
 

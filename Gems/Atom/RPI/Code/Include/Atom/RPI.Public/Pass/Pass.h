@@ -64,11 +64,10 @@ namespace AZ
         class AttachmentReadback;
         class ImageAttachmentCopy;
 
-        using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
         const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = 16;
+        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
                 
@@ -206,7 +205,7 @@ namespace AZ
             // --- Virtual functions which may need to be override by derived classes ---
 
             //! Collect all different view tags from this pass 
-            virtual void GetPipelineViewTags(SortedPipelineViewTags& outTags) const;
+            virtual void GetPipelineViewTags(PipelineViewTags& outTags) const;
 
             //! Adds this pass' DrawListTags to the outDrawListMask.
             virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;

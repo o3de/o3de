@@ -30,6 +30,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Interface/Interface.h>
@@ -83,12 +84,15 @@ namespace AZ
             if (m_xrSystem)
             {
                 AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
+                // UnRegister xr system if a Fail ResultCode is returned
                 if (resultCode == AZ::RHI::ResultCode::Fail)
                 {
                     UnregisterXRSystem();
+                    AZ_Error(
+                        "RPISystem",
+                        resultCode == AZ::RHI::ResultCode::Success,
+                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled.");
                 }
-                AZ_Warning("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System");
             }
 
             //Init RHI device
@@ -119,10 +123,6 @@ namespace AZ
             Debug::TraceMessageBus::Handler::BusConnect();
 #endif
             m_descriptor = rpiSystemDescriptor;
-
-            // set the default multisample state to MSAA 4x
-            // the default render pipeline may override this when it is loaded
-            m_multisampleState.m_samples = 4;
         }
 
         void RPISystem::Shutdown()
@@ -317,6 +317,14 @@ namespace AZ
                 scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
 
+            //Collect all the active pipelines running in this frame.
+            uint16_t numActiveRenderPipelines = 0;
+            for (auto& scenePtr : m_scenes)
+            {
+                numActiveRenderPipelines += scenePtr->GetActiveRenderPipelines();
+            }
+            m_rhiSystem.SetNumActiveRenderPipelines(numActiveRenderPipelines);
+
             m_rhiSystem.FrameUpdate(
                 [this](RHI::FrameGraphBuilder& frameGraphBuilder)
                 {
@@ -473,7 +481,7 @@ namespace AZ
                     // MSAA state set to the render pipeline at creation time from its data might be different
                     // from the one set to the application. So it can arrive here having the same new
                     // target state, but still needs to be marked as its MSAA state has changed so its passes
-                    // are recreated using the new supervariant name comming from MSAA at application level just set above.
+                    // are recreated using the new supervariant name coming from MSAA at application level just set above.
                     // In conclusion, it's not safe to skip here setting MSAA state to the render pipeline when it's the
                     // same as the target.
                     renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
@@ -490,14 +498,20 @@ namespace AZ
         void RPISystem::RegisterXRSystem(XRRenderingInterface* xrSystemInterface)
         { 
             AZ_Assert(!m_xrSystem, "XR System is already registered");
-            m_xrSystem = xrSystemInterface;
-            m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface());
+            if (m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface()))
+            {
+                m_xrSystem = xrSystemInterface;
+            }
         }
 
         void RPISystem::UnregisterXRSystem()
         {
-            m_rhiSystem.UnregisterXRSystem();
-            m_xrSystem = nullptr;
+            AZ_Assert(m_xrSystem, "XR System is not registered");
+            if (m_xrSystem)
+            {
+                m_rhiSystem.UnregisterXRSystem();
+                m_xrSystem = nullptr;
+            }
         }
 
         XRRenderingInterface* RPISystem::GetXRSystem() const

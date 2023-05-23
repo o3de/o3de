@@ -24,6 +24,17 @@ AZ_DEFINE_BUDGET(Vegetation);
 
 namespace Vegetation
 {
+    void InstanceSpawner::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serialize)
+        {
+            serialize->Class<InstanceSpawner>()
+                ->Version(0)
+                ;
+        }
+    }
+
     namespace Details
     {
         AzFramework::GenericAssetHandler<DescriptorListAsset>* s_vegetationDescriptorListAssetHandler = nullptr;

@@ -21,8 +21,6 @@ namespace AZ
     namespace RPI
     {
         //! A copy pass is a leaf pass (pass with no children) used for copying images and buffers on the GPU.
-        // [GFX TODO] ATOM-1188 (antonmic): Current implementation only supports image to image copying. With
-        // ATOM-1188 we will also enable image to buffer, buffer to image and buffer to buffer copies.
         class CopyPass
             : public RenderPass
         {

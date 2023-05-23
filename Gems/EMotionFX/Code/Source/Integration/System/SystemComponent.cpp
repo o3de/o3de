@@ -70,6 +70,7 @@
 #include <QtGui/QSurfaceFormat>
 // EMStudio tools and main window registration
 #include <LyViewPaneNames.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <AzQtComponents/Components/FancyDocking.h>
 #include <AzCore/std/string/wildcard.h>
@@ -509,6 +510,7 @@ namespace EMotionFX
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
             // Register custom property handlers for the reflected property editor.
             m_propertyHandlers = RegisterPropertyTypes();
@@ -534,6 +536,7 @@ namespace EMotionFX
                 EditorRequests::Bus::Broadcast(&EditorRequests::UnregisterViewPane, EMStudio::MainWindow::GetEMotionFXPaneName());
             }
 
+            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusDisconnect();
             AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
@@ -788,7 +791,6 @@ namespace EMotionFX
             return rayResult;
         }
 
-
 #if defined (EMOTIONFXANIMATION_EDITOR)
 
         //////////////////////////////////////////////////////////////////////////
@@ -859,11 +861,11 @@ namespace EMotionFX
             using namespace AzToolsFramework::AssetBrowser;
             if (AZStd::wildcard_match("*.motionset", fullSourceFileName))
             {
-                return SourceFileDetails("Editor/Images/AssetBrowser/MotionSet_16.svg");
+                return SourceFileDetails("Editor/Images/AssetBrowser/MotionSet_80.svg");
             }
             else if (AZStd::wildcard_match("*.animgraph", fullSourceFileName))
             {
-                return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_16.svg");
+                return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_80.svg");
             }
             return SourceFileDetails(); // no result
         }
@@ -989,6 +991,31 @@ namespace EMotionFX
                           AZ::Crc32(),
                           true);
                   } });
+        }
+
+        void SystemComponent::OnActionContextRegistrationHook()
+        {
+            constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+            constexpr AZStd::string_view AnimationEditorAnimGraphActionContextIdentifier = "o3de.context.animationEditor.animGraph";
+
+            if(auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+            {
+                // EMFX Main Window
+                {
+                    AzToolsFramework::ActionContextProperties contextProperties;
+                    contextProperties.m_name = "O3DE Animation Editor";
+
+                    actionManagerInterface->RegisterActionContext(AnimationEditorActionContextIdentifier, contextProperties);
+                }
+
+                // AnimGraph
+                {
+                    AzToolsFramework::ActionContextProperties contextProperties;
+                    contextProperties.m_name = "O3DE Animation Editor - Anim Graph";
+
+                    actionManagerInterface->RegisterActionContext(AnimationEditorAnimGraphActionContextIdentifier, contextProperties);
+                }
+            }
         }
 
         bool SystemComponent::HandlesSource(AZStd::string_view fileName) const

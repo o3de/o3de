@@ -9,7 +9,6 @@
 # this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Mac.
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                             TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform                  TARGETS RapidXML                    PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME pybind11-2.10.0-rev1-multiplatform                TARGETS pybind11                    PACKAGE_HASH 6690acc531d4b8cd453c19b448e2fb8066b2362cbdd2af1ad5df6e0019e6c6c4)
@@ -42,7 +41,7 @@ ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-mac                          
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac                       TARGETS squish-ccr                  PACKAGE_HASH 155bfbfa17c19a9cd2ef025de14c5db598f4290045d5b0d83ab58cb345089a77)
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev5-mac                         TARGETS astc-encoder                PACKAGE_HASH bdb1146cc6bbacc07901564fe884529d7cacc9bb44895597327341d3b9833ab0)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                      TARGETS ISPCTexComp                 PACKAGE_HASH 8a4e93277b8face6ea2fd57c6d017bdb55643ed3d6387110bc5f6b3b884dd169)
-ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-mac                          TARGETS lz4                         PACKAGE_HASH 891ff630bf34f7ab1d8eaee2ea0a8f1fca89dbdc63fca41ee592703dd488a73b)
+ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-mac                                TARGETS lz4                         PACKAGE_HASH d52e34e5e2f93acb914fd5f8e5247b67f2e7f15fae0586b5813c2721c8345a0d)
 ly_associate_package(PACKAGE_NAME azslc-1.8.15-rev2-mac                             TARGETS azslc                       PACKAGE_HASH c3b1af29e5e83e299fe5e8103f2f5610307005fb52714c3bcda692ca9f8f480c)
 ly_associate_package(PACKAGE_NAME SQLite-3.37.2-rev2-mac                            TARGETS SQLite                      PACKAGE_HASH b7d9abdb68045003e030e1a9a805db1aefa5e8fde6dccfbb4fab3a06249a41fc)
 ly_associate_package(PACKAGE_NAME AwsIotDeviceSdkCpp-1.15.2-rev2-mac                TARGETS AwsIotDeviceSdkCpp          PACKAGE_HASH 4854edb7b88fa6437b4e69e87d0ee111a25313ac2a2db5bb2f8b674ba0974f95)

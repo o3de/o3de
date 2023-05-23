@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
@@ -18,6 +17,7 @@
 
 namespace AZ
 {
+    class ReflectContext;
     namespace SceneAPI
     {
         namespace Containers

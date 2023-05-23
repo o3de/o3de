@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <Source/EditorPrismaticJointComponent.h>
 #include <Source/PrismaticJointComponent.h>
@@ -178,7 +179,6 @@ namespace PhysX
             return;
         }
 
-        const float size = 1.0f;
         const float alpha = 0.6f;
         const AZ::Color colorDefault = AZ::Color(1.0f, 1.0f, 1.0f, alpha);
         const AZ::Color colorLimitLower = AZ::Color(1.0f, 0.0f, 0.0f, alpha);
@@ -190,16 +190,16 @@ namespace PhysX
 
         const AZ::EntityId& entityId = GetEntityId();
 
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
 
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(localTransform,
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue,
-            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
+        const float size = 1.0f * scaleMultiply;
+
+        debugDisplay.PushMatrix(jointWorldTransform);
 
         debugDisplay.SetColor(colorDefault);
         debugDisplay.DrawLine(AZ::Vector3::CreateAxisX(m_linearLimit.m_limitLower), AZ::Vector3::CreateAxisX(m_linearLimit.m_limitUpper));
@@ -218,8 +218,7 @@ namespace PhysX
             AZ::Vector3(m_linearLimit.m_limitUpper, size, size),
             AZ::Vector3(m_linearLimit.m_limitUpper, size, -size));
 
-        debugDisplay.PopMatrix(); // pop local transform
-        debugDisplay.PopMatrix(); // pop world transform
+        debugDisplay.PopMatrix(); // pop joint world transform
         debugDisplay.SetState(stateBefore);
     }
 } // namespace PhysX

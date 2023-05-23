@@ -13,8 +13,6 @@
       <file alias="show_in_explorer.svg">../../../../Assets/Editor/Icons/AssetImporter/show_in_explorer.svg</file>
     </qresource>
     <qresource prefix="/SceneUI/Common">
-      <file alias="WarningIcon.png">../../../../Assets/Editor/Styles/StyleSheetImages/info_icon.png</file>
-      <file alias="ErrorIcon.png">../../../../Assets/Editor/Styles/StyleSheetImages/error_icon.png</file>
       <file alias="AssertIcon.png">../../../../Assets/Editor/Icons/Assets/Lua.png</file>
       <file alias="WarningIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/logging/warning.svg</file>
       <file alias="ErrorIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/logging/error.svg</file>

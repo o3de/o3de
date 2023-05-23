@@ -103,7 +103,7 @@ namespace Physics
                 if (entity)
                 {
                     // Only immediately dispatch if the entity is already active, otherwise when
-                    // entity will get activated it will make the notifications itself.
+                    // entity will get activated it will send the notifications itself.
                     const AZ::Entity::State entityState = entity->GetState();
                     if (entityState == AZ::Entity::State::Active)
                     {

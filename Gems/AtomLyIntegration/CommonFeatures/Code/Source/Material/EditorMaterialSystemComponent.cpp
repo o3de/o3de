@@ -27,6 +27,8 @@
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <Editor/LyViewPaneNames.h>
 #include <Material/EditorMaterialComponentInspector.h>
 #include <Material/EditorMaterialSystemComponent.h>
@@ -44,6 +46,9 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option")
 #include <QPixmap>
 #include <QProcessEnvironment>
 AZ_POP_DISABLE_WARNING
+
+constexpr AZStd::string_view MaterialCanvasActionIdentifier = "o3de.action.tools.material_canvas";
+constexpr AZStd::string_view MaterialEditorActionIdentifier = "o3de.action.tools.material_editor";
 
 void InitMaterialEditorResources()
 {
@@ -361,71 +366,114 @@ namespace AZ
             const char* fullSourceFileName)
         {
             const AZStd::string_view path(fullSourceFileName);
+            if (path.ends_with("physxmaterial") || path.ends_with("physicsmaterial"))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/PhysXMaterial_80.svg");
+            }
             if (path.ends_with(AZ::RPI::MaterialSourceData::Extension))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/material.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/Material_80.svg");
             }
             if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
             }
-
             if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/MaterialGraph_80.svg");
+            }
+            if (path.ends_with(AZ::RPI::BufferAsset::Extension))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/BufferAsset_80.svg");
+            }
+            if (path.ends_with(AZ::RPI::ShaderAsset::Extension))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/Shader_80.svg");
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
         }
 
-        void EditorMaterialSystemComponent::OnMenuBindingHook()
+        void EditorMaterialSystemComponent::OnActionRegistrationHook()
         {
-            auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-            AZ_Assert(menuManagerInterface, "EditorMaterialSystemComponent - could not get MenuManagerInterface");
-
             auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            AZ_Assert(menuManagerInterface, "EditorMaterialSystemComponent - could not get ActionManagerInterface");
+            AZ_Assert(actionManagerInterface, "EditorMaterialSystemComponent - could not get ActionManagerInterface");
 
             auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
             AZ_Assert(hotKeyManagerInterface, "EditorMaterialSystemComponent - could not get HotKeyManagerInterface");
 
-            constexpr AZStd::string_view ActionContext = "o3de.context.editor.mainwindow";
-            constexpr AZStd::string_view MaterialEditorAction = "o3de.tools.material_editor";
-            constexpr AZStd::string_view ToolsMenuIdentifier = "o3de.menu.editor.tools";
+            {
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Material Editor";
+                actionProperties.m_iconPath = ":/Menu/material_editor.svg";
 
-            AzToolsFramework::ActionProperties actionProperties;
-            actionProperties.m_name = "Material Editor";
-            actionProperties.m_iconPath = ":/Menu/material_editor.svg";
-            auto outcome = actionManagerInterface->RegisterAction(ActionContext, MaterialEditorAction, actionProperties, [this]()
-                {
-                    OpenMaterialEditor("");
-                });
-            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorAction.data());
+                auto outcome = actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    MaterialEditorActionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        OpenMaterialEditor("");
+                    }
+                );
+                AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialEditorActionIdentifier.data());
 
-            outcome = menuManagerInterface->AddActionToMenu(ToolsMenuIdentifier, MaterialEditorAction, 100);
-            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialEditorAction.data(), ToolsMenuIdentifier.data());
+                hotKeyManagerInterface->SetActionHotKey(MaterialEditorActionIdentifier, "M");
+            }
 
-            outcome = hotKeyManagerInterface->SetActionHotKey(MaterialEditorAction, "M");
-            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialEditorAction.data());
+            {
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Material Canvas (Preview)";
+                actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
 
+                auto outcome = actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    MaterialCanvasActionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        OpenMaterialCanvas("");
+                    });
+                AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialCanvasActionIdentifier.data());
 
-            constexpr AZStd::string_view MaterialCanvasAction = "o3de.tools.material_canvas";
+                outcome = hotKeyManagerInterface->SetActionHotKey(MaterialCanvasActionIdentifier, "Ctrl+Shift+M");
+                AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialCanvasActionIdentifier.data());
+            }
 
-            actionProperties.m_name = "Material Canvas (Preview)";
-            actionProperties.m_iconPath = ":/Menu/material_canvas.svg";
-            outcome = actionManagerInterface->RegisterAction(ActionContext, MaterialCanvasAction, actionProperties, [this]()
-                {
-                    OpenMaterialCanvas("");
-                });
-            AZ_Assert(outcome.IsSuccess(), "Failed to RegisterAction %s", MaterialCanvasAction.data());
+        }
 
-            outcome = menuManagerInterface->AddActionToMenu(ToolsMenuIdentifier, MaterialCanvasAction, 101);
-            AZ_Assert(outcome.IsSuccess(), "Failed to AddAction %s to Menu %s", MaterialCanvasAction.data(), ToolsMenuIdentifier.data());
+        void EditorMaterialSystemComponent::OnMenuBindingHook()
+        {
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            AZ_Assert(actionManagerInterface, "EditorMaterialSystemComponent - could not get ActionManagerInterface");
 
-            outcome = hotKeyManagerInterface->SetActionHotKey(MaterialCanvasAction, "Ctrl+Shift+M");
-            AZ_Assert(outcome.IsSuccess(), "Failed to ActionHotKey for %s", MaterialCanvasAction.data());
+            auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+            AZ_Assert(menuManagerInterface, "EditorMaterialSystemComponent - could not get MenuManagerInterface");
 
+            {
+                auto outcome = menuManagerInterface->AddActionToMenu(
+                    EditorIdentifiers::ToolsMenuIdentifier,
+                    MaterialEditorActionIdentifier,
+                    actionManagerInterface->GenerateActionAlphabeticalSortKey(MaterialEditorActionIdentifier));
+                AZ_Assert(
+                    outcome.IsSuccess(),
+                    "Failed to AddAction %s to Menu %s",
+                    MaterialEditorActionIdentifier.data(),
+                    EditorIdentifiers::ToolsMenuIdentifier.data());
+            }
+
+            {
+                auto outcome = menuManagerInterface->AddActionToMenu(
+                    EditorIdentifiers::ToolsMenuIdentifier,
+                    MaterialCanvasActionIdentifier,
+                    actionManagerInterface->GenerateActionAlphabeticalSortKey(MaterialCanvasActionIdentifier));
+                AZ_Assert(
+                    outcome.IsSuccess(),
+                    "Failed to AddAction %s to Menu %s",
+                    MaterialCanvasActionIdentifier.data(),
+                    EditorIdentifiers::ToolsMenuIdentifier.data());
+            }
         }
 
         void EditorMaterialSystemComponent::PurgePreviews()

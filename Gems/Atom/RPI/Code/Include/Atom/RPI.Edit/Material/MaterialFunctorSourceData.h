@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
 
@@ -110,7 +109,7 @@ namespace AZ
                 //! Find a property's index by its name. It will report error and return a Null index if it fails.
                 //! This will also automatically apply the MaterialNameContext.
                 MaterialPropertyIndex FindMaterialPropertyIndex(Name propertyId) const;
-                
+
                 //! Returns the name context for the functor.
                 //! It acts like a namespace for any names that the MaterialFunctorSourceData might reference. The namespace
                 //! is automatically applied by the other relevant functions of this RuntimeContext class.
@@ -140,7 +139,7 @@ namespace AZ
 
             //! Returns a list of all shader options that this functor can set.
             virtual AZStd::vector<AZ::Name> GetShaderOptionDependencies() const { return {}; }
-            
+
             //! Returns a list of other assets that this functor depends on.
             //! Any change to one of these assets will trigger the .materialtype to rebuild.
             virtual AZStd::vector<AssetDependency> GetAssetDependencies() const { return {}; }

@@ -222,7 +222,7 @@ namespace AzToolsFramework
             virtual AZ::s32 GetPriority() const { return 0; }
 
             //! Notification that a context menu is about to be shown and offers an opportunity to add actions.
-            virtual void AddContextMenuActions(QWidget* /*caller*/, QMenu* /*menu*/, const AZStd::vector<AssetBrowserEntry*>& /*entries*/) {};
+            virtual void AddContextMenuActions(QWidget* /*caller*/, QMenu* /*menu*/, const AZStd::vector<const AssetBrowserEntry*>& /*entries*/) {};
 
             //! Implement AddSourceFileOpeners to provide your own editor for source files
             //! This gets called to collect the list of available openers for a file.

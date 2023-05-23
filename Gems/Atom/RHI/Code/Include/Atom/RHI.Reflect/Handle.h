@@ -108,6 +108,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Category, "RHI")
                     ->Attribute(AZ::Script::Attributes::Module, "rhi")
                     ->Method("IsValid", &Handle<T, NamespaceType>::IsValid)
+                    ->Method("GetIndex", &Handle<T, NamespaceType>::GetIndex)
                     ;
             }
         }

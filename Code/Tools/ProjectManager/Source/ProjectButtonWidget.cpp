@@ -186,6 +186,7 @@ namespace O3DE::ProjectManager
         // Seperate buttons are used to avoid stutter from reloading style after changing object name
         m_actionCancelButton = new QPushButton(tr("Cancel Project Action"), this);
         m_actionCancelButton->setObjectName("projectActionCancelButton");
+        m_actionCancelButton->setProperty("danger", true);
         m_actionCancelButton->setVisible(false);
         verticalButtonLayout->addWidget(m_actionCancelButton);
 
@@ -311,7 +312,12 @@ namespace O3DE::ProjectManager
             QHBoxLayout* hLayout = new QHBoxLayout();
             hLayout->setContentsMargins(0, 0, 0, 0);
 
-            m_projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
+            QString projectName = m_projectInfo.GetProjectDisplayName();
+            if (!m_projectInfo.m_version.isEmpty())
+            {
+                projectName +=" " + m_projectInfo.m_version;
+            }
+            m_projectNameLabel = new AzQtComponents::ElidingLabel(projectName, this);
             m_projectNameLabel->setObjectName("projectNameLabel");
             m_projectNameLabel->setToolTip(m_projectInfo.m_path);
             m_projectNameLabel->refreshStyle();

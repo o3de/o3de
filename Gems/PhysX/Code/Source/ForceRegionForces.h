@@ -9,9 +9,13 @@
 #pragma once
 
 #include <AzCore/Math/Spline.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <PhysX/ForceRegionComponentBus.h>
 #include <AzCore/Math/Aabb.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace PhysX
 {
@@ -84,13 +88,13 @@ namespace PhysX
         AZ::Vector3 CalculateForce(const EntityParams& entity, const RegionParams& region) const override;
 
         // BaseForce
-        void Activate(AZ::EntityId entityId) override 
-        { 
+        void Activate(AZ::EntityId entityId) override
+        {
             BaseForce::Activate(entityId);
             ForceWorldSpaceRequestBus::Handler::BusConnect(entityId);
         }
-        void Deactivate() override 
-        { 
+        void Deactivate() override
+        {
             ForceWorldSpaceRequestBus::Handler::BusDisconnect();
             BaseForce::Deactivate();
         }
@@ -142,7 +146,7 @@ namespace PhysX
         float m_magnitude = 10.0f;
     };
 
-    /// Class for a point force exerted on bodies in a force region. 
+    /// Class for a point force exerted on bodies in a force region.
     /// Bodies in a force region with a point force are repelled away from the center of the force region.
     class ForcePoint final
         : public BaseForce
@@ -268,12 +272,12 @@ namespace PhysX
         AZ::Vector3 CalculateForce(const EntityParams& entity, const RegionParams& region) const override;
 
         // BaseForce
-        void Activate(AZ::EntityId entityId) override 
-        { 
+        void Activate(AZ::EntityId entityId) override
+        {
             BaseForce::Activate(entityId);
             ForceLinearDampingRequestBus::Handler::BusConnect(entityId);
         }
-        void Deactivate() override 
+        void Deactivate() override
         {
             ForceLinearDampingRequestBus::Handler::BusDisconnect();
             BaseForce::Deactivate();

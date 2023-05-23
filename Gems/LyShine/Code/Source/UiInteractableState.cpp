@@ -58,7 +58,7 @@ UiInteractableStateAction::EntityComboBoxVec UiInteractableStateAction::Populate
     EntityComboBoxVec result;
 
     // add a first entry for "None"
-    result.push_back(AZStd::make_pair(m_interactableEntity, "<This element>"));
+    result.emplace_back(m_interactableEntity, "<This element>");
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;

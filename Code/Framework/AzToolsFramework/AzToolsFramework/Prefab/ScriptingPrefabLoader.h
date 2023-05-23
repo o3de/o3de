@@ -11,6 +11,8 @@
 #include <Prefab/PrefabLoaderInterface.h>
 #include <Prefab/PrefabLoaderScriptingBus.h>
 
+#include <AzCore/Memory/SystemAllocator.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -27,7 +29,7 @@ namespace AzToolsFramework
 
             void Connect(PrefabLoaderInterface* prefabLoaderInterface);
             void Disconnect();
-            
+
         private:
 
             //////////////////////////////////////////////////////////////////////////

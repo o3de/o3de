@@ -12,12 +12,15 @@
 
 namespace EMotionFX
 {
+    class FloatParameter;
+    AZ_TYPE_INFO_SPECIALIZE(FloatParameter, "{0F0B8531-0B07-4D9B-A8AC-3A32D15E8762}");
+
     class FloatParameter 
         : public RangedValueParameter<float, FloatParameter>
     {
         using BaseType = RangedValueParameter<float, FloatParameter>;
     public:
-        AZ_RTTI(FloatParameter, "{0F0B8531-0B07-4D9B-A8AC-3A32D15E8762}", ValueParameter);
+        AZ_RTTI_NO_TYPE_INFO_DECL()
         AZ_CLASS_ALLOCATOR_DECL
 
         FloatParameter()

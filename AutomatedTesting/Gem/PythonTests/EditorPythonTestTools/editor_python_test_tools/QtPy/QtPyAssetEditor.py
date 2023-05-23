@@ -8,14 +8,16 @@ Object to house all the Qt Objects and behavior used in testing the asset editor
 """
 
 from editor_python_test_tools.utils import TestHelper as helper
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore
 import pyside_utils
 import azlmbr.editor as editor
 import azlmbr.bus as bus
 import os
 from editor_python_test_tools.QtPy.QtPyCommon import QtPyCommon
 from consts.asset_editor import (ASSET_EDITOR_UI, EVENTS_QT, DEFAULT_SCRIPT_EVENT, DEFAULT_METHOD_NAME)
-from consts.general import (WAIT_TIME_SEC_3, SAVE_STRING)
+from consts.general import (WAIT_TIME_SEC_3, SAVE_STRING, NAME_STRING)
+from consts.scripting import (PARAMETERS_QT, INDICATOR_QT)
+
 
 
 class QtPyAssetEditor(QtPyCommon):
@@ -40,18 +42,79 @@ class QtPyAssetEditor(QtPyCommon):
 
         returns none
         """
-        add_event = self.asset_editor_row_container.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(
-            QtWidgets.QToolButton, "")
+        self.add_event_to_script_event()
 
-        assert add_event is not None, "Failed to add new method to script event."
-
-        add_event.click()
         helper.wait_for_condition(lambda: self.asset_editor_widget.findChild(
             QtWidgets.QFrame, DEFAULT_SCRIPT_EVENT) is not None, WAIT_TIME_SEC_3)
 
         self.expand_qt_container_rows(DEFAULT_SCRIPT_EVENT)
-        self.expand_qt_container_rows("Name")
+        self.expand_qt_container_rows(NAME_STRING)
         self.update_new_method_name(DEFAULT_METHOD_NAME, method_name)
+
+    def add_parameter_to_method(self, new_parameter_name: str, parameter_index = 0):
+        """
+        function for adding a new parameter to the script event method. This will need to be updated to support
+        adding parameters to specific events or adding multiple parameters to a method.
+
+        returns reference to the parameter's qtwidget
+        """
+        add_parameters_button = self.asset_editor_row_container.findChild(QtWidgets.QFrame, PARAMETERS_QT).findChild(
+            QtWidgets.QToolButton, "")
+        add_parameters_button.click()
+
+        self.__refresh_qt_references()
+
+        self.update_parameter_name("ParameterName", new_parameter_name, parameter_index)
+
+    def change_parameter_type(self, parameter_index: int, type_index: int)-> None:
+        """
+        function for changing the data type of the script event method's parameters
+
+        params parameter_index: the index of the method's parameters to target
+        params type_index: the index of the data type to change the parameter to
+        """
+
+        type_qframes = self.asset_editor_row_container.findChildren(QtWidgets.QFrame, "Type")
+
+        type_combo_boxes = []
+
+        for qframe in type_qframes:
+            combo_box = qframe.findChild(QtWidgets.QComboBox)
+            if combo_box:
+                type_combo_boxes.append(combo_box)
+
+        target_combo_box = type_combo_boxes[parameter_index]
+        target_combo_box.setCurrentIndex(type_index)
+
+        set_type = target_combo_box.currentIndex()
+
+        assert set_type is type_index, "Failed to set parameter type index."
+
+    def update_parameter_name(self, old_parameter_name: str,updated_parameter_name: str, parameter_index: int) -> None:
+        """
+        helper function for updating the name of a parameter in the list of method parameters. This also needs to
+        be updated if we are to support multiple parameters
+
+        param old_parameter_name: the name of the parameter to update
+        param updated_parameter_name: the new name you want the parameter to have
+
+        returns: None
+
+        """
+        self.expand_qt_container_rows(f"[{parameter_index}]")
+        self.expand_qt_container_rows(NAME_STRING)
+
+        line_edits = self.asset_editor_row_container.findChildren(QtWidgets.QLineEdit)
+
+        old_parameter_exists = False
+
+        for line_edit in line_edits:
+            if line_edit.text() == old_parameter_name:
+                old_parameter_exists = True
+                line_edit.setText(f"{updated_parameter_name}")
+                break
+
+        assert old_parameter_exists, f"Failed to find parameter {old_parameter_name} in Asset Editor."
 
     def update_new_method_name(self, old_method_name: str, updated_method_name: str) -> None:
         """
@@ -77,6 +140,22 @@ class QtPyAssetEditor(QtPyCommon):
 
         assert old_method_exists, f"Failed to find method {old_method_name} in Asset Editor."
         assert method_name_field == updated_method_name, "Failed to set method name in Asset Editor."
+
+    def delete_parameter_from_method(self, parameter_index: int) -> None:
+        """
+        function for deleting a parameter from a script event at an index.
+
+        param parameter_index: the index of the parameter to delete
+        """
+
+        parameter_qframe = self.asset_editor_row_container.findChild(QtWidgets.QFrame, f"[{parameter_index}]")
+
+        toolbuttons = parameter_qframe.findChildren(QtWidgets.QToolButton)
+        for button in toolbuttons:
+            if button.objectName() != INDICATOR_QT:
+                button.click()
+
+        assert toolbuttons is not None, "Failed to delete parameter from Script Event method."
 
     def delete_method_from_script_events(self, ) -> None:
         """
@@ -141,3 +220,33 @@ class QtPyAssetEditor(QtPyCommon):
         returns: None
         """
         super().expand_qt_container_rows(self.asset_editor_row_container, category_name)
+
+    def __refresh_qt_references(self):
+        """
+        Function for updating references to qt objects associated with the asset manager. Expanding/deleting stuff
+        from the list will cause the hierarchy to shift around so references can get stale, which makes interacting
+        with it unpredictable
+
+        returns: None
+        """
+        self.asset_editor_widget = self.asset_editor.findChild(QtWidgets.QWidget, "AssetEditorWindowClass")
+        helper.wait_for_condition(lambda: self.asset_editor_widget is not None, WAIT_TIME_SEC_3)
+        self.asset_editor_row_container = self.asset_editor_widget.findChild(QtWidgets.QWidget, "ContainerForRows")
+        helper.wait_for_condition(lambda: self.asset_editor_row_container is not None, WAIT_TIME_SEC_3)
+
+    def add_event_to_script_event(self):
+        """
+        Function for clicking the "+" button to add a script event to the script event asset. Also refreshes our
+        reference to the asset editor qt objects
+
+        returns None
+        """
+        add_event = self.asset_editor.findChild(QtWidgets.QFrame, EVENTS_QT).findChild(
+            QtWidgets.QToolButton, "")
+
+        assert add_event is not None, "Failed to add new method to script event."
+
+        add_event.click()
+        # refresh our handle on the asset editor widget since the qt object structure has changed
+        self.__refresh_qt_references()
+        

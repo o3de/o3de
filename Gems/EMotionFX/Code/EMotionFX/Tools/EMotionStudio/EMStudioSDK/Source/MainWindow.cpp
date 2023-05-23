@@ -53,9 +53,11 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/CommandSystem/Source/ActorCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphCommands.h>
@@ -150,6 +152,8 @@ namespace EMStudio
         m_textEdit->setText(text.c_str());
     }
 
+    constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
         : AzQtComponents::DockMainWindow(parent, flags)
         , m_prevSelectedActor(nullptr)
@@ -180,10 +184,16 @@ namespace EMStudio
         m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
         m_saveWorkspaceCallback          = nullptr;
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::AssignWidgetToActionContextHelper(AnimationEditorActionContextIdentifier, this);
     }
 
     MainWindow::~MainWindow()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        AzToolsFramework::RemoveWidgetFromActionContextHelper(AnimationEditorActionContextIdentifier, this);
+
         DisableUpdatingPlugins();
 
         if (m_nativeEventFilter)

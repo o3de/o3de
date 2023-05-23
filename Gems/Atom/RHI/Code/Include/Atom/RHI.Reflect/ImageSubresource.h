@@ -101,7 +101,8 @@ namespace AZ
                 uint32_t bytesPerRow,
                 uint32_t bytesPerImage,
                 uint32_t numBlocksWidth,
-                uint32_t numBlocksHeight);
+                uint32_t numBlocksHeight,
+                uint32_t offset = 0);
 
             /// The size of the image subresource in pixels. Certain formats have alignment requirements.
             /// Block compressed formats are 4 pixel aligned. Other non-standard formats may be 2 pixel aligned.
@@ -121,17 +122,8 @@ namespace AZ
             
             /// The number of blocks in height based on the texture fomat
             uint32_t m_blockElementHeight = 1;
-            
-        };
 
-        struct ImageSubresourceLayoutPlaced : ImageSubresourceLayout
-        {
-            AZ_TYPE_INFO(ImageSubresourceLayoutPlaced, "{38EFBB72-A539-4F1D-A710-565BF6527B6E}");
-            static void Reflect(AZ::ReflectContext* context);
-
-            ImageSubresourceLayoutPlaced() = default;
-            ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, uint32_t offset);
-
+            /// The number of bytes that image date is offset in a buffer.
             uint32_t m_offset = 0;
         };
 

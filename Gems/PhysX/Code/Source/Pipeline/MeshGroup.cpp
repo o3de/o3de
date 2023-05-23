@@ -594,7 +594,7 @@ namespace PhysX
                 serializeContext
             )
             {
-                serializeContext->Class<MeshGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(5, &MeshGroup::VersionConverter)
+                serializeContext->Class<MeshGroup, AZ::SceneAPI::DataTypes::ISceneNodeGroup>()->Version(6)
                     ->Field("id", &MeshGroup::m_id)
                     ->Field("name", &MeshGroup::m_name)
                     ->Field("NodeSelectionList", &MeshGroup::m_nodeSelectionList)
@@ -827,92 +827,6 @@ namespace PhysX
         bool MeshGroup::GetDecomposeMeshesVisibility() const
         {
             return GetExportAsConvex() || GetExportAsPrimitive();
-        }
-
-        bool MeshGroup::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
-        {
-            // Remove the material rule.
-            if (classElement.GetVersion() < 1)
-            {
-                if (
-                    int ruleContainerNodeIndex = classElement.FindElement(AZ_CRC_CE("rules"));
-                    ruleContainerNodeIndex >= 0
-                )
-                {
-                    AZ::SerializeContext::DataElementNode& ruleContainerNode = classElement.GetSubElement(ruleContainerNodeIndex);
-                    AZ::SceneAPI::Containers::RuleContainer ruleContainer;
-                    if (ruleContainerNode.GetData<AZ::SceneAPI::Containers::RuleContainer>(ruleContainer))
-                    {
-                        auto materialRule = ruleContainer.FindFirstByType<AZ::SceneAPI::SceneData::MaterialRule>();
-                        ruleContainer.RemoveRule(materialRule);
-                    }
-
-                    ruleContainerNode.SetData<AZ::SceneAPI::Containers::RuleContainer>(context, ruleContainer);
-                }
-            }
-
-            // Move fields to sub-classes.
-            if (classElement.GetVersion() < 2)
-            {
-                auto readAndRemoveElement = [&](const AZ::u32 crc, auto& dst) {
-                    if (
-                        int index = classElement.FindElement(crc);
-                        index >= 0
-                    )
-                    {
-                        classElement.GetSubElement(index).GetData(dst);
-                        classElement.RemoveElement(index);
-                    }
-                };
-
-                // Triangle mesh asset parameters.
-                TriangleMeshAssetParams triangleMeshAssetParams;
-                readAndRemoveElement(AZ_CRC_CE("MergeMeshes"), triangleMeshAssetParams.m_mergeMeshes);
-                readAndRemoveElement(AZ_CRC_CE("WeldVertices"), triangleMeshAssetParams.m_weldVertices);
-                readAndRemoveElement(AZ_CRC_CE("DisableCleanMesh"), triangleMeshAssetParams.m_disableCleanMesh);
-                readAndRemoveElement(AZ_CRC_CE("Force32BitIndices"), triangleMeshAssetParams.m_force32BitIndices);
-                readAndRemoveElement(AZ_CRC_CE("SuppressTriangleMeshRemapTable"), triangleMeshAssetParams.m_suppressTriangleMeshRemapTable);
-                readAndRemoveElement(AZ_CRC_CE("BuildTriangleAdjacencies"), triangleMeshAssetParams.m_buildTriangleAdjacencies);
-                readAndRemoveElement(AZ_CRC_CE("MeshWeldTolerance"), triangleMeshAssetParams.m_meshWeldTolerance);
-                readAndRemoveElement(AZ_CRC_CE("NumTrisPerLeaf"), triangleMeshAssetParams.m_numTrisPerLeaf);
-                classElement.AddElementWithData(context, "TriangleMeshAssetParams", triangleMeshAssetParams);
-
-                // Convex asset parameters.
-                ConvexAssetParams convexAssetParams;
-                readAndRemoveElement(AZ_CRC_CE("AreaTestEpsilon"), convexAssetParams.m_areaTestEpsilon);
-                readAndRemoveElement(AZ_CRC_CE("PlaneTolerance"), convexAssetParams.m_planeTolerance);
-                readAndRemoveElement(AZ_CRC_CE("Use16bitIndices"), convexAssetParams.m_use16bitIndices);
-                readAndRemoveElement(AZ_CRC_CE("CheckZeroAreaTriangles"), convexAssetParams.m_checkZeroAreaTriangles);
-                readAndRemoveElement(AZ_CRC_CE("QuantizeInput"), convexAssetParams.m_quantizeInput);
-                readAndRemoveElement(AZ_CRC_CE("UsePlaneShifting"), convexAssetParams.m_usePlaneShifting);
-                readAndRemoveElement(AZ_CRC_CE("ShiftVertices"), convexAssetParams.m_shiftVertices);
-                readAndRemoveElement(AZ_CRC_CE("GaussMapLimit"), convexAssetParams.m_gaussMapLimit);
-                readAndRemoveElement(AZ_CRC_CE("BuildGpuData"), convexAssetParams.m_buildGpuData);
-                classElement.AddElementWithData(context, "ConvexAssetParams", convexAssetParams);
-
-                // Convex asset parameters. The volume term coefficient must be converted explicitly.
-                PrimitiveAssetParams primitiveAssetParams;
-                readAndRemoveElement(AZ_CRC_CE("PrimitiveShapeTarget"), primitiveAssetParams.m_primitiveShapeTarget);
-                if (
-                    int index = classElement.FindElement(AZ_CRC_CE("VolumeTermCoefficient"));
-                    index >= 0
-                )
-                {
-                    AZ::u32 oldValue = 0;
-                    classElement.GetSubElement(index).GetData(oldValue);
-                    classElement.RemoveElement(index);
-                    primitiveAssetParams.m_volumeTermCoefficient = oldValue * 2.0e-5f;
-                }
-                classElement.AddElementWithData(context, "PrimitiveAssetParams", primitiveAssetParams);
-
-                // Convert 'export as convex' to 'export method'
-                // export as primitive was not previously available
-                bool exportAsConvex;
-                readAndRemoveElement(AZ::Crc32("export as convex"), exportAsConvex);
-                classElement.AddElementWithData(context, "export method", exportAsConvex ? MeshExportMethod::Convex : MeshExportMethod::TriMesh);
-            }
-
-            return true;
         }
     }
 }

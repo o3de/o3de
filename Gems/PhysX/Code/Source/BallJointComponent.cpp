@@ -11,6 +11,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -30,7 +31,7 @@ namespace PhysX
     }
 
     BallJointComponent::BallJointComponent(
-        const JointComponentConfiguration& configuration, 
+        const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties,
         const JointLimitProperties& limitProperties)
         : JointComponent(configuration, genericProperties, limitProperties)
@@ -64,7 +65,7 @@ namespace PhysX
                 "PhysX", "Entity [%s] Ball Joint component missing lead entity. This joint will be a global constraint on the follower's global position.",
                 GetEntity()->GetName().c_str());
         }
-        
+
 
         BallJointConfiguration configuration;
         configuration.m_parentLocalPosition = leadFollowerInfo.m_leadLocal.GetTranslation();
@@ -79,7 +80,7 @@ namespace PhysX
         {
             m_jointHandle = sceneInterface->AddJoint(
                 leadFollowerInfo.m_followerBody->m_sceneOwner,
-                &configuration,  
+                &configuration,
                 parentHandle,
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;

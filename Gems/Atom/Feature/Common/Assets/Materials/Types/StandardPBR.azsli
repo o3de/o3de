@@ -86,7 +86,7 @@
     
     #include "Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli"
 
-    void EvaluateSurface(PixelGeometryData geoData)
+    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     {
         GetAlphaAndClip(geoData.uvs);
     }

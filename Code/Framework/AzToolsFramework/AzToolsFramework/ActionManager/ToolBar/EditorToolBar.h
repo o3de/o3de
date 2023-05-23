@@ -17,6 +17,8 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/string.h>
 
+#include <QEvent>
+#include <QMouseEvent>
 #include <QWidgetAction>
 
 class QAction;
@@ -30,6 +32,23 @@ namespace AzToolsFramework
     class MenuManagerInterface;
     class MenuManagerInternalInterface;
     class ToolBarManagerInterface;
+
+    //! A watcher class to handle the expander menu for a toolbar.
+    class ToolBarExpanderWatcher : public QObject
+    {
+    public:
+        explicit ToolBarExpanderWatcher(QObject* parent);
+
+        static void Initialize();
+
+    private:
+        bool eventFilter(QObject* obj, QEvent* event) override;
+
+        inline static ActionManagerInterface* s_actionManagerInterface = nullptr;
+        inline static ActionManagerInternalInterface* s_actionManagerInternalInterface = nullptr;
+        inline static MenuManagerInterface* s_menuManagerInterface = nullptr;
+        inline static MenuManagerInternalInterface* s_menuManagerInternalInterface = nullptr;
+    };
 
     //! Editor ToolBar class definitions.
     //! Wraps a QToolBar and provides additional functionality to handle and sort its items.

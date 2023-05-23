@@ -41,6 +41,10 @@
                 "Path": "Passes/MainPipeline.pass"
             },
             {
+                "Name": "CameraPipeline",
+                "Path": "Passes/CameraPipeline.pass"
+            },
+            {
                 "Name": "MainPipelineRenderToTexture",
                 "Path": "Passes/MainPipelineRenderToTexture.pass"
             },
@@ -91,6 +95,10 @@
             {
                 "Name": "SkyViewLUTTemplate",
                 "Path": "Passes/SkyViewLUT.pass"
+            },
+            {
+                "Name": "SkyVolumeLUTTemplate",
+                "Path": "Passes/SkyVolumeLUT.pass"
             },
             {
                 "Name": "SkyRayMarchingTemplate",
@@ -353,6 +361,10 @@
                 "Path": "Passes/ReflectionScreenSpace.pass"
             },
             {
+                "Name": "ReflectionScreenSpaceRayTracingPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceRayTracing.pass"
+            },
+            {
                 "Name": "ReflectionScreenSpaceTracePassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceTrace.pass"
             },
@@ -367,6 +379,14 @@
             {
                 "Name": "ReflectionScreenSpaceBlurHorizontalPassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceBlurHorizontal.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceFilterPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceFilter.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceCopyHistoryPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceCopyHistory.pass"
             },
             {
                 "Name": "ReflectionScreenSpaceCompositePassTemplate",
@@ -535,6 +555,14 @@
             {
                 "Name": "ChromaticAberrationTemplate",
                 "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "SplashScreenPassTemplate",
+                "Path": "Passes/SplashScreen.pass"
+            },
+            {
+                "Name": "TaaParentTemplate",
+                "Path": "Passes/TaaParent.pass"
             }
         ]
     }

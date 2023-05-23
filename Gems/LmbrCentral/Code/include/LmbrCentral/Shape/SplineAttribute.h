@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/Color.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
 #include <LmbrCentral/Shape/SplineComponentBus.h>
@@ -38,7 +37,7 @@ namespace LmbrCentral
     using SplineAttributeNotificationBus = AZ::EBus<SplineAttributeNotifications>;
 
     /// @brief Attributes are used to attach auxilary data to each vertex in a spline.
-    /// @description The elements of the attribute are of homogenous type. New elements can not be added or removed 
+    /// @description The elements of the attribute are of homogenous type. New elements can not be added or removed
     /// manually as the number of elements always matches the number of vertices in the spline.
     template<typename AttributeType>
     class SplineAttribute
@@ -55,7 +54,7 @@ namespace LmbrCentral
         void Activate(AZ::EntityId entityId);
         void Deactivate();
 
-        /// Interpolation function. 
+        /// Interpolation function.
         using Interpolator = AZStd::function<AttributeType(AttributeType, AttributeType, float)>;
 
         /// Sets an element in the spline attribute.

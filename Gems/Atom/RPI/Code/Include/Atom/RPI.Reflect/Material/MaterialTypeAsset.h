@@ -31,7 +31,7 @@ namespace AZ
         class UvNamePair final
         {
         public:
-            AZ_RTTI(AZ::RPI::MaterialTypeAsset, "{587D2902-B236-41B6-8F7B-479D891CC3F3}");
+            AZ_RTTI(UvNamePair, "{587D2902-B236-41B6-8F7B-479D891CC3F3}");
             static void Reflect(ReflectContext* context);
 
             UvNamePair() = default;
@@ -151,6 +151,8 @@ namespace AZ
             //! @return true if the property was renamed
             bool ApplyPropertyRenames(Name& propertyId) const;
 
+            bool InitializeNonSerializedData();
+
         private:
 
             bool PostLoadInit() override;
@@ -200,6 +202,8 @@ namespace AZ
 
             //! Contains actions to perform for each material update version.
             MaterialVersionUpdates m_materialVersionUpdates;
+
+            bool m_isNonSerializedDataInitialized = false;
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>

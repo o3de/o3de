@@ -74,7 +74,7 @@ namespace AZ
         ResultCode StreamingImagePool::Init(Device& device, const StreamingImagePoolDescriptor& descriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
-
+            SetName(AZ::Name("StreamingImagePool"));
             return ResourcePool::Init(
                 device, descriptor,
                 [this, &device, &descriptor]()

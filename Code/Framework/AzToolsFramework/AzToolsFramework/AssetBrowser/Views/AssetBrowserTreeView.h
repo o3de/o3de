@@ -31,7 +31,9 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserModel;
+        class AssetBrowserTableView;
         class AssetBrowserFilterModel;
+        class AssetBrowserThumbnailView;
         class EntryDelegate;
 
         class AssetBrowserTreeView
@@ -66,7 +68,7 @@ namespace AzToolsFramework
             //! Gets the selected entries.  if includeProducts is false, it will only
             //! count sources and folders - many common operations such as deleting, renaming, etc,
             //! can only work on sources and folders.
-            AZStd::vector<AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
+            AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
             void SelectFolder(AZStd::string_view folderPath);
 
@@ -75,6 +77,8 @@ namespace AzToolsFramework
             void DuplicateEntries();
             void MoveEntries();
             void AfterRename(QString newVal);
+
+            void SelectFileAtPathAfterUpdate(const AZStd::string& assetPath);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
@@ -101,6 +105,13 @@ namespace AzToolsFramework
 
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
+            void SetShowIndexAfterUpdate(QModelIndex index);
+
+            void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
+            void SetAttachedTableView(AssetBrowserTableView* tableView);
+
+            void SetApplySnapshot(bool applySnapshot);
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -108,9 +119,11 @@ namespace AzToolsFramework
 
         public Q_SLOTS:
             void OpenItemForEditing(const QModelIndex& index);
+            void OnContextMenu(const QPoint& point);
 
         protected:
             QModelIndexList selectedIndexes() const override;
+            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
@@ -123,10 +136,18 @@ namespace AzToolsFramework
 
             bool m_expandToEntriesByDefault = false;
 
+            bool m_applySnapshot = true;
+
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
 
+            AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
+            AssetBrowserTableView* m_attachedTableView = nullptr;
+
             QString m_name;
+
+            QModelIndex m_indexToSelectAfterUpdate;
+            AZStd::string m_fileToSelectAfterUpdate = "";
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0, bool useDisplayName = false);
@@ -138,8 +159,6 @@ namespace AzToolsFramework
             void AddSourceFileCreators(const char* fullSourceFolderName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators) override;
 
         private Q_SLOTS:
-            void OnContextMenu(const QPoint& point);
-
             //! Get all visible source entries and place them in a queue to update their source control status
             void OnUpdateSCThumbnailsList();
         };

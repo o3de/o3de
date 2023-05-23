@@ -9,6 +9,8 @@
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -22,6 +24,13 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
+
+#include <AzCore/JSON/document.h>
+#include <AzCore/JSON/stringbuffer.h>
+#include <AzCore/JSON/pointer.h>
+#include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <inttypes.h>
 
@@ -1375,8 +1384,8 @@ namespace AZ
         void ImGuiGpuMemoryView::PerformCapture()
         {
             // Collect and save new GPU memory usage data
-            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-            const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
+            RHI::RHIMemoryStatisticsInterface* rhiMemStats = RHI::RHIMemoryStatisticsInterface::Get();
+            const auto* memoryStatistics = rhiMemStats->GetMemoryStatistics();
             if (memoryStatistics)
             {
                 m_savedPools = memoryStatistics->m_pools;
@@ -1413,7 +1422,7 @@ namespace AZ
 
                 ImGui::SameLine();
 
-                if (ImGui::Button("Save to CSV"))
+                if (ImGui::Button("Save"))
                 {
                     if (m_savedPools.empty())
                     {
@@ -1421,11 +1430,11 @@ namespace AZ
                         PerformCapture();
                     }
 
-                    SaveToCSV();
+                    SaveToJSON();
                 }
                 ImGui::SameLine();
                 constexpr static const char* LoadMemoryCaptureTitle = "Select or input memory capture csv file";
-                if (ImGui::Button("Load from CSV"))
+                if (ImGui::Button("Load"))
                 {
                     m_captureInput[0] = '\0';
                     m_captureSelection = 0;
@@ -1444,6 +1453,13 @@ namespace AZ
                     auto* base = AZ::IO::FileIOBase::GetInstance();
                     base->FindFiles(
                         m_memoryCapturePath.c_str(), "*.csv",
+                        [&captures](const char* path)
+                        {
+                            captures.emplace_back(path);
+                            return true;
+                        });
+                    base->FindFiles(
+                        m_memoryCapturePath.c_str(), "*.json",
                         [&captures](const char* path)
                         {
                             captures.emplace_back(path);
@@ -1489,7 +1505,14 @@ namespace AZ
 
                         if (ImGui::Button("Open"))
                         {
-                            LoadFromCSV(captures[m_captureSelection].c_str());
+                            if (captures[m_captureSelection].Extension() == ".csv")
+                            {
+                                LoadFromCSV(captures[m_captureSelection].c_str());
+                            }
+                            else if (captures[m_captureSelection].Extension() == ".json")
+                            {
+                                LoadFromJSON(captures[m_captureSelection].c_str());
+                            }
                             ImGui::CloseCurrentPopup();
                         }
                     }
@@ -1687,13 +1710,7 @@ namespace AZ
             }
         }
 
-        static constexpr const char* MemoryCSVHeader =
-            "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
-            "1 == Texture), Byte Size, Flags\n";
-        static constexpr const char* MemoryCSVRowFormat = "%s, %i, %s, %i, %zu, %" PRIu32 "\n";
-        static constexpr size_t MemoryCSVFieldCount = 6;
-
-        void ImGuiGpuMemoryView::SaveToCSV()
+        void ImGuiGpuMemoryView::SaveToJSON()
         {
             time_t ltime;
             time(&ltime);
@@ -1705,56 +1722,58 @@ namespace AZ
 #endif
             char sTemp[128];
             strftime(sTemp, sizeof(sTemp), "%Y%m%d.%H%M%S", &today);
+            AZStd::string filename = AZStd::string::format("%s/GpuMemoryCapture_%s.json", m_memoryCapturePath.c_str(), sTemp);
 
-            AZStd::string filename = AZStd::string::format("%s/AtomMemory_%s.csv", m_memoryCapturePath.c_str(), sTemp);
-
-            AZ::IO::SystemFile fileOut;
-            if (!fileOut.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
+            AZ::IO::SystemFile outputFile;
+            if (!outputFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
             {
                 m_captureMessage = AZStd::string::format("Failed to open file %s for writing", filename.c_str());
                 AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
-            AZStd::string line = MemoryCSVHeader;
+            rapidjson::Document doc;
 
-            fileOut.Write(line.data(), line.size());
+            AZ::RHI::RHIMemoryStatisticsInterface::Get()->WriteResourcePoolInfoToJson(m_savedPools, doc);
 
-            // Iterate through each resource pool and save individual allocations as separate rows in the CSV file
-            for (const auto& pool : m_savedPools)
-            {
-                int memoryType = 0;
-                if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host).m_totalResidentInBytes > 0)
-                {
-                    memoryType = 0;
-                }
-                else if (pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes > 0)
-                {
-                    memoryType = 1;
-                }
-                else
-                {
-                    continue;
-                }
+            rapidjson::StringBuffer jsonStringBuffer;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(jsonStringBuffer);
+            doc.Accept(writer);
 
-                for (const auto& buffer : pool.m_buffers)
-                {
-                    line = AZStd::string::format(
-                        MemoryCSVRowFormat, pool.m_name.GetCStr(), memoryType, buffer.m_name.GetCStr(), 0, buffer.m_sizeInBytes,
-                        static_cast<uint32_t>(buffer.m_bindFlags));
-                    fileOut.Write(line.data(), line.size());
-                }
-
-                for (const auto& image : pool.m_images)
-                {
-                    line = AZStd::string::format(
-                        MemoryCSVRowFormat, pool.m_name.GetCStr(), memoryType, image.m_name.GetCStr(), 1, image.m_sizeInBytes,
-                        static_cast<uint32_t>(image.m_bindFlags));
-                    fileOut.Write(line.data(), line.size());
-                }
-            }
+            outputFile.Write(jsonStringBuffer.GetString(), jsonStringBuffer.GetSize());
+            outputFile.Close();
 
             m_captureMessage = AZStd::string::format("Wrote memory capture to %s", filename.c_str());
+        }
+
+        void ImGuiGpuMemoryView::LoadFromJSON(const AZStd::string& fileName)
+        {
+            m_loadedCapturePath.clear();
+
+            auto serializeOutcome = JsonSerializationUtils::ReadJsonFile(fileName);
+
+            if (!serializeOutcome.IsSuccess())
+            {
+                m_captureMessage = AZStd::string::format("Failed to load memory data from %s, error message = \"%s\"", 
+                                                        fileName.c_str(), serializeOutcome.GetError().c_str());
+                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                return;
+            }
+
+            m_loadedCapturePath = fileName;
+            rapidjson::Document& doc = serializeOutcome.GetValue();
+
+            auto loadOutcome = AZ::RHI::RHIMemoryStatisticsInterface::Get()->LoadResourcePoolInfoFromJson(
+                                                m_savedPools, m_savedHeaps, doc, fileName);
+            if (!loadOutcome.IsSuccess())
+            {
+                m_captureMessage = loadOutcome.GetError();
+                return;
+            }
+
+            // load from json here
+            UpdateTableRows();
+            UpdateTreemaps();
         }
 
 
@@ -1803,6 +1822,10 @@ namespace AZ
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
+        static constexpr const char* MemoryCSVHeader =
+            "Pool Name, Memory Type (0 == Host : 1 == Device), Allocation Name, Allocation Type (0 == Buffer : "
+            "1 == Texture), Byte Size, Flags\n";
+        static constexpr size_t MemoryCSVFieldCount = 6;
 
         void ImGuiGpuMemoryView::LoadFromCSV(const AZStd::string& fileName)
         {

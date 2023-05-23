@@ -7,6 +7,7 @@
 # {END_LICENSE}
 
 set(FILES
+    Source/${Name}ModuleInterface.cpp
     Source/${Name}ModuleInterface.h
     Source/Unified/${Name}SystemComponent.cpp
     Source/Unified/${Name}SystemComponent.h

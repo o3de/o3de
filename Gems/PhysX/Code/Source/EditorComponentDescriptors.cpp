@@ -8,8 +8,10 @@
 
 #include <Source/EditorComponentDescriptors.h>
 
+#include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorBallJointComponent.h>
 #include <Source/EditorColliderComponent.h>
+#include <Source/EditorMeshColliderComponent.h>
 #include <Source/EditorFixedJointComponent.h>
 #include <Source/EditorForceRegionComponent.h>
 #include <Source/EditorHeightfieldColliderComponent.h>
@@ -36,6 +38,7 @@ namespace PhysX
             EditorCharacterControllerComponent::CreateDescriptor(),
             EditorCharacterGameplayComponent::CreateDescriptor(),
             EditorColliderComponent::CreateDescriptor(),
+            EditorMeshColliderComponent::CreateDescriptor(),
             EditorFixedJointComponent::CreateDescriptor(),
             EditorForceRegionComponent::CreateDescriptor(),
             EditorHeightfieldColliderComponent::CreateDescriptor(),
@@ -46,6 +49,7 @@ namespace PhysX
             EditorStaticRigidBodyComponent::CreateDescriptor(),
             EditorShapeColliderComponent::CreateDescriptor(),
             EditorSystemComponent::CreateDescriptor(),
+            EditorArticulationLinkComponent::CreateDescriptor(),
             Pipeline::MeshBehavior::CreateDescriptor(),
             Pipeline::MeshExporter::CreateDescriptor()
         };

@@ -72,7 +72,7 @@ namespace AZ::Debug
     AZ_CVAR(
         bool,
         bg_assertsAutoBreak,
-        false,
+        true,
         nullptr,
         ConsoleFunctorFlags::Null,
         "Automatically break on assert when the debugger is attached. 0=disabled, 1=enabled.");
@@ -603,7 +603,8 @@ namespace AZ::Debug
 
         // If the raw output stream environment variable is set to a non-nullptr FILE* stream
         // write to that stream, otherwise write stdout
-        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdout; rawOutputStream != nullptr)
+        FILE* stdoutStream = stdout;
+        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdoutStream; rawOutputStream != nullptr)
         {
             fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
             fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);
@@ -643,7 +644,9 @@ namespace AZ::Debug
                     continue;
                 }
 
-                azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
+                const size_t endOfStr = AZStd::min(strlen(lines[i]), AZ_ARRAY_SIZE(lines[i]) - 2);
+                lines[i][endOfStr] = '\n';
+                lines[i][endOfStr + 1] = '\0';
 
                 // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
                 // this accidentally being suppressed as a normal message

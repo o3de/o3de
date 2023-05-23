@@ -275,7 +275,7 @@ namespace AtomToolsFramework
         }, {});
 
         makeSeperator("menuView");
-        m_actionPresetEditor = makeAction("menuView", tr("Preset Editor"), [this](){ OpenPresetsEditor(); }, {});
+        m_actionPresetEditor = makeAction("menuView", tr("Presets Editor"), [this](){ OpenPresetsEditor(); }, {});
 
         makeSeperator("menuView");
         m_actionShowEntireGraph = makeAction("menuView", tr("Show Entire Graph"), [this](){
@@ -672,7 +672,7 @@ namespace AtomToolsFramework
                     {
                         GraphCanvas::SceneRequestBus::Event(m_activeGraphId, &GraphCanvas::SceneRequests::ClearSelection);
                         GraphCanvas::VisualRequestBus::Event(nodeId, &GraphCanvas::VisualRequests::SetVisible, true);
-
+                        GraphCanvas::SceneMemberUIRequestBus::Event(nodeId, &GraphCanvas::SceneMemberUIRequests::SetSelected, true);
                         GraphCanvas::SceneNotificationBus::Event(m_activeGraphId, &GraphCanvas::SceneNotifications::PostCreationEvent);
                     }
                 }

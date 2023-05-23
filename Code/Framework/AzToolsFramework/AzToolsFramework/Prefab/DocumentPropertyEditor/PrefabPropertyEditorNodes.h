@@ -12,8 +12,13 @@
 
 namespace AzToolsFramework::Prefab::PrefabPropertyEditorNodes
 {
-    struct PrefabOverrideProperty : AZ::DocumentPropertyEditor::NodeDefinition
+    struct PrefabOverrideLabel : AZ::DocumentPropertyEditor::NodeDefinition
     {
-        static constexpr AZStd::string_view Name = "PrefabOverrideProperty";
+        static constexpr AZStd::string_view Name = "PrefabOverrideLabel";
+        static constexpr auto Text = AZ::DocumentPropertyEditor::AttributeDefinition<AZStd::string_view>("Text");
+        static constexpr auto IsOverridden = AZ::DocumentPropertyEditor::AttributeDefinition<bool>("IsOverridden");
+        static constexpr auto RelativePath = AZ::DocumentPropertyEditor::AttributeDefinition<AZStd::string_view>("RelativePath");
+        static constexpr auto RevertOverride =
+            AZ::DocumentPropertyEditor::CallbackAttributeDefinition<void(AZStd::string_view)>("RevertOverride");
     };
 } // namespace AzToolsFramework::Prefab::PrefabPropertyEditorNodes

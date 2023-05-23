@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <ACES/Aces.h>
 
 namespace AZ

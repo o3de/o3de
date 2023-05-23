@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <TestRunner/Python/TestImpactPythonRegularTestRunnerBase.h>

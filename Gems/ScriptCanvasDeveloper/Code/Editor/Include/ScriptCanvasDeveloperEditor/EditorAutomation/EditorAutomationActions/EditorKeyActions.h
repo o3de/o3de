@@ -40,8 +40,8 @@ namespace ScriptCanvas::Developer
         
     private:
     
-        AZ::u32 m_keyValue;
-        KeyAction m_keyAction;
+        [[maybe_unused]] AZ::u32 m_keyValue;
+        [[maybe_unused]] KeyAction m_keyAction;
     };
 
     /**

@@ -134,7 +134,6 @@ namespace ScriptCanvas
             void CleanupConnection();
 
             Mutex m_mutex;
-            bool m_breakOnNext = true;
 
             AzFramework::RemoteToolsEndpointInfo m_selfTarget;
 

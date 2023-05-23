@@ -1044,7 +1044,8 @@ namespace TextureAtlasBuilder
 
             // The Image Processing Gem can produce multiple output files under certain
             // circumstances, but the texture atlas is not expected to produce such output
-            if (outProducts.size() > 1)
+            // There should only be the texture atlas and its abdata file
+            if (outProducts.size() > 2)
             {
                 AZ_Error("AtlasBuilder", false, "Image processing resulted in multiple output files. Texture atlas is expected to produce one output.");
                 response.m_outputProducts.clear();

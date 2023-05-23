@@ -158,7 +158,6 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasRootPaletteTreeItem::ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel)
             : GraphCanvas::NodePaletteTreeItem("root", ScriptCanvasEditor::AssetEditorId)
-            , m_nodePaletteModel(nodePaletteModel)
             , m_assetModel(assetModel)
             , m_categorizer(nodePaletteModel)
         {

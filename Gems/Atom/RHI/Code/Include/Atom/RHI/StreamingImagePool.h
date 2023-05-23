@@ -124,7 +124,7 @@ namespace AZ
             //! User could provide such a callback function which releases some resources from the pool
             //! If some resources are released, the function may return true.
             //! If nothing is released, the function should return false.
-            using LowMemoryCallback = AZStd::function<bool()>;
+            using LowMemoryCallback = AZStd::function<bool(size_t targetMemoryUsage)>;
             void SetLowMemoryCallback(LowMemoryCallback callback);
             
             //! Set memory budget

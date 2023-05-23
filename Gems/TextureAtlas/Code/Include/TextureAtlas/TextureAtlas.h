@@ -9,11 +9,15 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <AtomCore/Instance/Instance.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace TextureAtlasNamespace
 {

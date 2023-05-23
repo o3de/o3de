@@ -12,55 +12,57 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_MaterialGraphName(geoData)
+#define EvaluateSurface EvaluateSurface_MaterialGraphName
 #endif
 
 #include <Atom/Features/MatrixUtility.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 Surface EvaluateSurface_MaterialGraphName(
+    VsOutput IN,
     float3 positionWS,
-    float3 vertexNormal,
-    float3 tangents[UvSetCount],
-    float3 bitangents[UvSetCount],
+    real3 normalWS,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
-    #define O3DE_MC_POSITION positionWS
+    const float3 bitangent = cross((float3)IN.normal, (float3)IN.tangent);
+    const float3 O3DE_MC_POSITION = (float3)IN.position;
+    const float3 O3DE_MC_NORMAL = (float3)IN.normal;
+    const float3 O3DE_MC_TANGENT = (float3)IN.tangent;
+    const float3 O3DE_MC_BITANGENT = (float3)bitangent;
+    const float3 O3DE_MC_POSITION_WS = positionWS;
+    const float3 O3DE_MC_NORMAL_WS = normalWS;
+    const float3 O3DE_MC_TANGENT_WS = tangents[0];
+    const float3 O3DE_MC_BITANGENT_WS = bitangents[0];
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
-    #define O3DE_MC_NORMAL vertexNormal
-    #define O3DE_MC_TANGENT tangents[0]
-    #define O3DE_MC_BITANGENT bitangents[0]
-    #define O3DE_MC_WORLD_POSITION positionWS
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
-    float3 inNormal = vertexNormal;
-    float3 inBaseColor = {1.0, 1.0, 1.0};
-    float inMetallic = 0.0;
-    float inRoughness = 0.0;
-    float inSpecularF0Factor = 0.0;
+    real3 inNormal = normalWS;
+    real3 inBaseColor = {1.0, 1.0, 1.0};
+    real inMetallic = 0.0;
+    real inRoughness = 0.0;
+    real inSpecularF0Factor = 0.0;
     // O3DE_GENERATED_INSTRUCTIONS_END
 
-    #undef O3DE_MC_POSITION
     #undef O3DE_MC_UV
-    #undef O3DE_MC_NORMAL
-    #undef O3DE_MC_TANGENT
-    #undef O3DE_MC_BITANGENT
-    #undef O3DE_MC_WORLD_POSITION
 
     Surface surface;
     surface.position = positionWS;
-    surface.vertexNormal = vertexNormal;
-    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((float2)inNormal, vertexNormal, tangents[0], bitangents[0]) : vertexNormal);
+    surface.vertexNormal = normalWS;
+    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();
     return surface;
 }
 
-Surface EvaluateSurface_MaterialGraphName(PixelGeometryData geoData)
+Surface EvaluateSurface_MaterialGraphName(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_MaterialGraphName(
+        IN,
         geoData.positionWS,
         geoData.vertexNormal,
         geoData.tangents,

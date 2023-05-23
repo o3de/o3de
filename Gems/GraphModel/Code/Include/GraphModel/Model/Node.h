@@ -196,6 +196,9 @@ namespace GraphModel
         //! This method does nothing if the slot is not extendable.
         virtual SlotPtr AddExtendedSlot(const SlotName& slotName);
 
+        //! Clear any data that was cached for this node
+        void ClearCachedData();
+
     protected:
 
         //! Default implementation will prevent slots from being extended past the
@@ -219,9 +222,6 @@ namespace GraphModel
         //! Node, not when loading a Node from serialize data (in that case Slot creation 
         //! will be handled automatically by PostLoadSetup()).
         void CreateSlotData();
-
-        //! Clear any data that was cached for this node
-        void ClearCachedData();
 
     private:
 

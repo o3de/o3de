@@ -24,6 +24,7 @@
 
 #include "Editor/EditorCommentComponent.h"
 #include "Shape/EditorAxisAlignedBoxShapeComponent.h"
+#include "Shape/EditorAxisAlignedBoxShapeComponentMode.h"
 #include "Shape/EditorBoxShapeComponent.h"
 #include "Shape/EditorCapsuleShapeComponent.h"
 #include "Shape/EditorCylinderShapeComponent.h"
@@ -119,30 +120,22 @@ namespace LmbrCentral
     {
         EditorSplineComponentMode::RegisterActions();
         EditorTubeShapeComponentMode::RegisterActions();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::RegisterActions();
-        }
+        AzToolsFramework::BoxComponentMode::RegisterActions();
     }
 
     void LmbrCentralEditorModule::OnActionContextModeBindingHook()
     {
         EditorSplineComponentMode::BindActionsToModes();
         EditorTubeShapeComponentMode::BindActionsToModes();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::BindActionsToModes();
-        }
+        AzToolsFramework::BoxComponentMode::BindActionsToModes();
+        EditorAxisAlignedBoxShapeComponentMode::BindActionsToModes();
     }
 
     void LmbrCentralEditorModule::OnMenuBindingHook()
     {
         EditorSplineComponentMode::BindActionsToMenus();
         EditorTubeShapeComponentMode::BindActionsToMenus();
-        if (IsShapeComponentTranslationEnabled())
-        {
-            AzToolsFramework::BoxComponentMode::BindActionsToMenus();
-        }
+        AzToolsFramework::BoxComponentMode::BindActionsToMenus();
     }
 
     void LmbrCentralEditorModule::OnPostActionManagerRegistrationHook()

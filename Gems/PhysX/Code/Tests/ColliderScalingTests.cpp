@@ -38,11 +38,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, BoxCollider_NonUniformScaleComponent_RuntimeShapeConfigReplacedWithConvex)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Box");
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::BoxShapeConfiguration());
-        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->Activate();
+        const AZ::Vector3 nonUniformScale(2.0f, 2.5f, 0.5f);
+
+        EntityPtr editorEntity = CreateBoxPrimitiveColliderEditorEntity(
+            Physics::ShapeConstants::DefaultBoxDimensions,
+            AZ::Transform::CreateIdentity(),
+            AZ::Vector3::CreateZero(),
+            AZ::Quaternion::CreateIdentity(),
+            nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -54,24 +57,13 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, BoxCollider_NonUniformScale_RuntimePhysicsAabbCorrect)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Box");
+        const AZ::Vector3 boxDimensions(0.5f, 0.7f, 0.9f);
+        const AZ::Transform transform(AZ::Vector3(5.0f, 6.0f, 7.0f), AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)), 1.5f);
+        const AZ::Vector3 translationOffset(1.0f, 2.0f, 3.0f);
+        const AZ::Quaternion rotationOffset = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(45.0f));
+        const AZ::Vector3 nonUniformScale(0.7f, 0.9f, 1.1f);
 
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(45.0f));
-        colliderConfig.m_position = AZ::Vector3(1.0f, 2.0f, 3.0f);
-        Physics::BoxShapeConfiguration boxShapeConfig(AZ::Vector3(0.5f, 0.7f, 0.9f));
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, boxShapeConfig);
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
-        editorEntity->Activate();
-
-        AZ::EntityId editorId = editorEntity->GetId();
-        AZ::Transform worldTM;
-        worldTM.SetUniformScale(1.5f);
-        worldTM.SetTranslation(AZ::Vector3(5.0f, 6.0f, 7.0f));
-        worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)));
-        AZ::TransformBus::Event(editorId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
-        AZ::NonUniformScaleRequestBus::Event(editorId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.7f, 0.9f, 1.1f));
+        EntityPtr editorEntity = CreateBoxPrimitiveColliderEditorEntity(boxDimensions, transform, translationOffset, rotationOffset, nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -83,26 +75,16 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(6.4955f, 6.7305f, 13.5662f), 1e-3f));
     }
 
-    TEST_F(PhysXEditorFixture, BoxColliderRigidBody_NonUniformScale_RuntimePhysicsAabbCorrect)
+    TEST_F(PhysXEditorFixture, BoxCollider_WithDynamicRigidBody_NonUniformScale_RuntimePhysicsAabbCorrect)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Box");
+        const AZ::Vector3 boxDimensions(0.5f, 0.7f, 0.9f);
+        const AZ::Transform transform(AZ::Vector3(5.0f, 6.0f, 7.0f), AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)), 1.5f);
+        const AZ::Vector3 translationOffset(1.0f, 2.0f, 3.0f);
+        const AZ::Quaternion rotationOffset = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(45.0f));
+        const AZ::Vector3 nonUniformScale(0.7f, 0.9f, 1.1f);
 
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationZ(AZ::DegToRad(45.0f));
-        colliderConfig.m_position = AZ::Vector3(1.0f, 2.0f, 3.0f);
-        Physics::BoxShapeConfiguration boxShapeConfig(AZ::Vector3(0.5f, 0.7f, 0.9f));
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, boxShapeConfig);
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
-        editorEntity->Activate();
-
-        AZ::EntityId editorId = editorEntity->GetId();
-        AZ::Transform worldTM;
-        worldTM.SetUniformScale(1.5f);
-        worldTM.SetTranslation(AZ::Vector3(5.0f, 6.0f, 7.0f));
-        worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(30.0f)));
-        AZ::TransformBus::Event(editorId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
-        AZ::NonUniformScaleRequestBus::Event(editorId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.7f, 0.9f, 1.1f));
+        EntityPtr editorEntity = CreateBoxPrimitiveColliderEditorEntity(
+            boxDimensions, transform, translationOffset, rotationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -116,11 +98,15 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, CapsuleCollider_NonUniformScaleComponent_RuntimeShapeConfigReplacedWithConvex)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Capsule");
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::CapsuleShapeConfiguration());
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
-        editorEntity->Activate();
+        const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 1.0f);
+
+        EntityPtr editorEntity = CreateCapsulePrimitiveColliderEditorEntity(
+            Physics::ShapeConstants::DefaultCapsuleRadius,
+            Physics::ShapeConstants::DefaultCapsuleHeight,
+            AZ::Transform::CreateIdentity(),
+            AZ::Vector3::CreateZero(),
+            AZ::Quaternion::CreateIdentity(),
+            nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -132,24 +118,15 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, CapsuleCollider_NonUniformScale_RuntimePhysicsAabbCorrect)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Capsule");
+        const float capsuleRadius = 0.3f;
+        const float capsuleHeight = 1.4f;
+        const AZ::Transform transform(AZ::Vector3(3.0f, 1.0f, -4.0f), AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)), 0.5f);
+        const AZ::Vector3 translationOffset(2.0f, 5.0f, 3.0f);
+        const AZ::Quaternion rotationOffset = AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f));
+        const AZ::Vector3 nonUniformScale(1.2f, 0.7f, 0.6f);
 
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f));
-        colliderConfig.m_position = AZ::Vector3(2.0f, 5.0f, 3.0f);
-        Physics::CapsuleShapeConfiguration capsuleShapeConfig(1.4f, 0.3f);
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, capsuleShapeConfig);
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
-        editorEntity->Activate();
-
-        AZ::EntityId capsuleId = editorEntity->GetId();
-        AZ::Transform worldTM;
-        worldTM.SetUniformScale(0.5f);
-        worldTM.SetTranslation(AZ::Vector3(3.0f, 1.0f, -4.0f));
-        worldTM.SetRotation(AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)));
-        AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
-        AZ::NonUniformScaleRequestBus::Event(capsuleId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.2f, 0.7f, 0.6f));
+        EntityPtr editorEntity = CreateCapsulePrimitiveColliderEditorEntity(
+            capsuleRadius, capsuleHeight, transform, translationOffset, rotationOffset, nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -162,26 +139,17 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(3.99f, 2.995f, -5.02f), 1e-3f));
     }
 
-    TEST_F(PhysXEditorFixture, CapsuleColliderRigidBody_NonUniformScale_RuntimePhysicsAabbCorrect)
+    TEST_F(PhysXEditorFixture, CapsuleCollider_WithDynamicRigidBody_NonUniformScale_RuntimePhysicsAabbCorrect)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Capsule");
+        const float capsuleRadius = 0.3f;
+        const float capsuleHeight = 1.4f;
+        const AZ::Transform transform(AZ::Vector3(3.0f, 1.0f, -4.0f), AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)), 0.5f);
+        const AZ::Vector3 translationOffset(2.0f, 5.0f, 3.0f);
+        const AZ::Quaternion rotationOffset = AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f));
+        const AZ::Vector3 nonUniformScale(1.2f, 0.7f, 0.6f);
 
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f));
-        colliderConfig.m_position = AZ::Vector3(2.0f, 5.0f, 3.0f);
-        Physics::CapsuleShapeConfiguration capsuleShapeConfig(1.4f, 0.3f);
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, capsuleShapeConfig);
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
-        editorEntity->Activate();
-
-        AZ::EntityId capsuleId = editorEntity->GetId();
-        AZ::Transform worldTM;
-        worldTM.SetUniformScale(0.5f);
-        worldTM.SetTranslation(AZ::Vector3(3.0f, 1.0f, -4.0f));
-        worldTM.SetRotation(AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f)));
-        AZ::TransformBus::Event(capsuleId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
-        AZ::NonUniformScaleRequestBus::Event(capsuleId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(1.2f, 0.7f, 0.6f));
+        EntityPtr editorEntity = CreateCapsulePrimitiveColliderEditorEntity(
+            capsuleRadius, capsuleHeight, transform, translationOffset, rotationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -196,11 +164,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, SphereCollider_NonUniformScaleComponent_RuntimeShapeConfigReplacedWithConvex)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Sphere");
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(Physics::ColliderConfiguration(), Physics::SphereShapeConfiguration());
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
-        editorEntity->Activate();
+        const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 1.0f);
+
+        EntityPtr editorEntity = CreateSpherePrimitiveColliderEditorEntity(
+            Physics::ShapeConstants::DefaultSphereRadius,
+            AZ::Transform::CreateIdentity(),
+            AZ::Vector3::CreateZero(),
+            AZ::Quaternion::CreateIdentity(),
+            nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -212,24 +183,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, SphereCollider_NonUniformScale_RuntimePhysicsAabbCorrect)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Sphere");
+        const float sphereRadius = 0.7f;
+        const AZ::Transform transform(AZ::Vector3(-2.0f, -1.0f, 3.0f), AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)), 1.2f);
+        const AZ::Vector3 translationOffset(3.0f, -2.0f, 2.0f);
+        const AZ::Quaternion rotationOffset = AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f));
+        const AZ::Vector3 nonUniformScale(0.8f, 0.9f, 0.6f);
 
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f));
-        colliderConfig.m_position = AZ::Vector3(3.0f, -2.0f, 2.0f);
-        Physics::SphereShapeConfiguration sphereShapeConfig(0.7f);
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, sphereShapeConfig);
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorStaticRigidBodyComponent>();
-        editorEntity->Activate();
-
-        AZ::EntityId sphereId = editorEntity->GetId();
-        AZ::Transform worldTM;
-        worldTM.SetUniformScale(1.2f);
-        worldTM.SetTranslation(AZ::Vector3(-2.0f, -1.0f, 3.0f));
-        worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
-        AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
-        AZ::NonUniformScaleRequestBus::Event(sphereId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.8f, 0.9f, 0.6f));
+        EntityPtr editorEntity =
+            CreateSpherePrimitiveColliderEditorEntity(sphereRadius, transform, translationOffset, rotationOffset, nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -242,26 +203,16 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.552f, -1.936f, 1.596f), 1e-3f));
     }
 
-    TEST_F(PhysXEditorFixture, SphereColliderRigidBody_NonUniformScale_RuntimePhysicsAabbCorrect)
+    TEST_F(PhysXEditorFixture, SphereCollider_WithDynamicRigidBody_NonUniformScale_RuntimePhysicsAabbCorrect)
     {
-        EntityPtr editorEntity = CreateInactiveEditorEntity("Sphere");
+        const float sphereRadius = 0.7f;
+        const AZ::Transform transform(AZ::Vector3(-2.0f, -1.0f, 3.0f), AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)), 1.2f);
+        const AZ::Vector3 translationOffset(3.0f, -2.0f, 2.0f);
+        const AZ::Quaternion rotationOffset = AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f));
+        const AZ::Vector3 nonUniformScale(0.8f, 0.9f, 0.6f);
 
-        Physics::ColliderConfiguration colliderConfig;
-        colliderConfig.m_rotation = AZ::Quaternion::CreateRotationY(AZ::DegToRad(90.0f));
-        colliderConfig.m_position = AZ::Vector3(3.0f, -2.0f, 2.0f);
-        Physics::SphereShapeConfiguration sphereShapeConfig(0.7f);
-        editorEntity->CreateComponent<PhysX::EditorColliderComponent>(colliderConfig, sphereShapeConfig);
-        editorEntity->CreateComponent<AzToolsFramework::Components::EditorNonUniformScaleComponent>();
-        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
-        editorEntity->Activate();
-
-        AZ::EntityId sphereId = editorEntity->GetId();
-        AZ::Transform worldTM;
-        worldTM.SetUniformScale(1.2f);
-        worldTM.SetTranslation(AZ::Vector3(-2.0f, -1.0f, 3.0f));
-        worldTM.SetRotation(AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)));
-        AZ::TransformBus::Event(sphereId, &AZ::TransformBus::Events::SetWorldTM, worldTM);
-        AZ::NonUniformScaleRequestBus::Event(sphereId, &AZ::NonUniformScaleRequests::SetScale, AZ::Vector3(0.8f, 0.9f, 0.6f));
+        EntityPtr editorEntity = CreateSpherePrimitiveColliderEditorEntity(
+            sphereRadius, transform, translationOffset, rotationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -274,14 +225,46 @@ namespace PhysXEditorTests
         EXPECT_THAT(aabb.GetMax(), UnitTest::IsCloseTolerance(AZ::Vector3(1.552f, -1.936f, 1.596f), 1e-3f));
     }
 
+    TEST_F(PhysXEditorFixture, CylinderCollider_RuntimeShapeConfigUsingConvex)
+    {
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            Physics::ShapeConstants::DefaultCylinderRadius,
+            Physics::ShapeConstants::DefaultCylinderHeight);
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        // Since there is no cylinder shape in PhysX, the runtime entity should have a BaseColliderComponent with a
+        // cooked mesh shape configuration.
+        ExpectSingleConvexRuntimeConfig(gameEntity.get());
+    }
+
+    TEST_F(PhysXEditorFixture, CylinderCollider_NonUniformScaleComponent_RuntimeShapeConfigUsingConvex)
+    {
+        const AZ::Vector3 nonUniformScale(1.0f, 1.5f, 1.0f);
+
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            Physics::ShapeConstants::DefaultCylinderRadius,
+            Physics::ShapeConstants::DefaultCylinderHeight,
+            AZ::Transform::CreateIdentity(),
+            AZ::Vector3::CreateZero(),
+            AZ::Quaternion::CreateIdentity(),
+            nonUniformScale);
+
+        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+
+        // Since there is no cylinder shape in PhysX, the runtime entity should have a BaseColliderComponent with a
+        // cooked mesh shape configuration.
+        ExpectSingleConvexRuntimeConfig(gameEntity.get());
+    }
+
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffset_CorrectEditorStaticBodyGeometry)
     {
+        const float radius = 1.5f;
+        const float height = 7.5f;
         const AZ::Transform transform(AZ::Vector3(3.0f, 3.0f, 5.0f), AZ::Quaternion(0.5f, -0.5f, -0.5f, 0.5f), 1.5f);
         const AZ::Vector3 positionOffset(0.5f, 1.5f, -2.5f);
         const AZ::Quaternion rotationOffset(0.3f, -0.1f, -0.3f, 0.9f);
-        const float radius = 1.5f;
-        const float height = 7.5f;
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(radius, height, transform, positionOffset, rotationOffset);
 
         const AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
@@ -291,13 +274,13 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffset_CorrectEditorDynamicBodyGeometry)
     {
+        const float radius = 3.0f;
+        const float height = 11.0f;
         const AZ::Transform transform(AZ::Vector3(5.0f, 6.0f, 7.0f), AZ::Quaternion(0.1f, 0.5f, -0.7f, 0.5f), 1.0f);
         const AZ::Vector3 positionOffset(-6.0f, -4.0f, -2.0f);
         const AZ::Quaternion rotationOffset(0.4f, 0.8f, 0.2f, 0.4f);
-        const float radius = 3.0f;
-        const float height = 11.0f;
-        EntityPtr editorEntity =
-            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            radius, height, transform, positionOffset, rotationOffset, AZStd::nullopt, RigidBodyType::Dynamic);
 
         const AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
@@ -307,12 +290,12 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffset_CorrectRuntimeStaticBodyGeometry)
     {
+        const float radius = 0.5f;
+        const float height = 4.0f;
         const AZ::Transform transform(AZ::Vector3(3.0f, 5.0f, -9.0f), AZ::Quaternion(0.7f, -0.1f, 0.1f, 0.7f), 0.5f);
         const AZ::Vector3 positionOffset(2.0f, 5.0f, 6.0f);
         const AZ::Quaternion rotationOffset(-0.9f, 0.1f, -0.3f, 0.3f);
-        const float radius = 0.5f;
-        const float height = 4.0f;
-        EntityPtr editorEntity = CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(radius, height, transform, positionOffset, rotationOffset);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -324,13 +307,13 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffset_CorrectRuntimeDynamicBodyGeometry)
     {
+        const float radius = 1.0f;
+        const float height = 5.5f;
         const AZ::Transform transform(AZ::Vector3(-4.0f, -1.0f, 2.0f), AZ::Quaternion(0.4f, 0.4f, -0.2f, 0.8f), 1.0f);
         const AZ::Vector3 positionOffset(3.0f, 4.0f, 5.0f);
         const AZ::Quaternion rotationOffset(-0.5f, -0.5f, -0.5f, 0.5f);
-        const float radius = 1.0f;
-        const float height = 5.5f;
-        EntityPtr editorEntity =
-            CreateCylinderColliderEditorEntity(transform, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            radius, height, transform, positionOffset, rotationOffset, AZStd::nullopt, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -342,14 +325,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffsetAndNonUniformScale_CorrectEditorStaticBodyGeometry)
     {
-        const AZ::Transform transform(AZ::Vector3(4.0f, -3.0f, -2.0f), AZ::Quaternion(0.3f, 0.9f, -0.3f, 0.1f), 2.0f);
-        const AZ::Vector3 nonUniformScale(0.5f, 2.0f, 2.0f);
-        const AZ::Vector3 positionOffset(0.5f, 0.2f, 0.3f);
-        const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
         const float radius = 0.5f;
         const float height = 4.0f;
+        const AZ::Transform transform(AZ::Vector3(4.0f, -3.0f, -2.0f), AZ::Quaternion(0.3f, 0.9f, -0.3f, 0.1f), 2.0f);
+        const AZ::Vector3 positionOffset(0.5f, 0.2f, 0.3f);
+        const AZ::Quaternion rotationOffset(0.5f, -0.5f, -0.5f, 0.5f);
+        const AZ::Vector3 nonUniformScale(0.5f, 2.0f, 2.0f);
         EntityPtr editorEntity =
-            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
+            CreateCylinderPrimitiveColliderEditorEntity(radius, height, transform, positionOffset, rotationOffset, nonUniformScale);
 
         const AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
@@ -359,14 +342,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffsetAndNonUniformScale_CorrectEditorDynamicBodyGeometry)
     {
-        const AZ::Transform transform(AZ::Vector3(2.0f, 5.0f, -3.0f), AZ::Quaternion(0.7f, -0.1f, 0.1f, 0.7f), 0.5f);
-        const AZ::Vector3 nonUniformScale(1.5f, 1.0f, 0.5f);
-        const AZ::Vector3 positionOffset(-1.0f, -1.0f, 0.5f);
-        const AZ::Quaternion rotationOffset(0.9f, -0.3f, -0.3f, 0.1f);
         const float radius = 1.5f;
         const float height = 9.0f;
-        EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
-            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+        const AZ::Transform transform(AZ::Vector3(2.0f, 5.0f, -3.0f), AZ::Quaternion(0.7f, -0.1f, 0.1f, 0.7f), 0.5f);
+        const AZ::Vector3 positionOffset(-1.0f, -1.0f, 0.5f);
+        const AZ::Quaternion rotationOffset(0.9f, -0.3f, -0.3f, 0.1f);
+        const AZ::Vector3 nonUniformScale(1.5f, 1.0f, 0.5f);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            radius, height, transform, positionOffset, rotationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         const AZ::Aabb aabb = GetSimulatedBodyAabb(editorEntity->GetId());
         // use a relatively large tolerance, because the cylinder will be a convex approximation rather than an exact primitive
@@ -376,14 +359,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffsetAndNonUniformScale_CorrectRuntimeStaticBodyGeometry)
     {
-        const AZ::Transform transform(AZ::Vector3(5.0f, 4.0f, 2.0f), AZ::Quaternion(0.4f, 0.4f, -0.8f, 0.2f), 0.8f);
-        const AZ::Vector3 nonUniformScale(3.0f, 1.0f, 2.0f);
-        const AZ::Vector3 positionOffset(2.0f, 1.0f, -2.0f);
-        const AZ::Quaternion rotationOffset(0.7f, -0.1f, -0.5f, 0.5f);
         const float radius = 1.0f;
         const float height = 5.0f;
+        const AZ::Transform transform(AZ::Vector3(5.0f, 4.0f, 2.0f), AZ::Quaternion(0.4f, 0.4f, -0.8f, 0.2f), 0.8f);
+        const AZ::Vector3 positionOffset(2.0f, 1.0f, -2.0f);
+        const AZ::Quaternion rotationOffset(0.7f, -0.1f, -0.5f, 0.5f);
+        const AZ::Vector3 nonUniformScale(3.0f, 1.0f, 2.0f);
         EntityPtr editorEntity =
-            CreateCylinderColliderNonUniformScaleEditorEntity(transform, nonUniformScale, positionOffset, rotationOffset, radius, height);
+            CreateCylinderPrimitiveColliderEditorEntity(radius, height, transform, positionOffset, rotationOffset, nonUniformScale);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
@@ -395,14 +378,14 @@ namespace PhysXEditorTests
 
     TEST_F(PhysXEditorFixture, EditorColliderComponent_CylinderWithOffsetAndNonUniformScale_CorrectRuntimeDynamicBodyGeometry)
     {
-        const AZ::Transform transform(AZ::Vector3(-2.0f, -3.0f, -6.0f), AZ::Quaternion(0.1f, 0.5f, -0.7f, 0.5f), 3.0f);
-        const AZ::Vector3 nonUniformScale(2.0f, 2.0f, 5.0f);
-        const AZ::Vector3 positionOffset(-1.0, 0.5f, -2.0f);
-        const AZ::Quaternion rotationOffset(0.2f, -0.4f, 0.8f, 0.4f);
         const float radius = 2.0f;
         const float height = 7.0f;
-        EntityPtr editorEntity = CreateCylinderColliderNonUniformScaleEditorEntity(
-            transform, nonUniformScale, positionOffset, rotationOffset, radius, height, RigidBodyType::Dynamic);
+        const AZ::Transform transform(AZ::Vector3(-2.0f, -3.0f, -6.0f), AZ::Quaternion(0.1f, 0.5f, -0.7f, 0.5f), 3.0f);
+        const AZ::Vector3 positionOffset(-1.0, 0.5f, -2.0f);
+        const AZ::Quaternion rotationOffset(0.2f, -0.4f, 0.8f, 0.4f);
+        const AZ::Vector3 nonUniformScale(2.0f, 2.0f, 5.0f);
+        EntityPtr editorEntity = CreateCylinderPrimitiveColliderEditorEntity(
+            radius, height, transform, positionOffset, rotationOffset, nonUniformScale, RigidBodyType::Dynamic);
 
         EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
 

@@ -191,6 +191,9 @@ namespace AZ
 
 namespace AZStd
 {
+    // extern the fixed_string<39> class required to hold a Uuid string
+    extern template class basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
+
     // hash specialization
     template <>
     struct hash<AZ::Uuid>

@@ -64,7 +64,6 @@ namespace GraphCanvas
         void UpdateLayout(bool forceUpdate = false);
         void UpdateGeometry();
     
-        NodePropertyConfiguration   m_propertyConfiguration;
         NodePropertyDisplay*        m_nodePropertyDisplay;
         
         QGraphicsLayoutItem*   m_layoutItem;

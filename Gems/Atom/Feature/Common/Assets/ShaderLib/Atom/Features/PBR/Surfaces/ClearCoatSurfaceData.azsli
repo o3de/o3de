@@ -12,18 +12,18 @@
 
 class ClearCoatSurfaceData
 {
-    float factor;           //!< clear coat strength factor
-    float roughness;        //!< clear coat linear roughness (not base layer one)
-    float3 normal;          //!< normal used for top layer clear coat
+    real factor;           //!< clear coat strength factor
+    real roughness;        //!< clear coat linear roughness (not base layer one)
+    real3 normal;          //!< normal used for top layer clear coat
 
     void InitializeToZero();
 };
 
 void ClearCoatSurfaceData::InitializeToZero()
 {
-    factor = 0.0f;
-    roughness = 0.0f;
-    normal = float3(0.0f, 0.0f, 0.0f);
+    factor = 0.0;
+    roughness = 0.0;
+    normal = real3(0.0, 0.0, 0.0);
 }
 
 #endif

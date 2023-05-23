@@ -710,8 +710,8 @@ namespace UnitTest
         // Validate retrieving a region of pixels
         AZStd::vector<float> pixelValues;
         pixelValues.reserve(size.m_width * size.m_height);
-        auto topLeft = AZStd::make_pair<uint32_t, uint32_t>(0, 0);
-        auto bottomRight = AZStd::make_pair<uint32_t, uint32_t>(size.m_width, size.m_height);
+        auto topLeft = AZStd::make_pair(0U, 0U);
+        auto bottomRight = AZStd::make_pair(size.m_width, size.m_height);
         RPI::GetSubImagePixelValues(imageAsset, topLeft, bottomRight, [&pixelValues]([[maybe_unused]] const AZ::u32& x, [[maybe_unused]] const AZ::u32& y, const float& value) {
             pixelValues.push_back(value);
         });

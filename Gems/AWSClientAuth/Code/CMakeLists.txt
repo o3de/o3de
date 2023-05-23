@@ -47,6 +47,37 @@ ly_add_target(
             Gem::AWSClientAuth.Static
 )
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+ly_add_target( 
+    NAME AWSClientAuth.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        awsclientauth_editor_files.cmake
+        awsclientauth_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Include
+            Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AWSCLIENTAUTH_EDITOR
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzToolsFramework
+            Gem::AWSCore
+            Gem::HttpRequestor
+            3rdParty::AWSNativeSDK::AWSClientAuth
+            3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+        Gem::AWSClientAuth
+)
+
+endif()
+
+
 # Load the "Gem::AWSClientAuth" module in all types of applications.
 ly_create_alias(
     NAME AWSClientAuth.Servers
@@ -80,7 +111,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME AWSClientAuth.Tools
         NAMESPACE Gem
         TARGETS
-            Gem::AWSClientAuth
+            Gem::AWSClientAuth.Editor
             Gem::AWSCore.Tools
             Gem::HttpRequestor.Tools
     )
@@ -125,5 +156,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
    )
    ly_add_googletest(
         NAME Gem::AWSClientAuth.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

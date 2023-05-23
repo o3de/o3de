@@ -90,7 +90,7 @@ namespace EMotionFX
 
         for (size_t i = 0; i < numJointNames; ++i)
         {
-            weightedJointNames[i] = AZStd::make_pair<AZStd::string, float>(jointNames[i], 0.0f);
+            weightedJointNames[i] = AZStd::make_pair(jointNames[i], 0.0f);
         }
 
         SetWeightedJointNames(weightedJointNames);

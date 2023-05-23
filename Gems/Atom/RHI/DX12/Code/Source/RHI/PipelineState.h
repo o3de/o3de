@@ -46,7 +46,7 @@ namespace AZ
             static RHI::Ptr<PipelineState> Create();
 
             /// Returns the pipeline layout associated with this PSO.
-            const PipelineLayout& GetPipelineLayout() const;
+            const PipelineLayout* GetPipelineLayout() const;
 
             /// Returns the platform pipeline state object.
             ID3D12PipelineState* Get() const;

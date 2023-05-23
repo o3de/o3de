@@ -147,11 +147,6 @@ namespace LmbrCentral
 
     void SphereShape::SetTranslationOffset(const AZ::Vector3& translationOffset)
     {
-        if (!IsShapeComponentTranslationEnabled())
-        {
-            return;
-        }
-
         bool shapeChanged = false;
         {
             AZStd::unique_lock lock(m_mutex);

@@ -96,9 +96,6 @@ namespace PhysX
         void EnterRagdoll() override;
         void ExitRagdoll() override;
 
-        // version converters
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-
     private:
         void CreateRagdoll(const Physics::RagdollConfiguration& ragdollConfiguration);
         void DestroyRagdoll();
@@ -112,12 +109,12 @@ namespace PhysX
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         /// Minimum number of position iterations to perform in the PhysX solver.
         /// Lower iteration counts are less expensive but may behave less realistically.
-        AZ::u32 m_positionIterations = 16; 
+        AZ::u32 m_positionIterations = 16;
         /// Minimum number of velocity iterations to perform in the PhysX solver.
         AZ::u32 m_velocityIterations = 8;
         /// Whether to use joint projection to preserve joint constraints in demanding
         /// situations at the expense of potentially reducing physical correctness.
-        bool m_enableJointProjection = true; 
+        bool m_enableJointProjection = true;
         /// Linear joint error above which projection will be applied.
         float m_jointProjectionLinearTolerance = 1e-3f;
         /// Angular joint error (in degrees) above which projection will be applied.

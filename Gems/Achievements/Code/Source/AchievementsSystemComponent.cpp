@@ -9,6 +9,8 @@
 #include <AchievementsSystemComponent.h>
 #include <Achievements/AchievementNotificationBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 
 namespace Achievements
 {
@@ -61,9 +63,9 @@ namespace Achievements
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            
+
             behaviorContext->Class<AchievementDetails>()
-                ->Constructor<AchievementDetails&>()
+                ->Constructor<const AchievementDetails&>()
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("id", BehaviorValueProperty(&AchievementDetails::id))
                 ->Property("name", BehaviorValueProperty(&AchievementDetails::name))

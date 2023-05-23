@@ -9,6 +9,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactTestSequence.h>
+#include <TestImpactFramework/Native/TestImpactNativeConfiguration.h>
 
 #include <Artifact/Static/TestImpactNativeTestTargetMeta.h>
 
@@ -20,5 +21,7 @@ namespace TestImpact
     //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @return The constructed list of test target meta-data artifacts.
     NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(
-        const AZStd::string& masterTestListData, const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet);
+        const AZStd::string& masterTestListData,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet);
 } // namespace TestImpact

@@ -22,6 +22,9 @@
 
 namespace Terrain
 {
+    // Implements EditorTerrainMacroMaterialComponent RTTI functions
+    AZ_RTTI_NO_TYPE_INFO_IMPL(EditorTerrainMacroMaterialComponent, AzToolsFramework::Components::EditorComponentBase);
+
     void EditorTerrainMacroMaterialComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

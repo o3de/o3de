@@ -31,7 +31,7 @@ namespace AZ
         {
             AZStd::unique_ptr<StreamingImageController> controller = AZStd::make_unique<StreamingImageController>();
             controller->m_pool = &pool;
-            controller->m_pool->SetLowMemoryCallback(AZStd::bind(&StreamingImageController::OnHandleLowMemory, controller.get()));
+            controller->m_pool->SetLowMemoryCallback(AZStd::bind(&StreamingImageController::ReleaseMemory, controller.get(), AZStd::placeholders::_1));
             return controller;
         }
 
@@ -51,13 +51,13 @@ namespace AZ
                 image->m_streamingController = this;
                 image->m_streamingContext = AZStd::move(context);
             }
-
-            // Add the image to the streaming image
+            
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
-                UpdateImagePriority(image);
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
                 m_streamableImages.insert(image);
             }
+
+            ReinsertImageToLists(image);
         }
 
         void StreamingImageController::DetachImage(StreamingImage* image)
@@ -65,11 +65,13 @@ namespace AZ
             AZ_Assert(image, "Image must not be null.");
 
             // Remove image from the list first before clearing the image streaming context
-            // since the compare function uses the context
+            // since the compare functions may use the image's StreamingImageContext
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
-                m_expandingImages.erase(image);
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
                 m_streamableImages.erase(image);
+                m_expandingImages.erase(image);
+                m_expandableImages.erase(image);
+                m_evictableImages.erase(image);
             }
 
             const StreamingImageContextPtr& context = image->m_streamingContext;
@@ -86,6 +88,37 @@ namespace AZ
             image->m_streamingContext = nullptr;
         }
 
+        void StreamingImageController::ReinsertImageToLists(StreamingImage* image)
+        {
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
+            m_expandableImages.erase(image);
+            m_evictableImages.erase(image);
+
+            if (!image->IsExpanding())
+            {
+                image->m_streamingContext->UpdateMipStats();
+
+                if (NeedExpand(image))
+                {
+                    m_expandableImages.insert(image);
+                }
+                if (image->IsTrimmable())
+                {
+                    m_evictableImages.insert(image);
+                }
+            }
+        }
+
+        void StreamingImageController::EndExpandImage(StreamingImage* image)
+        {
+            // remove unused mips in case global mip bias was changed during expanding
+            EvictUnusedMips(image);
+
+            image->m_streamingContext->m_queuedForMipExpand = false;
+
+            ReinsertImageToLists(image);
+        }
+
         void StreamingImageController::Update()
         {
             AZ_PROFILE_FUNCTION(RPI);
@@ -93,6 +126,27 @@ namespace AZ
             // Limit the amount of upload image per update to avoid internal queue being too long
             const uint32_t c_jobCount = 30;
             uint32_t jobCount = 0;
+
+            // if the memory was low, cancel all expanding images
+            if (m_lastLowMemory)
+            {
+                // clear the gpu expand queue
+                {
+                    AZStd::lock_guard<AZStd::mutex> mipExpandlock(m_mipExpandMutex);
+                    m_mipExpandQueue = AZStd::queue<StreamingImageContextPtr>();
+                }
+
+                // clear the expanding images
+                {
+                    AZStd::lock_guard<AZStd::recursive_mutex> imageListAccesslock(m_imageListAccessMutex);
+                    for (auto image:m_expandingImages)
+                    {
+                        image->CancelExpanding();
+                        EndExpandImage(image);
+                    }
+                    m_expandingImages.clear();
+                }
+            }
 
             // Finalize the mip expansion events generated from the controller. This is done once per update. Anytime
             // a new mip chain asset is ready, the streaming image will notify the controller, which will then queue
@@ -113,18 +167,13 @@ namespace AZ
 
                             if (!image->IsExpanding())
                             {
-                                AZStd::lock_guard<AZStd::mutex> imageListAccesslock(m_imageListAccessMutex);
+                                EndExpandImage(image);
                                 m_expandingImages.erase(image);
-                                // remove unused mips in case global mip bias changed 
-                                EvictUnusedMips(image);
-                                UpdateImagePriority(image);
-                                m_streamableImages.insert(image);
 
                                 StreamingDebugOutput("StreamingImageController", "Image [%s] expanded mip level to %d\n",
                                     image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_mipChainState.m_residencyTarget));
                             }
                         }
-                        context->m_queuedForMipExpand = false;
                     }
                     m_mipExpandQueue.pop();
 
@@ -135,24 +184,25 @@ namespace AZ
                     }
                 }
             }
-            
-            // Try to expand if the memory usage is dropping or there are enough free memory
-            jobCount = 0;
-            if (m_lastLowMemory == 0 || m_lastLowMemory > GetPoolMemoryUsage())
+
+            // reset low memory state if the memory is dropping since last low memory state
+            if (m_lastLowMemory > GetPoolMemoryUsage())
             {
-                while (jobCount < c_jobCount)
-                {
-                    if (ExpandOneMipChain())
-                    {
-                        jobCount++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                // reset last low memory
                 m_lastLowMemory = 0;
+            }
+            
+            // Try to expand if it's not in low memory state
+            jobCount = 0;
+            while (jobCount < c_jobCount && m_lastLowMemory == 0)
+            {
+                if (ExpandOneMipChain())
+                {
+                    jobCount++;
+                }
+                else
+                {
+                    break;
+                }
             }
 
             ++m_timestamp;
@@ -173,53 +223,67 @@ namespace AZ
             // update image priority and re-insert the image
             if (!context->m_queuedForMipExpand)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
                 EvictUnusedMips(image);
-                if (m_streamableImages.erase(image))
-                {
-                    UpdateImagePriority(image);
-                    m_streamableImages.insert(image);
-                }
             }
+
+            // reinsert the image since the priority might be changed after mip target changed
+            ReinsertImageToLists(image);
         }
 
-        void StreamingImageController::UpdateImagePriority(StreamingImage* image)
+        bool StreamingImageController::ExpandPriorityComparator::operator()(const StreamingImage* lhs, const StreamingImage* rhs) const
         {
-            StreamingImage::Priority newPriority = CalculateImagePriority(image);
-            image->SetStreamingPriority(newPriority);
-        }
+            // use the resident mip size and missing mip count to decide the expand priority
+            auto lhsMipSize = lhs->m_streamingContext->m_residentMipSize;
+            auto rhsMipSize = rhs->m_streamingContext->m_residentMipSize;
 
-        bool StreamingImageController::ImagePriorityComparator::operator()(const StreamingImage* lhs, const StreamingImage* rhs) const
-        {
-            auto lhsPriority = lhs->GetStreamingPriority();
-            auto rhsPriority = rhs->GetStreamingPriority();
-            auto lhsTimestamp = lhs->m_streamingContext->GetLastAccessTimestamp();
-            auto rhsTimestamp = rhs->m_streamingContext->GetLastAccessTimestamp();
-            if (lhsPriority == rhsPriority)
+            if (lhsMipSize == rhsMipSize)
             {
-                if (lhsTimestamp == rhsTimestamp)
+                auto lhsMissingMips = lhs->m_streamingContext->m_missingMips;
+                auto rhsMissingMips = rhs->m_streamingContext->m_missingMips;
+                if (lhsMissingMips == rhsMissingMips)
                 {
-                    return lhs > rhs;
+                    auto lhsTimestamp = lhs->m_streamingContext->GetLastAccessTimestamp();
+                    auto rhsTimestamp = rhs->m_streamingContext->GetLastAccessTimestamp();
+                    if (lhsTimestamp == rhsTimestamp)
+                    {
+                        // we need this to avoid same key in the AZStd::set
+                        return lhs < rhs;
+                    }
+                    // latest accessed image has higher priority
+                    return lhsTimestamp > rhsTimestamp;
                 }
                 else
                 {
-                    return lhsTimestamp > rhsTimestamp;
+                    // image with more missing mips has higher priority
+                    return lhsMissingMips > rhsMissingMips; 
                 }
             }
-            return lhsPriority > rhsPriority; 
-        }
 
-        StreamingImage::Priority StreamingImageController::CalculateImagePriority(StreamingImage* image) const
+            // image has smaller resolution has higher priority
+            return lhsMipSize < rhsMipSize;
+        }
+        
+        bool StreamingImageController::EvictPriorityComparator::operator()(const StreamingImage* lhs, const StreamingImage* rhs) const
         {
-            StreamingImage::Priority newPriority = 0; // 0 means lowest priority and the image mip would be evicted first
-            size_t residentMip = image->m_imageAsset->GetMipLevel(image->m_mipChainState.m_residencyTarget);
-            size_t targetMip = image->m_streamingContext->GetTargetMip();
-            if (residentMip >= targetMip)
+            auto lhsEvictableMips = lhs->m_streamingContext->m_evictableMips;
+            auto rhsEvictableMips = rhs->m_streamingContext->m_evictableMips;
+
+            if (lhsEvictableMips == rhsEvictableMips)
             {
-                newPriority = residentMip - targetMip;
+                auto lhsTimestamp = lhs->m_streamingContext->GetLastAccessTimestamp();
+                auto rhsTimestamp = rhs->m_streamingContext->GetLastAccessTimestamp();
+                if (lhsTimestamp == rhsTimestamp)
+                {
+                    // we need this to avoid same key in the AZStd::set
+                    return lhs < rhs;
+                }
+
+                // Last visited image will be evicted later
+                return lhsTimestamp < rhsTimestamp;
             }
 
-            return newPriority;
+            // images with higher evictable mip count will be evict first
+            return lhsEvictableMips > rhsEvictableMips; 
         }
 
         void StreamingImageController::OnMipChainAssetReady(StreamingImage* image)
@@ -236,6 +300,11 @@ namespace AZ
                 m_mipExpandQueue.push(context);
             }
         }
+        
+        uint32_t StreamingImageController::GetStreamableImageCount() const
+        {
+            return aznumeric_cast<uint32_t>(m_streamableImages.size());
+        }
 
         uint32_t StreamingImageController::GetExpandingImageCount() const
         {
@@ -244,13 +313,33 @@ namespace AZ
 
         void StreamingImageController::SetMipBias(int16_t mipBias)
         {
-            int16_t prevMipBias = m_globalMipBias;
-            m_globalMipBias = mipBias;
-            // if the mipBias increased (using smaller size of mips), go throw each streaming image and evict unneeded mips
-            if (m_globalMipBias > prevMipBias)
+            if (m_globalMipBias == mipBias)
             {
-                StreamingDebugOutput("StreamingImageController", "SetMipBias. EvictUnusedMips %u\n");
-                EvictUnusedMips();
+                return;
+            }
+
+            m_globalMipBias = mipBias;
+
+            // we need go through all the streamable image to update their streaming context and regenerate the lists
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
+            m_expandableImages.clear();
+            m_evictableImages.clear();
+
+            for (auto image : m_streamableImages)
+            {
+                EvictUnusedMips(image);
+                image->m_streamingContext->UpdateMipStats();
+                if (!image->IsExpanding())
+                {
+                    if (NeedExpand(image))
+                    {
+                        m_expandableImages.insert(image);
+                    }
+                    if (image->IsTrimmable())
+                    {
+                        m_evictableImages.insert(image);
+                    }
+                }
             }
         }
 
@@ -271,26 +360,28 @@ namespace AZ
 
         bool StreamingImageController::EvictOneMipChain()
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
-            if (m_streamableImages.size() == 0)
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
+            for (auto itr = m_evictableImages.begin(); itr != m_evictableImages.end(); itr++)
             {
-                return false; 
-            }
-            auto ritr = m_streamableImages.rbegin();
-            StreamingImage* image = *ritr;
+                StreamingImage* image = *itr;
 
-            if (image->IsTrimmable())
-            {
                 RHI::ResultCode success = image->TrimOneMipChain();
+
                 if (success == RHI::ResultCode::Success)
                 {
-                    StreamingDebugOutput("StreamingImageController", "Image [%s] has one mipchain released; Current resident mip: %d\n",
-                        image->GetRHIImage()->GetName().GetCStr(), image->GetRHIImage()->GetResidentMipLevel());
-                    // update the image's priority and re-insert the image 
-                    m_streamableImages.erase(image);
-                    UpdateImagePriority(image);
-                    m_streamableImages.insert(image);
+                    // update the image's priority and re-insert the image
+                    ReinsertImageToLists(image);
+
+                    StreamingDebugOutput(
+                        "StreamingImageController",
+                        "Image [%s] has one mipchain released; Current resident mip: %d\n",
+                        image->GetRHIImage()->GetName().GetCStr(),
+                        image->GetRHIImage()->GetResidentMipLevel());
                     return true;
+                }
+                else
+                {
+                    AZ_Assert(false, "failed to evict an evictable image!");
                 }
             }
 
@@ -306,27 +397,22 @@ namespace AZ
 
         bool StreamingImageController::ExpandOneMipChain()
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
-            if (m_streamableImages.size() == 0)
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
+            if (m_expandableImages.size() == 0)
             {
                 return false; 
             }
-            auto itr = m_streamableImages.begin();
+            auto itr = m_expandableImages.begin();
             StreamingImage* image = *itr;
-
-            if (NeedExpand(image))
+            image->QueueExpandToNextMipChainLevel();
+            if (image->IsExpanding())
             {
-                image->QueueExpandToNextMipChainLevel();
-                if (image->IsExpanding())
-                {
-                    StreamingDebugOutput("StreamingImageController", "Image [%s] is expanding mip level to %d\n",
-                        image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_mipChainState.m_streamingTarget));
-                    m_streamableImages.erase(image);
-                    m_expandingImages.insert(image);
-                }
-                return true;
+                StreamingDebugOutput("StreamingImageController", "Image [%s] is expanding mip level to %d\n",
+                    image->GetRHIImage()->GetName().GetCStr(), image->m_imageAsset->GetMipChainIndex(image->m_mipChainState.m_streamingTarget));
+                m_expandingImages.insert(image);
+                ReinsertImageToLists(image);
             }
-            return false;
+            return true;
         }
 
         uint16_t StreamingImageController::GetImageTargetMip(const StreamingImage* image) const
@@ -357,54 +443,32 @@ namespace AZ
             return true;
         }
 
-        void StreamingImageController::EvictUnusedMips()
-        {
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
-            if (m_streamableImages.size() == 0)
-            {
-                return; 
-            }
-
-            AZStd::vector<StreamingImage*> evictedImages;
-
-            auto itr = m_streamableImages.begin();
-            while (itr != m_streamableImages.end())
-            {
-                StreamingImage* image = *itr;
-                if (EvictUnusedMips(image))
-                {
-                    itr = m_streamableImages.erase(itr);
-                    evictedImages.push_back(image);
-                }
-                else
-                {
-                    itr++;
-                }
-            }
-
-            for (auto image : evictedImages)
-            {
-                UpdateImagePriority(image);
-                m_streamableImages.insert(image);
-            }
-        }
-
-        bool StreamingImageController::OnHandleLowMemory()
+        bool StreamingImageController::ReleaseMemory(size_t targetMemoryUsage)
         {
             StreamingDebugOutput("StreamingImageController", "Handle low memory\n");
 
-            // Evict some mips
-            bool evicted = EvictOneMipChain();
+            size_t currentResident = GetPoolMemoryUsage();
 
-            // Save the memory 
-            m_lastLowMemory = GetPoolMemoryUsage();
+            while (currentResident > targetMemoryUsage)
+            {
+                // Evict some mips
+                bool evicted = EvictOneMipChain();
+                if (!evicted)
+                {
+                    // nothing to be evicted anymore
+                    m_lastLowMemory = currentResident;
+                    return false;
+                }
+                currentResident = GetPoolMemoryUsage();
+            }
 
-            return evicted;
+            m_lastLowMemory = currentResident;
+            return true;
         }
 
         size_t StreamingImageController::GetPoolMemoryUsage()
         {
-            size_t totalResident = m_pool->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes.load();
+            size_t totalResident = m_pool->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes.load();
             return totalResident;
         }
     }

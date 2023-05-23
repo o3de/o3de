@@ -85,5 +85,10 @@ namespace AZ
             constexpr uint32_t Constant = 256;
             constexpr uint32_t Buffer = 16;
         }
+
+        namespace MultiDevice
+        {
+            constexpr int DefaultDeviceIndex = 0;
+        }
     }
 }

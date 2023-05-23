@@ -19,10 +19,12 @@ namespace Multiplayer
     void SimplePlayerSpawnerComponent::Activate()
     {
         AZ::Interface<IMultiplayerSpawner>::Register(this);
+        AZ::Interface<ISimplePlayerSpawner>::Register(this);
     }
 
     void SimplePlayerSpawnerComponent::Deactivate()
     {
+        AZ::Interface<ISimplePlayerSpawner>::Unregister(this);
         AZ::Interface<IMultiplayerSpawner>::Unregister(this);
     }
 
@@ -72,35 +74,79 @@ namespace Multiplayer
         incompatible.push_back(AZ_CRC_CE("MultiplayerSpawnerService"));
     }
 
+    AZ::Transform SimplePlayerSpawnerComponent::GetNextSpawnPoint() const
+    {
+        if (m_spawnPoints.empty())
+        {
+            return AZ::Transform::Identity();
+        }
+
+        if (m_spawnIndex >= m_spawnPoints.size())
+        {
+            AZ_Assert(false, "SimplePlayerSpawnerComponent has an out-of-bounds m_spawnIndex %i. Please ensure spawn index is always valid.", m_spawnIndex);
+            return AZ::Transform::Identity();
+        }
+
+        const AZ::EntityId spawnPointEntityId = m_spawnPoints[m_spawnIndex];
+
+        if (!spawnPointEntityId.IsValid())
+        {
+            AZ_Assert(
+                false,
+                "Empty spawner entry at m_spawnIndex %i. Please ensure spawn index is always valid.",
+                m_spawnIndex);
+            return AZ::Transform::Identity();
+        }
+
+        AZ::Transform spawnPointTransform = AZ::Transform::Identity();
+        AZ::TransformBus::EventResult(spawnPointTransform, spawnPointEntityId, &AZ::TransformInterface::GetWorldTM);
+        return spawnPointTransform;
+    }
+
+    const AZStd::vector<AZ::EntityId>& SimplePlayerSpawnerComponent::GetSpawnPoints() const
+    {
+        return m_spawnPoints;
+    }
+
+    uint32_t SimplePlayerSpawnerComponent::GetSpawnPointCount() const
+    {
+        return aznumeric_cast<uint32_t>(m_spawnPoints.size());
+    }
+
+    uint32_t SimplePlayerSpawnerComponent::GetNextSpawnPointIndex() const
+    {
+        if (m_spawnPoints.empty())
+        {
+            return 0;
+        }
+
+        if (m_spawnIndex >= m_spawnPoints.size())
+        {
+            AZ_Assert(false, "SimplePlayerSpawnerComponent has an out-of-bounds m_spawnIndex %i. Please ensure spawn index is always valid.", m_spawnIndex);
+            return static_cast<uint32_t>(-1);
+        }
+
+        return m_spawnIndex;
+    }
+
+    void SimplePlayerSpawnerComponent::SetNextSpawnPointIndex(uint32_t index)
+    {
+        if (index >= m_spawnPoints.size())
+        {
+            AZLOG_WARN("SetNextSpawnPointIndex called with out-of-bounds spawn index %i; total spawn points: %i", index, aznumeric_cast<uint32_t>(m_spawnPoints.size()));
+            return;
+        }
+
+        m_spawnIndex = index;
+    }
+
     NetworkEntityHandle SimplePlayerSpawnerComponent::OnPlayerJoin(
         [[maybe_unused]] uint64_t userId, [[maybe_unused]] const MultiplayerAgentDatum& agentDatum)
     {
         const PrefabEntityId prefabEntityId(AZ::Name(m_playerSpawnable.m_spawnableAsset.GetHint().c_str()));
-        AZ::Transform transform = AZ::Transform::Identity();
 
-        if (m_spawnPoints.empty())
-        {
-            AZLOG_WARN("SimplePlayerSpawnerComponent is missing spawn points. Spawning new player at the origin.")
-        }
-        else
-        {
-            m_spawnIndex %= m_spawnPoints.size();
-            const AZ::EntityId spawnPointEntityId = m_spawnPoints[m_spawnIndex];
-            
-            AZ::Entity* spawnPointEntity = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(
-                spawnPointEntity, &AZ::ComponentApplicationBus::Events::FindEntity, spawnPointEntityId);
-            if (spawnPointEntity != nullptr)
-            {
-                transform = spawnPointEntity->GetTransform()->GetWorldTM();
-            }
-            else
-            {
-                AZLOG_WARN("The spawn point entity id for index %i is invalid. Spawning new player at the origin.", m_spawnIndex)
-            }
-        }
-
-        ++m_spawnIndex;
+        const AZ::Transform transform = GetNextSpawnPoint();
+        m_spawnIndex = ++m_spawnIndex % m_spawnPoints.size();
 
         INetworkEntityManager::EntityList entityList =
             GetNetworkEntityManager()->CreateEntitiesImmediate(prefabEntityId, NetEntityRole::Authority, transform);
@@ -122,4 +168,4 @@ namespace Multiplayer
     {
         AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(entityHandle);
     }
-} // namespace SimplePlayerSpawnerComponent
+} // namespace Multiplayer

@@ -7,17 +7,23 @@
  */
 
 #include <AWSClientAuthSystemComponent.h>
+#include <AWSClientAuthResourceMappingConstants.h>
+
 #include <Authentication/AuthenticationProviderTypes.h>
 #include <Authentication/AuthenticationNotificationBusBehaviorHandler.h>
-#include <UserManagement/UserManagementNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationController.h>
-#include <AWSClientAuthResourceMappingConstants.h>
-#include <ResourceMapping/AWSResourceMappingBus.h>
+
 #include <Framework/AWSApiJobConfig.h>
+
 #include <ResourceMapping/AWSResourceMappingBus.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
+#include <UserManagement/UserManagementNotificationBusBehaviorHandler.h>
+
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
+
+#include <AWSCoreBus.h>
 
 namespace AZ
 {
@@ -191,8 +197,6 @@ namespace AWSClientAuth
             m_awsCognitoUserManagementController = AZStd::make_unique<AWSCognitoUserManagementController>();
             m_awsCognitoAuthorizationController = AZStd::make_unique<AWSCognitoAuthorizationController>();
         }
-
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSClientAuthEnabled);
     }
 
     void AWSClientAuthSystemComponent::Deactivate()

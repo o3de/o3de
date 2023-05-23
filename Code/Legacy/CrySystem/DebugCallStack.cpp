@@ -52,6 +52,10 @@ static bool IsFloatingPointException(EXCEPTION_POINTERS* pex);
 extern LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPointers);
 extern LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExceptionPointers, const char* szDumpPath, MINIDUMP_TYPE mdumpValue);
 
+void MarkThisThreadForDebugging(const char* name);
+void UnmarkThisThreadFromDebugging();
+void UpdateFPExceptionsMaskForThreads();
+
 //=============================================================================
 CONTEXT CaptureCurrentContext()
 {
@@ -139,6 +143,8 @@ void DebugCallStack::installErrorHandler(ISystem* pSystem)
 {
     m_pSystem = pSystem;
     prevExceptionHandler = (void*)SetUnhandledExceptionFilter(CryUnhandledExceptionHandler);
+
+    MarkThisThreadForDebugging("main");
 }
 
 //////////////////////////////////////////////////////////////////////////

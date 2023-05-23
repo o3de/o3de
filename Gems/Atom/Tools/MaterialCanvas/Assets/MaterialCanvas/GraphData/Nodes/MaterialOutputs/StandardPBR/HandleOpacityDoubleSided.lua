@@ -14,10 +14,14 @@ function GetMaterialPropertyDependencies()
 end
  
 function Process(context)
-    local doubleSided = context:GetMaterialPropertyValue_bool("general.double_sided")
+    local doubleSided = false
+    if context:HasMaterialProperty("general.double_sided") then
+        doubleSided = context:GetMaterialPropertyValue_bool("general.double_sided")
+    end
+
     local lastShader = context:GetShaderCount() - 1;
 
-    if(doubleSided) then
+    if doubleSided then
         for i=0,lastShader do
             context:GetShader(i):GetRenderStatesOverride():SetCullMode(CullMode_None)
         end

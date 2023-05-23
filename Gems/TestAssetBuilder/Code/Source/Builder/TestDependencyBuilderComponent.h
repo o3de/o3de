@@ -11,10 +11,13 @@
 #include <AzCore/Component/Component.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace TestAssetBuilder
 {

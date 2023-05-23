@@ -74,8 +74,8 @@ namespace AzToolsFramework
                     "Could not load parent entity's DOM from the focused template's DOM. "
                     "Focused template id: '%llu'.", static_cast<AZ::u64>(focusedTemplateId));
 
-                PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch,
-                    *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
+                PrefabUndoUtils::GenerateAndAppendPatch(
+                    m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
             }
 
             const AZStd::string newEntityAliasPathForPatch =
@@ -92,10 +92,8 @@ namespace AzToolsFramework
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
-                    parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
-                    newEntityDom, newEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
             }
         }
     }

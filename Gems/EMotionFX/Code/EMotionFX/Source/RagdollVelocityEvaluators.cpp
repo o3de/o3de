@@ -75,7 +75,7 @@ namespace EMotionFX
         }
 
         // Update the oldest pose in history pose ring buffer.
-        AZStd::pair<Physics::RagdollState, float> pair = AZStd::make_pair<Physics::RagdollState, float>(lastRagdollPose, timeDelta);
+        AZStd::pair<Physics::RagdollState, float> pair = AZStd::make_pair(lastRagdollPose, timeDelta);
         CalculateVelocities(pair.first, lastRagdollPose, currentRagdollPose, timeDelta);
         m_poseHistory.push_back(pair);
     }

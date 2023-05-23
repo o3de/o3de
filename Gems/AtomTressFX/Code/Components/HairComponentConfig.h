@@ -32,7 +32,7 @@ namespace AZ
 
             public:
                 AZ_CLASS_ALLOCATOR(HairComponentConfig, SystemAllocator)
-                AZ_RTTI(AZ::Render::HairComponentConfig, "{AF2C2F26-0C01-4EAD-A81C-4304BD751EDF}", AZ::ComponentConfig);
+                AZ_RTTI(HairComponentConfig, "{AF2C2F26-0C01-4EAD-A81C-4304BD751EDF}", AZ::ComponentConfig);
 
                 static void Reflect(ReflectContext* context);
 

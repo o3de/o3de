@@ -19,8 +19,6 @@ namespace AZ
 {
     namespace RPI
     {
-        using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
-
         //! This pass takes a mip mapped texture as input where the most detailed mip is already written to.
         //! It then recursively downsamples that mip to lower mip levels using the provided Compute Shader.
         //! It does this by recursively creating Compute Passes to write to each mip using the Compute Shader.

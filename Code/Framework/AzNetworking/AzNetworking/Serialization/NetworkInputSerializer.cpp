@@ -34,11 +34,6 @@ namespace AzNetworking
         return SerializeBytes((const uint8_t*)&serializeValue, sizeof(uint8_t));
     }
 
-    bool NetworkInputSerializer::Serialize(char& value, [[maybe_unused]] const char* name, char minValue, char maxValue)
-    {
-        return SerializeBoundedValue<char>(minValue, maxValue, value);
-    }
-
     bool NetworkInputSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, int8_t minValue, int8_t maxValue)
     {
         return SerializeBoundedValue<int8_t>(minValue, maxValue, value);
@@ -128,20 +123,21 @@ namespace AzNetworking
     {
         m_serializerValid &= (inputValue >= minValue);
         m_serializerValid &= (inputValue <= maxValue);
-        const uint64_t valueRange = static_cast<uint64_t>(maxValue - minValue);
+        const uint64_t valueRange = static_cast<uint64_t>(maxValue) - static_cast<uint64_t>(minValue);
+        const ORIGINAL_TYPE adjustedValue = inputValue - minValue;
         if (valueRange <= AZStd::numeric_limits<uint8_t>::max())
         {
-            return SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(inputValue - minValue));
+            return SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(adjustedValue));
         }
         else if (valueRange <= AZStd::numeric_limits<uint16_t>::max())
         {
-            return SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(inputValue - minValue));
+            return SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(adjustedValue));
         }
         else if (valueRange <= AZStd::numeric_limits<uint32_t>::max())
         {
-            return SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(inputValue - minValue));
+            return SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(adjustedValue));
         }
-        return SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(inputValue - minValue));
+        return SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(adjustedValue));
     }
 
     inline uint8_t HostToNetwork(uint8_t value)

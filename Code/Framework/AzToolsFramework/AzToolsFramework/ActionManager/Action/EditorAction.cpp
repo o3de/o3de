@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerNotificationBus.h>
 
+#include <AzCore/Interface/Interface.h>
+
 #include <QAction>
 #include <QIcon>
 
@@ -39,6 +41,7 @@ namespace AzToolsFramework
     {
         UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), this);
+        m_action->setObjectName(m_identifier.c_str());
 
         QObject::connect(
             m_action, &QAction::triggered, this,
@@ -162,7 +165,7 @@ namespace AzToolsFramework
     {
         return m_action;
     }
-    
+
     void EditorAction::AddEnabledStateCallback(AZStd::function<bool()> enabledStateCallback)
     {
         if (enabledStateCallback)

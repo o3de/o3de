@@ -503,7 +503,7 @@ if not PATH_O3DE_PROJECT:
 # 3, we can see if a global project is set as the default
 if not PATH_O3DE_PROJECT:
     O3DE_BOOTSTRAP_DATA = None
-    if O3DE_BOOTSTRAP_PATH.resolve(strict=True):
+    if O3DE_BOOTSTRAP_PATH.resolve().exists:
         try:
             with open(O3DE_BOOTSTRAP_PATH, "r") as data:
                 O3DE_BOOTSTRAP_DATA = json.load(data)

@@ -10,7 +10,6 @@
 
 // include core system
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include "EMotionFXConfig.h"
 
 
@@ -33,7 +32,7 @@ namespace EMotionFX
         MCORE_MEMORYOBJECTCATEGORY(KeyFrame, EMFX_DEFAULT_ALIGNMENT, EMFX_MEMCATEGORY_MOTIONS_KEYTRACKS);
 
     public:
-        AZ_TYPE_INFO_LEGACY(EMotionFX::KeyFrame, "{BCB35EA0-4C4C-4482-B32A-5E1D1F461D3D}", StorageType)
+        AZ_TYPE_INFO_WITH_NAME(KeyFrame, "EMotionFX::KeyFrame", "{BCB35EA0-4C4C-4482-B32A-5E1D1F461D3D}", StorageType);
 
         /**
          * Default constructor.
@@ -108,5 +107,6 @@ namespace EMotionFX
     };
 
     // include inline code
-#include "KeyFrame.inl"
 } // namespace EMotionFX
+
+#include "KeyFrame.inl"

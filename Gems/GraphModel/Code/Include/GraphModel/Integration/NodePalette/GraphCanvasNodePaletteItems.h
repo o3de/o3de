@@ -8,14 +8,17 @@
 
 #pragma once
 
-// AZ
-#include <AzCore/Serialization/SerializeContext.h>
 
 // Graph Canvas
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 #include <GraphCanvas/Widgets/GraphCanvasMimeEvent.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace GraphModelIntegration
 {
@@ -27,17 +30,7 @@ namespace GraphModelIntegration
         AZ_RTTI(CreateGraphCanvasNodeMimeEvent, "{7171A847-7405-459F-A031-CC9AE50745B6}", GraphCanvas::GraphCanvasMimeEvent);
         AZ_CLASS_ALLOCATOR(CreateGraphCanvasNodeMimeEvent, AZ::SystemAllocator);
 
-        static void Reflect(AZ::ReflectContext* reflectContext)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-
-            if (serializeContext)
-            {
-                serializeContext->Class<CreateGraphCanvasNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
-                    ->Version(0)
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateGraphCanvasNodeMimeEvent() = default;
         ~CreateGraphCanvasNodeMimeEvent() = default;
@@ -80,17 +73,7 @@ namespace GraphModelIntegration
         AZ_RTTI(CreateCommentNodeMimeEvent, "{1060EE7B-DBC2-4B7F-BC4C-4AB4651A3812}", CreateGraphCanvasNodeMimeEvent);
         AZ_CLASS_ALLOCATOR(CreateCommentNodeMimeEvent, AZ::SystemAllocator);
 
-        static void Reflect(AZ::ReflectContext* reflectContext)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-
-            if (serializeContext)
-            {
-                serializeContext->Class<CreateCommentNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
-                    ->Version(0)
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateCommentNodeMimeEvent() = default;
         ~CreateCommentNodeMimeEvent() = default;
@@ -119,7 +102,7 @@ namespace GraphModelIntegration
         {
             return aznew CreateCommentNodeMimeEvent();
         }
-    };    
+    };
 
     ////////////////////////////////////////////////////////////////////////////////////
     // Node Group Node
@@ -131,17 +114,7 @@ namespace GraphModelIntegration
         AZ_RTTI(CreateNodeGroupNodeMimeEvent, "{1451A2F2-640B-4CB3-BF48-DD77E97EC900}", CreateGraphCanvasNodeMimeEvent);
         AZ_CLASS_ALLOCATOR(CreateNodeGroupNodeMimeEvent, AZ::SystemAllocator);
 
-        static void Reflect(AZ::ReflectContext* reflectContext)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
-
-            if (serializeContext)
-            {
-                serializeContext->Class<CreateNodeGroupNodeMimeEvent, GraphCanvas::GraphCanvasMimeEvent>()
-                    ->Version(0)
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateNodeGroupNodeMimeEvent() = default;
         ~CreateNodeGroupNodeMimeEvent() = default;

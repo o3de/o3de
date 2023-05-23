@@ -6,6 +6,8 @@
 #
 #
 
+include_guard()
+
 string(TIMESTAMP current_year "%Y")
 set(O3DE_COPYRIGHT_YEAR ${current_year} CACHE STRING "Open 3D Engine's copyright year")
 
@@ -13,6 +15,83 @@ set(O3DE_COPYRIGHT_YEAR ${current_year} CACHE STRING "Open 3D Engine's copyright
 ly_file_read("${LY_ROOT_FOLDER}/engine.json" tmp_json_data)
 set_property(GLOBAL PROPERTY O3DE_ENGINE_JSON_DATA ${tmp_json_data})
 unset(tmp_json_data)
+
+#! o3de_get_name_and_version_specifier: Parse the dependency name, and optional version 
+# operator and version from the supplied input string. 
+# \arg:input - the input string e.g. o3de==1.0.0
+# \arg:dependency_name - the name to the left of any optional version specifier
+# \arg:operator - the version specifier operator e.g. == 
+# \arg:version - the version specifier version e.g. 1.0.0
+function(o3de_get_name_and_version_specifier input dependency_name operator version)
+    if("${input}" MATCHES "^(.*)(~=|==|!=|<=|>=|<|>|===)(.*)$")
+        if(${CMAKE_MATCH_COUNT} GREATER_EQUAL 1)
+            string(STRIP ${CMAKE_MATCH_1} _dependency_name)
+            set(${dependency_name} ${_dependency_name} PARENT_SCOPE)
+        endif()
+        if(${CMAKE_MATCH_COUNT} GREATER_EQUAL 2)
+            set(${operator} ${CMAKE_MATCH_2} PARENT_SCOPE)
+        endif()
+        if(${CMAKE_MATCH_COUNT} GREATER_EQUAL 3)
+            string(STRIP ${CMAKE_MATCH_3} _version)
+            set(${version} ${_version} PARENT_SCOPE)
+        endif()
+    else()
+        # format unknown, assume it's just the dependency name
+        set(${dependency_name} ${input} PARENT_SCOPE)
+    endif()
+endfunction()
+
+#! o3de_get_version_compatible: Check if the input version is compatible based on
+# the operator and specifier version provided
+# \arg:version - input version to check  e.g. 1.0.0
+# \arg:op - the version specifier operator e.g. ==
+# \arg:specifier_version - the version part of the version specifier  e.g. 1.2.0
+# \arg:is_compatible - TRUE if version is compatible otherwise FALSE 
+function(o3de_get_version_compatible version op specifier_version is_compatible)
+    set(contains_version FALSE)
+
+    if(op STREQUAL "==" AND version VERSION_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "!=" AND NOT version VERSION_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "<=" AND version VERSION_LESS_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL ">=" AND version VERSION_GREATER_EQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "<" AND version VERSION_LESS specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL ">" AND version VERSION_GREATER specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "===" AND version STREQUAL specifier_version)
+        set(contains_version TRUE)
+    elseif(op STREQUAL "~=")
+        # compatible versions have an equivalent combination of >= and == 
+        # e.g. ~=2.2 is equivalent to >=2.2,==2.*
+        if(version VERSION_GREATER_EQUAL specifier_version)
+            string(REPLACE "." ";" specifier_version_part_list ${specifier_version})
+            list(LENGTH specifier_version_part_list list_length)
+            if(list_length LESS 2)
+                # truncating would leave nothing to compare 
+                set(contains_version TRUE)
+            else()
+                # trim the last version part because CMake doesn't support '*'
+                math(EXPR truncated_length "${list_length} - 1")
+                list(SUBLIST specifier_version_part_list 0 ${truncated_length} specifier_version)
+                string(REPLACE ";" "." specifier_version "${specifier_version}")
+                string(REPLACE "." ";" version_part_list ${version})
+                list(SUBLIST version_part_list 0 ${truncated_length} version)
+                string(REPLACE ";" "." version "${version}")
+
+                # compare the truncated versions
+                if(version VERSION_EQUAL specifier_version)
+                    set(contains_version TRUE)
+                endif()
+            endif()
+        endif()
+    endif()
+
+    set(${is_compatible} ${contains_version} PARENT_SCOPE)
+endfunction()
 
 #! o3de_read_engine_default: Read a field from engine.json or use the default if not found
 # \arg:output_value - name of output variable to set 

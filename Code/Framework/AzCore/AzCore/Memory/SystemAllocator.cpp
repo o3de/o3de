@@ -25,6 +25,8 @@
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SystemAllocator, "SystemAllocator", "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SystemAllocator, AllocatorBase);
 
     SystemAllocator::SystemAllocator()
     {
@@ -128,7 +130,7 @@ namespace AZ
         pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
 
 #if defined(AZ_ENABLE_TRACING)
-        const size_type allocatedSize = get_allocated_size(newAddress, 1);
+        [[maybe_unused]] const size_type allocatedSize = get_allocated_size(newAddress, 1);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
 #endif

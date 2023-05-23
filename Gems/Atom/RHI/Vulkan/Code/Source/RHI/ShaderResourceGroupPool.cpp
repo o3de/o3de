@@ -84,6 +84,7 @@ namespace AZ
                 {
                     return RHI::ResultCode::OutOfMemory;
                 }
+                descriptorSet->SetName(GetName());
                 group.m_compiledData.push_back(descriptorSet);
             }
             

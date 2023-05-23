@@ -393,7 +393,7 @@ namespace AZ
                     range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
                 }
 
-                RHI::ImageSubresourceLayoutPlaced imageSubresourceLayout;
+                RHI::ImageSubresourceLayout imageSubresourceLayout;
                 image->GetSubresourceLayouts(range, &imageSubresourceLayout, nullptr);
 
                 RPI::CommonBufferDescriptor desc;

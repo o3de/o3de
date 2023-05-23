@@ -48,7 +48,7 @@ namespace AZ
 
             struct RuntimeControls
             {
-                AZ_TYPE_INFO(AZ::RPI::MaterialPipelineSourceData::MaterialPipelineSourceData, "{C5D3BFD5-876A-461F-BBC8-5A3429ACDC28}");
+                AZ_TYPE_INFO(RuntimeControls, "{C5D3BFD5-876A-461F-BBC8-5A3429ACDC28}");
 
                 AZStd::vector<MaterialPropertySourceData> m_materialTypeInternalProperties;
 

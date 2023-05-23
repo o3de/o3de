@@ -264,7 +264,7 @@ namespace EMotionFX
     void MotionSet::AddMotionEntry(MotionEntry* motionEntry)
     {
         MCore::LockGuardRecursive lock(m_mutex);
-        m_motionEntries.insert(AZStd::make_pair<AZStd::string, MotionEntry*>(motionEntry->GetId(), motionEntry));
+        m_motionEntries.insert(AZStd::make_pair(motionEntry->GetId(), motionEntry));
     }
 
 

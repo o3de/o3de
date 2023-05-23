@@ -125,6 +125,7 @@ namespace AzFramework
         // WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
         WindowSize GetClientAreaSize() const override;
+        WindowSize GetMaximumClientAreaSize() const override;
         void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override;
         bool GetFullScreenState() const override;
@@ -175,6 +176,7 @@ namespace AzFramework
 
             virtual void SetWindowTitle(const AZStd::string& title);
             virtual WindowSize GetClientAreaSize() const;
+            virtual WindowSize GetMaximumClientAreaSize() const;
             virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options);
             virtual bool SupportsClientAreaResize() const;
             virtual bool GetFullScreenState() const;

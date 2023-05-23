@@ -19,6 +19,16 @@
 
 namespace GradientSignal
 {
+    class EditorImageGradientComponent;
+
+    // Due to the EditorImageGradientComponent having a member where it passes itself as the type below
+    // `PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>`
+    // The AzTypeInfo can't be queried due to EditorImageGradientComponent still be defined
+    // First the AzTypeInfo is defined using the forward declaration above
+    // Next the `AZ_RTTI_NO_TYPE_INFO_DECL` is used to declare the RTTI member and static functions within the class
+    // Finally the AZ_RTTI_NO_TYPE_INFO_IMPL is used to implement the RTTI functions in the cpp file
+    AZ_TYPE_INFO_SPECIALIZE(EditorImageGradientComponent, EditorImageGradientComponentTypeId);
+
     // This class inherits from EditorComponentBase instead of EditorGradientComponentBase / EditorWrappedComponentBase so that
     // we can have control over where the Editor-specific parameters for image creation and editing appear in the component
     // relative to the other runtime-only settings.
@@ -29,8 +39,10 @@ namespace GradientSignal
         , private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(
-            EditorImageGradientComponent, EditorImageGradientComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorImageGradientComponent);
+        AZ_COMPONENT_BASE(EditorImageGradientComponent);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+
         static void Reflect(AZ::ReflectContext* context);
 
         static constexpr const char* const s_categoryName = "Gradients";

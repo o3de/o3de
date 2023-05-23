@@ -77,6 +77,7 @@ namespace UnitTest
 
             MockShapeComponent::CreateDescriptor(),
             MockSurfaceProviderComponent::CreateDescriptor(),
+            MockGradientSignal::CreateDescriptor()
         });
     }
 

@@ -67,7 +67,7 @@ namespace AZ
                 Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
                 m_visualizationMaterial = AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset);
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_visualizationMeshHandle, m_visualizationMaterial);
+                m_meshFeatureProcessor->SetCustomMaterials(m_visualizationMeshHandle, m_visualizationMaterial);
             }
         }
 

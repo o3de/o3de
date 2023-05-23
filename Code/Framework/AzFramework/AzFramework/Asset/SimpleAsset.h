@@ -191,7 +191,7 @@ namespace AZ
     };
 
     //! This is being declared so that azrtti_typeid<AzFramework::SimpleAssetReference>() will work
-    AZ_TYPE_INFO_INTERNAL_VARIATION_GENERIC(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId)
+    AZ_TYPE_INFO_TEMPLATE(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId, AZ_TYPE_INFO_CLASS);
 }
 
 #endif // AZFRAMEWORK_SIMPLEASSET_H

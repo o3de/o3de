@@ -58,7 +58,7 @@ namespace ImageProcessingAtom
 
         ////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationsBus::Handler
-        void AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
+        void AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////

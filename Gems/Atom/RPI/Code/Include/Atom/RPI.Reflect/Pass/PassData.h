@@ -7,10 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RPI
     {
         //! Specifies a connection that will be pointed to by the pipeline for global reference
@@ -23,7 +27,7 @@ namespace AZ
             //! The pipeline global name that other passes can use to reference the connection in a global way
             Name m_globalName;
 
-            //! Name of the local binding on the pass to expose at a pipeline level for reference in a global way 
+            //! Name of the local binding on the pass to expose at a pipeline level for reference in a global way
             Name m_localBinding;
         };
 

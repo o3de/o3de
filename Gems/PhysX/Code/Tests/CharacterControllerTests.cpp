@@ -140,6 +140,27 @@ namespace PhysX
 
     Physics::ShapeType controllerShapeTypes[] = { Physics::ShapeType::Capsule, Physics::ShapeType::Box };
 
+    TEST_F(PhysXDefaultWorldTest, CharacterControllerWhenRotationSetReturnsCorrectRotation)
+    {
+        ControllerTestBasis basis(m_testSceneHandle);
+        basis.Update(AZ::Vector3::CreateZero());
+
+        // Set an arbitrary character rotation and base position through separate calls.
+        // We deliberately set the rotation first and the base position second so that we can also verify
+        // that setting the position *after* the rotation hasn't reintroduced a regression where setting the position
+        // would clear the rotation.
+        const AZ::Vector3 arbitraryPosition = AZ::Vector3(300.0f, 200.0f, 100.0f);
+        const AZ::Quaternion arbitraryRotation = AZ::Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(10.0f, 20.0f, 30.0f));
+        basis.m_controller->SetRotation(arbitraryRotation);
+        basis.m_controller->SetBasePosition(arbitraryPosition);
+
+        auto characterTransform = basis.m_controller->GetTransform();
+
+        // Verify that both the position and rotation are the same as what we set.
+        EXPECT_EQ(characterTransform.GetTranslation(), arbitraryPosition);
+        EXPECT_EQ(characterTransform.GetRotation(), arbitraryRotation);
+    }
+
     TEST_F(PhysXDefaultWorldTest, CharacterController_UnimpededController_MovesAtDesiredVelocity)
     {
         ControllerTestBasis basis(m_testSceneHandle);

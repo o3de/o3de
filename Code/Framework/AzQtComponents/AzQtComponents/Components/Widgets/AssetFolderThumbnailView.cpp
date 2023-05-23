@@ -7,17 +7,20 @@
  */
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
+#include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
-#include <QAbstractItemDelegate>
+#include <QGuiApplication>
+#include <QLineEdit>
+#include <QMenu>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QScrollBar>
 #include <QSettings>
-#include <QMenu>
+#include <QStyledItemDelegate>
 AZ_POP_DISABLE_WARNING
 
 namespace
@@ -112,22 +115,8 @@ namespace AzQtComponents
         painter->drawConvexPolygon(caret);
     }
 
-    class AssetFolderThumbnailViewDelegate : public QAbstractItemDelegate
-    {
-    public:
-        explicit AssetFolderThumbnailViewDelegate(QObject* parent = nullptr);
-
-        void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-
-        void polish(const AssetFolderThumbnailView::Config& config);
-
-    private:
-        AssetFolderThumbnailView::Config m_config;
-    };
-
     AssetFolderThumbnailViewDelegate::AssetFolderThumbnailViewDelegate(QObject* parent)
-        : QAbstractItemDelegate(parent)
+        : QStyledItemDelegate(parent)
     {
     }
 
@@ -169,11 +158,20 @@ namespace AzQtComponents
 
         // pixmap
 
-        const auto& iconVariant = index.data(Qt::DecorationRole);
-        if (!iconVariant.isNull())
+        const auto& qVariant = index.data(Qt::DecorationRole);
+        if (!qVariant.isNull())
         {
-            const auto& icon = iconVariant.value<QIcon>();
-            icon.paint(painter, imageRect);
+            QIcon icon;
+            if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
+            {
+                icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
+            else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+            {
+                icon.addPixmap(pixmap.scaled(imageRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
         }
 
         if (isTopLevel)
@@ -233,6 +231,42 @@ namespace AzQtComponents
         m_config = config;
     }
 
+    QWidget* AssetFolderThumbnailViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        QWidget* widget = QStyledItemDelegate::createEditor(parent, option, index);
+        QLineEdit* lineEdit = qobject_cast<QLineEdit*>(widget);
+        if (lineEdit)
+        {
+            connect(
+                lineEdit,
+                &QLineEdit::editingFinished,
+                this,
+                [this]()
+                {
+                    auto sendingLineEdit = qobject_cast<QLineEdit*>(sender());
+                    if (sendingLineEdit)
+                    {
+                        emit RenameThumbnail(sendingLineEdit->text());
+                    }
+                });
+        }
+        return widget;
+    }
+
+    void AssetFolderThumbnailViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    {
+        if (QLineEdit* lineEdit = qobject_cast<QLineEdit*>(editor))
+        {
+            const auto& rect = option.rect;
+            const auto textHeight = option.fontMetrics.height();
+            const auto textRect = QRect{ rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2 };
+            lineEdit->setGeometry(textRect);
+            lineEdit->setMaximumWidth(rect.width());
+            return;
+        }
+        QStyledItemDelegate::updateEditorGeometry(editor, option, index);
+    }
+
     static void readColor(QSettings& settings, const QString& name, QColor& color)
     {
         // only overwrite the value if it's set; otherwise, it'll stay the default
@@ -283,6 +317,7 @@ namespace AzQtComponents
         config.topItemsVerticalSpacing = settings.value(QStringLiteral("TopItemsVerticalSpacing"), config.topItemsVerticalSpacing).toInt();
         config.childrenItemsHorizontalSpacing =
             settings.value(QStringLiteral("ChildrenItemsHorizontalSpacing"), config.childrenItemsHorizontalSpacing).toInt();
+        config.scrollSpeed = settings.value(QStringLiteral("ScrollSpeed"), config.scrollSpeed).toInt();
 
         settings.beginGroup(QStringLiteral("RootThumbnail"));
         readThumbnail(settings, config.rootThumbnail);
@@ -311,6 +346,7 @@ namespace AzQtComponents
         config.topItemsHorizontalSpacing = 18;
         config.topItemsVerticalSpacing = 18;
         config.childrenItemsHorizontalSpacing = 7;
+        config.scrollSpeed = 45;
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
@@ -376,6 +412,22 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
+        setSelectionMode(ExtendedSelection);
+        connect(
+            m_delegate,
+            &AssetFolderThumbnailViewDelegate::RenameThumbnail,
+            this,
+            [this](const QString& value)
+            {
+                emit afterRename(value);
+            });
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -496,12 +548,6 @@ namespace AzQtComponents
         }
     }
 
-    void AssetFolderThumbnailView::RefreshThumbnailview()
-    {
-        updateGeometries();
-        update();
-    }
-
     QModelIndex AssetFolderThumbnailView::moveCursor(QAbstractItemView::CursorAction cursorAction, Qt::KeyboardModifiers modifiers)
     {
         Q_UNUSED(modifiers);
@@ -591,7 +637,7 @@ namespace AzQtComponents
 
     bool AssetFolderThumbnailView::isExpandable(const QModelIndex& index) const
     {
-        return (m_hideProductAssets ? false : index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>());
+        return index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>();
     }
 
     void AssetFolderThumbnailView::paintEvent(QPaintEvent* event)
@@ -709,7 +755,6 @@ namespace AzQtComponents
         const auto p = event->pos() + QPoint{horizontalOffset(), verticalOffset()};
 
         // check the expand/collapse buttons on one of the top level items was clicked
-
         {
             auto it = std::find_if(
                 m_itemGeometry.keyBegin(),
@@ -745,9 +790,49 @@ namespace AzQtComponents
         auto idx = indexAtPos(p);
         if (idx.isValid())
         {
-            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-            emit clicked(idx);
+            bool isRightClick = event->button() == Qt::RightButton;
+            if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ControlModifier)
+            {
+                auto selectionFlag = isRightClick ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Toggle;
+                selectionModel()->select(idx, selectionFlag);
+            }
+            else if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ShiftModifier)
+            {
+                auto selectedIndex =
+                    (selectionModel()->hasSelection() ? selectionModel()->currentIndex() : model()->index(0, 0, rootIndex()));
+                QItemSelectionRange indexRange;
+                if (selectedIndex.row() < idx.row())
+                {
+                    indexRange = QItemSelectionRange(selectedIndex, idx);
+                }
+                else if (selectedIndex.row() > idx.row())
+                {
+                    indexRange = QItemSelectionRange(idx, selectedIndex);
+                }
+                if (!indexRange.isEmpty())
+                {
+                    QItemSelectionModel::SelectionFlag selectionFlag;
+                    if (selectionModel()->isSelected(idx) && !isRightClick)
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Deselect;
+                    }
+                    else
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Select;
+                    }
+                    for (auto index : indexRange.indexes())
+                    {
+                        selectionModel()->select(index, selectionFlag);
+                    }
+                }
+            }
+            else if (!selectionModel()->isSelected(idx))
+            {
+                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            }
             update();
+            // Pass event to base class to enable drag/drop selections.
+            QAbstractItemView::mousePressEvent(event);
             return;
         }
 
@@ -801,31 +886,9 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-        // For now we only have a context menu in search mode for the "show in folder" option
-        if (!m_showSearchResultsMode)
-        {
-            return;
-        }
-
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
-
-        if (idx.isValid())
-        {
-            m_contextMenu = new QMenu(this);
-            auto action = m_contextMenu->addAction("Show In Folder");
-            connect(
-                action,
-                &QAction::triggered,
-                this,
-                [this, idx]()
-                {
-                    emit showInFolderTriggered(idx);
-                });
-            m_contextMenu->exec(event->globalPos());
-            delete m_contextMenu;
-            m_contextMenu = nullptr;
-        }
+        emit contextMenu(idx);
     }
 
     int AssetFolderThumbnailView::rootThumbnailSizeInPixels() const
@@ -836,6 +899,29 @@ namespace AzQtComponents
     int AssetFolderThumbnailView::childThumbnailSizeInPixels() const
     {
         return m_config.childThumbnail.width;
+    }
+
+    void AssetFolderThumbnailView::rowsInserted(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsInserted(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
+    {
+        scheduleDelayedItemsLayout();
+
+        QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
+    }
+
+    void AssetFolderThumbnailView::reset()
+    {
+        m_itemGeometry.clear();
+        m_expandedIndexes.clear();
+        m_childFrames.clear();
+
+        QAbstractItemView::reset();
     }
 
     void AssetFolderThumbnailView::updateGeometries()
@@ -864,6 +950,7 @@ namespace AzQtComponents
         }
 
         verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setSingleStep(m_config.scrollSpeed);
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 
@@ -997,11 +1084,10 @@ namespace AzQtComponents
         m_showSearchResultsMode = searchMode;
     }
 
-    void AssetFolderThumbnailView::HideProductAssets(bool checked)
+    bool AssetFolderThumbnailView::InSearchResultsMode() const
     {
-        m_hideProductAssets = checked;
+        return m_showSearchResultsMode;
     }
-
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderThumbnailView.cpp"

@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
 #include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
+#include <AzCore/Component/Component.h>
 
 namespace AZ
 {

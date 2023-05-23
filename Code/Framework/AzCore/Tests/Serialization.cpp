@@ -950,7 +950,7 @@ namespace SerializeTestClasses
     class ClassThatAllocatesMemoryInDefaultCtor final
     {
     public:
-        AZ_RTTI("ClassThatAllocatesMemoryInDefaultCtor", "{CF9B593D-A19E-467B-8370-28AF68D2F345}")
+        AZ_RTTI(ClassThatAllocatesMemoryInDefaultCtor, "{CF9B593D-A19E-467B-8370-28AF68D2F345}")
         AZ_CLASS_ALLOCATOR(ClassThatAllocatesMemoryInDefaultCtor, AZ::SystemAllocator)
 
         ClassThatAllocatesMemoryInDefaultCtor()
@@ -975,7 +975,7 @@ namespace SerializeTestClasses
         class InstanceTracker final
         {
         public:
-            AZ_RTTI("InstanceTracker", "{DED6003B-11E0-454C-B170-4889697815A0}");
+            AZ_RTTI(InstanceTracker, "{DED6003B-11E0-454C-B170-4889697815A0}");
             AZ_CLASS_ALLOCATOR(InstanceTracker, AZ::SystemAllocator);
 
             InstanceTracker()
@@ -6394,37 +6394,37 @@ namespace UnitTest
         EXPECT_EQ(0U, RootElementMemoryTracker::s_allocatedInstance);
     }
 
+    struct EmptyDeprecatedClass
+    {
+        AZ_TYPE_INFO(EmptyDeprecatedClass, "{73890A64-9ADB-4639-B0E0-93294CE81B19}");
+    };
+
+    struct ConvertedNewClass
+    {
+        AZ_TYPE_INFO(ConvertedNewClass, "{BE892776-3830-43E5-873C-38A1CA6EF4BB}");
+        int32_t m_value{ 5 };
+    };
+
+    struct AggregateTestClassV1
+    {
+        AZ_TYPE_INFO(AggregateTestClassV1, "{088E3B16-4D93-4116-A747-706BE132AF5F}");
+        EmptyDeprecatedClass m_testField;
+        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        EmptyDeprecatedClass m_value;
+    };
+
+    struct AggregateTestClassV2
+    {
+        // AggregateTestClassV2 Uuid should match version 1, It isn't the class that
+        // is being converted, but it's m_value that is.
+        AZ_TYPE_INFO(AggregateTestClassV2, "{088E3B16-4D93-4116-A747-706BE132AF5F}");
+        ConvertedNewClass m_testField;
+        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        ConvertedNewClass m_value;
+    };
+
     TEST_F(ObjectStreamSerialization, LoadNonDeprecatedElement_FollowedByZeroSizeDeprecatedElement_DoesNotAssert)
     {
-        struct EmptyDeprecatedClass
-        {
-            AZ_TYPE_INFO(EmptyDeprecatedClass, "{73890A64-9ADB-4639-B0E0-93294CE81B19}");
-        };
-
-        struct ConvertedNewClass
-        {
-            AZ_TYPE_INFO(ConvertedNewClass, "{BE892776-3830-43E5-873C-38A1CA6EF4BB}");
-            int32_t m_value{ 5 };
-        };
-
-        struct AggregateTestClassV1
-        {
-            AZ_TYPE_INFO(AggregateTestClassV1, "{088E3B16-4D93-4116-A747-706BE132AF5F}");
-            EmptyDeprecatedClass m_testField;
-            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
-            EmptyDeprecatedClass m_value;
-        };
-
-        struct AggregateTestClassV2
-        {
-            // AggregateTestClassV2 Uuid should match version 1, It isn't the class that
-            // is being converted, but it's m_value that is.
-            AZ_TYPE_INFO(AggregateTestClassV1, "{088E3B16-4D93-4116-A747-706BE132AF5F}");
-            ConvertedNewClass m_testField;
-            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
-            ConvertedNewClass m_value;
-        };
-
         m_serializeContext->Class<EmptyDeprecatedClass>();
         m_serializeContext->Class<AggregateTestClassV1>()
             ->Field("m_testField", &AggregateTestClassV1::m_testField)
@@ -7680,7 +7680,7 @@ namespace UnitTest
     TEST_F(Serialization, CustomSerializerWithDefaultDeleter_IsDeletedOnUnreflect)
     {
         bool serializerDeleted = false;
-        AZ::SerializeContext::IDataSerializerPtr customSerializer{ new TestDeleterSerializer{ serializerDeleted }, AZ::SerializeContext::IDataSerializer::CreateDefaultDeleteDeleter() };
+        AZ::Serialize::IDataSerializerPtr customSerializer{ new TestDeleterSerializer{ serializerDeleted }, AZ::SerializeContext::IDataSerializer::CreateDefaultDeleteDeleter() };
         m_serializeContext->Class<TestLeafNode>()
             ->Version(1)
             ->Serializer(AZStd::move(customSerializer));
@@ -7697,7 +7697,7 @@ namespace UnitTest
     {
         bool serializerDeleted = false;
         TestDeleterSerializer* serializerInstance = new TestDeleterSerializer{ serializerDeleted };
-        AZ::SerializeContext::IDataSerializerPtr customSerializer{ serializerInstance, AZ::SerializeContext::IDataSerializer::CreateNoDeleteDeleter() };
+        AZ::Serialize::IDataSerializerPtr customSerializer{ serializerInstance, AZ::SerializeContext::IDataSerializer::CreateNoDeleteDeleter() };
         m_serializeContext->Class<TestLeafNode>()
             ->Version(1)
             ->Serializer(AZStd::move(customSerializer));
@@ -8055,7 +8055,7 @@ namespace UnitTest
             ->Field("m_value", &NoTypeInfoNonReflectedEnumWrapper::m_value)
             ;
 
-        static_assert(!AZ::Internal::HasAZTypeInfo<TestNoTypeInfoEnum>::value, "Test enum type should not have AzTypeInfo");
+        static_assert(AZ::Internal::HasAZTypeInfo<TestNoTypeInfoEnum>::value, "Test enum type should not have AzTypeInfo");
         NoTypeInfoNonReflectedEnumWrapper testObject;
         testObject.m_value = TestNoTypeInfoEnum::Second;
         AZStd::vector<uint8_t> byteBuffer;

@@ -9,13 +9,13 @@
 #pragma once
 
 
-float3 ApplyFilmicTonemap(float3 color)
+real3 ApplyFilmicTonemap(real3 color)
 {
     // Apply filmic curve. 
     return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7)+ 0.06);
 }
 
-float3 ApplyManualExposure(float3 color, float exposure)
+real3 ApplyManualExposure(real3 color, real exposure)
 {
     // Apply Manual exposure
     return color * pow(2.0, exposure);

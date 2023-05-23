@@ -211,7 +211,7 @@ set(FILES
     Source/Animation/AnimSequence.cpp
     Source/Animation/AnimSequence.h
     Source/Animation/AnimSplineTrack.h
-    Source/Animation/AnimSplineTrack_Vec2Specialization.h
+    Source/Animation/AnimSplineTrack_Vec2Specialization.cpp
     Source/Animation/AnimTrack.h
     Source/Animation/AzEntityNode.cpp
     Source/Animation/AzEntityNode.h

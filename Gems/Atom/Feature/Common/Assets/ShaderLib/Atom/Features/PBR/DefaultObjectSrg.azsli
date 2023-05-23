@@ -28,6 +28,11 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 
+    float4x4 GetWorldMatrixPrev()
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(m_objectId);
+    }
+
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;
 }

@@ -34,9 +34,11 @@ namespace AZ
 
             // Pass Overrides...
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-            bool IsEnabled() const override;
 
-            mutable uint32_t m_frameDelayCount = 0;
+            RHI::ShaderInputNameIndex m_outputScaleNameIndex = "m_outputScale";
+            RHI::ShaderInputNameIndex m_outputWidthNameIndex = "m_outputWidth";
+            RHI::ShaderInputNameIndex m_outputHeightNameIndex = "m_outputHeight";
+            RHI::ShaderInputNameIndex m_maxRoughnessNameIndex = "m_maxRoughness";
         };
     }   // namespace RPI
 }   // namespace AZ

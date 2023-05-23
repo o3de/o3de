@@ -44,8 +44,6 @@ namespace LUAEditor
         void OnScopeNamesUpdated(const QStringList& scopeNames);
 
     private:
-        const char* c_luaSplit{R"([.:])"};
-
         void LUALibraryFunctionsUpdated() override;
         void UpdateKeywords();
 

@@ -63,6 +63,7 @@ namespace AZ
 
             bool IsValid() const;
 
+            bool operator<(const InstanceId& rhs) const;
             bool operator==(const InstanceId& rhs) const;
             bool operator!=(const InstanceId& rhs) const;
 
@@ -77,7 +78,10 @@ namespace AZ
 
             // Pointer used to uniquely identify a version of the data, usually an asset. It is not intended to be
             // dereferenced or used to access asset data.
-            void* m_versionId = nullptr; 
+            void* m_versionId = nullptr;
+
+            private:
+            auto MakeTie() const;
         };
 
         template<class StringType>

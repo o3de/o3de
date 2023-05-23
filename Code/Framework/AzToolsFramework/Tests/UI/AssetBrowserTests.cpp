@@ -14,7 +14,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserListModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
@@ -75,7 +75,7 @@ namespace UnitTest
 
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserModel> m_assetBrowserModel;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
-        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
+        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserListModel> m_tableModel;
 
         AZStd::unique_ptr<::testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
         AZ::IO::FileIOBase* m_prevFileIO = nullptr;
@@ -95,7 +95,7 @@ namespace UnitTest
 
         m_assetBrowserModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserModel>();
         m_filterModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel>();
-        m_tableModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserTableModel>();
+        m_tableModel = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserListModel>();
 
         m_rootEntry = AZStd::make_shared<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry>();
         m_assetBrowserModel->SetRootEntry(m_rootEntry);
@@ -239,6 +239,29 @@ namespace UnitTest
                 return false;
             }
         );
+
+        ON_CALL(*m_fileIOMock, Open(::testing::_, ::testing::_, ::testing::_))
+            .WillByDefault(
+                [&](auto filePath, auto, AZ::IO::HandleType& handle)
+                {
+                    handle = AZ::u32(AZStd::hash<AZStd::string>{}(filePath));
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
+        ON_CALL(*m_fileIOMock, Close(::testing::_))
+            .WillByDefault(
+                [&](AZ::IO::HandleType /* handle*/)
+                {
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
+
+        ON_CALL(*m_fileIOMock, Size(testing::An<AZ::IO::HandleType>(), ::testing::_))
+            .WillByDefault(
+                [&](AZ::IO::HandleType /* handle*/, auto& size)
+                {
+                    size = 0;
+                    return AZ::IO::Result(AZ::IO::ResultCode::Success);
+                });
 
         using namespace testing;
 

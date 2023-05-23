@@ -46,24 +46,24 @@ namespace GraphModel
     //! counter, not an index of the current slots
     using SlotName = AZStd::string;
     using SlotSubId = int;
-    struct SlotIdData
+    struct SlotId
     {
     public:
-        AZ_TYPE_INFO(SlotIdData, "{D24130B9-89C4-4EAA-9A5D-3469B05C5065}");
+        AZ_TYPE_INFO(SlotId, "{D24130B9-89C4-4EAA-9A5D-3469B05C5065}");
 
         static void Reflect(AZ::ReflectContext* context);
 
-        SlotIdData() = default;
-        explicit SlotIdData(const SlotName& name);
-        explicit SlotIdData(const SlotName& name, SlotSubId subId);
-        ~SlotIdData() = default;
+        SlotId() = default;
+        SlotId(const SlotName& name);
+        SlotId(const SlotName& name, SlotSubId subId);
+        ~SlotId() = default;
 
         bool IsValid() const;
 
-        bool operator==(const SlotIdData& rhs) const;
-        bool operator!=(const SlotIdData& rhs) const;
-        bool operator<(const SlotIdData& rhs) const;
-        bool operator>(const SlotIdData& rhs) const;
+        bool operator==(const SlotId& rhs) const;
+        bool operator!=(const SlotId& rhs) const;
+        bool operator<(const SlotId& rhs) const;
+        bool operator>(const SlotId& rhs) const;
 
         AZStd::size_t GetHash() const;
 
@@ -71,22 +71,6 @@ namespace GraphModel
         SlotSubId m_subId = 0;
     };
 
-    struct ExtendableSlotConfiguration
-    {
-    public:
-        AZ_TYPE_INFO(ExtendableSlotConfiguration, "{ACD18AD2-AD90-408C-9C11-920C2A8D77EC}");
-        AZ_CLASS_ALLOCATOR(ExtendableSlotConfiguration, AZ::SystemAllocator);
-
-        ExtendableSlotConfiguration() = default;
-        ~ExtendableSlotConfiguration() = default;
-
-        bool m_isValid = false;             //!< Flag to determine if this extendable slot configuration is valid
-        AZStd::string m_addButtonLabel;     //!< Label for the button for adding new extendable slots
-        AZStd::string m_addButtonTooltip;   //!< Tooltip for the button for adding new extendable slots
-        int m_minimumSlots = 1;
-        int m_maximumSlots = 100;
-    };
-    
     //! Provides static information about a Slot, like its name and data type.
     //! The set of features provided by this slot is determined by the combination 
     //! of SlotDirection and SlotType, which is set depending on which Create* function
@@ -110,70 +94,26 @@ namespace GraphModel
         SlotDefinition() = default;
         virtual ~SlotDefinition() = default;
 
-        //! This set of factory functions create a SlotDefinition for each of the valid SlotDirection/SlotType combinations
-        static SlotDefinitionPtr CreateInputData(
-            AZStd::string_view name,
-            AZStd::string_view displayName,
-            DataTypePtr dataType,
-            AZStd::any defaultValue,
-            AZStd::string_view description,
-            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
+        SlotDefinition(
+            SlotDirection slotDirection,
+            SlotType slotType,
+            const AZStd::string& name,
+            const AZStd::string& displayName,
+            const AZStd::string& description = {},
+            const DataTypeList& supportedDataTypes = {},
+            const AZStd::any& defaultValue = {},
+            int minimumSlots = {},
+            int maximumSlots = {},
+            const AZStd::string& addButtonLabel = {},
+            const AZStd::string& addButtonTooltip = {},
             const AZStd::vector<AZStd::string>& enumValues = {},
             bool visibleOnNode = true,
             bool editableOnNode = true);
 
-        static SlotDefinitionPtr CreateInputData(
-            AZStd::string_view name,
-            AZStd::string_view displayName,
-            DataTypeList supportedDataTypes,
-            AZStd::any defaultValue,
-            AZStd::string_view description,
-            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
-            const AZStd::vector<AZStd::string>& enumValues = {},
-            bool visibleOnNode = true,
-            bool editableOnNode = true);
+        SlotDirection GetSlotDirection() const;
+        SlotType GetSlotType() const;
 
-        static SlotDefinitionPtr CreateOutputData(
-            AZStd::string_view name,
-            AZStd::string_view displayName,
-            DataTypePtr dataType,
-            AZStd::string_view description,
-            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
-            const AZStd::vector<AZStd::string>& enumValues = {},
-            bool visibleOnNode = true,
-            bool editableOnNode = true);
-
-        static SlotDefinitionPtr CreateInputEvent(
-            AZStd::string_view name,
-            AZStd::string_view displayName,
-            AZStd::string_view description,
-            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
-            bool visibleOnNode = true,
-            bool editableOnNode = true);
-
-        static SlotDefinitionPtr CreateOutputEvent(
-            AZStd::string_view name,
-            AZStd::string_view displayName,
-            AZStd::string_view description,
-            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
-            bool visibleOnNode = true,
-            bool editableOnNode = true);
-
-        static SlotDefinitionPtr CreateProperty(
-            AZStd::string_view name,
-            AZStd::string_view displayName,
-            DataTypePtr dataType,
-            AZStd::any defaultValue,
-            AZStd::string_view description,
-            ExtendableSlotConfiguration* extendableSlotConfiguration = nullptr,
-            const AZStd::vector<AZStd::string>& enumValues = {},
-            bool visibleOnNode = true,
-            bool editableOnNode = true);
-
-        SlotDirection GetSlotDirection() const;  
-        SlotType GetSlotType() const;        
-
-        //! Returns true if this slot supports assigning values 
+        //! Returns true if this slot supports assigning values
         bool SupportsValues() const;
 
         //! Returns true if this slot supports data types
@@ -190,7 +130,7 @@ namespace GraphModel
 
         //! Returns true if the value of this slot should be editable on the node UI, otherwise false
         bool IsEditableOnNode() const;
- 
+
         //! Returns whether this slot matches the given configuration
         bool Is(SlotDirection slotDirection, SlotType slotType) const;
 
@@ -209,9 +149,6 @@ namespace GraphModel
         const AZStd::string& GetExtensionTooltip() const;   //!< Retrieve the hover tooltip for the label with the '+' sign for adding extendable slots
 
     private:
-        //! Helper method for handling the assignment/registration of the extendable slot configuration for a definition.
-        static void HandleExtendableSlotRegistration(AZStd::shared_ptr<SlotDefinition> slotDefinition, ExtendableSlotConfiguration* extendableSlotConfiguration);
-
         SlotDirection m_slotDirection = SlotDirection::Invalid;
         SlotType m_slotType = SlotType::Invalid;
         SlotName m_name;
@@ -222,7 +159,10 @@ namespace GraphModel
         AZStd::any m_defaultValue;
         bool m_visibleOnNode = true;
         bool m_editableOnNode = true;
-        ExtendableSlotConfiguration m_extendableSlotConfiguration;
+        AZStd::string m_addButtonLabel; //!< Label for the button for adding new extendable slots
+        AZStd::string m_addButtonTooltip; //!< Tooltip for the button for adding new extendable slots
+        int m_minimumSlots = 0;
+        int m_maximumSlots = 0;
     };
 
     //!!! Start in Graph.h for high level GraphModel documentation !!!

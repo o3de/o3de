@@ -81,5 +81,7 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<AssetSelectionGrid> m_lightingPresetDialog;
 
         EntityPreviewViewportSettings m_viewportSettings;
+
+        bool m_wasPropertyEdit = false;
     };
 } // namespace AtomToolsFramework

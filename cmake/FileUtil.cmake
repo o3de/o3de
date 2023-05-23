@@ -141,6 +141,20 @@ function(ly_file_read path content)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${path})
 endfunction()
 
+#! o3de_file_read_cache: wrap ly_file_read but store the file in a cache to avoid 
+#  extra reads.
+function(o3de_file_read_cache path content)
+    unset(file_content)
+    cmake_path(SET path "${path}")
+    cmake_path(NORMAL_PATH path)
+    set(file_cache_var_name "O3DE_FILE_CACHE_${path}")
+    get_property(file_content GLOBAL PROPERTY ${file_cache_var_name})
+    if(NOT file_content)
+        ly_file_read(${path} file_content)
+        set_property(GLOBAL PROPERTY ${file_cache_var_name} ${file_content})
+    endif()
+    set(${content} ${file_content} PARENT_SCOPE)
+endfunction()
 
 #! ly_get_last_path_segment_concat_sha256 : Concatenates the last path segment of the absolute path
 # with the first 8 characters of the absolute path SHA256 hash to make a unique relative path segment

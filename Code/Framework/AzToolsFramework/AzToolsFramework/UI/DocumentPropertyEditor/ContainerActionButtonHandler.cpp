@@ -12,28 +12,18 @@ namespace AzToolsFramework
 {
     ContainerActionButtonHandler::ContainerActionButtonHandler()
     {
-        setAutoRaise(true);
-
-        connect(
-            this, &QToolButton::clicked, this,
-            [this]()
-            {
-                using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
-                ContainerActionButton::OnActivate.InvokeOnDomNode(m_node);
-            });
     }
 
     void ContainerActionButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
     {
+        GenericButtonHandler::SetValueFromDom(node);
+
         static QIcon s_iconAdd(QStringLiteral(":/stylesheet/img/UI20/add-16.svg"));
         static QIcon s_iconRemove(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
         static QIcon s_iconClear(QStringLiteral(":/stylesheet/img/UI20/delete-16.svg"));
 
         using AZ::DocumentPropertyEditor::Nodes::ContainerAction;
         using AZ::DocumentPropertyEditor::Nodes::ContainerActionButton;
-
-        // Cache the node so we can query OnActivate on it when we're pressed.
-        m_node = node;
 
         ContainerAction action = ContainerActionButton::Action.ExtractFromDomNode(node).value_or(ContainerAction::AddElement);
         switch (action)

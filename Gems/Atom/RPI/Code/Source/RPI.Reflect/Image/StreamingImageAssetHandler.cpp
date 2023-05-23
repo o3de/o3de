@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/AssetTagBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -46,6 +47,25 @@ namespace AZ
                 {
                     // ImageMipChainAsset has some internal variables need to initialized after it was loaded.
                     assetData->m_tailMipChain.Init();
+
+                    if (const auto& imageTags = assetData->GetTags(); !imageTags.empty())
+                    {
+                        AssetQuality highestMiplevel = AssetQualityLowest;
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            AssetQuality tagQuality = AssetQualityHighest;
+                            ImageTagBus::BroadcastResult(tagQuality, &ImageTagBus::Events::GetQuality, tag);
+
+                            highestMiplevel = AZStd::min(highestMiplevel, tagQuality);
+                        }
+
+                        assetData->RemoveFrontMipchains(highestMiplevel);
+
+                        for (const AZ::Name& tag : imageTags)
+                        {
+                            ImageTagBus::Broadcast(&ImageTagBus::Events::RegisterAsset, tag, assetData->GetId());
+                        }
+                    }
 
                     // Handle StreamingImageAsset reload (which the asset can be found from asset manager)
                     auto& assetManager = AZ::Data::AssetManager::Instance();

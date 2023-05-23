@@ -24,13 +24,7 @@ namespace GraphModel
 
     void Graph::Reflect(AZ::ReflectContext* context)
     {
-        Node::Reflect(context);
-        SlotIdData::Reflect(context);
-        Slot::Reflect(context);
-        Connection::Reflect(context);
-
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Graph>()
                 ->Version(2)
@@ -39,6 +33,34 @@ namespace GraphModel
                 ->Field("m_uiMetadata", &Graph::m_uiMetadata)
                 ->Field("m_nodeWrappings", &Graph::m_nodeWrappings)
                 ;
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Graph>("GraphModelGraph")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("GetContext", &Graph::GetContext)
+                ->Method("GetSystemName", &Graph::GetSystemName)
+                ->Method("AddNode", &Graph::AddNode)
+                ->Method("RemoveNode", &Graph::RemoveNode)
+                ->Method("WrapNode", &Graph::WrapNode)
+                ->Method("UnwrapNode", &Graph::UnwrapNode)
+                ->Method("IsNodeWrapped", &Graph::IsNodeWrapped)
+                ->Method("GetNodeWrappings", &Graph::GetNodeWrappings)
+                ->Method("GetNode", &Graph::GetNode)
+                ->Method("GetNodes", static_cast<const Graph::NodeMap& (Graph::*)()>(&Graph::GetNodes))
+                ->Method("GetNodeCount", &Graph::GetNodeCount)
+                ->Method("AddConnection", &Graph::AddConnection)
+                ->Method("RemoveConnection", &Graph::RemoveConnection)
+                ->Method("GetConnections", &Graph::GetConnections)
+                ->Method("GetConnectionCount", &Graph::GetConnectionCount)
+                ->Method("FindSlot", &Graph::FindSlot)
+                ->Method("ClearCachedData", &Graph::ClearCachedData)
+                ->Method("Contains", &Graph::Contains)
+                ->Method("FindConnection", &Graph::FindConnection)
+            ;
         }
     }
 

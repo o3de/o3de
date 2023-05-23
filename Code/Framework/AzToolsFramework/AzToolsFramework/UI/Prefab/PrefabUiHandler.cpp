@@ -242,7 +242,7 @@ namespace AzToolsFramework
 
     const QPixmap& PrefabUiHandler::GetOverrideImageForEntity(AZ::EntityId entityId) const
     {
-        if (auto overrideType = m_prefabOverridePublicInterface->GetOverrideType(entityId); overrideType.has_value())
+        if (auto overrideType = m_prefabOverridePublicInterface->GetEntityOverrideType(entityId); overrideType.has_value())
         {
             if (overrideType == AzToolsFramework::Prefab::OverrideType::AddEntity)
             {

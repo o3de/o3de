@@ -82,7 +82,7 @@ namespace LmbrCentral
 
         GenerateVertices();
 
-        const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
+        const bool allowAsymmetricalEditing = true;
         m_componentModeDelegate.ConnectWithSingleComponentMode<EditorCapsuleShapeComponent, AzToolsFramework::CapsuleComponentMode>(
             entityComponentIdPair, this, allowAsymmetricalEditing);
     }

@@ -408,6 +408,39 @@ TEST_F(AssetUtilitiesTest, GenerateFingerprint_OrderOnceJobDependency_NoChange)
     EXPECT_EQ(fingerprintWithoutOrderOnceJobDependency, fingerprintWithOrderOnceJobDependency);
 }
 
+TEST_F(AssetUtilitiesTest, GenerateFingerprint_OrderOnlyJobDependency_NoChange)
+{
+    // OrderOnly Job dependency should not alter the fingerprint of the job
+    QTemporaryDir dir;
+    QDir tempPath(dir.path());
+    UnitTests::MockPathConversion mockPathConversion(dir.path().toUtf8().constData());
+    QString canonicalTempDirPath = AssetUtilities::NormalizeDirectoryPath(tempPath.canonicalPath());
+    UnitTestUtils::ScopedDir changeDir(canonicalTempDirPath);
+    tempPath = QDir(canonicalTempDirPath);
+    const char relFile1Path[] = "file.txt";
+    const char relFile2Path[] = "secondFile.txt";
+    QString absoluteTestFile1Path = tempPath.absoluteFilePath(relFile1Path);
+    QString absoluteTestFile2Path = tempPath.absoluteFilePath(relFile2Path);
+
+    EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFile1Path, "contents"));
+    EXPECT_TRUE(UnitTestUtils::CreateDummyFile(absoluteTestFile2Path, "contents"));
+
+    AssetProcessor::JobDetails jobDetail;
+
+    jobDetail.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference(tempPath.absolutePath(), relFile1Path);
+    jobDetail.m_fingerprintFiles.insert(AZStd::make_pair(absoluteTestFile1Path.toUtf8().constData(), relFile1Path));
+
+    AZ::u32 fingerprintWithoutOrderOnlyJobDependency = AssetUtilities::GenerateFingerprint(jobDetail);
+
+    AssetBuilderSDK::SourceFileDependency dep = { relFile2Path, AZ::Uuid::CreateNull() };
+    AssetBuilderSDK::JobDependency jobDep("key", "pc", AssetBuilderSDK::JobDependencyType::OrderOnly, dep);
+    jobDetail.m_jobDependencyList.push_back(AssetProcessor::JobDependencyInternal(jobDep));
+
+    AZ::u32 fingerprintWithOrderOnlyJobDependency = AssetUtilities::GenerateFingerprint(jobDetail);
+
+    EXPECT_EQ(fingerprintWithoutOrderOnlyJobDependency, fingerprintWithOrderOnlyJobDependency);
+}
+
 namespace AssetUtilsTest
 {
     class MockJobDependencyResponder : public AssetProcessor::ProcessingJobInfoBus::Handler

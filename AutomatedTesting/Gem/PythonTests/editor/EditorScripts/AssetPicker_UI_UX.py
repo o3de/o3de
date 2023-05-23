@@ -224,7 +224,7 @@ def AssetPicker_UI_UX():
 
         # 3) Access Entity Inspector
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         component_list_widget = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
 
         # 4) Click on Asset Picker (Model Asset)

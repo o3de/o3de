@@ -13,6 +13,7 @@ import pathlib
 import traceback
 from test_impact import NativeTestImpact, PythonTestImpact
 from tiaf_logger import get_logger
+import tiaf_report_constants as constants
 
 logger = get_logger(__file__)
 
@@ -218,9 +219,7 @@ def main(args: dict):
                 args['mars_index_prefix'], tiaf_result, sys.argv, args['build_number'])
 
         logger.info("Complete!")
-        # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        # sys.exit(result.return_code)
-        sys.exit(0)
+        sys.exit(tiaf_result[constants.RUNTIME_RETURN_CODE_KEY])
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")

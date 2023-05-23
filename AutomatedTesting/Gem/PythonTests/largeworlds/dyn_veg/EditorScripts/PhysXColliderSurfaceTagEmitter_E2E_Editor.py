@@ -27,6 +27,8 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
+    from consts.physics import PHYSX_MESH_COLLIDER
 
     def validate_behavior_context():
         # Verify that we can create the component through the BehaviorContext
@@ -107,7 +109,7 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
                                                 5.0)
     Report.result(initial_instance_count, initial_success)
 
-    # Create an entity with a PhysX Collider and our PhysX Collider Surface Tag Emitter
+    # Create an entity with a PhysX Primitive Collider and our PhysX Collider Surface Tag Emitter
     collider_entity_created = (
         "Successfully created a Collider entity",
         "Failed to create Collider entity"
@@ -115,11 +117,11 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
     collider_entity = hydra.Entity("Collider Surface")
     collider_entity.create_entity(
         entity_center_point,
-        ["PhysX Collider", "PhysX Collider Surface Tag Emitter", "PhysX Static Rigid Body"]
+        [PHYSX_PRIMITIVE_COLLIDER, "PhysX Collider Surface Tag Emitter", "PhysX Static Rigid Body"]
         )
     Report.result(collider_entity_created, collider_entity.id.IsValid())
 
-    # Set up the PhysX Collider so that each shape type (sphere, box, capsule) has the same test height.
+    # Set up the PhysX Primitive Collider so that each shape type (sphere, box, capsule) has the same test height.
     hydra.get_set_test(collider_entity, component_index=0, path="Shape Configuration|Sphere|Radius", value=collider_radius)
     hydra.get_set_test(collider_entity, component_index=0, path="Shape Configuration|Box|Dimensions", value=math.Vector3(collider_diameter,
                                                                                               collider_diameter,
@@ -169,14 +171,13 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
 
     # Setup collider entity with a PhysX Mesh
     test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", os.path.join("levels", "physics",
-                                                        "Material_PerFaceMaterialGetsCorrectMaterial",
+        bus.Broadcast, "GetAssetIdByPath", os.path.join("assets", "objects",
+                                                        "pxmesh",
                                                         "test.pxmesh"), math.Uuid(), False)
-    collider_entity.remove_component("PhysX Collider")
-    collider_entity.add_component("PhysX Collider")
+    collider_entity.remove_component(PHYSX_PRIMITIVE_COLLIDER)
+    collider_entity.add_component(PHYSX_MESH_COLLIDER)
     helper.wait_for_condition(lambda: editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled',
                                                                    collider_entity.components[1]), 5.0)
-    hydra.get_set_test(collider_entity, component_index=2, path="Shape Configuration|Shape", value=7)
     hydra.get_set_test(collider_entity, component_index=2, path="Shape Configuration|Asset|PhysX Mesh", value=test_physx_mesh_asset_id)
 
     # Set the asset scale to match the test heights of the shapes tested

@@ -117,8 +117,6 @@ private:
     // Cached parameters of node at given time.
     float m_time = 0.0f;
 
-    IMovieSystem* m_pMovie;
-
     CSelectTrack* m_CurrentSelectTrack;
     int m_CurrentSelectTrackKeyNumber;
     IAnimNode* m_pCamNodeOnHoldForInterp;
@@ -133,7 +131,6 @@ private:
     int m_lastCaptureKey;    
     bool m_bLastCapturingEnded;
     int m_captureFrameCount;
-    bool m_sequenceTrackUpConverted = false;
 
     struct InterpolatingCameraStartState
     {

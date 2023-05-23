@@ -28,7 +28,7 @@ namespace ScriptCanvas
     namespace Grammar
     {
         void ReflectDebugSymbols(AZ::ReflectContext* context);
-        
+
         enum class DebugDataSourceType : AZ::u8
         {
             Internal,
@@ -64,12 +64,12 @@ namespace ScriptCanvas
             static DebugDataSource FromReturn(const Slot& slot, ExecutionTreeConstPtr execution, VariableConstPtr variable);
 
             static DebugDataSource FromVariable(const SlotId& slotId, const Data::Type& originalType, const VariableId& source);
-                        
+
             // constructs internal
             DebugDataSource();
 
         protected:
-            
+
             // constructs local
             explicit DebugDataSource(const Slot& localSource, const Data::Type& ifInvalidType);
 
@@ -107,8 +107,8 @@ namespace ScriptCanvas
         struct DebugSymbolMapReverse
         {
         public:
-            AZ_TYPE_INFO(DebugSymbolMap, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
-            AZ_CLASS_ALLOCATOR(DebugSymbolMap, AZ::SystemAllocator);
+            AZ_TYPE_INFO(DebugSymbolMapReverse, "{47A225DC-1B56-4C84-8CED-A5BF51E59690}");
+            AZ_CLASS_ALLOCATOR(DebugSymbolMapReverse, AZ::SystemAllocator);
 
             AZStd::unordered_map<ExecutionTreeConstPtr, size_t> m_in;
             AZStd::unordered_map<ExecutionTreeConstPtr, AZStd::vector<size_t>> m_out;
@@ -117,6 +117,6 @@ namespace ScriptCanvas
             // maps the assignment index to variable change debug index, since not all assignments need one
             AZStd::unordered_map<OutputAssignmentConstPtr, AZStd::unordered_map<size_t, size_t>> m_assignments;
         };
-    } 
+    }
 
-} 
+}

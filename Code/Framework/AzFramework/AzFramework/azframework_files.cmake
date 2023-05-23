@@ -138,6 +138,8 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     DocumentPropertyEditor/AdapterBuilder.cpp
     DocumentPropertyEditor/AdapterBuilder.h
+    DocumentPropertyEditor/AggregateAdapter.cpp
+    DocumentPropertyEditor/AggregateAdapter.h
     DocumentPropertyEditor/BasicAdapter.cpp
     DocumentPropertyEditor/BasicAdapter.h
     DocumentPropertyEditor/DocumentAdapter.cpp
@@ -315,12 +317,11 @@ set(FILES
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessCommon_fwd.h
-    Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
-    Process/ProcessCommon_fwd.h
     Process/ProcessCommunicatorTracePrinter.cpp
     Process/ProcessCommunicatorTracePrinter.h
+    Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h

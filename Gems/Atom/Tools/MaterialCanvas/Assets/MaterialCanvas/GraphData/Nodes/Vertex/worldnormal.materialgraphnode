@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{F1C815E8-0B44-43EA-8176-D075B5B2EA41}",
+        "category": "Vertex",
+        "title": "World Normal",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The surface normal of the current vertex or fragment in world space",
+        "slotDataTypeGroups": [
+            "outNormal",
+            "outX|outY|outZ"
+        ],
+        "outputSlots": [
+            {
+                "name": "outNormal",
+                "displayName": "Normal",
+                "description": "Normal",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL_WS;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL_WS.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL_WS.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_NORMAL_WS.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

@@ -18,6 +18,7 @@ set(FILES
     LocalizationManagerBus.inl
     ILog.h
     IMiniLog.h
+    IMovieSystem.cpp
     IMovieSystem.h
     IRenderAuxGeom.h
     IRenderer.h

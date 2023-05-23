@@ -49,6 +49,18 @@ namespace TestImpact
         AZ::IO::PathView RootName() const;
         AZ::IO::PathView RelativePath() const;
 
+        constexpr RepoPath& ReplaceFilename(const AZ::IO::PathView& replacementFilename)
+        {
+            m_path.ReplaceFilename(replacementFilename);
+            return *this;
+        }
+        
+        constexpr RepoPath& ReplaceExtension(const AZ::IO::PathView& replacementExtension = {})
+        {
+            m_path.ReplaceExtension(replacementExtension);
+            return *this;
+        }
+
         // Wrappers around the AZ::IO::Path concatenation operator
         friend RepoPath operator/(const RepoPath& lhs, const AZ::IO::PathView& rhs);
         friend RepoPath operator/(const RepoPath& lhs, AZStd::string_view rhs);
@@ -67,3 +79,26 @@ namespace TestImpact
         AZ::IO::Path m_path;
     };
 } // namespace TestImpact
+
+namespace AZStd
+{
+    //! Less function for RepoPath types for use in maps and sets.
+    template<>
+    struct less<TestImpact::RepoPath>
+    {
+        bool operator()(const TestImpact::RepoPath& lhs, const TestImpact::RepoPath& rhs) const
+        {
+            return lhs.String() < rhs.String();
+        }
+    };
+
+    //! Hash function for RepoPath types for use in unordered maps and sets.
+    template<>
+    struct hash<TestImpact::RepoPath>
+    {
+        bool operator()(const TestImpact::RepoPath& key) const
+        {
+            return hash<AZStd::string>()(key.String());
+        }
+    };
+} // namespace AZStd

@@ -186,7 +186,7 @@ def register_all_projects_in_folder(projects_path: pathlib.Path,
                                     force: bool = False,
                                     dry_run: bool = False) -> int:
     return register_all_o3de_objects_of_type_in_folder(projects_path, 'project', remove, force,
-                                                       stop_on_template_folders, engine_path=engine_path, 
+                                                       stop_on_template_folders, engine_path=engine_path,
                                                        dry_run=dry_run)
 
 
@@ -223,6 +223,60 @@ def register_all_repos_in_folder(repos_path: pathlib.Path,
                                  engine_path: pathlib.Path = None,
                                  force: bool = False) -> int:
     return register_all_o3de_objects_of_type_in_folder(repos_path, 'repo', remove, force, None, engine_path=engine_path)
+
+
+def remove_engine_name_to_path(json_data: dict,
+                               engine_path: pathlib.Path) -> int:
+    """
+    Remove the engine at the specified path if it exist in the o3de manifest
+    :param json_data in-memory json view of the o3de_manifest.json data
+    :param engine_path path to engine to remove from the manifest data
+    returns 0 to indicate no issues has occurred with removal
+    """
+    if engine_path.is_dir() and validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
+        engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
+        if 'engine_name' in engine_json_data and 'engines_path' in json_data:
+            engine_name = engine_json_data['engine_name']
+            try:
+                del json_data['engines_path'][engine_name]
+            except KeyError:
+                # Attempting to remove a non-existent engine_name is fine
+                pass
+
+    return 0
+
+
+def add_engine_name_to_path(json_data: dict, engine_path: pathlib.Path, force: bool):
+    # This functionality is deprecated and exists to allow older projects
+    # to find newer versions of the engine which no longer require the engine name
+    # exist in "engines_path"
+
+    # Add an engine path JSON object which maps the "engine_name" -> "engine_path"
+    engine_json_data = manifest.get_engine_json_data(engine_path=engine_path)
+    if not engine_json_data:
+        logger.error(f'Unable to retrieve json data from engine.json at path {engine_path.as_posix()}')
+        return 1
+    engines_path_json = json_data.setdefault('engines_path', {})
+    if 'engine_name' not in engine_json_data:
+        logger.error(f'engine.json at path {engine_path.as_posix()} is missing "engine_name" key')
+        return 1
+
+    engine_name = engine_json_data['engine_name']
+    if not force and engine_name in engines_path_json and \
+            pathlib.PurePath(engines_path_json[engine_name]) != engine_path:
+        logger.info(f'Engine successfully registered.')
+        logger.warning(
+            f'Important notice regarding older projects created with engine version 22.10 or earlier:\n'
+            f'An engine named "{engine_name}" is already registered at "{pathlib.Path(engines_path_json[engine_name]).as_posix()}"\n'
+            f'If you have projects created with engine version 22.10 or earlier, and you want them to use this engine'
+            f' you will need to:\n'
+            f'  1. backup the project\'s existing "cmake/EngineFinder.cmake" file\n'
+            f'  2. copy the "Templates/DefaultProject/Template/cmake/EngineFinder.cmake" from this engine into the project.\n'
+            f' Alternately, to force all older projects that use "{engine_name}" to use this engine path, specify the -f/--force option.')
+        return 0
+
+    engines_path_json[engine_name] = engine_path.as_posix()
+    return 0
 
 
 def register_o3de_object_path(json_data: dict,
@@ -325,8 +379,16 @@ def register_engine_path(json_data: dict,
     def transform_engine_dict_to_string(engine): return engine.get('path', '') if isinstance(engine, dict) else engine
     json_data['engines'] = list(map(transform_engine_dict_to_string, engine_list))
 
-    return register_o3de_object_path(json_data, engine_path, 'engines', 'engine.json',
+    result = register_o3de_object_path(json_data, engine_path, 'engines', 'engine.json',
                                        validation.valid_o3de_engine_json, remove)
+    if result != 0:
+        return result
+
+    # Backwards compatibility to allow older projects to find newer engines
+    if remove:
+        return remove_engine_name_to_path(json_data, engine_path)
+    else:
+        return add_engine_name_to_path(json_data, engine_path, force)
 
 
 def register_external_subdirectory(json_data: dict,
@@ -334,22 +396,25 @@ def register_external_subdirectory(json_data: dict,
                                    remove: bool = False,
                                    engine_path: pathlib.Path = None,
                                    project_path: pathlib.Path = None,
-                                   gem_path: pathlib.Path = None) -> int:
+                                   gem_path: pathlib.Path = None,
+                                   force_register_with_o3de_manifest: bool = False) -> int:
     """
     :return An integer return code indicating whether registration or removal of the external subdirectory
     completed successfully
     """
     # If a gem path, project path or engine path has not been supplied auto detect which manifest to register the input path with
-    if not gem_path:
-        gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path)
-    elif not project_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
-    elif not engine_path:
-        engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
+    # Start from the parent of the external_subdirectory to catch the case that if it is a gem, it does not register itself
+    if not force_register_with_o3de_manifest and not gem_path and not project_path and not engine_path:
+        if not gem_path and external_subdir_path.parent != external_subdir_path:
+            gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), external_subdir_path.parent)
+        if not gem_path:
+            project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
+        if not project_path:
+            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None,
-                                     pathlib.Path(gem_path).resolve() if gem_path else None)
+                                     pathlib.Path(engine_path).resolve() if not force_register_with_o3de_manifest and engine_path else None,
+                                     pathlib.Path(project_path).resolve() if not force_register_with_o3de_manifest and project_path else None,
+                                     pathlib.Path(gem_path).resolve() if not force_register_with_o3de_manifest and gem_path else None)
 
 
 def register_gem_path(json_data: dict,
@@ -357,11 +422,19 @@ def register_gem_path(json_data: dict,
                       remove: bool = False,
                       engine_path: pathlib.Path = None,
                       project_path:  pathlib.Path = None,
+                      ancestor_gem_path: pathlib.Path = None,
                       force: bool = False,
-                      dry_run:bool = False) -> int:
-    # If a project path or engine path has not been supplied auto detect which manifest to register the input path with
-    if not project_path and not engine_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), gem_path)
+                      dry_run: bool = False,
+                      force_register_with_o3de_manifest: bool = False) -> int:
+    # If an ancestor gem_ path, project path or engine path has not been supplied
+    # auto detect which manifest to register the input path with
+
+    if not force_register_with_o3de_manifest and not ancestor_gem_path and not project_path and not engine_path:
+        # Start from the parent of the gem_path to make sure the gem doesn't register itself as an external subdirectory
+        if gem_path.parent != gem_path:
+            ancestor_gem_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('gem.json'), gem_path.parent)
+        if not ancestor_gem_path:
+            project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), gem_path)
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), gem_path)
 
@@ -371,12 +444,12 @@ def register_gem_path(json_data: dict,
             logger.error(f'Failed to load gem.json data needed for registration from {gem_path}')
             return 1
 
-        # do not check compatibility if the project has not been registered with an engine 
-        # because most gems depend on engine gems which would not be found 
+        # do not check compatibility if the project has not been registered with an engine
+        # because most gems depend on engine gems which would not be found
         if project_path and manifest.get_project_engine_path(project_path):
             # note this check includes engine and manifest gems
-            incompatible_objects = compatibility.get_gem_project_incompatible_objects(gem_path, gem_json_data, project_path)
-            if incompatible_objects: 
+            incompatible_objects = compatibility.get_gems_project_incompatible_objects([gem_path], [gem_json_data['gem_name']], project_path)
+            if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
                     "\n  ".join(incompatible_objects))
@@ -392,7 +465,7 @@ def register_gem_path(json_data: dict,
                 external_subdirectories=[gem_path])
 
             incompatible_objects = compatibility.get_gem_engine_incompatible_objects(gem_json_data, engine_json_data, engine_gems_json_data)
-            if incompatible_objects: 
+            if incompatible_objects:
                 logger.error(f'{gem_json_data["gem_name"]} is not known to be compatible with the '
                     'following objects/APIs and requires the --force parameter to register:\n  '+
                     "\n  ".join(incompatible_objects))
@@ -400,9 +473,10 @@ def register_gem_path(json_data: dict,
 
     result = register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
                                      validation.valid_o3de_gem_json, remove,
-                                     pathlib.Path(engine_path).resolve() if engine_path else None,
-                                     pathlib.Path(project_path).resolve() if project_path else None,
-                                     dry_run=dry_run)
+                                     pathlib.Path(engine_path).resolve() if not force_register_with_o3de_manifest and engine_path else None,
+                                     pathlib.Path(project_path).resolve() if not force_register_with_o3de_manifest and project_path else None,
+                                     pathlib.Path(ancestor_gem_path).resolve() if not force_register_with_o3de_manifest and ancestor_gem_path else None,
+                                     dry_run=dry_run,)
 
     if result == 0 and dry_run:
         logger.info(f'Gem path {gem_path} was not registered because the --dry-run option was specified')
@@ -505,6 +579,7 @@ def register_restricted_path(json_data: dict,
 def register_repo(json_data: dict,
                   repo_uri: str,
                   remove: bool = False) -> int:
+    repo_uri = repo.sanitized_repo_uri(repo_uri)
     manifest_uri = repo.get_repo_manifest_uri(repo_uri)
 
     if not manifest_uri:
@@ -719,7 +794,8 @@ def register(engine_path: pathlib.Path = None,
              external_subdir_gem_path: pathlib.Path = None,
              remove: bool = False,
              force: bool = False,
-             dry_run: bool = False
+             dry_run: bool = False,
+             force_register_with_o3de_manifest: bool = False
              ) -> int:
     """
     Adds/Updates entries to the ~/.o3de/o3de_manifest.json
@@ -777,15 +853,18 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
                                              external_subdir_engine_path, external_subdir_project_path,
-                                             force, dry_run)
+                                             external_subdir_gem_path,
+                                             force, dry_run,
+                                             force_register_with_o3de_manifest=force_register_with_o3de_manifest)
 
     if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')
             return 1
         result = result or register_external_subdirectory(json_data, external_subdir_path, remove,
-                                                          external_subdir_engine_path, external_subdir_project_path, 
-                                                          external_subdir_gem_path)
+                                                          external_subdir_engine_path, external_subdir_project_path,
+                                                          external_subdir_gem_path,
+                                                          force_register_with_o3de_manifest=force_register_with_o3de_manifest)
 
     if isinstance(template_path, pathlib.PurePath):
         if not template_path:
@@ -876,7 +955,8 @@ def _run_register(args: argparse) -> int:
                         external_subdir_gem_path=args.external_subdirectory_gem_path,
                         remove=args.remove,
                         force=args.force,
-                        dry_run=args.dry_run)
+                        dry_run=args.dry_run,
+                        force_register_with_o3de_manifest=args.force_register_with_o3de_manifest)
 
 
 def add_parser_args(parser):
@@ -953,6 +1033,8 @@ def add_parser_args(parser):
                                             ' the engine-path location')
     external_subdir_path_group.add_argument('-espp', '--external-subdirectory-project-path', type=pathlib.Path)
     external_subdir_path_group.add_argument('-esgp', '--external-subdirectory-gem-path', type=pathlib.Path,  help='If supplied, registers the external subdirectory with the gem.json at the gem-path location')
+    external_subdir_path_group.add_argument('-frwom', '--force-register-with-o3de-manifest', action='store_true', default=False,
+                                            help='When set, forces the registration of the external subdirectory with the ~/.o3de/o3de_manifest.json')
     parser.set_defaults(func=_run_register)
 
 

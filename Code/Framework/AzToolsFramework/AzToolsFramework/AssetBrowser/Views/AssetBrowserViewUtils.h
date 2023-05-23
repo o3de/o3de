@@ -20,15 +20,17 @@ namespace AzToolsFramework
         class AssetBrowserViewUtils
         {
         public:
-            static void RenameEntry(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget);
-            static void AfterRename(QString newVal, AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget);
-            static void DeleteEntries(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget);
-            static void MoveEntries(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget);
-            static void DuplicateEntries(const AZStd::vector<AssetBrowserEntry*>& entries);
+            static bool RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
+            static void AfterRename(QString newVal, const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
+            static void DeleteEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
+            static void MoveEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
+            static void DuplicateEntries(const AZStd::vector<const AssetBrowserEntry*>& entries);
             static void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
-        private:
+
             static bool IsFolderEmpty(AZStd::string_view path);
-            static void EditName(QWidget* callingWidget);
+            static bool IsEngineOrProjectFolder(AZStd::string_view path);
+
+            static QVariant GetThumbnail(const AssetBrowserEntry* entry);
         };
     } // namespace AssetBrowser
 

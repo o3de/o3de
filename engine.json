@@ -3,19 +3,20 @@
     "restricted": "o3de",
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
-    "display_version":"00.00",
-    "version":"1.0.0",
+    "display_version": "00.00",
+    "version": "2.1.0",
     "api_versions": {
-        "editor":"1.0.0",
-        "framework":"1.0.0",
-        "launcher":"1.0.0",
-        "tools":"1.0.0"
+        "editor": "1.0.0",
+        "framework": "1.1.0",
+        "launcher": "1.0.0",
+        "tools": "1.0.0"
     },
     "file_version": 2,
     "copyright_year": 2023,
     "build": 0,
     "external_subdirectories": [
         "Gems/Achievements",
+        "Gems/Archive",
         "Gems/AssetValidation",
         "Gems/Atom",
         "Gems/AtomContent",
@@ -68,7 +69,6 @@
         "Gems/Prefab/PrefabBuilder",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
-        "Gems/Streamer",
         "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
@@ -89,6 +89,7 @@
         "Gems/StartingPointCamera",
         "Gems/StartingPointInput",
         "Gems/StartingPointMovement",
+        "Gems/Streamer",
         "Gems/SurfaceData",
         "Gems/Terrain",
         "Gems/TestAssetBuilder",
@@ -101,19 +102,35 @@
         "Gems/VirtualGamepad",
         "Gems/WhiteBox"
     ],
+    "gem_names": [
+        "Atom_Bootstrap",
+        "AtomShader",
+        "AtomViewportDisplayInfo",
+        "Camera",
+        "CommonFeaturesAtom",
+        "EditorModeFeedback",
+        "Maestro",
+        "PrefabBuilder",
+        "SceneProcessing"
+    ],
     "projects": [
         "AutomatedTesting"
     ],
     "templates": [
-        "Templates/PrebuiltGem",
-        "Templates/GemRepo",
         "Templates/AssetGem",
+        "Templates/CppToolGem",
         "Templates/DefaultComponent",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
-        "Templates/CppToolGem",
+        "Templates/GemRepo",
+        "Templates/GraphicsGems",
         "Templates/MinimalProject",
+        "Templates/PrebuiltGem",
+        "Templates/PythonToolGem",
         "Templates/ScriptCanvasNode",
-        "Templates/PythonToolGem"
+        "Templates/UnifiedMultiplayerGem"
+    ],
+    "repos": [
+        "https://canonical.o3de.org"
     ]
 }

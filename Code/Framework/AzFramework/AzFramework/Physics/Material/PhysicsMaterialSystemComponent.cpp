@@ -27,7 +27,6 @@ namespace Physics
         {
             serialize->Class<Physics::MaterialSystemComponent, AZ::Component>()
                 ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ;
         }
     }
@@ -61,6 +60,14 @@ namespace Physics
 
     void MaterialSystemComponent::Deactivate()
     {
+        for (auto& assetHandler : m_assetHandlers)
+        {
+            if (auto materialAssetHandler = azrtti_cast<AzFramework::GenericAssetHandler<MaterialAsset>*>(assetHandler.get());
+                materialAssetHandler != nullptr)
+            {
+                materialAssetHandler->Unregister();
+            }
+        }
         m_assetHandlers.clear();
     }
 } // namespace Physics

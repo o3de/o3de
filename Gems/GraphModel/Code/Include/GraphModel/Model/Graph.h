@@ -156,7 +156,6 @@ namespace GraphModel
         //! Reset any data that was cached for this graph
         void ClearCachedData();
 
-    protected:
         bool Contains(SlotPtr slot) const;
         ConnectionPtr FindConnection(ConstSlotPtr sourceSlot, ConstSlotPtr targetSlot);
 

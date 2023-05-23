@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
@@ -103,6 +104,7 @@ namespace AZ
             m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
             m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
             m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
+            m_enabledDeviceFeatures.independentBlend = deviceFeatures.independentBlend;
 
             if (deviceFeatures.geometryShader)
             {
@@ -1084,6 +1086,9 @@ namespace AZ
             m_limits.m_maxImageDimensionCube = deviceLimits.maxImageDimensionCube;
             m_limits.m_maxImageArraySize = deviceLimits.maxImageArrayLayers;
             m_limits.m_minConstantBufferViewOffset = static_cast<uint32_t>(deviceLimits.minUniformBufferOffsetAlignment);
+            m_limits.m_minTexelBufferOffsetAlignment = static_cast<uint32_t>(deviceLimits.minTexelBufferOffsetAlignment);
+            m_limits.m_minStorageBufferOffsetAlignment = static_cast<uint32_t>(deviceLimits.minStorageBufferOffsetAlignment);
+            m_limits.m_maxMemoryAllocationCount = deviceLimits.maxMemoryAllocationCount;
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
             m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
             m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;
@@ -1164,7 +1169,7 @@ namespace AZ
                 // remove some of them and try again.
                 memoryFlags = RHI::ResetBits(memoryFlags, filterFlags[filterIndex]);
             }
-
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(false);
             AZ_Assert(memory, "Failed to allocate memory size %llu bytes with flags %u, and memory types %u", static_cast<unsigned long long>(sizeInBytes), flags, memoryTypeMask);
             return memory;
         }

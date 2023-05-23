@@ -132,7 +132,5 @@ namespace GraphCanvas
         QGraphicsWidget* m_displayWidget{};
         IconLayoutItem* m_iconDisplay{};
         AZStd::vector<ReadOnlyVectorControl*> m_vectorDisplays{};
-
-        bool m_releaseLayout{};
     };
 } // namespace GraphCanvas

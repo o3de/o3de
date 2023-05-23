@@ -443,7 +443,7 @@ namespace AZ
             }
         }
 
-        void ParentPass::GetPipelineViewTags(SortedPipelineViewTags& outTags) const
+        void ParentPass::GetPipelineViewTags(PipelineViewTags& outTags) const
         {
             // Call base implementation
             Pass::GetPipelineViewTags(outTags);

@@ -17,21 +17,6 @@
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "InputAssembly"
                 }
-            ],
-            "ImageAttachments": [
-                {
-                    "Name": "ShadowmapImage",
-                    "Lifetime":  "Imported"
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "Shadowmap",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ShadowmapImage"
-                    }
-                }
             ]
         }
     }

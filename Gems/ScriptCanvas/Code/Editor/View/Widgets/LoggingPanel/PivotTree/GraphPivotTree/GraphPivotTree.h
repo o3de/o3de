@@ -87,7 +87,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_CLASS_ALLOCATOR(GraphPivotTreeFolder, AZ::SystemAllocator);
-        AZ_RTTI(GraphPivotTreeRoot, "{E67BBC27-6E0D-4D56-A7D4-9389FE30E909}", PivotTreeItem);
+        AZ_RTTI(GraphPivotTreeFolder, "{E67BBC27-6E0D-4D56-A7D4-9389FE30E909}", PivotTreeItem);
 
         GraphPivotTreeFolder(AZStd::string_view folder);
         ~GraphPivotTreeFolder() override = default;
@@ -161,7 +161,6 @@ namespace ScriptCanvasEditor
 
         LoggingDataId m_loggedDataId;
 
-        bool m_capturingData;
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
     };
 

@@ -18,29 +18,35 @@ namespace O3DE::ProjectManager
     GemsSubWidget::GemsSubWidget(QWidget* parent)
         : QWidget(parent)
     {
-        m_layout = new QVBoxLayout();
-        m_layout->setAlignment(Qt::AlignTop);
-        m_layout->setMargin(0);
-        setLayout(m_layout);
+        auto layout = new QVBoxLayout();
+        layout->setAlignment(Qt::AlignTop);
+        layout->setMargin(0);
+        setLayout(layout);
 
         m_titleLabel = new QLabel();
         m_titleLabel->setObjectName("gemSubWidgetTitleLabel");
-        m_layout->addWidget(m_titleLabel);
+        layout->addWidget(m_titleLabel);
 
         m_textLabel = new QLabel();
         m_textLabel->setObjectName("gemSubWidgetTextLabel");
         m_textLabel->setWordWrap(true);
-        m_layout->addWidget(m_textLabel);
+        layout->addWidget(m_textLabel);
 
         m_tagWidget = new TagContainerWidget();
         connect(m_tagWidget, &TagContainerWidget::TagClicked, this, [=](const Tag& tag){ emit TagClicked(tag); });
-        m_layout->addWidget(m_tagWidget);
+        layout->addWidget(m_tagWidget);
     }
 
     void GemsSubWidget::Update(const QString& title, const QString& text, const QVector<Tag>& tags)
     {
         m_titleLabel->setText(title);
+
+        // hide the text label if it's empty
         m_textLabel->setText(text);
+        m_textLabel->setVisible(!text.isEmpty());
+
         m_tagWidget->Update(tags);
+        m_tagWidget->adjustSize();
+        adjustSize();
     }
 } // namespace O3DE::ProjectManager

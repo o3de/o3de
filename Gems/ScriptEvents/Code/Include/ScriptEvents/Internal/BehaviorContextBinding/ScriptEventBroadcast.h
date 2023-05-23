@@ -53,13 +53,13 @@ namespace ScriptEvents
         }
 
         const AZStd::string* GetArgumentName(size_t index) const override { return &m_argumentNames[index]; }
-        void SetArgumentName(size_t index, const AZStd::string& name) override;
+        void SetArgumentName(size_t index, AZStd::string name) override;
 
         const AZ::BehaviorParameter* GetResult() const override { return &m_result; }
         bool HasBusId() const override { return false; }
 
         const AZStd::string* GetArgumentToolTip(size_t index) const override { return &m_argumentToolTips[index]; }
-        void SetArgumentToolTip(size_t index, const AZStd::string& tooltip) override
+        void SetArgumentToolTip(size_t index, AZStd::string tooltip) override
         {
             if (index >= m_argumentToolTips.size())
             {

@@ -9,6 +9,7 @@
 
 #include <AzCore/Module/Environment.h>
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/OSAllocator.h> // Needed for Context allocation from the OS
 #include <AzCore/RTTI/RTTI.h> // Context dynamic casting
 #include <AzCore/std/containers/vector.h> // Environment context array
@@ -262,7 +263,7 @@ namespace AZ
     template<class Context>
     u32 EBusEnvironmentStoragePolicy<Context>::GetVariableId()
     {
-        static const u32 NameCrc = Crc32(AZ_FUNCTION_SIGNATURE);
+        static constexpr u32 NameCrc = Crc32(AZ_FUNCTION_SIGNATURE);
         return NameCrc;
     }
 } // namespace AZ

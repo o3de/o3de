@@ -48,9 +48,9 @@ namespace AZ
                 return;
             }
 
-            AZ_Assert(GetDevice().GetFeatures().m_customSamplePositions, "Custom sample positions are not supported on this device");
             if (multisampleState.m_customPositionsCount > 0)
             {
+                AZ_Assert(GetDevice().GetFeatures().m_customSamplePositions, "Custom sample positions are not supported on this device");
                 AZStd::vector<D3D12_SAMPLE_POSITION> samplePositions;
                 AZStd::transform(
                     multisampleState.m_customPositions.begin(),

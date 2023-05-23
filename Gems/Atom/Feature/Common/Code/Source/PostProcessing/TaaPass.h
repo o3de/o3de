@@ -61,15 +61,13 @@ namespace AZ::Render
         
         // Scope producer functions...
         void CompileResources(const RHI::FrameGraphCompileContext& context) override;
-        void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
         // Pass behavior overrides...
-        void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
         void FrameBeginInternal(FramePrepareParams params) override;
         void ResetInternal() override;
         void BuildInternal() override;
 
-        void UpdateAttachmentImage(uint32_t attachmentIndex);
+        bool UpdateAttachmentImage(uint32_t attachmentIndex);
 
         void SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length);
         void GenerateFilterWeights(AZ::Vector2 jitterOffset);
@@ -84,8 +82,6 @@ namespace AZ::Render
         RPI::PassAttachmentBinding* m_inputColorBinding = nullptr;
         RPI::PassAttachmentBinding* m_lastFrameAccumulationBinding = nullptr;
         RPI::PassAttachmentBinding* m_outputColorBinding = nullptr;
-
-        RHI::CopyItem m_copyItem; // Can be removed when ShouldCopyHistoryBuffer is no longer needed.
 
         struct Offset
         {

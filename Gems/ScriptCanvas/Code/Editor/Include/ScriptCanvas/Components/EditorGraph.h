@@ -8,7 +8,6 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Bus/GraphBus.h>
@@ -36,6 +35,10 @@
 #include <Editor/Include/ScriptCanvas/Components/GraphUpgrade.h>
 #include <Editor/Assets/ScriptCanvasUndoHelper.h>
 
+namespace AZ
+{
+    class ReflectContext;
+}
 namespace ScriptCanvas
 {
     struct NodeReplacementConfiguration;
@@ -309,7 +312,7 @@ bool UpgradeGraph(SourceHandle source, UpgradeRequest upgradeRequest, const Upgr
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
-        
+
     protected:
         void PostRestore(const UndoData& restoredData) override;
 

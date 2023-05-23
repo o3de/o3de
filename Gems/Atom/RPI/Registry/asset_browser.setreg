@@ -1,0 +1,13 @@
+{
+    "O3DE": {
+        "AssetBrowser": {
+            "AssetTypeUuidExcludes": {
+                "AzslOutcomeAsset":  "{6977AEB1-17AD-4992-957B-23BB2E85B18B}",
+                "ModelLodAsset": "{65B5A801-B9B9-4160-9CB4-D40DAA50B15C}",
+                "ImageMipChainAsset": "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", 
+                "BufferAsset": "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}", 
+                "ShaderVariantAsset": "{51BED815-36D8-410E-90F0-1FA9FF765FBA}"
+            }
+        }
+    }
+}

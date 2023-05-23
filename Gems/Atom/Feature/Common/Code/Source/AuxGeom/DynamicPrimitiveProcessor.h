@@ -66,8 +66,11 @@ namespace AZ
             //! Process the list of primitives in the buffer data and add them to the views in the feature processor packet
             void ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
 
-            //! do any cleanup from last frame.
+            //! Prepare frame.
             void PrepareFrame();
+                        
+            //! Do any cleanup after current frame is rendered.
+            void FrameEnd();
 
             //! Notify this DynamicPrimitiveProcessor to update its pipeline states
             void SetUpdatePipelineStates();

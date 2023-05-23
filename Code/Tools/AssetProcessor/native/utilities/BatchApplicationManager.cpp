@@ -107,6 +107,14 @@ void BatchApplicationManager::InitSourceControl()
     }
 }
 
+void BatchApplicationManager::InitUuidManager()
+{
+    m_uuidManager = AZStd::make_unique<AssetProcessor::UuidManager>();
+    m_assetProcessorManager->SetMetaCreationDelay(0);
+
+    // Note that batch does not set any enabled types and has 0 delay because batch mode is not expected to generate metadata files or handle moving/renaming while running.
+}
+
 void BatchApplicationManager::MakeActivationConnections()
 {
     QObject::connect(m_rcController, &AssetProcessor::RCController::FileCompiled,

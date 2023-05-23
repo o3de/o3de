@@ -31,7 +31,7 @@ public:
 void AtomLyIntegrationHook::AddGemsAndComponents()
 {
     AddDynamicModulePaths({ "LmbrCentral.Editor" });
-    AddComponentDescriptors({
+    AddComponentDescriptors(AZStd::initializer_list<AZ::ComponentDescriptor*>{
         AZ::Render::AreaLightComponent::CreateDescriptor(),
         AZ::Render::EditorAreaLightComponent::CreateDescriptor()});
 }

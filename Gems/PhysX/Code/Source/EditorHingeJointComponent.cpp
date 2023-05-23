@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
@@ -43,7 +44,7 @@ namespace PhysX
                     ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "The rotation angle limit around the joint's axis.")
                     ->DataElement(0, &EditorHingeJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, "Component Mode", "Hinge Joint Component Mode.")
-                      ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }
@@ -233,82 +234,102 @@ namespace PhysX
         AngleLimitsFloatPair currentValue(m_angularLimit.m_limitPositive, m_angularLimit.m_limitNegative);
         AZ::Vector3 axis = AZ::Vector3::CreateAxisX();
 
-        const float size = 2.0f;
-        AZ::Vector3 axisPoint = axis * size * 0.5f;
+        const AZ::EntityId& entityId = GetEntityId();
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
 
-        AZ::Vector3 points[4] = {
-            -axisPoint
-            , axisPoint
-            , axisPoint
-            , -axisPoint
-        };
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
-        if (axis == AZ::Vector3::CreateAxisX())
-        {
-            points[2].SetZ(size);
-            points[3].SetZ(size);
-        }
-        else if (axis == AZ::Vector3::CreateAxisY())
-        {
-            points[2].SetX(size);
-            points[3].SetX(size);
-        }
-        else if (axis == AZ::Vector3::CreateAxisZ())
-        {
-            points[2].SetX(size);
-            points[3].SetX(size);
-        }
+        const float size = 2.0f * scaleMultiply;
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();
         debugDisplay.SetAlpha(s_alpha);
 
-        const AZ::EntityId& entityId = GetEntityId();
+        debugDisplay.PushMatrix(jointWorldTransform);
 
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
-
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(localTransform, 
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue, 
-            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
-
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
-
-        debugDisplay.SetColor(s_colorSweepArc);
-        const float sweepLineDisplaceFactor = 0.5f;
-        const float sweepLineThickness = 1.0f;
-        const float sweepLineGranularity = 1.0f;
-        const AZ::Vector3 zeroVector = AZ::Vector3::CreateZero();
-        const AZ::Vector3 posPosition = axis * sweepLineDisplaceFactor;
-        const AZ::Vector3 negPosition = -posPosition;
-        debugDisplay.DrawArc(posPosition, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
-        debugDisplay.DrawArc(zeroVector, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
-        debugDisplay.DrawArc(negPosition, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
-        debugDisplay.DrawArc(posPosition, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
-        debugDisplay.DrawArc(zeroVector, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
-        debugDisplay.DrawArc(negPosition, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
-
-        AZ::Quaternion firstRotate = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(currentValue.first));
-        AZ::Transform firstTM = AZ::Transform::CreateFromQuaternion(firstRotate);
-        debugDisplay.PushMatrix(firstTM);
+        // draw a cylinder to indicate the axis of revolution.
+        const float cylinderThickness = 0.05f * scaleMultiply;
         debugDisplay.SetColor(s_colorFirst);
-        debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
-        debugDisplay.PopMatrix();
+        debugDisplay.DrawSolidCylinder(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisX(), cylinderThickness, size, true);
 
-        AZ::Quaternion secondRotate = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(currentValue.second));
-        AZ::Transform secondTM = AZ::Transform::CreateFromQuaternion(secondRotate);
-        debugDisplay.PushMatrix(secondTM);
-        debugDisplay.SetColor(s_colorSecond);
-        debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
-        debugDisplay.PopMatrix();
+        if (m_angularLimit.m_standardLimitConfig.m_isLimited)
+        {
+            // if we are angularly limited, then show the limits, with an arc between them:
+            AZ::Vector3 axisPoint = axis * size * 0.5f;
 
-        debugDisplay.SetColor(s_colorDefault);
-        debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+            AZ::Vector3 points[4] = { -axisPoint, axisPoint, axisPoint, -axisPoint };
 
-        debugDisplay.PopMatrix(); //pop local transform
-        debugDisplay.PopMatrix(); //pop global transform
+            if (axis == AZ::Vector3::CreateAxisX())
+            {
+                points[2].SetZ(size);
+                points[3].SetZ(size);
+            }
+            else if (axis == AZ::Vector3::CreateAxisY())
+            {
+                points[2].SetX(size);
+                points[3].SetX(size);
+            }
+            else if (axis == AZ::Vector3::CreateAxisZ())
+            {
+                points[2].SetX(size);
+                points[3].SetX(size);
+            }
+
+            
+            debugDisplay.SetColor(s_colorSweepArc);
+            const float sweepLineDisplaceFactor = 0.5f;
+            const float sweepLineThickness = 1.0f * scaleMultiply;
+            const float sweepLineGranularity = 1.0f;
+            const AZ::Vector3 zeroVector = AZ::Vector3::CreateZero();
+            const AZ::Vector3 posPosition = axis * sweepLineDisplaceFactor * scaleMultiply;
+            const AZ::Vector3 negPosition = -posPosition;
+            debugDisplay.DrawArc(posPosition, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(zeroVector, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(negPosition, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(posPosition, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(zeroVector, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(negPosition, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
+
+            AZ::Quaternion firstRotate = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(currentValue.first));
+            AZ::Transform firstTM = AZ::Transform::CreateFromQuaternion(firstRotate);
+            debugDisplay.PushMatrix(firstTM);
+            debugDisplay.SetColor(s_colorFirst);
+            debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+            debugDisplay.PopMatrix();
+
+            AZ::Quaternion secondRotate = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(currentValue.second));
+            AZ::Transform secondTM = AZ::Transform::CreateFromQuaternion(secondRotate);
+            debugDisplay.PushMatrix(secondTM);
+            debugDisplay.SetColor(s_colorSecond);
+            debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+            debugDisplay.PopMatrix();
+
+            debugDisplay.SetColor(s_colorDefault);
+            debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+        }
+        else // if we are not limited, show direction of revolve instead
+        {
+            debugDisplay.SetColor(s_colorSweepArc);
+            const float circleRadius = 0.6f * scaleMultiply;
+            const float coneRadius = 0.05 * scaleMultiply;
+            const float coneHeight = 0.2f * scaleMultiply;
+            debugDisplay.DrawCircle(AZ::Vector3::CreateZero(), 1.0f * circleRadius, 0);
+            // show tick-marks on the revolve axis that indicate the positive direction of revolution
+            AZ::Vector3 pointOnCircle = circleRadius * AZ::Vector3::CreateAxisY();
+            debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisZ(), coneRadius, coneHeight);
+            pointOnCircle = -circleRadius * AZ::Vector3::CreateAxisY();
+            debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisZ(), coneRadius,coneHeight);
+
+            pointOnCircle = circleRadius * AZ::Vector3::CreateAxisZ();
+            debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisY(), coneRadius, coneHeight);
+            pointOnCircle = -circleRadius * AZ::Vector3::CreateAxisZ();
+            debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisY(), coneRadius, coneHeight);
+        }
+
+        debugDisplay.PopMatrix(); // pop joint world transform
         debugDisplay.SetState(stateBefore);
     }
 }

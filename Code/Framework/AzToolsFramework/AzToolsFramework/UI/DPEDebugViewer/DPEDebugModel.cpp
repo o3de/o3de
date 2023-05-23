@@ -401,13 +401,12 @@ namespace AzToolsFramework
     DPEModelNode* DPEDebugModel::GetNodeFromPath(const AZ::Dom::Path& thePath) const
     {
         DPEModelNode* returnedNode = m_rootNode;
-        for (auto pathIter = thePath.begin(), endIter = thePath.end(); pathIter != endIter && returnedNode != nullptr; ++pathIter)
+        for (auto pathIter = thePath.begin(), endIter = thePath.end();
+             pathIter != endIter && returnedNode != nullptr && pathIter->IsIndex();
+             ++pathIter)
         {
             // non-index subpaths are for properties not nodes, so only handle the index paths
-            if (pathIter->IsIndex())
-            {
-                returnedNode = returnedNode->GetChildFromDomIndex(pathIter->GetIndex());
-            }
+            returnedNode = returnedNode->GetChildFromDomIndex(pathIter->GetIndex());
         }
         return returnedNode;
     }

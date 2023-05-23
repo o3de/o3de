@@ -27,7 +27,8 @@ namespace PhysX::Benchmarks
             int benchmarkObjectType,
             GenerateColliderFuncPtr* genColliderFuncPtr /*= nullptr*/, GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr /*= nullptr*/,
             GenerateSpawnOrientationFuncPtr* genSpawnOriFuncPtr /*= nullptr*/, GenerateMassFuncPtr* genMassFuncPtr /*= nullptr*/,
-            GenerateEntityIdFuncPtr* genEntityIdFuncPtr /*= nullptr*/
+            GenerateEntityIdFuncPtr* genEntityIdFuncPtr /*= nullptr*/,
+            bool activateEntities /*= true*/
         )
         {
             BenchmarkRigidBodies benchmarkRigidBodies;
@@ -110,7 +111,10 @@ namespace PhysX::Benchmarks
                     entity->CreateComponent<PhysX::RigidBodyComponent>(rigidBodyConfig, sceneHandle);
 
                     entity->Init();
-                    entity->Activate();
+                    if (activateEntities)
+                    {
+                        entity->Activate();
+                    }
 
                     AZStd::get_if<PhysX::EntityList>(&benchmarkRigidBodies)->push_back(entity);
                 }

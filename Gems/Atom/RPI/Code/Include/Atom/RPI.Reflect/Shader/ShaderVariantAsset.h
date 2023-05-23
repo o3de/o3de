@@ -81,8 +81,7 @@ namespace AZ
 
             AZStd::array<RHI::Ptr<RHI::ShaderStageFunction>, RHI::ShaderStageCount> m_functionsByStage;
 
-            //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset, especially during hot-reload.
-            AZ::u64 m_buildTimestamp = 0;
+
         };
 
         class ShaderVariantAssetHandler final

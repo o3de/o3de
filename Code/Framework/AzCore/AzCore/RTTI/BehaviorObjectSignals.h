@@ -22,8 +22,8 @@ namespace AZ
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
 
         // Keyed off of the void* pointer of the object that is being listened to.
-        typedef void* BusIdType;
-        
+        typedef const void* BusIdType;
+
         virtual void OnMemberMethodCalled(const BehaviorMethod* method) = 0;
     };
 

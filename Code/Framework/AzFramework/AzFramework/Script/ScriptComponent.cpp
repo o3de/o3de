@@ -19,6 +19,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -31,6 +32,8 @@ extern "C" {
 #include <AzFramework/Script/ScriptComponent.h>
 
 AZ_DEFINE_BUDGET(Script);
+
+constexpr static const char* ScriptComponentHotReloadPath = "/O3DE/AzFramework/Script/HotReloadEnabled";
 
 namespace ScriptComponentCpp
 {
@@ -506,16 +509,25 @@ namespace AzFramework
         // Load the script, find the base table...
         if (LoadInContext())
         {
+            bool isHotReloadEnabled = false;
+
+            // Retrieve new action manager setting
+            if (auto* registry = AZ::SettingsRegistry::Get())
+            {
+                registry->Get(isHotReloadEnabled, ScriptComponentHotReloadPath);
+            }
+
+            if (isHotReloadEnabled)
+            {
+                AZ::Data::AssetBus::Handler::BusConnect(m_script.GetId());
+            }
+
             // ...create the entity table, find the Activate/Deactivate functions in the script and call them
             CreateEntityTable();
         }
     }
 
-    //=========================================================================
-    // Deactivate
-    // [8/12/2013]
-    //=========================================================================
-    void ScriptComponent::Deactivate()
+    void ScriptComponent::DestroyEntityTable()
     {
         AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
 
@@ -553,10 +565,25 @@ namespace AzFramework
         }
     }
 
-    //=========================================================================
-    // LoadInContext
-    // [3/3/2014]
-    //=========================================================================
+    void ScriptComponent::Deactivate()
+    {
+        AZ::Data::AssetBus::Handler::BusDisconnect();
+
+        DestroyEntityTable();
+    }
+
+    void ScriptComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    {
+        DestroyEntityTable();
+
+        m_script = asset;
+
+        if (LoadInContext())
+        {
+            CreateEntityTable();
+        }
+    }
+
     bool ScriptComponent::LoadInContext()
     {
         LSV_BEGIN(m_context->NativeContext(), 1);

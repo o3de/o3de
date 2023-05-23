@@ -9,6 +9,8 @@
 
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/IO/SystemFile.h> // for max path
 

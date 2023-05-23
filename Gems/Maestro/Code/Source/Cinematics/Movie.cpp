@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Time/ITime.h>

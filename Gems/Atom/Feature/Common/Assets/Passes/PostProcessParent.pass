@@ -86,7 +86,7 @@
                 },
                 {
                     "Name": "TaaPass",
-                    "TemplateName": "TaaTemplate",
+                    "TemplateName": "TaaParentTemplate",
                     "Enabled": false,
                     "Connections": [
                         {

@@ -967,7 +967,7 @@ namespace MCore
         }
 
         // add the command to the hash table
-        m_registeredCommands.insert(AZStd::make_pair<AZStd::string, Command*>(command->GetNameString(), command));
+        m_registeredCommands.insert(AZStd::make_pair(command->GetNameString(), command));
 
         // we're going to insert the command in a sorted way now
         bool found = false;

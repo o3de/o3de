@@ -513,7 +513,7 @@ namespace UnitTest
         class StructOuter
         {
         public:
-            AZ_TYPE_INFO(StructInner, "{FEDCED26-8D5A-41CB-BA97-AB687CF51FC6}");
+            AZ_TYPE_INFO(StructOuter, "{FEDCED26-8D5A-41CB-BA97-AB687CF51FC6}");
 
             AZStd::vector<StructInner> m_vector;
 

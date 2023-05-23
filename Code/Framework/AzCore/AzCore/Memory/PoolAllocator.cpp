@@ -32,9 +32,25 @@
 #define POOL_ALLOCATION_MIN_ALLOCATION_SIZE size_t{8}
 #define POOL_ALLOCATION_MAX_ALLOCATION_SIZE size_t{512}
 
+namespace AZ
+{
+    AZ_TYPE_INFO_WITH_NAME_IMPL(PoolSchema, "PoolSchema", "{3BFAC20A-DBE9-4C94-AC20-8417FD9C9CB2}");
+}
+
 namespace AZ::Internal
 {
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
     template class PoolAllocatorHelper<PoolSchema>;
+
+    // Also instantiate the PoolAllocatorHelper for the Thread Pool Allocator
+    template class PoolAllocatorHelper<ThreadPoolSchemaHelper<ThreadPoolAllocator>>;
+}
+
+namespace AZ
+{
+    // Instantiate the PoolAllocatorHelper<PoolSchema> AZ::AzTypeInfo template
+    template struct AzTypeInfo<Internal::PoolAllocatorHelper<PoolSchema>>;
 }
 
 namespace
@@ -125,6 +141,7 @@ namespace AZ
     class PoolSchemaImpl
     {
     public:
+        PoolSchemaImpl(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize);
         PoolSchemaImpl();
         ~PoolSchemaImpl();
 
@@ -282,6 +299,14 @@ namespace AZ
         ThreadPoolSchemaImpl(
             ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
             ThreadPoolSchema::SetThreadPoolData threadPoolSetter);
+
+        ThreadPoolSchemaImpl(
+            ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
+            ThreadPoolSchema::SetThreadPoolData threadPoolSetter,
+            ThreadPoolSchema::size_type pageSize,
+            ThreadPoolSchema::size_type minAllocationSize,
+            ThreadPoolSchema::size_type maxAllocationSize);
+
         ~ThreadPoolSchemaImpl();
 
         ThreadPoolSchema::pointer Allocate(ThreadPoolSchema::size_type byteSize, ThreadPoolSchema::size_type alignment);
@@ -649,8 +674,7 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     PoolSchema::PoolSchema()
-        : m_impl(new (AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), AZStd::alignment_of<PoolSchemaImpl>::value))
-                 PoolSchemaImpl())
+        : m_impl(nullptr)
     {
     }
 
@@ -671,6 +695,13 @@ namespace AZ
     //=========================================================================
     bool PoolSchema::Create()
     {
+        return Create(POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE);
+    }
+
+    bool PoolSchema::Create(PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize)
+    {
+        m_impl = new (AZStd::stateless_allocator().allocate(sizeof(PoolSchemaImpl), AZStd::alignment_of<PoolSchemaImpl>::value))
+            PoolSchemaImpl(pageSize, minAllocationSize, maxAllocationSize);
         return true;
     }
 
@@ -751,9 +782,15 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     PoolSchemaImpl::PoolSchemaImpl()
+        : PoolSchemaImpl(POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
+    {
+    }
+
+    PoolSchemaImpl::PoolSchemaImpl(
+        PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize)
         : m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
-        , m_allocator(this, POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
-        , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
+        , m_allocator(this, pageSize, minAllocationSize, maxAllocationSize)
+        , m_pageSize(pageSize)
     {
     }
 
@@ -871,8 +908,7 @@ namespace AZ
     ThreadPoolSchema::ThreadPoolSchema(GetThreadPoolData getThreadPoolData, SetThreadPoolData setThreadPoolData)
         : m_threadPoolGetter(getThreadPoolData)
         , m_threadPoolSetter(setThreadPoolData)
-        , m_impl(new (AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value))
-                     ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter))
+        , m_impl(nullptr)
     {
     }
 
@@ -893,6 +929,14 @@ namespace AZ
     //=========================================================================
     bool ThreadPoolSchema::Create()
     {
+        return Create(POOL_ALLOCATION_PAGE_SIZE, POOL_ALLOCATION_MIN_ALLOCATION_SIZE, POOL_ALLOCATION_MAX_ALLOCATION_SIZE);
+    }
+
+    bool ThreadPoolSchema::Create(
+        PoolSchema::size_type pageSize, PoolSchema::size_type minAllocationSize, PoolSchema::size_type maxAllocationSize)
+    {
+        m_impl = new (AZStd::stateless_allocator().allocate(sizeof(ThreadPoolSchemaImpl), AZStd::alignment_of<ThreadPoolSchemaImpl>::value))
+                     ThreadPoolSchemaImpl(m_threadPoolGetter, m_threadPoolSetter, pageSize, minAllocationSize, maxAllocationSize);
         return true;
     }
 
@@ -972,14 +1016,28 @@ namespace AZ
     // [9/15/2009]
     //=========================================================================
     ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(
+        ThreadPoolSchema::GetThreadPoolData threadPoolGetter, ThreadPoolSchema::SetThreadPoolData threadPoolSetter)
+        : ThreadPoolSchemaImpl(
+              threadPoolGetter,
+              threadPoolSetter,
+              POOL_ALLOCATION_PAGE_SIZE,
+              POOL_ALLOCATION_MIN_ALLOCATION_SIZE,
+              POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
+    {
+    }
+
+    ThreadPoolSchemaImpl::ThreadPoolSchemaImpl(
         ThreadPoolSchema::GetThreadPoolData threadPoolGetter,
-        ThreadPoolSchema::SetThreadPoolData threadPoolSetter)
+        ThreadPoolSchema::SetThreadPoolData threadPoolSetter,
+        ThreadPoolSchema::size_type pageSize,
+        ThreadPoolSchema::size_type minAllocationSize,
+        ThreadPoolSchema::size_type maxAllocationSize)
         : m_threadPoolGetter(threadPoolGetter)
         , m_threadPoolSetter(threadPoolSetter)
         , m_pageAllocator(&AllocatorInstance<SystemAllocator>::Get())
-        , m_pageSize(POOL_ALLOCATION_PAGE_SIZE)
-        , m_minAllocationSize(POOL_ALLOCATION_MIN_ALLOCATION_SIZE)
-        , m_maxAllocationSize(POOL_ALLOCATION_MAX_ALLOCATION_SIZE)
+        , m_pageSize(pageSize)
+        , m_minAllocationSize(minAllocationSize)
+        , m_maxAllocationSize(maxAllocationSize)
     {
 #if AZ_TRAIT_OS_HAS_CRITICAL_SECTION_SPIN_COUNT
         // In memory allocation case (usually tools) we might have high contention,

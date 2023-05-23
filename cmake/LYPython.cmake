@@ -20,10 +20,30 @@ include(cmake/LySet.cmake)
 
 # CMAKE_HOST_SYSTEM_NAME is  "Windows", "Darwin", or "Linux" in our cases..
 if (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux" )
-    ly_set(LY_PYTHON_VERSION 3.10.5)
-    ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
-    ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev2-linux)
-    ly_set(LY_PYTHON_PACKAGE_HASH eda1fdc9129fb70df2d63bd21d0876c83c4f7021864f22c85850f4a8ff8cf1bf)
+
+    # Note: CMAKE_HOST_SYSTEM_PROCESSOR may not available in this script if it is not
+    #       invoked from the base CMakeList.txt since project needs to be declared.
+    #       We will extract the host architecture manually if this script is called externally
+    if (${CMAKE_SYSTEM_ARCHITECTURE})
+        set(LINUX_HOST_ARCHITECTURE ${CMAKE_SYSTEM_ARCHITECTURE})
+    else()
+        execute_process(COMMAND uname -m OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE LINUX_HOST_ARCHITECTURE)
+    endif()
+
+    if (${LINUX_HOST_ARCHITECTURE} STREQUAL "x86_64")
+        ly_set(LY_PYTHON_VERSION 3.10.5)
+        ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
+        ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev2-linux)
+        ly_set(LY_PYTHON_PACKAGE_HASH eda1fdc9129fb70df2d63bd21d0876c83c4f7021864f22c85850f4a8ff8cf1bf)
+    elseif(${LINUX_HOST_ARCHITECTURE} STREQUAL "aarch64")
+        ly_set(LY_PYTHON_VERSION 3.10.5)
+        ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
+        ly_set(LY_PYTHON_PACKAGE_NAME python-3.10.5-rev3-linux-aarch64)
+        ly_set(LY_PYTHON_PACKAGE_HASH 49207e509dd2f160fdd6019cbd7b0dcb718b6b0f6ac947853e4b9eb75257c9d8)
+    else()
+        message(FATAL_ERROR "Linux host architecture ${LINUX_HOST_ARCHITECTURE} not supported.")
+    endif()
+
 elseif  (${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Darwin" )
     ly_set(LY_PYTHON_VERSION 3.10.5)
     ly_set(LY_PYTHON_VERSION_MAJOR_MINOR 3.10)
@@ -143,6 +163,11 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     set(stamp_file ${CMAKE_BINARY_DIR}/packages/pip_installs/${pip_package_name}.stamp)
     get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
     file(MAKE_DIRECTORY ${stamp_file_directory})
+    
+    # for the first release of the o3de snap we will only use packages shipped with o3de
+    if ($ENV{O3DE_SNAP})
+        file(TOUCH ${stamp_file})
+    endif()
    
     # we only ever need to do this once per runtime install, since its a link
     # not an actual install:

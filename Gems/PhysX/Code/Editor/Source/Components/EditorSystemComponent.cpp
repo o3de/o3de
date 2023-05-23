@@ -23,6 +23,7 @@
 #include <Editor/PropertyTypes.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
+#include <Pipeline/PhysicsPrefabProcessor.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
@@ -35,10 +36,11 @@ namespace PhysX
         EditorJointLimitLinearPairConfig::Reflect(context);
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
-        JointMotorProperties::Reflect(context);
         JointsComponentMode::Reflect(context);
 
         EditorMaterialAsset::Reflect(context);
+
+        PhysicsPrefabProcessor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -62,13 +64,13 @@ namespace PhysX
     void EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("PhysicsService"));
-        required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void EditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+        dependent.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void EditorSystemComponent::Activate()
@@ -128,6 +130,14 @@ namespace PhysX
 
         m_materialAssetBuilder.BusDisconnect();
 
+        for (auto& assetHandler : m_assetHandlers)
+        {
+            if (auto editorMaterialAssetHandler = azrtti_cast<AzFramework::GenericAssetHandler<PhysX::EditorMaterialAsset>*>(assetHandler.get());
+                editorMaterialAssetHandler != nullptr)
+            {
+                editorMaterialAssetHandler->Unregister();
+            }
+        }
         m_assetHandlers.clear();
     }
 

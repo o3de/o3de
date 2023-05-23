@@ -93,9 +93,6 @@ namespace AZ
             
             //! Cache the multisample state and at the same time hook up the custom sample msaa positions for the render pass.
             void ApplyMSAACustomPositions(const ImageView* imageView);
-            
-            /// Depth stencil attachment access.
-            RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
 
             /// Render pass descriptor needed for RenderCommandEncoder or ParallelCommandEncoder
             MTLRenderPassDescriptor*    m_renderPassDescriptor = nil;

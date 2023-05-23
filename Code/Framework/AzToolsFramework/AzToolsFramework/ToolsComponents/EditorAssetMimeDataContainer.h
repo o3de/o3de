@@ -11,14 +11,15 @@
 #include <AzCore/base.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 
 #include <QtCore/QString>
 
 namespace AZ
 {
     struct ClassDataReflection;
+    class ReflectContext;
 }
 
 class QMimeData;

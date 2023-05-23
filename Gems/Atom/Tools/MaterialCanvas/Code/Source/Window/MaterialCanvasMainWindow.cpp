@@ -220,6 +220,12 @@ namespace MaterialCanvas
         Base::PopulateSettingsInspector(inspector);
     }
 
+    void MaterialCanvasMainWindow::OnSettingsDialogClosed()
+    {
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
+        Base::OnSettingsDialogClosed();
+    }
+
     AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const
     {
         return R"(<html><head/><body>

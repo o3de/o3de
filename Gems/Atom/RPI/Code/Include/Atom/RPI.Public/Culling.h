@@ -96,9 +96,10 @@ namespace AZ
             {
                 struct Lod
                 {
-                    float m_screenCoverageMin;
-                    float m_screenCoverageMax;
+                    float m_screenCoverageMin = 0.0f;
+                    float m_screenCoverageMax = 1.0f;
                     AZStd::vector<const RHI::DrawPacket*> m_drawPackets;
+                    void* m_visibleObjectUserData = nullptr;
                 };
 
                 AZStd::vector<Lod> m_lods;
@@ -222,7 +223,7 @@ namespace AZ
         };
 
         //! Selects an lod (based on size-in-screen-space) and adds the appropriate DrawPackets to the view.
-        uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view);
+        uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view, AzFramework::VisibilityEntry::TypeFlags typeFlags);
 
         //! Centralized manager for culling-related processing for a given scene.
         //! There is one CullingScene owned by each Scene, so external systems (such as FeatureProcessors) should

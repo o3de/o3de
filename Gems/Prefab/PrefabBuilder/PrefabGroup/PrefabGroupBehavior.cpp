@@ -20,6 +20,7 @@
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
@@ -134,18 +135,24 @@ namespace AZ::SceneAPI::Behaviors
     {
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
+            bool skip = false;
+
             // this toggle makes constructing default mesh groups and a prefab optional
             bool createDefaultPrefab = true;
             settingsRegistry->Get(createDefaultPrefab, s_PrefabGroupBehaviorCreateDefaultKey);
             if (createDefaultPrefab == false)
             {
-                return Events::ProcessingResult::Ignored;
+                AZ_Info(
+                    "PrefabGroupBehavior",
+                    "Skipping default prefab generation - registry setting %s is disabled\n",
+                    s_PrefabGroupBehaviorCreateDefaultKey);
+                skip = true;
             }
 
             // do not make a Prefab Group if the animation policy will be applied (if ignore actors is set)
             bool ignoreActors = true;
             settingsRegistry->Get(ignoreActors, s_PrefabGroupBehaviorIgnoreActorsKey);
-            if (ignoreActors)
+            if (!skip && ignoreActors)
             {
                 AZStd::set<AZStd::string> appliedPolicies;
                 AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
@@ -155,8 +162,33 @@ namespace AZ::SceneAPI::Behaviors
 
                 if (appliedPolicies.contains("ActorGroupBehavior"))
                 {
-                    return Events::ProcessingResult::Ignored;
+                    AZ_Info(
+                        "PrefabGroupBehavior",
+                        "Skipping default prefab generation - scene has an Actor group present and registry setting %s"
+                        " is enabled\n",
+                        s_PrefabGroupBehaviorIgnoreActorsKey);
+                    skip = true;
                 }
+            }
+
+            // Remove the prefab group so it doesn't try fail to process an empty prefab group during export
+            if (skip)
+            {
+                for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+                {
+                    const auto* prefabGroup =
+                        azrtti_cast<const SceneData::PrefabGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                    if (prefabGroup)
+                    {
+                        if (prefabGroup->GetPrefabDomRef().has_value() == false)
+                        {
+                            scene.GetManifest().RemoveEntry(prefabGroup);
+                            return Events::ProcessingResult::Ignored;
+                        }
+                    }
+                }
+
+                return Events::ProcessingResult::Ignored;
             }
         }
 
@@ -253,7 +285,7 @@ namespace AZ::SceneAPI::Behaviors
             manifestUpdates, &AZ::SceneAPI::PrefabGroupEventBus::Events::GenerateDefaultPrefabMeshGroups, scene);
 
         Events::ManifestMetaInfoBus::Broadcast(&Events::ManifestMetaInfoBus::Events::AddObjects, manifestUpdates);
-        
+
     }
 
     //
@@ -465,17 +497,16 @@ namespace AZ::SceneAPI::Behaviors
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
         if (behaviorContext)
         {
-            using namespace AzToolsFramework::Prefab;
 
             auto loadTemplate = [](const AZStd::string& prefabPath)
             {
                 AZ::IO::FixedMaxPath path {prefabPath};
-                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                auto* prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 if (prefabLoaderInterface)
                 {
                     return prefabLoaderInterface->LoadTemplateFromFile(path);
                 }
-                return TemplateId{};
+                return AzToolsFramework::Prefab::TemplateId{};
             };
 
             behaviorContext->Method("LoadTemplate", loadTemplate)
@@ -483,10 +514,10 @@ namespace AZ::SceneAPI::Behaviors
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "prefab");
 
-            auto saveTemplateToString = [](TemplateId templateId) -> AZStd::string
+            auto saveTemplateToString = [](AzToolsFramework::Prefab::TemplateId templateId) -> AZStd::string
             {
                 AZStd::string output;
-                auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+                auto* prefabLoaderInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
                 if (prefabLoaderInterface)
                 {
                     prefabLoaderInterface->SaveTemplateToString(templateId, output);

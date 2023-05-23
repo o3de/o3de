@@ -89,7 +89,6 @@ namespace ScriptCanvasEditor
             AZStd::atomic_bool m_alreadyQueuedDrainMessage;  // we also only drain the queue at the end so that we do bulk inserts instead of one at a time.
 
             void CommitAddedLines();
-            bool m_alreadyQueuedCommit = false;
 
         private Q_SLOTS:
             void    DrainMessages();

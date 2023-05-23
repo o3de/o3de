@@ -7,6 +7,8 @@
  */
 
 #include <AzFramework/Components/ComponentAdapterHelpers.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace AzToolsFramework
 {

@@ -3426,7 +3426,11 @@ namespace LandscapeCanvasEditor
         // Handle if this node has an image asset slot to parse
         HandleImageAssetSlot(node, nodeMaps[EntityIdNodeMapEnum::Gradients], connections);
 
-        auto handleIndexedSlots = [this, graphId, node, &connections](AzToolsFramework::EntityIdList entityIds, const EntityIdNodeMap& sourceNodeMap, GraphModel::SlotName outboundSlotId, LandscapeCanvas::LandscapeCanvasDataTypeEnum slotDataType)
+        auto handleIndexedSlots = [this, graphId, node, &connections](
+                                      const AzToolsFramework::EntityIdList& entityIds,
+                                      const EntityIdNodeMap& sourceNodeMap,
+                                      const GraphModel::SlotName& outboundSlotId,
+                                      LandscapeCanvas::LandscapeCanvasDataTypeEnum slotDataType)
         {
             if (entityIds.empty())
             {

@@ -32,6 +32,8 @@
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 //////////////////////////////////////////////////////////////////////////
 CAnimSequence::CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType sequenceType)
     : m_refCount(0)
@@ -234,7 +236,7 @@ bool CAnimSequence::AddNode(IAnimNode* animNode)
             }
         }
     }
-     
+
     if (animNode->NeedToRender())
     {
         AddNodeNeedToRender(animNode);
@@ -304,7 +306,7 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
         case AnimNodeType::ScreenFader:
             animNode = aznew CAnimScreenFaderNode(nNodeId);
             break;
-        default:     
+        default:
             m_pMovieSystem->LogUserNotificationMsg("AnimNode cannot be added because it is an unsupported object type.");
             break;
     }
@@ -359,7 +361,7 @@ IAnimNode* CAnimSequence::CreateNode(XmlNodeRef node)
     CAnimNode* newAnimNode = static_cast<CAnimNode*>(pNewNode);
 
     // Make sure de-serializing this node didn't just create an id conflict. This can happen sometimes
-    // when copy/pasting nodes from a different sequence to this one. 
+    // when copy/pasting nodes from a different sequence to this one.
     for (const auto& curNode : m_nodes)
     {
         CAnimNode* animNode = static_cast<CAnimNode*>(curNode.get());
@@ -1289,7 +1291,7 @@ void CAnimSequence::RemoveNodeNeedToRender(IAnimNode* pNode)
 
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::SetSequenceEntityId(const AZ::EntityId& sequenceEntityId)
-{ 
+{
     m_sequenceEntityId = sequenceEntityId;
 }
 //////////////////////////////////////////////////////////////////////////

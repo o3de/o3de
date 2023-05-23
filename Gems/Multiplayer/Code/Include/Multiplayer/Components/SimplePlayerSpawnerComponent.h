@@ -10,12 +10,18 @@
 
 #include <AzCore/Component/Component.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
-
+#include <Multiplayer/Components/ISimplePlayerSpawner.h>
 namespace Multiplayer
 {
+    /*!
+     * \class SimplePlayerSpawnerComponent
+     * \brief A network player spawner. Attach this component to any level's root entity which needs to spawn a network player.
+     *        If no spawn points are provided the network players will be spawned at the world-space origin.
+     */
     class SimplePlayerSpawnerComponent
         : public AZ::Component
         , public IMultiplayerSpawner
+        , public ISimplePlayerSpawner
     {
     public:
         AZ_COMPONENT(Multiplayer::SimplePlayerSpawnerComponent, "{0A6D0132-3FD2-4F13-B537-2B1DA99E34E9}");
@@ -27,6 +33,15 @@ namespace Multiplayer
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
+
+        ////////////////////////////////////////////////////////////////////////
+        // ISimplePlayerSpawner implementation...
+        AZ::Transform GetNextSpawnPoint() const override;
+        const AZStd::vector<AZ::EntityId>& GetSpawnPoints() const override;
+        uint32_t GetSpawnPointCount() const override;
+        uint32_t GetNextSpawnPointIndex() const override;
+        void SetNextSpawnPointIndex(uint32_t index) override;
+        ////////////////////////////////////////////////////////////////////////
 
     protected:
 
@@ -46,5 +61,7 @@ namespace Multiplayer
 
         // Runtime properties
         uint32_t m_spawnIndex = 0;
+
+        friend class SimplePlayerSpawnerTests;
     };
 } // namespace Multiplayer

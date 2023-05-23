@@ -5,13 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef __IMGUI_MANAGER_H__
-#define __IMGUI_MANAGER_H__
 
 #pragma once
 
 #ifdef IMGUI_ENABLED
 
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
 #include <AzFramework/Input/Events/InputTextEventListener.h>
 #include <AzFramework/Windowing/WindowBus.h>
@@ -21,8 +20,8 @@
 #include <VertexFormats.h>
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
-#include <AzCore/Module/DynamicModuleHandle.h>
-#endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
+#   include <AzCore/Module/DynamicModuleHandle.h>
+#endif
 
 namespace AZ { class JobCompletion; }
 
@@ -53,13 +52,9 @@ namespace ImGui
         // This is called by the ImGuiGem to Register CVARs at the correct time
         void RegisterImGuiCVARs();
     protected:
-        void RenderImGuiBuffers(const ImVec2& scaleRects);
-
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
-        DisplayState GetEditorWindowState() const override { return m_editorWindowState; }
-        void SetEditorWindowState(DisplayState state) override { m_editorWindowState = state; }
-        DisplayState GetClientMenuBarState() const override { return m_clientMenuBarState; }
-        void SetClientMenuBarState(DisplayState state) override { m_clientMenuBarState = state; }
+        DisplayState GetDisplayState() const override { return m_clientMenuBarState; }
+        void SetDisplayState(DisplayState state) override { m_clientMenuBarState = state; }
         bool IsControllerSupportModeEnabled(ImGuiControllerModeFlags::FlagType controllerMode) const override;
         void EnableControllerSupportMode(ImGuiControllerModeFlags::FlagType controllerMode, bool enable) override;
         void SetControllerMouseSensitivity(float sensitivity) override { m_controllerMouseSensitivity = sensitivity; }
@@ -74,7 +69,7 @@ namespace ImGui
         void RestoreRenderWindowSizeToDefault() override;
         void SetDpiScalingFactor(float dpiScalingFactor) override;
         float GetDpiScalingFactor() const override;
-        void Render() override;
+        ImDrawData* GetImguiDrawData() override;
         void ToggleThroughImGuiVisibleState() override;
         void ToggleToImGuiVisibleState(DisplayState state) override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
@@ -96,7 +91,6 @@ namespace ImGui
 
         ImGuiContext* m_imguiContext = nullptr;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
-        DisplayState m_editorWindowState = DisplayState::Hidden;
 
         // ImGui Resolution Settings
         ImGuiResolutionMode m_resolutionMode = ImGuiResolutionMode::MatchRenderResolution;
@@ -114,6 +108,7 @@ namespace ImGui
 
         bool m_hardwardeMouseConnected = false;
         bool m_enableDiscreteInputMode = false;
+        AzFramework::SystemCursorState m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
         ImGuiControllerModeFlags::FlagType m_controllerModeFlags = 0;
         float m_controllerMouseSensitivity = 4.0f;
         float m_controllerMousePosition[2] = { 0.0f, 0.0f };
@@ -134,4 +129,3 @@ namespace ImGui
 }
 
 #endif // ~IMGUI_ENABLED
-#endif //__IMGUI_MANAGER_H__

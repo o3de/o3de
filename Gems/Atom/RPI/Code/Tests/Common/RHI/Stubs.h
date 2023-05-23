@@ -97,7 +97,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
         private:
-            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayoutPlaced*, size_t*) const override {}
+            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayout*, size_t*) const override {}
             bool IsStreamableInternal() const override {return true;};
         };
 

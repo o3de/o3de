@@ -25,15 +25,15 @@ namespace PhysX
             [this]()
             {
                 float capsuleRadius = 0.0f;
-                EditorColliderComponentRequestBus::EventResult(
-                    capsuleRadius, m_entityComponentIdPair, &EditorColliderComponentRequests::GetSphereRadius);
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleRadius, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetSphereRadius);
                 return capsuleRadius;
             });
         m_sphereViewportEdit->InstallSetSphereRadius(
             [this](float radius)
             {
-                EditorColliderComponentRequestBus::Event(
-                    m_entityComponentIdPair, &EditorColliderComponentRequests::SetSphereRadius, radius);
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetSphereRadius, radius);
             });
         m_sphereViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
         m_sphereViewportEdit->AddEntityComponentIdPair(idPair);

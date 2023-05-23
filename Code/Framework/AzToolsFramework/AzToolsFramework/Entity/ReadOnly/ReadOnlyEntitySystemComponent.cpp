@@ -86,7 +86,7 @@ namespace AzToolsFramework
         }
     }
 
-    void ReadOnlyEntitySystemComponent::OnContextReset()
+    void ReadOnlyEntitySystemComponent::OnPrepareForContextReset()
     {
         m_readOnlystates.clear();
     }

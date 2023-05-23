@@ -8,9 +8,11 @@
 
 #include "MaterialGraphName_Common.azsli"
 
-VsOutput MainVS(VsInput IN)
+VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    return EvaluateVertexGeometry(IN);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    return EvaluateVertexGeometry(IN, SV);
 }
 
 struct PsDepthOutput
@@ -21,7 +23,8 @@ struct PsDepthOutput
 PsDepthOutput MainPS(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 {
     PixelGeometryData geoData = EvaluatePixelGeometry(IN, isFrontFace);
-    Surface surface = EvaluateSurface(geoData);
+
+    Surface surface = EvaluateSurface(IN, geoData);
 
 #if !FORCE_OPAQUE
     CheckClipping(surface.alpha, 0.5);

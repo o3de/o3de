@@ -1436,5 +1436,24 @@ namespace AZ
             desc.StencilWriteMask = static_cast<UINT8>(depthStencil.m_stencil.m_writeMask);
             return desc;
         }
+
+        RHI::ResultCode ConvertResult(HRESULT result)
+        {
+            switch(result)
+            {
+                case S_OK:
+                case S_FALSE:
+                    return RHI::ResultCode::Success;
+                case E_OUTOFMEMORY:
+                    return RHI::ResultCode::OutOfMemory;
+                case E_INVALIDARG:
+                    return RHI::ResultCode::InvalidArgument;
+                case DXGI_ERROR_INVALID_CALL:
+                case E_NOTIMPL:
+                    return RHI::ResultCode::InvalidOperation;
+                default:
+                    return RHI::ResultCode::Fail;
+            }
+        }
    }
 }

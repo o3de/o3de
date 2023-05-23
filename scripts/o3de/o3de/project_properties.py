@@ -43,16 +43,28 @@ def _edit_gem_names(proj_json: dict,
         add_list = new_gem_names.split() if isinstance(new_gem_names, str) else new_gem_names
         if is_optional_gem:
             add_list = [dict(name=gem_name, optional=True) for gem_name in add_list]
+
+        def is_version_of_gem(candidate: str or dict, gem_name) -> bool:
+            candidate_gem_name = candidate if isinstance(candidate, str) else candidate.get('name')
+            candidate_gem_name_only, _ = utils.get_object_name_and_optional_version_specifier(candidate_gem_name)
+            return candidate_gem_name_only == gem_name
+
+        # remove any versions of the existing gem first
+        if proj_json.get('gem_names',[]):
+            for new_gem_name in add_list:
+                new_gem_name = new_gem_name if isinstance(new_gem_name,str) else new_gem_name['name']
+                gem_name_only, _ = utils.get_object_name_and_optional_version_specifier(new_gem_name)
+                proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not is_version_of_gem(gem, gem_name_only)]
+            
         proj_json.setdefault('gem_names', []).extend(add_list)
 
     if delete_gem_names:
         removal_list = delete_gem_names.split() if isinstance(delete_gem_names, str) else delete_gem_names
         if 'gem_names' in proj_json:
             def in_list(gem: str or dict, remove_list: list) -> bool:
-                if isinstance(gem, dict):
-                    return gem.get('name', '') in remove_list
-                else:
-                    return gem in remove_list
+                gem_name_with_specifier = gem.get('name', '') if isinstance(gem, dict) else gem
+                gem_name, _ = utils.get_object_name_and_optional_version_specifier(gem_name_with_specifier)
+                return gem_name_with_specifier in remove_list or gem_name in remove_list 
 
             proj_json['gem_names'] = [gem for gem in proj_json['gem_names'] if not in_list(gem, removal_list)]
 
