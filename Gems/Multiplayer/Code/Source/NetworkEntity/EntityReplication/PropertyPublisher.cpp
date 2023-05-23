@@ -11,6 +11,8 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 
+#pragma optimize("", off)
+
 namespace Multiplayer
 {
     AZ_CVAR(uint32_t, net_EntityReplicatorRecordsMax, 45, nullptr, AZ::ConsoleFunctorFlags::Null, "Number of allowed outstanding entity records");
@@ -36,6 +38,7 @@ namespace Multiplayer
 
     bool PropertyPublisher::IsDeleting() const
     {
+        // This will return true once the delete message has been generated, both before and after acknowledgement.
         return (PropertyPublisher::EntityReplicatorState::Deleting == m_replicatorState);
     }
 
@@ -55,7 +58,7 @@ namespace Multiplayer
 
     void PropertyPublisher::SetDeleting()
     {
-        m_netBindComponent = nullptr;
+        AZ_Assert(m_replicatorState != EntityReplicatorState::Deleting, "Attempting to delete the same entity twice.");
         m_replicatorState = EntityReplicatorState::Deleting;
     }
 
@@ -81,21 +84,23 @@ namespace Multiplayer
         m_netBindComponent->FillReplicationRecord(m_pendingRecord);
     }
 
-    bool PropertyPublisher::HasUpdateEntityRecord()
+    bool PropertyPublisher::HasEntityChangesToSend()
     {
         auto mostRecentAckedIter = m_sentRecords.end();
         for (auto iter = m_sentRecords.begin(); iter != m_sentRecords.end(); ++iter)
         {
+            // m_sentRecords is sorted from the most to the least recent sent changes, so once
+            // the first acknowledged record is found, everything from that record and beyond in the list
+            // is no longer necessary and can be deleted.
             if (m_connection.WasPacketAcked(iter->m_sentPacketId))
             {
-                // This has been acked, so everything after to this and this replication record are not useful
                 mostRecentAckedIter = iter;
                 m_remoteReplicatorEstablished = true;
                 break;
             }
         }
 
-        // delete everything prior to this
+        // Delete all of the acknowledged records.
         m_sentRecords.erase(mostRecentAckedIter, m_sentRecords.end());
 
         // Nothing to send
@@ -103,11 +108,15 @@ namespace Multiplayer
         {
             return false;
         }
+
+        // Still need to send a change record if there are pending changes or
+        // if the remote replicator hasn't acknowledged a connection yet.
         return true;
     }
 
     bool PropertyPublisher::PrepareAddEntityRecord()
     {
+        // On an "Add", create a change record that contains all the serialized fields for the entity.
         m_sentRecords.clear();
         m_netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
         m_sentRecords.push_front(m_pendingRecord);
@@ -135,12 +144,14 @@ namespace Multiplayer
         bool didPrepare = true;
         if (m_sentRecords.size() >= net_EntityReplicatorRecordsMax)
         {
-            // If we reach the maximum outstanding records, reset the replication state
+            // If we reach the maximum outstanding records, reset the replication state by creating an "Add" record.
             didPrepare = PrepareAddEntityRecord();
         }
         else
         {
-            // We need to clear out old records, and build up a list of everything that has changed since the last acked packet
+            // The update record consists of the pending record (new changes) merged together with everything else that has changed
+            // since the last acked record (old changes). That way, the client can ignore any out-of-sequence records because the
+            // later ones will always contain the necessary and latest information.
             m_sentRecords.push_front(m_pendingRecord);
             auto iter = m_sentRecords.begin();
             ++iter; // Consider everything after the record we are going to send
@@ -162,9 +173,25 @@ namespace Multiplayer
 
     bool PropertyPublisher::PrepareDeleteEntityRecord()
     {
-        m_sentRecords.clear();
-        m_pendingRecord.Clear();
-        return !IsDeleted();
+        if (IsDeleted())
+        {
+            // The delete has already been acknowledged, so there's nothing more to do.
+            return false;
+        }
+        if (m_sentRecords.empty() && (!m_remoteReplicatorEstablished))
+        {
+            // If the entity add has never been sent (no sent records waiting for acknowledgement and
+            // no acknowledged sends), then don't bother sending a delete.
+            // If there are sent records, there might be an unacknowledged entity add that's been sent,
+            // so we'll still need to send a delete record just in case.
+            return false;
+        }
+
+        GenerateRecord();
+
+        // A delete entity record looks the same as an update but will have an extra deletion flag on it.
+        // This ensures that the replicated entity has correct and consistent state at the point of deletion.
+        return PrepareUpdateEntityRecord();
     }
 
     bool PropertyPublisher::SerializeUpdateEntityRecord(AzNetworking::ISerializer &serializer)
@@ -178,7 +205,9 @@ namespace Multiplayer
 
     bool PropertyPublisher::SerializeDeleteEntityRecord(AzNetworking::ISerializer &serializer)
     {
-        return serializer.IsValid();
+        // On deletion, we still want to serialize any state deltas that exist.
+        bool success = SerializeUpdateEntityRecord(serializer);
+        return success;
     }
 
     void PropertyPublisher::FinalizeUpdateEntityRecord(AzNetworking::PacketId packetId)
@@ -209,8 +238,8 @@ namespace Multiplayer
 
     bool PropertyPublisher::RequiresSerialization()
     {
+
         // Send our entity replication update
-        AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
 
         switch (m_replicatorState)
         {
@@ -220,10 +249,14 @@ namespace Multiplayer
 
         case PropertyPublisher::EntityReplicatorState::Creating:
         case PropertyPublisher::EntityReplicatorState::Rebasing:
+            AZ_Assert(
+                m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
             return true;
 
         case PropertyPublisher::EntityReplicatorState::Updating:
-            return HasUpdateEntityRecord();
+            AZ_Assert(
+                m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
+            return HasEntityChangesToSend();
 
         case PropertyPublisher::EntityReplicatorState::Deleting:
             if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
@@ -240,6 +273,12 @@ namespace Multiplayer
 
     bool PropertyPublisher::PrepareSerialization()
     {
+        if (m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared)
+        {
+            AZ_Assert(IsDeleting(), "We should only be in the Prepared phase for an entity that's being deleted.");
+            return true;
+        }
+
         // Send our entity replication update
         AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
 
@@ -335,7 +374,6 @@ namespace Multiplayer
         break;
         case PropertyPublisher::EntityReplicatorState::Deleting:
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
             FinalizeDeleteEntityRecord(sentId);
         }
         break;
@@ -344,7 +382,8 @@ namespace Multiplayer
             break;
         }
         // Reset our state for the next frame
-        AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
         m_serializationPhase = PropertyPublisher::EntityReplicatorSerializationPhase::Ready;
     }
 }
+
+#pragma optimize("", on)

@@ -18,6 +18,8 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    //! @class PropertyPublisher
+    //! @brief Private helper class for the EntityReplicator to help manage publishing for entity adds/updates/deletes
     class PropertyPublisher
     {
     public:
@@ -66,7 +68,7 @@ namespace Multiplayer
         EntityReplicatorState GetReplicatorState() const;
 
         //! Check if we have data to send
-        bool HasUpdateEntityRecord();
+        bool HasEntityChangesToSend();
 
         //! Phase 1, setup of the record
         bool PrepareAddEntityRecord();

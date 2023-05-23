@@ -31,10 +31,20 @@ namespace Multiplayer
     class PropertyPublisher;
     class PropertySubscriber;
 
+    //! @class EntityReplicator
+    //! @brief Handles replication of a single entity for one connection.
     class EntityReplicator final
         : public AZ::EntityBus::Handler
     {
     public:
+        enum class DeletionState
+        {
+            NoDeleteRequested,      // entity is pre-initialized, initialized, or active
+            PendingRemoval,         // delete is requested but hasn't happened yet
+            MarkedForRemoval,       // delete is in process. The entity is deleted locally, delete message is created and possibly sent.
+            DeleteAcknowledged      // delete message has been received remotely and acknowledged.
+        };
+
         EntityReplicator(EntityReplicationManager& replicationManager, AzNetworking::IConnection* connection, NetEntityRole remoteNetworkRole, const ConstNetworkEntityHandle& entityHandle);
         ~EntityReplicator() override;
 
@@ -51,28 +61,40 @@ namespace Multiplayer
         bool OwnsReplicatorLifetime() const;
         bool RemoteManagerOwnsEntityLifetime() const;
 
+        bool IsPendingRemoval() const;
+        bool IsMarkedForRemoval() const;
+        bool IsDeletionAcknowledged() const;
+
         // Interface for ReplicationManager to modify state of replication
         void Initialize(const ConstNetworkEntityHandle& entityHandle);
         void Reset(NetEntityRole remoteNetworkRole);
         void MarkForRemoval();
-        bool IsMarkedForRemoval() const;
         void SetPendingRemoval(AZ::TimeMs pendingRemovalTimeMs);
-        bool IsPendingRemoval() const;
         void ClearPendingRemoval();
-        bool IsDeletionAcknowledged() const;
         bool WasMigrated() const;
         void SetWasMigrated(bool wasMigrated);
         // If an entity is part of a network hierarchy then it is only ready to activate when its direct parent entity is active.
         bool IsReadyToActivate() const;
 
+        // Interface for ReplicationManager to manage entity serialization
+        bool IsReadyForSerialization() const;
+        bool IsRemoteReplicatorEstablished() const;
+        bool PrepareSerialization();
+        bool RequiresSerialization();
+        void SetRebasing();
+        void GenerateRecord();
+        bool UpdateSerialization(AzNetworking::ISerializer& serializer);
+
+
+        // Interface for ReplicationManager to manage subscriber information
+        bool HandlePropertyChangeMessage(AzNetworking::PacketId packetId, AzNetworking::ISerializer* serializer, bool notifyChanges);
+        bool IsPacketIdValid(AzNetworking::PacketId packetId) const;
+        AzNetworking::PacketId GetLastReceivedPacketId() const;
+
         NetworkEntityUpdateMessage GenerateUpdatePacket();
         void FinalizeSerialization(AzNetworking::PacketId sentId);
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
-
-        PropertyPublisher* GetPropertyPublisher();
-        const PropertyPublisher* GetPropertyPublisher() const;
-        PropertySubscriber* GetPropertySubscriber();
 
         // Handlers for Rpc messages
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage);
@@ -136,6 +158,11 @@ namespace Multiplayer
         NetEntityRole m_boundLocalNetworkRole;
         NetEntityRole m_remoteNetworkRole;
 
+        // In the case of deletes, we need to produce our update message at the point of deletion
+        // and then keep it around until it's requested.
+        NetworkEntityUpdateMessage m_cachedDeleteMessage;
+
+        DeletionState m_deletionState = DeletionState::NoDeleteRequested; // Track delete status.
         bool m_wasMigrated = false;
         bool m_isForwardingRpc = false;
         bool m_prefabEntityIdSet = false;

@@ -330,9 +330,9 @@ namespace Multiplayer
         EXPECT_EQ(message.GetEstimatedSerializeSize(), 17);
 
         // Test ctors, assignment and comparisons (const and non const versions)
-        message = NetworkEntityUpdateMessage(m_root->m_netId, false);
+        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, true, false);
         EXPECT_EQ(m_root->m_netId, message.GetEntityId());
-        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId);
+        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, false, false);
         EXPECT_EQ(message.GetNetworkRole(), NetEntityRole::Authority);
         message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, prefabId);
         AzNetworking::PacketEncodingBuffer buffer;
@@ -340,7 +340,7 @@ namespace Multiplayer
         message.SetData(buffer);
         NetworkEntityUpdateMessage message2(AZStd::move(message));
         EXPECT_EQ(message, message2);
-        EXPECT_TRUE(m_root->m_replicator->GetPropertyPublisher()->PrepareSerialization());
+        EXPECT_TRUE(m_root->m_replicator->PrepareSerialization());
         const NetworkEntityUpdateMessage constMessage = m_root->m_replicator->GenerateUpdatePacket();
         EXPECT_TRUE(message != constMessage);
         message = constMessage;
