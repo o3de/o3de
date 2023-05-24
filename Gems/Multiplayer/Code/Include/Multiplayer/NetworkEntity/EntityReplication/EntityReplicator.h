@@ -81,15 +81,17 @@ namespace Multiplayer
         //! Start preparing the update packet.
         //! @return true if there are any unacknowledged changes to publish, false if not.
         bool PrepareToGenerateUpdatePacket();
+        //! Generate an update packet.
         NetworkEntityUpdateMessage GenerateUpdatePacket();
+        //! Generate a migration packet.
         EntityMigrationMessage GenerateMigrationPacket();
+        //! After sending a generated packet, record the sent packet id for tracking acknowledgements.
         void RecordSentPacketId(AzNetworking::PacketId sentId);
 
         // Interface for ReplicationManager to manage receiving entity changes
         bool HandlePropertyChangeMessage(AzNetworking::PacketId packetId, AzNetworking::ISerializer* serializer, bool notifyChanges);
         bool IsPacketIdValid(AzNetworking::PacketId packetId) const;
         AzNetworking::PacketId GetLastReceivedPacketId() const;
-
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
 
