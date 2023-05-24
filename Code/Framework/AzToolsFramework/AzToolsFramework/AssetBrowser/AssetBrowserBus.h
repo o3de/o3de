@@ -420,7 +420,8 @@ namespace AzToolsFramework
             virtual bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) = 0;
 
             virtual void AddFavoriteAsset(const AssetBrowserEntry* favorite) = 0;
-            virtual void AddFavoriteSearchFromWidget(SearchWidget* searchWidget) = 0;
+            virtual void AddFavoriteSearchButtonPressed(SearchWidget* searchWidget) = 0;
+            virtual void AddFavoriteEntriesButtonPressed(QWidget* sourceWindow) = 0;
 
             virtual void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) = 0;
             virtual void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) = 0;

@@ -64,6 +64,48 @@ namespace AzQtComponents
     const QString BackgroundColor{ "#565A5B" };
     const QString SeparatorColor{ "#606060" };
 
+    
+    FilterTextButton::FilterTextButton(const QString& labelText, QWidget* parent, const QString& extraIconFileName)
+        : QFrame(parent)
+    {
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_frameLayout = new QHBoxLayout(this);
+        m_frameLayout->setMargin(0);
+        m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        m_frameLayout->setSpacing(0);
+
+        if (!extraIconFileName.isEmpty())
+        {
+            QLabel* extraIcon = new QLabel(this);
+            extraIcon->setObjectName(s_tagIcon);
+            extraIcon->setPixmap(QIcon(extraIconFileName).pixmap(16, 16));
+            m_frameLayout->addWidget(extraIcon);
+        }
+
+        m_tagLabel = new QLabel(this);
+        m_tagLabel->setObjectName(s_tagText);
+        m_tagLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_tagLabel->setMinimumSize(24, 16);
+        m_tagLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        m_tagLabel->setText(labelText);
+
+        QPushButton* button = new QPushButton(this);
+        button->setObjectName("closeTag");
+        button->setFlat(true);
+        button->setProperty("iconButton", "true");
+        button->setMouseTracking(true);
+
+        m_frameLayout->addWidget(m_tagLabel);
+        m_frameLayout->addWidget(button);
+
+        connect(button, &QPushButton::clicked, this, &FilterTextButton::RequestClose);
+    }
+
+    void FilterTextButton::SetText(const QString& text)
+    {
+        m_tagLabel->setText(text);
+    }
+
     FilterCriteriaButton::FilterCriteriaButton(const QString& labelText, QWidget* parent, FilterCriteriaButton::ExtraButtonType type, const QString& extraIconFileName)
         : QFrame(parent)
     {
@@ -221,6 +263,7 @@ namespace AzQtComponents
                 emit TypeToggled(index, enabled);
             }
         });
+
         verticalLayout->addLayout(m_searchLayout);
         verticalLayout->addLayout(itemLayout);
     }
@@ -665,6 +708,7 @@ namespace AzQtComponents
         // clear the label text by default
         clearLabelText();
 
+        m_ui->m_addFavoriteEntryButton->hide();
         m_ui->filteredLayout->setLayout(m_flowLayout);
         m_ui->filteredParent->hide();
         m_ui->filteredLayout->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -685,17 +729,29 @@ namespace AzQtComponents
         });
         connect(m_ui->textSearch, &QLineEdit::returnPressed, this, &FilteredSearchWidget::UpdateTextFilter);
         connect(this, &FilteredSearchWidget::textFilterFillsWidthChanged, this, &FilteredSearchWidget::UpdateTextFilterWidth);
-        connect(this, &FilteredSearchWidget::TypeFilterChanged, this, [this](const SearchTypeFilterList& activeTypeFilters)
+        connect(this, &FilteredSearchWidget::TypeFilterChanged, this, [this]()
         {
-            if (!m_displayEnabledFilters)
+            if (!m_displayEnabledFilters && !m_filterTextButton)
             {
                 return;
             }
 
-            m_ui->filteredParent->setVisible(!activeTypeFilters.isEmpty());
+            SetFilteredParentViewState();
         });
         connect(m_ui->textSearch, &QWidget::customContextMenuRequested, this, &FilteredSearchWidget::OnSearchContextMenu);
 
+        m_ui->m_addFavoriteEntryButton->setToolTip(tr("Add Selected Assets to Favorites"));
+        m_ui->m_addFavoriteEntryButton->setAutoRaise(true);
+
+        connect(
+            m_ui->m_addFavoriteEntryButton,
+            &QAbstractButton::clicked,
+            this,
+            [this]()
+            {
+                emit addFavoriteEntriesPressed();
+            }
+        );
         if (!willUseOwnSelector)
         {
             // have to initialize this after we've called setupUi so that we can make the
@@ -729,6 +785,21 @@ namespace AzQtComponents
 
         connect(m_selector, &SearchTypeSelector::aboutToShow, this, [this]() {m_selector->Setup(m_typeFilters); });
         connect(m_selector, &SearchTypeSelector::TypeToggled, this, &FilteredSearchWidget::SetFilterStateByIndex);
+    }
+
+    void FilteredSearchWidget::SetUseFavorites(bool useFavorites)
+    {
+        m_usingFavoritesSystem = useFavorites;
+
+        if (!m_usingFavoritesSystem)
+        {
+            m_ui->m_addFavoriteEntryButton->hide();
+        }
+        else
+        {
+            m_ui->m_addFavoriteEntryButton->show();
+            createAddFavoriteSearchButton();
+        }
     }
 
     void FilteredSearchWidget::SetTypeFilterVisible(bool visible)
@@ -867,6 +938,24 @@ namespace AzQtComponents
         return -1;
     }
 
+    void FilteredSearchWidget::SetFilteredParentViewState()
+    {
+        bool setVisible = false;
+
+        for (SearchTypeFilter& filter : m_typeFilters)
+        {
+            if (filter.enabled)
+            {
+                setVisible = true;
+                break;
+            }
+        }
+
+        setVisible |= m_filterTextButton != nullptr;
+
+        m_ui->filteredParent->setVisible(setVisible);
+    }
+
     void FilteredSearchWidget::ClearTypeFilter()
     {
         for (auto it = m_typeButtons.begin(), end = m_typeButtons.end(); it != end; ++it)
@@ -880,16 +969,46 @@ namespace AzQtComponents
             filter.enabled = false;
         }
 
-        m_ui->filteredParent->setVisible(false);
+        SetFilteredParentViewState();
 
         SearchTypeFilterList checkedTypes;
         emit TypeFilterChanged(checkedTypes);
     }
 
+    void FilteredSearchWidget::createAddFavoriteSearchButton()
+    {
+        QToolButton* button = new QToolButton(this);
+        button->setObjectName("addSearchFavoriteButton");
+        button->setIcon(QIcon(":/Gallery/Favorites.svg"));
+        button->setToolTip(tr("Save Search to Favorites"));
+        button->setAutoRaise(true);
+        m_flowLayout->addWidget(button);
+        connect(
+            button,
+            &QAbstractButton::clicked,
+            this,
+            [this]
+            {
+                emit addFavoriteSearchPressed();
+            });
+    }
+
     FilterCriteriaButton* FilteredSearchWidget::createCriteriaButton(const SearchTypeFilter& filter, int filterIndex)
     {
         Q_UNUSED(filterIndex);
-        return new FilterCriteriaButton(filter.displayName, this, filter.typeExtraButton, filter.extraIconFilename);
+
+        QString iconFilename = filter.extraIconFilename;
+        if (iconFilename.isEmpty())
+        {
+            iconFilename = QStringLiteral(":/stylesheet/img/filter.svg");
+        }
+
+        return new FilterCriteriaButton(filter.displayName, this, filter.typeExtraButton, iconFilename);
+    }
+
+    FilterTextButton* FilteredSearchWidget::createTextFilterButton(const QString& text)
+    {
+        return new FilterTextButton(text, this, ":/stylesheet/img/search.svg");
     }
 
     void FilteredSearchWidget::SetFilterStateByIndex(int index, bool enabled)
@@ -1144,6 +1263,27 @@ namespace AzQtComponents
     {
         m_inputTimer.stop();
         emit TextFilterChanged(m_ui->textSearch->text());
+
+        if (m_usingFavoritesSystem)
+        {
+            if (m_filterTextButton)
+            {
+                m_filterTextButton->SetText(m_ui->textSearch->text());
+                if (m_ui->textSearch->text().isEmpty())
+                {
+                    delete m_filterTextButton;
+                    m_filterTextButton = nullptr;
+                }
+            }
+            else if (!m_ui->textSearch->text().isEmpty())
+            {
+                m_filterTextButton = createTextFilterButton(m_ui->textSearch->text());
+                connect(m_filterTextButton, &FilterTextButton::RequestClose, this, [this]() { ClearTextFilter(); });
+                m_flowLayout->addWidget(m_filterTextButton);
+            }
+        }
+
+        SetFilteredParentViewState();
     }
 
     bool FilteredSearchWidget::polish(Style* style, QWidget* widget, const Config& config)

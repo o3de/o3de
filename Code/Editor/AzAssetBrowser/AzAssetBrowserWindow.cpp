@@ -103,9 +103,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserListModel(parent))
+    , m_addToFavoritesButton(new QToolButton(this))
 {
     m_ui->setupUi(this);
-    m_ui->m_searchWidget->Setup(true, true);
+    m_ui->m_searchWidget->Setup(true, true, true);
 
     CreateToolsMenu();
 
@@ -128,6 +129,18 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserFavoritesWidget->SetSearchWidget(m_ui->m_searchWidget);
 
+    connect(m_ui->m_searchWidget, &SearchWidget::addFavoriteEntriesPressed, this, &AzAssetBrowserWindow::AddFavoriteEntriesButtonPressed);
+    connect(
+        m_ui->m_searchWidget,
+        &SearchWidget::addFavoriteSearchPressed,
+        this,
+        [this]()
+        {
+            AssetBrowserFavoriteRequestBus::Broadcast(
+                &AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
+        }
+    );
+
     if (ed_useNewAssetBrowserListView)
     {
         m_ui->m_toolsMenuButton->setVisible(true);
@@ -145,12 +158,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_createButton->setEnabled(true);
         m_ui->m_createButton->setAutoRaise(true);
         m_ui->m_createButton->setPopupMode(QToolButton::InstantPopup);
-
-        m_ui->m_addToFavoritesButton->setToolTip(tr("Save Search"));
-        m_ui->m_addToFavoritesButton->setEnabled(true);
-        m_ui->m_addToFavoritesButton->setAutoRaise(true);
-        m_ui->m_addToFavoritesButton->setPopupMode(QToolButton::InstantPopup);
-        connect(m_ui->m_addToFavoritesButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::AddSearchToFavorites);
 
         connect(m_createMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::AddCreateMenu);
 
@@ -231,6 +238,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             OnDoubleClick(entry);
         });
 
+    connect(m_ui->m_assetBrowserFavoritesWidget, &AssetBrowserFavoritesView::setFavoritesWindowHeight,
+        this,
+        &AzAssetBrowserWindow::SetFavoritesWindowHeight);
+
     if (!ed_useWIPAssetBrowserDesign)
     {
         m_ui->m_breadcrumbsWrapper->hide(); 
@@ -239,7 +250,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_thumbnailViewButton->hide();
         m_ui->m_tableViewButton->hide();
         m_ui->m_createButton->hide();
-        m_ui->m_addToFavoritesButton->hide();
+        m_addToFavoritesButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         m_ui->m_assetBrowserFavoritesWidget->hide();
     }
@@ -250,7 +261,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
-    m_ui->horizontalLayout->setAlignment(m_ui->m_addToFavoritesButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_addToFavoritesButton, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->framePreCreate, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->framePostCreate, Qt::AlignTop);
+    m_ui->horizontalLayout->setAlignment(m_ui->frame, Qt::AlignTop);
 
     m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createSeparator());
     m_ui->m_breadcrumbsLayout->insertWidget(0, m_ui->m_pathBreadCrumbs->createBackForwardToolBar());
@@ -585,7 +599,7 @@ void AzAssetBrowserWindow::SetNarrowMode(bool narrow)
     }
     else
     {
-        m_ui->horizontalLayout->insertWidget(4, m_ui->m_breadcrumbsWrapper);
+        m_ui->horizontalLayout->insertWidget(7, m_ui->m_breadcrumbsWrapper);
         m_ui->m_breadcrumbsWrapper->setContentsMargins(0, 0, 0, 0);
         m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
 
@@ -691,7 +705,7 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->AddFolderFilter();
     m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
-    m_ui->m_addToFavoritesButton->setEnabled(true);
+    m_addToFavoritesButton->setEnabled(true);
     if (thumbnailView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
@@ -704,7 +718,7 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
         m_ui->m_tableView->SetTableViewActive(true);
         m_ui->m_searchWidget->setDisabled(true);
         m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(true);
-        m_ui->m_addToFavoritesButton->setDisabled(true);
+        m_addToFavoritesButton->setDisabled(true);
     }
 }
 
@@ -723,13 +737,27 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         m_ui->m_tableView->SetTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
         m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
-        m_ui->m_addToFavoritesButton->setEnabled(true);
+        m_addToFavoritesButton->setEnabled(true);
     }
 }
 
-void AzAssetBrowserWindow::AddSearchToFavorites()
+void AzAssetBrowserWindow::AddFavoriteSearchButtonPressed()
 {
-    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchFromWidget, m_ui->m_searchWidget);
+    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
+}
+
+void AzAssetBrowserWindow::AddFavoriteEntriesButtonPressed()
+{
+    QWidget* sourceWidget = m_ui->m_assetBrowserTreeViewWidget;
+    if (m_ui->m_thumbnailView->GetIsAssetBrowserMainView())
+    {
+        sourceWidget = m_ui->m_thumbnailView;
+    }
+    else if (m_ui->m_tableView->GetIsAssetBrowserMainView())
+    {
+        sourceWidget = m_ui->m_tableView;
+    }
+    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteEntriesButtonPressed, sourceWidget);
 }
 
 void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
@@ -976,6 +1004,15 @@ void AzAssetBrowserWindow::SetCurrentMode(const AssetBrowserMode mode)
     }
 
     m_currentMode = mode;
+}
+
+
+void AzAssetBrowserWindow::SetFavoritesWindowHeight(int height)
+{
+    QList<int> sizes;
+    sizes.append(height);
+    sizes.append(m_ui->scrollAreaWidgetContents->height() - height);
+    m_ui->m_leftsplitter->setSizes(sizes);
 }
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>

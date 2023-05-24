@@ -48,7 +48,8 @@ namespace AzToolsFramework
             // AssetBrowserFavoriteRequestBus overrides
             //////////////////////////////////////////////////////////////////////////
             void AddFavoriteAsset(const AssetBrowserEntry* favorite) override;
-            void AddFavoriteSearchFromWidget(SearchWidget* searchWidget) override;
+            void AddFavoriteSearchButtonPressed(SearchWidget* searchWidget) override;
+            void AddFavoriteEntriesButtonPressed(QWidget* sourceWindow) override;
             void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) override;
             void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) override;
             bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) override;

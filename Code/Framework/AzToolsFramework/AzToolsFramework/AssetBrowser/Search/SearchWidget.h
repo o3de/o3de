@@ -31,7 +31,7 @@ namespace AzToolsFramework
         public:
             explicit SearchWidget(QWidget* parent = nullptr);
 
-            void Setup(bool stringFilter, bool assetTypeFilter);
+            void Setup(bool stringFilter, bool assetTypeFilter, bool useFavorites = false);
 
             void ToggleEngineFilter(bool checked);
 

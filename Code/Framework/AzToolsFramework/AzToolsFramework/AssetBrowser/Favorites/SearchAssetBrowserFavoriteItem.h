@@ -43,11 +43,15 @@ namespace AzToolsFramework
 
             FavoriteType GetFavoriteType() const override;
 
+            bool IsFilterActive();
+
             void SetupFromSearchWidget(SearchWidget* searchWidget);
             void WriteToSearchWidget(SearchWidget* searchWidget);
 
             void LoadSettings(QSettings& settings);
             void SaveSettings(QSettings& settings);
+
+            QString GetDefaultName();
         private:
             QString m_name;
             QString m_searchTerm;

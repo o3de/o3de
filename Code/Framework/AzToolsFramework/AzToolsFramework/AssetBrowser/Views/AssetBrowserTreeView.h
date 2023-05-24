@@ -125,6 +125,7 @@ namespace AzToolsFramework
         protected:
             QModelIndexList selectedIndexes() const override;
             void dropEvent(QDropEvent* event) override;
+            void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;

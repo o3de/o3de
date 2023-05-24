@@ -27,6 +27,9 @@
 #include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 
 #include <QModelIndex>
 #include <QSettings>
@@ -74,13 +77,57 @@ namespace AzToolsFramework
             m_favoriteEntriesCache[favorite] = item;
         }
 
-        void AssetBrowserFavoritesManager::AddFavoriteSearchFromWidget(SearchWidget* searchWidget)
+        void AssetBrowserFavoritesManager::AddFavoriteSearchButtonPressed(SearchWidget* searchWidget)
         {
             SearchAssetBrowserFavoriteItem* item = aznew SearchAssetBrowserFavoriteItem();
             item->SetupFromSearchWidget(searchWidget);
-            item->SetName(QObject::tr("New Saved Search"));
+
+            if (!item->IsFilterActive())
+            {
+                delete item;
+                return;
+            }
 
             AddFavoriteItem(item);
+        }
+
+        void AssetBrowserFavoritesManager::AddFavoriteEntriesButtonPressed(QWidget* sourceWindow)
+        {
+            AZStd::vector<const AssetBrowserEntry*> entries;
+
+            AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*>(sourceWindow);
+            if (treeView)
+            {
+                entries = treeView->GetSelectedAssets();
+            }
+
+            AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(sourceWindow);
+            if (tableView)
+            {
+                entries = tableView->GetSelectedAssets();
+            }
+
+            AssetBrowserThumbnailView* thumbnailView = qobject_cast<AssetBrowserThumbnailView*>(sourceWindow);
+            if (thumbnailView)
+            {
+                entries = thumbnailView->GetSelectedAssets();
+            }
+
+            if (entries.empty())
+            {
+                return;
+            }
+
+            m_loading = true;
+
+            for (auto entry : entries)
+            {
+                AddFavoriteAsset(entry);
+            }
+
+            m_loading = false;
+
+            SaveFavorites();
         }
 
         void AssetBrowserFavoritesManager::RemoveEntryFromFavorites(const AssetBrowserEntry* item)

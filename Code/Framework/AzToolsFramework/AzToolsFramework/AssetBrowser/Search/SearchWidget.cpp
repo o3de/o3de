@@ -142,7 +142,7 @@ namespace AzToolsFramework
             });
         }
 
-        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter)
+        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter, bool useFavorites)
         {
             ClearTextFilter();
             ClearTypeFilter();
@@ -151,6 +151,7 @@ namespace AzToolsFramework
 
             SetTextFilterVisible(stringFilter);
             SetTypeFilterVisible(assetTypeFilter);
+            SetUseFavorites(useFavorites);
 
             if (stringFilter)
             {

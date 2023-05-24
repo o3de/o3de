@@ -39,6 +39,24 @@ namespace AzToolsFramework
             return FavoriteType::Search;
         }
 
+        bool SearchAssetBrowserFavoriteItem::IsFilterActive()
+        {
+            if (!m_searchTerm.isEmpty())
+            {
+                return true;
+            }
+
+            for (auto typeFilter : m_typeFilters)
+            {
+                if (typeFilter->enabled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         void SearchAssetBrowserFavoriteItem::SetupFromSearchWidget(SearchWidget* searchWidget)
         {
             m_unusableProductsFilterActive = searchWidget->GetIsUnusableProductsFilterActive();
@@ -59,6 +77,8 @@ namespace AzToolsFramework
                 searchWidget->GetTypeFilterDetails(typeIndex, typeFilter->categoryKey, typeFilter->displayName, typeFilter->enabled);
                 m_typeFilters.append(typeFilter);
             }
+
+            m_name = GetDefaultName();
         }
 
         void SearchAssetBrowserFavoriteItem::WriteToSearchWidget(SearchWidget* searchWidget)
@@ -129,6 +149,39 @@ namespace AzToolsFramework
             }
 
             settings.endArray();
+        }
+
+        QString SearchAssetBrowserFavoriteItem::GetDefaultName()
+        {
+            QString name = "";
+
+            if (!m_searchTerm.isEmpty())
+            {
+                name += "S:" + m_searchTerm;
+            }
+
+            bool firstEntry = true;
+            for (auto typeFilter : m_typeFilters)
+            {
+                if (typeFilter->enabled)
+                {
+                    if (firstEntry)
+                    {
+                        if (!name.isEmpty())
+                        {
+                            name += "&";
+                        }
+                        firstEntry = false;
+                    }
+                    else
+                    {
+                        name += "|";
+                    }
+                    name += "F:" + typeFilter->displayName;
+                }
+            }
+
+            return name;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

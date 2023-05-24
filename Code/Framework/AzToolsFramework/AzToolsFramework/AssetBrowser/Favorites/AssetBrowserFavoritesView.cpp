@@ -16,6 +16,7 @@
 #include <QMenu>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QPainter>
 
 namespace AzToolsFramework
 {
@@ -47,6 +48,11 @@ namespace AzToolsFramework
 
             connect(m_delegate.data(), &EntryDelegate::RenameEntry, this, &AssetBrowserFavoritesView::AfterRename);
             connect(this, &QTreeView::customContextMenuRequested, this, &AssetBrowserFavoritesView::OnContextMenu);
+
+            connect(this, &QTreeView::expanded, this, &AssetBrowserFavoritesView::expanded);
+            connect(this, &QTreeView::collapsed, this, &AssetBrowserFavoritesView::collapsed);
+
+            m_currentHeight = this->height();
         }
 
         void AssetBrowserFavoritesView::SetSearchWidget(SearchWidget* searchWidget)
@@ -97,7 +103,7 @@ namespace AzToolsFramework
                             m_favoritesModel.data()->Select(favoriteItem);
                         });
                     menu.addAction(
-                        QObject::tr("Update"),
+                        QObject::tr("Update Saved Search"),
                         [this, favoriteItem]()
                         {
                             SearchAssetBrowserFavoriteItem* searchFavorite = static_cast<SearchAssetBrowserFavoriteItem*>(favoriteItem);
@@ -151,9 +157,66 @@ namespace AzToolsFramework
             if (event->mimeData()->hasFormat(AssetBrowserEntry::GetMimeType()) ||
                 event->mimeData()->hasFormat(FolderAssetBrowserEntry::GetMimeType()))
             {
+                event->accept();
                 return;
             }
-            event->accept();
+            event->ignore();
+        }
+
+        void AssetBrowserFavoritesView::mouseDoubleClickEvent(QMouseEvent* event)
+        {
+            const auto p = event->pos();
+            if (auto idx = indexAt(p); idx.isValid())
+            {
+                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::Rows);
+
+                AssetBrowserFavoriteItem* favoriteItem = static_cast<AssetBrowserFavoriteItem*>(idx.internalPointer());
+
+                m_favoritesModel.data()->Select(favoriteItem);
+            }
+        }
+
+        int slideroffset = 5;
+
+        void AssetBrowserFavoritesView::resizeEvent(QResizeEvent* event)
+        {
+            if (isExpanded(m_favoritesModel->GetTopLevelIndex()))
+            {
+                m_currentHeight = event->size().height();
+            }
+
+            QTreeViewWithStateSaving::resizeEvent(event);
+        }
+
+        void AssetBrowserFavoritesView::collapsed(const QModelIndex& index)
+        {
+            if (!index.parent().isValid())
+            {
+                emit(setFavoritesWindowHeight(MinimumHeight));
+            }
+        }
+
+        int hosft = 10;
+
+        void AssetBrowserFavoritesView::expanded(const QModelIndex& index)
+        {
+            if (!index.parent().isValid())
+            {
+                if (height() == MinimumHeight)
+                {
+                    emit(setFavoritesWindowHeight(m_currentHeight + hosft));
+                }
+            }
+        }
+
+        void AssetBrowserFavoritesView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
+        {
+            if (!index.parent().isValid() && !selectedIndexes().contains(index))
+            {
+                painter->fillRect(rect, 0x333333);
+            }
+
+            QTreeView::drawBranches(painter, rect, index);
         }
 
         void AssetBrowserFavoritesView::SetSearchDisabled(bool disabled)

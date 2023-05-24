@@ -68,6 +68,8 @@ public:
     AzToolsFramework::AssetBrowser::AssetBrowserMode GetCurrentMode() const;
     void SetCurrentMode(const AzToolsFramework::AssetBrowser::AssetBrowserMode mode);
 
+    void SetFavoritesWindowHeight(int height);
+
 Q_SIGNALS:
     void SizeChangedSignal(int newWidth);
 
@@ -86,7 +88,8 @@ protected slots:
     void UpdateWidgetAfterFilter();
     void SetTwoColumnMode(QWidget* viewToShow);
     void SetOneColumnMode();
-    void AddSearchToFavorites();
+    void AddFavoriteSearchButtonPressed();
+    void AddFavoriteEntriesButtonPressed();
     void OnDoubleClick(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry);
 
 private:
@@ -98,6 +101,7 @@ private:
     QMenu* m_createMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
+    QToolButton* m_addToFavoritesButton;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
     AzToolsFramework::AssetBrowser::AssetBrowserMode m_currentMode = AzToolsFramework::AssetBrowser::AssetBrowserMode::ThumbnailView;

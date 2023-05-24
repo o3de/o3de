@@ -30,24 +30,38 @@ namespace AzToolsFramework
             : public QTreeViewWithStateSaving
         {
             Q_OBJECT
-
+            
         public:
             explicit AssetBrowserFavoritesView(QWidget* parent = nullptr);
 
             void SetSearchWidget(SearchWidget* searchWidget);
+
+            void AddSelectedEntriesToFavorites();
 
             void AfterRename(QString newName);
 
             void SetSearchDisabled(bool disabled);
 
             AssetBrowserFavoritesModel* GetModel();
+
+        Q_SIGNALS:
+            void setFavoritesWindowHeight(int height);
+
         protected:
             // Qt overrides
             void dragMoveEvent(QDragMoveEvent* event) override;
+            void mouseDoubleClickEvent(QMouseEvent* event) override;
+            void resizeEvent(QResizeEvent* event) override;
+
+            void collapsed(const QModelIndex& index);
+            void expanded(const QModelIndex& index);
+
+            void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 
         private:
             QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFavoritesModel> m_favoritesModel;
             QScopedPointer<FavoritesEntryDelegate> m_delegate;
+            int m_currentHeight = 0;
 
             void OnContextMenu(const QPoint& point);
         };

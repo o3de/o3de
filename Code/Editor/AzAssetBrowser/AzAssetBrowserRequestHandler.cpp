@@ -451,7 +451,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser = false;
     }
 
-    if (!treeView && !tableView && !thumbnailView && !tableView && !favoritesView)
+    if (!treeView && !tableView && !thumbnailView && !listView && !favoritesView)
     {
         return;
     }
@@ -464,9 +464,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
     if (favoritesView)
     {
-        bool isFavorite = false;
-        AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
-
         menu->addAction(
             QObject::tr("View in Asset Browser"),
             [favoritesView, entry]()
@@ -474,23 +471,29 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 AssetBrowserFavoriteRequestBus::Broadcast(
                     &AssetBrowserFavoriteRequestBus::Events::ViewEntryInAssetBrowser, favoritesView, entry);
             });
+    }
 
-        if (isFavorite)
-        {
-            menu->addAction(
-                QObject::tr("Remove from Favorites"),
-                [entry]()
-                {
-                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
-                });
-        }
-        else
+    bool isFavorite = false;
+    AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
+
+    if (isFavorite)
+    {
+        menu->addAction(
+            QObject::tr("Remove from Favorites"),
+            [entry]()
+            {
+                AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
+            });
+    }
+    else
+    {
+        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
         {
             menu->addAction(
                 QObject::tr("Add to Favorites"),
-                [entry]()
+                [caller]()
                 {
-                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
+                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteEntriesButtonPressed, caller);
                 });
         }
     }
@@ -580,7 +583,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                         OpenWithOS(fullFilePath);
                     });
             }
-           
+
             menu->addAction(
                 QObject::tr("Open in another Asset Browser"),
                 [fullFilePath, thumbnailView, tableView]()

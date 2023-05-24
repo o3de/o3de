@@ -274,6 +274,11 @@ namespace AzToolsFramework
 
         void AssetBrowserFavoritesModel::Select(AssetBrowserFavoriteItem* favoriteItem)
         {
+            if (!favoriteItem)
+            {
+                return;
+            }
+
             QWidget* parentWidget = m_searchWidget->parentWidget();
 
             if (favoriteItem->GetFavoriteType() == AssetBrowserFavoriteItem::FavoriteType::AssetBrowserEntry)
@@ -345,6 +350,11 @@ namespace AzToolsFramework
             return m_searchDisabled;
         }
 
+        QModelIndex AssetBrowserFavoritesModel::GetTopLevelIndex()
+        {
+            return createIndex(0, 0);
+        }
+
         QString AssetBrowserFavoritesModel::GetProjectName()
         {
             AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
@@ -368,7 +378,7 @@ namespace AzToolsFramework
 
             m_loading = false;
 
-            m_parentView->expand(createIndex(0, 0));
+            m_parentView->expand(GetTopLevelIndex());
         }
 
     } // namespace AssetBrowser

@@ -58,6 +58,8 @@ namespace AzToolsFramework
             void DisableSearchItems();
             bool GetIsSearchDisabled();
 
+            QModelIndex GetTopLevelIndex();
+
             //////////////////////////////////////////////////////////////////////////
             // QAbstractItemModel overrides
             //////////////////////////////////////////////////////////////////////////

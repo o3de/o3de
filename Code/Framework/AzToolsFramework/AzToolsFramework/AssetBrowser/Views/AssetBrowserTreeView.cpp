@@ -188,6 +188,16 @@ namespace AzToolsFramework
             QTreeView::dropEvent(event);
         }
 
+        void AssetBrowserTreeView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
+        {
+            if (!index.parent().isValid() && ! selectedIndexes().contains(index))
+            {
+                painter->fillRect(rect, 0x333333);
+            }
+
+            QTreeView::drawBranches(painter, rect, index);
+        }
+
         AZStd::vector<const AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();

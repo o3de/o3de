@@ -132,13 +132,17 @@ namespace AzToolsFramework
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                //bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-               // bool isSelected = (option.state & QStyle::State_Selected) != 0;
-
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
                 // draw the background
-                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+                if (!index.parent().isValid() && !(option.state & QStyle::State_MouseOver) && !(option.state & QStyle::State_Selected))
+                {
+                    painter->fillRect(option.rect, 0x333333);
+                }
+                else
+                {
+                    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+                }
 
                 auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
 

@@ -46,6 +46,22 @@ namespace AzQtComponents
     class FilteredSearchItemDelegate;
     class SearchTypeSelectorFilterModel;
 
+    class AZ_QT_COMPONENTS_API FilterTextButton : public QFrame
+    {
+        Q_OBJECT
+
+    public:
+        explicit FilterTextButton(const QString& text, QWidget* parent = nullptr, const QString& extraIconFileName = QString());
+
+        void SetText(const QString& text);
+    protected:
+        QHBoxLayout* m_frameLayout;
+        QLabel* m_tagLabel;
+
+    signals:
+        void RequestClose();
+    };
+
     class AZ_QT_COMPONENTS_API FilterCriteriaButton
         : public QFrame
     {
@@ -242,6 +258,7 @@ namespace AzQtComponents
         explicit FilteredSearchWidget(QWidget* parent = nullptr, bool willUseOwnSelector = false);
         ~FilteredSearchWidget() override;
 
+        void SetUseFavorites(bool useFavorites);
         void SetTypeFilterVisible(bool visible);
         void SetTypeFilters(const SearchTypeFilterList& typeFilters);
         void AddTypeFilter(const SearchTypeFilter& typeFilter);
@@ -281,6 +298,8 @@ namespace AzQtComponents
         static QString GetBackgroundColor();
         static QString GetSeparatorColor();
 
+        void SetFilteredParentViewState();
+
         QToolButton* assetTypeSelectorButton() const;
     signals:
         void TextFilterChanged(const QString& activeTextFilter);
@@ -288,6 +307,9 @@ namespace AzQtComponents
 
         void placeholderTextChanged(const QString& placeholderText);
         void textFilterFillsWidthChanged(bool fillsWidth);
+
+        void addFavoriteEntriesPressed();
+        void addFavoriteSearchPressed();
 
     public slots:
         virtual void ClearTypeFilter();
@@ -307,6 +329,9 @@ namespace AzQtComponents
         const SearchTypeFilterList& typeFilters() const;
 
         virtual FilterCriteriaButton* createCriteriaButton(const SearchTypeFilter& filter, int filterIndex);
+
+        FilterTextButton* createTextFilterButton(const QString& text);
+        void createAddFavoriteSearchButton();
 
         virtual void SetupPaintDelegates();
     private slots:
@@ -329,9 +354,11 @@ namespace AzQtComponents
         AZ_POP_DISABLE_WARNING
             bool m_textFilterFillsWidth;
         bool m_displayEnabledFilters;
+        FilterTextButton* m_filterTextButton = nullptr;
 
     private:
         int FindFilterIndex(const QString& category, const QString& displayName) const;
+        bool m_usingFavoritesSystem = false;
 
         QTimer m_inputTimer;
         QMenu* m_filterMenu;

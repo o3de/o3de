@@ -98,22 +98,69 @@
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="Line" name="line">
+          <item>
+          <spacer name="horizontalSpacerPreCreate">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>4</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QFrame" name="framePreCreate">
+           <property name="minimumSize">
+            <size>
+             <width>1</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QFrame { color : rgb(34, 34, 34);}</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="lineWidth">
+            <number>1</number>
+           </property>
+           <property name="midLineWidth">
+            <number>0</number>
            </property>
           </widget>
          </item>
-          <item>
-            <widget class="QToolButton" name="m_addToFavoritesButton">
-              <property name="icon">
-                <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
-                  <normaloff>:/Gallery/Favorites.svg</normaloff>:/Gallery/Favorites.svg
-                </iconset>
-              </property>
-            </widget>
-          </item>
+         <item>
+          <spacer name="horizontalSpacer2">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>4</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
          <item>
           <widget class="QToolButton" name="m_createButton">
            <property name="text">
@@ -126,11 +173,67 @@
           </widget>
          </item>
          <item>
-          <widget class="Line" name="line_2">
+          <spacer name="horizontalSpacer3">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>4</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QFrame" name="framePostCreate">
+           <property name="minimumSize">
+            <size>
+             <width>1</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1</width>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QFrame { color : rgb(34, 34, 34);}</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="lineWidth">
+            <number>1</number>
+           </property>
+           <property name="midLineWidth">
+            <number>0</number>
            </property>
           </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer4">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>4</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
          </item>
          <item>
           <widget class="QWidget" name="m_breadcrumbsWrapper" native="true">
@@ -241,7 +344,13 @@
            <property name="minimumSize">
             <size>
              <width>1</width>
-             <height>0</height>
+             <height>22</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>1</width>
+             <height>22</height>
             </size>
            </property>
            <property name="styleSheet">
