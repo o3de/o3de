@@ -534,6 +534,12 @@ namespace Multiplayer
 
     NetworkEntityUpdateMessage EntityReplicator::GenerateUpdatePacket()
     {
+        AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
+        if (!m_propertyPublisher)
+        {
+            return {};
+        }
+
         auto message = m_propertyPublisher->GenerateUpdatePacket(m_netBindComponent, WasMigrated());
         if (message.GetIsDelete())
         {
@@ -549,7 +555,8 @@ namespace Multiplayer
 
     EntityMigrationMessage EntityReplicator::GenerateMigrationPacket()
     {
-        return m_propertyPublisher->GenerateMigrationPacket(m_netBindComponent);
+        AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
+        return m_propertyPublisher ? m_propertyPublisher->GenerateMigrationPacket(m_netBindComponent) : EntityMigrationMessage();
     }
 
     bool EntityReplicator::IsReadyToPublish() const
@@ -559,37 +566,42 @@ namespace Multiplayer
 
     bool EntityReplicator::IsRemoteReplicatorEstablished() const
     {
-        return m_propertyPublisher->IsRemoteReplicatorEstablished();
+        AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
+        return m_propertyPublisher ? m_propertyPublisher->IsRemoteReplicatorEstablished() : false;
     }
 
     bool EntityReplicator::HasChangesToPublish()
     {
-        return m_propertyPublisher->RequiresSerialization();
+        AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
+        return m_propertyPublisher ? m_propertyPublisher->RequiresSerialization() : false;
     }
 
     void EntityReplicator::SetRebasing()
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
-        m_propertyPublisher->SetRebasing();
+        if (m_propertyPublisher)
+        {
+            m_propertyPublisher->SetRebasing();
+        }
     }
 
     bool EntityReplicator::IsPacketIdValid(AzNetworking::PacketId packetId) const
     {
         AZ_Assert(m_propertySubscriber, "Expected to have a property subscriber.");
-        return m_propertySubscriber->IsPacketIdValid(packetId);
+        return m_propertySubscriber ? m_propertySubscriber->IsPacketIdValid(packetId) : false;
     }
 
     AzNetworking::PacketId EntityReplicator::GetLastReceivedPacketId() const
     {
         AZ_Assert(m_propertySubscriber, "Expected to have a property subscriber.");
-        return m_propertySubscriber->GetLastReceivedPacketId();
+        return m_propertySubscriber ? m_propertySubscriber->GetLastReceivedPacketId() : AzNetworking::InvalidPacketId;
     }
 
     bool EntityReplicator::HandlePropertyChangeMessage(
         AzNetworking::PacketId packetId, AzNetworking::ISerializer* serializer, bool notifyChanges)
     {
         AZ_Assert(m_propertySubscriber, "Expected to have a property subscriber.");
-        return m_propertySubscriber->HandlePropertyChangeMessage(packetId, serializer, notifyChanges);
+        return m_propertySubscriber ? m_propertySubscriber->HandlePropertyChangeMessage(packetId, serializer, notifyChanges) : false;
     }
 
     bool EntityReplicator::PrepareToGenerateUpdatePacket()
@@ -597,14 +609,22 @@ namespace Multiplayer
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
 
         // Otherwise, let the property publisher determine if any data should be sent.
-        m_propertyPublisher->UpdatePendingRecord(m_netBindComponent);
-        return m_propertyPublisher->PrepareSerialization(m_netBindComponent);
+        if (m_propertyPublisher)
+        {
+            m_propertyPublisher->UpdatePendingRecord(m_netBindComponent);
+            return m_propertyPublisher->PrepareSerialization(m_netBindComponent);
+        }
+
+        return false;
     }
 
     void EntityReplicator::RecordSentPacketId(AzNetworking::PacketId sentId)
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
-        m_propertyPublisher->FinalizeSerialization(sentId);
+        if (m_propertyPublisher)
+        {
+            m_propertyPublisher->FinalizeSerialization(sentId);
+        }
     }
 
     void EntityReplicator::DeferRpcMessage(NetworkEntityRpcMessage& entityRpcMessage)
