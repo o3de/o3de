@@ -251,11 +251,37 @@ namespace AZ::DocumentPropertyEditor
                 else
                 {
                     // TODO: handle row being replaced
+                    AZ_Assert(0, "AggregateAdapter: row replace operation is not supported yet!");
                 }
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
-                // TODO: handle new nodes being added
+                auto destinationPath = operationIterator->GetDestinationPath();
+                auto lastPathEntry = destinationPath.Back();
+                destinationPath.Pop();
+                auto parentNode = GetNodeAtAdapterPath(adapterIndex, destinationPath);
+                AZ_Assert(parentNode, "can't find node to add to!");
+                if (parentNode)
+                {
+                    if (IsRow(operationIterator->GetValue()))
+                    {
+                        // adding a full row
+                        AZ_Assert(lastPathEntry.IsIndex(), "new addition is a row, it must be addressed by index!");
+                        auto childIndex = lastPathEntry.GetIndex();
+                        auto* aggregateNode = AddChildRow(adapterIndex, parentNode, operationIterator->GetValue(), childIndex);
+                        if (aggregateNode && aggregateNode->EntryCount() == m_adapters.size())
+                        {
+                            // the aggregate node that this add affected is now complete
+                            NotifyContentsChanged(
+                                { Dom::PatchOperation::AddOperation(GetPathForNode(aggregateNode), GetValueHierarchyForNode(aggregateNode)) });
+                        }
+                    }
+                    else
+                    {
+                        // not a full row - see if adding this child causes its parent to no longer match its other entries
+                        AZ_Assert(0, "addition of non-row is not yet supported!");
+                    }
+                }
             }
         }
 
@@ -440,11 +466,88 @@ namespace AZ::DocumentPropertyEditor
         return Dom::Value();
     }
 
+    Dom::Value RowAggregateAdapter::GetValueForNode(AggregateNode* aggregateNode)
+    {
+        return (
+            aggregateNode->m_allEntriesMatch || !m_generateDiffRows ? GenerateAggregateRow(aggregateNode)
+                                                                    : GenerateValuesDifferRow(aggregateNode));
+    }
+
+    Dom::Value RowAggregateAdapter::GetValueHierarchyForNode(AggregateNode* aggregateNode)
+    {
+        Dom::Value returnValue;
+
+        // only create a value if this node is represented by all member adapters
+        if (aggregateNode && aggregateNode->EntryCount() == m_adapters.size())
+        {
+            // create a row value for this node
+            returnValue = Dom::Value::CreateNode(Nodes::Row::Name);
+
+            /* add all row children first (before any labels or PropertyHandlers in this row),
+                so that functions like GetPathForNode can make simplifying assumptions */
+            for (auto& currChild : aggregateNode->m_childRows)
+            {
+                Dom::Value childValue = GetValueHierarchyForNode(currChild.get());
+
+                if (!childValue.IsNull())
+                {
+                    returnValue.ArrayPushBack(childValue);
+                }
+            }
+            // row children have been added, now add the actual label/PropertyEditor children
+            auto childlessRow = GetValueForNode(aggregateNode);
+            if (!childlessRow.IsArrayEmpty())
+            {
+                returnValue.ArrayReserve(returnValue.ArraySize() + childlessRow.ArraySize());
+                AZStd::move(childlessRow.MutableArrayBegin(), childlessRow.MutableArrayEnd(), AZStd::back_inserter(returnValue.GetMutableArray()));
+            }
+        }
+        return returnValue;
+    }
+
     void RowAggregateAdapter::PopulateNodesForAdapter(size_t adapterIndex)
     {
         auto sourceAdapter = m_adapters[adapterIndex]->adapter;
         const auto& sourceContents = sourceAdapter->GetContents();
         PopulateChildren(adapterIndex, sourceContents, m_rootNode.get());
+    }
+
+    RowAggregateAdapter::AggregateNode* RowAggregateAdapter::AddChildRow(
+        size_t adapterIndex, AggregateNode* parentNode, const Dom::Value& childValue, size_t childIndex)
+    {
+        AggregateNode* addedToNode = nullptr;
+
+        // check each existing child to see if we belong there.
+        for (auto matchIter = parentNode->m_childRows.begin(), endIter = parentNode->m_childRows.end();
+             !addedToNode && matchIter != endIter;
+             ++matchIter)
+        {
+            AggregateNode* possibleMatch = matchIter->get();
+
+            // make sure there isn't already an entry for this adapter. This can happen in
+            // edge cases where multiple rows can match, like in multi-sets
+            if (!possibleMatch->HasEntryForAdapter(adapterIndex))
+            {
+                auto comparisonRow = GetComparisonRow(possibleMatch);
+                if (SameRow(childValue, comparisonRow))
+                {
+                    const bool allEntriesMatch = possibleMatch->m_allEntriesMatch && ValuesMatch(childValue, comparisonRow);
+                    possibleMatch->AddEntry(adapterIndex, childIndex, allEntriesMatch);
+                    PopulateChildren(adapterIndex, childValue, possibleMatch);
+                    addedToNode = possibleMatch;
+                }
+            }
+        }
+        if (!addedToNode)
+        {
+            // didn't find an existing child to own us, add a new one and attach to it
+            auto& newNode = parentNode->m_childRows.emplace_back(AZStd::make_unique<AggregateNode>());
+            newNode->m_parent = parentNode;
+            newNode->AddEntry(adapterIndex, childIndex, true);
+            PopulateChildren(adapterIndex, childValue, newNode.get());
+            addedToNode = newNode.get();
+        }
+        return addedToNode;
     }
 
     void RowAggregateAdapter::PopulateChildren(size_t adapterIndex, const Dom::Value& parentValue, AggregateNode* parentNode)
@@ -454,39 +557,11 @@ namespace AZ::DocumentPropertyEditor
         for (size_t childIndex = 0; childIndex < numChildren; ++childIndex)
         {
             const auto& childValue = parentValue[childIndex];
+
+            // the RowAggregateAdapter groups nodes by row, so we ignore non-child rows here
             if (IsRow(childValue))
             {
-                AggregateNode* addedToNode = nullptr;
-
-                // check each existing child to see if we belong there.
-                for (auto matchIter = parentNode->m_childRows.begin(), endIter = parentNode->m_childRows.end();
-                     !addedToNode && matchIter != endIter;
-                     ++matchIter)
-                {
-                    AggregateNode* possibleMatch = matchIter->get();
-
-                    // make sure there isn't already an entry for this adapter. This can happen in
-                    // edge cases where multiple rows can match, like in multi-sets
-                    if (!possibleMatch->HasEntryForAdapter(adapterIndex))
-                    {
-                        auto comparisonRow = GetComparisonRow(possibleMatch);
-                        if (SameRow(childValue, comparisonRow))
-                        {
-                            const bool allEntriesMatch = possibleMatch->m_allEntriesMatch && ValuesMatch(childValue, comparisonRow);
-                            possibleMatch->AddEntry(adapterIndex, childIndex, allEntriesMatch);
-                            PopulateChildren(adapterIndex, childValue, possibleMatch);
-                            addedToNode = possibleMatch;
-                        }
-                    }
-                }
-                if (!addedToNode)
-                {
-                    // didn't find an existing child to own us, add a new one and attach to it
-                    auto& newNode = parentNode->m_childRows.emplace_back(AZStd::make_unique<AggregateNode>());
-                    newNode->m_parent = parentNode;
-                    newNode->AddEntry(adapterIndex, childIndex, true);
-                    PopulateChildren(adapterIndex, childValue, newNode.get());
-                }
+                AddChildRow(adapterIndex, parentNode, childValue, childIndex);
             }
         }
     }
@@ -496,37 +571,17 @@ namespace AZ::DocumentPropertyEditor
         m_builder.BeginAdapter();
         m_builder.EndAdapter();
         Dom::Value contents = m_builder.FinishAndTakeResult();
-        const size_t numAdapters = m_adapters.size();
-        auto AddChildrenToValue = [=](AggregateNode* parentNode, Dom::Value& value, auto&& AddChildrenToValue) -> void
+
+        // root node is not a row, so cannot generate a value directly. Instead, iterate its children for values
+        for (auto& topLevelRow : m_rootNode->m_childRows)
         {
-            for (auto& currChild : parentNode->m_childRows)
+            Dom::Value childValue = GetValueHierarchyForNode(topLevelRow.get());
+            if (!childValue.IsNull())
             {
-                if (currChild->EntryCount() == numAdapters)
-                {
-                    /* add all row children first (before any labels or PropertyHandlers in this row),
-                    so that functions like GetPathForNode can make simplifying assumptions */
-                    auto aggregateRow = Dom::Value::CreateNode(Nodes::Row::Name);
-                    AddChildrenToValue(currChild.get(), aggregateRow, AddChildrenToValue);
-
-                    // row children have been added, now add the actual label/PropertyEditor children
-                    auto generatedValue =
-                        (currChild->m_allEntriesMatch || !m_generateDiffRows ? GenerateAggregateRow(currChild.get())
-                                                                             : GenerateValuesDifferRow(currChild.get()));
-
-                    // move all the non-row items that were generated for the standalone row to this new full row
-                    auto& aggregateRowArray = aggregateRow.GetMutableArray();
-                    auto& generatedValueArray = generatedValue.GetArray();
-                    aggregateRowArray.insert(
-                        aggregateRowArray.end(),
-                        AZStd::make_move_iterator(generatedValueArray.begin()),
-                        AZStd::make_move_iterator(generatedValueArray.end()));
-
-                    value.ArrayPushBack(aggregateRow);
-                }
+                contents.ArrayPushBack(childValue);
             }
-        };
+        }
 
-        AddChildrenToValue(m_rootNode.get(), contents, AddChildrenToValue);
         return contents;
     }
 
@@ -633,7 +688,8 @@ namespace AZ::DocumentPropertyEditor
     {
         return { Nodes::PropertyEditor::OnChanged.GetName(),
                  Nodes::PropertyEditor::ChangeNotify.GetName(),
-                 Nodes::PropertyEditor::RequestTreeUpdate.GetName() };
+                 Nodes::PropertyEditor::RequestTreeUpdate.GetName(),
+                 Nodes::GenericButton::OnActivate.GetName() };
     }
 
     Dom::Value LabeledRowAggregateAdapter::GenerateAggregateRow(AggregateNode* matchingNode)
