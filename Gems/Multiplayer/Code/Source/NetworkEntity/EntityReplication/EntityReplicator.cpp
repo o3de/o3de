@@ -641,7 +641,6 @@ namespace Multiplayer
         return m_propertySubscriber->HandlePropertyChangeMessage(packetId, serializer, notifyChanges);
     }
 
-
     bool EntityReplicator::PrepareToGenerateUpdatePacket()
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");

@@ -89,10 +89,10 @@ namespace Multiplayer
         bool HasEntityChangesToSend();
 
         //! Phase 1, setup of the record
-        bool PrepareAddEntityRecord(NetBindComponent* netBindComponent);
-        bool PrepareRebaseEntityRecord(NetBindComponent* netBindComponent);
-        bool PrepareUpdateEntityRecord(NetBindComponent* netBindComponent);
-        bool PrepareDeleteEntityRecord(NetBindComponent* netBindComponent);
+        void PrepareAddEntityRecord(NetBindComponent* netBindComponent);
+        void PrepareRebaseEntityRecord(NetBindComponent* netBindComponent);
+        void PrepareUpdateEntityRecord(NetBindComponent* netBindComponent);
+        void PrepareDeleteEntityRecord(NetBindComponent* netBindComponent);
 
         //! Phase 2, serialize the record
         //! Add/update/delete all use the same serialization path.

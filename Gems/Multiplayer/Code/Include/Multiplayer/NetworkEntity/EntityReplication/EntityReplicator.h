@@ -69,10 +69,17 @@ namespace Multiplayer
         bool IsReadyToActivate() const;
 
         // Interface for ReplicationManager to manage publishing entity changes
+
+        //! Set the next update packet to be a "rebase" message.
         void SetRebasing();
+        //! True if the replicator is ready to start publishing changes, false if not.
         bool IsReadyToPublish() const;
+        //! True if the remote replicator has acknowledged at least one update packet.
         bool IsRemoteReplicatorEstablished() const;
+        //! True if there are any unacknowledged changes to publish
         bool HasChangesToPublish();
+        //! Start preparing the update packet.
+        //! @return true if there are any unacknowledged changes to publish, false if not.
         bool PrepareToGenerateUpdatePacket();
         NetworkEntityUpdateMessage GenerateUpdatePacket();
         EntityMigrationMessage GenerateMigrationPacket();

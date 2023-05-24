@@ -111,7 +111,7 @@ namespace Multiplayer
         return true;
     }
 
-    bool PropertyPublisher::PrepareAddEntityRecord(NetBindComponent* netBindComponent)
+    void PropertyPublisher::PrepareAddEntityRecord(NetBindComponent* netBindComponent)
     {
         AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
 
@@ -119,10 +119,9 @@ namespace Multiplayer
         m_sentRecords.clear();
         netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
         m_sentRecords.push_front(m_pendingRecord);
-        return true;
     }
 
-    bool PropertyPublisher::PrepareRebaseEntityRecord(NetBindComponent* netBindComponent)
+    void PropertyPublisher::PrepareRebaseEntityRecord(NetBindComponent* netBindComponent)
     {
         AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
 
@@ -135,16 +134,14 @@ namespace Multiplayer
             m_pendingRecord.Subtract(netBindComponent->GetPredictableRecord());
         }
         m_sentRecords.push_front(m_pendingRecord);
-        return true;
     }
 
-    bool PropertyPublisher::PrepareUpdateEntityRecord(NetBindComponent* netBindComponent)
+    void PropertyPublisher::PrepareUpdateEntityRecord(NetBindComponent* netBindComponent)
     {
-        bool didPrepare = true;
         if (m_sentRecords.size() >= net_EntityReplicatorRecordsMax)
         {
             // If we reach the maximum outstanding records, reset the replication state by creating an "Add" record.
-            didPrepare = PrepareAddEntityRecord(netBindComponent);
+            PrepareAddEntityRecord(netBindComponent);
         }
         else
         {
@@ -166,32 +163,10 @@ namespace Multiplayer
         {
             m_pendingRecord.Subtract(netBindComponent->GetPredictableRecord());
         }
-
-        return didPrepare;
     }
 
-    bool PropertyPublisher::PrepareDeleteEntityRecord(NetBindComponent* netBindComponent)
+    void PropertyPublisher::PrepareDeleteEntityRecord(NetBindComponent* netBindComponent)
     {
-        if (IsDeleted())
-        {
-            // The delete has already been acknowledged, so there's nothing more to do.
-            return false;
-        }
-        if (m_sentRecords.empty() && (!m_remoteReplicatorEstablished))
-        {
-            // If the entity add has never been sent (no sent records waiting for acknowledgement and
-            // no acknowledged sends), then don't send a delete. It would cause the receiving end to create and delete
-            // the entity in the same frame, which would be unnecessarily wasteful for both bandwidth and processing.
-
-            // Note that if at least one record has been sent, even if it hasn't been acknowledged yet,
-            // the entity creation might still get received, so in that case we'll still send a delete record.
-            AZLOG(
-                NET_RepDeletes,
-                "Skipping delete replication for entity %llu because no create has been sent yet.",
-                (AZ::u64)netBindComponent->GetNetEntityId());
-            return false;
-        }
-
         GenerateRecord(netBindComponent);
 
         // A delete entity record looks the same as an update but will have an extra deletion flag on it.
@@ -258,8 +233,25 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Deleting:
             if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
             {
-                return !IsDeleted();
+                if (IsDeleted())
+                {
+                    // The delete has already been acknowledged, so there's nothing more to do.
+                    return false;
+                }
+                if (m_sentRecords.empty() && (!m_remoteReplicatorEstablished))
+                {
+                    // If the entity add has never been sent (no sent records waiting for acknowledgement and
+                    // no acknowledged sends), then don't send a delete. It would cause the receiving end to create and delete
+                    // the entity in the same frame, which would be unnecessarily wasteful for both bandwidth and processing.
+                    // Note that if at least one record has been sent, even if it hasn't been acknowledged yet,
+                    // the entity creation might still get received, so in that case we'll still send a delete record.
+                    return false;
+                }
+
+                return true;
             }
+
+            // Never send a delete for an entity that we don't own the lifetime for.
             return false;
 
         default:
@@ -270,16 +262,17 @@ namespace Multiplayer
 
     bool PropertyPublisher::PrepareSerialization(NetBindComponent* netBindComponent)
     {
-        if (m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared)
-        {
-            AZ_Assert(IsDeleting(), "We should only be in the Prepared phase for an entity that's being deleted.");
-            return true;
-        }
-
-        // Send our entity replication update
+        // The publisher should always be in the "Ready" phase at the point that we prepare for serialization.
         AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Ready, "Unexpected serialization phase");
 
-        bool needsUpdate(false);
+        // If there are no unacknowledged changes, there's nothing to do.
+        if (RequiresSerialization() == false)
+        {
+            // Nothing was prepared.
+            return false;
+        }
+
+        // There are unacknowledged changes, so prepare the proper type of entity record.
         switch (m_replicatorState)
         {
         case PropertyPublisher::EntityReplicatorState::Invalid:
@@ -289,37 +282,37 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Creating:
             if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
             {
-                needsUpdate = PrepareAddEntityRecord(netBindComponent);
+                PrepareAddEntityRecord(netBindComponent);
             }
+            // After the first create, transition to updating.
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
             break;
 
         case PropertyPublisher::EntityReplicatorState::Rebasing:
             AZ_Assert(m_ownsLifetime == PropertyPublisher::OwnsLifetime::True, "Expected to own our lifetime if we rebase");
-            needsUpdate = PrepareRebaseEntityRecord(netBindComponent);
+            PrepareRebaseEntityRecord(netBindComponent);
+            // After a rebase, transition to updating.
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
             break;
 
         case PropertyPublisher::EntityReplicatorState::Updating:
-            needsUpdate = PrepareUpdateEntityRecord(netBindComponent);
+            PrepareUpdateEntityRecord(netBindComponent);
             break;
 
         case PropertyPublisher::EntityReplicatorState::Deleting:
-            if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
-            {
-                needsUpdate = PrepareDeleteEntityRecord(netBindComponent);
-            }
+            AZ_Assert(m_ownsLifetime == PropertyPublisher::OwnsLifetime::True, "Expected to own our lifetime if we delete");
+            PrepareDeleteEntityRecord(netBindComponent);
             break;
 
         default:
             AZ_Assert(false, "EntityReplicator: Unexpected state");
             break;
         }
-        m_serializationPhase = needsUpdate ? PropertyPublisher::EntityReplicatorSerializationPhase::Prepared
-                                           : PropertyPublisher::EntityReplicatorSerializationPhase::Ready;
-        return needsUpdate;
-    }
 
+        // We've prepared the record, so change our phrase and return true that we have changes to send.
+        m_serializationPhase = PropertyPublisher::EntityReplicatorSerializationPhase::Prepared;
+        return true;
+    }
 
     bool PropertyPublisher::UpdateSerialization(AzNetworking::ISerializer& serializer, NetBindComponent* netBindComponent)
     {
