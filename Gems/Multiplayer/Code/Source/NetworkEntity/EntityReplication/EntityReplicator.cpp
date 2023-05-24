@@ -329,7 +329,7 @@ namespace Multiplayer
         // NOTE: It's possible that heading into this function, m_entityHandle is already invalid if this was triggered
         // via OnEntityRemoved.
 
-        AZLOG(NET_RepDeletes, "Marking entity %llu for removal.", (AZ::u64)m_entityHandle.GetNetEntityId());
+        AZLOG(NET_RepDeletes, "Marking entity %llu for removal.", aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()));
 
         AZ::EntityBus::Handler::BusDisconnect();
 
@@ -355,7 +355,7 @@ namespace Multiplayer
             // Cache the delete packet here, since the data will no longer be available after this point.
             if (m_propertyPublisher->CacheDeletePacket(m_netBindComponent, WasMigrated()))
             {
-                AZLOG(NET_RepDeletes, "Caching delete message for entity %llu.", (AZ::u64)m_entityHandle.GetNetEntityId());
+                AZLOG(NET_RepDeletes, "Caching delete message for entity %llu.", aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()));
 
                 // Only send the delete message if one was cached. Otherwise, no delete message is necessary, the client
                 // never added the entity.
@@ -367,13 +367,13 @@ namespace Multiplayer
                 if (m_propertyPublisher->IsDeleted())
                 {
                     AZLOG(NET_RepDeletes, "Trying to cache second delete message for entity %llu.",
-                        (AZ::u64)m_entityHandle.GetNetEntityId());
+                        aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()));
                 }
                 else
                 {
                     AZLOG(
                         NET_RepDeletes, "Dropping delete message, never sent add for entity %llu.",
-                        (AZ::u64)m_entityHandle.GetNetEntityId());
+                        aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()));
 
                     // It's possible that adds/updates have already added this replicator to the pending send list.
                     // If we've also got a delete before we've sent anything, then remove the replicator from the send queue.
@@ -429,8 +429,8 @@ namespace Multiplayer
             AZLOG(
                 NET_RepDeletes,
                 "Setting pending removal for entity %llu with time %llu ms.",
-                (AZ::u64)m_entityHandle.GetNetEntityId(),
-                (uint64_t)(pendingRemovalTimeMs));
+                aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()),
+                aznumeric_cast<uint64_t>(pendingRemovalTimeMs));
 
             if (!IsPendingRemoval())
             {
@@ -452,7 +452,7 @@ namespace Multiplayer
     {
         if (IsPendingRemoval())
         {
-            AZLOG(NET_RepDeletes, "Clearing pending removal for entity %llu.", (AZ::u64)m_entityHandle.GetNetEntityId());
+            AZLOG(NET_RepDeletes, "Clearing pending removal for entity %llu.", aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()));
         }
 
         m_proxyRemovalEvent.RemoveFromQueue();

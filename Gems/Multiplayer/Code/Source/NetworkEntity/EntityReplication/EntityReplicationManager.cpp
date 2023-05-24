@@ -839,7 +839,7 @@ namespace Multiplayer
                         AZLOG(
                             NET_RepDeletes,
                             "Dropping message that would both add and delete entity id %llu from remote host %s",
-                            (AZ::u64)updateMessage.GetEntityId(),
+                            aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
                             GetRemoteHostId().GetString().c_str());
                     }
                     else if (entityReplicator && entityReplicator->IsMarkedForRemoval())
@@ -850,7 +850,7 @@ namespace Multiplayer
                         AZLOG(
                             NET_RepDeletes,
                             "Dropping redundant client message to delete entity id %llu from remote host %s",
-                            (AZ::u64)updateMessage.GetEntityId(),
+                            aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
                             GetRemoteHostId().GetString().c_str());
                     }
                 }
@@ -868,17 +868,17 @@ namespace Multiplayer
                 if (updateMessage.GetIsDelete())
                 {
                     AZLOG(NET_RepDeletes, "EntityReplicationManager: Received old DeleteProxy message for entity id %llu, sequence %d latest sequence %d from remote host %s",
-                        (AZ::u64)updateMessage.GetEntityId(),
-                        (uint32_t)packetId,
-                        (uint32_t)entityReplicator->GetLastReceivedPacketId(),
+                        aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
+                        aznumeric_cast<uint32_t>(packetId),
+                        aznumeric_cast<uint32_t>(entityReplicator->GetLastReceivedPacketId()),
                         GetRemoteHostId().GetString().c_str());
                 }
                 else
                 {
                     AZLOG(NET_RepUpdate, "EntityReplicationManager: Received old PropertyChangeMessage message for entity id %llu, sequence %d latest sequence %d from remote host %s",
-                        (AZ::u64)updateMessage.GetEntityId(),
-                        (uint32_t)packetId,
-                        (uint32_t)entityReplicator->GetLastReceivedPacketId(),
+                        aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()),
+                        aznumeric_cast<uint32_t>(packetId),
+                        aznumeric_cast<uint32_t>(entityReplicator->GetLastReceivedPacketId()),
                         GetRemoteHostId().GetString().c_str());
                 }
             }
@@ -895,7 +895,7 @@ namespace Multiplayer
     {
         if (updateMessage.GetIsDelete())
         {
-            AZLOG(NET_RepDeletes, "Handling entity delete message for entity %llu.", (AZ::u64)updateMessage.GetEntityId());
+            AZLOG(NET_RepDeletes, "Handling entity delete message for entity %llu.", aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()));
         }
 
         // May still be nullptr
@@ -965,7 +965,7 @@ namespace Multiplayer
         if (updateMessage.GetIsDelete())
         {
             handled = HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage) && handled;
-            AZLOG(NET_RepDeletes, "Handled entity delete message for entity %llu.", (AZ::u64)updateMessage.GetEntityId());
+            AZLOG(NET_RepDeletes, "Handled entity delete message for entity %llu.", aznumeric_cast<AZ::u64>(updateMessage.GetEntityId()));
         }
 
         return handled;
