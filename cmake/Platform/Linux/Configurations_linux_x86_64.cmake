@@ -24,11 +24,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
                 -L$ENV{SNAP}/usr/lib/gcc/x86_64-linux-gnu/12/
-<<<<<<< Updated upstream
-                -L/snap/core20/current/lib/x86_64-linux-gnu
-                -L/snap/core20/current/usr/lib/x86_64-linux-gnu
-=======
->>>>>>> Stashed changes
                 -L$ENV{SNAP}/lib/x86_64-linux-gnu
                 -L$ENV{SNAP}/lib32/x86_64-linux-gnu
                 -L$ENV{SNAP}/usr/lib/x86_64-linux-gnu
@@ -37,11 +32,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
                 -L$ENV{SNAP}/usr/lib/gcc/x86_64-linux-gnu/12/
-<<<<<<< Updated upstream
-                -L/snap/core20/current/lib/x86_64-linux-gnu
-                -L/snap/core20/current/usr/lib/x86_64-linux-gnu
-=======
->>>>>>> Stashed changes
                 -L$ENV{SNAP}/lib/x86_64-linux-gnu
                 -L$ENV{SNAP}/lib32/x86_64-linux-gnu
                 -L$ENV{SNAP}/usr/lib/x86_64-linux-gnu
@@ -98,13 +88,4 @@ endif()
 
 ly_set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 ly_set(CMAKE_INSTALL_RPATH_USE_LINK_PATH FALSE)
-<<<<<<< Updated upstream
-
-if ($ENV{O3DE_SNAP})
-    ly_set(CMAKE_INSTALL_RPATH "$ORIGIN:/snap/core20/current/lib/x86_64-linux-gnu:/snap/core20/current/usr/lib/x86_64-linux-gnu")
-else()
-    ly_set(CMAKE_INSTALL_RPATH "$ORIGIN")
-endif()
-=======
 ly_set(CMAKE_INSTALL_RPATH "$ORIGIN")
->>>>>>> Stashed changes
