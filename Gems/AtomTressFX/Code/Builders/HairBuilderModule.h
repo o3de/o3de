@@ -21,7 +21,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(HairBuilderModule, "{44440BE8-48AC-46AA-9643-2BD866709E27}", AZ::Module);
-                AZ_CLASS_ALLOCATOR(HairBuilderModule, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairBuilderModule, AZ::SystemAllocator);
 
                 HairBuilderModule();
 

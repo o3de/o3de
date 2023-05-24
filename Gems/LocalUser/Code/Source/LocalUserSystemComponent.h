@@ -102,18 +102,17 @@ namespace LocalUser
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Default factory create function
             //! \param[in] localUserSystemComponent Reference to the parent being implemented
-            static Implementation* Create(LocalUserSystemComponent& localUserSystemComponent);
+            static Implementation* Create();
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Constructor
             //! \param[in] localUserSystemComponent Reference to the parent being implemented
-            Implementation(LocalUserSystemComponent& localUserSystemComponent)
-                : m_localUserSystemComponent(localUserSystemComponent) {}
+            Implementation() {}
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Disable copying
@@ -145,11 +144,6 @@ namespace LocalUser
             //! \param[in] localUserId The local user id to query.
             //! \return The user name that is associated with localUserId.
             virtual AZStd::string GetLocalUserName(AzFramework::LocalUserId localUserId) = 0;
-
-        private:
-            ////////////////////////////////////////////////////////////////////////////////////////
-            // Variables
-            LocalUserSystemComponent& m_localUserSystemComponent; //!< Reference to the parent
         };
 
     private:

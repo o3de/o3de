@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PhysicsSetup, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PhysicsSetup, EMotionFX::ActorAllocator)
 
     const char* PhysicsSetup::s_colliderConfigTypeVisualNames[5] =
     {
@@ -231,7 +231,7 @@ namespace EMotionFX
             outResult = AZStd::string::format("Could not create collider with type '%s'.", typeId.ToString<AZStd::string>().c_str());
             return AZ::Failure();
         }
-        
+
         AzPhysics::ShapeColliderPair pair(AZStd::make_shared<Physics::ColliderConfiguration>(), shapeConfig);
         AZ_Assert(pair.first->m_materialSlots.GetSlotsCount() > 0, "Material slots is empty.");
 
@@ -324,29 +324,7 @@ namespace EMotionFX
         m_config.m_simulatedObjectColliderConfig.m_nodes.clear();
     }
 
-    void PhysicsSetup::Reflect(AZ::ReflectContext* context)
-    {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
-        {
-            serializeContext->Class<PhysicsSetup>()
-                ->Version(4, &VersionConverter)
-                ->Field("config", &PhysicsSetup::m_config)
-            ;
-
-            AZ::EditContext* editContext = serializeContext->GetEditContext();
-            if (editContext)
-            {
-                editContext->Class<PhysicsSetup>("PhysicsSetup", "Physics setup properties")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ;
-            }
-        }
-    }
-
-    bool PhysicsSetup::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool PhysicsSetupVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         if (classElement.GetVersion() == 2)
         {
@@ -481,6 +459,28 @@ namespace EMotionFX
         }
 
         return true;
+    }
+
+    void PhysicsSetup::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<PhysicsSetup>()
+                ->Version(4, &PhysicsSetupVersionConverter)
+                ->Field("config", &PhysicsSetup::m_config)
+            ;
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (editContext)
+            {
+                editContext->Class<PhysicsSetup>("PhysicsSetup", "Physics setup properties")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                ;
+            }
+        }
     }
 
     AZ::Vector3 GetBoneDirection(const Skeleton* skeleton, const Node* node)

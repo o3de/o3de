@@ -25,7 +25,7 @@ namespace EMotionFX
     const char* AnimGraphPlayTimeCondition::s_modeReachedEnd = "Reached End";
     const char* AnimGraphPlayTimeCondition::s_modeHasLessThanXSecondsLeft = "Less Than X Seconds Left";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphPlayTimeCondition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphPlayTimeCondition, AnimGraphAllocator)
 
     AnimGraphPlayTimeCondition::AnimGraphPlayTimeCondition()
         : AnimGraphTransitionCondition()

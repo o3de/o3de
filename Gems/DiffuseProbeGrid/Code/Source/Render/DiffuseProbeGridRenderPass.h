@@ -26,7 +26,7 @@ namespace AZ
       
         public:
             AZ_RTTI(DiffuseProbeGridRenderPass, "{33F79A39-2DB3-46FC-8BA1-9E43E222C322}", Base);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRenderPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridRenderPass, SystemAllocator);
 
             ~DiffuseProbeGridRenderPass() = default;
             static RPI::Ptr<DiffuseProbeGridRenderPass> Create(const RPI::PassDescriptor& descriptor);

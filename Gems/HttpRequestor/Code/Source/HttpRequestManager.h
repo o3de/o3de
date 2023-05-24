@@ -53,6 +53,7 @@ namespace HttpRequestor
         AZStd::atomic<bool>                     m_runThread;                        // Run flag used to signal the worker thread
         AZStd::thread                           m_thread;                           // This is the thread that will be used for all async operations
         static const char*                      s_loggingName;                      // Name to use for log messages etc...
+        bool                                    m_ownsAwsNativeInitialization = false; // Whether or not this module initialized the native layer
     };
 
     using ManagerPtr = AZStd::shared_ptr<Manager>;

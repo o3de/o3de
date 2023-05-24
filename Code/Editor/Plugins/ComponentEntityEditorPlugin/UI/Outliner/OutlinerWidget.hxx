@@ -63,7 +63,7 @@ class OutlinerWidget
 {
     Q_OBJECT;
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerWidget, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(OutlinerWidget, AZ::SystemAllocator);
 
     OutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
     virtual ~OutlinerWidget();
@@ -121,7 +121,6 @@ private:
     Ui::OutlinerWidgetUI* m_gui;
     OutlinerListModel* m_listModel;
     OutlinerSortFilterProxyModel* m_proxyModel;
-    AZ::u64 m_selectionContextId;
     AZStd::vector<AZ::EntityId> m_selectedEntityIds;
 
     void PrepareSelection();
@@ -154,7 +153,6 @@ private:
     QAction* m_actionToDeleteSelection;
     QAction* m_actionToDeleteSelectionAndDescendants;
     QAction* m_actionToRenameSelection;
-    QAction* m_actionToReparentSelection;
     QAction* m_actionToMoveEntityUp;
     QAction* m_actionToMoveEntityDown;
     QAction* m_actionGoToEntitiesInViewport;

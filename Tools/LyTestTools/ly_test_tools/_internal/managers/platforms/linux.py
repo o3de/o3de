@@ -16,18 +16,12 @@ from ly_test_tools._internal.managers.abstract_resource_locator import AbstractR
 logger = logging.getLogger(__name__)
 
 CACHE_DIR = 'linux'
-CONFIG_FILE = 'system_linux_pc.cfg'
 
 
 class _LinuxResourceManager(AbstractResourceLocator):
     """
     Override for locating resources in a Linux operating system running LyTestTools.
     """
-    def platform_config_file(self):
-        """
-        :return: path to the platform config file
-        """
-        return os.path.join(self.engine_root(), CONFIG_FILE)
 
     def platform_cache(self):
         """

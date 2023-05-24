@@ -20,7 +20,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoDeleteAsOverride, "{399C7D62-D748-4697-AB44-6BB478E3E128}", PrefabUndoUpdateLink);
-            AZ_CLASS_ALLOCATOR(PrefabUndoDeleteAsOverride, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoDeleteAsOverride, AZ::SystemAllocator);
 
             explicit PrefabUndoDeleteAsOverride(const AZStd::string& undoOperationName);
 
@@ -29,8 +29,8 @@ namespace AzToolsFramework
                 const AZStd::vector<AZStd::string>& entityAliasPathList,
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
-                const Instance& owningInstance,
-                Instance& focusedInstance);
+                Instance& owningInstance,
+                const Instance& focusedInstance);
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -20,8 +20,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTimeCondition, AnimGraphConditionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTimeCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTimeCondition, AnimGraphConditionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTimeCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphTimeCondition::AnimGraphTimeCondition()
         : AnimGraphTransitionCondition()

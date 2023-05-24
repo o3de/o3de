@@ -37,7 +37,7 @@ namespace AZ
                 NSString * deviceName = [mtlDevice name];
                 const char * deviceNameCStr = [ deviceName UTF8String ];
                 m_descriptor.m_description = AZStd::string(deviceNameCStr);
-                m_descriptor.m_deviceId = deviceName.hash; //Used for storing PipelineLibraries
+                m_descriptor.m_deviceId = static_cast<uint32_t>(deviceName.hash); //Used for storing PipelineLibraries
                 
                 if(strstr(m_descriptor.m_description.c_str(), ToString(RHI::VendorId::Apple).data()))
                 {

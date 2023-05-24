@@ -34,7 +34,7 @@ namespace AzQtComponents
     class DragAndDropContextBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(DragAndDropContextBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DragAndDropContextBase, AZ::SystemAllocator);
         // this class is a base class for specific types of drag and drop contexts (such as viewport drag and drop context or others)
         // that have more information about the context of the drag and drop.
 

@@ -11,6 +11,7 @@
 #include <QElapsedTimer>
 #include <QTextStream>
 #include <QCoreApplication>
+#include <AzCore/IO/Path/Path.h>
 
 
 namespace AssetProcessorBuildTarget
@@ -29,7 +30,7 @@ namespace UnitTestUtils
 {
     void SleepForMinimumFileSystemTime()
     {
-        // note that on Mac, the file system has a resolution of 1 second, and since we're using modtime for a bunch of things, 
+        // note that on Mac, the file system has a resolution of 1 second, and since we're using modtime for a bunch of things,
         // not the actual hash files, we have to wait different amount depending on the OS.
 #ifdef AZ_PLATFORM_WINDOWS
         int milliseconds = 1;
@@ -37,6 +38,21 @@ namespace UnitTestUtils
         int milliseconds = 1001;
 #endif
         AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(milliseconds));
+    }
+
+    bool CreateDummyFileAZ(AZ::IO::PathView fullPathToFile, AZStd::string_view contents)
+    {
+        AZ::IO::FileIOStream stream(fullPathToFile.FixedMaxPathString().c_str(), AZ::IO::OpenMode::ModeWrite);
+
+        if (!stream.IsOpen())
+        {
+            return false;
+        }
+
+        stream.Write(contents.size(), contents.data());
+        stream.Close();
+
+        return true;
     }
 
     bool CreateDummyFile(const QString& fullPathToFile, QString contents)
@@ -50,6 +66,7 @@ namespace UnitTestUtils
             return false;
         }
 
+        if (!contents.isEmpty())
         {
             QTextStream ts(&writer);
             ts.setCodec("UTF-8");

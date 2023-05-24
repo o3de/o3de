@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -16,6 +17,7 @@
 #include <RHI/Device.h>
 #include <RHI/Metal.h>
 #include <RHI/PhysicalDevice.h>
+
 
 //Symbols related to Obj-c categories are getting stripped out as part of the link step for monolithic builds
 //This forces the linker to not strip symbols related to categories without actually referencing the dummy function.
@@ -76,7 +78,7 @@ namespace AZ
             allocatorDescriptor.m_pageSizeInBytes = DefaultConstantBufferPageSize;
             allocatorDescriptor.m_bindFlags = AZ::RHI::BufferBindFlags::Constant;
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferConstantsAllocatorMemoryUsage; };
-            allocatorDescriptor.m_recycleOnCollect = true;
+            allocatorDescriptor.m_recycleOnCollect = false;
             m_argumentBufferConstantsAllocator.Init(allocatorDescriptor);
              
             allocatorDescriptor.m_getHeapMemoryUsageFunction = [this]() { return &m_argumentBufferAllocatorMemoryUsage; };
@@ -88,6 +90,7 @@ namespace AZ
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
+            m_bindlessArgumentBuffer.Init(this);
             return RHI::ResultCode::Success;
         }
     
@@ -100,6 +103,7 @@ namespace AZ
             m_asyncUploadQueue.Shutdown();
             m_stagingBufferPool.reset();
             m_nullDescriptorManager.Shutdown();
+            m_bindlessArgumentBuffer.GarbageCollect();
         }
 
         void Device::ShutdownInternal()
@@ -166,6 +170,7 @@ namespace AZ
         MemoryView Device::CreateInternalImageCommitted(MTLTextureDescriptor* mtlTextureDesc)
         {
             id<MTLTexture> mtlTexture = [m_metalDevice newTextureWithDescriptor : mtlTextureDesc];
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(mtlTexture != nil);
             AZ_Assert(mtlTexture, "Failed to create texture");
             
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlTexture, ResourceType::MtlTextureType});
@@ -238,6 +243,7 @@ namespace AZ
             ResourceDescriptor resourceDesc = ConvertBufferDescriptor(bufferDescriptor, heapMemoryLevel);
             MTLResourceOptions resOptions = CovertToResourceOptions(resourceDesc.m_mtlStorageMode, resourceDesc.m_mtlCPUCacheMode, resourceDesc.m_mtlHazardTrackingMode);
             mtlBuffer = [m_metalDevice newBufferWithLength:resourceDesc.m_width options:resOptions];
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(mtlBuffer != nil);
             AZ_Assert(mtlBuffer, "Failed to create the buffer");
             
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlBuffer, ResourceType::MtlBufferType});
@@ -341,7 +347,7 @@ namespace AZ
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
             m_features.m_dualSourceBlending = true;
-            m_features.m_customResolvePositions = m_metalDevice.programmableSamplePositionsSupported;
+            m_features.m_customSamplePositions = m_metalDevice.programmableSamplePositionsSupported;
             m_features.m_indirectDrawSupport = false;
             
             //Metal drivers save and load serialized PipelineLibrary internally
@@ -371,6 +377,8 @@ namespace AZ
             //Compute queue can do gfx work
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;            
             m_features.m_occlusionQueryPrecise = true;
+            
+            m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
             
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
@@ -443,6 +451,11 @@ namespace AZ
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
+        }
+    
+        BindlessArgumentBuffer& Device::GetBindlessArgumentBuffer()
+        {
+            return m_bindlessArgumentBuffer;
         }
     }
 }

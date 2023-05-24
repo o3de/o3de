@@ -9,6 +9,10 @@
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h>
+
+#include <QWidget>
 
 namespace AzToolsFramework
 {
@@ -16,7 +20,7 @@ namespace AzToolsFramework
 
     bool IsNewActionManagerEnabled()
     {
-        bool isNewActionManagerEnabled = false;
+        bool isNewActionManagerEnabled = true;
 
         // Retrieve new action manager setting
         if (auto* registry = AZ::SettingsRegistry::Get())
@@ -25,6 +29,22 @@ namespace AzToolsFramework
         }
 
         return isNewActionManagerEnabled;
+    }
+
+    void AssignWidgetToActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget)
+    {
+        if (auto hotKeyWidgetRegistrationInterface = AZ::Interface<HotKeyWidgetRegistrationInterface>::Get())
+        {
+            hotKeyWidgetRegistrationInterface->AssignWidgetToActionContext(actionContextIdentifier, widget);
+        }
+    }
+
+    void RemoveWidgetFromActionContextHelper(const AZStd::string& actionContextIdentifier, QWidget* widget)
+    {
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(actionContextIdentifier, widget);
+        }
     }
 
 } // namespace AzToolsFramework

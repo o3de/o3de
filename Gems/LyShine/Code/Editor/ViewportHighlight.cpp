@@ -55,7 +55,7 @@ void ViewportHighlight::Draw(Draw2dHelper& draw2d,
                     // so if this element has children we should NOT draw a border for it
 
                     int numChildren = 0;
-                    EBUS_EVENT_ID_RESULT(numChildren, element->GetId(), UiElementBus, GetNumChildElements);
+                    UiElementBus::EventResult(numChildren, element->GetId(), &UiElementBus::Events::GetNumChildElements);
                     if (numChildren > 0)
                     {
                         shouldDrawBorder = false;
@@ -79,10 +79,10 @@ void ViewportHighlight::Draw(Draw2dHelper& draw2d,
                     // so if this element is hidden we should NOT draw a border for it
 
                     bool isVisible = false;
-                    EBUS_EVENT_ID_RESULT(isVisible, element->GetId(), UiEditorBus, GetIsVisible);
+                    UiEditorBus::EventResult(isVisible, element->GetId(), &UiEditorBus::Events::GetIsVisible);
 
                     bool areAllAncestorsVisible = false;
-                    EBUS_EVENT_ID_RESULT(areAllAncestorsVisible, element->GetId(), UiEditorBus, AreAllAncestorsVisible);
+                    UiEditorBus::EventResult(areAllAncestorsVisible, element->GetId(), &UiEditorBus::Events::AreAllAncestorsVisible);
 
                     if (!(isVisible && areAllAncestorsVisible))
                     {

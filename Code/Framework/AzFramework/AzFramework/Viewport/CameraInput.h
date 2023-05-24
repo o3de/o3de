@@ -18,7 +18,6 @@
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
-#include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
@@ -542,6 +541,11 @@ namespace AzFramework
         AZStd::function<float()> m_translateSpeedFn;
         AZStd::function<float()> m_boostMultiplierFn;
 
+        bool Boosting() const
+        {
+            return m_boost;
+        }
+
     private:
         //! The type of translation the camera input is performing (multiple may be active at once).
         enum class TranslationType
@@ -679,6 +683,11 @@ namespace AzFramework
     private:
         InputChannelId m_orbitChannelId; //!< Input channel to begin the orbit camera input (note: A modifier key is preferred).
         PivotFn m_pivotFn; //!< The pivot position to use for this orbit camera (how is the pivot point calculated/retrieved).
+
+        void ResetImpl() override
+        {
+            m_orbitCameras.Reset();
+        }
     };
 
     inline void OrbitCameraInput::SetPivotFn(PivotFn pivotFn)

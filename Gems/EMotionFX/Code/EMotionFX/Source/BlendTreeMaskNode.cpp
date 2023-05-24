@@ -18,9 +18,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::Mask, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::Mask, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
     const size_t BlendTreeMaskNode::s_numMasks = 4;
 
     BlendTreeMaskNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
@@ -203,7 +203,7 @@ namespace EMotionFX
         AnimGraphNode* basePoseNode = GetInputNode(INPUTPORT_BASEPOSE);
         if (basePoseNode)
         {
-            basePoseNode->PerformUpdate(animGraphInstance, timePassedInSeconds);
+            UpdateIncomingNode(animGraphInstance, basePoseNode, timePassedInSeconds);
             uniqueData->Init(animGraphInstance, basePoseNode);
         }
         else
@@ -216,7 +216,7 @@ namespace EMotionFX
             AnimGraphNode* inputNode = GetInputNode(maskInstance.m_inputPortNr);
             if (inputNode)
             {
-                inputNode->PerformUpdate(animGraphInstance, timePassedInSeconds);
+                UpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
             }
         }
     }
@@ -232,7 +232,7 @@ namespace EMotionFX
         AnimGraphNode* basePoseNode = GetInputNode(INPUTPORT_BASEPOSE);
         if (basePoseNode)
         {
-            basePoseNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, basePoseNode, timePassedInSeconds);
 
             const AnimGraphNodeData* basePoseNodeUniqueData = basePoseNode->FindOrCreateUniqueNodeData(animGraphInstance);
             data->SetEventBuffer(basePoseNodeUniqueData->GetRefCountedData()->GetEventBuffer());
@@ -247,7 +247,7 @@ namespace EMotionFX
                 continue;
             }
 
-            inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
 
             // If we want to output events for this input, add the incoming events to the output event buffer.
             if (GetOutputEvents(inputPortNr))

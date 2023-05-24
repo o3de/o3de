@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class SpawnableMetaDataTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 

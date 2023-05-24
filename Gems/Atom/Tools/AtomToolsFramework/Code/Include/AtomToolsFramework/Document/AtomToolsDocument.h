@@ -25,7 +25,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(AtomToolsDocument, "{7E6CA0C4-077C-4849-B24C-6796AF3B640B}");
-        AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(AtomToolsDocument);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -48,7 +48,7 @@ namespace AtomToolsFramework
         void Clear() override;
         bool IsOpen() const override;
         bool IsModified() const override;
-        bool CanSave() const override;
+        bool CanSaveAsChild() const override;
         bool CanUndo() const override;
         bool CanRedo() const override;
         bool Undo() override;

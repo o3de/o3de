@@ -28,7 +28,6 @@ namespace AzToolsFramework
     {
         ViewPaneOptions opts;
         opts.paneRect = QRect(100, 100, 700, 600);
-        opts.isDeletable = false;
         RegisterViewPane<CvarDPE>(LyViewPane::ConsoleVariables, LyViewPane::CategoryOther, opts);
     }
 

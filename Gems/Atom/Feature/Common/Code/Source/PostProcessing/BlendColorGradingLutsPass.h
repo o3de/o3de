@@ -40,7 +40,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BlendColorGradingLutsPass, "{F1E7ED65-27B1-4AF3-AF8D-C29C2BF31EE7}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(BlendColorGradingLutsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BlendColorGradingLutsPass, SystemAllocator);
             virtual ~BlendColorGradingLutsPass();
 
             /// Creates a DisplayMapperPass

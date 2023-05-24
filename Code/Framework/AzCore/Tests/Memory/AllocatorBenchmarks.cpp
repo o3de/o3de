@@ -30,126 +30,13 @@ namespace Benchmark
         size_t GetMemorySize(void* memory);
     }
 
-    /// <summary>
-    /// Test allocator wrapper that redirects the calls to the passed TAllocator by using AZ::AllocatorInstance.
-    /// It also creates/destroys the TAllocator type (to reflect what happens at runtime)
-    /// </summary>
-    /// <typeparam name="TAllocator">Allocator type to wrap</typeparam>
-    template<typename TAllocator>
-    class TestAllocatorWrapper
+    class RawMallocAllocator
+        : public AZStd::stateless_allocator
     {
     public:
-        static void SetUp()
-        {
-            AZ::AllocatorInstance<TAllocator>::Create();
-        }
-
-        static void TearDown()
-        {
-            AZ::AllocatorInstance<TAllocator>::Destroy();
-        }
-
-        static void* Allocate(size_t byteSize, size_t alignment)
-        {
-            return AZ::AllocatorInstance<TAllocator>::Get().Allocate(byteSize, alignment);
-        }
-
-        static void DeAllocate(void* ptr, size_t byteSize = 0)
-        {
-            AZ::AllocatorInstance<TAllocator>::Get().DeAllocate(ptr, byteSize);
-        }
-
-        static void* ReAllocate(void* ptr, size_t newSize, size_t newAlignment)
-        {
-            return AZ::AllocatorInstance<TAllocator>::Get().ReAllocate(ptr, newSize, newAlignment);
-        }
-
-        static void GarbageCollect()
-        {
-            AZ::AllocatorInstance<TAllocator>::Get().GarbageCollect();
-        }
-
-        static size_t NumAllocatedBytes()
-        {
-            return AZ::AllocatorInstance<TAllocator>::Get().NumAllocatedBytes() +
-                AZ::AllocatorInstance<TAllocator>::Get().GetUnAllocatedMemory();
-        }
-
-        static size_t GetSize(void* ptr)
-        {
-            return AZ::AllocatorInstance<TAllocator>::Get().AllocationSize(ptr);
-        }
+        void GarbageCollect() {}
+        size_t NumAllocatedBytes() { return 0; }
     };
-
-    /// <summary>
-    /// Basic allocator used as a baseline. This allocator is the most basic allocation possible with the OS (AZ_OS_MALLOC).
-    /// </summary>
-    class RawMallocAllocator {};
-
-    template<>
-    class TestAllocatorWrapper<RawMallocAllocator>
-    {
-    public:
-        TestAllocatorWrapper()
-        {
-            s_numAllocatedBytes = 0;
-        }
-
-        static void SetUp()
-        {
-            s_numAllocatedBytes = 0;
-        }
-
-        static void TearDown()
-        {
-        }
-
-        static void* Allocate(size_t byteSize, size_t)
-        {
-            s_numAllocatedBytes += byteSize;
-            // Don't pass an alignment since we wont be able to get the memory size without also passing the alignment
-            return AZ_OS_MALLOC(byteSize, 1);
-        }
-
-        static void DeAllocate(void* ptr, size_t = 0)
-        {
-            s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
-            AZ_OS_FREE(ptr);
-        }
-
-        static void* ReAllocate(void* ptr, size_t newSize, size_t)
-        {
-            s_numAllocatedBytes -= Platform::GetMemorySize(ptr);
-            AZ_OS_FREE(ptr);
-
-            s_numAllocatedBytes += newSize;
-            return AZ_OS_MALLOC(newSize, 1);
-        }
-
-        static size_t Resize(void* ptr, size_t newSize)
-        {
-            AZ_UNUSED(ptr);
-            AZ_UNUSED(newSize);
-
-            return 0;
-        }
-
-        static void GarbageCollect() {}
-
-        static size_t NumAllocatedBytes()
-        {
-            return s_numAllocatedBytes;
-        }
-
-        static size_t GetSize(void* ptr)
-        {
-            return Platform::GetMemorySize(ptr);
-        }
-
-    private:
-         inline static size_t s_numAllocatedBytes = 0;
-    };
-
     // We use both this HphaSchemaAllocator and the SystemAllocator configured with Hpha because the SystemAllocator
     // has extra things
     class HphaSchemaAllocator : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
@@ -199,15 +86,14 @@ namespace Benchmark
         : public ::benchmark::Fixture
     {
     protected:
-        using TestAllocatorType = TestAllocatorWrapper<TAllocator>;
+        using TestAllocatorType = TAllocator;
 
         virtual void internalSetUp(const ::benchmark::State& state)
         {
-            if (state.thread_index == 0) // Only setup in the first thread
+            m_allocator = AZStd::make_unique<TestAllocatorType>();
+            if (state.thread_index() == 0)
             {
-                TestAllocatorType::SetUp();
-
-                m_allocations.resize(state.threads);
+                m_allocations.resize(state.threads());
                 for (auto& perThreadAllocations : m_allocations)
                 {
                     perThreadAllocations.resize(state.range(0), nullptr);
@@ -217,13 +103,12 @@ namespace Benchmark
 
         virtual void internalTearDown(const ::benchmark::State& state)
         {
-            if (state.thread_index == 0) // Only setup in the first thread
+            if (state.thread_index() == 0) // Only setup in the first thread
             {
                 m_allocations.clear();
                 m_allocations.shrink_to_fit();
-
-                TestAllocatorType::TearDown();
             }
+            m_allocator = nullptr;
         }
 
         AZStd::vector<void*>& GetPerThreadAllocations(size_t threadIndex)
@@ -250,7 +135,11 @@ namespace Benchmark
             internalTearDown(state);
         }
 
+        const TestAllocatorType& GetAllocator() const { return *m_allocator; }
+        TestAllocatorType& GetAllocator() { return *m_allocator; }
+
     private:
+        AZStd::unique_ptr<TestAllocatorType> m_allocator;
         AZStd::vector<AZStd::vector<void*>> m_allocations;
     };
 
@@ -268,7 +157,7 @@ namespace Benchmark
             {
                 state.PauseTiming();
 
-                AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
+                AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index());
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -278,21 +167,21 @@ namespace Benchmark
                     totalAllocationSize += allocationSize;
 
                     state.ResumeTiming();
-                    perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
+                    perThreadAllocations[allocationIndex] = this->GetAllocator().allocate(allocationSize, 0);
                     state.PauseTiming();
                 }
 
-                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(this->GetAllocator().NumAllocatedBytes()), benchmark::Counter::kDefaults);
                 state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
                 {
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
-                    TestAllocatorType::DeAllocate(perThreadAllocations[allocationIndex], allocationSize);
+                    this->GetAllocator().deallocate(perThreadAllocations[allocationIndex], allocationSize);
                     perThreadAllocations[allocationIndex] = nullptr;
                 }
-                TestAllocatorType::GarbageCollect();
+                this->GetAllocator().GarbageCollect();
 
                 state.SetItemsProcessed(numberOfAllocations);
 
@@ -314,7 +203,7 @@ namespace Benchmark
             for ([[maybe_unused]] auto _ : state)
             {
                 state.PauseTiming();
-                AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index);
+                AZStd::vector<void*>& perThreadAllocations = base::GetPerThreadAllocations(state.thread_index());
 
                 const size_t numberOfAllocations = perThreadAllocations.size();
                 size_t totalAllocationSize = 0;
@@ -323,7 +212,7 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     totalAllocationSize += allocationSize;
-                    perThreadAllocations[allocationIndex] = TestAllocatorType::Allocate(allocationSize, 0);
+                    perThreadAllocations[allocationIndex] = this->GetAllocator().allocate(allocationSize, 0);
                 }
 
                 for (size_t allocationIndex = 0; allocationIndex < numberOfAllocations; ++allocationIndex)
@@ -331,17 +220,17 @@ namespace Benchmark
                     const AllocationSizeArray& allocationArray = s_allocationSizes[TAllocationSize];
                     const size_t allocationSize = allocationArray[allocationIndex % allocationArray.size()];
                     state.ResumeTiming();
-                    TestAllocatorType::DeAllocate(perThreadAllocations[allocationIndex], allocationSize);
+                    this->GetAllocator().deallocate(perThreadAllocations[allocationIndex], allocationSize);
                     state.PauseTiming();
                     perThreadAllocations[allocationIndex] = nullptr;
                 }
 
-                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(this->GetAllocator().NumAllocatedBytes()), benchmark::Counter::kDefaults);
                 state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(numberOfAllocations);
 
-                TestAllocatorType::GarbageCollect();
+                this->GetAllocator().GarbageCollect();
 
                 state.ResumeTiming();
             }
@@ -351,17 +240,7 @@ namespace Benchmark
     template<typename TAllocator>
     class RecordedAllocationBenchmarkFixture : public ::benchmark::Fixture
     {
-        using TestAllocatorType = TestAllocatorWrapper<TAllocator>;
-
-        virtual void internalSetUp()
-        {
-            TestAllocatorType::SetUp();
-        }
-
-        void internalTearDown()
-        {
-            TestAllocatorType::TearDown();
-        }
+        using TestAllocatorType = TAllocator;
 
         #pragma pack(push, 1)
         struct alignas(1) AllocatorOperation
@@ -379,23 +258,32 @@ namespace Benchmark
         #pragma pack(pop)
         static_assert(sizeof(AllocatorOperation) == 8);
 
-    public:
-        void SetUp(const ::benchmark::State&) override
+        void InternalSetUp([[maybe_unused]] const ::benchmark::State& state)
         {
-            internalSetUp();
-        }
-        void SetUp(::benchmark::State&) override
-        {
-            internalSetUp();
+            m_allocator = AZStd::make_unique<TestAllocatorType>();
         }
 
-        void TearDown(const ::benchmark::State&) override
+        void InternalTearDown([[maybe_unused]] const ::benchmark::State& state)
         {
-            internalTearDown();
+            m_allocator = nullptr;
         }
-        void TearDown(::benchmark::State&) override
+    public:
+        void SetUp(const ::benchmark::State& state) override
         {
-            internalTearDown();
+            InternalSetUp(state);
+        }
+        void SetUp(::benchmark::State& state) override
+        {
+            InternalSetUp(state);
+        }
+
+        void TearDown(const ::benchmark::State& state) override
+        {
+            InternalTearDown(state);
+        }
+        void TearDown(::benchmark::State& state) override
+        {
+            InternalTearDown(state);
         }
 
         void Benchmark(benchmark::State& state)
@@ -436,7 +324,7 @@ namespace Benchmark
                                 if (it.second) // otherwise already allocated
                                 {
                                     state.ResumeTiming();
-                                    void* ptr = TestAllocatorType::Allocate(operation.m_size, operation.m_alignment);
+                                    void* ptr = this->GetAllocator().allocate(operation.m_size, operation.m_alignment);
                                     state.PauseTiming();
                                     totalAllocationSize += operation.m_size;
                                     it.first->second = ptr;
@@ -446,7 +334,7 @@ namespace Benchmark
                                     // Doing a resize, dont account for this memory change, this operation is rare and we dont have
                                     // the size of the previous allocation
                                     state.ResumeTiming();
-                                    TestAllocatorType::ReAllocate(it.first->second, operation.m_size, operation.m_alignment);
+                                    this->GetAllocator().reallocate(it.first->second, operation.m_size, operation.m_alignment);
                                     state.PauseTiming();
                                 }
                             }
@@ -459,7 +347,7 @@ namespace Benchmark
                                     {
                                         totalAllocationSize -= operation.m_size;
                                         state.ResumeTiming();
-                                        TestAllocatorType::DeAllocate(
+                                        this->GetAllocator().deallocate(
                                             ptrIt->second,
                                             /*operation.m_size*/ 0); // size is not correct after a resize, a 0 size deals with it
                                         state.PauseTiming();
@@ -470,7 +358,7 @@ namespace Benchmark
                                 {
                                     // Just to account of the call of deallocate(nullptr);
                                     state.ResumeTiming();
-                                    TestAllocatorType::DeAllocate(nullptr, /*operation.m_size*/ 0);
+                                    this->GetAllocator().deallocate(nullptr, /*operation.m_size*/ 0);
                                     state.PauseTiming();
                                 }
                             }
@@ -486,23 +374,26 @@ namespace Benchmark
                     for (const auto& pointerMapping : pointerRemapping)
                     {
                         state.ResumeTiming();
-                        TestAllocatorType::DeAllocate(pointerMapping.second);
+                        this->GetAllocator().deallocate(pointerMapping.second);
                         state.PauseTiming();
                     }
                     itemsProcessed += pointerRemapping.size();
                     pointerRemapping.clear();
                 }
 
-                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(TestAllocatorType::NumAllocatedBytes()), benchmark::Counter::kDefaults);
+                state.counters[s_counterAllocatorMemory] = benchmark::Counter(static_cast<double>(this->GetAllocator().NumAllocatedBytes()), benchmark::Counter::kDefaults);
                 state.counters[s_counterBenchmarkMemory] = benchmark::Counter(static_cast<double>(totalAllocationSize), benchmark::Counter::kDefaults);
 
                 state.SetItemsProcessed(itemsProcessed);
 
-                TestAllocatorType::GarbageCollect();
+                this->GetAllocator().GarbageCollect();
 
                 state.ResumeTiming();
             }
         }
+    private:
+        AZStd::unique_ptr<TestAllocatorType> m_allocator;
+        TestAllocatorType& GetAllocator() { return *m_allocator; }
     };
 
     // For non-threaded ranges, run 100, 400, 1600 amounts
@@ -555,7 +446,7 @@ namespace Benchmark
     BM_REGISTER_ALLOCATOR(RawMallocAllocator, RawMallocAllocator);
     BM_REGISTER_ALLOCATOR(HphaSchemaAllocator, HphaSchemaAllocator);
     BM_REGISTER_ALLOCATOR(SystemAllocator, TestSystemAllocator);
-    
+
     //BM_REGISTER_SCHEMA(PoolSchema); // Requires special alignment requests while allocating
     // BM_REGISTER_ALLOCATOR(OSAllocator, OSAllocator); // Requires special treatment to initialize since it will be already initialized, maybe creating a different instance?
 

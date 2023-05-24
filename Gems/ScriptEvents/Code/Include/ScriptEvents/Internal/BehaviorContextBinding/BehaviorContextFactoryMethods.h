@@ -17,7 +17,7 @@ namespace ScriptEvents
     class BehaviorHandlerFactoryMethod  : public AZ::BehaviorMethod
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorHandlerFactoryMethod, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorHandlerFactoryMethod, AZ::SystemAllocator);
 
         // The result parameter takes the 0th index
         enum ParameterIndex
@@ -34,9 +34,14 @@ namespace ScriptEvents
         ~BehaviorHandlerFactoryMethod() override
         {}
 
-        bool Call([[maybe_unused]] AZ::BehaviorArgument* arguments, [[maybe_unused]] unsigned int numArguments, [[maybe_unused]] AZ::BehaviorArgument* result = nullptr) const override
+        bool Call([[maybe_unused]] AZStd::span<AZ::BehaviorArgument> arguments, [[maybe_unused]] AZ::BehaviorArgument* result = nullptr) const override
         {
             return false;
+        }
+
+        ResultOutcome IsCallable([[maybe_unused]] AZStd::span<AZ::BehaviorArgument> arguments, [[maybe_unused]] AZ::BehaviorArgument* result = nullptr) const override
+        {
+            return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType("BehaviorHandlerFactoryMethod not callable") };
         }
 
         bool HasResult() const override
@@ -84,7 +89,7 @@ namespace ScriptEvents
             return nullptr;
         }
 
-        void SetArgumentName(size_t /*index*/, const AZStd::string& /*name*/) override
+        void SetArgumentName(size_t /*index*/, AZStd::string /*name*/) override
         {
         }
 
@@ -93,7 +98,7 @@ namespace ScriptEvents
             return nullptr;
         }
 
-        void SetArgumentToolTip(size_t /*index*/, const AZStd::string& /*name*/) override
+        void SetArgumentToolTip(size_t /*index*/, AZStd::string /*name*/) override
         {
         }
 
@@ -120,17 +125,17 @@ namespace ScriptEvents
     class DefaultBehaviorHandlerCreator : public  BehaviorHandlerFactoryMethod
     {
     public:
-        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerCreator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerCreator, AZ::SystemAllocator);
 
         DefaultBehaviorHandlerCreator(AZ::BehaviorEBus* ebus, AZ::BehaviorContext* behaviorContext, const AZStd::string& name)
             : BehaviorHandlerFactoryMethod(ebus, behaviorContext, name)
         {
         }
 
-        bool Call(AZ::BehaviorArgument* arguments, unsigned int numArguments, AZ::BehaviorArgument* result = nullptr) const override
+        bool Call(AZStd::span<AZ::BehaviorArgument> arguments, AZ::BehaviorArgument* result = nullptr) const override
         {
             const ScriptEvents::ScriptEvent* scriptEventDefinition = nullptr;
-            if (numArguments > 0)
+            if (!arguments.empty())
             {
                 scriptEventDefinition = static_cast<const ScriptEvents::ScriptEvent*>(arguments[0].GetValueAddress());
             }
@@ -145,14 +150,25 @@ namespace ScriptEvents
             return false;
         }
 
+        ResultOutcome IsCallable([[maybe_unused]] AZStd::span<AZ::BehaviorArgument> arguments, AZ::BehaviorArgument* result = nullptr) const override
+        {
+            if (result)
+            {
+                return AZ::Success();
+            }
+
+            return ResultOutcome{ AZStd::unexpect, ResultOutcome::ErrorType("BehaviorHandlerCreator must supply an argument of type ScriptEvent"
+                " and a result parameter for storing the Bus Handler") };
+        }
+
         bool HasResult() const override
         {
             return true;
         }
 
-        bool IsMember() const override 
+        bool IsMember() const override
         {
-            return true; 
+            return true;
         }
 
     };
@@ -160,22 +176,26 @@ namespace ScriptEvents
     class DefaultBehaviorHandlerDestroyer : public BehaviorHandlerFactoryMethod
     {
     public:
-        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerDestroyer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerDestroyer, AZ::SystemAllocator);
 
         DefaultBehaviorHandlerDestroyer(AZ::BehaviorEBus* ebus, AZ::BehaviorContext* behaviorContext, const AZStd::string& name)
             : BehaviorHandlerFactoryMethod(ebus, behaviorContext, name)
         {
         }
 
-        bool Call(AZ::BehaviorArgument* arguments, [[maybe_unused]] unsigned int numArguments, [[maybe_unused]] AZ::BehaviorArgument* result = nullptr) const override
+        bool Call(AZStd::span<AZ::BehaviorArgument> arguments, [[maybe_unused]] AZ::BehaviorArgument* result = nullptr) const override
         {
-            AZ_Assert(arguments, "Must pass in the handler to delete");
-            if (arguments)
+            if (!arguments.empty())
             {
                 // The first argument is the handler that needs to be deleted
                 delete *arguments[0].GetAsUnsafe<DefaultBehaviorHandler*>();
             }
             return true;
+        }
+
+        ResultOutcome IsCallable([[maybe_unused]] AZStd::span<AZ::BehaviorArgument> arguments, [[maybe_unused]] AZ::BehaviorArgument* result = nullptr) const override
+        {
+            return AZ::Success();
         }
 
         bool HasResult() const override

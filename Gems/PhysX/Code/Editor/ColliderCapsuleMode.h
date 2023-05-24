@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzToolsFramework/ComponentModes/CapsuleViewportEdit.h>
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 
 namespace PhysX
 {
@@ -19,7 +19,6 @@ namespace PhysX
     class ColliderCapsuleMode
         : public PhysXSubComponentModeBase
         , private AzFramework::EntityDebugDisplayEventBus::Handler
-        , private AzToolsFramework::CapsuleViewportEdit
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
@@ -36,15 +35,7 @@ namespace PhysX
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        // CapsuleViewportEdit ...
-        AZ::Transform GetCapsuleWorldTransform() const override;
-        AZ::Transform GetCapsuleLocalTransform() const override;
-        AZ::Vector3 GetCapsuleNonUniformScale() const override;
-        float GetCapsuleRadius() const override;
-        float GetCapsuleHeight() const override;
-        void SetCapsuleRadius(float radius) override;
-        void SetCapsuleHeight(float height) override;
-
         AZ::EntityComponentIdPair m_entityComponentIdPair;
+        AZStd::unique_ptr<AzToolsFramework::CapsuleViewportEdit> m_capsuleViewportEdit;
     };
 } //namespace PhysX

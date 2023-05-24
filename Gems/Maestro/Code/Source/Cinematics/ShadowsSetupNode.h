@@ -21,7 +21,7 @@ class CShadowsSetupNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CShadowsSetupNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CShadowsSetupNode, AZ::SystemAllocator);
     AZ_RTTI(CShadowsSetupNode, "{419F9F77-FC64-43D1-ABCF-E78E90889DF8}", CAnimNode);
 
     CShadowsSetupNode();

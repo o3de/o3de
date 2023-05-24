@@ -20,7 +20,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoDeleteEntity, "{63C3579D-9F8B-4B0F-AEE9-F8CF2E3E941A}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoDeleteEntity, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoDeleteEntity, AZ::SystemAllocator);
 
             explicit PrefabUndoDeleteEntity(const AZStd::string& undoOperationName);
 

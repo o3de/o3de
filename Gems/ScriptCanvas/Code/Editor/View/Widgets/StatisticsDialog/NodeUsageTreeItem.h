@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::NodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteNodeUsageRootItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteNodeUsageRootItem, AZ::SystemAllocator);
         AZ_RTTI(NodePaletteNodeUsageRootItem, "{ED21874C-6955-40F0-B451-F5FF5A16CF71}", GraphCanvas::NodePaletteTreeItem);
 
         NodePaletteNodeUsageRootItem(const NodePaletteModel& nodePaletteModel);
@@ -36,7 +36,6 @@ namespace ScriptCanvasEditor
 
     private:
 
-        const NodePaletteModel& m_nodePaletteModel;
         GraphCanvas::GraphCanvasTreeCategorizer m_categorizer;
     };
 
@@ -44,7 +43,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::IconDecoratedNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteNodeUsagePaletteItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteNodeUsagePaletteItem, AZ::SystemAllocator);
         AZ_RTTI(NodePaletteNodeUsagePaletteItem, "{CA8E31A8-56CA-49A2-80F2-68A1E3A9EDF6}", GraphCanvas::IconDecoratedNodePaletteTreeItem);
 
         NodePaletteNodeUsagePaletteItem(const ScriptCanvas::NodeTypeIdentifier& nodeIdentifier, AZStd::string_view displayName);
@@ -64,7 +63,7 @@ namespace ScriptCanvasEditor
         , public AZ::Data::AssetBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageTreeItem, AZ::SystemAllocator);
         AZ_RTTI(ScriptCanvasAssetNodeUsageTreeItem, "{1FF437D9-5159-49CD-8D80-8AC3334886E8}", GraphCanvas::GraphCanvasTreeItem);
 
         enum Column
@@ -121,7 +120,7 @@ namespace ScriptCanvasEditor
         , public AZ::Data::AssetBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageTreeItemRoot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageTreeItemRoot, AZ::SystemAllocator);
         AZ_RTTI(ScriptCanvasAssetNodeUsageTreeItemRoot, "{EDCBFE97-0BF9-4AE5-8C6E-C4805E08CBFC}", ScriptCanvasAssetNodeUsageTreeItem);
 
         typedef AZStd::unordered_map< AZ::Data::AssetId, ScriptCanvasAssetNodeUsageTreeItem* > ScriptCanvasAssetMap;

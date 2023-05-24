@@ -45,7 +45,6 @@
 #include <Cinematics/AnimPostFXNode.h>
 #include <Cinematics/EventNode.h>
 #include <Cinematics/LayerNode.h>
-#include <Cinematics/MaterialNode.h>
 #include <Cinematics/ShadowsSetupNode.h>
 
 namespace Maestro
@@ -180,7 +179,6 @@ namespace Maestro
         CAnimPostFXNode::Reflect(context);
         CAnimEventNode::Reflect(context);
         CLayerNode::Reflect(context);
-        CAnimMaterialNode::Reflect(context);
         CShadowsSetupNode::Reflect(context);
     }
 
@@ -238,7 +236,8 @@ namespace Maestro
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
         bool changed = false;
         
-        EBUS_EVENT_ID_RESULT(changed, ebusId, Maestro::SequenceAgentComponentRequestBus, SetAnimatedPropertyValue, animatableAddress, value);
+        Maestro::SequenceAgentComponentRequestBus::EventResult(
+            changed, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
         
         return changed;
     }
@@ -248,7 +247,8 @@ namespace Maestro
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAnimatedPropertyValue, returnValue, animatableAddress);
+        Maestro::SequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,7 +266,8 @@ namespace Maestro
     void SequenceComponent::GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAssetDuration, returnValue, componentId, assetId);
+        Maestro::SequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAssetDuration, returnValue, componentId, assetId);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

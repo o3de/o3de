@@ -49,10 +49,10 @@ namespace UnitTest
     };
 
     class Tree_RedBlack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
-    
+
     TEST_F(Tree_RedBlack, Test)
     {
         array<int, 5> elements = {
@@ -169,7 +169,7 @@ namespace UnitTest
     }
 
     class Tree_IntrusiveMultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct Node
@@ -280,7 +280,7 @@ namespace UnitTest
 
     // SetContainerTest-Begin
     class Tree_Set
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -409,7 +409,7 @@ namespace UnitTest
     }
 
     class Tree_MultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -531,7 +531,7 @@ namespace UnitTest
     }
 
     class Tree_Map
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -689,7 +689,7 @@ namespace UnitTest
     }
 
     class Tree_MultiMap
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -834,18 +834,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
 
@@ -955,6 +945,23 @@ namespace UnitTest
         EXPECT_EQ(7, testContainer.size());
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(-73, static_cast<int32_t>(extractedNode.value()));
+    }
+
+    TYPED_TEST(TreeSetContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using SetType = typename TypeParam::SetType;
+        using node_type = typename SetType::node_type;
+
+        SetType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(-73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.value() = static_cast<int32_t>(extractedNode.value()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        // Lookup reinserted node
+        foundIter = testContainer.find(-72);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeSetContainers, InsertNodeHandleSucceeds)
@@ -1136,7 +1143,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1159,7 +1166,11 @@ namespace UnitTest
     TYPED_TEST_CASE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeSetDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1204,18 +1215,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template<typename ContainerType>
@@ -1284,6 +1285,22 @@ namespace UnitTest
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(73, static_cast<int32_t>(extractedNode.key()));
         EXPECT_EQ(0xfee1badd, extractedNode.mapped());
+    }
+
+    TYPED_TEST(TreeMapContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using MapType = typename TypeParam::MapType;
+        using node_type = typename MapType::node_type;
+
+        MapType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.key() = static_cast<int32_t>(extractedNode.key()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        foundIter = testContainer.find(74);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeMapContainers, InsertNodeHandleSucceeds)
@@ -1607,7 +1624,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1630,7 +1647,11 @@ namespace UnitTest
     TYPED_TEST_CASE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeMapDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1731,7 +1752,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override

@@ -9,13 +9,23 @@
             "Slots": [
                 {
                     "Name": "Input",
-                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_input",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "Output",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "Output",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "ScreenSpaceReflectionInputOutput"
+                    }
                 }
             ],
             "PassData": {

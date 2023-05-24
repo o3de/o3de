@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BloomDownsamplePass, "{D1CA5F45-70DB-4130-B5FA-147EFB010B1F}", RenderPass);
-            AZ_CLASS_ALLOCATOR(BloomDownsamplePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BloomDownsamplePass, SystemAllocator);
             virtual ~BloomDownsamplePass() = default;
 
             //! Creates a BloomDownsamplePass

@@ -20,7 +20,7 @@
 namespace UnitTest
 {
     struct ProceduralPrefabSystemComponentTests
-        : AllocatorsTestFixture
+        : LeakDetectionFixture
           , AZ::ComponentApplicationBus::Handler
     {
         void SetUp() override
@@ -31,7 +31,7 @@ namespace UnitTest
             TestRunner::Instance().m_suppressErrors = false;
             TestRunner::Instance().m_suppressAsserts = false;
 
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::ComponentApplicationBus::Handler::BusConnect();
 
@@ -92,7 +92,7 @@ namespace UnitTest
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
 
             AZ::ComponentApplicationBus::Handler::BusDisconnect();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
 
             TestRunner::Instance().ResetSuppressionSettingsToDefault();
 

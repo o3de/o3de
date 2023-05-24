@@ -17,8 +17,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode::RotationLimit, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitNode::RotationLimit, AnimGraphAllocator)
 
 
     const float BlendTreeRotationLimitNode::RotationLimit::s_rotationLimitRangeMin = -360.0f;

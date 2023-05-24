@@ -65,9 +65,9 @@ namespace EMotionFX
     class EMFX_API SharedHelperData
         : public SharedData
     {
-        MCORE_MEMORYOBJECTCATEGORY(SharedHelperData, EMFX_DEFAULT_ALIGNMENT, EMFX_MEMCATEGORY_IMPORTER);
-
+        AZ_CLASS_ALLOCATOR_DECL
     public:
+
         // the type returned by GetType()
         enum
         {

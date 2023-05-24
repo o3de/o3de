@@ -12,7 +12,7 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_EnhancedPBR(IN)
+#define EvaluateVertexGeometry EvaluateVertexGeometry_EnhancedPBR
 #endif
 
 #include "../BasePBR/BasePBR_VertexEval.azsli"
@@ -23,10 +23,11 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     float3 normal,
     float4 tangent,
     float2 uv0,
-    float2 uv1)
+    float2 uv1,
+    uint instanceId)
 {
     // BasePBRP
-    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1);
+    VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId);
 
     // Detail UVs
     float2 detailUvs[UvSetCount] = { uv0, uv1 };
@@ -35,12 +36,13 @@ VsOutput EvaluateVertexGeometry_EnhancedPBR(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN)
+VsOutput EvaluateVertexGeometry_EnhancedPBR(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_EnhancedPBR(
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
-        IN.uv1);
+        IN.uv1,
+        SV.m_instanceId);
 }

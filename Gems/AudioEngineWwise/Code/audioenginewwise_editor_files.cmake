@@ -8,14 +8,6 @@
 
 set(FILES
     Source/Editor/EditorWwise.qrc
-    Source/Builder/AudioControlBuilderComponent.cpp
-    Source/Builder/AudioControlBuilderComponent.h
-    Source/Builder/AudioControlBuilderWorker.cpp
-    Source/Builder/AudioControlBuilderWorker.h
-    Source/Builder/WwiseBuilderComponent.cpp
-    Source/Builder/WwiseBuilderComponent.h
-    Source/Builder/WwiseBuilderWorker.cpp
-    Source/Builder/WwiseBuilderWorker.h
     Source/Editor/AudioSystemControl_wwise.cpp
     Source/Editor/AudioSystemEditor_wwise.cpp
     Source/Editor/AudioWwiseLoader.cpp

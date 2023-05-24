@@ -25,12 +25,10 @@ class ToolsFrameworkHook
 public:
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 };
 

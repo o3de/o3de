@@ -9,9 +9,12 @@
 #include <Framework/Error.h>
 #include <Framework/JsonObjectHandler.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace AWSCore
 {
-    
+
     const AZStd::string Error::TYPE_NETWORK_ERROR{"NetworkError"};
     const AZStd::string Error::TYPE_CLIENT_ERROR{"ClientError"};
     const AZStd::string Error::TYPE_SERVICE_ERROR{"ServiceError"};
@@ -47,9 +50,9 @@ namespace AWSCore
         {
             return reader.Accept(message);
         }
-        // Fail if there is any unexpected content. For errors, This will cause all the content to be used 
+        // Fail if there is any unexpected content. For errors, This will cause all the content to be used
         // in the error message.
-        return false; 
+        return false;
     }
 
 } // namespace AWSCore

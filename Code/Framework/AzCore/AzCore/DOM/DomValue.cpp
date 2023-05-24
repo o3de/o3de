@@ -164,47 +164,57 @@ namespace AZ::Dom
     }
 
     Value::Value(int8_t value)
-        : m_value(aznumeric_cast<int64_t>(value))
+        : m_value(static_cast<int64_t>(value))
     {
     }
 
     Value::Value(uint8_t value)
-        : m_value(aznumeric_cast<uint64_t>(value))
+        : m_value(static_cast<uint64_t>(value))
     {
     }
 
     Value::Value(int16_t value)
-        : m_value(aznumeric_cast<int64_t>(value))
+        : m_value(static_cast<int64_t>(value))
     {
     }
 
     Value::Value(uint16_t value)
-        : m_value(aznumeric_cast<uint64_t>(value))
+        : m_value(static_cast<uint64_t>(value))
     {
     }
 
     Value::Value(int32_t value)
-        : m_value(aznumeric_cast<int64_t>(value))
+        : m_value(static_cast<int64_t>(value))
     {
     }
 
     Value::Value(uint32_t value)
-        : m_value(aznumeric_cast<uint64_t>(value))
+        : m_value(static_cast<uint64_t>(value))
     {
     }
 
-    Value::Value(int64_t value)
-        : m_value(value)
+    Value::Value(long value)
+        : m_value(static_cast<int64_t>(value))
     {
     }
 
-    Value::Value(uint64_t value)
-        : m_value(value)
+    Value::Value(unsigned long value)
+        : m_value(static_cast<uint64_t>(value))
+    {
+    }
+
+    Value::Value(long long value)
+        : m_value(static_cast<int64_t>(value))
+    {
+    }
+
+    Value::Value(unsigned long long value)
+        : m_value(static_cast<uint64_t>(value))
     {
     }
 
     Value::Value(float value)
-        : m_value(aznumeric_cast<double>(value))
+        : m_value(static_cast<double>(value))
     {
     }
 
@@ -923,9 +933,9 @@ namespace AZ::Dom
         case GetTypeIndex<int64_t>():
             return AZStd::get<int64_t>(m_value);
         case GetTypeIndex<uint64_t>():
-            return aznumeric_cast<int64_t>(AZStd::get<uint64_t>(m_value));
+            return static_cast<int64_t>(AZStd::get<uint64_t>(m_value));
         case GetTypeIndex<double>():
-            return aznumeric_cast<int64_t>(AZStd::get<double>(m_value));
+            return static_cast<int64_t>(AZStd::get<double>(m_value));
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
         return {};
@@ -941,11 +951,11 @@ namespace AZ::Dom
         switch (m_value.index())
         {
         case GetTypeIndex<int64_t>():
-            return aznumeric_cast<uint64_t>(AZStd::get<int64_t>(m_value));
+            return static_cast<uint64_t>(AZStd::get<int64_t>(m_value));
         case GetTypeIndex<uint64_t>():
             return AZStd::get<uint64_t>(m_value);
         case GetTypeIndex<double>():
-            return aznumeric_cast<uint64_t>(AZStd::get<double>(m_value));
+            return static_cast<uint64_t>(AZStd::get<double>(m_value));
         }
         AZ_Assert(false, "AZ::Dom::Value: Called GetInt on a non-numeric type");
         return {};
@@ -976,9 +986,9 @@ namespace AZ::Dom
         switch (m_value.index())
         {
         case GetTypeIndex<int64_t>():
-            return aznumeric_cast<double>(AZStd::get<int64_t>(m_value));
+            return static_cast<double>(AZStd::get<int64_t>(m_value));
         case GetTypeIndex<uint64_t>():
-            return aznumeric_cast<double>(AZStd::get<uint64_t>(m_value));
+            return static_cast<double>(AZStd::get<uint64_t>(m_value));
         case GetTypeIndex<double>():
             return AZStd::get<double>(m_value);
         }

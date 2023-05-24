@@ -8,8 +8,8 @@
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/PaintBrush/PaintBrushSubModeCluster.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsRequestBus.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 
 namespace AzToolsFramework
 {
@@ -54,34 +54,74 @@ namespace AzToolsFramework
         m_buttonSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
-                AzToolsFramework::PaintBrushMode brushMode = AzToolsFramework::PaintBrushMode::Paintbrush;
+                PaintBrushMode brushMode = PaintBrushMode::Paintbrush;
 
                 if (buttonId == m_eyedropperModeButtonId)
                 {
-                    brushMode = AzToolsFramework::PaintBrushMode::Eyedropper;
+                    brushMode = PaintBrushMode::Eyedropper;
                 }
                 else if (buttonId == m_smoothModeButtonId)
                 {
-                    brushMode = AzToolsFramework::PaintBrushMode::Smooth;
+                    brushMode = PaintBrushMode::Smooth;
                 }
 
-                AzToolsFramework::OpenViewPane(::PaintBrush::s_paintBrushSettingsName);
+                AzToolsFramework::OpenViewPane(AzToolsFramework::s_paintBrushSettingsName);
 
-                AzToolsFramework::PaintBrushSettingsRequestBus::Broadcast(
-                    &AzToolsFramework::PaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
+                AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Broadcast(
+                    &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::SetBrushMode, brushMode);
             });
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RegisterClusterEventHandler,
             m_paintBrushControlClusterId,
             m_buttonSelectionHandler);
+
+        AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusConnect();
+
+        // Set the initially-active brush mode button.
+        PaintBrushMode brushMode = PaintBrushMode::Paintbrush;
+        AzToolsFramework::GlobalPaintBrushSettingsRequestBus::BroadcastResult(
+            brushMode, &AzToolsFramework::GlobalPaintBrushSettingsRequestBus::Events::GetBrushMode);
+        OnPaintBrushModeChanged(brushMode);
     }
 
     PaintBrushSubModeCluster::~PaintBrushSubModeCluster()
     {
+        AzToolsFramework::GlobalPaintBrushSettingsNotificationBus::Handler::BusDisconnect();
+
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::RemoveCluster,
             m_paintBrushControlClusterId);
     }
+
+    void PaintBrushSubModeCluster::OnPaintBrushModeChanged(PaintBrushMode newBrushMode)
+    {
+        // Change the active brush mode button based on the newly-active brush mode.
+
+        AzToolsFramework::ViewportUi::ButtonId buttonId;
+
+        switch (newBrushMode)
+        {
+        case PaintBrushMode::Paintbrush:
+            buttonId = m_paintModeButtonId;
+            break;
+        case PaintBrushMode::Eyedropper:
+            buttonId = m_eyedropperModeButtonId;
+            break;
+        case PaintBrushMode::Smooth:
+            buttonId = m_smoothModeButtonId;
+            break;
+        default:
+            AZ_Assert(false, "Unknown brush mode type.");
+            break;
+        }
+
+        ViewportUi::ViewportUiRequestBus::Event(
+            ViewportUi::DefaultViewportId,
+            &ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+            m_paintBrushControlClusterId,
+            buttonId);
+    }
+
 } // namespace AzToolsFramework

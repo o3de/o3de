@@ -15,7 +15,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorJointBrowseEdit, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorJointBrowseEdit, AZ::SystemAllocator)
 
     ActorJointBrowseEdit::ActorJointBrowseEdit(QWidget* parent)
         : AzQtComponents::BrowseEdit(parent)

@@ -19,7 +19,7 @@ namespace AZ
         class CommandQueueContext
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator);
 
             CommandQueueContext() = default;
 

@@ -33,7 +33,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT;
 
     public:
-        AZ_CLASS_ALLOCATOR(LoggingWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LoggingWindow, AZ::SystemAllocator);
 
         LoggingWindow(QWidget* parentWidget = nullptr);
         virtual ~LoggingWindow();

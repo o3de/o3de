@@ -96,6 +96,9 @@ namespace AZ::Debug
 
     private:
         Budget* m_budget;
+
+        // Optimization to avoid calling Interface<Profiler>::Get
+        static AZStd::optional<Profiler*> m_cachedProfiler;
     };
 } // namespace AZ::Debug
 

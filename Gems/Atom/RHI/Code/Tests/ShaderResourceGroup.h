@@ -17,14 +17,14 @@ namespace UnitTest
         : public AZ::RHI::ShaderResourceGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
     };
 
     class ShaderResourceGroupPool
         : public AZ::RHI::ShaderResourceGroupPool
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ShaderResourceGroupPoolDescriptor&) override;

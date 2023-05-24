@@ -13,7 +13,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator)
 
     WhiteBoxModule::WhiteBoxModule()
         : CryHooksModule()

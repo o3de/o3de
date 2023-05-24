@@ -46,12 +46,10 @@ namespace WhiteBox
     protected:
         // AZ::Component ...
         void Activate() override;
+        void Deactivate() override;
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
 
     private:
-        // AZ::Component ...
-        void Deactivate() override;
-
         //! The builder invoked by CreateRenderMeshInterface.
         RenderMeshInterfaceBuilderFn m_renderMeshInterfaceBuilder;
     };

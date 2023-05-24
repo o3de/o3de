@@ -30,15 +30,15 @@ namespace EMStudio
         m_baseSize = sz;
     }
 
-    void ZoomableLineEdit::setBaseFontPointSizeF(qreal pointSize)
+    void ZoomableLineEdit::setBaseFontPixelSize(qreal pointSize)
     {
-        m_fontPointSize = pointSize;
+        m_fontPixelSize = pointSize;
     }
 
     void ZoomableLineEdit::updateScaledSize()
     {
         QFont f = font();
-        f.setPointSizeF(m_fontPointSize * m_scale);
+        f.setPixelSize(m_fontPixelSize * m_scale);
         setFont(f);
         resize(m_baseSize.width() * m_scale, m_baseSize.height() * m_scale);
     }

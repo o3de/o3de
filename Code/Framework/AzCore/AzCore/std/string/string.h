@@ -1544,7 +1544,7 @@ namespace AZStd
             {
                 va_list args;
                 va_start(args, formatStr);
-                basic_string<char, char_traits<char>, Allocator> result = this_type::format_arg(formatStr, args);
+                auto result = this_type::format_arg(formatStr, args);
                 va_end(args);
                 return result;
             }
@@ -1553,7 +1553,7 @@ namespace AZStd
             {
                 va_list args;
                 va_start(args, formatStr);
-                basic_string<wchar_t, char_traits<wchar_t>, Allocator> result = this_type::format_arg(formatStr, args);
+                auto result = this_type::format_arg(formatStr, args);
                 va_end(args);
                 return result;
             }
@@ -1578,7 +1578,7 @@ namespace AZStd
         {
             va_list args;
             va_start(args, formatStr);
-            basic_string<char, char_traits<char>, Allocator> result = format_arg(formatStr, args);
+            auto result = format_arg(formatStr, args);
             va_end(args);
             return result;
         }
@@ -1587,12 +1587,6 @@ namespace AZStd
 #    undef FORMAT_FUNC_ARG
 
 #else // !AZ_COMPILER_CLANG && !defined(_PREFAST_) && !defined(_RELEASE)
-
-        static basic_string<char, char_traits<char>, Allocator> format(const char* formatStr)
-        {
-            return { formatStr };
-        }
-
         template<typename... Args>
         static basic_string<char, char_traits<char>, Allocator> format(const char* formatStr, Args... args)
         {
@@ -1605,16 +1599,12 @@ namespace AZStd
                 return isValid;
             };
             constexpr bool allValid = (IsValidFormatArg(args) && ...);
-            static_assert(allValid, "Invalid string::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/w_char)");
+            static_assert(allValid, "Invalid string::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/wchar_t)");
 
             return _Format_Internal::raw_format(formatStr, args...);
         }
 #endif // AZ_COMPILER_CLANG || defined(_PREFAST_) || defined(_RELEASE)
 
-        static inline basic_string<wchar_t, char_traits<wchar_t>, Allocator> format(const wchar_t* formatStr)
-        {
-            return { formatStr };
-        }
 
         template<typename... Args>
         static basic_string<wchar_t, char_traits<wchar_t>, Allocator> format(const wchar_t* formatStr, Args... args)
@@ -1628,7 +1618,7 @@ namespace AZStd
                 return isValid;
             };
             constexpr bool allValid = (IsValidFormatArg(args) && ...);
-            static_assert(allValid, "Invalid wstring::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/w_char)");
+            static_assert(allValid, "Invalid wstring::format arguments, must be: numeric(floating point, integral, pointer) or C String(char/wchar_t)");
 
             return _Format_Internal::raw_format(formatStr, args...);
         }

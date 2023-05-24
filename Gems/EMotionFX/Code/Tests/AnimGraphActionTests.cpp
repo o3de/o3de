@@ -9,9 +9,11 @@
 #include <EMotionFX/CommandSystem/Source/AnimGraphTriggerActionCommands.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/AnimGraphBindPoseNode.h>
+#include <EMotionFX/Source/AnimGraphSimpleStateAction.h>
 #include <EMotionFX/Source/AnimGraphSymbolicFollowerParameterAction.h>
 #include <EMotionFX/Source/AnimGraphStateMachine.h>
 #include <EMotionFX/Source/AnimGraphStateTransition.h>
+#include <LmbrCentral/Scripting/SimpleStateComponentBus.h>
 #include <Tests/AnimGraphFixture.h>
 
 namespace EMotionFX
@@ -47,6 +49,21 @@ namespace EMotionFX
 
         AnimGraphSymbolicFollowerParameterAction* action = azdynamic_cast<AnimGraphSymbolicFollowerParameterAction*>(m_transition->GetTriggerActionSetup().GetAction(0));
         ASSERT_NE(action, nullptr) << "Action not a valid symbolic follower parameter action.";
+
+        GetEMotionFX().Update(1.0f);
+    }
+
+    TEST_F(AnimGraphActionFixture, AnimGraphSimpleStateAction_BasicTests)
+    {
+        CommandSystem::CommandManager commandManager;
+
+        CommandSystem::AddTransitionAction(m_transition, azrtti_typeid<AnimGraphSimpleStateAction>());
+        EXPECT_EQ(m_transition->GetTriggerActionSetup().GetNumActions(), 1) << "There should be exactly one transition action.";
+
+        // Setup the simple state action
+        AnimGraphSimpleStateAction* action =
+            azdynamic_cast<AnimGraphSimpleStateAction*>(m_transition->GetTriggerActionSetup().GetAction(0));
+        ASSERT_NE(action, nullptr) << "Action not a valid simple state action.";
 
         GetEMotionFX().Update(1.0f);
     }

@@ -17,10 +17,16 @@ namespace AZ
 {
     namespace Render
     {
+        namespace DirectionalLightConstants
+        {
+            static const float MIN_CASCADE_FAR_DEPTH = 0.01f;
+        }
+
         struct DirectionalLightComponentConfig final
             : public ComponentConfig
         {
-            AZ_RTTI(DirectionalLightConfiguration, "EB01B835-F9FE-4FF0-BDC4-455462BFE769", ComponentConfig);
+            AZ_CLASS_ALLOCATOR(DirectionalLightComponentConfig, SystemAllocator)
+            AZ_RTTI(DirectionalLightComponentConfig, "EB01B835-F9FE-4FF0-BDC4-455462BFE769", ComponentConfig);
             static void Reflect(ReflectContext* context);
 
             // The following functions provide information to an EditContext...
@@ -138,6 +144,7 @@ namespace AZ
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsEsmDisabled() const;
+            AZ::Crc32 UpdateCascadeFarDepths();
         };
     } // namespace Render
 } // namespace AZ

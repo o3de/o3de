@@ -43,6 +43,7 @@ namespace AZ
             : public SimpleSpotLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(SimpleSpotLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::SimpleSpotLightFeatureProcessor, "{01610AD4-0872-4F80-9F12-22FB7CCF6866}", AZ::Render::SimpleSpotLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

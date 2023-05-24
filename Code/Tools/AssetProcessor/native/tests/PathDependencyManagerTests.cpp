@@ -57,7 +57,7 @@ namespace UnitTests
     };
 
     struct PathDependencyDeletionTest
-        : ::UnitTest::ScopedAllocatorSetupFixture
+        : ::UnitTest::LeakDetectionFixture
         , PathDependencyBase
     {
         void SetUp() override
@@ -86,9 +86,6 @@ namespace UnitTests
 
         m_platformConfig = AZStd::make_unique<AssetProcessor::PlatformConfiguration>();
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         m_descriptor = AZ::JobManagerComponent::CreateDescriptor();
         m_descriptor->Reflect(m_serializeContext.get());
@@ -108,9 +105,6 @@ namespace UnitTests
         delete m_jobManagerEntity;
 
         delete m_descriptor;
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         BusDisconnect();
     }
@@ -338,8 +332,7 @@ namespace UnitTests
     }
 
     struct PathDependencyBenchmarks
-        : ::UnitTest::ScopedAllocatorFixture
-          , PathDependencyBase
+        : PathDependencyBase
     {
         static inline constexpr int NumTestDependencies = 4; // Must be a multiple of 4
         static inline constexpr int NumTestProducts = 2; // Must be a multiple of 2
@@ -490,7 +483,8 @@ namespace UnitTests
     };
 
     struct PathDependencyTestValidation
-        : PathDependencyBenchmarks, ::testing::Test
+        : ::UnitTest::LeakDetectionFixture
+        , PathDependencyBenchmarks
     {
         void SetUp() override
         {

@@ -8,7 +8,7 @@
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Memory/HphaAllocator.h>
-#include <AzCore/Memory/AllocatorDebug.h>
+#include <AzCore/std/allocator_stateless.h>
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/Memory/OSAllocator.h> // required by certain platforms
@@ -544,15 +544,14 @@ namespace AZ
         };
 
         // record map that keeps all debug records in a set, sorted by memory address of the allocation
-        class debug_record_map : public AZStd::set<debug_record, AZStd::less<debug_record>, Debug::DebugAllocator>
+        class debug_record_map : public AZStd::set<debug_record, AZStd::less<debug_record>, AZStd::stateless_allocator>
         {
-            typedef AZStd::set<debug_record, AZStd::less<debug_record>, Debug::DebugAllocator> base;
+            using base = AZStd::set<debug_record, AZStd::less<debug_record>, AZStd::stateless_allocator>;
 
             static void memory_fill(void* ptr, size_t size);
 
         public:
-            debug_record_map() = default;
-            ~debug_record_map() = default;
+            using base::base;
 
             using const_iterator = typename base::const_iterator;
             using iterator = typename base::iterator;
@@ -2213,7 +2212,8 @@ namespace AZ
         if constexpr (DebugAllocatorEnable)
         {
             AZ::Debug::SymbolStorage::StackLine stackLines[MAX_CALLSTACK_DEPTH] = { { 0 } };
-            AZ::Debug::SymbolStorage::DecodeFrames(mCallStack, MAX_CALLSTACK_DEPTH, stackLines);
+            auto recordFrameCount = static_cast<unsigned int>(AZStd::GetMin(AZ_ARRAY_SIZE(mCallStack), AZ_ARRAY_SIZE(stackLines)));
+            AZ::Debug::SymbolStorage::DecodeFrames(mCallStack, recordFrameCount, stackLines);
 
             for (int i = 0; i < MAX_CALLSTACK_DEPTH; ++i)
             {

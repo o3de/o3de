@@ -39,7 +39,7 @@ namespace Terrain
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainWorldConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainWorldConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainWorldConfig, "{295844DB-20DD-45B2-94DB-4245D5AE9AFF}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

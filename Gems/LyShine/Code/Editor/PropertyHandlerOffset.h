@@ -19,7 +19,7 @@ class PropertyHandlerOffset
     : public UIVectorPropertyHandlerBase< UiTransform2dInterface::Offsets>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerOffset, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerOffset, AZ::SystemAllocator);
 
     PropertyHandlerOffset()
         : UIVectorPropertyHandlerBase(4, 2)

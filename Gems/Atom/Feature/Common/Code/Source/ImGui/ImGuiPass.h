@@ -33,7 +33,7 @@ namespace AZ
             : public RPI::RasterPassData
         {
             AZ_RTTI(ImGuiPassData, "{3E96AF5F-DE1E-4B3B-9833-7164AEAB7C28}", RPI::RasterPassData);
-            AZ_CLASS_ALLOCATOR(ImGuiPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImGuiPassData, SystemAllocator);
 
             ImGuiPassData() = default;
             virtual ~ImGuiPassData() = default;
@@ -63,7 +63,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ImGuiPass, "{44EC7CFB-860B-40C8-922D-D54F971E049F}", Base);
-            AZ_CLASS_ALLOCATOR(ImGuiPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImGuiPass, SystemAllocator);
 
             //! Creates a new ImGuiPass
             static RPI::Ptr<ImGuiPass> Create(const RPI::PassDescriptor& descriptor);

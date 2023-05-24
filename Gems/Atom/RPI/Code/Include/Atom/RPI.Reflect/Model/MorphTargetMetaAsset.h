@@ -26,7 +26,7 @@ namespace AZ::RPI
         static constexpr inline const char* Group = "Model";
 
         AZ_RTTI(MorphTargetMetaAsset, "{7F8D8CEA-6E03-4EA6-8E9B-3388D8E00EFD}", Data::AssetData);
-        AZ_CLASS_ALLOCATOR(MorphTargetMetaAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MorphTargetMetaAsset, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

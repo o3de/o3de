@@ -216,7 +216,7 @@ namespace UnitTest
         : public AZ::Component
     {
     public:
-        AZ_CLASS_ALLOCATOR(SortOrderTestComponentWrapper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SortOrderTestComponentWrapper, AZ::SystemAllocator);
         AZ_RTTI(SortOrderTestComponentWrapper, "{00000000-0000-0000-0000-000000000011}", AZ::Component);
 
         SortOrderTestComponentWrapper() { }
@@ -281,7 +281,7 @@ namespace UnitTest
         : public AZ::ComponentDescriptorHelper<SortOrderTestComponentWrapper>
     {
     public:
-        AZ_CLASS_ALLOCATOR(SortOrderComponentWrapperDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SortOrderComponentWrapperDescriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(SortOrderComponentWrapperDescriptor, "{58A6544E-9476-4A93-AB6E-768B7326494B}");
 
         AZ::ComponentDescriptor* GetTemplateDescriptor(const AZ::Component* instance) const
@@ -345,7 +345,8 @@ namespace UnitTest
     AZ::ComponentDescriptor* SortOrderTestComponentWrapper::CreateDescriptor()
     {
         AZ::ComponentDescriptor* descriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(descriptor, SortOrderTestComponentWrapper::RTTI_Type(), AZ::ComponentDescriptorBus, GetDescriptor);
+        AZ::ComponentDescriptorBus::EventResult(
+            descriptor, SortOrderTestComponentWrapper::RTTI_Type(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
         return descriptor ? descriptor : aznew SortOrderComponentWrapperDescriptor();
     }

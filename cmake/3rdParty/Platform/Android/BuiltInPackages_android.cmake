@@ -9,7 +9,6 @@
 # this file allows you to specify all 3p packages (provided by O3DE or the operating system) for Android.
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5       PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform TARGETS RapidJSON PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-rev1-multiplatform   TARGETS RapidXML  PACKAGE_HASH 4b7b5651e47cfd019b6b295cc17bb147b65e53073eaab4a0c0d20a37ab74a246)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform         TARGETS cityhash  PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
@@ -22,13 +21,18 @@ ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev4-android         TARGETS TIF
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-android       TARGETS Freetype        PACKAGE_HASH 31cd0411425f3d69064849190c3cafb09fc3cdd64507f40bf49342630d76f861)
 ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev2-android   TARGETS AWSNativeSDK    PACKAGE_HASH 3b924576bb5c2ca2e77a5cc605fbc64e085bc9766b4523d0e646b067c2bc58ef)
 ly_associate_package(PACKAGE_NAME Lua-5.4.4-rev1-android             TARGETS Lua             PACKAGE_HASH 2adda1831577336454090f249baf09519f41bb73160cd1d5b5b33564729af4a2)
-ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-android  TARGETS PhysX           PACKAGE_HASH b346e8f9bc55f367a97d781d94c8a5c3bff8059478b8a7007e5fd17708dc1d07)
 ly_associate_package(PACKAGE_NAME mikkelsen-1.0.0.4-android          TARGETS mikkelsen       PACKAGE_HASH 075e8e4940884971063b5a9963014e2e517246fa269c07c7dc55b8cf2cd99705)
 ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS googletest      PACKAGE_HASH 95671be75287a61c9533452835c3647e9c1b30f81b34b43bcb0ec1997cc23894)
-ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS GoogleBenchmark PACKAGE_HASH 20b46e572211a69d7d94ddad1c89ec37bb958711d6ad4025368ac89ea83078fb)
+ly_associate_package(PACKAGE_NAME googlebenchmark-1.7.0-rev2-android TARGETS GoogleBenchmark PACKAGE_HASH 972c1fd1dec3d1cecd7b05f1064e47e20775ea4ba211a08a53c4d1c7c1ccc905)
 ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-android            TARGETS PNG             PACKAGE_HASH c2240299251d97d963d2e9f4320fbc384bfb2e1b1e073419d1171df0e8ea983d)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev2-android        TARGETS OpenSSL         PACKAGE_HASH 28fa781be8fa233e3074b08e5d6d5064d1a5a5cffc80b04e1bb8d407aca459a0)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-android           TARGETS ZLIB            PACKAGE_HASH 73c9e88892c237a3fc6eafc04268ccd9d479e6d55f9df2ed58b236c8f9cf2cae)
-ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-android       TARGETS lz4             PACKAGE_HASH f5b22642d218dbbb442cae61e469e5b241c4740acd258c3e8678e60dec61ea93)
+ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-android             TARGETS lz4             PACKAGE_HASH 97a4758f07bea6792dc68d7e9b84952800628bc482b33d9a93e2c52f9e758662)
 
+set(AZ_USE_PHYSX5 OFF CACHE BOOL "When ON PhysX Gem will use PhysX 5 SDK")
+if(AZ_USE_PHYSX5)
+    ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev1-android           TARGETS PhysX       PACKAGE_HASH 38b469c334017c3dd0a75ddd98c562846bacd017023a37aa26d56b747fb1440b)
+else()
+    ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-android  TARGETS PhysX       PACKAGE_HASH b346e8f9bc55f367a97d781d94c8a5c3bff8059478b8a7007e5fd17708dc1d07)
+endif()

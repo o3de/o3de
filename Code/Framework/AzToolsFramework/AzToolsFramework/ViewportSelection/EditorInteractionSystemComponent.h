@@ -34,6 +34,7 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         // EditorInteractionSystemViewportSelectionRequestBus
+        const EditorVisibleEntityDataCacheInterface* GetEntityDataCache() const override;
         void SetHandler(const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder) override;
         void SetDefaultHandler() override;
 

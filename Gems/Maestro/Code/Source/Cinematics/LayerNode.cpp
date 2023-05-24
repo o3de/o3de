@@ -17,7 +17,7 @@
 namespace
 {
     bool s_nodeParamsInitialized = false;
-    StaticInstance<std::vector<CAnimNode::SParamInfo>> s_nodeParams;
+    AZStd::vector<CAnimNode::SParamInfo> s_nodeParams;
 
     void AddSupportedParam(const char* sName, AnimParamType paramId, AnimValueType valueType)
     {

@@ -9,7 +9,6 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/RPI/Math.azsli>
 
@@ -102,6 +101,10 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 option bool o_layer2_enabled;
 option bool o_layer3_enabled;
 
+COMMON_OPTIONS_PARALLAX(o_layer1_)
+COMMON_OPTIONS_PARALLAX(o_layer2_)
+COMMON_OPTIONS_PARALLAX(o_layer3_)
+
 enum class DebugDrawMode { None, BlendMask, Displacement, FinalBlendWeights };
 option DebugDrawMode o_debugDrawMode;
 
@@ -193,6 +196,8 @@ float3 GetApplicableBlendMaskValues(LayerBlendSource blendSource, float2 blendMa
             case LayerBlendSource::BlendMaskVertexColors:
             case LayerBlendSource::Displacement_With_BlendMaskVertexColors:
                 blendSourceValues = blendMaskVertexColors;
+                break;
+            case LayerBlendSource::Fallback:
                 break;
         }
 
@@ -355,20 +360,6 @@ float3 BlendLayers(float3 layer1, float3 layer2, float3 layer3, float3 blendWeig
 }
 
 // ------ Parallax Utilities ----------------------------------------
-
-bool ShouldHandleParallax()
-{
-    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
-    // Also, all the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
-    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
-}
-
-bool ShouldHandleParallaxInDepthShaders()
-{
-    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer (or when
-    // parallax could affect texel clipping but we don't have alpha/clipping support in multilayer PBR).
-    return ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
-}
 
 //! Returns the depth values for each layer.
 float3 GetLayerDepthValues(float2 uv, float2 uv_ddx, float2 uv_ddy)

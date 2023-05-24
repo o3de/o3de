@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ImagePoolResolver, "{8112B50E-E26D-4686-87A3-0757A90BE4EF}", Base);
-            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator);
 
             ImagePoolResolver(Device& device);
 

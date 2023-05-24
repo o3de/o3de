@@ -55,7 +55,7 @@ namespace AZ
             //!
             //! If initialization fails. The device is left in an uninitialized state (as if Init had never
             //! been called), and an error code is returned.
-            ResultCode Init(PhysicalDevice& physicalDevice);
+            ResultCode Init(int deviceIndex, PhysicalDevice& physicalDevice);
 
             //! Begins execution of a frame. The device internally manages a set of command queues. This
             //! method will synchronize the CPU with the GPU according to the number of in-light frames
@@ -95,6 +95,9 @@ namespace AZ
 
             //! Returns the physical device associated with this device.
             const PhysicalDevice& GetPhysicalDevice() const;
+
+            //! Returns the device index.
+            int GetDeviceIndex() const;
 
             //! Returns the descriptor associated with the device.
             const DeviceDescriptor& GetDescriptor() const;
@@ -141,6 +144,9 @@ namespace AZ
             {
                 return RHI::ResultCode::Success;
             };
+
+            //! Converts a shading rate enum to the proper texel value to be used in a shading rate image.
+            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) const = 0;
 
             bool WasDeviceRemoved();
             void SetDeviceRemoved();
@@ -208,6 +214,9 @@ namespace AZ
 
             // The physical device backing this logical device instance.
             Ptr<PhysicalDevice> m_physicalDevice;
+
+            // The device's index for when there are multiple devices.
+            int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
 
             // Tracks whether the device is in the BeginFrame / EndFrame scope.
             bool m_isInFrame = false;

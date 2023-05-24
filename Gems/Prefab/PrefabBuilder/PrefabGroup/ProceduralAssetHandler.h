@@ -18,7 +18,7 @@ namespace AZ::Prefab
         : public AZ::Data::AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabGroupAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabGroupAssetHandler, AZ::SystemAllocator);
         PrefabGroupAssetHandler();
         ~PrefabGroupAssetHandler() override;
 

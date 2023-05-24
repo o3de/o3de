@@ -41,6 +41,7 @@ namespace AZ
             friend struct ShaderVariantTreeNode;
 
         public:
+            AZ_CLASS_ALLOCATOR(ShaderVariantTreeAsset , SystemAllocator)
             AZ_RTTI(ShaderVariantTreeAsset, "{EBF48506-F8BB-4B37-8FAC-F132BF83E42D}", Data::AssetData);
 
             static void Reflect(ReflectContext* context);
@@ -51,8 +52,8 @@ namespace AZ
             static constexpr AZ::u32 ProductSubID = 0; //Reserved for ShaderVariantTreeAssets.
 
             //! See comments in ValidateShaderVariantListLocation() inside ShaderVariantAssetBuilder.cpp
-            static constexpr const char* CommonSubFolder = "ShaderVariants";
-            static constexpr const char* CommonSubFolderLowerCase = "shadervariants";
+            static constexpr char CommonSubFolder[] = "ShaderVariants";
+            static constexpr char CommonSubFolderLowerCase[] = "shadervariants";
 
             ShaderVariantTreeAsset() = default;
             ~ShaderVariantTreeAsset() = default;

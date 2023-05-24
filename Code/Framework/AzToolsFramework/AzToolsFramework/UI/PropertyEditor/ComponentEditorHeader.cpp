@@ -47,6 +47,16 @@ namespace AzToolsFramework
         AzQtComponents::CardHeader::setIcon(icon);
     }
 
+    void ComponentEditorHeader::SetIconOverlay(const QIcon& icon)
+    {
+        AzQtComponents::CardHeader::setIconOverlay(icon);
+    }
+
+    void ComponentEditorHeader::SetComponentIconClickable(bool clickable)
+    {
+        AzQtComponents::CardHeader::setIconClickable(clickable);
+    }
+
     void ComponentEditorHeader::SetExpandable(bool expandable)
     {
         AzQtComponents::CardHeader::setExpandable(expandable);

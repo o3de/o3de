@@ -31,7 +31,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator)
         AZ_RTTI(BoxShape, "{36D1BA94-13CF-433F-B1FE-28BEBBFE20AA}")
 
         BoxShape();
@@ -55,8 +55,9 @@ namespace LmbrCentral
 
         // BoxShapeComponentRequestBus::Handler
         BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
-        AZ::Vector3 GetBoxDimensions() override { return m_boxShapeConfig.m_dimensions; }
+        AZ::Vector3 GetBoxDimensions() const override { return m_boxShapeConfig.m_dimensions; }
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+        bool IsTypeAxisAligned() override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;

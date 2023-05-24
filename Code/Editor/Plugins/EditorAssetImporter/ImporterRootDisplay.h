@@ -89,7 +89,7 @@ class ImporterRootDisplayWidget
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(ImporterRootDisplayWidget, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(ImporterRootDisplayWidget, AZ::SystemAllocator);
 
     ImporterRootDisplayWidget(AZ::SerializeContext* serializeContext, QWidget* parent = nullptr);
 

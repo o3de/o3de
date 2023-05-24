@@ -54,9 +54,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Cube.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -81,7 +81,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -120,9 +120,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Cylinder.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -147,7 +147,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -173,6 +173,14 @@ Node Path: RootNode.Cylinder.BitangentSet_0
 Node Type: MeshVertexBitangentData
 	Bitangents: Count 192. Hash: 11177881960262055002
 	GenerationMethod: 1
+
+Node Name: custom_properties
+Node Path: RootNode.Cube_test_cube_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
 
 Node Name: UVMap
 Node Path: RootNode.Cube_test_cube_optimized.UVMap
@@ -202,14 +210,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.Cube_test_cube_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
-
 Node Name: SingleMaterial
 Node Path: RootNode.Cube_test_cube_optimized.SingleMaterial
 Node Type: MaterialData
@@ -226,7 +226,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -239,6 +239,14 @@ Node Type: MaterialData
 	AmbientOcclusionTexture: 
 	EmissiveTexture: 
 	BaseColorTexture: TwoMeshOneMaterial/FBXTestTexture.png
+
+Node Name: custom_properties
+Node Path: RootNode.Cylinder_test_cylinder_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
 
 Node Name: UVMap
 Node Path: RootNode.Cylinder_test_cylinder_optimized.UVMap
@@ -268,14 +276,6 @@ Node Type: TransformData
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: <-4.388482,  0.000000,  0.000000>
 
-Node Name: custom_properties
-Node Path: RootNode.Cylinder_test_cylinder_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
-
 Node Name: SingleMaterial
 Node Path: RootNode.Cylinder_test_cylinder_optimized.SingleMaterial
 Node Type: MaterialData
@@ -292,7 +292,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set

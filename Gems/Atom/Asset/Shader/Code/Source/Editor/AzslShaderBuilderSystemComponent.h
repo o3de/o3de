@@ -18,6 +18,7 @@
 #include "ShaderVariantAssetBuilder.h"
 #include "PrecompiledShaderBuilder.h"
 #include "ShaderPlatformInterfaceRequest.h"
+#include "ShaderVariantListBuilder.h"
 
 namespace AZ
 {
@@ -73,6 +74,8 @@ namespace AZ
             ShaderVariantAssetBuilder m_shaderVariantAssetBuilder;
 
             PrecompiledShaderBuilder m_precompiledShaderBuilder;
+
+            ShaderVariantListBuilder m_shaderVariantListBuilder;
 
             /// Contains the ShaderPlatformInterface for all registered RHIs
             AZStd::unordered_map<RHI::APIType, RHI::ShaderPlatformInterface*> m_shaderPlatformInterfaces;

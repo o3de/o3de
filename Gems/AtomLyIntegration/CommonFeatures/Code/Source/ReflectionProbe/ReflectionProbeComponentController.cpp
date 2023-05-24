@@ -124,8 +124,8 @@ namespace AZ
             }
 
             // add this reflection probe to the feature processor
-            const AZ::Transform& transform = m_transformInterface->GetWorldTM();
-            m_handle = m_featureProcessor->AddReflectionProbe(transform, m_configuration.m_useParallaxCorrection);
+            m_handle = m_featureProcessor->AddReflectionProbe(
+                ComputeOverallTransform(m_transformInterface->GetWorldTM()), m_configuration.m_useParallaxCorrection);
 
             // set the visualization sphere option
             m_featureProcessor->ShowVisualization(m_handle, m_configuration.m_showVisualization);
@@ -248,7 +248,7 @@ namespace AZ
                 return;
             }
 
-            m_featureProcessor->SetTransform(m_handle, world);
+            m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(world));
         }
 
         void ReflectionProbeComponentController::OnShapeChanged(ShapeChangeReasons changeReason)
@@ -263,6 +263,8 @@ namespace AZ
             if (changeReason == ShapeChangeReasons::ShapeChanged)
             {
                 UpdateOuterExtents();
+                // the shape translation offset may have changed, which would affect the overall transform
+                m_featureProcessor->SetTransform(m_handle, ComputeOverallTransform(m_transformInterface->GetWorldTM()));
             }
         }
 
@@ -286,6 +288,8 @@ namespace AZ
             m_configuration.m_innerWidth = AZStd::min(m_configuration.m_innerWidth, m_configuration.m_outerWidth);
             m_configuration.m_innerLength = AZStd::min(m_configuration.m_innerLength, m_configuration.m_outerLength);
             m_configuration.m_innerHeight = AZStd::min(m_configuration.m_innerHeight, m_configuration.m_outerHeight);
+
+            m_innerExtentsChangedEvent.Signal(true);
         }
 
         void ReflectionProbeComponentController::SetBakeExposure(float bakeExposure)
@@ -328,7 +332,36 @@ namespace AZ
             AZ::Transform unused;
             AZ::Aabb localBounds = AZ::Aabb::CreateNull();
             m_shapeBus->GetTransformAndLocalBounds(unused, localBounds);
-            return localBounds;
+            if (!m_boxShapeInterface->IsTypeAxisAligned())
+            {
+                return localBounds;
+            }
+            else
+            {
+                return localBounds.GetTransformedAabb(
+                    AZ::Transform::CreateFromQuaternion(m_transformInterface->GetWorldTM().GetRotation().GetInverseFast()));
+            }
+        }
+
+        void ReflectionProbeComponentController::RegisterInnerExtentsChangedHandler(AZ::Event<bool>::Handler& handler)
+        {
+            handler.Connect(m_innerExtentsChangedEvent);
+        }
+
+        AZ::Transform ReflectionProbeComponentController::ComputeOverallTransform(const AZ::Transform& entityTransform) const
+        {
+            const bool isTypeAxisAligned = m_boxShapeInterface ? m_boxShapeInterface->IsTypeAxisAligned() : false;
+            const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
+            const AZ::Transform translationOffsetTransform = AZ::Transform::CreateTranslation(translationOffset);
+
+            if (isTypeAxisAligned)
+            {
+                AZ::Transform entityTransformNoRotation = entityTransform;
+                entityTransformNoRotation.SetRotation(AZ::Quaternion::CreateIdentity());
+                return entityTransformNoRotation * translationOffsetTransform;
+            }
+
+            return entityTransform * translationOffsetTransform;
         }
     } // namespace Render
 } // namespace AZ

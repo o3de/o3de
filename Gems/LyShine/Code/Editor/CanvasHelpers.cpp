@@ -14,7 +14,7 @@ namespace CanvasHelpers
     {
         // Currently this serializes the entire canvas including all elements.
         AZStd::string canvasUndoXml;
-        EBUS_EVENT_ID_RESULT(canvasUndoXml, canvasEntityId, UiCanvasBus, SaveToXmlString);
+        UiCanvasBus::EventResult(canvasUndoXml, canvasEntityId, &UiCanvasBus::Events::SaveToXmlString);
         return canvasUndoXml;
     }
 
@@ -22,7 +22,7 @@ namespace CanvasHelpers
     {
         // serialize the changed state of the canvas
         AZStd::string canvasRedoXml;
-        EBUS_EVENT_ID_RESULT(canvasRedoXml, editorWindow->GetCanvas(), UiCanvasBus, SaveToXmlString);
+        UiCanvasBus::EventResult(canvasRedoXml, editorWindow->GetCanvas(), &UiCanvasBus::Events::SaveToXmlString);
         if (canvasUndoXml.empty() || canvasRedoXml.empty())
         {
             AZ_Warning("UI", false, "Failed to serialize canvas for undo of %s'.", commandName);
@@ -37,7 +37,7 @@ namespace CanvasHelpers
     AZ::Vector2 GetViewportPoint(AZ::EntityId canvasEntityId, const AZ::Vector2& canvasPoint)
     {
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID_RESULT(transform, canvasEntityId, UiCanvasBus, GetCanvasToViewportMatrix);
+        UiCanvasBus::EventResult(transform, canvasEntityId, &UiCanvasBus::Events::GetCanvasToViewportMatrix);
 
         AZ::Vector3 canvasPoint3(canvasPoint.GetX(), canvasPoint.GetY(), 0.0f);
         AZ::Vector3 viewportPoint3 = transform * canvasPoint3;
@@ -49,7 +49,7 @@ namespace CanvasHelpers
     AZ::Vector2 GetSnappedCanvasPoint(AZ::EntityId canvasEntityId, const AZ::Vector2& viewportPoint, bool snapToGrid)
     {
         AZ::Matrix4x4 transform;
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, GetViewportToCanvasMatrix, transform);
+        UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::GetViewportToCanvasMatrix, transform);
 
         AZ::Vector3 viewportPoint3(viewportPoint.GetX(), viewportPoint.GetY(), 0.0f);
         AZ::Vector3 canvasPoint3 = transform * viewportPoint3;
@@ -59,7 +59,7 @@ namespace CanvasHelpers
         float snapDistance = 1.0f;
         if (snapToGrid)
         {
-            EBUS_EVENT_ID_RESULT(snapDistance, canvasEntityId, UiEditorCanvasBus, GetSnapDistance);
+            UiEditorCanvasBus::EventResult(snapDistance, canvasEntityId, &UiEditorCanvasBus::Events::GetSnapDistance);
         }
 
         return EntityHelpers::Snap(canvasPoint, snapDistance);

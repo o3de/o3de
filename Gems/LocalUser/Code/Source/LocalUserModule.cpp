@@ -18,7 +18,7 @@ namespace LocalUser
     {
     public:
         AZ_RTTI(LocalUserModule, "{E154A426-0E21-4EB0-BE57-0947BB257D4D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(LocalUserModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalUserModule, AZ::SystemAllocator);
 
         LocalUserModule()
             : AZ::Module()

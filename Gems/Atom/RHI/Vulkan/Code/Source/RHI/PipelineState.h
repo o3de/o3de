@@ -21,7 +21,7 @@ namespace AZ
             using Base = RHI::PipelineState;
 
         public:
-            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
             AZ_RTTI(PipelineState, "40D76567-1C43-4D0F-885A-B63337DCE31B", Base);
 
             static RHI::Ptr<PipelineState> Create();

@@ -15,6 +15,7 @@
 #include <AzCore/std/functional.h>
 
 #include <AzCore/Debug/Profiler.h>
+#include <memory>
 
 #define AZCORE_SYSTEM_ALLOCATOR_HPHA 1
 #define AZCORE_SYSTEM_ALLOCATOR_MALLOC 2
@@ -24,17 +25,12 @@
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
-    // Globals - we use global storage for the first memory schema, since we can't use dynamic memory!
-    static AZStd::aligned_storage<sizeof(HphaSchema), AZStd::alignment_of<HphaSchema>::value>::type g_systemSchema;
-
-    //////////////////////////////////////////////////////////////////////////
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SystemAllocator, "SystemAllocator", "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SystemAllocator, AllocatorBase);
 
     SystemAllocator::SystemAllocator()
     {
         AllocatorInstance<OSAllocator>::Get();
-#if defined(AZ_ENABLE_TRACING)
-        SetProfilingActive(true);
-#endif
         Create();
         PostCreate();
     }
@@ -54,23 +50,8 @@ namespace AZ
     //=========================================================================
     bool SystemAllocator::Create()
     {
-        AZ_Assert(IsReady() == false, "System allocator was already created!");
-        if (IsReady())
-        {
-            return false;
-        }
-
-        m_subAllocator = new (&g_systemSchema) HphaSchema();
+        m_subAllocator = AZStd::make_unique<HphaSchema>();
         return true;
-    }
-
-    //=========================================================================
-    // Allocate
-    // [9/2/2009]
-    //=========================================================================
-    void SystemAllocator::Destroy()
-    {
-        static_cast<HphaSchema*>(m_subAllocator)->~HphaSchema();
     }
 
     AllocatorDebugConfig SystemAllocator::GetDebugConfig()
@@ -115,7 +96,7 @@ namespace AZ
         }
 
         AZ_Assert(
-            address != nullptr, "SystemAllocator: Failed to allocate %d bytes aligned on %d!", byteSize,
+            address != nullptr, "SystemAllocator: Failed to allocate %zu bytes aligned on %zu!", byteSize,
             alignment);
 
         AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
@@ -149,7 +130,7 @@ namespace AZ
         pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
 
 #if defined(AZ_ENABLE_TRACING)
-        const size_type allocatedSize = get_allocated_size(newAddress, 1);
+        [[maybe_unused]] const size_type allocatedSize = get_allocated_size(newAddress, 1);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
 #endif

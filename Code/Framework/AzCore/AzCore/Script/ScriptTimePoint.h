@@ -25,7 +25,7 @@ namespace AZ
     {
     public:
         AZ_TYPE_INFO(ScriptTimePoint, "{4c0f6ad4-0d4f-4354-ad4a-0c01e948245c}");
-        AZ_CLASS_ALLOCATOR(ScriptTimePoint, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptTimePoint, SystemAllocator);
 
         ScriptTimePoint()
             : m_timePoint(AZStd::chrono::steady_clock::now()) {}

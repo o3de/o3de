@@ -198,7 +198,8 @@ namespace AZ
         virtual AllocatorDebugConfig GetDebugConfig() { return {}; }
 
         /// Returns a pointer to the allocation records. They might be available or not depending on the build type. \ref Debug::AllocationRecords
-        virtual Debug::AllocationRecords* GetRecords() { return nullptr; }
+        virtual const Debug::AllocationRecords* GetRecords() const { return nullptr; }
+        Debug::AllocationRecords* GetRecords() { return const_cast<Debug::AllocationRecords*>(static_cast<const IAllocator*>(this)->GetRecords()); }
 
         /// Sets the allocation records.
         virtual void SetRecords([[maybe_unused]] Debug::AllocationRecords* records) {}
@@ -206,7 +207,6 @@ namespace AZ
         /// Returns true if this allocator is ready to use.
         virtual bool IsReady() const { return true; }
 
-    private:
         /// Sets whether profiling calls should be made.
         /// This is primarily a performance compromise, as the profiling calls go out on an EBus that may not exist if not activated, and will
         /// result in an expensive hash lookup if that is the case.
@@ -215,6 +215,7 @@ namespace AZ
         /// Returns true if profiling calls will be made.
         virtual bool IsProfilingActive() const { return false; }
 
+    protected:
         /// All conforming allocators must call PostCreate() after their custom Create() method in order to be properly registered.
         virtual void PostCreate() {}
 

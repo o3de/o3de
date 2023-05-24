@@ -16,6 +16,11 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+namespace AZ
+{
+    class ReflectContext;
+}
+
 // These flags are mostly applicable for hermit based splines.
 enum ESplineKeyTangentType
 {
@@ -376,7 +381,7 @@ namespace spline
 
         SplineKey& operator=(const SplineKey& src) { memcpy(this, &src, sizeof(*this)); return *this; }
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
     };
 
     template    <class T>
@@ -635,7 +640,7 @@ namespace spline
         virtual void interp_keys(int key1, int key2, float u, value_type& val) = 0;
         //////////////////////////////////////////////////////////////////////////
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
 
         inline void add_ref()
         {
@@ -1011,7 +1016,7 @@ namespace spline
             }
         }
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
 
     protected:
         virtual void interp_keys(int from, int to, float u, T& val)

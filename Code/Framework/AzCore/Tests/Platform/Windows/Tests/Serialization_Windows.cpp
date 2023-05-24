@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     class SerializationFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
 

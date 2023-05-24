@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(PrecompiledRootShaderVariantAssetSourceData, "{661EF8A7-7BAC-41B6-AD5C-C7249B2390AD}");
-            AZ_CLASS_ALLOCATOR(PrecompiledRootShaderVariantAssetSourceData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrecompiledRootShaderVariantAssetSourceData, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -40,7 +40,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(PrecompiledSupervariantSourceData, "{630BDF15-CE7C-4E2C-882E-4F7AF09C8BB6}");
-            AZ_CLASS_ALLOCATOR(PrecompiledSupervariantSourceData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrecompiledSupervariantSourceData, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -55,7 +55,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(PrecompiledShaderAssetSourceData, "{C6B606EF-B788-4979-BA0F-6A28B33A1372}");
-            AZ_CLASS_ALLOCATOR(PrecompiledShaderAssetSourceData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrecompiledShaderAssetSourceData, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

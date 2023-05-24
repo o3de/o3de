@@ -49,11 +49,11 @@ namespace AZ
         MOCK_METHOD1(Remove, bool(AZStd::string_view));
 
         MOCK_METHOD3(MergeCommandLineArgument, bool(AZStd::string_view, AZStd::string_view, const CommandLineArgumentSettings&));
-        MOCK_METHOD3(MergeSettings, bool(AZStd::string_view, Format, AZStd::string_view));
-        MOCK_METHOD4(MergeSettingsFile, bool(AZStd::string_view, Format, AZStd::string_view, AZStd::vector<char>*));
+        MOCK_METHOD3(MergeSettings, MergeSettingsResult(AZStd::string_view, Format, AZStd::string_view));
+        MOCK_METHOD4(MergeSettingsFile, MergeSettingsResult(AZStd::string_view, Format, AZStd::string_view, AZStd::vector<char>*));
         MOCK_METHOD5(
             MergeSettingsFolder,
-            bool(AZStd::string_view, const Specializations&, AZStd::string_view, AZStd::string_view, AZStd::vector<char>*));
+            MergeSettingsResult(AZStd::string_view, const Specializations&, AZStd::string_view, AZStd::string_view, AZStd::vector<char>*));
 
         MOCK_METHOD1(SetNotifyForMergeOperations, void(bool));
         MOCK_CONST_METHOD0(GetNotifyForMergeOperations, bool());

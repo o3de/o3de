@@ -102,6 +102,7 @@ set(FILES
     Geometry2DUtils.cpp
     Interface.cpp
     IO/FileReaderTests.cpp
+    IO/Path/PathReflectTests.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
     Jobs.cpp
@@ -159,12 +160,12 @@ set(FILES
     Math/Vector4PerformanceTests.cpp
     Math/Vector4Tests.cpp
     Memory/AllocatorBenchmarks.cpp
-    Memory/AllocatorManager.cpp
     Memory/HphaAllocator.cpp
     Memory/HphaAllocatorErrorDetection.cpp
     Memory/LeakDetection.cpp
     Memory.cpp
     Metrics/EventLoggerFactoryTests.cpp
+    Metrics/EventLoggerReflectUtilsTests.cpp
     Metrics/EventLoggerUtilsTests.cpp
     Metrics/JsonTraceEventLoggerTests.cpp
     Module.cpp
@@ -177,6 +178,7 @@ set(FILES
     OutcomeTests.cpp
     Patching.cpp
     RemappableId.cpp
+    RTTI/IsTypeofBenchmarks.cpp
     RTTI/TypeSafeIntegralTests.cpp
     Rtti.cpp
     Script.cpp
@@ -225,6 +227,7 @@ set(FILES
     Serialization.cpp
     SerializeContextFixture.h
     Settings/CommandLineTests.cpp
+    Settings/ConfigParserTests.cpp
     Settings/ConfigurableStackTests.cpp
     Settings/SettingsRegistryTests.cpp
     Settings/SettingsRegistryConsoleUtilsTests.cpp
@@ -232,6 +235,7 @@ set(FILES
     Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
+    Settings/TextParserTests.cpp
     Slice.cpp
     State.cpp
     Statistics.cpp

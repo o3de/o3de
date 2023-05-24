@@ -9,6 +9,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI.Reflect/Size.h>
 
 namespace AZ
 {
@@ -31,8 +32,17 @@ namespace AZ
             /// The maximum size of an image array.
             uint32_t m_maxImageArraySize = 0;
 
-            /// The alignment required when creating buffer views
+            /// The maximum number of valid memory allocations that can exist simultaneously within a device
+            uint32_t m_maxMemoryAllocationCount = 0;
+            
+            /// The alignment required when creating constant buffer views
             uint32_t m_minConstantBufferViewOffset = 0;
+
+            /// The alignment required when creating typed buffer views
+            uint32_t m_minTexelBufferOffsetAlignment = 0;
+
+            /// The alignment required when creating storage buffer views
+            uint32_t m_minStorageBufferOffsetAlignment = 0;
 
             /// The maximum number of draws when doing indirect drawing.
             uint32_t m_maxIndirectDrawCount = 1;
@@ -45,6 +55,10 @@ namespace AZ
 
             /// The maximum size in bytes of a buffer (BufferBindFlags::ShaderRead, BufferBindFlags::ShaderWrite or BufferBindFlags::ShaderReadWrite).
             uint64_t m_maxBufferSize = 0;
+                        
+            //! Size of the tile when specifying shading rate through an image. The size refers to the tile's width and
+            //! height in texels.
+            RHI::Size m_shadingRateTileSize;
 
             /// Additional limits here.
         };

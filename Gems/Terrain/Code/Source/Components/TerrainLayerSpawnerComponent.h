@@ -43,7 +43,7 @@ namespace Terrain
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainLayerSpawnerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainLayerSpawnerConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainLayerSpawnerConfig, "{8E0695DE-E843-4858-BAEA-70953E74C810}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

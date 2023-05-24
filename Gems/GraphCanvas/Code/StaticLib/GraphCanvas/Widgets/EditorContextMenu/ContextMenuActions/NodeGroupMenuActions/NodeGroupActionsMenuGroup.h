@@ -16,7 +16,7 @@ namespace GraphCanvas
     class NodeGroupActionsMenuGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodeGroupActionsMenuGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupActionsMenuGroup, AZ::SystemAllocator);
         
         NodeGroupActionsMenuGroup();
         ~NodeGroupActionsMenuGroup();

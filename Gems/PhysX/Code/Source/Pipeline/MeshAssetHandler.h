@@ -25,7 +25,7 @@ namespace PhysX
         public:
             static const char* s_assetFileExtension;
 
-            AZ_CLASS_ALLOCATOR(MeshAssetHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshAssetHandler, AZ::SystemAllocator);
 
             MeshAssetHandler();
             ~MeshAssetHandler();

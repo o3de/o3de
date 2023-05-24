@@ -24,8 +24,7 @@ namespace Constants = AZ::Constants;
 namespace UnitTest
 {
     class SphereShapeTest
-        : public AllocatorsFixture
-        , public RegistryTestHelper
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformShapeComponentDescriptor;
@@ -34,8 +33,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_transformShapeComponentDescriptor.reset(AzFramework::TransformComponent::CreateDescriptor());
             m_transformShapeComponentDescriptor->Reflect(&(*m_serializeContext));
@@ -51,8 +49,7 @@ namespace UnitTest
             m_sphereShapeComponentDescriptor.reset();
             m_sphereShapeDebugDisplayComponentDescriptor.reset();
             m_serializeContext.reset();
-            RegistryTestHelper::TearDown();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

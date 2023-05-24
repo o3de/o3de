@@ -27,7 +27,7 @@ namespace AZ
 {
     namespace RPI
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertyValueSerializer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertyValueSerializer, SystemAllocator);
 
         template<typename T>
         JsonSerializationResult::ResultCode JsonMaterialPropertyValueSerializer::LoadVariant(

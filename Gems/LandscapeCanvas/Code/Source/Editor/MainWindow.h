@@ -54,7 +54,7 @@ namespace LandscapeCanvasEditor
         : public AzToolsFramework::EntityPropertyEditor
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator);
 
         CustomEntityPropertyEditor(QWidget* parent = nullptr);
 
@@ -67,7 +67,7 @@ namespace LandscapeCanvasEditor
         : public AzQtComponents::StyledDockWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator);
 
         CustomNodeInspectorDockWidget(QWidget* parent = nullptr);
 
@@ -100,6 +100,7 @@ namespace LandscapeCanvasEditor
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(MainWindow, AZ::SystemAllocator)
         explicit MainWindow(QWidget* parent = nullptr);
         ~MainWindow() override;
 
@@ -157,6 +158,10 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList GetAllNodesMatchingEntity(const AZ::EntityId& entityId) override;
         GraphModel::NodePtrList GetAllNodesMatchingEntityComponent(const AZ::EntityComponentIdPair& entityComponentId) override;
         ////////////////////////////////////////////////////////////////////////
+
+        GraphModel::NodePtrList GetAllNodesMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId);
+        GraphModel::NodePtrList GetAllNodesMatchingEntityComponentInGraph(
+            const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId);
 
         ////////////////////////////////////////////////////////////////////////
         // GraphCanvas::AssetEditorMainWindow overrides

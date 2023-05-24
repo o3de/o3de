@@ -27,7 +27,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScaleModifierConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScaleModifierConfig, AZ::SystemAllocator);
         AZ_RTTI(ScaleModifierConfig, "{1CD41DA9-91CA-4A57-A169-B42FC25FC4C3}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;

@@ -185,7 +185,8 @@ void ConnectionManager::OnStatusChanged(unsigned int connId)
 
             if (priorCount == 0)
             {
-                EBUS_EVENT(AssetProcessorPlatformBus, AssetProcessorPlatformConnected, thisPlatform.toUtf8().data());
+                AssetProcessorPlatformBus::Broadcast(
+                    &AssetProcessorPlatformBus::Events::AssetProcessorPlatformConnected, thisPlatform.toUtf8().data());
             }
         }
     }
@@ -198,7 +199,8 @@ void ConnectionManager::OnStatusChanged(unsigned int connId)
             m_platformsConnected[thisPlatform] = priorCount - 1;
             if (priorCount == 1)
             {
-                EBUS_EVENT(AssetProcessorPlatformBus, AssetProcessorPlatformDisconnected, thisPlatform.toUtf8().data());
+                AssetProcessorPlatformBus::Broadcast(
+                    &AssetProcessorPlatformBus::Events::AssetProcessorPlatformDisconnected, thisPlatform.toUtf8().data());
             }
         }
     }
@@ -448,6 +450,15 @@ void ConnectionManager::removeConnection(const QModelIndex& index)
     int key = keys[index.row()];
 
     removeConnection(key);
+
+    // Normally, removing a connection will cause RemoveConnectionFromMap to be called
+    // later, when the connection is fully removed. However, SaveConnections stores all
+    // user created connections, so this connection needs to be removed early.
+    // RemoveConnectionFromMap doesn't call SaveConnections because asset builders connect
+    // and disconnection shouldn't cause the settings to get saved constantly.
+    // This does mean RemoveConnectionFromMap is called twice, but that's OK because it won't find
+    // the key and it will safely handle that situation.
+    RemoveConnectionFromMap(key);
 
     SaveConnections();
 }

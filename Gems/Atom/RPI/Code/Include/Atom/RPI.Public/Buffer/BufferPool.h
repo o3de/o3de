@@ -30,7 +30,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(BufferPool, "{1EBB16AD-AC85-4560-BAC4-133D43826566}");
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
 
             /// Instantiates or returns an existing buffer pool using a paired resource pool asset.
             static Data::Instance<BufferPool> FindOrCreate(const Data::Asset<ResourcePoolAsset>& resourcePoolAsset);

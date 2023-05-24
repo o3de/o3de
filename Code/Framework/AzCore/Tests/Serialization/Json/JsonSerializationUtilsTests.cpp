@@ -93,12 +93,12 @@ namespace UnitTest
     }
 
     class JsonSerializationUtilsTests
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
@@ -130,7 +130,7 @@ namespace UnitTest
             m_serializeContext.reset();
             m_jsonSystemComponent.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;

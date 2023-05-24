@@ -20,7 +20,7 @@ namespace GraphModel
     {
     public:
         AZ_RTTI(GraphModelModule, "{217B9E5D-C0FC-4D9D-AD75-AA3B23566A96}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(GraphModelModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphModelModule, AZ::SystemAllocator);
 
         GraphModelModule()
             : AZ::Module()

@@ -55,7 +55,7 @@ namespace PolygonPrismMeshUtils
             for (int elementIndex = 0; elementIndex < 3; elementIndex++)
             {
                 const float elementValue = angles.GetElement(elementIndex);
-                EXPECT_FALSE(std::isnan(elementValue));
+                EXPECT_FALSE(AZStd::isnan(elementValue));
                 EXPECT_GE(elementValue, -epsilon);
                 EXPECT_LE(elementValue, AZ::Constants::Pi + epsilon);
             }

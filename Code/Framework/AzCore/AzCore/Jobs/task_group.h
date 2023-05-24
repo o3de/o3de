@@ -21,7 +21,7 @@ namespace AZ
     class structured_task_group
     {
     public:
-        AZ_CLASS_ALLOCATOR(structured_task_group, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(structured_task_group, ThreadPoolAllocator);
 
         /**
          * This default constructor obtains the parent JobContext from the global context. The parent context can

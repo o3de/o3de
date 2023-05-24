@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Attachment, AttachmentAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Attachment, AttachmentAllocator)
 
     // constructor
     Attachment::Attachment(ActorInstance* attachToActorInstance, ActorInstance* attachment)

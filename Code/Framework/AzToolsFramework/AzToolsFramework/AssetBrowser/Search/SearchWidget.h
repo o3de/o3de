@@ -33,11 +33,27 @@ namespace AzToolsFramework
 
             void Setup(bool stringFilter, bool assetTypeFilter);
 
+            void ToggleEngineFilter(bool checked);
+
+            void ToggleUnusableProductsFilter(bool checked);
+
+            AZStd::vector<AZ::Data::AssetType> BuildAssetTypeList();
+
+            void AddFolderFilter();
+
+            void RemoveFolderFilter();
+
             QSharedPointer<CompositeFilter> GetFilter() const;
 
             QSharedPointer<CompositeFilter> GetStringFilter() const;
 
             QSharedPointer<CompositeFilter> GetTypesFilter() const;
+
+            QSharedPointer<CompositeFilter> GetEngineFilter() const;
+
+            QSharedPointer<CompositeFilter> GetUnusableProductsFilter() const;
+
+            QSharedPointer<CompositeFilter> GetFolderFilter() const;
 
             QString GetFilterString() const { return textFilter(); }
             void ClearStringFilter() { ClearTextFilter(); }
@@ -46,6 +62,10 @@ namespace AzToolsFramework
             QSharedPointer<CompositeFilter> m_filter;
             QSharedPointer<CompositeFilter> m_stringFilter;
             QSharedPointer<CompositeFilter> m_typesFilter;
+            QSharedPointer<CompositeFilter> m_engineFilter;
+            QSharedPointer<CompositeFilter> m_unusableProductsFilter;
+            QSharedPointer<CompositeFilter> m_folderFilter;
         };
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

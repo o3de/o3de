@@ -10,6 +10,8 @@
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 #include <AzQtComponents/Components/StyleManager.h>
 
 #include <QMainWindow>
@@ -21,19 +23,19 @@ namespace AzToolsFramework
         , m_toolBarArea(toolBarArea)
     {
     }
-    
+
     void EditorToolBarArea::AddToolBar(int sortKey, AZStd::string toolBarIdentifier)
     {
         m_toolBarToSortKeyMap.insert(AZStd::make_pair(toolBarIdentifier, sortKey));
         m_toolBars[sortKey].push_back(AZStd::move(toolBarIdentifier));
     }
-    
+
     bool EditorToolBarArea::ContainsToolBar(const AZStd::string& toolBarIdentifier) const
     {
         return m_toolBarToSortKeyMap.contains(toolBarIdentifier);
     }
 
-    AZStd::optional<int> EditorToolBarArea::GetToolBarSortKey(const AZStd::string& toolBarIdentifier) const
+    AZStd::optional<int> EditorToolBarArea::GenerateToolBarSortKey(const AZStd::string& toolBarIdentifier) const
     {
         auto toolBarIterator = m_toolBarToSortKeyMap.find(toolBarIdentifier);
         if (toolBarIterator == m_toolBarToSortKeyMap.end())
@@ -54,6 +56,7 @@ namespace AzToolsFramework
         for (QToolBar* toolBar : m_toolBarsCache)
         {
             m_mainWindow->removeToolBar(toolBar);
+            delete toolBar;
         }
         m_toolBarsCache.clear();
 
@@ -61,7 +64,7 @@ namespace AzToolsFramework
         {
             for (const auto& toolBarIdentifier : vectorIterator.second)
             {
-                if (QToolBar* toolBar = m_toolBarManagerInterface->GetToolBar(toolBarIdentifier))
+                if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(toolBarIdentifier))
                 {
                     m_mainWindow->addToolBar(m_toolBarArea, toolBar);
                     AzQtComponents::StyleManager::repolishStyleSheet(toolBar);

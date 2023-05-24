@@ -124,18 +124,8 @@ namespace UnitTest
     };
 
     class DeltaSerializerTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     static constexpr float BLEND_FACTOR_SCALE = 1.1f;

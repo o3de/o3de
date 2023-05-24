@@ -17,7 +17,7 @@ namespace AZ
         struct GetUnpackedReturnValueTypesHolder
         {
             AZ_TYPE_INFO(GetUnpackedReturnValueTypesHolder, "{DCE581D4-5F89-4A7A-BA67-9A7B13B580C2}");
-            AZ_CLASS_ALLOCATOR(GetUnpackedReturnValueTypesHolder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetUnpackedReturnValueTypesHolder, AZ::SystemAllocator);
 
             GetUnpackedReturnValueTypes m_function;
         };
@@ -26,7 +26,7 @@ namespace AZ
         struct TupleConstructorHolder
         {
             AZ_TYPE_INFO(TupleConstructorHolder, "{E7BCBB72-E3F7-4E8B-BBA1-7824603650DB}");
-            AZ_CLASS_ALLOCATOR(TupleConstructorHolder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TupleConstructorHolder, AZ::SystemAllocator);
 
             TupleConstructor m_function;
         };

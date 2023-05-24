@@ -57,7 +57,7 @@ namespace AWSCore
     {
 
     public:
-        AZ_CLASS_ALLOCATOR(AwsApiClientJobConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AwsApiClientJobConfig, AZ::SystemAllocator);
 
         using AwsApiClientJobConfigType = AwsApiClientJobConfig<ClientType>;
         using InitializerFunction = AZStd::function<void(AwsApiClientJobConfigType& config)>;

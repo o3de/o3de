@@ -34,8 +34,6 @@ namespace AZ
 
     namespace RPI
     {
-        using ShaderResourceGroupList = AZStd::fixed_vector<const RHI::ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
-
         class View;
         using ViewPtr = AZStd::shared_ptr<View>;
         using ConstViewPtr = AZStd::shared_ptr<const View>;
@@ -61,18 +59,13 @@ namespace AZ
 
         using MatrixChangedEvent = Event<const AZ::Matrix4x4&>;
 
-        //! The name used to identify a View within in a Scene.
-        //! Note that the same View could have different tags in different RenderPipelines.
+        //! A name tag used in a RenderPipeline to associate a View to a Pass
+        //! For example, a RasterPass can have a PipelineViewTag name "MainCamera". And user can attach a RPI::View generated from a user camera to the render pipeline
+        //! via RenderPipelie::SetPersistentView(const PipelineViewTag&, ViewPtr) function so the camera is used as "MainCamera" for this render pipeline.
         using PipelineViewTag = AZ::Name;
 
-        // [GFX TODO][ATOM-2620] Move this to live with Name code and make it sort alphabetically. Current uses can be switched to unsorted containers.
-        struct AZNameSortAscending
-        {
-            bool operator()(const AZ::Name& lhs, const AZ::Name& rhs) const
-            {
-                return AZStd::hash<Name>()(lhs) < AZStd::hash<Name>()(rhs);
-            }
-        };
+        //! A collection of unique render pipeline view tags
+        using PipelineViewTags = AZStd::unordered_set<PipelineViewTag>;
 
         class FeatureProcessor;
 

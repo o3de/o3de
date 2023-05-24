@@ -16,7 +16,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(NodeListSelectionHandler, SystemAllocator);
 
             NodeListSelectionHandler* NodeListSelectionHandler::s_instance = nullptr;
 

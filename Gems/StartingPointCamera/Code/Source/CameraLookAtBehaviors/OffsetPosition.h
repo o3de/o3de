@@ -28,7 +28,7 @@ namespace Camera
     public:
         ~OffsetPosition() override = default;
         AZ_RTTI(OffsetPosition, "{5B2975A6-839B-4DE0-842B-EDE78D778BC9}", ICameraLookAtBehavior);
-        AZ_CLASS_ALLOCATOR(OffsetPosition, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OffsetPosition, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

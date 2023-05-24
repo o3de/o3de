@@ -37,7 +37,7 @@ namespace AZ
             : public RHI::ScopeProducer
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScopeProducerFunction, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScopeProducerFunction, SystemAllocator);
 
             using PrepareFunction = AZStd::function<void(RHI::FrameGraphInterface)>;
             using CompileFunction = AZStd::function<void(const RHI::FrameGraphCompileContext&)>;
@@ -393,7 +393,7 @@ namespace AZ
                     range.m_aspectFlags = RHI::ImageAspectFlags::Depth;
                 }
 
-                RHI::ImageSubresourceLayoutPlaced imageSubresourceLayout;
+                RHI::ImageSubresourceLayout imageSubresourceLayout;
                 image->GetSubresourceLayouts(range, &imageSubresourceLayout, nullptr);
 
                 RPI::CommonBufferDescriptor desc;

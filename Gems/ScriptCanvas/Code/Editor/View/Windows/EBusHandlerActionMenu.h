@@ -42,7 +42,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EBusHandlerActionSourceModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusHandlerActionSourceModel, AZ::SystemAllocator);
 
         EBusHandlerActionSourceModel(QObject* parent = nullptr);
         ~EBusHandlerActionSourceModel();
@@ -76,7 +76,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EBusHandlerActionFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusHandlerActionFilterProxyModel, AZ::SystemAllocator);
         
         EBusHandlerActionFilterProxyModel(QObject* parent = nullptr);
         ~EBusHandlerActionFilterProxyModel() = default;
@@ -99,7 +99,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EBusHandlerActionMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusHandlerActionMenu, AZ::SystemAllocator);
         EBusHandlerActionMenu(QWidget* parent = nullptr);
         ~EBusHandlerActionMenu() = default;
         

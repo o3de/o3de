@@ -32,16 +32,17 @@ endif()
 # Clients
 ################################################################################
 ly_add_target(
-    NAME AudioEngineWwise.Static STATIC
+    NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         audioenginewwise_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    TARGET_PROPERTIES
+        O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             Source/Engine
             ${pal_dir}
             ${common_dir}
@@ -52,37 +53,32 @@ ly_add_target(
         PUBLIC
             3rdParty::Wwise
             Legacy::CryCommon
-            Gem::AudioSystem.Static
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
-    NAME AudioEngineWwise ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         audioenginewwise_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             Source/Engine
             ${pal_dir}
             ${common_dir}
-    COMPILE_DEFINITIONS
-        PUBLIC
-            ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AudioEngineWwise.Static
+            Gem::${gem_name}.Private.Object
 )
 
-# we'll load the above "Gem::AudioEngineWwise" module in clients.
-ly_create_alias(NAME AudioEngineWwise.Clients NAMESPACE Gem TARGETS Gem::AudioEngineWwise)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 
 ################################################################################
 # Tests
 ################################################################################
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
    ly_add_target(
-        NAME AudioEngineWwise.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             audioenginewwise_tests_files.cmake
@@ -90,20 +86,22 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
-                Source
                 Source/Engine
                 ${pal_dir}
                 ${common_dir}
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
             PRIVATE
                 AZ::AzTest
-                Gem::AudioEngineWwise.Static
-    )
-    ly_add_googletest(
-        NAME Gem::AudioEngineWwise.Tests
+                Gem::${gem_name}.Private.Object
     )
 
-    list(APPEND testTargets AudioEngineWwise.Tests)
+    ly_add_googletest(
+        NAME Gem::${gem_name}.Tests
+    )
+
+    list(APPEND testTargets ${gem_name}.Tests)
 
     ly_add_target_files(
         TARGETS
@@ -114,37 +112,43 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Test.Assets/Gems/AudioEngineWwise/sounds/wwise/soundbanks
     )
 
-endif()
+endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+
 
 ################################################################################
 # Tools / Builders
 ################################################################################
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AudioEngineWwise.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         AUTORCC
         FILES_CMAKE
             audioenginewwise_editor_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
+        COMPILE_DEFINITIONS
+            PUBLIC
+                ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
-                Source
         BUILD_DEPENDENCIES
+            PUBLIC
+                3rdParty::Wwise
+                Gem::AudioSystem.Editor.API
+                Legacy::CryCommon
             PRIVATE
                 Legacy::EditorCore
-            PUBLIC
-                AZ::AssetBuilderSDK
-                Gem::AudioEngineWwise.Static
-                Gem::AudioSystem.Editor
+                Gem::${gem_name}.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )
 
     ly_add_target(
-        NAME AudioEngineWwise.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             audioenginewwise_editor_shared_files.cmake
@@ -153,44 +157,98 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AUDIO_ENGINE_WWISE_EDITOR
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source/Builder
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
-                Source
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
             PRIVATE
-                Gem::AudioEngineWwise.Editor.Static
+                Gem::${gem_name}.Editor.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )
 
-    # by default, we'll load the above "Gem::AudioEngineWwise.Editor" module in builders and tools.
-    ly_create_alias(NAME AudioEngineWwise.Builders NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
-    ly_create_alias(NAME AudioEngineWwise.Tools NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
+    ly_add_target(
+        NAME ${gem_name}.Builder.Private.Object STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            audioenginewwise_builder_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
+        COMPILE_DEFINITIONS
+            PUBLIC
+                ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source/Builder
+                Source/Engine
+                ${pal_dir}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                3rdParty::Wwise
+                AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
+            PRIVATE
+                Legacy::EditorCore
+    )
+
+    ly_add_target(
+        NAME ${gem_name}.Builder GEM_MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            audioenginewwise_builder_shared_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                AUDIO_ENGINE_WWISE_BUILDER
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source/Builder
+                Source/Editor
+                Source/Engine
+                ${pal_dir}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
+                Gem::AudioSystem.Editor.API
+                Legacy::CryCommon
+            PRIVATE
+                Gem::${gem_name}.Builder.Private.Object
+                Gem::${gem_name}.Private.Object
+    )
+
+    ly_create_alias(NAME ${gem_name}.Builders   NAMESPACE Gem TARGETS Gem::${gem_name}.Builder)
+    ly_create_alias(NAME ${gem_name}.Tools      NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
-            NAME AudioEngineWwise.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 audioenginewwise_editor_tests_files.cmake
+                audioenginewwise_editor_shared_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
+                    Source/Builder
                     Source/Editor
-                    Source
+                    Source/Engine
+                    ${pal_dir}
             BUILD_DEPENDENCIES
+                PUBLIC
+                    Gem::AudioSystem.API
                 PRIVATE
                     AZ::AzTest
-                    Gem::AudioEngineWwise.Editor.Static
+                    Gem::${gem_name}.Editor.Private.Object
+                    Gem::${gem_name}.Builder.Private.Object
                     Legacy::CryCommon
         )
+
         ly_add_googletest(
-            NAME Gem::AudioEngineWwise.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
         )
 
-        list(APPEND editorTestTargets AudioEngineWwise.Editor.Tests)
+        list(APPEND editorTestTargets ${gem_name}.Editor.Tests)
 
         ly_add_target_files(
             TARGETS
@@ -243,5 +301,5 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Test.Assets/Gems/AudioEngineWwise/sounds/wwise
         )
 
-    endif()
-endif()
+    endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+endif() # PAL_TRAIT_BUILD_HOST_TOOLS

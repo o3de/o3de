@@ -66,6 +66,7 @@ ly_add_target(
 # Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
 ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+ly_create_alias(NAME Atom_AtomBridge.Unified NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -118,8 +119,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AtomViewportDisplayIcons.Editor
             Gem::MaterialCanvas.Builders
             Gem::MaterialEditor.Builders
+            Gem::PassCanvas.Builders
             Gem::ShaderManagementConsole.Builders
-            Gem::EditorModeFeedback.Editor
     )
 
 

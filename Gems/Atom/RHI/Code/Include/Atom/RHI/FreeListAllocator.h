@@ -33,7 +33,7 @@ namespace AZ
             : public Allocator
         {
         public:
-            AZ_CLASS_ALLOCATOR(FreeListAllocator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FreeListAllocator, AZ::SystemAllocator);
 
             struct Descriptor : public Allocator::Descriptor
             {

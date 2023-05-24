@@ -13,7 +13,7 @@
 
 namespace UnitTests
 {
-    using SourceAssetReferenceTests = ::UnitTest::ScopedAllocatorSetupFixture;
+    using SourceAssetReferenceTests = ::UnitTest::LeakDetectionFixture;
 
     TEST_F(SourceAssetReferenceTests, Construct_AbsolutePath_Succeeds)
     {

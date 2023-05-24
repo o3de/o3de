@@ -10,7 +10,7 @@
 #include <AZTestShared/Utils/Utils.h>
 
 class GenericStreamTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
@@ -19,7 +19,7 @@ public:
         using ::testing::NiceMock;
         using ::testing::Return;
 
-        UnitTest::ScopedAllocatorSetupFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
 
         // Route our mocked WriteFromStream back to the base class implementation for test validation
         ON_CALL(m_mockGenericStream, WriteFromStream(_, _))
@@ -31,7 +31,7 @@ public:
 
     void TearDown() override
     {
-        UnitTest::ScopedAllocatorSetupFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
     void CreateTestData(AZStd::vector<AZ::u8>& inBuffer, size_t numBytes)

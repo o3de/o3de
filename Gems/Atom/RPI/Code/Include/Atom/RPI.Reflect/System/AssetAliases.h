@@ -26,7 +26,7 @@ namespace AZ
             friend class AssetAliasesSourceData;
         public:
             AZ_RTTI(AssetAliases, "{0C4796E1-5229-4A09-B093-59A09A122A2F}");
-            AZ_CLASS_ALLOCATOR(AssetAliases, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetAliases, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
                 

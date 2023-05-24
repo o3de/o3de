@@ -12,9 +12,13 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace LmbrCentral
 {

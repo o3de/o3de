@@ -34,6 +34,14 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
+# dynaconf boilerplate
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+
+settings.setenv() # ensure default file based settings are in the env
+
 # ensure dccsi and o3de core access
 # in a future iteration it is suggested that the core config
 # be rewritten from ConfigClass, then WingConfig inherits core

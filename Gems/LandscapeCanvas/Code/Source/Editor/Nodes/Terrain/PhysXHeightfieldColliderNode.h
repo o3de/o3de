@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXHeightfieldColliderNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXHeightfieldColliderNode, AZ::SystemAllocator);
         AZ_RTTI(PhysXHeightfieldColliderNode, "{F2214078-EB6E-4EDE-AE5C-65AB3D34ACD7}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -18,7 +18,7 @@ namespace UnitTest
         : public AZ::RHI::PipelineLibrary
     {
     public:
-        AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
 
         AZStd::unordered_map<uint64_t, const AZ::RHI::PipelineState*> m_pipelineStates;
 
@@ -34,7 +34,7 @@ namespace UnitTest
         : public AZ::RHI::PipelineState
     {
     public:
-        AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForDraw&, AZ::RHI::PipelineLibrary*) override;

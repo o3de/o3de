@@ -34,22 +34,12 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class TupleTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
-
         struct MoveOnlyType
         {
-            AZ_CLASS_ALLOCATOR(MoveOnlyType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MoveOnlyType, AZ::SystemAllocator);
             MoveOnlyType() = delete;
             MoveOnlyType(AZStd::tuple<AZ::s32&&, AZStd::string_view&&> tuplePair)
                 : m_valueInt(AZStd::move(AZStd::get<0>(tuplePair)))
@@ -65,18 +55,8 @@ namespace UnitTest
     // Fixture for typed tests
     template<typename Tuple>
     class TupleTypedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
     using TupleTestTypes = ::testing::Types<
         AZStd::tuple<>,
@@ -1112,19 +1092,9 @@ namespace UnitTest
     namespace ExtendedApplyTest
     {
         class ExtendedTupleTest
-            : public AllocatorsFixture
+            : public LeakDetectionFixture
         {
         protected:
-            void SetUp() override
-            {
-                AllocatorsFixture::SetUp();
-            }
-
-            void TearDown() override
-            {
-                AllocatorsFixture::TearDown();
-            }
-
             static void SetUpTestCase()
             {
                 ExtendedTupleTest::m_count = 0;

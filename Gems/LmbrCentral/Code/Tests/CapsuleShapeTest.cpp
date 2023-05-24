@@ -22,8 +22,7 @@
 namespace UnitTest
 {
     class CapsuleShapeTest
-        : public AllocatorsFixture
-        , public RegistryTestHelper
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -34,8 +33,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -55,8 +53,7 @@ namespace UnitTest
             m_capsuleShapeComponentDescriptor.reset();
             m_transformComponentDescriptor.reset();
             m_serializeContext.reset();
-            RegistryTestHelper::TearDown();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

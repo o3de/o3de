@@ -26,7 +26,7 @@ namespace AZ
     {
     public:
         AZ_TYPE_INFO(DynamicSerializableField, "{D761E0C2-A098-497C-B8EB-EA62F5ED896B}")
-        AZ_CLASS_ALLOCATOR(DynamicSerializableField, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicSerializableField, AZ::SystemAllocator);
 
         DynamicSerializableField();
         DynamicSerializableField(const DynamicSerializableField& serializableField);

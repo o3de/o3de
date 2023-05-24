@@ -16,8 +16,7 @@
  * [Editor Components documentation](https://www.o3de.org/docs/user-guide/programming/components/editor-components/).
  */
 
-#ifndef EDITOR_COMPONENT_BASE_H
-#define EDITOR_COMPONENT_BASE_H
+#pragma once
 
 #include <AzCore/base.h>
 #include <AzCore/Asset/AssetCommon.h>
@@ -115,7 +114,18 @@ namespace AzToolsFramework
              * call the Deactivate() function of the base class.
              */
             virtual void Deactivate() override;
-            //////////////////////////////////////////////////////////////////////////
+
+            //! Function to call after setting the entity in this component.
+            //! For an editor component, this would set up the serialized identifier.
+            void OnAfterEntitySet() override final;
+
+            //! Sets the provided string as the serialized identifier for the component.
+            //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
+            void SetSerializedIdentifier(AZStd::string serializedIdentifier) override final;
+
+            //! Gets the serialzied identifier of this component within an entity.
+            //! @return The serialized identifier of this component.
+            AZStd::string GetSerializedIdentifier() const override final;
 
             /**
              * Gets the transform interface of the entity that the component
@@ -191,6 +201,12 @@ namespace AzToolsFramework
             static void Reflect(AZ::ReflectContext* context);
 
         private:
+            //! Generates a component serialized identifier based on existing components of the same type.
+            //! @return Serialized identifier string that can be used as a component alias.
+            AZStd::string GenerateComponentSerializedIdentifier();
+
+        private:
+            AZStd::string m_alias;
             AZ::TransformInterface* m_transform;
         };
 
@@ -281,7 +297,7 @@ namespace AzToolsFramework
              * Specifies that this class should use AZ::SystemAllocator for memory
              * management by default.
              */
-            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorComponentDescriptorDefault<ComponentClass>, AZ::SystemAllocator);
 
             AZ_HAS_STATIC_MEMBER(EditorComponentMatching, DoComponentsMatch, bool, (const ComponentClass*, const ComponentClass*));
             AZ_HAS_STATIC_MEMBER(EditorComponentPasteOver, PasteOverComponent, void, (const ComponentClass*, ComponentClass*));
@@ -402,6 +418,4 @@ namespace AzToolsFramework
     } // namespace Components
 } // namespace AzToolsFramework
 
-
-
-#endif
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);

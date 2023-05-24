@@ -51,6 +51,7 @@ namespace AZ::Debug
     {
     public:
         AZ_RTTI(ProfilerSystemScriptProxy, "{D671FB70-8B09-4C3A-96CD-06A339F3138E}", BehaviorInterfaceProxy<ProfilerRequests>);
+        AZ_CLASS_ALLOCATOR(ProfilerSystemScriptProxy, AZ::SystemAllocator)
 
         AZ_BEHAVIOR_INTERFACE(ProfilerSystemScriptProxy, ProfilerRequests);
     };

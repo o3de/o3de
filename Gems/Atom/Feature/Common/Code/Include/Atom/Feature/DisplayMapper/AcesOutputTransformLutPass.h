@@ -35,7 +35,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AcesOutputTransformLutPass, "{914EE97F-20DA-4916-AE66-DC4141E1A06E}", DisplayMapperFullScreenPass);
-            AZ_CLASS_ALLOCATOR(AcesOutputTransformLutPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AcesOutputTransformLutPass, SystemAllocator);
             virtual ~AcesOutputTransformLutPass();
 
             /// Creates a AcesOutputTransformLutPass

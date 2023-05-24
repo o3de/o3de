@@ -1,0 +1,29 @@
+{
+    "values": [
+        {
+            "$type": "{07B356B7-3635-40B5-878A-FAC4EFD5AD86} MeshGroup",
+            "name": "b",
+            "nodeSelectionList": {
+                "selectedNodes": [
+                    {},
+                    "RootNode",
+                    "RootNode.cube"
+                ]
+            },
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "MaterialRule"
+                    }
+                ]
+            },
+            "id": "{158A701C-E424-4063-B08B-6FF8DC8D393C}"
+        },
+        {
+            "$type": "ActorGroup",
+            "name": "b",
+            "selectedRootBone": "RootNode",
+            "id": "{0383725D-07BF-42D2-B5B7-CA5A3A4AC5DB}"
+        }
+    ]
+}

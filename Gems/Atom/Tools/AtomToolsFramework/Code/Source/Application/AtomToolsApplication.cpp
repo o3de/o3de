@@ -10,21 +10,18 @@
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
-
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
-
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
 #include <AzQtComponents/Components/GlobalEventFilter.h>
-
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
@@ -39,6 +36,7 @@
 #include "AtomToolsFramework_Traits_Platform.h"
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
+#include <QClipboard>
 #include <QMessageBox>
 #include <QObject>
 AZ_POP_DISABLE_WARNING
@@ -145,12 +143,12 @@ namespace AtomToolsFramework
         components.insert(
             components.end(),
             {
-                azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
+                azrtti_typeid<AzToolsFramework::ActionManagerSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetBrowser::AssetBrowserComponent>(),
                 azrtti_typeid<AzToolsFramework::AssetSystem::AssetSystemComponent>(),
-                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
                 azrtti_typeid<AzToolsFramework::Components::PropertyManagerComponent>(),
                 azrtti_typeid<AzToolsFramework::PerforceComponent>(),
+                azrtti_typeid<AzToolsFramework::Thumbnailer::ThumbnailerComponent>(),
             });
 
         return components;
@@ -193,7 +191,8 @@ namespace AtomToolsFramework
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
-        if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
+        auto rpiInterface = AZ::RPI::RPISystemInterface::Get();
+        if (rpiInterface && !rpiInterface->IsInitialized())
         {
             AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
         }
@@ -237,6 +236,9 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Destroy()
     {
+        // Clearing graph canvas clipboard mime data for copied nodes before exiting the application to prevent a crash in qt_call_post_routines
+        QApplication::clipboard()->clear();
+
         m_assetBrowserInteractions.reset();
         m_styleManager.reset();
 

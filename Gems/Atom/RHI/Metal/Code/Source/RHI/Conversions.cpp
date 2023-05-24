@@ -372,7 +372,7 @@ namespace AZ
         ResourceDescriptor ConvertBufferDescriptor(const RHI::BufferDescriptor& descriptor, RHI::HeapMemoryLevel heapMemoryLevel)
         {
             ResourceDescriptor resourceDesc;
-            resourceDesc.m_width = descriptor.m_byteCount;
+            resourceDesc.m_width = static_cast<uint32_t>(descriptor.m_byteCount);
             resourceDesc.m_mtlStorageMode = ConvertBufferStorageMode(descriptor, heapMemoryLevel);
             resourceDesc.m_mtlCPUCacheMode = ConvertBufferCPUCacheMode();
             resourceDesc.m_mtlHazardTrackingMode = ConvertBufferHazardTrackingMode();
@@ -1394,7 +1394,7 @@ namespace AZ
     
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)
         {
-            MTLResourceUsage mtlResourceUsage = MTLResourceUsageSample | MTLResourceUsageRead;
+            MTLResourceUsage mtlResourceUsage = MTLResourceUsageRead;
             if(imageAccess == RHI::ShaderInputImageAccess::ReadWrite)
             {
                 mtlResourceUsage |= MTLResourceUsageWrite;

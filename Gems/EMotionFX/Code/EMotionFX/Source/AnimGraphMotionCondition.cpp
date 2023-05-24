@@ -33,8 +33,8 @@ namespace EMotionFX
     const char* AnimGraphMotionCondition::s_functionIsMotionAssigned = "Is Motion Assigned?";
     const char* AnimGraphMotionCondition::s_functionIsMotionNotAssigned = "Is Motion Not Assigned?";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition, AnimGraphConditionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition, AnimGraphConditionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphMotionCondition::AnimGraphMotionCondition()
         : AnimGraphTransitionCondition()

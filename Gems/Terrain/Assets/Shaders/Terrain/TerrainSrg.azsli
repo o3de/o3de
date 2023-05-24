@@ -21,7 +21,7 @@ static const uint DetailClipmapUpdateRegionMax = 96u; // = DetailClipmapStackSiz
 
 ShaderResourceGroupSemantic SRG_Terrain
 {
-    FrequencyId = 7;
+    FrequencyId = 3;
 };
 
 ShaderResourceGroup TerrainSrg : SRG_Terrain
@@ -33,6 +33,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         float m_rcpClodDistance;
         float m_rcpGridSize;
         float m_gridToQuadScale;
+        [[pad_to(16)]]
     };
 
     struct DetailMaterialData
@@ -62,14 +63,16 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
         uint m_flags; // see DetailTextureFlags
 
         // Image indices
-        uint m_colorNormalImageIndices;
-        uint m_roughnessMetalnessImageIndices;
-
-        uint m_specularF0OcclusionImageIndices;
-        uint m_heightImageIndex; // only first 16 bits used
+        uint m_colorImageIndex;
+        uint m_normalImageIndex;
+        uint m_roughnessImageIndex;
+        uint m_metalnessImageIndex;
+        uint m_specularF0ImageIndex;
+        uint m_occlusionImageIndex;
+        uint m_heightImageIndex;
 
         // 16 byte aligned
-        uint m_padding;
+        uint2 m_padding;
     };
 
     struct MacroMaterialData
@@ -90,6 +93,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     {
         uint m_tileCount1D; // How many x/y tiles along edge of grid. Grid is always square, so total number of tiles is this value squared.
         float m_tileSize; // Size of a tile in meters.
+        [[pad_to(16)]]
     };
 
     struct MacroMaterialRefs
@@ -210,6 +214,7 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
             float2 m_padding;
         };
         ClipmapToWorldScale m_clipmapToWorldScale[SharedClipmapStackSizeMax];
+        [[pad_to(16)]]
     };
 
     MeshData m_meshData;
@@ -247,7 +252,6 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     StructuredBuffer<MacroMaterialRefs> m_macroMaterialGridRefs;
     MacroMaterialGridInfo m_macroMaterialGridInfo;
     
-    Texture2D m_textures[]; // bindless array of all textures for detail and macro materials
     float m_detailMaterialIdScale;
 
     float CalculateClodDistance(uint lodLevel, float3 worldPosition)

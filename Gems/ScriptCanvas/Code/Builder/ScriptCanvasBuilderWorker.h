@@ -119,7 +119,7 @@ namespace ScriptCanvasBuilder
     class JobDependencyVerificationHandler : public ScriptCanvas::RuntimeAssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobDependencyVerificationHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JobDependencyVerificationHandler, AZ::SystemAllocator);
         AZ_RTTI(JobDependencyVerificationHandler, "{3997EF50-350A-46F0-9D84-7FA403855CC5}", ScriptCanvas::RuntimeAssetHandler);
 
         void InitAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset, bool loadStageSucceeded, bool isReload) override

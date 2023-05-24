@@ -6,15 +6,15 @@
  *
  */
 
-#include <Editor/CollisionGroupWidget.h>
-#include <Editor/ConfigurationWindowBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Physics/PropertyTypes.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <LyViewPaneNames.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Configuration/CollisionConfiguration.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzFramework/Physics/PropertyTypes.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <Editor/CollisionGroupWidget.h>
+#include <Editor/ConfigurationWindowBus.h>
+#include <LyViewPaneNames.h>
 
 namespace PhysX
 {
@@ -32,12 +32,14 @@ namespace PhysX
         QWidget* CollisionGroupWidget::CreateGUI(QWidget* parent)
         {
             widget_t* picker = new widget_t(parent);
-            
+
+            picker->GetEditButton()->setVisible(true);
             picker->GetEditButton()->setToolTip("Edit Collision Groups");
 
             connect(picker->GetComboBox(), &QComboBox::currentTextChanged, this, [picker]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
             connect(picker->GetEditButton(), &QToolButton::clicked, this, &CollisionGroupWidget::OnEditButtonClicked);
@@ -69,18 +71,16 @@ namespace PhysX
 
         bool CollisionGroupWidget::ReadValuesIntoGUI([[maybe_unused]] size_t index, widget_t* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            QSignalBlocker signalBlocker(GUI->GetComboBox());
-            GUI->GetComboBox()->clear();
+            GUI->clearElements();
 
             auto groupNames = GetGroupNames();
             for (auto& layerName : groupNames)
             {
-                GUI->GetComboBox()->addItem(layerName.c_str());
+                GUI->Add(layerName);
             }
 
-            auto groupName = GetNameFromGroup(instance);
-            GUI->GetComboBox()->setCurrentText(groupName.c_str());
-            return true;
+            GUI->setValue(GetNameFromGroup(instance));
+            return false;
         }
 
         void CollisionGroupWidget::OnEditButtonClicked()

@@ -10,7 +10,6 @@
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <Editor/IEditor.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #endif

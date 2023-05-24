@@ -16,7 +16,7 @@
 namespace AZ::MeshBuilder
 {
     class CubeMeshVerticesTests
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUpMeshBuilder(size_t vertCount)

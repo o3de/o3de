@@ -29,9 +29,9 @@ namespace EMotionFX
     const char* AnimGraphStateCondition::s_functionStateFullyBlendedOut = "State Fully Blended Out";
     const char* AnimGraphStateCondition::s_functionHasReachedSpecifiedPlaytime = "Has Reached Specified Playtime";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition, AnimGraphConditionAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::EventHandler, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition, AnimGraphConditionAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateCondition::EventHandler, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphStateCondition::AnimGraphStateCondition()
         : AnimGraphTransitionCondition()

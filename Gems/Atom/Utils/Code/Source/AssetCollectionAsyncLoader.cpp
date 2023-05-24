@@ -21,7 +21,7 @@ namespace AZ
     class AssetDiscoveryJob : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetDiscoveryJob, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AssetDiscoveryJob, ThreadPoolAllocator);
 
         //! @queryWaitMilliseconds How long to wait between each attempt to query for assets that are not yet present in the asset database.
         AssetDiscoveryJob(AssetCollectionAsyncLoader& assetCollectionLoadManager,

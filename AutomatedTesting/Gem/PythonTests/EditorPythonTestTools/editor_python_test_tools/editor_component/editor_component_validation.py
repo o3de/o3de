@@ -4,15 +4,14 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT+
 import typing
-
 import azlmbr.asset as AzAsset
 import azlmbr.math as Math
-
 from editor_python_test_tools.utils import Report
 from editor_python_test_tools.editor_entity_utils import EditorComponent
 from consts.general import ComponentPropertyVisibilityStates as PropertyVisibility
 from editor_python_test_tools.asset_utils import Asset
-
+from editor_python_test_tools.editor_component.editor_script_canvas import VariableState, Path
+from typing import Any
 
 def compare_vec3(expected: Math.Vector3, actual: Math.Vector3) -> bool:
     """
@@ -194,3 +193,48 @@ def validate_asset_property(property_name: str, get_asset_value: typing.Callable
     assert expected_asset.id.is_equal(expected_asset.id, set_value), \
         f"Error: The {component_name}'s {property_name} property failed to properly set the mesh. Asset Id: " \
         f"{expected_asset.id} was expected but Asset Id: {set_value} was retrieved from \"{expected_asset.get_path()}\""
+
+
+def validate_script_canvas_graph_file(get_script_canvas_graph_file: typing.Callable,
+                                      set_script_canvas_graph_file: typing.Callable, sc_file_path: str) -> None:
+    """
+    Function to validate the setting of a script canvas graph file to the file source field in the script canvas component
+
+    get_script_canvas_graph_file: getter for the script canvas component file source handle field
+    set_script_canvas_graph_file: setter for the script canvas component's file source field.
+    sc_file_path: the path on disk where the graph file exists
+
+    """
+    Report.info(f"Validating Script Canvas component's file source field can be set.")
+
+    old_value = get_script_canvas_graph_file()
+
+    set_script_canvas_graph_file(sc_file_path)
+
+    set_value = get_script_canvas_graph_file()
+    assert (set_value != old_value) and set_value is not None, f"Graph file could not be set!"
+
+
+def validate_script_canvas_variable_changed(get_variable_value: typing.Callable, set_variable_value: typing.Callable,
+                                            variable_name: str, variable_state: VariableState, expected_variable_value: Any) -> None:
+    """
+    Function for validating that a script canvas component variable can be changed.
+
+    get_variable_value: getter for variables on the script canvas component
+    set_variable_value: setter for variables on the script canvas component
+    variable_name: the name of the variable to change
+    variable_state: whether the variable is initialized or not within graph file(initialized by the script canvas editor).
+    variable_value: the value to set the variable to. has no rigid type since variables can be primitives or user created types.
+    o3de/o3de#13344. We currently only support strings and boolean variables.
+
+
+    """
+    Report.info(f"Validating Script Canvas component's variable can be set. This will seek out the variable in the "
+                f"script canvas component's exposed variable list and set data to it.")
+
+    set_variable_value(variable_name, variable_state, expected_variable_value)
+
+    new_variable_value = get_variable_value(variable_name, variable_state)
+
+    assert expected_variable_value == new_variable_value, f"Component variable {variable_name} was not set properly. " \
+                                                          f"check the variable's name, state or incomming type being set."

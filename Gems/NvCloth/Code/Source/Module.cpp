@@ -27,7 +27,7 @@ namespace NvCloth
     {
     public:
         AZ_RTTI(Module, "{34C529D4-688F-4B51-BF60-75425754A7E6}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Module, AZ::SystemAllocator);
 
         Module()
             : AZ::Module()

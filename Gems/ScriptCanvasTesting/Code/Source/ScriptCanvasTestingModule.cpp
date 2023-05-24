@@ -18,7 +18,7 @@ namespace ScriptCanvasTesting
     {
     public:
         AZ_RTTI(ScriptCanvasTestingModule, "{AF32BC51-C4E5-48C4-B5E4-D7877C303D43}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasTestingModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasTestingModule, AZ::SystemAllocator);
 
         ScriptCanvasTestingModule()
         {

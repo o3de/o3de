@@ -139,7 +139,7 @@ bool CImageUtil::LoadPGM(const QString& fileName, CImageEx& image)
 
 
     fseek(file, 0, SEEK_END);
-    int fileSize = ftell(file);
+    int fileSize = static_cast<int>(ftell(file));
     fseek(file, 0, SEEK_SET);
 
     char* str = new char[fileSize];

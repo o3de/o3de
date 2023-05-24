@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <Atom/Features/ParallaxMapping.azsli>
 #include "../MaterialInputs/ParallaxInput.azsli"
 #include <Atom/Features/MatrixUtility.azsli>
@@ -13,54 +15,57 @@
 
  void SetPixelDepth(
      inout float3 positionWS,
-     float3 normal,
-     float3 tangents[UvSetCount],
-     float3 bitangents[UvSetCount],
+     real3 normal,
+     real3 tangents[UvSetCount],
+     real3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     real4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
 {
-    float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-    float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
+    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : real3x3(CreateIdentity3x3());
     
-    float heightmapScale = MaterialSrg::m_heightmapScale;
-    float heightmapOffset = MaterialSrg::m_heightmapOffset;
+    real heightmapScale = real(MaterialSrg::m_heightmapScale);
+    real heightmapOffset = real(MaterialSrg::m_heightmapOffset);
     
-    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
+    AdjustParallaxShadowCaster(heightmapScale, heightmapOffset, real(MaterialSrg::m_parallax_pdo_shadowFactor));
 
     GetParallaxInput(
         normal, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex],
         heightmapScale, heightmapOffset,
-        ObjectSrg::GetWorldMatrix(), uvMatrix, uvMatrixInverse,
+        objectToWorld, uvMatrix, uvMatrixInverse,
         uvs[MaterialSrg::m_parallaxUvIndex], positionWS, depthNDC, depthCS, isClipped);
 }
 
  void SetPixelDepth(
      inout float3 positionWS,
-     float3 normal,
-     float3 tangents[UvSetCount],
-     float3 bitangents[UvSetCount],
+     real3 normal,
+     real3 tangents[UvSetCount],
+     real3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
+     real4x4 objectToWorld,
      inout float depthNDC)
 {
     // Dummy variables to call the above function
-    float depthCS = 1.0;
+    real depthCS = 1.0;
     bool isClipped;
     
-    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, isClipped);
+    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 }
 
  void SetPixelDepth(
      inout float3 positionWS,
-     float3 normal,
-     float3 tangents[UvSetCount],
-     float3 bitangents[UvSetCount],
+     real3 normal,
+     real3 tangents[UvSetCount],
+     real3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      inout float2 detailUv[UvSetCount],
      bool isFrontFace,
+     real4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
@@ -70,7 +75,7 @@
     // This is the same as:   detailUv -= oldUv;   detailUv += newUv;
     detailUv[MaterialSrg::m_parallaxUvIndex] -= uvs[MaterialSrg::m_parallaxUvIndex];
     
-    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, depthNDC, depthCS, isClipped);
+    SetPixelDepth(positionWS, normal, tangents, bitangents, uvs, isFrontFace, objectToWorld, depthNDC, depthCS, isClipped);
 
     // Apply second part of the offset to the detail UV (see comment above)
     detailUv[MaterialSrg::m_parallaxUvIndex] += uvs[MaterialSrg::m_parallaxUvIndex];

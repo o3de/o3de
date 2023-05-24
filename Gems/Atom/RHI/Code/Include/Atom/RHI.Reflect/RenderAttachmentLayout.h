@@ -41,6 +41,21 @@ namespace AZ
             AttachmentLoadStoreAction m_loadStoreAction;
         };
 
+        //! Describes a subpass input attachment.
+        struct SubpassInputDescriptor
+        {
+            AZ_TYPE_INFO(SubpassInputDescriptor, "{5E5B933D-8209-4722-8AC5-C3FEA1D75BB3}");
+            static void Reflect(ReflectContext* context);
+
+            bool operator==(const SubpassInputDescriptor& other) const;
+            bool operator!=(const SubpassInputDescriptor& other) const;
+
+            //! Attachment index that this subpass input references.
+            uint32_t m_attachmentIndex = 0;
+            //! Aspects that are used by the input (needed by some implementations, like Vulkan, when creating a renderpass with a subpass input)
+            RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::None;
+        };
+
         //! Describes the attachments of one subpass as part of a render target layout.
         //! It include descriptions about the render targets, subpass inputs and depth/stencil attachment.
         struct SubpassRenderAttachmentLayout
@@ -58,9 +73,11 @@ namespace AZ
             //! List of render targets used by the subpass.
             AZStd::array<RenderAttachmentDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_rendertargetDescriptors;
             //! List of subpass inputs used by the subpass.
-            AZStd::array<uint32_t, Limits::Pipeline::AttachmentColorCountMax> m_subpassInputIndices = { {} };
-            //! Descriptor of the depth/stencil attachment. Invalid if not used.
+            AZStd::array<SubpassInputDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_subpassInputDescriptors = { {} };
+            //! Descriptor of the depth/stencil attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.
             RenderAttachmentDescriptor m_depthStencilDescriptor;
+            //! Descriptor of the shading rate attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.
+            RenderAttachmentDescriptor m_shadingRateDescriptor;
         };
 
         //! A RenderAttachmentLayout consist of a description of one or more subpasses.

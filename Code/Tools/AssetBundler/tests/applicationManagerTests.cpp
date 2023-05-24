@@ -40,19 +40,19 @@ namespace AssetBundler
     };
 
     class BasicApplicationManagerTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
 
     };
 
     class ApplicationManagerTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             m_data = AZStd::make_unique<StaticData>();
 
             AZ::SettingsRegistryInterface* registry = nullptr;
@@ -112,7 +112,7 @@ namespace AssetBundler
             m_data->m_applicationManager->Stop();
             m_data->m_applicationManager.reset();
             m_data.reset();
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         struct StaticData

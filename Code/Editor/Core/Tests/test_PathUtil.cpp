@@ -10,7 +10,7 @@
 namespace UnitTest
 {
     class PathUtil
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 

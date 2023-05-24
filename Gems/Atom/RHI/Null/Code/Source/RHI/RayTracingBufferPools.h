@@ -18,7 +18,7 @@ namespace AZ
             : public RHI::RayTracingBufferPools
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingBufferPools, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingBufferPools, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingBufferPools> Create() { return aznew RayTracingBufferPools; }
 

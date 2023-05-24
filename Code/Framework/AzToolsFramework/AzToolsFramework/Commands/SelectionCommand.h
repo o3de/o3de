@@ -27,7 +27,7 @@ namespace AzToolsFramework
         : public UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(SelectionCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SelectionCommand, AZ::SystemAllocator);
         AZ_RTTI(SelectionCommand, "{07A0CF6A-79FA-4EA3-B056-1C0DA6F36699}", UndoSystem::URSequencePoint);
 
         SelectionCommand(const AZStd::vector<AZ::EntityId>& proposedSelection, const AZStd::string& friendlyName);

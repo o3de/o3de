@@ -17,7 +17,7 @@ class CAnimCVarNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimCVarNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimCVarNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimCVarNode, "{9059B454-EE73-4865-9B76-8C8430E3BB82}", CAnimNode);
 
     CAnimCVarNode(const int id);

@@ -23,9 +23,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
 
-AZ_CVAR(bool, bg_AssertNetBindOnDeactivationWithoutMarkForRemoval, false, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "If true, assert when a multiplayer entity is deactivated without first calling MarkForRemoval from NetworkEntityManager.");
-
 namespace Multiplayer
 {
     void NetBindComponent::Reflect(AZ::ReflectContext* context)
@@ -48,8 +45,8 @@ namespace Multiplayer
                     "Network Binding", "The Network Binding component marks an entity as able to be replicated across the network")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/NetBinding.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/NetBinding.svg")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/NetworkBinding.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/NetworkBinding.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"));
             }
         }
@@ -171,6 +168,13 @@ namespace Multiplayer
         ;
     }
 
+    NetBindComponent::~NetBindComponent()
+    {
+        // If the entity is initialized but never activated, then it's possible to still be in a registered state.
+        // Make sure that the entity is unregistered from the NetworkEntityManager and NetworkEntityTracker before destruction.
+        Unregister();
+    }
+
     void NetBindComponent::Init()
     {
         auto* netEntityManager = AZ::Interface<INetworkEntityManager>::Get();
@@ -192,8 +196,33 @@ namespace Multiplayer
         }
     }
 
+    void NetBindComponent::Register(AZ::Entity* entity)
+    {
+        if (!m_isRegistered)
+        {
+            GetNetworkEntityTracker()->RegisterNetBindComponent(entity, this);
+            m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, entity);
+            m_isRegistered = true;
+        }
+    }
+
+    void NetBindComponent::Unregister()
+    {
+        if (m_isRegistered)
+        {
+            GetNetworkEntityTracker()->UnregisterNetBindComponent(this);
+            GetNetworkEntityManager()->RemoveEntityFromEntityMap(m_netEntityId);
+            m_netEntityHandle = {};
+            m_isRegistered = false;
+        }
+    }
+
     void NetBindComponent::Activate()
     {
+        // If this entity has been activated and deactivated multiple times since creation, we might need to re-register
+        // with the NetworkEntityTracker and NetworkEntityManager.
+        Register(GetEntity());
+
         m_needsToBeStopped = true;
         if (m_netEntityRole == NetEntityRole::Authority)
         {
@@ -216,13 +245,7 @@ namespace Multiplayer
 
     void NetBindComponent::Deactivate()
     {
-        if (bg_AssertNetBindOnDeactivationWithoutMarkForRemoval)
-        {
-            AZ_Assert(
-                m_needsToBeStopped == false,
-                "Entity (%s) appears to have been improperly deleted. Use MarkForRemoval to correctly clean up a networked entity.",
-                GetEntity() ? GetEntity()->GetName().c_str() : "null");
-        }
+        StopEntity();
         m_handleLocalServerRpcMessageEventHandle.Disconnect();
         m_handleLocalAutonomousToAuthorityRpcMessageEventHandle.Disconnect();
         m_handleLocalAuthorityToClientRpcMessageEventHandle.Disconnect();
@@ -231,7 +254,8 @@ namespace Multiplayer
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
         }
 
-        GetNetworkEntityTracker()->UnregisterNetBindComponent(this);
+        // Remove this entity from the NetworkEntityTracker and NetworkEntityManager.
+        Unregister();
     }
 
     NetEntityRole NetBindComponent::GetNetEntityRole() const
@@ -593,6 +617,11 @@ namespace Multiplayer
         eventHandler.Connect(m_entityCorrectionEvent);
     }
 
+    void NetBindComponent::AddNetworkActivatedEventHandler(AZ::Event<>::Handler& eventHandler)
+    {
+        eventHandler.Connect(m_onNetworkActivated);
+    }
+
     bool NetBindComponent::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)
     {
         m_predictableRecord.ResetConsumedBits();
@@ -661,9 +690,8 @@ namespace Multiplayer
         m_netEntityRole = netEntityRole;
         m_prefabEntityId = prefabEntityId;
 
-        GetNetworkEntityTracker()->RegisterNetBindComponent(entity, this);
-
-        m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, entity);
+        // Register the entity with the NetworkEntityTracker and NetworkEntityManager.
+        Register(entity);
 
         for (AZ::Component* component : entity->GetComponents())
         {
@@ -789,6 +817,11 @@ namespace Multiplayer
             component->NetworkAttach(this, m_currentRecord, m_predictableRecord);
         }
         m_totalRecord = m_currentRecord;
+    }
+
+    void NetBindComponent::NetworkActivated()
+    {
+        m_onNetworkActivated.Signal();
     }
 
     void NetBindComponent::HandleMarkedDirty()

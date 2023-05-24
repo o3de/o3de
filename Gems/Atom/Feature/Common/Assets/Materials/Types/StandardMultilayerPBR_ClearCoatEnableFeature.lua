@@ -14,9 +14,9 @@
 
 function GetMaterialPropertyDependencies()
     return { 
-        "layer1_clearCoat.enable",
-        "layer2_clearCoat.enable",
-        "layer3_clearCoat.enable" 
+        "layer1.clearCoat.enable",
+        "layer2.clearCoat.enable",
+        "layer3.clearCoat.enable" 
     }
 end
 
@@ -25,8 +25,8 @@ function GetShaderOptionDependencies()
 end
  
 function Process(context)
-    local enable1 = context:GetMaterialPropertyValue_bool("layer1_clearCoat.enable")
-    local enable2 = context:GetMaterialPropertyValue_bool("layer2_clearCoat.enable")
-    local enable3 = context:GetMaterialPropertyValue_bool("layer3_clearCoat.enable")
+    local enable1 = context:GetMaterialPropertyValue_bool("layer1.clearCoat.enable")
+    local enable2 = context:GetMaterialPropertyValue_bool("layer2.clearCoat.enable")
+    local enable3 = context:GetMaterialPropertyValue_bool("layer3.clearCoat.enable")
     context:SetShaderOptionValue_bool("o_clearCoat_feature_enabled", enable1 or enable2 or enable3)
 end

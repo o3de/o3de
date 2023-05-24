@@ -38,7 +38,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(MockManifestInt, "{D6F96B49-4E6F-4EE8-A5A3-959B76F90DA8}", IManifestObject);
-                AZ_CLASS_ALLOCATOR(MockManifestInt, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(MockManifestInt, AZ::SystemAllocator);
 
                 MockManifestInt()
                     : m_value(0)
@@ -81,7 +81,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(MockSceneManifest, "{E6B3247F-1B48-49F8-B514-18FAC77C0F94}", SceneManifest);
-                AZ_CLASS_ALLOCATOR(MockSceneManifest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(MockSceneManifest, AZ::SystemAllocator);
 
                 AZ::Outcome<void, AZStd::string> LoadFromString(const AZStd::string& fileContents, SerializeContext* context, JsonRegistrationContext* registrationContext, bool loadXml = false)
                 {
@@ -109,7 +109,7 @@ namespace AZ
 
 
             class SceneManifestTest
-                : public UnitTest::AllocatorsTestFixture
+                : public UnitTest::LeakDetectionFixture
                 , public AZ::Debug::TraceMessageBus::Handler
             {
             public:

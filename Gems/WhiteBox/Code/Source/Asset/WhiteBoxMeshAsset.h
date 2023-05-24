@@ -23,7 +23,7 @@ namespace WhiteBox
         public:
             friend class WhiteBoxMeshAssetHandler;
 
-            AZ_CLASS_ALLOCATOR(WhiteBoxMeshAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WhiteBoxMeshAsset, AZ::SystemAllocator);
             AZ_RTTI(WhiteBoxMeshAsset, "{6784304A-4ED6-42FD-A5C9-316265F071F2}", AZ::Data::AssetData);
 
             ~WhiteBoxMeshAsset()

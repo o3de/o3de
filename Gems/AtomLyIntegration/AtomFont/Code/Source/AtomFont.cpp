@@ -641,7 +641,7 @@ void AZ::AtomFont::OnLanguageChanged()
 {
     ReloadAllFonts();
 
-    EBUS_EVENT(LanguageChangeNotificationBus, LanguageChanged);
+    LanguageChangeNotificationBus::Broadcast(&LanguageChangeNotificationBus::Events::LanguageChanged);
 }
 
 void AZ::AtomFont::ReloadAllFonts()
@@ -673,7 +673,7 @@ void AZ::AtomFont::ReloadAllFonts()
 
     // All UI text components need to reload their font assets (both in-game
     // and in-editor).
-    EBUS_EVENT(FontNotificationBus, OnFontsReloaded);
+    FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontsReloaded);
 }
 
 void AZ::AtomFont::UnregisterFont(const char* fontName)

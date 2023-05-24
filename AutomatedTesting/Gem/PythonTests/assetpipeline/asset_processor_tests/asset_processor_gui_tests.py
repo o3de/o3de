@@ -17,6 +17,7 @@ import configparser
 from pathlib import Path
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
@@ -65,9 +66,9 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.SUITE_periodic
 @pytest.mark.assetpipeline
-class TestsAssetProcessorGUI_Windows(object):
+class TestsAssetProcessorGUI(object):
     """
-    Specific Tests for Asset Processor GUI To Only Run on Windows
+    Specific Tests for Asset Processor GUI
     """
 
     @pytest.mark.assetpipeline
@@ -92,15 +93,15 @@ class TestsAssetProcessorGUI_Windows(object):
         assert output_message == "pong", "Failed to receive response on control channel socket"
         asset_processor.stop()
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14930")
     @pytest.mark.test_case_id("C1564070")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_ProcessAssets_ReprocessDeletedCache(self, asset_processor, workspace):
+    def test_ProcessAssets_ReprocessDeletedCache(self, asset_processor, workspace):
         """
         Deleting assets from Cache will make them re-processed in the already running AP
         """
 
-        START_UP_SECONDS = 3
         asset_processor.create_temp_asset_root()
         asset_processor.add_source_folder_assets(os.path.join(workspace.project, 'Fonts'))
         font_path = os.path.join(asset_processor.temp_project_cache(), "fonts")
@@ -109,7 +110,7 @@ class TestsAssetProcessorGUI_Windows(object):
         result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
-        # check that files exist in the cache: dev\Cache\AutomatedTesting\pc\automatedtesting\fonts
+        # check that files exist in the cache: \tempAssetRoot\AutomatedTesting\Cache\pc\fonts
         assert os.path.exists(font_path), "Fonts folder was not found initially."
 
         # delete the cached files
@@ -127,10 +128,10 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1564065")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
-    def test_WindowsPlatforms_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
+
+    def test_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
                                                                          ):
-        # fmt:on
+
         """
         Asset Processor Deletes processed assets when source is removed from project folder (while running)
 
@@ -176,10 +177,10 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1591563")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
-    def test_WindowsPlatforms_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
+
+    def test_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
                                                                 ):
-        # fmt:on
+
         """
         Processing changed files (while running)
 
@@ -202,7 +203,7 @@ class TestsAssetProcessorGUI_Windows(object):
 
         # Save path to test asset in project folder and path to test asset in cache
         project_asset_path = os.path.join(test_assets_folder, "C1591563_test_asset.txt")
-        cache_asset_path = os.path.join(cache_path, "C1591563_test_asset.txt")
+        cache_asset_path = os.path.join(cache_path, "c1591563_test_asset.txt")
 
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
@@ -236,7 +237,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C24168803")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_RunAP_ProcessesIdle(self, asset_processor):
+    def test_RunAP_ProcessesIdle(self, asset_processor):
         """
         Asset Processor goes idle
 
@@ -269,7 +270,7 @@ class TestsAssetProcessorGUI_Windows(object):
     @pytest.mark.test_case_id("C1564064")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    def test_WindowsPlatforms_AddAssetsWhileRunning_AssetsProcessed(
+    def test_AddAssetsWhileRunning_AssetsProcessed(
         self, ap_setup_fixture, workspace, asset_processor
     ):
         """
@@ -298,7 +299,7 @@ class TestsAssetProcessorGUI_Windows(object):
         # Expected test asset sources and products
         exp_project_level_assets = ["TestDependenciesLevel.prefab"]
         exp_project_test_assets = [new_asset]
-        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower(),"TestDependenciesLevel.network.spawnable".lower()]
+        exp_cache_level_assets = ["TestDependenciesLevel.spawnable".lower()]
         exp_cache_test_assets = [f"{new_asset_lower}_compiled", f"{new_asset_lower}_fn_compiled", "c1564064_vm.luac"]
 
         result, _ = asset_processor.gui_process(quitonidle=False)
@@ -317,27 +318,27 @@ class TestsAssetProcessorGUI_Windows(object):
         # Verify level and test assets in project folder
         level_assets_list = utils.get_relative_file_paths(project_level_dir)
         test_assets_list = utils.get_relative_file_paths(test_project_asset_dir)
-        # fmt:off
+
         assert utils.compare_lists(level_assets_list, exp_project_level_assets), \
             "One or more assets is missing between the level in the project and its expected source assets"
         assert utils.compare_lists(test_assets_list, exp_project_test_assets), \
             "One or more assets is missing between the test assets in the project and the expected source assets"
-        # fmt:on
+
 
         # Verify level and test assets in cache folder
         level_assets_list = utils.get_relative_file_paths(cache_level_dir)
         test_assets_list = utils.get_relative_file_paths(os.path.join(asset_processor.temp_project_cache(),
                                                                       env["test_asset_dir_name"]))
-        # fmt:off
+
         assert utils.compare_lists(level_assets_list, exp_cache_level_assets), \
             "One or more assets is missing between the level in the cache and its expected product assets"
         assert utils.compare_lists(test_assets_list, exp_cache_test_assets), \
             "One or more assets is missing between the test assets in the cache and the expected product assets"
-        # fmt:on
+
         asset_processor.stop()
 
     @pytest.mark.assetpipeline
-    def test_APStop_TimesOut(self, ap_setup_fixture, asset_processor):
+    def test_APStop_TimesOut(self, asset_processor):
         """
         Tests whether or not Asset Processor will Time Out
 
@@ -347,8 +348,9 @@ class TestsAssetProcessorGUI_Windows(object):
         3. Verify that Asset Processor times out and returns the expected StopReason
         """
 
+        asset_processor.create_temp_asset_root()
         asset_processor.start()
-        stop = asset_processor.stop(timeout=0)
+        stop = asset_processor.stop(timeout=-1)
         assert stop == StopReason.TIMEOUT, f"AP did not time out as expected, Expected: {StopReason.TIMEOUT} Actual: {stop}"
 
     @pytest.mark.assetpipeline

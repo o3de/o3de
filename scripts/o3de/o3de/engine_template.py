@@ -16,7 +16,7 @@ import sys
 import json
 import uuid
 import re
-
+from typing import Tuple
 
 from o3de import manifest, register, validation, utils
 
@@ -672,7 +672,7 @@ def create_template(source_path: pathlib.Path,
         return ext.lower() in cpp_file_ext
 
     def _transform_into_template(s_data: object,
-                                 prefer_sanitized_name: bool = False) -> (bool, str):
+                                 prefer_sanitized_name: bool = False) -> Tuple[bool, str]:
         """
         Internal function to transform any data into templated data
         :param s_data: the input data, this could be file data or file name data
@@ -706,32 +706,77 @@ def create_template(source_path: pathlib.Path,
         if not keep_license_text:
             t_data = _replace_license_text(t_data)
 
+        def find_pattern_and_add_replacement(pattern: str, replace_placeholder: str):
+            """
+            Searchs for pattern containing Uuid within the file data
+            and replaces matched Uuids with with the specified placeholder
+            :param pattern: Regular expression pattern to search for Uuid
+                            Pattern must contain a symbolic group of (?P<Uuid>...)
+                            as documented at https://docs.python.org/3/library/re.html#regular-expression-syntax
+            :replace_placeholder: text to replaced matched Uuid symbolic group pattern with
+            """
+            nonlocal t_data
+            match_result_list = re.findall(pattern, t_data)
+            if match_result_list:
+                for uuid_text in match_result_list:
+                    replacements.append((uuid_text, replace_placeholder))
+                    t_data = t_data.replace(uuid_text, replace_placeholder)
+
         # See if this file has the ModuleClassId
-        try:
-            pattern = r'.*AZ_RTTI\(\$\{SanitizedCppName\}Module, \"(?P<ModuleClassId>\{.*-.*-.*-.*-.*\})\",'
-            module_class_id = re.search(pattern, t_data).group('ModuleClassId')
-            replacements.append((module_class_id, '${ModuleClassId}'))
-            t_data = t_data.replace(module_class_id, '${ModuleClassId}')
-        except Exception as e:
-            pass
+        find_pattern_and_add_replacement( \
+            r'.*AZ_RTTI\(\$\{SanitizedCppName\}Module,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${ModuleClassId}')
 
         # See if this file has the SysCompClassId
-        try:
-            pattern = r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}SystemComponent, \"(?P<SysCompClassId>\{.*-.*-.*-.*-.*\})\"'
-            sys_comp_class_id = re.search(pattern, t_data).group('SysCompClassId')
-            replacements.append((sys_comp_class_id, '${SysCompClassId}'))
-            t_data = t_data.replace(sys_comp_class_id, '${SysCompClassId}')
-        except Exception as e:
-            pass
+        find_pattern_and_add_replacement( \
+            r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}SystemComponent,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${SysCompClassId}')
 
         # See if this file has the EditorSysCompClassId
-        try:
-            pattern = r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}EditorSystemComponent, \"(?P<EditorSysCompClassId>\{.*-.*-.*-.*-.*\})\"'
-            editor_sys_comp_class_id = re.search(pattern, t_data).group('EditorSysCompClassId')
-            replacements.append((editor_sys_comp_class_id, '${EditorSysCompClassId}'))
-            t_data = t_data.replace(editor_sys_comp_class_id, '${EditorSysCompClassId}')
-        except Exception as e:
-            pass
+        find_pattern_and_add_replacement( \
+            r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}EditorSystemComponent,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${EditorSysCompClassId}')
+
+        # Replace TypeIds.h TypeIds values with placeholders
+        # Replace <Uuid> values for EditorSystemComponentTypeId with the ${EditorSysCompClassId} placeholder
+        # Users non-capturing group of (?:...) to match a separating '=', '{' or '('
+        find_pattern_and_add_replacement( \
+            r'.*\$\{SanitizedCppName\}EditorSystemComponentTypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${EditorSysCompClassId}')
+
+        # Replace the <Uuid> values from a line that matches patterns such as
+        # 1. *${SanitizedCppName}SystemComponentTypeId = <Uuid>;
+        # 2. *${SanitizedCppName}SystemComponentTypeId{<Uuid>};
+        # 3. *${SanitizedCppName}SystemComponentTypeId(<Uuid>);
+        # with the ${SysCompClassId} placeholder
+        find_pattern_and_add_replacement( \
+            r'.*\$\{SanitizedCppName\}SystemComponentTypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${SysCompClassId}')
+
+        # Replace <Uuid> values for ModuleTypeId with the ${EditorSysCompClassId} placeholder
+        find_pattern_and_add_replacement( \
+            r'.*\$\{SanitizedCppName\}ModuleTypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${ModuleClassId}')
+
+        # Replace <Uuid> values for remaining *TypeId variables with the {${Random_Uuid}} placeholder
+        find_pattern_and_add_replacement( \
+            r'.*TypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+
+        # Finally replace any remaining AZ_TYPE_INFO*, AZ_RTTI*, AZ_COMPONENT*, and AZ_EDITOR_COMPONENT*
+        # with the {${Random_Uuid}} placehlder
+        find_pattern_and_add_replacement( \
+            r'.*AZ_TYPE_INFO.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+        find_pattern_and_add_replacement( \
+            r'.*AZ_RTTI.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+        find_pattern_and_add_replacement( \
+            r'.*AZ_COMPONENT.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+        find_pattern_and_add_replacement( \
+            r'.*AZ_EDITOR_COMPONENT.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
 
         # we want to send back the transformed data and whether or not this file
         # may require transformation when instantiated. So if the input data is not the
@@ -1454,7 +1499,8 @@ def create_project(project_path: pathlib.Path,
                    system_component_class_id: str = None,
                    editor_system_component_class_id: str = None,
                    module_id: str = None,
-                   project_id: str = None) -> int:
+                   project_id: str = None,
+                   version:str = None) -> int:
     """
     Template instantiation specialization that makes all default assumptions for a Project template instantiation,
      reducing the effort needed in instancing a project
@@ -1484,6 +1530,7 @@ def create_project(project_path: pathlib.Path,
      random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
     :param project_id: optionally specify a str for the project id, default is random uuid
+    :param version: optionally specify a str for the project version, default is 1.0.0
     :return: 0 for success or non 0 failure code
     """
     if template_name and template_path:
@@ -1696,6 +1743,7 @@ def create_project(project_path: pathlib.Path,
     replacements.append(("${NameUpper}", project_name.upper()))
     replacements.append(("${NameLower}", project_name.lower()))
     replacements.append(("${SanitizedCppName}", sanitized_cpp_name))
+    replacements.append(("${Version}", version if version else "1.0.0"))
 
     # was a project id specified
     if project_id:
@@ -1843,7 +1891,8 @@ def create_gem(gem_path: pathlib.Path,
                no_register: bool = False,
                system_component_class_id: str = None,
                editor_system_component_class_id: str = None,
-               module_id: str = None) -> int:
+               module_id: str = None,
+               version: str = None) -> int:
     """
     Template instantiation specialization that makes all default assumptions for a Gem template instantiation,
      reducing the effort needed in instancing a gem
@@ -1886,6 +1935,7 @@ def create_gem(gem_path: pathlib.Path,
     :param editor_system_component_class_id: optionally specify a uuid for the editor system component class, default is
      random uuid
     :param module_id: optionally specify a uuid for the module class, default is random uuid
+    :param version: optionally specify a version, default is 1.0.0
     :return: 0 for success or non 0 failure code
     """
     if template_name and template_path:
@@ -2108,7 +2158,8 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${LicenseURL}", license_url if license_url else ""))
     replacements.append(("${Origin}", origin if origin else ""))
     replacements.append(("${OriginURL}", origin_url if origin_url else ""))
-    
+    replacements.append(("${Version}", version if version else "1.0.0"))
+
 
     tags = [gem_name]
     if user_tags:
@@ -2304,7 +2355,8 @@ def _run_create_project(args: argparse) -> int:
                           args.system_component_class_id,
                           args.editor_system_component_class_id,
                           args.module_id,
-                          args.project_id)
+                          args.project_id,
+                          args.version)
 
 
 def _run_create_gem(args: argparse) -> int:
@@ -2337,7 +2389,8 @@ def _run_create_gem(args: argparse) -> int:
                       args.no_register,
                       args.system_component_class_id,
                       args.editor_system_component_class_id,
-                      args.module_id)
+                      args.module_id,
+                      args.version)
 
 
 def add_args(subparsers) -> None:
@@ -2405,12 +2458,12 @@ def add_args(subparsers) -> None:
                                                 ' --template-restricted-path C:/restricted'
                                                 ' --template-restricted-platform-relative-path some/folder'
                                                 ' => C:/restricted/<platform>/some/folder/<template_name>')
-    create_template_subparser.add_argument('-kr', '--keep-restricted-in-template', action='store_true',
+    create_template_subparser.add_argument('--keep-restricted-in-template', '-kr', action='store_true',
                                            default=False,
                                            help='Should the template keep the restricted platforms in the template, or'
                                                 ' create the restricted files in the restricted folder, default is'
                                                 ' False so it will create a restricted folder by default')
-    create_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_template_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                            default=False,
                                            help='Should license in the template files text be kept in the'
                                                 ' instantiation, default is False, so will not keep license text'
@@ -2424,7 +2477,7 @@ def add_args(subparsers) -> None:
                                                 ' Note: <TemplateName> is automatically ${Name}'
                                                 ' Note: <templatename> is automatically ${NameLower}'
                                                 ' Note: <TEMPLATENAME> is automatically ${NameUpper}')
-    create_template_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_template_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                            help='Copies to new template directory even if it exist.')
     create_template_subparser.add_argument('--no-register', action='store_true', default=False,
                                            help='If the template is created successfully, it will not register the'
@@ -2497,12 +2550,12 @@ def add_args(subparsers) -> None:
                                                      ' --template-restricted-path C:/restricted'
                                                      ' --template-restricted-platform-relative-path some/folder'
                                                      ' => C:/restricted/<platform>/some/folder/<template_name>')
-    create_from_template_subparser.add_argument('-kr', '--keep-restricted-in-instance', action='store_true',
+    create_from_template_subparser.add_argument('--keep-restricted-in-instance', '-kr', action='store_true',
                                                 default=False,
                                                 help='Should the instance keep the restricted platforms in the instance,'
                                                      ' or create the restricted files in the restricted folder, default'
                                                      ' is False')
-    create_from_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_from_template_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                                 default=False,
                                                 help='Should license in the template files text be kept in the instantiation,'
                                                      ' default is False, so will not keep license text by default.'
@@ -2516,7 +2569,7 @@ def add_args(subparsers) -> None:
                                                      ' Note: ${Name} is automatically <DestinationName>'
                                                      ' Note: ${NameLower} is automatically <destinationname>'
                                                      ' Note: ${NameUpper} is automatically <DESTINATIONNAME>')
-    create_from_template_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_from_template_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                                 help='Copies over instantiated template directory even if it exist.')
     create_from_template_subparser.add_argument('--no-register', action='store_true', default=False,
                                                 help='If the project template is instantiated successfully, it will not register the'
@@ -2586,11 +2639,11 @@ def add_args(subparsers) -> None:
                                                ' --template-restricted-path C:/restricted'
                                                ' --template-restricted-platform-relative-path some/folder'
                                                ' => C:/restricted/<platform>/some/folder/<template_name>')
-    create_project_subparser.add_argument('-kr', '--keep-restricted-in-project', action='store_true',
+    create_project_subparser.add_argument('--keep-restricted-in-project', '-kr', action='store_true',
                                           default=False,
                                           help='Should the new project keep the restricted platforms in the project, or'
                                                'create the restricted files in the restricted folder, default is False')
-    create_project_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_project_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                           default=False,
                                           help='Should license in the template files text be kept in the instantiation,'
                                                ' default is False, so will not keep license text by default.'
@@ -2620,11 +2673,13 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--project-id', type=str, required=False,
                                           help='The str id you want to associate with the project, default is a random uuid'
                                                ' Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
-    create_project_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_project_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                           help='Copies over instantiated template directory even if it exist.')
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
                                           help='If the project template is instantiated successfully, it will not register the'
                                                ' project with the global or engine manifest file.')
+    create_project_subparser.add_argument('--version', type=str, required=False,
+                                          help='An optional version. Defaults to 1.0.0')
     create_project_subparser.set_defaults(func=_run_create_project)
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
@@ -2699,11 +2754,11 @@ def add_args(subparsers) -> None:
                                            ' Note: ${Name} is automatically <GemName>'
                                            ' Note: ${NameLower} is automatically <gemname>'
                                            ' Note: ${NameUpper} is automatically <GEMANME>')
-    create_gem_subparser.add_argument('-kr', '--keep-restricted-in-gem', action='store_true',
+    create_gem_subparser.add_argument('--keep-restricted-in-gem', '-kr', action='store_true',
                                       default=False,
                                       help='Should the new gem keep the restricted platforms in the project, or'
                                            'create the restricted files in the restricted folder, default is False')
-    create_gem_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_gem_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                       default=False,
                                       help='Should license in the template files text be kept in the instantiation,'
                                            ' default is False, so will not keep license text by default.'
@@ -2719,7 +2774,7 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('--module-id', type=uuid.UUID, required=False,
                                       help='The uuid you want to associate with the gem module,'
                                            ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
-    create_gem_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_gem_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                       help='Copies over instantiated template directory even if it exist.')
     create_gem_subparser.add_argument('--no-register', action='store_true', default=False,
                                       help='If the gem template is instantiated successfully, it will not register the'
@@ -2738,17 +2793,17 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('-lu', '--license-url', type=str, required=False,
                        default='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0',
                        help='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0')
-    create_gem_subparser.add_argument('-o', '--origin', type=str, required=False, 
+    create_gem_subparser.add_argument('-o', '--origin', type=str, required=False,
                        default='The name of the originator or creator',
                        help='The name of the originator or creator i.e. XYZ Inc.')
-    create_gem_subparser.add_argument('-ou', '--origin-url', type=str, required=False, 
+    create_gem_subparser.add_argument('-ou', '--origin-url', type=str, required=False,
                        default='The website for this Gem',
                        help='The website for your Gem. i.e. http://www.mydomain.com')
     create_gem_subparser.add_argument('-ut', '--user-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Can be specified multiple times.')
     create_gem_subparser.add_argument('-pl', '--platforms', type=str, nargs='*', required=False,
                        help='Add platform(s) to platforms property. Can be specified multiple times.')
-    create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False, 
+    create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False,
                        default="preview.png",
                        help='Select Gem icon path')
     create_gem_subparser.add_argument('-du', '--documentation-url', type=str, required=False,
@@ -2756,6 +2811,8 @@ def add_args(subparsers) -> None:
                        help='Link to any documentation of your Gem i.e. https://o3de.org/docs/user-guide/gems/...')
     create_gem_subparser.add_argument('-ru', '--repo-uri', type=str, required=False,
                        help='An optional URI for the gem repository where your Gem can be downloaded')
+    create_gem_subparser.add_argument('--version', type=str, required=False,
+                       help='An optional version. Defaults to 1.0.0')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
 

@@ -37,7 +37,7 @@ namespace UnitTest
     };
 
     class AssetProcessorUnitTestBase
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         AssetProcessorUnitTestBase();

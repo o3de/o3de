@@ -35,7 +35,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AssetEditorToolbar, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorToolbar, AZ::SystemAllocator);
 
         AssetEditorToolbar(EditorId editorId);
         ~AssetEditorToolbar() = default;

@@ -21,7 +21,7 @@ class CAnimStringTable
     : public IAnimStringTable
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimStringTable, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimStringTable, AZ::SystemAllocator);
     AZ_RTTI(CAnimStringTable, "{B7C435CF-A763-41B5-AA1E-3BA2CD4232B2}", IAnimStringTable);
 
     CAnimStringTable();
@@ -61,7 +61,7 @@ class CTrackEventTrack
     : public TAnimTrack<IEventKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CTrackEventTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CTrackEventTrack, AZ::SystemAllocator);
     AZ_RTTI(CTrackEventTrack, "{3F659864-D66B-4211-93FB-1401EF4614D4}", IAnimTrack);
 
     explicit CTrackEventTrack(IAnimStringTable* pStrings);

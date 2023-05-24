@@ -17,6 +17,8 @@
 #include <Vegetation/InstanceData.h>
 #include <AzCore/Debug/Profiler.h>
 
+#include <VegetationProfiler.h>
+
 namespace Vegetation
 {
     void SlopeAlignmentModifierConfig::Reflect(AZ::ReflectContext* context)
@@ -159,7 +161,7 @@ namespace Vegetation
 
     void SlopeAlignmentModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_surfaceAlignmentOverrideEnabled;
         const float min = useOverrides ? instanceData.m_descriptorPtr->m_surfaceAlignmentMin : m_configuration.m_rangeMin;

@@ -35,7 +35,14 @@ namespace HttpRequestor
         desc.m_name = s_loggingName;
         desc.m_cpuId = AFFINITY_MASK_USERTHREADS;
         m_runThread = true;
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
+
+        // Multiple different Gems might try to use the AWSNativeSDK, so make sure it only gets initialized / shutdown once
+        // by the first Gem to try using it.
+        m_ownsAwsNativeInitialization = !AWSNativeSDKInit::InitializationManager::IsInitialized();
+        if (m_ownsAwsNativeInitialization)
+        {
+            AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        }
         auto function = [this]
         {
             ThreadFunction();
@@ -53,7 +60,10 @@ namespace HttpRequestor
         }
 
         // Shutdown after background thread has closed.
-        AWSNativeSDKInit::InitializationManager::Shutdown();
+        if (m_ownsAwsNativeInitialization)
+        {
+            AWSNativeSDKInit::InitializationManager::Shutdown();
+        }
     }
 
     void Manager::AddRequest(Parameters&& httpRequestParameters)

@@ -31,8 +31,8 @@ namespace AZ
         //!     to increase the ring buffer's size. 
         class DynamicBufferAllocator
         {
-            AZ_RTTI(AZ::RPI::DynamicBufferAllocator, "{82B047B3-C845-4F77-9852-747E39C53081}");
         public:
+            AZ_RTTI(AZ::RPI::DynamicBufferAllocator, "{82B047B3-C845-4F77-9852-747E39C53081}");
 
             DynamicBufferAllocator() = default;
             virtual ~DynamicBufferAllocator() = default;

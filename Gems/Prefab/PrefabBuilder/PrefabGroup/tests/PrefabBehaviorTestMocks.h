@@ -27,7 +27,7 @@ namespace AZ::Render
     struct EditorMeshComponentHelper
         : public AZ::ComponentDescriptorHelper<EditorMeshComponent>
     {
-        AZ_CLASS_ALLOCATOR(EditorMeshComponentHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorMeshComponentHelper, AZ::SystemAllocator);
 
         void Reflect(AZ::ReflectContext* reflection) const override;
     };

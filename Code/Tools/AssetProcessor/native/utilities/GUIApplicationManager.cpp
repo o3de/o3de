@@ -367,7 +367,7 @@ bool GUIApplicationManager::Run()
     m_mainWindow = nullptr;
 
     AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -485,12 +485,17 @@ bool GUIApplicationManager::OnAssert(const char* message)
     return true;
 }
 
+WId GUIApplicationManager::GetWindowId() const
+{
+    return m_mainWindow->effectiveWinId();
+}
+
 bool GUIApplicationManager::Activate()
 {
     m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(m_mainWindow);
 
     AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -747,9 +752,12 @@ bool GUIApplicationManager::Restart()
 
 void GUIApplicationManager::Reflect()
 {
+    ApplicationManagerBase::Reflect();
+
     AZ::SerializeContext* context;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialize context");
+
     AzToolsFramework::LogPanel::BaseLogPanel::Reflect(context);
     AssetProcessor::PlatformConfiguration::Reflect(context);
 }

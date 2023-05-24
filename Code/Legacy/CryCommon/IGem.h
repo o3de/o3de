@@ -26,6 +26,7 @@ class CryHooksModule
     , protected  ISystemEventListener
 {
 public:
+    AZ_CLASS_ALLOCATOR(CryHooksModule, AZ::SystemAllocator)
     AZ_RTTI(CryHooksModule, "{BD896D16-6F7D-4EA6-A532-0A9E6BF3C089}", AZ::Module);
     CryHooksModule()
         : Module()

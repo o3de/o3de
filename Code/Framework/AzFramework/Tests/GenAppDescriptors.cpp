@@ -16,7 +16,7 @@
 namespace UnitTest
 {
     class GenAppDescriptors
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void FakePopulateModules(AZ::ComponentApplication::Descriptor& desc, const char* libSuffix)

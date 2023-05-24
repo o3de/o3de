@@ -86,6 +86,9 @@ namespace AZ::Prefab
 
     void PrefabDomData::CopyValue(const rapidjson::Value& inputValue)
     {
+        // Force a memory clear by first assigning to empty.  Simply calling copyfrom
+        // just allocates more memory without clearing existing memory usage.
+        m_prefabDom = AzToolsFramework::Prefab::PrefabDom();
         m_prefabDom.CopyFrom(inputValue, m_prefabDom.GetAllocator());
     }
 

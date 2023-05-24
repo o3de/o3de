@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class DitherGradientModifierNode : public BaseGradientModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(DitherGradientModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DitherGradientModifierNode, AZ::SystemAllocator);
         AZ_RTTI(DitherGradientModifierNode, "{14B9E63F-5ECA-49AA-B50F-7238B1442E3D}", BaseGradientModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);

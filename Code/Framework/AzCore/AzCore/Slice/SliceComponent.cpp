@@ -2849,7 +2849,7 @@ namespace AZ
         if (!m_serializeContext)
         {
             // use the default app serialize context
-            EBUS_EVENT_RESULT(m_serializeContext, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(m_serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!m_serializeContext)
             {
                 AZ_Error("Slices", false, "SliceComponent: No serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or SliceComponent serialize context should not be null!");
@@ -3076,14 +3076,16 @@ namespace AZ
             AZ_PROFILE_FUNCTION(AzCore);
 
             SliceComponent* sliceComponent = reinterpret_cast<SliceComponent*>(classPtr);
-            EBUS_EVENT(SliceAssetSerializationNotificationBus, OnWriteDataToSliceAssetEnd, *sliceComponent);
+            SliceAssetSerializationNotificationBus::Broadcast(
+                &SliceAssetSerializationNotificationBus::Events::OnWriteDataToSliceAssetEnd, *sliceComponent);
 
             // Broadcast OnSliceEntitiesLoaded for entities that are "new" to this slice.
             // We can't broadcast this event for instanced entities yet, since they don't exist until instantiation.
             if (!sliceComponent->GetNewEntities().empty())
             {
                 AZ_PROFILE_SCOPE(AzCore, "SliceComponentSerializationEvents::OnWriteEnd:OnSliceEntitiesLoaded");
-                EBUS_EVENT(SliceAssetSerializationNotificationBus, OnSliceEntitiesLoaded, sliceComponent->GetNewEntities());
+                SliceAssetSerializationNotificationBus::Broadcast(
+                    &SliceAssetSerializationNotificationBus::Events::OnSliceEntitiesLoaded, sliceComponent->GetNewEntities());
             }
         }
     };

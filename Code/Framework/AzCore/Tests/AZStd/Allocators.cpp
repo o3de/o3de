@@ -27,7 +27,7 @@ namespace UnitTest
 
     /// Default allocator.
     class AllocatorDefaultTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()

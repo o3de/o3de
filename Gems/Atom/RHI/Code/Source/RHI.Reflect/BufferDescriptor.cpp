@@ -51,6 +51,8 @@ namespace AZ
                 break;
             case ScopeAttachmentUsage::InputAssembly:
                 return BufferBindFlags::InputAssembly;
+            case ScopeAttachmentUsage::ShadingRate:
+                break;
             case ScopeAttachmentUsage::Uninitialized:
                 break;
             default:

@@ -1515,10 +1515,11 @@ namespace AzFramework
         }
 
         AssetChangeReportRequest::AssetChangeReportRequest(
-            const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType)
+            const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType, bool isFolder)
             : m_fromPath(fromPath)
             , m_toPath(toPath)
             , m_type(changeType)
+            , m_isFolder(isFolder)
         {
         }
 
@@ -1537,8 +1538,8 @@ namespace AzFramework
                     ->Version(1)
                     ->Field("FromPath", &AssetChangeReportRequest::m_fromPath)
                     ->Field("ToPath", &AssetChangeReportRequest::m_toPath)
-                    ->Field("ChangeType", &AssetChangeReportRequest::m_type);
-
+                    ->Field("ChangeType", &AssetChangeReportRequest::m_type)
+                    ->Field("IsFolder", &AssetChangeReportRequest::m_isFolder);
             }
         }
 

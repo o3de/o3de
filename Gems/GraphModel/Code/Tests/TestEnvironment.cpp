@@ -51,25 +51,33 @@ namespace GraphModelIntegrationTest
     {
         GraphModel::DataTypePtr stringDataType = m_graphContext->GetDataType(TestDataTypeEnum::TestDataTypeEnum_String);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             TEST_STRING_INPUT_ID,
             "Test Input",
-            stringDataType,
-            stringDataType->GetDefaultValue(),
-            "A test input slot for String data type"));
+            "A test input slot for String data type",
+            GraphModel::DataTypeList{ stringDataType },
+            stringDataType->GetDefaultValue()));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             TEST_STRING_OUTPUT_ID,
             "Test Output",
-            stringDataType,
-            "A test output slot for String data type"));
+            "A test output slot for String data type",
+            GraphModel::DataTypeList{ stringDataType } ));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputEvent(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Event,
             TEST_EVENT_INPUT_ID,
             "Event In",
             "A test input event slot"));
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputEvent(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Event,
             TEST_EVENT_OUTPUT_ID,
             "Event Out",
             "A test output event slot"));
@@ -104,100 +112,62 @@ namespace GraphModelIntegrationTest
     {
         GraphModel::DataTypePtr stringDataType = m_graphContext->GetDataType(TestDataTypeEnum::TestDataTypeEnum_String);
 
-        GraphModel::ExtendableSlotConfiguration inputDataSlotConfig;
-        inputDataSlotConfig.m_minimumSlots = 0;
-        inputDataSlotConfig.m_maximumSlots = 2;
-        inputDataSlotConfig.m_addButtonLabel = "Add String Input";
-        inputDataSlotConfig.m_addButtonTooltip = "Add a test string input";
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             TEST_STRING_INPUT_ID,
             "Test Input",
-            stringDataType,
+            "An extendable input slot for String data type",
+            GraphModel::DataTypeList{ stringDataType },
             stringDataType->GetDefaultValue(),
-            "An extendable input slot for String data type"
-            , &inputDataSlotConfig));
+            0,
+            2,
+            "Add String Input",
+            "Add a test string input"));
 
-        GraphModel::ExtendableSlotConfiguration outputDataSlotConfig;
-        outputDataSlotConfig.m_addButtonLabel = "Add String Output";
-        outputDataSlotConfig.m_addButtonTooltip = "Add a test string output";
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
             TEST_STRING_OUTPUT_ID,
             "Test Output",
-            stringDataType,
             "An extendable output slot for String data type",
-            &outputDataSlotConfig));
+            GraphModel::DataTypeList{ stringDataType },
+            AZStd::any{},
+            1,
+            100,
+            "Add String Output",
+            "Add a test string output"));
 
-        GraphModel::ExtendableSlotConfiguration inputEventSlotConfig;
-        inputEventSlotConfig.m_addButtonLabel = "Add Input Event";
-        inputEventSlotConfig.m_addButtonTooltip = "Add a test event input";
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputEvent(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Event,
             TEST_EVENT_INPUT_ID,
             "Test Input Event",
-            "An extendable input event"
-            , &inputEventSlotConfig));
+            "An extendable input event",
+            GraphModel::DataTypeList{},
+            AZStd::any{},
+            1,
+            100,
+            "Add Input Event",
+            "Add a test event input"));
 
-        GraphModel::ExtendableSlotConfiguration outputEventSlotConfig;
-        outputEventSlotConfig.m_addButtonLabel = "Add Output Event";
-        outputEventSlotConfig.m_addButtonTooltip = "Add a test event output";
-        outputEventSlotConfig.m_minimumSlots = 3;
-        outputEventSlotConfig.m_maximumSlots = 4;
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputEvent(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Event,
             TEST_EVENT_OUTPUT_ID,
             "Test Output Event",
-            "An extendable output event"
-            , &outputEventSlotConfig));
-    }
-
-    // BadNode
-    void BadNode::Reflect(AZ::ReflectContext* context)
-    {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
-        {
-            serializeContext->Class<BadNode, GraphModel::Node>()
-                ->Version(0)
-                ;
-        }
-    }
-
-    BadNode::BadNode(GraphModel::GraphPtr graph, AZStd::shared_ptr<TestGraphContext> graphContext)
-        : GraphModel::Node(graph)
-        , m_graphContext(graphContext)
-    {
-        RegisterSlots();
-        CreateSlotData();
-    }
-
-    const char* BadNode::GetTitle() const
-    {
-        return "BadNode";
-    }
-
-    void BadNode::RegisterSlots()
-    {
-        GraphModel::DataTypePtr stringDataType = m_graphContext->GetDataType(TestDataTypeEnum::TestDataTypeEnum_String);
-
-        // This will result in an invalid configuration since the minimum is greater than the maximum
-        GraphModel::ExtendableSlotConfiguration inputDataSlotConfig;
-        inputDataSlotConfig.m_minimumSlots = 5;
-        inputDataSlotConfig.m_maximumSlots = 1;
-        inputDataSlotConfig.m_addButtonLabel = "Add String Input";
-        inputDataSlotConfig.m_addButtonTooltip = "Add a test string input";
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
-            TEST_STRING_INPUT_ID,
-            "Test Input",
-            stringDataType,
-            stringDataType->GetDefaultValue(),
-            "An extendable input slot for String data type"
-            , &inputDataSlotConfig));
+            "An extendable output event",
+            GraphModel::DataTypeList{},
+            AZStd::any{},
+            3,
+            4,
+            "Add Output Event",
+            "Add a test event output"));
     }
 
     // GraphModelTestEnvironment
     void GraphModelTestEnvironment::SetupEnvironment()
     {
-        // Setup a system allocator
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         // Create application and descriptor
         m_application = aznew AZ::ComponentApplication;
         AZ::ComponentApplication::Descriptor appDesc;
@@ -206,7 +176,6 @@ namespace GraphModelIntegrationTest
         // Create basic system entity
         AZ::ComponentApplication::StartupParameters startupParams;
         m_systemEntity = m_application->Create(appDesc, startupParams);
-        m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
         m_systemEntity->AddComponent(aznew AZ::AssetManagerComponent());
         m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
         m_systemEntity->AddComponent(aznew AZ::StreamerComponent());
@@ -233,7 +202,5 @@ namespace GraphModelIntegrationTest
     void GraphModelTestEnvironment::TeardownEnvironment()
     {
         delete m_application;
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 }

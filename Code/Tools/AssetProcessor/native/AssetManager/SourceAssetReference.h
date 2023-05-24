@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <utilities/IPathConversion.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
+#include <AssetDatabase/AssetDatabaseConnection.h>
 
 namespace AssetProcessor
 {
@@ -35,6 +36,11 @@ namespace AssetProcessor
         explicit SourceAssetReference(AZ::IO::PathView absolutePath);
 
         SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder);
+
+        SourceAssetReference(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+            : SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str())
+        {
+        }
 
         SourceAssetReference(QString scanFolderPath, QString pathRelativeToScanFolder)
             : SourceAssetReference(
@@ -60,9 +66,9 @@ namespace AssetProcessor
         explicit operator bool() const;
 
         bool IsValid() const;
-        AZ::IO::Path AbsolutePath() const;
-        AZ::IO::Path RelativePath() const;
-        AZ::IO::Path ScanFolderPath() const;
+        AZ::IO::FixedMaxPath AbsolutePath() const;
+        AZ::IO::FixedMaxPath RelativePath() const;
+        AZ::IO::FixedMaxPath ScanFolderPath() const;
         AZ::s64 ScanFolderId() const;
 
     private:

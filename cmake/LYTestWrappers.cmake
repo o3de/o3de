@@ -66,14 +66,14 @@ function(ly_strip_target_namespace)
     set(${ly_strip_target_namespace_OUTPUT_VARIABLE} ${stripped_target} PARENT_SCOPE)
 endfunction()
 
-#! ly_add_test: Adds a new RUN_TEST using for the specified target using the supplied command
+#! ly_add_test: Adds a new RUN_TEST for the specified target using the supplied command
 #
-# \arg:NAME - Name to for the test run target
+# \arg:NAME - Name of the test run target
 # \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "benchmark" or "sandbox" or "awsi" - prevents the test from running normally
-#      and instead places it a special suite of tests that only run when requested.
+#      and instead places it in a special suite of tests that only run when requested.
 #      Otherwise, do not specify a TEST_SUITE value and the default ("main") will apply.
 #      "smoke" is tiny, quick tests of fundamental operation (tests with no suite marker will also execute here in CI)
 #      "periodic" is low-priority verification, which should not block code submission
@@ -95,6 +95,10 @@ endfunction()
 #      ly_add_* function below, not by user code
 # sets LY_ADDED_TEST_NAME to the fully qualified name of the test, in parent scope
 function(ly_add_test)
+    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        return()
+    endif()
+
     set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
     set(one_value_args NAME PARENT_NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
     set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
@@ -172,6 +176,9 @@ function(ly_add_test)
     if (ly_add_test_LABELS)
         list(APPEND final_labels ${ly_add_test_LABELS})
     endif()
+
+    # Allow TIAF to apply the label of supported test categories from being run by CTest 
+    o3de_test_impact_apply_test_labels(${ly_add_test_TEST_LIBRARY} final_labels)
 
     # labels expects a single param, of concatenated labels
     # this always has a value because ly_add_test_TEST_SUITE is automatically
@@ -274,10 +281,12 @@ function(ly_add_test)
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
         set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
     endif()
-    # Add the test suite and timeout value to the test target params
+    # Add the test suite, timeout value and labels to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
-    # Store the params for this test target
+    string(REPLACE ";" "," flattened_labels "${final_labels}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${flattened_labels}")
+    # Store the params and labels for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
 endfunction()
 

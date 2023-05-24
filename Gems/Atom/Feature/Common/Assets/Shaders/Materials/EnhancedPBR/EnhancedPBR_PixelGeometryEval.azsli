@@ -12,26 +12,26 @@
 // used in your shader. Simply #define EvaluatePixelGeometry to your custom definition before including this file
 //
 #ifndef EvaluatePixelGeometry
-#define EvaluatePixelGeometry(IN, isFrontFace)      EvaluatePixelGeometry_EnhancedPBR(IN, isFrontFace)
+#define EvaluatePixelGeometry EvaluatePixelGeometry_EnhancedPBR
 #endif
 
 #include "../StandardPBR/StandardPBR_PixelGeometryEval.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Features/Debug.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
     inout float4 positionSV,
     float3 positionWS,
-    float3 normal,
-    float3 tangent,
-    float3 bitangent,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
     float2 uvs[UvSetCount],
     float2 detailUvs[UvSetCount],
-    bool isFrontFace)
+    bool isFrontFace,
+    real4x4 objectToWorld)
 {
-    bool usingParallax = ShouldHandleParallax();
-    bool evaluateTangentFrame = usingParallax || o_normal_useTexture || (o_clearCoat_enabled && o_clearCoat_normal_useTexture) || o_detail_normal_useTexture;
-    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normal, tangent, bitangent, uvs, isFrontFace, evaluateTangentFrame);
+    PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
 
     // ------- Detail UVs -------
 
@@ -41,10 +41,10 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
 
     geoData.isDisplacementClipped = false;
 
-    if(usingParallax)
+    if(ShouldHandleParallax())
     {
         SetPixelDepth(geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                      geoData.uvs, geoData.detailUvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+                      geoData.uvs, geoData.detailUvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
     }
 
     return geoData;
@@ -52,19 +52,20 @@ PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(
 
 PixelGeometryData EvaluatePixelGeometry_EnhancedPBR(inout VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     return EvaluatePixelGeometry_EnhancedPBR(
         IN.position,
         IN.worldPosition,
-        vertexNormal,
-        vertexTangent,
-        vertexBitangent,
+        normalWS,
+        tangentWS,
+        bitangentWS,
         IN.uvs,
         IN.detailUvs,
-        isFrontFace);
+        isFrontFace,
+        objectToWorld);
 }

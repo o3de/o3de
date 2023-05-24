@@ -24,7 +24,7 @@ namespace Camera
     public:
         ~FollowTargetFromAngle() override = default;
         AZ_RTTI(FollowTargetFromAngle, "{4DBE7A2C-8E93-422E-8942-9601A270D37E}", ICameraTransformBehavior)
-        AZ_CLASS_ALLOCATOR(FollowTargetFromAngle, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FollowTargetFromAngle, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

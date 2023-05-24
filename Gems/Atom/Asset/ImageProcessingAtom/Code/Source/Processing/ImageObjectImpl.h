@@ -20,7 +20,7 @@ namespace ImageProcessingAtom
         : public IImageObject
     {
     public:
-        AZ_CLASS_ALLOCATOR(CImageObject, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CImageObject, AZ::SystemAllocator);
 
     public:
         // Constructors
@@ -99,7 +99,7 @@ namespace ImageProcessingAtom
         class MipLevel
         {
         public:
-            AZ_CLASS_ALLOCATOR(MipLevel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MipLevel, AZ::SystemAllocator);
 
             AZ::u32 m_width;
             AZ::u32 m_height;

@@ -21,7 +21,7 @@ namespace UnitTest
         : public AZ::RHI::TransientAttachmentPool
     {
     public:
-        AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
 
         TransientAttachmentPool() = default;
 

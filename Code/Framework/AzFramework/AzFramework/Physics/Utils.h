@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -48,5 +49,8 @@ namespace Physics
 
         //! Returns true if the tag matches the filter tag, or the filter tag is empty
         bool FilterTag(AZ::Crc32 tag, AZ::Crc32 filter);
+
+        //! Returns true if the scale is uniform.
+        bool HasUniformScale(const AZ::Vector3& scale);
     }
 }

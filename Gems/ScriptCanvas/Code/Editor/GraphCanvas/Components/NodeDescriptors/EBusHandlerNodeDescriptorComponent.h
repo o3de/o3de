@@ -33,7 +33,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(EBusHandlerNodeDescriptorSaveData, "{9E81C95F-89C0-4476-8E82-63CCC4E52E04}", GraphCanvas::ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(EBusHandlerNodeDescriptorSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EBusHandlerNodeDescriptorSaveData, AZ::SystemAllocator);
 
             EBusHandlerNodeDescriptorSaveData();
             EBusHandlerNodeDescriptorSaveData(EBusHandlerNodeDescriptorComponent* component);

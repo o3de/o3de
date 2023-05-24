@@ -11,13 +11,15 @@
 #include <AzCore/Component/Component.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
-#include <Editor/AWSCoreEditorManager.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
+#include <Editor/UI/AWSCoreEditorMenu.h>
 
 namespace AWSCore
 {
     class AWSCoreEditorSystemComponent
         : public AZ::Component
-        , private AzToolsFramework::EditorEvents::Bus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
+        , private AWSCoreEditorRequestBus::Handler
     {
     public:
         static constexpr const char EDITOR_HELP_MENU_TEXT[] = "&Help";
@@ -38,10 +40,20 @@ namespace AWSCore
         void Activate() override;
         void Deactivate() override;
 
-        // AzToolsFramework::EditorEvents interface implementation
-        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
+        // AWSCoreEditorRequestBus interface implementation
+        void CreateSubMenu(const AZStd::string& parentMenuIdentifier, const char* const menuDetails[], int sort) override;
+        void AddExternalLinkAction(const AZStd::string& menuIdentifier, const char* const actionDetails[], int sort) override;
 
-        AZStd::unique_ptr<AWSCoreEditorManager> m_awsCoreEditorManager;
+        // ActionManagerRegistrationNotificationBus implementation
+        void OnMenuBarRegistrationHook() override;
+        void OnMenuBindingHook() override;
+
+        AZStd::unique_ptr<AWSCoreEditorMenu> m_awsCoreEditorMenu;
+
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
+
     };
 
 } // namespace AWSCore

@@ -36,7 +36,7 @@ class OutlinerTreeView
 {
     Q_OBJECT;
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerTreeView, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerTreeView, AZ::SystemAllocator);
 
     OutlinerTreeView(QWidget* pParent = NULL);
     virtual ~OutlinerTreeView();

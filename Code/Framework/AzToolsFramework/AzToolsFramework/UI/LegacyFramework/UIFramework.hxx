@@ -45,7 +45,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(QTickBusTicker, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QTickBusTicker, AZ::SystemAllocator);
 
         QTickBusTicker();
         static QTickBusTicker* SpinUp();
@@ -206,7 +206,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AZPreferencesView, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AZPreferencesView, AZ::SystemAllocator)
 
         AZPreferencesView(QWidget* parent = 0);
         virtual ~AZPreferencesView();
@@ -225,7 +225,7 @@ namespace AzToolsFramework
         : public QStandardItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(AZPreferencesItem, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AZPreferencesItem, AZ::SystemAllocator)
 
         AZPreferencesItem(Framework::HotkeyData& hkData);
         virtual ~AZPreferencesItem();
@@ -245,7 +245,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(AZPreferencesDataModel, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AZPreferencesDataModel, AZ::SystemAllocator)
 
         AZPreferencesDataModel(QObject* pParent);
         virtual ~AZPreferencesDataModel();

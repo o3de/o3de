@@ -14,7 +14,7 @@
 #include "HttpRequestManager.h"
 
 class HttpTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 };
 

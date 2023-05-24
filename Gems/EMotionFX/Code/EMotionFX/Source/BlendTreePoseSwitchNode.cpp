@@ -19,8 +19,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSwitchNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSwitchNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSwitchNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSwitchNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
 
     BlendTreePoseSwitchNode::BlendTreePoseSwitchNode()
@@ -187,7 +187,7 @@ namespace EMotionFX
         }
 
         // update the node that plugs into the decision value port
-        m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, m_inputPorts[INPUTPORT_DECISIONVALUE].m_connection->GetSourceNode(), timePassedInSeconds);
 
         // get the index we choose
         const int32 decisionValue = MCore::Clamp<int32>(GetInputNumberAsInt32(animGraphInstance, INPUTPORT_DECISIONVALUE), 0, 9); // max 10 cases
@@ -205,7 +205,7 @@ namespace EMotionFX
 
         // pass through the motion extraction of the selected node
         AnimGraphNode* sourceNode = m_inputPorts[INPUTPORT_POSE_0 + decisionValue].m_connection->GetSourceNode();
-        sourceNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, sourceNode, timePassedInSeconds);
 
         // output the events of the source node we picked
         RequestRefDatas(animGraphInstance);
@@ -244,7 +244,7 @@ namespace EMotionFX
         // top down update all incoming connections
         for (BlendTreeConnection* connection : m_connections)
         {
-            connection->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, connection->GetSourceNode(), timePassedInSeconds);
         }
     }
 

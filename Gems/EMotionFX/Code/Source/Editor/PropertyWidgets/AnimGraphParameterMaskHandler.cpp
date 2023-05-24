@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterMaskHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterMaskHandler, EditorAllocator)
 
     AnimGraphParameterMaskHandler::AnimGraphParameterMaskHandler()
         : QObject()
@@ -36,7 +36,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
         return picker;
     }
@@ -45,7 +46,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            AnimGraphNode* node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            AnimGraphNode* node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
             m_object = azdynamic_cast<ObjectAffectedByParameterChanges*>(node);
             GUI->SetObjectAffectedByParameterChanges(m_object);
         }

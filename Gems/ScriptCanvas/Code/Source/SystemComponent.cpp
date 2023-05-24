@@ -105,7 +105,6 @@ namespace ScriptCanvas
                 ec->Class<SystemComponent>("Script Canvas", "Script Canvas System Component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_infiniteLoopDetectionMaxIterations, "Infinite Loop Protection Max Iterations", "Script Canvas will avoid infinite loops by detecting potentially re-entrant conditions that execute up to this number of iterations.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SystemComponent::m_maxHandlerStackDepth, "Max Handler Stack Depth", "Script Canvas will avoid infinite loops at run-time by detecting sending Ebus Events while handling said Events. This limits the stack depth of the broadcast.")

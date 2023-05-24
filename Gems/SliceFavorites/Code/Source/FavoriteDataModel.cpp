@@ -803,7 +803,7 @@ namespace SliceFavorites
         menu->addMenu(GetFavoritesMenu());
     }
 
-    void FavoriteDataModel::AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
+    void FavoriteDataModel::AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
     {
         if (!menu)
         {
@@ -839,7 +839,7 @@ namespace SliceFavorites
         }
     }
 
-    const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* FavoriteDataModel::GetSliceProductFromBrowserEntry(AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
+    const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* FavoriteDataModel::GetSliceProductFromBrowserEntry(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry) const
     {
         if (!entry)
         {

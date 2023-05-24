@@ -47,6 +47,9 @@ namespace AtomToolsFramework
         //! Get last lighting preset path
         virtual AZStd::string GetLastLightingPresetPath() const = 0;
 
+        //! Get last lighting preset path
+        virtual AZStd::string GetLastLightingPresetPathWithoutAlias() const = 0;
+
         //! Get last lighting preset asset id
         virtual AZ::Data::AssetId GetLastLightingPresetAssetId() const = 0;
 
@@ -82,6 +85,9 @@ namespace AtomToolsFramework
         //! Get last model preset path
         virtual AZStd::string GetLastModelPresetPath() const = 0;
 
+        //! Get last model preset path
+        virtual AZStd::string GetLastModelPresetPathWithoutAlias() const = 0;
+
         //! Get last model preset asset id
         virtual AZ::Data::AssetId GetLastModelPresetAssetId() const = 0;
 
@@ -104,6 +110,9 @@ namespace AtomToolsFramework
 
         //! Get last render pipeline path
         virtual AZStd::string GetLastRenderPipelinePath() const = 0;
+
+        //! Get last render pipeline path
+        virtual AZStd::string GetLastRenderPipelinePathWithoutAlias() const = 0;
 
         //! Get last render pipeline asset id
         virtual AZ::Data::AssetId GetLastRenderPipelineAssetId() const = 0;

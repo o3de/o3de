@@ -32,7 +32,7 @@ namespace AZ
             static const char* Extension;
 
             AZ_RTTI(AttachmentImageAsset, "{82CEA86B-E891-4969-8F35-D8017E8902C8}", ImageAsset);
-            AZ_CLASS_ALLOCATOR(AttachmentImageAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentImageAsset, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             ~AttachmentImageAsset() override = default;

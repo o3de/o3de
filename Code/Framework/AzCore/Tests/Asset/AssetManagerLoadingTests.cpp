@@ -1079,13 +1079,10 @@ namespace UnitTest
                 }
                 AZStd::this_thread::yield();
             }
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
 
             EXPECT_EQ(asset1Container->IsReady(), true);
             EXPECT_EQ(asset2Container->IsReady(), true);
             EXPECT_EQ(asset3Container->IsReady(), true);
-
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
 
             auto rootAsset = asset1Container->GetRootAsset();
             EXPECT_EQ(rootAsset->GetId(), MyAsset1Id);
@@ -1116,7 +1113,6 @@ namespace UnitTest
 
             // We've now created the dependencies for each asset in the container as well
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, NumTestAssets * AssetsPerContainer);
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
             EXPECT_EQ(asset1CopyContainer->GetDependencies().size(), 1);
 
             asset1Container = {};
@@ -1126,6 +1122,11 @@ namespace UnitTest
 
             asset1CopyContainer = {};
             asset1 = {};
+
+            // Make sure events are dispatched after releasing the asset handles, so they get destroyed.
+            // This addresses a rare race condition, a test failure roughly once every 2,000 runs on Linux.
+            m_testAssetManager->DispatchEvents();
+
             // We've released the references for one asset and its dependency
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numDestructions, AssetsPerContainer);
             asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
@@ -1995,6 +1996,27 @@ namespace UnitTest
 
         CheckFinishedCreationsAndDestructions();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
+    }
+
+    using AssetLoadingTest = AssetJobsFloodTest;
+
+    TEST_F(AssetLoadingTest, CreateAssetWithOutdatedAssetId_LegacyIdAddedAfterwards_UpgradesAndLoadsSuccessfully)
+    {
+        static constexpr AZ::Uuid MyOutdatedUuid{ "{30583432-95F0-4071-883E-114D57CD7CE1}" };
+
+        Asset<AssetWithAssetReference> asset;
+        asset.Create(MyOutdatedUuid);
+
+        EXPECT_EQ(asset.GetId().m_guid, MyOutdatedUuid);
+
+        m_assetHandlerAndCatalog->AddLegacyAssetId(MyOutdatedUuid, MyAsset1Id);
+
+        EXPECT_TRUE(asset.QueueLoad());
+        EXPECT_EQ(asset.GetId().m_guid, MyAsset1Id);
+
+        asset.BlockUntilLoadComplete();
+
+        EXPECT_TRUE(asset.IsReady());
     }
 
     /**

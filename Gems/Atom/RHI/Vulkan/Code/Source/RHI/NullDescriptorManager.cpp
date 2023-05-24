@@ -22,6 +22,7 @@
 #include <RHI/NullDescriptorManager.h>
 #include <RHI/Queue.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -52,17 +53,17 @@ namespace AZ
             const Device& device = static_cast<Device&>(GetDevice());
             for (auto& image : m_imageNullDescriptor.m_images)
             {
-                device.GetContext().DestroyImage(device.GetNativeDevice(), image.m_image, nullptr);
-                device.GetContext().DestroyImageView(device.GetNativeDevice(), image.m_view, nullptr);
+                device.GetContext().DestroyImage(device.GetNativeDevice(), image.m_image, VkSystemAllocator::Get());
+                device.GetContext().DestroyImageView(device.GetNativeDevice(), image.m_view, VkSystemAllocator::Get());
                 image.m_deviceMemory.reset();
             }
 
-            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, nullptr);
-            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_bufferNullDescriptor.m_view, nullptr);
+            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, VkSystemAllocator::Get());
+            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_bufferNullDescriptor.m_view, VkSystemAllocator::Get());
             m_bufferNullDescriptor.m_memory.reset();
 
-            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, nullptr);
-            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_texelViewNullDescriptor.m_view, nullptr);
+            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, VkSystemAllocator::Get());
+            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_texelViewNullDescriptor.m_view, VkSystemAllocator::Get());
             m_texelViewNullDescriptor.m_memory.reset();
 
             RHI::DeviceObject::Shutdown();
@@ -212,7 +213,10 @@ namespace AZ
                 imageCreateInfo.flags = m_imageNullDescriptor.m_images[imageIndex].m_imageCreateFlagBits;
 
                 VkResult result = device.GetContext().CreateImage(
-                    device.GetNativeDevice(), &imageCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_image);
+                    device.GetNativeDevice(),
+                    &imageCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_imageNullDescriptor.m_images[imageIndex].m_image);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 VkMemoryRequirements memReqs = {};
@@ -249,7 +253,10 @@ namespace AZ
                 samplerCreateInfo.anisotropyEnable = VK_FALSE;
                 samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
                 result = device.GetContext().CreateSampler(
-                    device.GetNativeDevice(), &samplerCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_sampler);
+                    device.GetNativeDevice(),
+                    &samplerCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_imageNullDescriptor.m_images[imageIndex].m_sampler);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 // image view
@@ -282,7 +289,10 @@ namespace AZ
                 }
 
                 result = device.GetContext().CreateImageView(
-                    device.GetNativeDevice(), &imageViewCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_view);
+                    device.GetNativeDevice(),
+                    &imageViewCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_imageNullDescriptor.m_images[imageIndex].m_view);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 m_imageNullDescriptor.m_images[imageIndex].m_descriptorImageInfo.imageLayout = m_imageNullDescriptor.m_images[imageIndex].m_layout;
@@ -332,8 +342,8 @@ namespace AZ
             bufferCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
             bufferCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
             bufferCreateInfo.pQueueFamilyIndices = queueFamilies.data();
-            VkResult result =
-                device.GetContext().CreateBuffer(device.GetNativeDevice(), &bufferCreateInfo, nullptr, &m_bufferNullDescriptor.m_buffer);
+            VkResult result = device.GetContext().CreateBuffer(
+                device.GetNativeDevice(), &bufferCreateInfo, VkSystemAllocator::Get(), &m_bufferNullDescriptor.m_buffer);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             VkMemoryRequirements memReqs;
@@ -355,7 +365,7 @@ namespace AZ
             bufferViewCreateInfo.pNext = nullptr;
             bufferViewCreateInfo.range = m_bufferNullDescriptor.m_bufferSize;
             result = device.GetContext().CreateBufferView(
-                device.GetNativeDevice(), &bufferViewCreateInfo, nullptr, &m_bufferNullDescriptor.m_view);
+                device.GetNativeDevice(), &bufferViewCreateInfo, VkSystemAllocator::Get(), &m_bufferNullDescriptor.m_view);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             m_bufferNullDescriptor.m_bufferInfo.buffer = m_bufferNullDescriptor.m_buffer;
@@ -379,8 +389,8 @@ namespace AZ
             bufferCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
             bufferCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
             bufferCreateInfo.pQueueFamilyIndices = queueFamilies.data();
-            VkResult result =
-                device.GetContext().CreateBuffer(device.GetNativeDevice(), &bufferCreateInfo, nullptr, &m_texelViewNullDescriptor.m_buffer);
+            VkResult result = device.GetContext().CreateBuffer(
+                device.GetNativeDevice(), &bufferCreateInfo, VkSystemAllocator::Get(), &m_texelViewNullDescriptor.m_buffer);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             // device memory
@@ -405,7 +415,7 @@ namespace AZ
             bufferViewCreateInfo.pNext = nullptr;
             bufferViewCreateInfo.range = m_texelViewNullDescriptor.m_bufferSize;
             result = device.GetContext().CreateBufferView(
-                device.GetNativeDevice(), &bufferViewCreateInfo, nullptr, &m_texelViewNullDescriptor.m_view);
+                device.GetNativeDevice(), &bufferViewCreateInfo, VkSystemAllocator::Get(), &m_texelViewNullDescriptor.m_view);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             return RHI::ResultCode::Success;

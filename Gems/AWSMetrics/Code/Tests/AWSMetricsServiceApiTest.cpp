@@ -34,7 +34,7 @@ namespace AWSMetrics
     };
 
     class AWSMetricsServiceApiTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         testing::NiceMock<JsonReaderMock> JsonReader;

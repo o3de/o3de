@@ -6,7 +6,7 @@
  *
  */
 
-#include <Builder/WwiseBuilderComponent.h>
+#include <WwiseBuilderComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>

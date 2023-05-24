@@ -33,6 +33,7 @@ namespace AZ
             SeparateDepthStencil,
             DescriptorIndexing,
             BufferDeviceAddress,
+            SubgroupOperation,
             Count // Must be last
         };
 
@@ -57,6 +58,9 @@ namespace AZ
             DescriptorIndexing,
             Spirv14,
             ShaderFloatControls,
+            FragmentShadingRate,
+            FragmentDensityMap,
+            Renderpass2,
             Count
         };
 
@@ -65,7 +69,7 @@ namespace AZ
         {
             using Base = RHI::PhysicalDevice;
         public:
-            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
             AZ_RTTI(PhysicalDevice, "AD5F2BAD-A9B3-48F4-962F-C6D0760EEE17", Base);
             PhysicalDevice() = default;
             ~PhysicalDevice() = default;
@@ -94,6 +98,11 @@ namespace AZ
             const VkPhysicalDeviceRayTracingPipelinePropertiesKHR& GetPhysicalDeviceRayTracingPipelineProperties() const;
             const VkPhysicalDeviceRayTracingPipelineFeaturesKHR& GetPhysicalDeviceRayTracingPipelineFeatures() const;
             const VkPhysicalDeviceRayQueryFeaturesKHR& GetRayQueryFeatures() const;
+            const VkPhysicalDeviceFragmentShadingRateFeaturesKHR& GetPhysicalDeviceFragmentShadingRateFeatures() const;
+            const VkPhysicalDeviceFragmentDensityMapFeaturesEXT& GetPhysicalDeviceFragmentDensityMapFeatures() const;
+            const VkPhysicalDeviceFragmentDensityMapPropertiesEXT& GetPhysicalDeviceFragmentDensityMapProperties() const;
+            const VkPhysicalDeviceFragmentShadingRatePropertiesKHR& GetPhysicalDeviceFragmentShadingRateProperties() const;
+            
             VkFormatProperties GetFormatProperties(RHI::Format format, bool raiseAsserts = true) const;
             StringList GetDeviceLayerNames() const;
             StringList GetDeviceExtensionNames(const char* layerName = nullptr) const;
@@ -133,6 +142,10 @@ namespace AZ
             VkPhysicalDeviceRayTracingPipelineFeaturesKHR m_rayTracingPipelineFeatures{};
             VkPhysicalDeviceRayQueryFeaturesKHR m_rayQueryFeatures{};
             VkPhysicalDeviceVulkan12Features m_vulkan12Features{};
+            VkPhysicalDeviceFragmentShadingRateFeaturesKHR m_shadingRateFeatures{};
+            VkPhysicalDeviceFragmentDensityMapFeaturesEXT m_fragmentDensityMapFeatures{};
+            VkPhysicalDeviceFragmentDensityMapPropertiesEXT m_fragmentDensityMapProperties{};
+            VkPhysicalDeviceFragmentShadingRatePropertiesKHR m_fragmentShadingRateProperties{};
         };
     }
 }

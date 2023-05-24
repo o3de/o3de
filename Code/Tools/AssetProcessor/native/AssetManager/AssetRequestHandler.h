@@ -83,6 +83,8 @@ namespace AssetProcessor
         template<typename TRequest, typename TResponse, typename TClass>
         void RegisterQueuedCallbackHandler(TClass* obj, TResponse(TClass::* handler)(AssetProcessor::MessageData<TRequest>))
         {
+            AZ_Assert(obj, "Programmer Error - Handler object is null");
+
             // Return type is set to void here since the response needs to be delayed along with the handler call
             // HandleResponse gets called twice in this whole chain but the first time won't attempt to send a response because of this void
             RegisterMessageHandler<TRequest, void>([=](MessageData<TRequest> messageData)
@@ -191,7 +193,7 @@ namespace AssetProcessor
     protected:
 
         //! This function creates a fence file.
-        //! It will return the fencefile path if it succeeds, otherwise it returns an empty string  
+        //! It will return the fencefile path if it succeeds, otherwise it returns an empty string
         virtual QString CreateFenceFile(unsigned int fenceId);
         //! This function delete a fence file.
         //! it will return true if it succeeds, otherwise it returns false.
@@ -229,8 +231,8 @@ Q_SIGNALS:
 
         void OnFenceFileDetected(unsigned int fenceId);
 
-        //!  This will get called for every asset related messages or messages that require fencing 
-        void OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform);
+        //!  This will get called for every asset related messages or messages that require fencing
+        virtual void OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform);
 
     public:
 
@@ -249,7 +251,25 @@ Q_SIGNALS:
         // Invokes the appropriate handler and returns true if the message should be deleted by the caller and false if the request handler is responsible for deleting the message
         virtual bool InvokeHandler(MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> message);
 
-    private:
+        //! This is an internal struct that is used for storing all the necessary information for requests that require fencing
+        struct RequestInfo
+        {
+            RequestInfo() = default;
+
+            RequestInfo(NetworkRequestID requestId, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform)
+                : m_requestId(requestId)
+                , m_message(AZStd::move(message))
+                , m_platform(platform)
+            {
+            }
+
+            NetworkRequestID m_requestId{};
+            AZStd::shared_ptr<BaseAssetProcessorMessage> m_message{};
+            QString m_platform{};
+        };
+        AZStd::unordered_map<unsigned int, RequestInfo> m_pendingFenceRequestMap;
+
+    protected:
 
         void DeleteFenceFile_Retry(unsigned fenceId, QString fenceFileName, NetworkRequestID key, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform, int retriesRemaining);
 
@@ -279,23 +299,6 @@ Q_SIGNALS:
         // this map keeps track of whether a request was for a compile (FALSE), or a status (TRUE)
         QHash<NetworkRequestID, AssetRequestLine> m_pendingAssetRequests;
 
-        //! This is an internal struct that is used for storing all the necessary information for requests that require fencing
-        struct RequestInfo
-        {
-            RequestInfo() = default;
-
-            RequestInfo(NetworkRequestID requestId, AZStd::shared_ptr<BaseAssetProcessorMessage> message, QString platform)
-                :m_requestId(requestId)
-                , m_message(AZStd::move(message))
-                , m_platform(platform)
-            {
-            }
-
-            NetworkRequestID m_requestId{};
-            AZStd::shared_ptr<BaseAssetProcessorMessage> m_message{};
-            QString m_platform{};
-        };
-        AZStd::unordered_map<unsigned int, RequestInfo> m_pendingFenceRequestMap;
         unsigned int m_fenceId = 0;
 
         IRequestRouter m_requestRouter{ [this](unsigned int connId, unsigned int serial, QByteArray payload, QString platform) {OnNewIncomingRequest(connId, serial, payload, platform); } };

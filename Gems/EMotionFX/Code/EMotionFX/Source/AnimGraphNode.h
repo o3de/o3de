@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/tuple.h>
 #include <EMotionFX/Source/AnimGraphObjectIds.h>
@@ -943,7 +944,46 @@ namespace EMotionFX
 
         static void Reflect(AZ::ReflectContext* context);
 
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+        enum class ProfileMode : AZ::u8
+        {
+            Update = 1 << 0,
+            TopDown = 1 << 1,
+            PostUpdate = 1 << 2,
+            Output = 1 << 3
+        };
+
+        AZ::u8 m_profileMode = 0;
+        virtual void SetProfileMode(AZ::u8 profileMode) { m_profileMode = profileMode; };
+        virtual AZ::u8 GetProfileMode() const { return m_profileMode; };
+
+        void ClearProfileTimers(AnimGraphInstance* animGraphInstance);
+        AZStd::chrono::microseconds GetTotalUpdateTime(AnimGraphInstance* animGraphInstance) const;
+        AZStd::chrono::microseconds GetUpdateTime(AnimGraphInstance* animGraphInstance) const;
+
+        struct ProfileSection
+        {
+            ProfileSection(AnimGraphNode* node, AnimGraphInstance* animGraphInstance, ProfileMode mode, bool incomingNode);
+            ~ProfileSection();
+
+            AnimGraphNode* m_node = nullptr;
+            AnimGraphInstance* m_animGraphInstance = nullptr;
+            ProfileMode m_profileMode{0};
+            AZStd::chrono::system_clock::time_point m_startPoint;
+            bool m_isIncomingNode = false;
+        };
+
+#define EMFX_ANIMGRAPH_PROFILE_NODE(animGraph, profileMode) ProfileSection section##__LINE__(this, animGraph, profileMode, false);
+#define EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(animGraph, profileMode) ProfileSection section##__LINE__(this, animGraph, profileMode, true);
+#else
+#define EMFX_ANIMGRAPH_PROFILE_NODE(...)
+#define EMFX_ANIMGRAPH_PROFILE_INCOMING_NODE(...)
+#endif
+
     protected:
+        void PostUpdateIncomingNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* node, float timePassedInSeconds);
+        void TopDownUpdateIncomingNode(AnimGraphInstance* animGraphInstance, AnimGraphNode* node, float timePassedInSeconds);
+
         size_t                                      m_nodeIndex;
         AZ::u64                                     m_id;
         AZStd::vector<BlendTreeConnection*>         m_connections;

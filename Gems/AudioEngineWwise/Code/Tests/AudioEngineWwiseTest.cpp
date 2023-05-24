@@ -37,8 +37,6 @@ namespace UnitTest
         : public AZ::Test::ITestEnvironment
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(WwiseTestEnvironment)
-
         WwiseTestEnvironment() = default;
         ~WwiseTestEnvironment() override = default;
 
@@ -46,8 +44,6 @@ namespace UnitTest
 
         struct MockHolder
         {
-            AZ_TEST_CLASS_ALLOCATOR(MockHolder)
-
             NiceMock<ConsoleMock> m_console;
             NiceMock<SystemMock> m_system;
         };
@@ -76,9 +72,6 @@ namespace UnitTest
     class AudioSystemImplWwiseTests
         : public ::testing::Test
     {
-    public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioSystemImplWwiseTests)
-
     protected:
         AudioSystemImplWwiseTests()
             : m_wwiseImpl("")
@@ -170,8 +163,6 @@ namespace UnitTest
         : public CAudioSystemImpl_wwise
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioSystemImpl_wwise_Test)
-
         explicit AudioSystemImpl_wwise_Test(const char* assetPlatform)
             : CAudioSystemImpl_wwise(assetPlatform)
         {}
@@ -189,9 +180,6 @@ namespace UnitTest
     class AudioSystemImplWwiseConfigTests
         : public ::testing::Test
     {
-    public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioSystemImplWwiseConfigTests)
-
     protected:
         AudioSystemImplWwiseConfigTests()
             : m_wwiseImpl("")

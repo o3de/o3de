@@ -234,10 +234,20 @@ namespace AtomToolsFramework
 
         m_renderPipeline->AddToRenderTickOnce();
 
-        AZ::Render::FrameCaptureId frameCaptureId = AZ::Render::InvalidFrameCaptureId;
+        AZ::Render::FrameCaptureOutcome captureOutcome;
         AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-            frameCaptureId, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback, m_passHierarchy,
-            AZStd::string("Output"), captureCallback, AZ::RPI::PassAttachmentReadbackOption::Output);
+            captureOutcome,
+            &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachmentWithCallback,
+            captureCallback,
+            m_passHierarchy,
+            AZStd::string("Output"), AZ::RPI::PassAttachmentReadbackOption::Output);
+
+        AZ_Error("PreviewRenderer", captureOutcome.IsSuccess(),
+            "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
+
+        AZ::Render::FrameCaptureId frameCaptureId = captureOutcome.IsSuccess() ?
+            captureOutcome.GetValue() : AZ::Render::InvalidFrameCaptureId;
+
         return frameCaptureId;
     }
 

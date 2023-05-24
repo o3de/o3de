@@ -11,6 +11,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 #include <Atom/RHI/DrawFilterTagRegistry.h>
+#include <Atom/RHI/TagBitRegistry.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
@@ -60,7 +61,7 @@ namespace AZ
             friend class FeatureProcessorFactory;
             friend class RPISystem;
         public:
-            AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scene, AZ::SystemAllocator);
             AZ_RTTI(Scene, "{29860D3E-D57E-41D9-8624-C39604EF2973}");
 
             // Pipeline states info built from scene's render pipeline passes
@@ -183,9 +184,21 @@ namespace AZ
             //! Try apply render pipeline changes from each feature processors if the pipeline allows modification and wasn't modified.
             void TryApplyRenderPipelineChanges(RenderPipeline* pipeline);
 
+            RHI::TagBitRegistry<uint32_t>& GetViewTagBitRegistry();
+            
+            RHI::Ptr<RHI::DrawFilterTagRegistry> GetDrawFilterTagRegistry() const
+            {
+                return m_drawFilterTagRegistry;
+            }
+
+            uint16_t GetActiveRenderPipelines() const
+            {
+                return m_numActiveRenderPipelines;
+            }
+
         protected:
-            // SceneFinder overrides...
-            void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
+            // SceneRequestBus::Handler overrides...
+            void OnSceneNotificationHandlerConnected(SceneNotification* handler) override;
             void PipelineStateLookupNeedsRebuild() override;
 
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
@@ -205,7 +218,6 @@ namespace AZ
             // Update and compile scene and view srgs
             // This is called after PassSystem's FramePrepare so passes can still modify view srgs in its FramePrepareIntenal function before they are submitted to command list
             void UpdateSrgs();
-
 
         private:
             Scene();
@@ -282,6 +294,9 @@ namespace AZ
             // reference of dynamic draw system (from RPISystem)
             DynamicDrawSystem* m_dynamicDrawSystem = nullptr;
 
+            // Bit tag registry that allows all views in the scene to sync on the position of flag bits by tag.
+            RHI::Ptr <RHI::TagBitRegistry<uint32_t>> m_viewTagBitRegistry = nullptr;
+
             // Registry which allocates draw filter tag for RenderPipeline
             RHI::Ptr<RHI::DrawFilterTagRegistry> m_drawFilterTagRegistry;
 
@@ -289,6 +304,7 @@ namespace AZ
             float m_simulationTime = 0.0;
             RHI::ShaderInputNameIndex m_prevTimeInputIndex = "m_prevTime";
             float m_prevSimulationTime = 0.0;
+            uint16_t m_numActiveRenderPipelines = 0;
         };
 
         // --- Template functions ---

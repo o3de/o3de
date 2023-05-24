@@ -129,4 +129,5 @@ set(FILES
     Source/RHI.Reflect/PlatformLimitsDescriptor.cpp
     Include/Atom/RHI.Reflect/ShaderInputNameIndex.h
     Source/RHI.Reflect/ShaderInputNameIndex.cpp
+    Include/Atom/RHI.Reflect/VariableRateShadingEnums.h
 )

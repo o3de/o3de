@@ -18,7 +18,7 @@ namespace PhysX
         : public AzPhysics::Joint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXJoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXJoint, AZ::SystemAllocator);
         AZ_RTTI(PhysXJoint, "{DBE1D185-E318-407D-A5A1-AC1DE7F4A62D}", AzPhysics::Joint);
 
         PhysXJoint(
@@ -48,7 +48,7 @@ namespace PhysX
         : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXD6Joint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXD6Joint, AZ::SystemAllocator);
         AZ_RTTI(PhysXD6Joint, "{144B2FAF-A3EE-4FE1-9328-2C44FE1E3676}", PhysX::PhysXJoint);
 
         PhysXD6Joint(const D6JointLimitConfiguration& configuration,
@@ -73,7 +73,7 @@ namespace PhysX
     class PhysXFixedJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXFixedJoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXFixedJoint, AZ::SystemAllocator);
         AZ_RTTI(PhysXFixedJoint, "{B821D6D8-7B41-479D-9325-F9BC9754C5F8}", PhysX::PhysXJoint);
 
         PhysXFixedJoint(const FixedJointConfiguration& configuration,
@@ -90,7 +90,7 @@ namespace PhysX
     class PhysXBallJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXBallJoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXBallJoint, AZ::SystemAllocator);
         AZ_RTTI(PhysXBallJoint, "{9494CE43-3AE2-40AB-ADF7-FDC5F8B0F15A}", PhysX::PhysXJoint);
 
         PhysXBallJoint(const BallJointConfiguration& configuration,
@@ -107,7 +107,7 @@ namespace PhysX
     class PhysXHingeJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXHingeJoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXHingeJoint, AZ::SystemAllocator);
         AZ_RTTI(PhysXHingeJoint, "{9C5B955C-6C80-45FA-855D-DDA449C85313}", PhysX::PhysXJoint);
 
         PhysXHingeJoint(const HingeJointConfiguration& configuration,
@@ -123,7 +123,7 @@ namespace PhysX
     class PhysXPrismaticJoint : public PhysXJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysXPrismaticJoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysXPrismaticJoint, AZ::SystemAllocator);
         AZ_RTTI(PhysXPrismaticJoint, "{CEE6A6DF-FDE1-4E30-9EE2-631C7561C1C7}", PhysX::PhysXJoint);
 
         PhysXPrismaticJoint(const PrismaticJointConfiguration& configuration,

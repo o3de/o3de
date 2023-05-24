@@ -21,7 +21,7 @@ namespace GraphCanvas
         , public GraphCanvasCheckBoxNotificationBus::Handler
     {    
     public:
-        AZ_CLASS_ALLOCATOR(BooleanNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BooleanNodePropertyDisplay, AZ::SystemAllocator);
         BooleanNodePropertyDisplay(BooleanDataInterface* dataInterface);
         virtual ~BooleanNodePropertyDisplay();
     

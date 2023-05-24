@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class Geometry3DUtilsFixture :
-        public UnitTest::AllocatorsFixture,
+        public UnitTest::LeakDetectionFixture,
         public ::testing::WithParamInterface<uint8_t>
     {
     };

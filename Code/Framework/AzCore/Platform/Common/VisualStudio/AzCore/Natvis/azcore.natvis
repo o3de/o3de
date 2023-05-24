@@ -656,6 +656,18 @@
     </Expand>
   </Type>
 
+  <Type Name="AZStd::expected&lt;void,*&gt;">
+      <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
+      <Intrinsic Name="error" Expression="this->m_storage.m_unexpected"/>
+      <DisplayString Condition="has_value()">Value = Success</DisplayString>
+      <DisplayString Condition="!has_value()">Error = {error()}</DisplayString>
+      <Expand>
+          <Item Name="has_value">has_value()</Item>
+          <Item Name="value" Condition="has_value()">Success</Item>
+          <Item Name="error" Condition="!has_value()">error()</Item>
+      </Expand>
+  </Type>
+
   <Type Name="AZ::Outcome&lt;*&gt;">
     <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
     <Intrinsic Name="value"       Expression="this->m_storage.m_value"/>
@@ -668,6 +680,18 @@
       <Item Name="Error" Condition="!has_value()">error()</Item>
     </Expand>
   </Type>
+
+    <Type Name="AZ::Outcome&lt;void,*&gt;">
+        <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
+        <Intrinsic Name="error" Expression="this->m_storage.m_unexpected"/>
+        <DisplayString Condition="has_value()" >{{Value = Success}}</DisplayString>
+        <DisplayString Condition="!has_value()">{{Error = {error()}}}</DisplayString>
+        <Expand>
+            <Item Name="IsSuccess">has_value()</Item>
+            <Item Name="Value" Condition="has_value()">Success</Item>
+            <Item Name="Error" Condition="!has_value()">error()</Item>
+        </Expand>
+    </Type>
 
   <Type Name="AZ::EnvironmentVariable&lt;*&gt;">
     <DisplayString Condition="m_data != nullptr">{*($T1*)&amp;m_data->m_value}</DisplayString>

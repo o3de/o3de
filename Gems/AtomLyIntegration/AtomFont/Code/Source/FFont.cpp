@@ -1477,7 +1477,7 @@ bool AZ::FFont::UpdateTexture()
     range.m_mipSliceMax = 0;
     range.m_arraySliceMin = 0;
     range.m_arraySliceMax = 0;
-    RHI::ImageSubresourceLayoutPlaced layout;
+    RHI::ImageSubresourceLayout layout;
     m_fontImage->GetSubresourceLayouts(range, &layout, nullptr);
 
     RHI::ImageUpdateRequest imageUpdateReq;
@@ -1537,7 +1537,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
 
         // Let any listeners know that the font texture has changed
         // TODO Update to an AZ::Event when Cry use of this bus is cleaned out.
-        EBUS_EVENT(FontNotificationBus, OnFontTextureUpdated, this);
+        FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontTextureUpdated, this);
     }
     else
     {

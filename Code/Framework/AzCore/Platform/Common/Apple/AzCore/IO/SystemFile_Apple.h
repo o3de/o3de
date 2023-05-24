@@ -95,12 +95,12 @@ namespace AZ
 
             inline int Read(int fileDescriptor, void* data, size_t size)
             {
-                return read(fileDescriptor, data, size);
+                return static_cast<int>(read(fileDescriptor, data, size));
             }
 
             inline int Write(int fileDescriptor, const void* data, size_t size)
             {
-                return write(fileDescriptor, data, size);
+                return static_cast<int>(write(fileDescriptor, data, size));
             }
 
             int Dup(int fileDescriptor);

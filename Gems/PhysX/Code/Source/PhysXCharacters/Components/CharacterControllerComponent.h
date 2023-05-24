@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/EntityBus.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/CollisionBus.h>
@@ -30,6 +31,7 @@ namespace PhysX
     /// prevent walking through walls or falling through terrain.
     class CharacterControllerComponent
         : public AZ::Component
+        , public AZ::EntityBus::Handler
         , public Physics::CharacterRequestBus::Handler
         , public AzPhysics::SimulatedBodyComponentRequestsBus::Handler
         , public AZ::TransformNotificationBus::Handler
@@ -49,11 +51,15 @@ namespace PhysX
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            // Character controller acts as dynamic kinematic rigid body,
+            // so it also serves the rigid body service.
+            provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
             provided.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
+            incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
             incompatible.push_back(AZ_CRC_CE("PhysicsCharacterControllerService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         }
@@ -63,9 +69,8 @@ namespace PhysX
             required.push_back(AZ_CRC_CE("TransformService"));
         }
 
-        static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+        static void GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
         }
 
         Physics::CharacterConfiguration& GetCharacterConfiguration()
@@ -78,6 +83,9 @@ namespace PhysX
         void Init() override;
         void Activate() override;
         void Deactivate() override;
+
+        // AZ::EntityBus overrides ...
+        void OnEntityActivated(const AZ::EntityId& entityId) override;
 
         // Physics::CharacterRequestBus
         AZ::Vector3 GetBasePosition() const override;
@@ -133,9 +141,8 @@ namespace PhysX
         // Creates the physics character controller in the current default physics scene.
         // This will do nothing if the controller is already created.
         void CreateController();
-        // Removes the physics character controller from the scene and will call DestroyController for clean up.
-        void DisableController();
-        // Cleans up all references and events used with the physics character controller.
+        // Removes the physics character controller from the scene and cleans up all
+        // references and events used with the physics character controller.
         void DestroyController();
 
         void OnPostSimulate(float deltaTime);

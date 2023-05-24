@@ -75,7 +75,7 @@ def build(build_config_filename, build_platform, build_type):
     print('[ci_build] Executing \"{}\"'.format(build_cmd_path))
     print('  cwd = {}'.format(cwd_dir))
     print('  engine_dir = {}'.format(engine_dir))
-    print('  paramaters:')
+    print('  parameters:')
     env_params = os.environ.copy()
     env_params['ENGINE_DIR'] = engine_dir
     for v in build_params:

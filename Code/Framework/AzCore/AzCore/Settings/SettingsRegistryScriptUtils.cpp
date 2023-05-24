@@ -34,6 +34,10 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
     }
 
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy() = default;
+    SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::nullptr_t)
+        : SettingsRegistryScriptProxy()
+    {}
+
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::shared_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
         : m_settingsRegistry(AZStd::move(settingsRegistry))
         , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())

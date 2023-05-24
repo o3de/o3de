@@ -216,6 +216,11 @@ namespace Multiplayer
             return NetworkEntityHandle(entity, &m_tracker);
         }
 
+        void RemoveEntityFromEntityMap(NetEntityId netEntityId) override
+        {
+            m_networkEntityMap.erase(netEntityId);
+        }
+
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override
         {
             AZ::Entity* entity = m_networkEntityMap[netEntityId];
@@ -333,7 +338,7 @@ namespace Multiplayer
 
     class HierarchyBenchmarkBase
         : public benchmark::Fixture
-        , public AllocatorsBase
+        , public LeakDetectionBase
     {
     public:
         void SetUp(const benchmark::State&) override
@@ -356,7 +361,6 @@ namespace Multiplayer
 
         virtual void internalSetUp()
         {
-            SetupAllocator();
             AZ::NameDictionary::Create();
 
             m_ComponentApplicationRequests = AZStd::make_unique<BenchmarkComponentApplicationRequests>();

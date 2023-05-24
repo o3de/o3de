@@ -16,7 +16,6 @@ namespace Ui
     {
         static const char* BackgroundId = "Background";
         static const char* NameId = "Name";
-        static const char* LocationId = "Location";
         static const char* IconId = "Icon";
 
         static const char* AssetEditorIconClassName = "AssetEditorHeaderIcon";
@@ -37,17 +36,13 @@ namespace Ui
         m_iconLabel = new QLabel(m_backgroundFrame);
         m_iconLabel->setObjectName(HeaderConstants::IconId);
         m_iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        m_iconLabel->setFixedSize(16, 16);
         AzQtComponents::Style::addClass(m_iconLabel, HeaderConstants::AssetEditorIconClassName);
         m_iconLabel->hide();
 
         m_assetName = new AzQtComponents::ElidingLabel(m_backgroundFrame);
         m_assetName->setObjectName(HeaderConstants::NameId);
-        m_assetName->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-        m_assetLocation = new AzQtComponents::ElidingLabel(m_backgroundFrame);
-        m_assetLocation->setObjectName(HeaderConstants::LocationId);
-        m_assetLocation->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        m_assetLocation->hide();
+        m_assetName->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
         m_backgroundLayout = new QHBoxLayout(this);
         m_backgroundLayout->setSizeConstraint(QLayout::SetMinimumSize);
@@ -56,8 +51,6 @@ namespace Ui
 
         m_backgroundLayout->addWidget(m_iconLabel);
         m_backgroundLayout->addWidget(m_assetName);
-        m_backgroundLayout->addStretch(1);
-        m_backgroundLayout->addWidget(m_assetLocation);
         m_backgroundFrame->setLayout(m_backgroundLayout);
 
         m_mainLayout = new QVBoxLayout(this);
@@ -72,12 +65,6 @@ namespace Ui
     void AssetEditorHeader::setName(const QString& name)
     {
         m_assetName->setText(name);
-    }
-
-    void AssetEditorHeader::setLocation(const QString& location)
-    {
-        m_assetLocation->setText(location);
-        m_assetLocation->setVisible(!location.isEmpty());
     }
 
     void AssetEditorHeader::setIcon(const QIcon& icon)

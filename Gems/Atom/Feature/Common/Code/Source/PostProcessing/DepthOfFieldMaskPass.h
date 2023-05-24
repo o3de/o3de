@@ -21,7 +21,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::DepthOfFieldMaskPass, "{37025565-2187-4841-8F17-FE90600BA884}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldMaskPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldMaskPass, SystemAllocator);
             virtual ~DepthOfFieldMaskPass() = default;
 
             //! Creates a DepthOfFieldMaskPass

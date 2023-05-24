@@ -68,7 +68,7 @@ namespace GraphCanvas
             : public QGraphicsWidget
         {
         public:
-            AZ_CLASS_ALLOCATOR(WrappedNodeLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WrappedNodeLayout, AZ::SystemAllocator);
             WrappedNodeLayout(WrapperNodeLayoutComponent& wrapperLayoutComponent);
             ~WrappedNodeLayout();
             
@@ -96,7 +96,7 @@ namespace GraphCanvas
                 HasElements,
             };
 
-            AZ_CLASS_ALLOCATOR(WrappedNodeActionGraphicsWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WrappedNodeActionGraphicsWidget, AZ::SystemAllocator);
             WrappedNodeActionGraphicsWidget(WrapperNodeLayoutComponent& wrapperLayoutComponent);
 
             void OnAddedToScene();

@@ -18,7 +18,7 @@ namespace BarrierInput
     {
     public:
         AZ_RTTI(BarrierInputModule, "{C338BB3B-EA09-4FC8-AD49-840F8A22837F}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(BarrierInputModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BarrierInputModule, AZ::SystemAllocator);
 
         BarrierInputModule()
             : AZ::Module()

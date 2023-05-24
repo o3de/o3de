@@ -48,7 +48,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator);
 
         NodePaletteDockWidget(GraphCanvasTreeItem* treeItem, const EditorId& editorId, const QString& windowLabel, QWidget* parent, const char* mimeType, bool inContextMenu, AZStd::string_view identifier);
         NodePaletteDockWidget(QWidget* parent, const QString& windowLabel, const NodePaletteConfig& configuration);

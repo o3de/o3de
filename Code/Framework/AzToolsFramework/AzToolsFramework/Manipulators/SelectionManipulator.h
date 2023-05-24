@@ -27,7 +27,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(SelectionManipulator, "{966F44B7-E287-4C28-9734-5958F1A13A1D}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(SelectionManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SelectionManipulator, AZ::SystemAllocator);
 
         SelectionManipulator() = delete;
         SelectionManipulator(const SelectionManipulator&) = delete;

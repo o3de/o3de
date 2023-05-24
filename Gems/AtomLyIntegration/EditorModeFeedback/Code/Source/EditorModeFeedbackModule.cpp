@@ -13,7 +13,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ_CLASS_ALLOCATOR_IMPL(EditorModeFeedbackModule, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(EditorModeFeedbackModule, AZ::SystemAllocator)
 
         EditorModeFeedbackModule::EditorModeFeedbackModule()
         {

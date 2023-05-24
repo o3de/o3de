@@ -18,7 +18,7 @@ namespace EMotionFX
         : public AzPhysics::JointConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(D6JointLimitConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(D6JointLimitConfiguration, AZ::SystemAllocator);
         // This uses the same uuid as the production D6JointLimitConfiguration.
         AZ_RTTI(D6JointLimitConfiguration, "{88E067B4-21E8-4FFA-9142-6C52605B704C}", AzPhysics::JointConfiguration);
 

@@ -176,7 +176,7 @@ namespace AZ
 
         bool ImGuiPass::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
         {
-            if (!IsEnabled() || GetRenderPipeline()->GetScene() == nullptr)
+            if (!IsEnabled() || GetRenderPipeline() == nullptr || GetRenderPipeline()->GetScene() == nullptr)
             {
                 return false;
             }

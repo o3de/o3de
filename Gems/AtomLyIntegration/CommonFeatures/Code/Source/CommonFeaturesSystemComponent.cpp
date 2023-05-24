@@ -6,16 +6,15 @@
  *
  */
 
-#include <CommonFeaturesSystemComponent.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
+#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
-
-#include <AtomLyIntegration/CommonFeatures/CoreLights/CoreLightsConstants.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentConstants.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <CommonFeaturesSystemComponent.h>
 
 namespace AZ
 {
@@ -23,6 +22,9 @@ namespace AZ
     {
         void AtomLyIntegrationCommonFeaturesSystemComponent::Reflect(ReflectContext* context)
         {
+            MaterialAssignment::Reflect(context);
+            CoreLightConstantsReflect(context);
+
             if (SerializeContext* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<AtomLyIntegrationCommonFeaturesSystemComponent, Component>()
@@ -32,13 +34,10 @@ namespace AZ
                 {
                     ec->Class<AtomLyIntegrationCommonFeaturesSystemComponent>("Common", "[Description of functionality provided by this System Component]")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                 }
             }
-
-            CoreLightConstantsReflect(context);
         }
 
         void AtomLyIntegrationCommonFeaturesSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)

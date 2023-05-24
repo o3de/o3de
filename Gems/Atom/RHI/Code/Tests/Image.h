@@ -17,7 +17,7 @@ namespace UnitTest
         : public AZ::RHI::ImageView
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::Resource&) override;
@@ -29,17 +29,17 @@ namespace UnitTest
         : public AZ::RHI::Image
     {
     public:
-        AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
     private:
-        void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayoutPlaced*, size_t*) const override {}
+        void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayout*, size_t*) const override {}
     };
 
     class ImagePool
         : public AZ::RHI::ImagePool
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ImagePoolDescriptor&) override;

@@ -268,7 +268,7 @@ namespace Vegetation
 
     bool SurfaceMaskFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         //determine if tags provided by the component should be considered
         bool useCompTags = !m_configuration.m_allowOverrides || (instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_surfaceFilterOverrideMode != OverrideMode::Replace);

@@ -38,8 +38,7 @@ KINESIS_APPLICATION_CODE = "-- ** Continuous Filter **\n"\
 LAMBDA_TIMEOUT_IN_MINUTES = 5
 # The amount of memory available to the function at runtime. Range from 128 to 10240.
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#cfn-lambda-function-memorysize
-LAMBDA_MEMORY_SIZE_IN_MB = 256
-
+LAMBDA_MEMORY_SIZE_IN_MB: int = 256
 
 # Constants for the Glue database and table.
 GLUE_TABLE_NAME = 'firehose_events'

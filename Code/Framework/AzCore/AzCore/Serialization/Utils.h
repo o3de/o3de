@@ -30,7 +30,7 @@ namespace AZ
         template <typename ObjectType>
         ObjectType* LoadObjectFromStream(IO::GenericStream& stream, SerializeContext* context = nullptr, const FilterDescriptor& filterDesc = FilterDescriptor())
         {
-            constexpr Uuid objectTypeId = AzTypeInfo<ObjectType>::Uuid();
+            const Uuid objectTypeId = AzTypeInfo<ObjectType>::Uuid();
             return reinterpret_cast<ObjectType*>(LoadObjectFromStream(stream, context, &objectTypeId, filterDesc));
         }
 
@@ -122,7 +122,7 @@ namespace AZ
             return GetEnumStringRepresentation<T1>(value, data, instance, storageTypeId) ||
                 GetEnumStringRepresentation<T2, TRest...>(value, data, instance, storageTypeId);
         }
-        
+
         bool IsVectorContainerType(const AZ::Uuid& type);
         bool IsSetContainerType(const AZ::Uuid& type);
         bool IsMapContainerType(const AZ::Uuid& type);

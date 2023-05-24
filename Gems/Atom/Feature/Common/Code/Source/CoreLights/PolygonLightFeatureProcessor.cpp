@@ -66,7 +66,7 @@ namespace AZ::Render
         MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
         if (meshFeatureProcessor)
         {
-            m_lightMeshFlag = meshFeatureProcessor->GetFlagRegistry()->AcquireTag(AZ::Name("o_enablePolygonLights"));
+            m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enablePolygonLights"));
         }
     }
 
@@ -227,33 +227,38 @@ namespace AZ::Render
     void PolygonLightFeatureProcessor::SetPolygonPoints(LightHandle handle, const Vector3* vertices, const uint32_t vertexCount, const Vector3& direction)
     {
         AZ_Warning("PolygonLightFeatureProcessor", vertexCount <= MaxPolygonPoints, "Too many polygon points on polygon light. Only using the first %lu vertices.", MaxPolygonPoints);
-        AZ_Warning("PolygonLightFeatureProcessor", vertexCount >= 2, "Polygon light must have at least three points - ignoring points.");
-        
+        AZ_Warning("PolygonLightFeatureProcessor", vertexCount > 2, "Polygon light must have at least three points - ignoring points.");
+
+        PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
         if (vertexCount < 3)
         {
-            return; // not enough points
+            data.SetEndIndex(data.GetStartIndex()); // Set the number of points to 0.
         }
-
-        PolygonPoints& pointArray = m_lightData.GetData<1>(handle.GetIndex());
-        uint32_t clippedCount = AZ::GetMin<uint32_t>(vertexCount, MaxPolygonPoints);
-        for (uint32_t i = 0; i < clippedCount; ++i)
+        else
         {
-            pointArray.at(i).x = vertices[i].GetX();
-            pointArray.at(i).y = vertices[i].GetY();
-            pointArray.at(i).z = vertices[i].GetZ();
+            PolygonPoints& pointArray = m_lightData.GetData<1>(handle.GetIndex());
+            uint32_t clippedCount = AZ::GetMin<uint32_t>(vertexCount, MaxPolygonPoints);
+
+            for (uint32_t i = 0; i < clippedCount; ++i)
+            {
+                vertices[i].StoreToFloat4(&pointArray.at(i).x); // StoreToFloat4 is faster and w is ignored by the shader.
+            }
+            data.SetEndIndex(data.GetStartIndex() + clippedCount);
+            direction.GetNormalized().StoreToFloat3(data.m_direction.data());
         }
-        PolygonLightData& data = m_lightData.GetData<0>(handle.GetIndex());
-        data.SetEndIndex(data.GetStartIndex() + clippedCount);
-        direction.StoreToFloat3(data.m_direction.data());
 
         UpdateBounds(handle);
-
         m_deviceBufferNeedsUpdate = true;
     }
 
     const Data::Instance<RPI::Buffer> PolygonLightFeatureProcessor::GetLightBuffer()const
     {
         return m_lightBufferHandler.GetBuffer();
+    }
+
+    const Data::Instance<RPI::Buffer> PolygonLightFeatureProcessor::GetLightPointBuffer() const
+    {
+        return m_lightPolygonPointBufferHandler.GetBuffer();
     }
 
     uint32_t PolygonLightFeatureProcessor::GetLightCount() const
@@ -277,8 +282,12 @@ namespace AZ::Render
         AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
         float radius = LightCommon::GetRadiusFromInvRadiusSquared(abs(data.m_invAttenuationRadiusSquared));
 
-        // Emits both directions is stored in the sign of m_invAttenuationRadiusSquared.
-        if (data.m_invAttenuationRadiusSquared < 0.0f)
+        if (data.GetEndIndex() == data.GetStartIndex() || AZStd::isnan(radius))
+        {
+            // Invalid polygon light, just use an invalid variant.
+            bounds.emplace<AZStd::monostate>();
+        }
+        if (data.m_invAttenuationRadiusSquared < 0.0f) // Emits both directions is stored in the sign of m_invAttenuationRadiusSquared.
         {
             bounds.emplace<Sphere>(AZ::Sphere(position, radius));
         }

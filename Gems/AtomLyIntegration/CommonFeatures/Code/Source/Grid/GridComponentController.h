@@ -27,7 +27,7 @@ namespace AZ
         public:
             friend class EditorGridComponent;
 
-            AZ_CLASS_ALLOCATOR(GridComponentController, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(GridComponentController, SystemAllocator);
             AZ_RTTI(AZ::Render::GridComponentController, "{D2FF04F5-2F8D-44C5-99CA-A6FF800187DD}");
 
             static void Reflect(ReflectContext* context);

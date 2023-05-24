@@ -8,24 +8,24 @@
 
 #include "ProcessCommunicatorTracePrinter.h"
 
-
-ProcessCommunicatorTracePrinter::ProcessCommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window) :
+ProcessCommunicatorTracePrinter::ProcessCommunicatorTracePrinter(
+    AzFramework::ProcessCommunicator* communicator, const char* window, TraceProcessing processingType)
+    :
     m_communicator(communicator),
-    m_window(window)
+    m_window(window),
+    m_processingType(processingType)
 {
     m_stringBeingConcatenated.reserve(1024);
+
+    if (m_processingType == TraceProcessing::Threaded)
+    {
+        StartPumpThread();
+    }
 }
 
 ProcessCommunicatorTracePrinter::~ProcessCommunicatorTracePrinter()
 {
-    // flush stdout
-    Pump();  // get any remaining data if available and split it by newlines
-    
-    // if there's any further data left over in the buffer then make sure it gets written, too
-    WriteCurrentString(false);
-    
-    // flush stderr
-    WriteCurrentString(true);
+    FlushInternal();
 }
 
 void ProcessCommunicatorTracePrinter::Pump()
@@ -44,6 +44,92 @@ void ProcessCommunicatorTracePrinter::Pump()
             ParseDataBuffer(readSize, true);
         }
     }
+}
+
+void ProcessCommunicatorTracePrinter::Flush()
+{
+    FlushInternal();
+
+    // Start the pump thread back up again after flushing.
+    if (m_processingType == TraceProcessing::Threaded)
+    {
+        StartPumpThread();
+    }
+}
+
+void ProcessCommunicatorTracePrinter::FlushInternal()
+{
+    if (m_processingType == TraceProcessing::Threaded)
+    {
+        EndPumpThread();
+    }
+
+    // flush stdout
+    Pump(); // get any remaining data if available and split it by newlines
+
+    // if there's any further data left over in the buffer then make sure it gets written, too
+    WriteCurrentString(false);
+
+    // flush stderr
+    WriteCurrentString(true);
+}
+
+void ProcessCommunicatorTracePrinter::StartPumpThread()
+{
+    m_runThread = true;
+
+    AZStd::thread_desc desc;
+    desc.m_name = "Process Trace Printer Pump";
+    m_pumpThread = AZStd::thread(
+        desc,
+        [this]()
+        {
+            // read from the process until the handle is no longer valid
+            while (m_runThread)
+            {
+                // Wait for more output to be ready. Note that this might not block on all platforms.
+                AzFramework::ProcessCommunicator::OutputStatus status;
+                m_communicator->WaitForReadyOutputs(status);
+
+                // If we've found some data, process as much as we're given
+                if (status.shouldReadErrors || status.shouldReadOutput)
+                {
+                    Pump();
+                }
+                else
+                {
+                    // Sleep on every empty iteration through the loop.
+                    // WaitForReadyOutputs() isn't guaranteed to actually be a blocking wait on all platforms,
+                    // so if we aren't supposed to read anything, sleep a bit before trying to read again.
+                    constexpr int PumpingDelayMs = 10;
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(PumpingDelayMs));
+                }
+
+                // If the streams are no longer valid, write any final strings that we have and exit the thread.
+                // No more outputs will show up, so there's no point in looping any further.
+                if (!status.outputDeviceReady && !status.errorsDeviceReady)
+                {
+                    WriteCurrentString(true);
+                    WriteCurrentString(false);
+                    break;
+                }
+            }
+        });
+}
+
+void ProcessCommunicatorTracePrinter::EndPumpThread()
+{
+    // Signal our pump thread to exit as soon as it can, wait for it to exit and clear it out.
+    m_runThread = false;
+    if (m_pumpThread.joinable())
+    {
+        m_pumpThread.join();
+    }
+    m_pumpThread = {};
+
+    // Make sure any remaining strings for stderr and stdout are written out.
+    WriteCurrentString(true);
+    WriteCurrentString(false);
 }
 
 void ProcessCommunicatorTracePrinter::ParseDataBuffer(AZ::u32 readSize, bool isFromStdErr)

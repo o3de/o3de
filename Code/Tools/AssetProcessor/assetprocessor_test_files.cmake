@@ -42,6 +42,11 @@ set(FILES
     native/tests/assetmanager/AssetManagerTestingBase.h
     native/tests/assetmanager/IntermediateAssetTests.cpp
     native/tests/assetmanager/IntermediateAssetTests.h
+    native/tests/assetmanager/DelayRelocationTests.cpp
+    native/tests/assetmanager/DelayRelocationTests.h
+    native/tests/assetmanager/SourceDependencyTests.cpp
+    native/tests/assetmanager/SourceDependencyTests.h
+    native/tests/assetmanager/InitialScanSkippingTests.cpp
     native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.cpp
     native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.h
     native/tests/utilities/assetUtilsTest.cpp
@@ -69,6 +74,7 @@ set(FILES
     native/tests/BuilderManagerTests.h
     native/tests/MockAssetDatabaseRequestsHandler.h
     native/tests/SourceAssetReferenceTests.cpp
+    native/tests/UuidManagerTests.cpp
     native/unittests/AssetCacheServerUnitTests.cpp
     native/unittests/AssetProcessingStateDataUnitTests.cpp
     native/unittests/AssetProcessorUnitTests.h
@@ -82,7 +88,6 @@ set(FILES
     native/unittests/ConnectionUnitTests.cpp
     native/unittests/ConnectionManagerUnitTests.cpp
     native/unittests/FileWatcherUnitTests.cpp
-    native/unittests/FileWatcherUnitTests.h
     native/unittests/PlatformConfigurationUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.cpp
     native/unittests/RCcontrollerUnitTests.h

@@ -19,7 +19,7 @@ if(NOT PAL_TRAIT_ATOM_MATERIAL_EDITOR_APPLICATION_SUPPORTED)
 endif()
 
 ly_add_target(
-    NAME MaterialEditor EXECUTABLE
+    NAME MaterialEditor APPLICATION
     NAMESPACE Gem
     AUTOMOC
     AUTORCC

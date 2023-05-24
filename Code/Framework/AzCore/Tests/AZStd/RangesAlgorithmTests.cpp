@@ -14,7 +14,7 @@
 namespace UnitTest
 {
     class RangesAlgorithmTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     // range algorithm min and max

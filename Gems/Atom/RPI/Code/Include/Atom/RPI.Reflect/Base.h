@@ -62,6 +62,7 @@ namespace AZ
             static constexpr uint32_t Pass = 4;
             static constexpr uint32_t View = 5;
             static constexpr uint32_t Scene = 6;
+            static constexpr uint32_t Bindless = 7;
         };
     }
 }

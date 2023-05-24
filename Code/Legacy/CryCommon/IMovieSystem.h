@@ -15,7 +15,6 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <Range.h>
 #include <AnimKey.h>
@@ -32,10 +31,10 @@ struct IMovieSystem;
 struct IKey;
 class XmlNodeRef;
 struct ISplineInterpolator;
-struct ILightAnimWrapper;
 
 namespace AZ
 {
+    class SerializeContext;
     namespace Data
     {
         class AssetData;
@@ -104,106 +103,54 @@ class CAnimParamType
     friend class AnimSerializer;
 
 public:
-    AZ_TYPE_INFO(CAnimParamType, "{E2F34955-3B07-4241-8D34-EA3BEF3B33D2}")
+    AZ_TYPE_INFO_WITH_NAME_DECL(CAnimParamType);
 
     static const uint kParamTypeVersion = 9;
 
-    CAnimParamType()
-        : m_type(kAnimParamTypeInvalid) {}
+    CAnimParamType();
 
-    CAnimParamType(const AZStd::string& name)
-    {
-        *this = name;
-    }
+    CAnimParamType(const AZStd::string& name);
 
-    CAnimParamType(AnimParamType type)
-    {
-        *this = type;
-    }
+    CAnimParamType(AnimParamType type);
 
     // Convert from old enum or int
-    void operator =(AnimParamType type)
-    {
-        m_type = type;
-    }
+    void operator =(AnimParamType type);
 
-    void operator =(const AZStd::string& name)
-    {
-        m_type = kAnimParamTypeByString;
-        m_name = name;
-    }
+    void operator =(const AZStd::string& name);
 
     // Convert to enum. This needs to be explicit,
     // otherwise operator== will be ambiguous
-    AnimParamType GetType() const { return m_type; }
+    AnimParamType GetType() const;
 
     // Get name
-    const char* GetName() const { return m_name.c_str(); }
+    const char* GetName() const;
 
-    bool operator ==(const CAnimParamType& animParamType) const
+    bool operator ==(const CAnimParamType& animParamType) const;
+
+    bool operator !=(const CAnimParamType& animParamType) const;
+
+    bool operator <(const CAnimParamType& animParamType) const;
+
+    constexpr operator size_t() const
     {
-        if (m_type == kAnimParamTypeByString && animParamType.m_type == kAnimParamTypeByString)
-        {
-            return m_name == animParamType.m_name;
-        }
-
-        return m_type == animParamType.m_type;
+        AZStd::hash<AnimParamType> paramTypeHasher;
+        size_t retVal = paramTypeHasher(GetType());
+        AZStd::hash_combine(retVal, AZ::Crc32(GetName()));
+        return retVal;
     }
-
-    bool operator !=(const CAnimParamType& animParamType) const
-    {
-        return !(*this == animParamType);
-    }
-
-    bool operator <(const CAnimParamType& animParamType) const
-    {
-        if (m_type == kAnimParamTypeByString && animParamType.m_type == kAnimParamTypeByString)
-        {
-            return m_name < animParamType.m_name;
-        }
-        else if (m_type == kAnimParamTypeByString)
-        {
-            return false; // Always sort named params last
-        }
-        else if (animParamType.m_type == kAnimParamTypeByString)
-        {
-            return true; // Always sort named params last
-        }
-        if (m_type < animParamType.m_type)
-        {
-            return true;
-        }
-
-        return false;
-    }
-
 
     void SaveToXml(XmlNodeRef& xmlNode) const;
     void LoadFromXml(const XmlNodeRef& xmlNode, const uint version = kParamTypeVersion);
 
-    // Serialization. Defined in Movie.cpp
-    inline void Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version = kParamTypeVersion);
+    // Serialization
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version = kParamTypeVersion);
 
 private:
     AnimParamType m_type;
     AZStd::string m_name;
 };
 
-namespace AZStd
-{
-    // define hasher to allow for AZStd maps and sets of CAnimParamType
-    template <>
-    struct hash < CAnimParamType >
-    {
-        inline size_t operator()(const CAnimParamType& paramType) const
-        {
-            AZStd::hash<AnimParamType> paramTypeHasher;
-            size_t retVal = paramTypeHasher(paramType.GetType());
-            AZStd::hash_combine(retVal, AZ::Crc32(paramType.GetName()));
-            return retVal;
-        }
-    };
-}  // namespace AZStd
+
 
 //! Types of animation track.
 // Do not change values! they are serialized
@@ -231,18 +178,7 @@ enum ETrackMask
 //! Structure passed to Animate function.
 struct SAnimContext
 {
-    SAnimContext()
-    {
-        singleFrame = false;
-        forcePlay = false;
-        resetting = false;
-        time = 0;
-        dt = 0;
-        fps = 0;
-        sequence = nullptr;
-        trackMask = 0;
-        startTime = 0;
-    }
+    SAnimContext();
 
     float time;             //!< Current time in seconds.
     float dt;               //!< Delta of time from previous animation frame in seconds.
@@ -263,12 +199,7 @@ struct SAnimContext
 */
 struct SCameraParams
 {
-    SCameraParams()
-    {
-        fov = 0.0f;
-        nearZ = DEFAULT_NEAR;
-        justActivated = false;
-    }
+    SCameraParams();
     AZ::EntityId cameraEntityId;
     float fov;
     float nearZ;
@@ -314,16 +245,11 @@ struct IMovieCallback
 */
 struct IAnimTrack
 {
-    AZ_RTTI(IAnimTrack, "{AA0D5170-FB28-426F-BA13-7EFF6BB3AC67}");
-    AZ_CLASS_ALLOCATOR(IAnimTrack, AZ::SystemAllocator, 0);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimTrack);
+    AZ_RTTI_NO_TYPE_INFO_DECL();
+    AZ_CLASS_ALLOCATOR_DECL
 
-    static void Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<IAnimTrack>();
-        }
-    }
+    static void Reflect(AZ::ReflectContext* context);
 
     //! Flags that can be set on animation track.
     enum EAnimTrackFlags
@@ -476,24 +402,9 @@ struct IAnimTrack
     virtual void GetValue(float time, Maestro::AssetBlends<AZ::Data::AssetData>& value) = 0;
 
     // support for AZ:: vector types - re-route to legacy types
-    void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false)
-    {
-        Vec3 vec3;
-        GetValue(time, vec3, applyMultiplier);
-        value.Set(vec3.x, vec3.y, vec3.z);
-    }
-    void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false)
-    {
-        Vec4 vec4;
-        GetValue(time, vec4, applyMultiplier);
-        value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
-    }
-    void GetValue(float time, AZ::Quaternion& value)
-    {
-        Quat quat;
-        GetValue(time, quat);
-        value.Set(quat.v.x, quat.v.y, quat.v.z, quat.w);
-    }
+    void GetValue(float time, AZ::Vector3& value, bool applyMultiplier = false);
+    void GetValue(float time, AZ::Vector4& value, bool applyMultiplier = false);
+    void GetValue(float time, AZ::Quaternion& value);
 
     //////////////////////////////////////////////////////////////////////////
     // Set track value at specified time.
@@ -519,21 +430,9 @@ struct IAnimTrack
     virtual void SetValue(float time, const Maestro::AssetBlends<AZ::Data::AssetData>& value, bool bDefault = false) = 0;
 
     // support for AZ:: vector types - re-route to legacy types
-    void SetValue(float time, AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false)
-    {
-        Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
-        SetValue(time, vec4, bDefault, applyMultiplier);
-    }
-    void SetValue(float time, AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false)
-    {
-        Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
-        SetValue(time, vec3, bDefault, applyMultiplier);
-    }
-    void SetValue(float time, AZ::Quaternion& value, bool bDefault = false)
-    {
-        Quat quat(value.GetW(), value.GetX(), value.GetY(), value.GetZ());
-        SetValue(time, quat, bDefault);
-    }
+    void SetValue(float time, AZ::Vector4& value, bool bDefault = false, bool applyMultiplier = false);
+    void SetValue(float time, AZ::Vector3& value, bool bDefault = false, bool applyMultiplier = false);
+    void SetValue(float time, AZ::Quaternion& value, bool bDefault = false);
 
     // Only for position tracks, offset all track keys by this amount.
     virtual void OffsetKeyPosition(const Vec3& value) = 0;
@@ -567,17 +466,7 @@ struct IAnimTrack
     //! @param key Index of of key.
     //! @return Index of the next key in time. If the last key given, this returns -1.
     // In case of keys sorted, it's just 'key+1', but if not sorted, it can be another value.
-    virtual int NextKeyByTime(int key) const
-    {
-        if (key + 1 < GetNumKeys())
-        {
-            return key + 1;
-        }
-        else
-        {
-            return -1;
-        }
-    }
+    virtual int NextKeyByTime(int key) const;
 
     //! Get the animation layer index assigned. (only for character/look-at tracks ATM)
     virtual int GetAnimationLayerIndex() const { return -1; }
@@ -625,16 +514,11 @@ struct IAnimNodeOwner
 struct IAnimNode
 {
 public:
-    AZ_RTTI(IAnimNode, "{0A096354-7F26-4B18-B8C0-8F10A3E0440A}");
-    AZ_CLASS_ALLOCATOR(IAnimNode, AZ::SystemAllocator, 0);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimNode);
+    AZ_RTTI_NO_TYPE_INFO_DECL()
+    AZ_CLASS_ALLOCATOR_DECL;
 
-    static void Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<IAnimNode>();
-        }
-    }
+    static void Reflect(AZ::ReflectContext* context);
 
     //////////////////////////////////////////////////////////////////////////
     // Supported params.
@@ -647,15 +531,8 @@ public:
 
     struct SParamInfo
     {
-        SParamInfo()
-            : name("")
-            , valueType(kAnimValueDefault)
-            , flags(ESupportedParamFlags(0)) {};
-        SParamInfo(const char* _name, CAnimParamType _paramType, AnimValueType _valueType, ESupportedParamFlags _flags)
-            : name(_name)
-            , paramType(_paramType)
-            , valueType(_valueType)
-            , flags(_flags) {};
+        SParamInfo();
+        SParamInfo(const char* _name, CAnimParamType _paramType, AnimValueType _valueType, ESupportedParamFlags _flags);
 
         AZStd::string name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
@@ -724,32 +601,20 @@ public:
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent SetPos that accepts AZ::Vector3
      **/
-    void SetPos(float time, const AZ::Vector3& pos)
-    {
-        Vec3 vec3(pos.GetX(), pos.GetY(), pos.GetZ());
-        SetPos(time, vec3);
-    }
+    void SetPos(float time, const AZ::Vector3& pos);
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent SetRotate that accepts AZ::Quaternion
      **/
-    void SetRotate(float time, const AZ::Quaternion& rot)
-    {
-        Quat quat(rot.GetX(), rot.GetY(), rot.GetZ(), rot.GetW());
-        SetRotate(time, quat);
-    }
+    void SetRotate(float time, const AZ::Quaternion& rot);
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent SetScale that accepts AZ::Vector3
      **/
-    void SetScale(float time, const AZ::Vector3& scale)
-    {
-        Vec3 vec3(scale.GetX(), scale.GetY(), scale.GetZ());
-        SetScale(time, vec3);
-    }
+    void SetScale(float time, const AZ::Vector3& scale);
 
     //! Compute and return the offset which brings the current position to the given position
-    virtual Vec3 GetOffsetPosition(const Vec3& position) { return position - GetPos(); }
+    virtual Vec3 GetOffsetPosition(const Vec3& position);
 
     //! Get current entity position.
     virtual Vec3 GetPos() = 0;
@@ -771,22 +636,13 @@ public:
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent SetParamValue that accepts AZ::Vector3
      **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value)
-    {
-        Vec3 vec3(value.GetX(), value.GetY(), value.GetZ());
-        return SetParamValue(time, param, vec3);
-    }
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector3& value);
 
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent SetParamValue that accepts AZ::Vector4
      **/
-    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value)
-    {
-        Vec4 vec4(value.GetX(), value.GetY(), value.GetZ(), value.GetW());
-        return SetParamValue(time, param, vec4);
-    }
-
+    bool SetParamValue(float time, CAnimParamType param, const AZ::Vector4& value);
 
     // Get float/vec3/vec4 parameter at given time.
     // @return true if parameter exist, false if this parameter not exist in node.
@@ -798,25 +654,13 @@ public:
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent GetParamValue that accepts AZ::Vector4
      **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value)
-    {
-        Vec3 vec3;
-        const bool result = GetParamValue(time, param, vec3);
-        value.Set(vec3.x, vec3.y, vec3.z);
-        return result;
-    }
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector3& value);
 
     /**
      * O3DE_DEPRECATION_NOTICE(GHI-9326)
      * use equivalent GetParamValue that accepts AZ::Vector4
      **/
-    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value)
-    {
-        Vec4 vec4;
-        const bool result = GetParamValue(time, param, vec4);
-        value.Set(vec4.x, vec4.y, vec4.z, vec4.w);
-        return result;
-    }
+    bool GetParamValue(float time, CAnimParamType param, AZ::Vector4& value);
 
     //! Evaluate animation node while not playing animation.
     virtual void StillUpdate() = 0;
@@ -1020,7 +864,8 @@ struct IAnimLegacySequenceObject
 
 struct IAnimStringTable
 {
-    AZ_RTTI(IAnimStringTable, "{35690309-9D22-41FF-80B7-8AF7C8419945}")
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimStringTable);
+    AZ_RTTI_NO_TYPE_INFO_DECL();
     virtual ~IAnimStringTable() {}
 
     // for intrusive_ptr support
@@ -1034,18 +879,13 @@ struct IAnimStringTable
  */
 struct IAnimSequence
 {
-    AZ_RTTI(IAnimSequence, "{A60F95F5-5A4A-47DB-B3BB-525BBC0BC8DB}");
-    AZ_CLASS_ALLOCATOR(IAnimSequence, AZ::SystemAllocator, 0);
+    AZ_TYPE_INFO_WITH_NAME_DECL(IAnimSequence);
+    AZ_RTTI_NO_TYPE_INFO_DECL();
+    AZ_CLASS_ALLOCATOR_DECL;
 
     static const int kSequenceVersion = 5;
 
-    static void Reflect(AZ::ReflectContext* context)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<IAnimSequence>();
-        }
-    }
+    static void Reflect(AZ::ReflectContext* context);
 
     //! Flags used for SetFlags(),GetFlags(),SetParentFlags(),GetParentFlags() methods.
     enum EAnimSequenceFlags
@@ -1064,6 +904,7 @@ struct IAnimSequence
         eSeqFlags_EarlyMovieUpdate    = BIT(15), //!< Turn the 'sys_earlyMovieUpdate' on during the sequence.
         eSeqFlags_LightAnimationSet   = BIT(16), //!< A special unique sequence for light animations
         eSeqFlags_NoMPSyncingNeeded   = BIT(17), //!< this sequence doesn't require MP net syncing
+        eSeqFlags_DisplayAsFramesOrSeconds = BIT(18), //!< Display Start/End time as frames or seconds
     };
 
     virtual ~IAnimSequence() {};
@@ -1274,7 +1115,8 @@ struct IMovieListener
  */
 struct IMovieSystem
 {
-    AZ_RTTI(IMovieSystem, "{D8E6D6E9-830D-40DC-87F3-E9A069FBEB69}")
+    AZ_TYPE_INFO_WITH_NAME_DECL(IMovieSystem);
+    AZ_RTTI_NO_TYPE_INFO_DECL();
 
     enum ESequenceStopBehavior
     {
@@ -1516,27 +1358,3 @@ struct IMovieSystem
 
     // </interfuscator:shuffle>
 };
-
-inline void CAnimParamType::SaveToXml(XmlNodeRef& xmlNode) const
-{
-    if (gEnv->pMovieSystem)
-    {
-        gEnv->pMovieSystem->SaveParamTypeToXml(*this, xmlNode);
-    }
-}
-
-inline void CAnimParamType::LoadFromXml(const XmlNodeRef& xmlNode, const uint version)
-{
-    if (gEnv->pMovieSystem)
-    {
-        gEnv->pMovieSystem->LoadParamTypeFromXml(*this, xmlNode, version);
-    }
-}
-
-inline void CAnimParamType::Serialize(XmlNodeRef& xmlNode, bool bLoading, const uint version)
-{
-    if (gEnv->pMovieSystem)
-    {
-        gEnv->pMovieSystem->SerializeParamType(*this, xmlNode, bLoading, version);
-    }
-}

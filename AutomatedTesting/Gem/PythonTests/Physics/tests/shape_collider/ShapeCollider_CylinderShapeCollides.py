@@ -58,6 +58,7 @@ def ShapeCollider_CylinderShapeCollides():
     import azlmbr.math as math
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
+    from consts.physics import PHYSX_SHAPE_COLLIDER
 
     # Global time out
     TIME_OUT = 1.0
@@ -68,10 +69,11 @@ def ShapeCollider_CylinderShapeCollides():
     
     # Create terrain entity 
     terrain = EditorEntity.create_editor_entity_at([30.0, 30.0, 33.96], "Terrain")
+    terrain.add_component("PhysX Static Rigid Body")
     Report.result(Tests.create_terrain, terrain.id.IsValid())
     
-    terrain.add_component("PhysX Shape Collider")
-    Report.result(Tests.add_physx_shape_collider, terrain.has_component("PhysX Shape Collider"))
+    terrain.add_component(PHYSX_SHAPE_COLLIDER)
+    Report.result(Tests.add_physx_shape_collider, terrain.has_component(PHYSX_SHAPE_COLLIDER))
 
     box_shape_component = terrain.add_component("Box Shape")
     Report.result(Tests.add_box_shape, terrain.has_component("Box Shape"))

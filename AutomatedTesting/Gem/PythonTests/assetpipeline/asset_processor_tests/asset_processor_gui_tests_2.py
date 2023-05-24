@@ -8,6 +8,7 @@ General Asset Processor GUI Tests
 """
 
 # Import builtin libraries
+import psutil
 import pytest
 import logging
 import os
@@ -16,6 +17,7 @@ import configparser
 from pathlib import Path
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
@@ -67,6 +69,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
     Specific Tests for Asset Processor GUI To Only Run on Windows and Mac
     """
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/15101")
     @pytest.mark.test_case_id("C3540434")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
@@ -109,13 +112,13 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
 
         assert key_value.lower() == "true", f"The fast scan setting found was {key_value}"
 
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.test_case_id("C3635822")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
     def test_WindowsMacPlatforms_GUIFastScanEnabled_GameLauncherWorksWithAP(self, asset_processor, workspace,
                                                                             ap_fast_scan_setting_backup_fixture):
-        # fmt:on
+
         """
         Make sure game launcher working with Asset Processor set to turbo mode
         Validate that no fatal errors (crashes) are reported within a certain
@@ -146,7 +149,6 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
         #   This applies to AP and GameLauncher.exe
         time.sleep(CHECK_ALIVE_SECONDS)
         launcher_name = f"{workspace.project.title()}.GameLauncher"
-        # fmt:off
 
         launcher_exists = False
         asset_processor_exists = False
@@ -159,7 +161,7 @@ class TestsAssetProcessorGUI_WindowsAndMac(object):
 
         assert launcher_exists, f"{launcher_name} was not live during the check."
         assert asset_processor_exists, "AssetProcessor was not live during the check."
-        # fmt:on
+
 
 @pytest.mark.usefixtures("asset_processor")
 @pytest.mark.usefixtures("ap_setup_fixture")
@@ -171,50 +173,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
     """
     Tests for Asset Processor GUI To Run on All Supported Host Platforms
     """
-
-    @pytest.mark.test_case_id("C1591337")
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
-    # fmt:off
-    def test_AllSupportedPlatforms_DeleteCachedAssets_AssetsReprocessed(self, ap_setup_fixture,
-                                                                        asset_processor):
-        # fmt:on
-        """
-        Deleting files while AP is running
-
-        Test Steps:
-        1. Create temporary testing environment with test assets
-        2. Launch Asset Processor and wait for it to go idle
-        3. Verify product assets were created in the cache
-        4. Delete test assets from the cache
-        5. Wait for Asset Processor to go idle
-        6. Verify product assets were regenerated in the cache
-        """
-        env = ap_setup_fixture
-
-        # Copy test assets to project folder and verify test assets folder exists in project folder
-        test_assets_folder, cache_folder = asset_processor.prepare_test_environment(env["tests_dir"], os.path.join("TestAssets", "single_working_prefab"))
-        assert os.path.exists(test_assets_folder), f"Test assets folder was not found {test_assets_folder}"
-
-        # Launch Asset Processor and wait for it to go idle
-        result, _ = asset_processor.gui_process(quitonidle=False)
-        assert result, "AP GUI failed"
-
-        # Verify test assets were added to cache
-        def test_assets_added_to_cache() -> bool:
-            missing_assets, _ = asset_processor.compare_assets_with_cache()
-            return not missing_assets
-
-        assert test_assets_added_to_cache(), "Test assets are missing from cache"
-
-        # Delete test assets from cache
-        asset_processor.delete_temp_cache()
-
-        asset_processor.next_idle()
-
-        # Verify test assets were repopulated in cache
-        assert test_assets_added_to_cache(), "Test assets are missing from cache"
-        asset_processor.stop()
 
     @pytest.mark.test_case_id("C4874115")
     @pytest.mark.BAT
@@ -335,10 +293,9 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
 
         # Verify test assets in cache folder
         cache_assets_list = utils.get_relative_file_paths(cache_folder)
-        # fmt:off
+
         assert utils.compare_lists(cache_assets_list, expected_cache_assets), \
             "One or more assets is missing between project folder and cache folder"
-        # fmt:on
 
         # Grab timestamps of cached assets before edit of *.assetinfo file in project folder
         timestamps = [os.stat(os.path.join(cache_folder, asset)).st_mtime for asset in cache_assets_list]
@@ -357,7 +314,6 @@ class TestsAssetProcessorGUI_AllPlatforms(object):
         # Verify new timestamp for *.actor file in cache folder after edit of *.assetinfo file in project folder
         for asset in cache_assets_list:
             if ".actor" in asset:
-                # fmt:off
+
                 assert os.stat(os.path.join(cache_folder, asset)).st_mtime not in timestamps, \
                     f"Cached {asset} was not updated"
-                # fmt: on

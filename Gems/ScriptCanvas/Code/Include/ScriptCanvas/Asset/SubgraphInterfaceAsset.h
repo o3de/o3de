@@ -29,7 +29,7 @@ namespace ScriptCanvas
     struct SubgraphInterfaceData
     {
         AZ_TYPE_INFO(SubgraphInterfaceData, "{1734C569-7D40-4491-9EEE-A225E333C9BA}");
-        AZ_CLASS_ALLOCATOR(SubgraphInterfaceData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SubgraphInterfaceData, AZ::SystemAllocator);
         SubgraphInterfaceData() = default;
         ~SubgraphInterfaceData() = default;
         SubgraphInterfaceData(const SubgraphInterfaceData&) = default;
@@ -48,7 +48,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(SubgraphInterfaceAsset, "{E22967AC-7673-4778-9125-AF49D82CAF9F}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(SubgraphInterfaceAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SubgraphInterfaceAsset, AZ::SystemAllocator);
 
         static const char* GetFileExtension()
         {

@@ -32,7 +32,7 @@ namespace EMotionFX
         AZ::Vector3 GetPosition(const AZ::Vector3& startPosition, const AZ::Vector3& offset) const;
         void OnManipulatorMoved(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
         void BeginEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
-        void FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
+        void EndEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset);
 
         // PhysicsSetupManipulatorRequestBus::Handler overrides ...
         void OnUnderlyingPropertiesChanged() override;

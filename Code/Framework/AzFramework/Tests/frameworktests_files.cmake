@@ -39,4 +39,9 @@ set(FILES
     DocumentPropertyEditor/SchemaTests.cpp
     DocumentPropertyEditor/CvarAdapterTests.cpp
     DocumentPropertyEditor/SettingsRegistryAdapterTests.cpp
+    PaintBrush/MockPaintBrushNotificationHandler.h
+    PaintBrush/PaintBrushBaseTests.cpp
+    PaintBrush/PaintBrushPaintLocationTests.cpp
+    PaintBrush/PaintBrushPaintSettingsTests.cpp
+    PaintBrush/PaintBrushSmoothLocationTests.cpp
 )

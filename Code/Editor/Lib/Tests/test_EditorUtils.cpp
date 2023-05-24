@@ -40,7 +40,7 @@ namespace EditorUtilsTest
 
 
     class TestWarningAbsorber
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     };
 

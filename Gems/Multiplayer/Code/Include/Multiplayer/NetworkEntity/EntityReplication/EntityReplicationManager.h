@@ -136,6 +136,8 @@ namespace Multiplayer
         EntityReplicator* GetEntityReplicator(const ConstNetworkEntityHandle& entityHandle);
 
         void UpdateWindow();
+        void OnEntityActivated(AZ::Entity* entity);
+        void OnEntityDeactivated(AZ::Entity* entity);
 
         bool HandlePropertyChangeMessage
         (
@@ -195,6 +197,8 @@ namespace Multiplayer
         EntityExitDomainEvent::Handler m_entityExitDomainEventHandler;
         SendMigrateEntityEvent m_sendMigrateEntityEvent;
         NotifyEntityMigrationEvent::Handler m_notifyEntityMigrationHandler;
+        AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
+        AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
         AZ::ScheduledEvent m_clearRemovedReplicators;
         AZ::ScheduledEvent m_updateWindow;

@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 #include <QToolBar>
 
@@ -112,10 +114,13 @@ namespace AzToolsFramework
         virtual ToolBarManagerOperationResult AddToolBarToToolBarArea(
             const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex) = 0;
 
-        //! Retrieve a QToolBar from its identifier.
-        //! @param toolBarIdentifier The identifier for the ToolBar to retrieve.
-        //! @return A raw pointer to the QToolBar object.
-        virtual QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) = 0;
+        //! Generate an instance of a ToolBar from its identifier.
+        //! The requester should take care of correctly parenting and deleting the ToolBar once it is no longer needed.
+        //! Note that the ToolBar Manager system will still retain control over the contents of the ToolBar
+        //! and clear and re-populate it when necessary.
+        //! @param toolBarIdentifier The identifier for the ToolBar to generate.
+        //! @return A raw pointer to the new QToolBar object.
+        virtual QToolBar* GenerateToolBar(const AZStd::string& toolBarIdentifier) = 0;
 
         //! Retrieve the sort key of an action in a toolbar from its identifier.
         //! @param toolBarIdentifier The identifier for the toolbar to query.

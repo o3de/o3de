@@ -75,6 +75,11 @@ namespace AZ
                 m_uvs.reserve(size);
             }
 
+            void MeshVertexUVData::Clear()
+            {
+                m_uvs.clear();
+            }
+
             void MeshVertexUVData::AppendUV(const AZ::Vector2& uv)
             {
                 m_uvs.push_back(uv);

@@ -23,7 +23,7 @@ namespace UiSerialize
     {
     public:
         virtual ~AnimationData() { }
-        AZ_CLASS_ALLOCATOR(AnimationData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimationData, AZ::SystemAllocator);
         AZ_RTTI(AnimationData, "{FDC58CF7-8109-48F2-8D5D-BCBAF774ABB7}");
         AZStd::string m_serializeData;
     };

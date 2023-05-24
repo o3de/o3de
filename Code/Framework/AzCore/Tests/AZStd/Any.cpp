@@ -61,18 +61,18 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class AnyTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     { };
 
     // Fixture for tests with 1 type
     template<typename TestStruct>
     class AnySizedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             TestStruct::Reset();
         }
@@ -83,7 +83,7 @@ namespace UnitTest
     // Fixture for tests with 2 types (for converting between types)
     template <typename StructPair>
     class AnyConversionTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using LHS = typename StructPair::first_type;
@@ -91,7 +91,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             LHS::Reset();
             RHS::Reset();

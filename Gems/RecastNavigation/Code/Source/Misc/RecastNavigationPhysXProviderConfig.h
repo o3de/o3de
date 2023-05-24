@@ -20,6 +20,7 @@ namespace RecastNavigation
         : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(RecastNavigationPhysXProviderConfig, AZ::SystemAllocator)
         AZ_RTTI(RecastNavigationPhysXProviderConfig, "{310A3F15-6212-445E-A543-FB3BD6D47768}");
 
         static void Reflect(AZ::ReflectContext* context);

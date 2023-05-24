@@ -86,7 +86,7 @@ R"({
     {
     public:
         AZ_RTTI(OldTestClass, "{A34DB600-4479-4FAC-A049-93FC6AB7C5D0}");
-        AZ_CLASS_ALLOCATOR(OldTestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OldTestClass, AZ::SystemAllocator);
 
         OldTestClass() = default;
         virtual ~OldTestClass() = default;

@@ -26,8 +26,7 @@ AWS_METRICS_FEATURE_NAME = 'AWSMetrics'
 logger = logging.getLogger(__name__)
 
 
-def setup(launcher: pytest.fixture,
-          asset_processor: pytest.fixture) -> pytest.fixture:
+def _setup(launcher: pytest.fixture, asset_processor: pytest.fixture) -> pytest.fixture:
     """
     Set up the resource mapping configuration and start the log monitor.
     :param launcher: Client launcher for running the test level.
@@ -89,7 +88,7 @@ def query_metrics_from_s3(aws_metrics_utils: pytest.fixture, resource_mappings: 
         resource_mappings.get_resource_name_id('AWSMetrics.EventsCrawlerName'))
 
     # Remove the events_json table if exists so that the sample query can create a table with the same name.
-    aws_metrics_utils.delete_table(resource_mappings.get_resource_name_id('AWSMetrics.EventDatabaseName'), 'events_json')
+    aws_metrics_utils.try_delete_table(resource_mappings.get_resource_name_id('AWSMetrics.EventDatabaseName'), 'events_json')
     aws_metrics_utils.run_named_queries(resource_mappings.get_resource_name_id('AWSMetrics.AthenaWorkGroupName'))
     logger.info('Query metrics from S3 successfully.')
 
@@ -134,6 +133,7 @@ def update_kinesis_analytics_application_status(aws_metrics_utils: pytest.fixtur
         aws_metrics_utils.stop_kinesis_data_analytics_application(
             resource_mappings.get_resource_name_id('AWSMetrics.AnalyticsApplicationName'))
 
+
 @pytest.mark.SUITE_awsi
 @pytest.mark.usefixtures('automatic_process_killer')
 @pytest.mark.usefixtures('aws_credentials')
@@ -167,7 +167,7 @@ class TestAWSMetricsWindows(object):
                                                                 args=(aws_metrics_utils, resource_mappings, True))
         kinesis_analytics_application_thread.start()
 
-        log_monitor = setup(launcher, asset_processor)
+        log_monitor = _setup(launcher=launcher, asset_processor=asset_processor)
 
         # Kinesis analytics application needs to be in the running state before we start the game launcher.
         kinesis_analytics_application_thread.join()
@@ -203,13 +203,13 @@ class TestAWSMetricsWindows(object):
 
     @pytest.mark.parametrize('level', ['levels/aws/metrics/metrics.spawnable'])
     def test_realtime_and_batch_analytics_no_global_accountid(self,
-                                                            level: str,
-                                                            launcher: pytest.fixture,
-                                                            asset_processor: pytest.fixture,
-                                                            workspace: pytest.fixture,
-                                                            aws_utils: pytest.fixture,
-                                                            resource_mappings: pytest.fixture,
-                                                            aws_metrics_utils: pytest.fixture):
+                                                              level: str,
+                                                              launcher: pytest.fixture,
+                                                              asset_processor: pytest.fixture,
+                                                              workspace: pytest.fixture,
+                                                              aws_utils: pytest.fixture,
+                                                              resource_mappings: pytest.fixture,
+                                                              aws_metrics_utils: pytest.fixture):
         """
         Verify that the metrics events are sent to CloudWatch and S3 for analytics.
         """
@@ -220,7 +220,7 @@ class TestAWSMetricsWindows(object):
                                                                 args=(aws_metrics_utils, resource_mappings, True))
         kinesis_analytics_application_thread.start()
 
-        log_monitor = setup(launcher, asset_processor)
+        log_monitor = _setup(launcher=launcher, asset_processor=asset_processor)
 
         # Kinesis analytics application needs to be in the running state before we start the game launcher.
         kinesis_analytics_application_thread.join()
@@ -263,7 +263,7 @@ class TestAWSMetricsWindows(object):
         """
         Verify that unauthorized users cannot send metrics events to the AWS backed backend.
         """
-        log_monitor = setup(launcher, asset_processor)
+        log_monitor = _setup(launcher=launcher, asset_processor=asset_processor)
 
         # Set invalid AWS credentials.
         launcher.args = ['+LoadLevel', level, '+cl_awsAccessKey', 'AKIAIOSFODNN7EXAMPLE',

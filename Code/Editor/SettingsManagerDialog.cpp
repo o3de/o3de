@@ -42,6 +42,11 @@ CSettingsManagerDialog::CSettingsManagerDialog(QWidget* pParent)
     connect(ui->m_readBtn, &QAbstractButton::clicked, this, &CSettingsManagerDialog::OnReadBtnClick);
     connect(ui->m_importBtn, &QAbstractButton::clicked, this, &CSettingsManagerDialog::OnImportBtnClick);
     connect(ui->m_closeAllToolsBtn, &QAbstractButton::clicked, this, &CSettingsManagerDialog::OnCloseAllTools);
+
+    connect(ui->m_layoutListBox, &QListWidget::itemSelectionChanged, this, &CSettingsManagerDialog::OnSelectionChanged);
+
+    // Disable import button until a layout is selected.
+    ui->m_importBtn->setEnabled(false);
 }
 
 
@@ -264,6 +269,11 @@ void CSettingsManagerDialog::OnCloseAllTools()
 
     viewPaneManager->CloseAllNonStandardPanes();
     viewPaneManager->SaveLayout();
+}
+
+void CSettingsManagerDialog::OnSelectionChanged()
+{
+    ui->m_importBtn->setEnabled(ui->m_layoutListBox->selectedItems().count());
 }
 
 #include <moc_SettingsManagerDialog.cpp>

@@ -20,7 +20,7 @@ namespace TestAssetBuilder
     {
     public:
         AZ_RTTI(TestAssetBuilderModule, "{E1BD9AEE-8A56-4BA5-8FD7-7B9DD5DCBADB}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(TestAssetBuilderModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetBuilderModule, AZ::SystemAllocator);
 
         TestAssetBuilderModule()
             : AZ::Module()

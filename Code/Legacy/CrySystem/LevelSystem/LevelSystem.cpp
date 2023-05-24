@@ -16,7 +16,6 @@
 #include "CryPath.h"
 
 #include <CryCommon/LoadScreenBus.h>
-#include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Time/ITime.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -148,8 +147,7 @@ struct SLevelNameAutoComplete
     virtual int GetCount() const { return static_cast<int>(levels.size()); };
     virtual const char* GetValue(int nIndex) const { return levels[nIndex].c_str(); };
 };
-// definition and declaration must be separated for devirtualization
-static StaticInstance<SLevelNameAutoComplete, AZStd::no_destruct<SLevelNameAutoComplete>> g_LevelNameAutoComplete;
+static SLevelNameAutoComplete g_LevelNameAutoComplete;
 
 //------------------------------------------------------------------------
 CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
@@ -170,7 +168,7 @@ CLevelSystem::CLevelSystem(ISystem* pSystem, const char* levelsFolder)
 
     m_nLoadedLevelsCount = 0;
 
-    gEnv->pConsole->RegisterAutoComplete("LoadLevel", &(*g_LevelNameAutoComplete));
+    gEnv->pConsole->RegisterAutoComplete("LoadLevel", &g_LevelNameAutoComplete);
 
     AZ_Assert(gEnv && gEnv->pCryPak, "gEnv and CryPak must be initialized for loading levels.");
     if (!gEnv || !gEnv->pCryPak)
@@ -224,10 +222,10 @@ void CLevelSystem::Rescan(const char* levelsFolder)
     m_levelInfos.reserve(64);
     ScanFolder(0, false);
 
-    g_LevelNameAutoComplete->levels.clear();
-    for (int i = 0; i < (int)m_levelInfos.size(); i++)
+    g_LevelNameAutoComplete.levels.clear();
+    for (const CLevelInfo& levelInfo : m_levelInfos)
     {
-        g_LevelNameAutoComplete->levels.push_back(AZStd::string(PathUtil::GetFileName(m_levelInfos[i].GetName()).c_str()));
+        g_LevelNameAutoComplete.levels.emplace_back(AZ::IO::PathView(levelInfo.GetName()).Stem().Native());
     }
 }
 

@@ -135,7 +135,6 @@ namespace AZ
             ImageSubresource::Reflect(context);
             ImageSubresourceRange::Reflect(context);
             ImageSubresourceLayout::Reflect(context);
-            ImageSubresourceLayoutPlaced::Reflect(context);
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
@@ -214,6 +213,7 @@ namespace AZ
                 ->Value("Indirect", ScopeAttachmentUsage::Indirect)
                 ->Value("SubpassInput", ScopeAttachmentUsage::SubpassInput)
                 ->Value("InputAssembly", ScopeAttachmentUsage::InputAssembly)
+                ->Value("ShadingRate", ScopeAttachmentUsage::ShadingRate)
                 ;
 
             serializeContext->Enum<HardwareQueueClass>()
@@ -280,6 +280,7 @@ namespace AZ
                 ->Value("ShaderRead", ImageBindFlags::ShaderRead)
                 ->Value("ShaderWrite", ImageBindFlags::ShaderWrite)
                 ->Value("ShaderReadWrite", ImageBindFlags::ShaderReadWrite)
+                ->Value("ShadingRate", ImageBindFlags::ShadingRate)
                 ;
 
             serializeContext->Enum<ImageAspectFlags>()

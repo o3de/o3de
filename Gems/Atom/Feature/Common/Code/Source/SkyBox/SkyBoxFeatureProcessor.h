@@ -48,6 +48,7 @@ namespace AZ
             : public SkyBoxFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(SkyBoxFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::SkyBoxFeatureProcessor, "{CB7D1F95-2A02-4152-86F1-BB29DC802CF7}", AZ::Render::SkyBoxFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

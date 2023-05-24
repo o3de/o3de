@@ -23,7 +23,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ExecutionStateInterpreted, "{824E3CF1-5403-4AF7-AC5F-B69699FFF669}", ExecutionState);
-        AZ_CLASS_ALLOCATOR(ExecutionStateInterpreted, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionStateInterpreted, AZ::SystemAllocator);
 
         ExecutionStateInterpreted(ExecutionStateConfig& config);
 

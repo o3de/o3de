@@ -27,10 +27,10 @@ namespace InputUnitTests
     using namespace UnitTest;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    class InputTest : public ScopedAllocatorSetupFixture
+    class InputTest : public LeakDetectionFixture
     {
     public:
-        InputTest() : ScopedAllocatorSetupFixture()
+        InputTest() : LeakDetectionFixture()
         {
             // Many input tests are only valid if the GamePad device is supported on this platform.
             m_gamepadSupported = InputDeviceGamepad::GetMaxSupportedGamepads() > 0;

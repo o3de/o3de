@@ -34,7 +34,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::LightCullingRemap, "{0ED3D558-F7B3-4D3F-B9E6-3A3B8EC30E91}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(LightCullingRemap, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LightCullingRemap, SystemAllocator);
             virtual ~LightCullingRemap() = default;
 
             /// Creates a LightCullingRemap

@@ -29,7 +29,7 @@ namespace AZ
     
         void Image::GetSubresourceLayouts(
             const ImageSubresourceRange& subresourceRange,
-            ImageSubresourceLayoutPlaced* subresourceLayouts,
+            ImageSubresourceLayout* subresourceLayouts,
             size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();

@@ -47,6 +47,7 @@ namespace AZ::Render
         void SetFilteringSampleCount(uint32_t count) override;
         void SetEsmExponent(float exponent) override;
         void SetNormalShadowBias(float bias) override;
+        void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) override;
         void SetAffectsGI(bool affectsGI) override;
         void SetAffectsGIFactor(float affectsGIFactor) override;
         Aabb GetLocalVisualizationBounds() const override;

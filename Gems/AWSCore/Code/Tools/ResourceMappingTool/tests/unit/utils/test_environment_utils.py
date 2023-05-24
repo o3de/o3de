@@ -6,12 +6,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import platform
-from typing import List
 from unittest import TestCase
 from unittest.mock import (ANY, call, MagicMock, patch)
-
-from model import constants
-from model.basic_resource_attributes import (BasicResourceAttributes, BasicResourceAttributesBuilder)
 from utils import environment_utils
 
 
@@ -28,6 +24,10 @@ class TestEnvironmentUtils(TestCase):
         self.addCleanup(os_pathsep_patcher.stop)
         self._mock_os_pathsep: MagicMock = os_pathsep_patcher.start()
 
+        os_add_dll_directory_patcher: patch = patch("os.add_dll_directory")
+        self.addCleanup(os_add_dll_directory_patcher.stop)
+        self._mock_os_dll_directory: MagicMock = os_add_dll_directory_patcher.start()
+
     @patch('os.path.exists')
     @patch('ctypes.CDLL')
     def test_setup_qt_environment_global_flag_is_set(self, mock_os_path_exists, mock_ctype_cdll) -> None:
@@ -38,6 +38,8 @@ class TestEnvironmentUtils(TestCase):
         assert environment_utils.is_qt_linked() is True
         if platform.system() == 'Linux':
             mock_os_path_exists.assert_called()
+        elif platform.system() == 'Windows':
+            self._mock_os_dll_directory.assert_called_once()
 
     @patch('os.path.exists')
     @patch('ctypes.CDLL')
@@ -49,3 +51,5 @@ class TestEnvironmentUtils(TestCase):
         assert environment_utils.is_qt_linked() is False
         if platform.system() == 'Linux':
             mock_os_path_exists.assert_called()
+        elif platform.system() == 'Windows':
+            self._mock_os_dll_directory.assert_called_once()

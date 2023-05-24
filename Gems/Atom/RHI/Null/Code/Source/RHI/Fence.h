@@ -19,7 +19,7 @@ namespace AZ
             using Base = RHI::Fence;
         public:
             AZ_RTTI(Fence, "{34908F40-A7DE-4EE8-A871-71ACE0C24972}", Base);
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
             static RHI::Ptr<Fence> Create();
             

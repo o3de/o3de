@@ -55,7 +55,7 @@ namespace ScriptCanvas
             VariableReference
         };
 
-        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Slot, AZ::SystemAllocator);
         AZ_TYPE_INFO(Slot, "{FBFE0F02-4C26-475F-A28B-18D3A533C13C}");
 
         static void Reflect(AZ::ReflectContext* reflection);

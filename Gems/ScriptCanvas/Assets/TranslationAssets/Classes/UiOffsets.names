@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "SetBottom",
-                    "context": "UiOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Bottom"
@@ -40,7 +39,6 @@
                 },
                 {
                     "base": "SetRight",
-                    "context": "UiOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Right"
@@ -69,7 +67,6 @@
                 },
                 {
                     "base": "SetOffsets",
-                    "context": "UiOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Offsets"
@@ -116,7 +113,6 @@
                 },
                 {
                     "base": "SetTop",
-                    "context": "UiOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Top"
@@ -145,7 +141,6 @@
                 },
                 {
                     "base": "SetLeft",
-                    "context": "UiOffsets",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Set Left"

@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RHI.Reflect/PipelineLibraryData.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {

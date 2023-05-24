@@ -10,7 +10,6 @@
 
 #include <Tests/SystemComponentFixture.h>
 
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -43,6 +42,8 @@ namespace GraphCanvas { class NodePaletteTreeView; }
 namespace EMotionFX
 {
     class SimulatedObjectColliderWidget;
+    class SkeletonOutlinerPlugin;
+    class SimulatedObjectWidget;
 
     class MakeQtApplicationBase
     {
@@ -60,7 +61,6 @@ namespace EMotionFX
     };
 
     using UIFixtureBase = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -134,6 +134,9 @@ namespace EMotionFX
 
         QApplication* m_uiApp = nullptr;
         EMStudio::AnimGraphPlugin* m_animGraphPlugin = nullptr;
+        EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutlinerPlugin = nullptr;
+        EMotionFX::SimulatedObjectWidget* m_simulatedObjectPlugin = nullptr;
+
         testing::NiceMock<UnitTests::MockAssetSystemRequest> m_assetSystemRequestMock;
     };
 } // end namespace EMotionFX

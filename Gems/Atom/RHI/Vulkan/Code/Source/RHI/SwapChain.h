@@ -32,7 +32,7 @@ namespace AZ
             using Base = RHI::SwapChain;
 
         public:
-            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
             AZ_RTTI(SwapChain, "4AE7AE82-BB25-4665-BF79-85F407255B26", Base);
 
             struct FrameContext
@@ -97,13 +97,11 @@ namespace AZ
 
             //! Destroy the surface.
             void InvalidateSurface();
-            //! Destroy the old swapchain.
-            void InvalidateNativeSwapChain();
-            void InvalidateNativeSwapChainImmediately();
+            //! Destroy the swapchain.
+            void InvalidateNativeSwapChain(VkSwapchainKHR swapchain);
 
             RHI::Ptr<WSISurface> m_surface;
             VkSwapchainKHR m_nativeSwapChain = VK_NULL_HANDLE;
-            VkSwapchainKHR m_oldNativeSwapChain = VK_NULL_HANDLE;
             CommandQueue* m_presentationQueue = nullptr;
             FrameContext m_currentFrameContext;
 

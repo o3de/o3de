@@ -10,6 +10,48 @@
 
 namespace TestImpact
 {
+    RepoPath::RepoPath(const string_type& path) noexcept
+        : m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    RepoPath::RepoPath(const string_view_type& path) noexcept
+        : m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    RepoPath::RepoPath(const value_type* path) noexcept
+        : m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    RepoPath::RepoPath(const AZ::IO::PathView& path)
+        : m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    RepoPath::RepoPath(const AZ::IO::Path& path)
+        : m_path(path)
+    {
+        m_path.MakePreferred();
+    }
+
+    const char* RepoPath::c_str() const { return m_path.c_str(); }
+    AZStd::string RepoPath::String() const { return m_path.String(); }
+    AZ::IO::PathView RepoPath::Stem() const { return m_path.Stem(); }
+    AZ::IO::PathView RepoPath::Extension() const { return m_path.Extension(); }
+    bool RepoPath::empty() const { return m_path.empty(); }
+    AZ::IO::PathView RepoPath::ParentPath() const { return m_path.ParentPath(); }
+    AZ::IO::PathView RepoPath::Filename() const { return m_path.Filename(); }
+    AZ::IO::Path RepoPath::LexicallyRelative(const RepoPath& base) const { return m_path.LexicallyRelative(base.m_path); }
+    [[nodiscard]] bool RepoPath::IsRelativeTo(const RepoPath& base) const { return m_path.IsRelativeTo(base.m_path); }
+    AZ::IO::PathView RepoPath::RootName() const { return m_path.RootName(); }
+    AZ::IO::PathView RepoPath::RelativePath() const { return m_path.RelativePath(); }
+
     RepoPath& RepoPath::operator=(const string_type& other) noexcept
     {
         m_path = AZ::IO::Path(other).MakePreferred();

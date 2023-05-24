@@ -94,8 +94,11 @@ def AssetBrowser_SearchFiltering():
         editor_window = pyside_utils.get_editor_main_window()
         app = QtWidgets.QApplication.instance()
 
-        # 3) Type the name of an asset in the search bar and make sure it is filtered to and selectable
+        # 3) Switch to list view, type the name of an asset in the search bar and make sure it is filtered to and selectable
         asset_browser = editor_window.findChild(QtWidgets.QDockWidget, "Asset Browser")
+        tree_view_button = asset_browser.findChild(QtWidgets.QToolButton, "m_treeViewButton")
+        tree_view_button.click()
+        general.idle_wait(1.0)
         search_bar = asset_browser.findChild(QtWidgets.QLineEdit, "textSearch")
 
         # Add a small pause when typing in the search bar in order to check that the entries are updated properly
@@ -105,15 +108,15 @@ def AssetBrowser_SearchFiltering():
         general.idle_wait(0.5)
 
         asset_browser_tree = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTreeViewWidget")
-        asset_browser_table = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTableViewWidget")
-        found = await pyside_utils.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx"), 5.0)
+        found = await pyside_utils.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(asset_browser_tree, "cedar.fbx"), 5.0)
         if found:
-            model_index = pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx")
+            model_index = pyside_utils.find_child_by_pattern(asset_browser_tree, "cedar.fbx")
         else:
             Report.result(Tests.asset_filtered, found)
-        pyside_utils.item_view_index_mouse_click(asset_browser_table, model_index)
+        asset_browser_tree.scrollTo(model_index)
+        pyside_utils.item_view_index_mouse_click(asset_browser_tree, model_index)
         is_filtered = await pyside_utils.wait_for_condition(
-            lambda: asset_browser_table.currentIndex() == model_index, 5.0)
+            lambda: asset_browser_tree.currentIndex() == model_index, 5.0)
         Report.result(Tests.asset_filtered, is_filtered)
 
         # 4) Click the "X" in the search bar.

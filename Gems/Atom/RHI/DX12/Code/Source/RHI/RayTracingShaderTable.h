@@ -22,7 +22,7 @@ namespace AZ
             : public RHI::RayTracingShaderTable
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingShaderTable> Create();
 
@@ -34,6 +34,10 @@ namespace AZ
                 RHI::Ptr<Buffer> m_missTable;
                 uint32_t m_missTableSize = 0;
                 uint32_t m_missTableStride = 0;
+
+                RHI::Ptr<Buffer> m_callableTable;
+                uint32_t m_callableTableSize = 0;
+                uint32_t m_callableTableStride = 0;
 
                 RHI::Ptr<Buffer> m_hitGroupTable;
                 uint32_t m_hitGroupTableSize = 0;

@@ -43,7 +43,7 @@ namespace Multiplayer
     using namespace ::UnitTest;
 
     class NetworkEntityTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

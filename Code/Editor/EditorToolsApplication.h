@@ -25,6 +25,7 @@ namespace EditorInternal
         , public AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorToolsApplication, AZ::SystemAllocator)
         EditorToolsApplication(int* argc, char*** argv);
         ~EditorToolsApplication();
 

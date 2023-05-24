@@ -80,7 +80,7 @@ namespace AZ
             //! @param originatingSourceFilePath  Path to a file that references referencedSourceFilePath. May be absolute or relative to asset-root.
             //! @param referencedSourceFilePath   The referenced path as it appears in the originating file. May be relative to the originating file location or relative to asset-root.
             //! @return the list of possible paths, ordered from highest priority to lowest priority
-            AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
+            AZStd::vector<AZStd::string> GetPossibleDependencyPaths(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath);
 
             //! Takes an arbitrary string and replaces some characters to make it a valid filename. The result will be compatible with AzQtComponents::FileDialog.
             //! Ex. SanitizeFileName("Left=>Right.txt") == "Left_Right.txt"

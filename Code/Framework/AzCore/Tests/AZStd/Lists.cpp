@@ -55,7 +55,7 @@ namespace UnitTest
      * Tests AZSTD::list container.
      */
     class ListContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         // ListContainerTest-Begin

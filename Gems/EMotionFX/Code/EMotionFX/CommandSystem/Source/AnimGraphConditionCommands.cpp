@@ -23,7 +23,7 @@
 
 namespace CommandSystem
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAddTransitionCondition, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAddTransitionCondition, EMotionFX::CommandAllocator)
     const char* CommandAddTransitionCondition::s_commandName = "AnimGraphAddCondition";
     const char* CommandAddTransitionCondition::s_conditionTypeParameterName = "conditionType";
     const char* CommandAddTransitionCondition::s_insertAtParameterName = "insertAt";
@@ -198,7 +198,7 @@ namespace CommandSystem
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandRemoveTransitionCondition, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandRemoveTransitionCondition, EMotionFX::CommandAllocator)
     const char* CommandRemoveTransitionCondition::s_commandName = "AnimGraphRemoveCondition";
 
     CommandRemoveTransitionCondition::CommandRemoveTransitionCondition(MCore::Command* orgCommand)
@@ -305,7 +305,7 @@ namespace CommandSystem
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustTransitionCondition, EMotionFX::CommandAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(CommandAdjustTransitionCondition, EMotionFX::CommandAllocator)
     const char* CommandAdjustTransitionCondition::s_commandName = "AnimGraphAdjustCondition";
 
     CommandAdjustTransitionCondition::CommandAdjustTransitionCondition(MCore::Command* orgCommand)

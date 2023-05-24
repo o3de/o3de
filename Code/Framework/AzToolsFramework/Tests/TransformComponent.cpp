@@ -32,16 +32,18 @@ namespace UnitTest
 {
     // Fixture base class for AzFramework::TransformComponent tests.
     class TransformComponentApplication
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
-            m_app.Start(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(desc, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -52,7 +54,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_app.Stop();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzFramework::Application m_app;
@@ -972,12 +974,14 @@ namespace UnitTest
 
     // Fixture base class for AzToolsFramework::Components::TransformComponent tests
     class OldEditorTransformComponentTest
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            m_app.Start(AZ::ComponentApplication::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

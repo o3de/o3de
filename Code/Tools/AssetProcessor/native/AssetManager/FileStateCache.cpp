@@ -42,7 +42,7 @@ namespace AssetProcessor
         LockGuardType scopeLock(m_mapMutex);
         QString key = PathToKey(existingInfo.m_filePath);
         m_fileInfoMap[key] = FileStateInfo(existingInfo);
-        
+
         // it is possible to update the cache so that the info is known, but the hash is not.
         if (hash == InvalidFileHash)
         {
@@ -151,6 +151,8 @@ namespace AssetProcessor
 
     void FileStateCache::InvalidateHash(const QString& absolutePath)
     {
+        m_keyCache = {}; // Clear the key cache, its only really intended to help speedup the startup phase
+
         auto fileHashItr = m_fileHashMap.find(PathToKey(absolutePath));
 
         if (fileHashItr != m_fileHashMap.end())
@@ -163,16 +165,22 @@ namespace AssetProcessor
 
     QString FileStateCache::PathToKey(const QString& absolutePath) const
     {
+        auto cached = m_keyCache.find(absolutePath);
+
+        if (cached != m_keyCache.end())
+        {
+            return cached.value();
+        }
+
         QString normalized = AssetUtilities::NormalizeFilePath(absolutePath);
 
         if constexpr (!ASSETPROCESSOR_TRAIT_CASE_SENSITIVE_FILESYSTEM)
         {
-            return normalized.toLower();
+            normalized = normalized.toLower();
         }
-        else
-        {
-            return normalized;
-        }
+
+        m_keyCache[absolutePath] = normalized;
+        return normalized;
     }
 
     void FileStateCache::AddOrUpdateFileInternal(QFileInfo fileInfo)

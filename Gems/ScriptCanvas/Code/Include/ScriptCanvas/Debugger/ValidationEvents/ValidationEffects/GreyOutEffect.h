@@ -16,7 +16,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(GreyOutNodeEffect, "{422124DF-B5B9-4450-874B-D1DD9AA50E98}");
-        AZ_CLASS_ALLOCATOR(GreyOutNodeEffect, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GreyOutNodeEffect, AZ::SystemAllocator);
 
         GreyOutNodeEffect() = default;
         virtual ~GreyOutNodeEffect() = default;

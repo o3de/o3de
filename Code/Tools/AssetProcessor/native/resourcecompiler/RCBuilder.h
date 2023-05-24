@@ -51,6 +51,7 @@ namespace AssetProcessor
     struct InternalAssetRecognizer
         : public AssetRecognizer
     {
+        AZ_CLASS_ALLOCATOR(InternalAssetRecognizer, AZ::SystemAllocator)
         InternalAssetRecognizer(const AssetRecognizer& src, const AZStd::string& builderId, const AZStd::unordered_map<AZStd::string, AssetInternalSpec>& assetPlatformSpecByPlatform);
         InternalAssetRecognizer(const InternalAssetRecognizer& src) = default;
 

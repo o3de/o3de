@@ -34,7 +34,7 @@ namespace AZ
                 constexpr uint32_t MultiSampleCustomLocationsCountMax = 16;
                 constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
                 constexpr uint32_t SubpassCountMax = 10;
-                constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 1; // RenderAttachments + ResolveAttachments + DepthStencilAttachment
+                constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 2; // RenderAttachments + ResolveAttachments + DepthStencilAttachment +  ShadingRateAttachment
             }
 
             namespace Device
@@ -84,6 +84,11 @@ namespace AZ
             constexpr uint32_t InputAssembly = 4;
             constexpr uint32_t Constant = 256;
             constexpr uint32_t Buffer = 16;
+        }
+
+        namespace MultiDevice
+        {
+            constexpr int DefaultDeviceIndex = 0;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace AZ
             using Base = RHI::FrameGraphExecuter;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
             AZ_RTTI(FrameGraphExecuter, "22B6E224-9469-4D8B-828F-A81C83B6EEEC", Base);
 
             static RHI::Ptr<FrameGraphExecuter> Create();

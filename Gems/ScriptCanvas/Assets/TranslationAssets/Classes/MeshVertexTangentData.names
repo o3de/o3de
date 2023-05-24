@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetCount",
-                    "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Count"
@@ -34,7 +33,6 @@
                 },
                 {
                     "base": "GetTangent",
-                    "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tangent"
@@ -65,7 +63,6 @@
                 },
                 {
                     "base": "GetTangentSetIndex",
-                    "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Tangent Set Index"
@@ -88,7 +85,6 @@
                 },
                 {
                     "base": "GetGenerationMethod",
-                    "context": "MeshVertexTangentData",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Generation Method"

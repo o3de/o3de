@@ -20,7 +20,7 @@
 namespace UnitTest
 {
     class JsonTraceEventLoggerTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     };
 

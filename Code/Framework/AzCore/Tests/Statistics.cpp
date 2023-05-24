@@ -20,7 +20,7 @@ using namespace Debug;
 namespace UnitTest
 {
     class StatisticsTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         StatisticsTest()
@@ -29,7 +29,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_dataSamples = AZStd::make_unique<AZStd::vector<u32>>();
             const u32 numSamples = 100;
@@ -49,7 +49,7 @@ namespace UnitTest
             // clearing up memory
             m_dataSamples = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:

@@ -56,6 +56,10 @@ namespace AZ
             //! Returns a system image generated at runtime.
             virtual const Data::Instance<Image>& GetSystemImage(SystemImage systemImage) const = 0;
 
+            //! Returns a system attachment image generated at runtime for the given format. Supports
+            //! color, depth, and depth/stencil attachment images
+            virtual const Data::Instance<AttachmentImage>& GetSystemAttachmentImage(RHI::Format format) = 0;
+
             //! Returns the system streaming image pool. 
             virtual const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const = 0;
 
@@ -77,7 +81,7 @@ namespace AZ
             virtual void UnregisterAttachmentImage(AttachmentImage* attachmentImage) = 0;
 
             //! Find an attachment image by its unique name (same as its attachment id) from registered attachment images.
-            //! Note: only attachment image created with an uqniue name will be registered.
+            //! Note: only attachment image created with an unique name will be registered.
             virtual Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const Name& uniqueName) const = 0;
 
             virtual void Update() = 0;

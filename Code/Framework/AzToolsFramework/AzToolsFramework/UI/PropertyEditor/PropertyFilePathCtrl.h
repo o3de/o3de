@@ -35,7 +35,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyFilePathCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFilePathCtrl, AZ::SystemAllocator);
 
         PropertyFilePathCtrl(QWidget* parent = nullptr);
 
@@ -67,7 +67,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyFilePathHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyFilePathHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override;
 

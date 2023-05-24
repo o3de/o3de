@@ -13,10 +13,10 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitHandler, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitContainerHandler, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitWdget, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitContainerWdget, EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitHandler, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRotationLimitContainerHandler, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitWdget, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(RotationLimitContainerWdget, EditorAllocator);
 
     const int RotationLimitWdget::s_decimalPlaces = 1;
 

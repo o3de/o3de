@@ -21,7 +21,7 @@ namespace AZ
     {
         namespace SceneUI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ExpandedTransform, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR_IMPL(ExpandedTransform, SystemAllocator);
 
             void PopulateVector3(AzQtComponents::VectorInput* vectorProperty, AZ::Vector3& vector)
             {
@@ -98,7 +98,7 @@ namespace AZ
             }
             
             
-            AZ_CLASS_ALLOCATOR_IMPL(TransformRowWidget, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR_IMPL(TransformRowWidget, SystemAllocator);
 
             TransformRowWidget::TransformRowWidget(QWidget* parent)
                 : QWidget(parent)

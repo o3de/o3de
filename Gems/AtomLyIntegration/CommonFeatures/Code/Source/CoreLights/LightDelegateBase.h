@@ -59,6 +59,7 @@ namespace AZ
             void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {}
             void SetEsmExponent([[maybe_unused]] float esmExponent) override {}
             void SetNormalShadowBias([[maybe_unused]] float bias) override {}
+            void SetShadowCachingMode([[maybe_unused]] AreaLightComponentConfig::ShadowCachingMode cachingMode) override {}
 
             void SetAffectsGI([[maybe_unused]] bool affectsGI) override {}
             void SetAffectsGIFactor([[maybe_unused]] float affectsGIFactor) override {}
@@ -81,12 +82,16 @@ namespace AZ
             // TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const Transform& local, const Transform& world) override;
 
+            LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
+
         private:
+            // Computes overall effect transform, taking shape translation offsets into account if applicable
+            AZ::Transform ComputeOverallTransform(const Transform& entityTransform);
+
             FeatureProcessorType* m_featureProcessor = nullptr;
             typename FeatureProcessorType::LightHandle m_lightHandle;
             const AreaLightComponentConfig* m_componentConfig = nullptr;
 
-            LmbrCentral::ShapeComponentRequests* m_shapeBus = nullptr;
             Transform m_transform;
             PhotometricValue m_photometricValue;
             bool m_shuttersEnabled = false;

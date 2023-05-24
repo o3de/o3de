@@ -13,14 +13,14 @@
 namespace UnitTest
 {
     class UuidTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
         static const int numUuid = 2000;
         AZ::Uuid* m_array;
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_array = (AZ::Uuid*)azmalloc(sizeof(AZ::Uuid) * numUuid, alignof(AZ::Uuid));
         }
@@ -28,7 +28,7 @@ namespace UnitTest
         {
             azfree(m_array);
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
         void run()
         {

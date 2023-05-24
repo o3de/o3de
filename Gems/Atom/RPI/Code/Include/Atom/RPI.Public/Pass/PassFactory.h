@@ -41,7 +41,7 @@ namespace AZ
             using CreatorIndex = RHI::Handle<uint32_t, PassCreator>;
 
         public:
-            AZ_CLASS_ALLOCATOR(PassFactory, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassFactory, SystemAllocator);
 
             PassFactory() = default;
 

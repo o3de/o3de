@@ -14,7 +14,7 @@
 namespace UnitTest
 {
     using namespace AZ;
-    using Geometry2DUtilsFixture = ::UnitTest::AllocatorsFixture;
+    using Geometry2DUtilsFixture = ::UnitTest::LeakDetectionFixture;
 
     struct Signed2DTriangleAreaTestData
     {

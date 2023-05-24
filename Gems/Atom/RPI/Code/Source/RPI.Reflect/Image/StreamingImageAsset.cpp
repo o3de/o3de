@@ -37,6 +37,7 @@ namespace AZ
                     ->Field("m_tailMipChain", &StreamingImageAsset::m_tailMipChain)
                     ->Field("m_totalImageDataSize", &StreamingImageAsset::m_totalImageDataSize)
                     ->Field("m_averageColor", &StreamingImageAsset::m_averageColor)
+                    ->Field("m_tags", &StreamingImageAsset::m_tags)
                     ;
             }
         }
@@ -131,6 +132,42 @@ namespace AZ
             }
 
             return imageDescriptor;
+        }
+
+        const AZStd::vector<AZ::Name>& StreamingImageAsset::GetTags() const
+        {
+            return m_tags;
+        }
+
+        void StreamingImageAsset::RemoveFrontMipchains(size_t mipChainLevel)
+        {
+            mipChainLevel = AZStd::min(mipChainLevel, m_mipChains.size() - 1);
+            if (mipChainLevel == 0)
+            {
+                return;
+            }
+
+            AZ::u16 mipmapShift = m_mipChains[mipChainLevel].m_mipOffset;
+
+            AZStd::move(m_mipLevelToChainIndex.begin() + mipmapShift, m_mipLevelToChainIndex.end(), m_mipLevelToChainIndex.begin());
+            AZ_Assert(m_mipLevelToChainIndex.front() == mipChainLevel, "unmatching mipchain index");
+
+            for (AZ::u16& chainIndex : m_mipLevelToChainIndex)
+            {
+                chainIndex -= aznumeric_cast<AZ::u16>(mipChainLevel);
+            }
+
+            AZStd::move(m_mipChains.begin() + mipChainLevel, m_mipChains.end(), m_mipChains.begin());
+            m_mipChains.resize(m_mipChains.size() - mipChainLevel);
+
+            for (auto& mipChain : m_mipChains)
+            {
+                AZ_Assert(mipChain.m_mipOffset >= mipChain.m_mipOffset, "unexpected mipoffset");
+                mipChain.m_mipOffset -= mipmapShift;
+            }
+
+            m_imageDescriptor.m_mipLevels -= mipmapShift;
+            m_imageDescriptor.m_size = m_imageDescriptor.m_size.GetReducedMip(mipmapShift);
         }
 
         AZStd::span<const uint8_t> StreamingImageAsset::GetSubImageData(uint32_t mip, uint32_t slice)

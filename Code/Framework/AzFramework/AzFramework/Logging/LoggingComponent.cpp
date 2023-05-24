@@ -175,7 +175,6 @@ namespace AzFramework
                     "File Logging", "Listens to AZ trace messages and forwards them to a log file")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Profiling")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LogComponent::m_logFileBaseName, "Log file name", "The base name of the file to log to")
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &LogComponent::m_rolloverLength, "Rollover length", "Max size of a log file before saving and opening a new one")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &LogComponent::m_machineReadable, "Machine Readable", "")

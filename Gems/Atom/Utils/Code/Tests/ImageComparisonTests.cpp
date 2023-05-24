@@ -14,7 +14,7 @@ namespace UnitTest
     using namespace AZ::Utils;
 
     class ImageComparisonTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         static const AZ::RHI::Format DefaultFormat = AZ::RHI::Format::R8G8B8A8_UNORM;
@@ -47,11 +47,11 @@ namespace UnitTest
         AZ::RHI::Size sizeA{1, 1, 1};
         AZ::RHI::Size sizeB{1, 2, 1};
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             CreateTestRGBAImageData(sizeA), sizeA, DefaultFormat,
             CreateTestRGBAImageData(sizeB), sizeB, DefaultFormat);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::SizeMismatch);
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ImageComparisonTests, Error_BufferSizeDoesntMatchImageSize)
@@ -59,11 +59,11 @@ namespace UnitTest
         AZ::RHI::Size size{1, 1, 1};
         AZ::RHI::Size wrongSize{1, 2, 1};
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             CreateTestRGBAImageData(size), wrongSize, DefaultFormat,
             CreateTestRGBAImageData(size), wrongSize, DefaultFormat);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::SizeMismatch);
+        EXPECT_FALSE(outcome.IsSuccess());
     }
         
     TEST_F(ImageComparisonTests, Error_UnsupportedFormat)
@@ -71,35 +71,35 @@ namespace UnitTest
         AZ::RHI::Format format = AZ::RHI::Format::G8R8_G8B8_UNORM;
         AZ::RHI::Size size{1, 1, 1};
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             CreateTestRGBAImageData(size), size, format,
             CreateTestRGBAImageData(size), size, format);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::UnsupportedFormat);
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ImageComparisonTests, Error_FormatsDontMatch)
     {
         AZ::RHI::Size size{1, 1, 1};
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             CreateTestRGBAImageData(size), size, AZ::RHI::Format::R8G8B8A8_SNORM,
             CreateTestRGBAImageData(size), size, AZ::RHI::Format::R8G8B8A8_UNORM);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::FormatMismatch);
+        EXPECT_FALSE(outcome.IsSuccess());
     }
 
     TEST_F(ImageComparisonTests, CheckThreshold_SmallIdenticalImages)
     {
         AZ::RHI::Size size{16, 9, 1};
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             CreateTestRGBAImageData(size), size, DefaultFormat,
             CreateTestRGBAImageData(size), size, DefaultFormat);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::Success);
+        EXPECT_TRUE(outcome.IsSuccess());
 
-        EXPECT_EQ(0.0f, result.m_diffScore);
+        EXPECT_EQ(0.0f, outcome.GetValue().m_diffScore);
     }
 
     TEST_F(ImageComparisonTests, CheckThreshold_LargeIdenticalImages)
@@ -109,13 +109,13 @@ namespace UnitTest
         AZStd::vector<uint8_t> imageA = CreateTestRGBAImageData(size);
         AZStd::vector<uint8_t> imageB = imageA;
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             imageA, size, DefaultFormat,
             imageB, size, DefaultFormat);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::Success);
+        EXPECT_TRUE(outcome.IsSuccess());
 
-        EXPECT_EQ(0.0f, result.m_diffScore);
+        EXPECT_EQ(0.0f, outcome.GetValue().m_diffScore);
     }
 
     
@@ -178,15 +178,15 @@ namespace UnitTest
         SetPixel(imageA, 3, 100, 100, 100);
         SetPixel(imageB, 3, 101, 102, 0);
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             imageA, size, DefaultFormat,
             imageB, size, DefaultFormat);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::Success);
+        EXPECT_TRUE(outcome.IsSuccess());
 
         // Result should be:
         // sqrt( (1^2 + 2^2 + 5^2 + 100^2) / (255.0^2) / 4 )
-        EXPECT_FLOAT_EQ(0.19637232876f, result.m_diffScore);
+        EXPECT_FLOAT_EQ(0.19637232876f, outcome.GetValue().m_diffScore);
     }
     
     TEST_F(ImageComparisonTests, CheckThreshold_SmallImagesWithAlphaDifference)
@@ -212,15 +212,15 @@ namespace UnitTest
         SetPixel(imageA, 3, 0, 0, 0, 100);
         SetPixel(imageB, 3, 0, 0, 0, 0);
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             imageA, size, DefaultFormat,
             imageB, size, DefaultFormat);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::Success);
+        EXPECT_TRUE(outcome.IsSuccess());
 
         // Result should be:
         // sqrt( (1^2 + 2^2 + 5^2 + 100^2) / (255.0^2) / 4 )
-        EXPECT_FLOAT_EQ(0.19637232876f, result.m_diffScore);
+        EXPECT_FLOAT_EQ(0.19637232876f, outcome.GetValue().m_diffScore);
     }
 
     TEST_F(ImageComparisonTests, CheckThreshold_IgnoreImperceptibleDifferences)
@@ -248,19 +248,19 @@ namespace UnitTest
 
         const float minDiffFilter = 3.9f / 255.0f;
 
-        auto result = CalcImageDiffRms(
+        auto outcome = CalcImageDiffRms(
             imageA, size, DefaultFormat,
             imageB, size, DefaultFormat,
             minDiffFilter);
 
-        EXPECT_EQ(result.m_resultCode, ImageDiffResultCode::Success);
+        EXPECT_TRUE(outcome.IsSuccess());
 
         // Result should be:
         // sqrt( (1^2 + 2^2 + 5^2 + 4^2) / (255.0^2) / 4 )
-        EXPECT_FLOAT_EQ(0.01329868624, result.m_diffScore);
+        EXPECT_FLOAT_EQ(0.01329868624, outcome.GetValue().m_diffScore);
 
         // Result should be:
         // sqrt( (5^2 + 4^2) / (255.0^2) / 4 )
-        EXPECT_FLOAT_EQ(0.01255514556f, result.m_filteredDiffScore);
+        EXPECT_FLOAT_EQ(0.01255514556f, outcome.GetValue().m_filteredDiffScore);
     }
 }

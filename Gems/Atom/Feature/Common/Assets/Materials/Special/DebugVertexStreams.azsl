@@ -8,8 +8,9 @@
 
 #include <viewsrg.srgi>
 #define UvSetCount 2
-#include <Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 #include <Atom/RPI/TangentSpace.azsli>
 
 // These enums need to be kept in sync with the enum values in DebugVertexStreams_IncompatibleEnums.lua
@@ -46,12 +47,14 @@ struct VSOutput
 
     // Extended fields (only referenced in this azsl file)...
     float2 m_uv[UvSetCount] : UV1;
+    uint m_instanceId : SV_InstanceID;
 };
 
-VSOutput MainVS(VSInput IN)
+VSOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
-    VSOutput OUT;    
-    OUT.m_worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    VSOutput OUT;
+    OUT.m_instanceId = instanceId;
+    OUT.m_worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
 
     // Only UV0 is supported
@@ -99,27 +102,27 @@ float3 OffsetColor(float3 color)
 
 PixelOutput MainPS(VSOutput IN)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
-    float3 vertexNormal, vertexTangent, vertexBitangent;
-    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, vertexNormal, vertexTangent, vertexBitangent);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.m_normal), real4(IN.m_tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     PixelOutput OUT;
     
-    float3 tangents[UvSetCount] = { vertexTangent, vertexTangent };
-    float3 bitangents[UvSetCount] = { vertexBitangent, vertexBitangent };
+    float3 tangents[UvSetCount] = { tangentWS, tangentWS };
+    float3 bitangents[UvSetCount] = { bitangentWS, bitangentWS };
     
     if(o_bitangentOptions == BitangentOptions::ReconstructBitangent && MaterialSrg::m_uvIndex == 0)
     {
-        bitangents[MaterialSrg::m_uvIndex] = cross(vertexNormal, vertexTangent) * sign(IN.m_tangent.w);
+        bitangents[MaterialSrg::m_uvIndex] = cross(normalWS, tangentWS) * sign(IN.m_tangent.w);
     }
     else if((o_debugVertexStream == DebugVertexStream::Tangents && o_tangentOptions == TangentOptions::UseSurfaceGradient)
     || (o_debugVertexStream == DebugVertexStream::Bitangents && o_bitangentOptions == BitangentOptions::UseSurfaceGradient)
     || MaterialSrg::m_uvIndex > 0)
     {
         const bool isBackface = false;
-        SurfaceGradientNormalMapping_Init(vertexNormal, IN.m_worldPosition, isBackface);
+        SurfaceGradientNormalMapping_Init(normalWS, IN.m_worldPosition, isBackface);
         SurfaceGradientNormalMapping_GenerateTB(IN.m_uv[MaterialSrg::m_uvIndex], tangents[MaterialSrg::m_uvIndex], bitangents[MaterialSrg::m_uvIndex]);
     }
 

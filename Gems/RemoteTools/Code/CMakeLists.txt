@@ -70,6 +70,7 @@ ly_add_target(
 # active in Clients, Servers and Tools by default, delete one or all of the following lines:
 ly_create_alias(NAME RemoteTools.Clients NAMESPACE Gem TARGETS Gem::RemoteTools)
 ly_create_alias(NAME RemoteTools.Servers NAMESPACE Gem TARGETS Gem::RemoteTools)
+ly_create_alias(NAME RemoteTools.Unified NAMESPACE Gem TARGETS Gem::RemoteTools)
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME RemoteTools.Tools   NAMESPACE Gem TARGETS Gem::RemoteTools)
     ly_create_alias(NAME RemoteTools.LuaTools NAMESPACE Gem TARGETS Gem::RemoteTools)
@@ -102,6 +103,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         # Add RemoteTools.Tests to googletest
         ly_add_googletest(
             NAME Gem::RemoteTools.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

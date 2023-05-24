@@ -51,7 +51,7 @@ namespace Presence
         class Implementation
         {
         public: 
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             static Implementation* Create(PresenceSystemComponent& presenceSystemComponent);
             Implementation(PresenceSystemComponent& presenceSystemComponent);

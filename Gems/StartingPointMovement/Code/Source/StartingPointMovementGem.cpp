@@ -58,7 +58,8 @@ namespace StartingPointMovement
             {
                 typeIds.emplace_back(descriptor->GetUuid());
             }
-            EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+            AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+                &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
         }
     };
 }

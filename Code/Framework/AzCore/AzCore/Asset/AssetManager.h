@@ -156,7 +156,7 @@ namespace AZ
             typedef AZStd::unordered_map<AssetContainerKey, AZStd::weak_ptr<AssetContainer>> WeakAssetContainerMap;
             typedef AZStd::unordered_map<AssetContainer*, AZStd::shared_ptr<AssetContainer>> OwnedAssetContainerMap;
 
-            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetManager, SystemAllocator);
 
             static bool Create(const Descriptor& desc);
             static void Destroy();

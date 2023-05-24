@@ -26,7 +26,7 @@ using namespace AZ;
 using namespace SceneBuilder;
 
 class SceneBuilderTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
     , public UnitTest::TraceBusRedirector
 {
 protected:
@@ -40,7 +40,9 @@ protected:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        m_app.Start(AZ::ComponentApplication::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
@@ -231,7 +233,7 @@ struct ImportHandler
     }
 };
 
-using SourceDependencyTests = UnitTest::ScopedAllocatorSetupFixture;
+using SourceDependencyTests = UnitTest::LeakDetectionFixture;
 
 namespace SourceDependencyJson
 {
@@ -283,7 +285,7 @@ TEST_F(SourceDependencyTests, PopulateSourceDependencies_WithEmptyManifest_Shoul
     ASSERT_EQ(dependencies.size(), 0);
 }
 
-struct SourceDependencyMockedIOTests : UnitTest::ScopedAllocatorSetupFixture
+struct SourceDependencyMockedIOTests : UnitTest::LeakDetectionFixture
     , UnitTest::SetRestoreFileIOBaseRAII
 {
     SourceDependencyMockedIOTests()

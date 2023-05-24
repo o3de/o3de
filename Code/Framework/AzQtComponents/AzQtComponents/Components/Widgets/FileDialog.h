@@ -24,7 +24,16 @@ namespace AzQtComponents
         static QString GetSaveFileName(QWidget* parent = nullptr, const QString& caption = QString(),
             const QString& dir = QString(), const QString& filter = QString(),
             QString* selectedFilter = nullptr, QFileDialog::Options options = QFileDialog::Options());
-        
+
+        //! Helper function which simply calls the GetSaveFileName function
+        static QString GetSaveFileName_(
+            QWidget* parent = nullptr,
+            const QString& caption = QString(),
+            const QString& dir = QString(),
+            const QString& filter = QString(),
+            QString* selectedFilter = nullptr,
+            QFileDialog::Options options = QFileDialog::Options());
+
         //! Check if the filename has any invalid characters
         static bool IsValidFileName(const QString& fileName);
 

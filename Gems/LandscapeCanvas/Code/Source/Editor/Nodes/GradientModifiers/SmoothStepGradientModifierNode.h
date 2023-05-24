@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class SmoothStepGradientModifierNode : public BaseGradientModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SmoothStepGradientModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SmoothStepGradientModifierNode, AZ::SystemAllocator);
         AZ_RTTI(SmoothStepGradientModifierNode, "{F0A862F4-DE3A-401C-8138-78B0804C2259}", BaseGradientModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -18,6 +18,14 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 
+// this define specifies that the mesh buffers and material textures are stored in the Bindless Srg
+// Note1: The previous implementation using separate unbounded arrays is preserved since it demonstrates a TDR caused by
+//        the RHI unbounded array allocation.  This define and the previous codepath can be removed once the TDR is
+//        investigated and resolved.
+// Note2: There are corresponding USE_BINDLESS_SRG defines in the RayTracingSceneSrg.azsli and RayTracingMaterialSrg.azsli
+//        shader files that must match the setting of this define.
+#define USE_BINDLESS_SRG 1
+
 namespace AZ
 {
     namespace Render
@@ -54,6 +62,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
         public:
+            AZ_CLASS_ALLOCATOR(RayTracingFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::RayTracingFeatureProcessor, "{5017EFD3-A996-44B0-9ED2-C47609A2EE8D}", AZ::RPI::FeatureProcessor);
 
@@ -64,6 +73,8 @@ namespace AZ
 
             // FeatureProcessor overrides ...
             void Activate() override;
+            void Deactivate() override;
+            void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
             struct Mesh;
 
@@ -123,6 +134,9 @@ namespace AZ
                 // parent mesh
                 Mesh* m_mesh = nullptr;
 
+            private:
+                friend RayTracingFeatureProcessor;
+
                 // index of this mesh in the subMesh list, also applies to the MeshInfo and MaterialInfo entries
                 uint32_t m_globalIndex = InvalidIndex;
 
@@ -139,19 +153,36 @@ namespace AZ
                 // assetId of the model
                 AZ::Data::AssetId m_assetId = AZ::Data::AssetId{};
 
-                // indices of subMeshes in the subMesh list
-                IndexVector m_subMeshIndices;
-
-                // mesh transform
+                // transform
                 AZ::Transform m_transform = AZ::Transform::CreateIdentity();
 
-                // mesh non-uniform scale
+                // non-uniform scale
                 AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne();
+
+                // reflection probe
+                struct ReflectionProbe
+                {
+                    AZ::Transform m_modelToWorld;
+                    AZ::Vector3   m_outerObbHalfLengths;
+                    AZ::Vector3   m_innerObbHalfLengths;
+                    bool          m_useParallaxCorrection = false;
+                    float         m_exposure = 0.0f;
+
+                    Data::Instance<RPI::Image> m_reflectionProbeCubeMap;
+                };
+
+                ReflectionProbe m_reflectionProbe;
+
+            private:
+                friend RayTracingFeatureProcessor;
+
+                // indices of subMeshes in the subMesh list
+                IndexVector m_subMeshIndices;
             };
 
             //! Adds ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
-            void AddMesh(const AZ::Uuid& uuid, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale);
+            void AddMesh(const AZ::Uuid& uuid, const Mesh& rayTracingMesh, const SubMeshVector& subMeshes);
 
             //! Removes ray tracing data for a mesh.
             //! This will cause an update to the RayTracing acceleration structure on the next frame
@@ -160,6 +191,9 @@ namespace AZ
             //! Sets the ray tracing mesh transform
             //! This will cause an update to the RayTracing acceleration structure on the next frame
             void SetMeshTransform(const AZ::Uuid& uuid, const AZ::Transform transform, const AZ::Vector3 nonUniformScale);
+
+            //! Sets the reflection probe for a mesh
+            void SetMeshReflectionProbe(const AZ::Uuid& uuid, const Mesh::ReflectionProbe& reflectionProbe);
 
             //! Retrieves the map of all subMeshes in the scene
             const SubMeshVector& GetSubMeshes() const { return m_subMeshes; }
@@ -293,7 +327,25 @@ namespace AZ
                 AZStd::array<float, 3> m_emissiveColor; // float3
                 RayTracingSubMeshTextureFlags m_textureFlags = RayTracingSubMeshTextureFlags::None;
                 uint32_t m_textureStartIndex = 0;
-                float m_padding0;
+
+                // reflection probe data, must match the structure in ReflectionProbeData.azlsi
+                struct ReflectionProbeData
+                {
+                    AZStd::array<float, 12> m_modelToWorld;        // float3x4
+                    AZStd::array<float, 12> m_modelToWorldInverse; // float3x4
+                    AZStd::array<float, 3>  m_outerObbHalfLengths; // float3
+                    AZStd::array<float, 3>  m_innerObbHalfLengths; // float3
+                    float m_padding0 = 0.0f;
+                    uint32_t m_useReflectionProbe = 0;
+                    uint32_t m_useParallaxCorrection = 0;
+                    float m_exposure = 0.0f;
+                };
+
+                ReflectionProbeData m_reflectionProbeData;
+                uint32_t m_reflectionProbeCubeMapIndex = InvalidIndex;
+               
+                float m_padding1 = 0.0f;
+                float m_padding2 = 0.0f;
             };
 
             // vector of MaterialInfo, transferred to the materialInfoGpuBuffer
@@ -310,25 +362,27 @@ namespace AZ
             // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
             BlasInstanceMap m_blasInstanceMap;
 
+#if !USE_BINDLESS_SRG
             // Mesh buffer and material texture resources are managed with a RayTracingResourceList, which contains an internal
             // indirection list.  This allows resource entries to be swapped inside the RayTracingResourceList when removing entries,
             // without invalidating the indices held here in the m_meshBufferIndices and m_materialTextureIndices lists.
-            //
-            // RayTracingIndexList implements an internal freelist chain stored inside the list itself, allowing entries to be
-            // reused after elements are removed.
             
             // mesh buffer and material texture resource lists, accessed by the shader through an unbounded array
             RayTracingResourceList<RHI::BufferView> m_meshBuffers;
             RayTracingResourceList<const RHI::ImageView> m_materialTextures;
+#endif
 
-            // mesh buffer and material texture index lists, these are the indices into the resource lists
+            // RayTracingIndexList implements an internal freelist chain stored inside the list itself, allowing entries to be
+            // reused after elements are removed.
+
+            // mesh buffer and material texture index lists, which contain the array indices of the mesh resources
             static const uint32_t NumMeshBuffersPerMesh = 6;
             RayTracingIndexList<NumMeshBuffersPerMesh> m_meshBufferIndices;
 
             static const uint32_t NumMaterialTexturesPerMesh = 5;
             RayTracingIndexList<NumMaterialTexturesPerMesh> m_materialTextureIndices;
 
-            // Gpu buffers for the mesh and material resources
+            // Gpu buffers for the mesh and material index lists
             Data::Instance<RPI::Buffer> m_meshBufferIndicesGpuBuffer[BufferFrameCount];
             Data::Instance<RPI::Buffer> m_materialTextureIndicesGpuBuffer[BufferFrameCount];
             uint32_t m_currentIndexListFrameIndex = 0;

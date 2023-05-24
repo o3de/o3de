@@ -17,7 +17,7 @@
 namespace UnitTest::EventLoggerUtilsTests
 {
     class EventLoggerUtilsFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         EventLoggerUtilsFixture()

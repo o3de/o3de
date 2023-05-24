@@ -26,7 +26,7 @@ namespace AZ
 
         public:
             AZ_RTTI(QueryPool, "{46816FA4-3B31-434A-AAE3-037BC889AE73}", Base);
-            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
             ~QueryPool() = default;
             static RHI::Ptr<QueryPool> Create();
 

@@ -14,7 +14,7 @@
 
 namespace AZ::Data
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AssetJsonSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AssetJsonSerializer, SystemAllocator);
 
     JsonSerializationResult::Result AssetJsonSerializer::Load(void* outputValue, const Uuid& /*outputValueTypeId*/,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)

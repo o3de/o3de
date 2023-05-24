@@ -30,7 +30,7 @@ namespace PhysX
         : public Physics::CharacterConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterControllerConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterControllerConfiguration, AZ::SystemAllocator);
         AZ_RTTI(CharacterControllerConfiguration, "{23A8DFD6-7DA4-4CB3-BBD3-7FB58DEE6F9D}", Physics::CharacterConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -51,7 +51,7 @@ namespace PhysX
         , public physx::PxControllerBehaviorCallback
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterControllerCallbackManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterControllerCallbackManager, AZ::SystemAllocator);
         AZ_TYPE_INFO(CharacterControllerCallbackManager, "93C7DEA8-98E6-4C07-96B7-D215800D0ECB");
 
         /// Determines whether this controller should be obstructed by other controllers or able to move through them.
@@ -124,6 +124,15 @@ namespace PhysX
         // physx::PxQueryFilterCallback
         physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape,
             const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        physx::PxQueryHitType::Enum postFilter(
+            const physx::PxFilterData& filterData,
+            const physx::PxQueryHit& hit,
+            const physx::PxShape* shape,
+            const physx::PxRigidActor* actor) override;
+#endif
+
         physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         // physx::PxUserControllerHitReport
@@ -152,7 +161,7 @@ namespace PhysX
         : public Physics::Character
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterController, AZ::SystemAllocator);
         AZ_RTTI(PhysX::CharacterController, "{A75A7D19-BC21-4F7E-A3D9-05031D2DFC94}", Physics::Character);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -251,6 +260,7 @@ namespace PhysX
         float m_maximumSpeed = 100.0f; ///< If the accumulated requested velocity for a tick exceeds this magnitude, it will be clamped.
         AZStd::unique_ptr<CharacterControllerCallbackManager>
             m_callbackManager; ///< Manages callbacks for collision filtering, collision notifications, and handling riding on objects.
+        AZ::Quaternion m_orientation; ///< The orientation of the character.
     };
 
     //! Example implementation of controller-controller filtering callback.

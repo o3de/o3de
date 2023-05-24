@@ -12,6 +12,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
@@ -238,7 +239,6 @@ namespace AzToolsFramework
             }
             return defaultFlags;
         }
-
         QStringList AssetBrowserModel::mimeTypes() const
         {
             QStringList list = QAbstractItemModel::mimeTypes();
@@ -246,29 +246,8 @@ namespace AzToolsFramework
             return list;
         }
 
-        bool AssetBrowserModel::canDropMimeData(
-            const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const
-        {
-            Q_UNUSED(data);
-            Q_UNUSED(action);
-            Q_UNUSED(row);
-            Q_UNUSED(column);
-            const AssetBrowserEntry* item = static_cast<const AssetBrowserEntry*>(parent.internalPointer());
-
-            // We can only drop onto a folder
-            if (item && (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type())))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
         bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {
-            if (!canDropMimeData(data, action, row, column, parent))
-                return false;
-
             if (action == Qt::IgnoreAction)
                 return true;
 
@@ -281,35 +260,74 @@ namespace AzToolsFramework
 
                 if (Utils::FromMimeData(data, entries))
                 {
-                    for (auto entry : entries)
+                    if (entries.empty())
                     {
-                        using namespace AZ::IO;
-                        Path fromPath;
-                        Path toPath;
-                        bool isFolder{ true };
- 
-                        if (entry && (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
+                        return false;
+                    }
+
+                    if (entries.size() > 1)
+                    {
+                        for (auto assetEntry : entries)
                         {
-                            fromPath = entry->GetFullPath();
-                            PathView filename = fromPath.Filename();
-                            toPath = item->GetFullPath();
-                            toPath /= filename;
-                            isFolder = false;
+                            if (assetEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                            {
+                                return false;
+                            }
                         }
-                        else
+                    }
+                    bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+                    if (isFolder && AssetBrowserViewUtils::IsEngineOrProjectFolder(entries[0]->GetFullPath()))
+                    {
+                        return false;
+                    }
+                    AZStd::string folderPath = item->GetFullPath();
+                    bool connectedToAssetProcessor = false;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                    if (connectedToAssetProcessor)
+                    {
+                        for (auto entry : entries)
                         {
-                            fromPath = entry->GetFullPath() + "/*";
-                            Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
-                            toPath = item->GetFullPath() + "/" + filename.c_str() + "/*";
+                            using namespace AZ::IO;
+                            bool isEmptyFolder = isFolder && AssetBrowserViewUtils::IsFolderEmpty(entry->GetFullPath());
+                            Path fromPath;
+                            Path toPath;
+                            if (isFolder)
+                            {
+                                Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
+                                if (isEmptyFolder)
+                                // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                                // This code is needed until that bug is fixed. GHI 13340
+                                {
+                                    fromPath = entry->GetFullPath();
+                                    toPath = AZStd::string::format(
+                                        "%.*s/%.*s", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                    AZ::IO::SystemFile::CreateDir(toPath.c_str());
+                                    AZ::IO::SystemFile::DeleteDir(fromPath.c_str());
+                                    return true;
+                                }
+                                else
+                                {
+                                    fromPath = AZStd::string::format("%.*s/*", AZ_STRING_ARG(entry->GetFullPath()));
+                                    toPath = AZStd::string::format(
+                                        "%.*s/%.*s/*", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                }
+                            }
+                            else
+                            {
+                                fromPath = entry->GetFullPath();
+                                PathView filename = fromPath.Filename();
+                                toPath = folderPath;
+                                toPath /= filename;
+                            }
+                            AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
                         }
-                        MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        return true;
                     }
                 }
-                return true;
             }
-
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
-
         }
 
         Qt::DropActions AssetBrowserModel::supportedDropActions() const
@@ -367,13 +385,13 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries)
+        void AssetBrowserModel::SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<const AssetBrowserEntry*>& entries)
         {
             for (const auto& index : indexes)
             {
                 if (index.isValid())
                 {
-                    AssetBrowserEntry* item = static_cast<AssetBrowserEntry*>(index.internalPointer());
+                    const AssetBrowserEntry* item = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                     entries.push_back(item);
                 }
             }
@@ -492,16 +510,19 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserModel::HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId)
+        void AssetBrowserModel::HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId, const bool initialFilenameChange)
         {
-            QModelIndex index = findIndex(assetPath.c_str());
-            if (index.isValid())
+            if (initialFilenameChange)
             {
-                emit RequestOpenItemForEditing(index);
-            }
-            else
-            {
-                m_newlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
+                QModelIndex index = findIndex(assetPath.c_str());
+                if (index.isValid())
+                {
+                    emit RequestOpenItemForEditing(index);
+                }
+                else
+                {
+                    m_newlyCreatedAssetPathsToCreatorBusIds[AZ::IO::Path(assetPath).AsPosix()] = creatorBusId;
+                }
             }
         }
 

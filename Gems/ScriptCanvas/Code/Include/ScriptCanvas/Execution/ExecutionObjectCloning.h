@@ -27,7 +27,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(CloneSource, "{C2E49697-AC80-4024-A7F8-99AFD4858EDA}");
-            AZ_CLASS_ALLOCATOR(CloneSource, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CloneSource, AZ::SystemAllocator);
 
             CloneSource(const AZ::BehaviorClass& bcClass, void* source);
 

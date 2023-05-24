@@ -73,7 +73,7 @@ namespace TestImpact
             for (const auto& sourceCovered : moduleCovered.m_sources)
             {
                 m_sourcesCovered.emplace_back(sourceCovered.m_path);
-                if (!sourceCovered.m_coverage.empty())
+                if (!sourceCovered.m_lineCoverage.empty())
                 {
                     m_coverageLevel = CoverageLevel::Line;
                 }

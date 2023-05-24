@@ -43,7 +43,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
-#include <AzToolsFramework/PaintBrushSettings/PaintBrushSettingsWindow.h>
+#include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsWindow.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/Viewport/LocalViewBookmarkLoader.h>
@@ -53,6 +53,7 @@
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 #include <AzQtComponents/Components/DockMainWindow.h>
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
@@ -311,6 +312,9 @@ MainWindow::MainWindow(QWidget* parent)
         m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
         m_toolbarManager = new ToolbarManager(m_actionManager, this);
         m_levelEditorMenuHandler = new LevelEditorMenuHandler(this, m_viewPaneManager);
+        connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
+            m_assetImporterManager->Exec();
+        });
     }
 
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
@@ -334,10 +338,6 @@ MainWindow::MainWindow(QWidget* parent)
     AssetImporterDragAndDropHandler* assetImporterDragAndDropHandler = new AssetImporterDragAndDropHandler(this, m_assetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManager, this, &MainWindow::OnOpenAssetImporterManager);
 
-    connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
-        m_assetImporterManager->Exec();
-    });
-
     setFocusPolicy(Qt::StrongFocus);
 
     setAcceptDrops(true);
@@ -358,7 +358,7 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::SystemTick()
 {
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
     if (componentApplication)
     {
         componentApplication->TickSystem();
@@ -451,7 +451,7 @@ void MainWindow::InitCentralWidget()
     // make sure the layout wnd knows to reset it's layout and settings
     connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
 
-    EBUS_EVENT(AzToolsFramework::EditorEvents::Bus, NotifyCentralWidgetInitialized);
+    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
 }
 
 void MainWindow::Initialize()
@@ -685,9 +685,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
     }
 
-    am->AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS, tr("Export Selected &Objects"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-    am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
 #ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
@@ -887,7 +884,7 @@ void MainWindow::InitActions()
             return false;
         }
 
-        SandboxEditor::InterpolateDefaultViewportCameraToTransform(
+        SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(
             bookmark->m_position, AZ::DegToRad(bookmark->m_rotation.GetX()), AZ::DegToRad(bookmark->m_rotation.GetZ()));
 
         QString tagConsoleText = tr("View Bookmark %1 loaded position: x=%2, y=%3, z=%4")
@@ -1016,31 +1013,6 @@ void MainWindow::InitActions()
     {
         am->AddAction(ID_VIEW_CONFIGURELAYOUT, tr("Configure Layout..."));
     }
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    am->AddAction(ID_VIEW_CYCLE2DVIEWPORT, tr("Cycle Viewports"))
-        .SetShortcut(tr("Ctrl+Tab"))
-        .SetStatusTip(tr("Cycle 2D Viewport"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
-#endif
-    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers"))
-        .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
-        .SetCheckable(true)
-        .RegisterUpdateCallback(
-            [](QAction* action)
-            {
-                Q_ASSERT(action->isCheckable());
-                action->setChecked(AzToolsFramework::HelpersVisible());
-            })
-        .Connect(
-            &QAction::triggered,
-            []()
-            {
-                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    AzToolsFramework::HelpersVisible());
-            });
     am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
         .SetShortcut(tr("Ctrl+Space"))
         .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
@@ -1059,9 +1031,30 @@ void MainWindow::InitActions()
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
-    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
-        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
+    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers for all entities"))
+        .SetShortcut(tr("Shift+Space"))
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::HelpersVisible());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for selected entities"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
             [](QAction* action)
@@ -1074,9 +1067,28 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
+    am->AddAction(AzToolsFramework::HideHelpers, tr("Hide Helpers"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(!AzToolsFramework::OnlyShowHelpersForSelectedEntities() && !AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
+                AzToolsFramework::SetHelpersVisible(false);
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
 
     // Audio actions
@@ -1487,11 +1499,11 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
     case eNotify_OnBeginSceneOpen:
     case eNotify_OnBeginNewScene:
     case eNotify_OnCloseScene:
-        ResetAutoSaveTimers();
+        StopAutoSaveTimers();
         break;
     case eNotify_OnEndSceneOpen:
     case eNotify_OnEndNewScene:
-        ResetAutoSaveTimers(true);
+        StartAutoSaveTimers();
         break;
     }
 }
@@ -1515,7 +1527,7 @@ void MainWindow::RegisterStdViewClasses()
     CSettingsManagerDialog::RegisterViewClass();
     AzAssetBrowserWindow::RegisterViewClass();
     AssetEditorWindow::RegisterViewClass();
-    PaintBrush::RegisterPaintBrushSettingsWindow();
+    AzToolsFramework::RegisterPaintBrushSettingsWindow();
 
     // Notify that views can now be registered
     AzToolsFramework::EditorEvents::Bus::Broadcast(
@@ -1533,7 +1545,7 @@ void MainWindow::RefreshStyle()
     GetIEditor()->Notify(eNotify_OnStyleChanged);
 }
 
-void MainWindow::ResetAutoSaveTimers(bool bForceInit)
+void MainWindow::StopAutoSaveTimers()
 {
     if (m_autoSaveTimer)
     {
@@ -1545,35 +1557,50 @@ void MainWindow::ResetAutoSaveTimers(bool bForceInit)
     }
     m_autoSaveTimer = nullptr;
     m_autoRemindTimer = nullptr;
+}
 
-    if (bForceInit)
+void MainWindow::StartAutoSaveTimers()
+{
+    if (gSettings.autoBackupTime > 0 && gSettings.autoBackupEnabled)
     {
-        if (gSettings.autoBackupTime > 0 && gSettings.autoBackupEnabled)
-        {
-            m_autoSaveTimer = new QTimer(this);
-            m_autoSaveTimer->start(gSettings.autoBackupTime * 1000 * 60);
-            connect(m_autoSaveTimer, &QTimer::timeout, this, [&]() {
+        m_autoSaveTimer = new QTimer(this);
+        m_autoSaveTimer->start(gSettings.autoBackupTime * 1000 * 60);
+        connect(
+            m_autoSaveTimer,
+            &QTimer::timeout,
+            this,
+            [&]()
+            {
                 if (gSettings.autoBackupEnabled)
                 {
                     // Call autosave function of CryEditApp
                     GetIEditor()->GetDocument()->SaveAutoBackup();
                 }
             });
-        }
-        if (gSettings.autoRemindTime > 0)
-        {
-            m_autoRemindTimer = new QTimer(this);
-            m_autoRemindTimer->start(gSettings.autoRemindTime * 1000 * 60);
-            connect(m_autoRemindTimer, &QTimer::timeout, this, [&]() {
+    }
+    if (gSettings.autoRemindTime > 0)
+    {
+        m_autoRemindTimer = new QTimer(this);
+        m_autoRemindTimer->start(gSettings.autoRemindTime * 1000 * 60);
+        connect(
+            m_autoRemindTimer,
+            &QTimer::timeout,
+            this,
+            [&]()
+            {
                 if (gSettings.autoRemindTime > 0)
                 {
                     // Remind to save.
                     CCryEditApp::instance()->SaveAutoRemind();
                 }
             });
-        }
     }
+}
 
+void MainWindow::ResetAutoSaveTimers()
+{
+    StopAutoSaveTimers();
+    StartAutoSaveTimers();
 }
 
 void MainWindow::ResetBackgroundUpdateTimer()
@@ -1640,7 +1667,7 @@ void MainWindow::SaveLayout()
         return;
     }
 
-    QString layoutName = QInputDialog::getText(this, tr("Layout Name"), QString()).toLower();
+    QString layoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
     if (layoutName.isEmpty())
     {
         return;
@@ -1694,11 +1721,7 @@ void MainWindow::ViewRenamePaneLayout(const QString& layoutName)
     bool validName = false;
     while (!validName)
     {
-        newLayoutName = QInputDialog::getText(this, tr("Rename layout '%1'").arg(layoutName), QString());
-        if (newLayoutName.isEmpty())
-        {
-            return;
-        }
+        newLayoutName = InputDialog::getText(this, tr("Layout Name"), QString(), QLineEdit::Normal, QString(), "[a-z]+[a-z0-9\\-\\_]*");
 
         if (m_viewPaneManager->HasLayout(newLayoutName))
         {

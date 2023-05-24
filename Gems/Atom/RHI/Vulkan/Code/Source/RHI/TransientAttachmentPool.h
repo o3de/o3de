@@ -26,7 +26,7 @@ namespace AZ
             using Base = RHI::TransientAttachmentPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
             AZ_RTTI(TransientAttachmentPool, "5440AD98-D7EF-4C73-BA79-D281253BC048", Base);
 
             static RHI::Ptr<TransientAttachmentPool> Create();

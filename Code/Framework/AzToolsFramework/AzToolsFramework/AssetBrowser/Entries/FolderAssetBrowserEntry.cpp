@@ -40,6 +40,11 @@ namespace AzToolsFramework
             return m_isScanFolder;
         }
 
+        bool FolderAssetBrowserEntry::IsGemFolder() const
+        {
+            return m_isGemFolder;
+        }
+
         const AZ::Uuid& FolderAssetBrowserEntry::GetFolderUuid() const
         {
             return m_folderUuid;
@@ -58,6 +63,9 @@ namespace AzToolsFramework
             {
                 child->m_relativePath = (m_relativePath / child->m_name).LexicallyNormal();
             }
+
+            // the visible path of a child is the path that is visible in the asset browser
+            child->m_visiblePath = (m_visiblePath / child->m_name).LexicallyNormal();
 
             // display path is just the relative path without the name:
             AZ::IO::Path parentPath = child->m_relativePath.ParentPath();

@@ -29,7 +29,7 @@ namespace AWSCore
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(ServiceJobConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceJobConfig, AZ::SystemAllocator);
 
         using InitializerFunction = AZStd::function<void(ServiceJobConfig& config)>;
 

@@ -21,3 +21,24 @@ macro(ly_set name)
         set(${name} "${ARGN}" PARENT_SCOPE)
     endif()
 endmacro()
+
+#! o3de_set_from_env_with_default: convenient function to set a variable
+# from an environment variable or a default if the environment var is empty
+# and then run CONFIGURE on the result to replace all @sign variable references
+#
+# Example usage:
+# set(default "example")
+# o3de_set_from_env_with_default(var ENVVAR "@default@" CACHE STRING "Example string")
+# message(INFO "Result is ${var}")
+# Prints "Result is example" if no environment var named "ENVVAR" is set or is empty
+# 
+# \arg:name - name of output variable to set 
+# \arg:env_name - name of environment variable to use 
+# \argn - remaining args are passed to the set() command and should at least contain the value 
+macro(o3de_set_from_env_with_default name env_name)
+    set(${name} ${ARGN})
+    if(NOT "$ENV{${env_name}}" STREQUAL "")
+        set(${name} "$ENV{${env_name}}")
+    endif()
+    string(CONFIGURE ${${name}} ${name} @ONLY)
+endmacro()

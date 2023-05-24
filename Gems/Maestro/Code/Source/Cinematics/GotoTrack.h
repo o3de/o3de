@@ -23,7 +23,7 @@ class CGotoTrack
     : public TAnimTrack<IDiscreteFloatKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CGotoTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CGotoTrack, AZ::SystemAllocator);
     AZ_RTTI(CGotoTrack, "{B9A6BD22-F669-4D84-AD1D-B7BD07165C5D}", IAnimTrack);
 
     CGotoTrack();

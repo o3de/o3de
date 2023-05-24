@@ -39,6 +39,7 @@ class AssetProcessorAZApplication
 {
     Q_OBJECT
 public:
+    AZ_CLASS_ALLOCATOR(AssetProcessorAZApplication, AZ::SystemAllocator)
     explicit AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent = nullptr);
 
     ~AssetProcessorAZApplication() override = default;
@@ -151,7 +152,7 @@ protected:
     AssetProcessorAZApplication m_frameworkApp;
     QCoreApplication* m_qApp = nullptr;
 
-    virtual void Reflect() = 0;
+    virtual void Reflect() {}
     virtual const char* GetLogBaseName() = 0;
     virtual RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) = 0;
 private:

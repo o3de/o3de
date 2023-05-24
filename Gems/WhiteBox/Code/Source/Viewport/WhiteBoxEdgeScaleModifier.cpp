@@ -20,7 +20,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeScaleModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeScaleModifier, AZ::SystemAllocator)
 
     EdgeScaleModifier::EdgeScaleModifier(
         const Api::EdgeHandle& edgeHandle, const AZ::EntityComponentIdPair& entityComponentIdPair)

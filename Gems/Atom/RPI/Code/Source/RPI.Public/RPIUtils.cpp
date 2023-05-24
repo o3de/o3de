@@ -13,6 +13,8 @@
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
 
 #include <Atom/RPI.Public/BlockCompression.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -224,6 +226,11 @@ namespace AZ
                         float color = actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
                         return s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color * AZStd::numeric_limits<AZ::u8>::max())];
                     }
+                case AZ::RHI::Format::BC4_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC4Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second).GetElement(componentIndex);
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return 0.0f;
@@ -427,6 +434,11 @@ namespace AZ
                             s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetB() * AZStd::numeric_limits<AZ::u8>::max())],
                             s_SrgbGammaToLinearLookupTable[aznumeric_cast<uint8_t>(color.GetA() * AZStd::numeric_limits<AZ::u8>::max())]);
                     }
+                case AZ::RHI::Format::BC4_UNORM:
+                    {
+                        auto actualMem = reinterpret_cast<const BC4Block*>(mem);
+                        return actualMem[indices.first].GetBlockColor(indices.second);
+                    }
                 default:
                     AZ_Assert(false, "Unsupported pixel format: %s", AZ::RHI::ToString(format));
                     return AZ::Color::CreateZero();
@@ -518,6 +530,8 @@ namespace AZ
                 case AZ::RHI::Format::BC1_UNORM:
                 case AZ::RHI::Format::BC1_UNORM_SRGB:
                     return BC1Block::GetBlockIndices(width, x, y);
+                case AZ::RHI::Format::BC4_UNORM:
+                    return BC4Block::GetBlockIndices(width, x, y);
                 default:
                     return AZStd::pair<size_t, size_t>((y * width + x) * numComponents, 0);
                 }
@@ -827,6 +841,7 @@ namespace AZ
             // Compressed types
             case AZ::RHI::Format::BC1_UNORM:
             case AZ::RHI::Format::BC1_UNORM_SRGB:
+            case AZ::RHI::Format::BC4_UNORM:
                 return true;
             }
 
@@ -1086,6 +1101,63 @@ namespace AZ
             else
             {
                 return AZStd::nullopt;
+            }
+        }
+
+        void AddPassRequestToRenderPipeline(
+            AZ::RPI::RenderPipeline* renderPipeline,
+            const char* passRequestAssetFilePath,
+            const char* referencePass,
+            bool beforeReferencePass)
+        {
+            auto passRequestAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(
+                passRequestAssetFilePath, AZ::RPI::AssetUtils::TraceLevel::Warning);
+            const AZ::RPI::PassRequest* passRequest = nullptr;
+            if (passRequestAsset->IsReady())
+            {
+                passRequest = passRequestAsset->GetDataAs<AZ::RPI::PassRequest>();
+            }
+            if (!passRequest)
+            {
+                AZ_Error("RPIUtils", false, "Can't load PassRequest from %s", passRequestAssetFilePath);
+                return;
+            }
+
+            // Return if the pass to be created already exists
+            AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(passRequest->m_passName, renderPipeline);
+            AZ::RPI::Pass* existingPass = AZ::RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+            if (existingPass)
+            {
+                return;
+            }
+
+            // Create the pass
+            AZ::RPI::Ptr<AZ::RPI::Pass> newPass = AZ::RPI::PassSystemInterface::Get()->CreatePassFromRequest(passRequest);
+            if (!newPass)
+            {
+                AZ_Error("RPIUtils", false, "Failed to create the pass from pass request [%s].", passRequest->m_passName.GetCStr());
+                return;
+            }
+
+            // Add the pass to render pipeline
+            bool success;
+            if (beforeReferencePass)
+            {
+                success = renderPipeline->AddPassBefore(newPass, AZ::Name(referencePass));
+            }
+            else
+            {
+                success = renderPipeline->AddPassAfter(newPass, AZ::Name(referencePass));
+            }
+            // only create pass resources if it was success
+            if (!success)
+            {
+                AZ_Error(
+                    "RPIUtils",
+                    false,
+                    "Failed to add pass [%s] to render pipeline [%s].",
+                    newPass->GetName().GetCStr(),
+                    renderPipeline->GetId().GetCStr());
             }
         }
     } // namespace RPI

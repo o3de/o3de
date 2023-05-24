@@ -143,7 +143,8 @@ private:
     {
         Editor,
         Starting,
-        Started
+        Started,
+        Stopping
     };
 
     enum class KeyPressedState
@@ -236,7 +237,6 @@ private:
 
     // Camera::EditorCameraRequestBus overrides ...
     void SetViewFromEntityPerspective(const AZ::EntityId& entityId) override;
-    void SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement) override;
     AZ::EntityId GetCurrentViewEntityId() override;
     bool GetActiveCameraPosition(AZ::Vector3& cameraPos) override;
     AZStd::optional<AZ::Transform> GetActiveCameraTransform() override;
@@ -300,8 +300,7 @@ private:
     void SetDefaultCamera();
     void SetSelectedCamera();
     bool IsSelectedCamera() const;
-    void SetComponentCamera(const AZ::EntityId& entityId);
-    void SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement = false);
+    void SetEntityAsCamera(const AZ::EntityId& entityId);
     void SetFirstComponentCamera();
     void PostCameraSet();
     // This switches the active camera to the next one in the list of (default, all custom cams).
@@ -362,9 +361,6 @@ private:
     // Legacy...
     KeyPressedState m_pressedKeyState = KeyPressedState::AllUp;
 
-    // The last camera matrix of the default editor camera, used when switching back to editor camera to restore the right TM
-    Matrix34 m_defaultViewTM;
-
     // The name to use for the default editor camera
     const QString m_defaultViewName;
 
@@ -389,6 +385,8 @@ private:
 
     // Handlers for snapping/editor event callbacks
     SandboxEditor::AngleSnappingChangedEvent::Handler m_angleSnappingHandler;
+    SandboxEditor::CameraSpeedScaleChangedEvent::Handler m_cameraSpeedScaleHandler;
+    SandboxEditor::GridShowingChangedEvent::Handler m_gridShowingHandler;
     SandboxEditor::GridSnappingChangedEvent::Handler m_gridSnappingHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_nearPlaneDistanceHandler;
     SandboxEditor::NearFarPlaneChangedEvent::Handler m_farPlaneDistanceHandler;
@@ -415,13 +413,6 @@ private:
 
     // Type to return current state of editor viewport settings
     EditorViewportSettings m_editorViewportSettings;
-
-    // The default view group created for the viewport context, which is used as the "Editor Camera".
-    // The group contains stereoscopic and non-stereoscopic views.
-    AZ::RPI::ViewGroupPtr m_defaultViewGroup;
-
-    // The name to set on the viewport context when this viewport widget is set as the active one
-    AZ::Name m_defaultViewportContextName;
 
     // DO NOT USE THIS! It exists only to satisfy the signature of the base class method GetViewTm
     mutable Matrix34 m_viewTmStorage;

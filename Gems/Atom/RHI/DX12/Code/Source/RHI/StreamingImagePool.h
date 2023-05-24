@@ -26,7 +26,7 @@ namespace AZ
         {
             using Base = RHI::StreamingImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{D168A0F2-6B81-4281-9D4D-01C784F98DDD}", Base);
 
             static RHI::Ptr<StreamingImagePool> Create();
@@ -45,6 +45,7 @@ namespace AZ
             RHI::ResultCode ExpandImageInternal(const RHI::StreamingImageExpandRequest& request) override;
             RHI::ResultCode TrimImageInternal(RHI::Image& image, uint32_t targetMipLevel) override;
             RHI::ResultCode SetMemoryBudgetInternal(size_t newBudget) override;
+            bool SupportTiledImageInternal() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

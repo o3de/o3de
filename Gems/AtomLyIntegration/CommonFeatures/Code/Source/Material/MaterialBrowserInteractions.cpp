@@ -57,7 +57,7 @@ namespace AZ
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::ShaderExtensionWithDot))
             {
-                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Experimental)...", QIcon(":/Menu/material_canvas.svg"),
+                openers.push_back({ "Material_Canvas", "Open in Material Canvas (Preview)...", QIcon(":/Menu/material_canvas.svg"),
                     [&](const char* fullSourceFileNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
                     {
                         EditorMaterialSystemComponentRequestBus::Broadcast(
@@ -121,6 +121,12 @@ namespace AZ
                           dialog.m_sourcePath.toUtf8().constData();
                           materialData.m_parentMaterial = "";
                           AZ::RPI::JsonUtils::SaveObjectToFile(dialog.m_targetPath.toUtf8().constData(), materialData);
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                              AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                              &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                              dialog.m_targetPath.toUtf8().constData(),
+                              AZ::Crc32(),
+                              false);
                       }
                   } });
 
@@ -131,7 +137,7 @@ namespace AZ
                       const AZStd::string defaultMaterialGraphTemplate =
                           AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                               "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
-                              "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/blank.materialgraphtemplate"));
+                              "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate"));
 
                       QWidget* mainWindow = nullptr;
                       AzToolsFramework::EditorRequests::Bus::BroadcastResult(
@@ -156,6 +162,12 @@ namespace AZ
                       {
                           AZ::IO::FileIOBase::GetInstance()->Copy(
                               dialog.m_sourcePath.toUtf8().constData(), dialog.m_targetPath.toUtf8().constData());
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                              AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                              &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                              dialog.m_targetPath.toUtf8().constData(),
+                              AZ::Crc32(),
+                              false);
                       }
                   } });
         }

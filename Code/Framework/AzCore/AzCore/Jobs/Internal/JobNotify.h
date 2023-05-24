@@ -23,7 +23,7 @@ namespace AZ
             : public Job
         {
         public:
-            AZ_CLASS_ALLOCATOR(JobNotify, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(JobNotify, ThreadPoolAllocator);
 
             JobNotify(AZStd::atomic<bool>* notifyFlag, JobContext* context = nullptr)
                 : Job(false, context)

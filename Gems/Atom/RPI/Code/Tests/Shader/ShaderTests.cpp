@@ -92,7 +92,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(TestShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", AZ::RHI::ShaderStageFunction);
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestShaderStageFunction, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -300,7 +300,7 @@ namespace UnitTest
             srgLayout->SetName(srgId);
             srgLayout->SetBindingSlot(aznumeric_caster(index));
             srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
-                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
+                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index), static_cast<uint32_t>(index)});
 
             EXPECT_TRUE(srgLayout->Finalize());
 
@@ -311,7 +311,7 @@ namespace UnitTest
         {
             Name srgId = CreateShaderResourceGroupId(index);
             AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo;
-            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index)} });
+            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index), static_cast<uint32_t>(index)} });
             return bindingInfo;
         }
 
@@ -396,7 +396,6 @@ namespace UnitTest
         {
             RPI::ShaderVariantAssetCreator shaderVariantAssetCreator;
             shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, isFullyBaked);
-            shaderVariantAssetCreator.SetBuildTimestamp(AZStd::sys_time_t(1)); //Make non-zero
 
             for (RHI::ShaderStage rhiStage : stagesToActivate)
             {

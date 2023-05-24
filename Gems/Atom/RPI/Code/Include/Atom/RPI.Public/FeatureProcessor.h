@@ -75,7 +75,7 @@ namespace AZ
             };            
 
             AZ_RTTI(FeatureProcessor, "{B8027170-C65C-4237-964D-B557FC9D7575}");
-            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator);
 
             FeatureProcessor() = default;
             virtual ~FeatureProcessor() = default;
@@ -119,7 +119,13 @@ namespace AZ
             //! 
             //!  - This is called every frame.
             //!  - This may be called in parallel with other feature processors.
+            //!  - This may be called in parallel with culling
             virtual void Render(const RenderPacket&) {}
+            
+            //! Notifies when culling is finished, but draw lists have not been finalized or sorted
+            //! If a feature processor uses visibility lists instead of letting the culling system submit draw items
+            //! it should access the visibility lists here
+            virtual void OnEndCulling(const RenderPacket&) {}
 
             //! The feature processor may do clean up when the current render frame is finished
             //!  - This is called every RPI::RenderTick.

@@ -154,7 +154,7 @@ namespace AZ
             return m_childrenPipelineViewTags;
         }
 
-        void CascadedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const
+        void CascadedShadowmapsPass::GetPipelineViewTags(RPI::PipelineViewTags& outTags) const
         {
             for (size_t childIndex = 0; childIndex < m_numCascades; ++childIndex)
             {

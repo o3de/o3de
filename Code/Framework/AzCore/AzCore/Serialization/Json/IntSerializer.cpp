@@ -21,19 +21,19 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonIntegerSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonIntegerSerializer, SystemAllocator);
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonCharSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonShortSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonIntSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonLongSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonLongLongSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonCharSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonShortSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonIntSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonLongSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonLongLongSerializer, SystemAllocator);
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedCharSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedShortSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedIntSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedLongSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedLongLongSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedCharSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedShortSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedIntSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedLongSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsignedLongLongSerializer, SystemAllocator);
 
     namespace SerializerInternal
     {

@@ -104,29 +104,51 @@ namespace
             {
                 case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath);
+                        auto resultCheck = relocationInterface->Move(
+                            messageData.m_message->m_fromPath,
+                            messageData.m_message->m_toPath,
+                            RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag |
+                                RelocationParameters_UpdateReferencesFlag | RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Move:
                 {
+                    auto* metadataUpdates = AZ::Interface<AssetProcessor::IMetadataUpdates>::Get();
+                    AZ_Assert(metadataUpdates, "Programmer Error - IMetadataUpdates interface is not available.");
+
+                    metadataUpdates->PrepareForFileMove(messageData.m_message->m_fromPath.c_str(), messageData.m_message->m_toPath.c_str());
+
                     auto resultMove = relocationInterface->Move(
-                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, false, true, true, true);
+                        messageData.m_message->m_fromPath,
+                        messageData.m_message->m_toPath,
+                        RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag |
+                            RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultMove, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath);
+                    auto flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, false, true, true);
+                    int flags = RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;
@@ -385,7 +407,7 @@ bool AssetRequestHandler::InvokeHandler(MessageData<AzFramework::AssetSystem::Ba
 }
 
 void AssetRequestHandler::ProcessAssetRequest(MessageData<RequestAssetStatus> messageData)
-{    
+{
     if ((messageData.m_message->m_searchTerm.empty())&&(!messageData.m_message->m_assetId.IsValid()))
     {
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Failed to decode incoming RequestAssetStatus - both path and uuid is empty\n");
@@ -463,12 +485,12 @@ void AssetRequestHandler::OnRequestAssetExistsResponse(NetworkRequestID groupID,
 
     if (located == m_pendingAssetRequests.end())
     {
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
+        AZ_Trace(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
         return;
     }
-    
-    AZ_TracePrintf(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n", 
-        located.value().GetDisplayString().toUtf8().constData(), 
+
+    AZ_Trace(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n",
+        located.value().GetDisplayString().toUtf8().constData(),
         exists ? "compiled already" : "missing" );
 
     SendAssetStatus(groupID, RequestAssetStatus::MessageType, exists ? AssetStatus_Compiled : AssetStatus_Missing);
@@ -480,7 +502,7 @@ void AssetRequestHandler::SendAssetStatus(NetworkRequestID groupID, unsigned int
 {
     ResponseAssetStatus resp;
     resp.m_assetStatus = status;
-    EBUS_EVENT_ID(groupID.first, AssetProcessor::ConnectionBus, SendResponse, groupID.second, resp);
+    AssetProcessor::ConnectionBus::Event(groupID.first, &AssetProcessor::ConnectionBus::Events::SendResponse, groupID.second, resp);
 }
 
 AssetRequestHandler::AssetRequestHandler()
@@ -581,7 +603,7 @@ void AssetRequestHandler::DeleteFenceFile_Retry(unsigned int fenceId, QString fe
 void AssetRequestHandler::OnNewIncomingRequest(unsigned int connId, unsigned int serial, QByteArray payload, QString platform)
 {
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
     AZStd::shared_ptr<BaseAssetProcessorMessage> message{ AZ::Utils::LoadObjectFromBuffer<BaseAssetProcessorMessage>(payload.constData(), payload.size(), serializeContext) };
 

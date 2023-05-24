@@ -47,6 +47,7 @@ namespace O3DE::ProjectManager
         QHBoxLayout* m_horizontalLayout;
         QVBoxLayout* m_verticalLayout;
         FormLineEditWidget* m_projectName;
+        FormLineEditWidget* m_projectVersion;
         FormBrowseEditWidget* m_projectPath;
     };
 

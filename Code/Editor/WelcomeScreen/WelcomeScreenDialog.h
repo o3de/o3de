@@ -51,6 +51,7 @@ private:
     const char* m_levelExtension = nullptr;
     bool m_messageScrollReported = false;
 
+    bool IsValidLevelName(const QString& path);
     void RemoveLevelEntry(int index);
 
     void OnShowToolTip(const QModelIndex& index);

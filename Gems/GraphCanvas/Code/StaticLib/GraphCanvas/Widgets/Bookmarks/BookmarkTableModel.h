@@ -70,7 +70,7 @@ namespace GraphCanvas
             CD_Count
         };
     
-        AZ_CLASS_ALLOCATOR(BookmarkTableSourceModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkTableSourceModel, AZ::SystemAllocator);
 
         BookmarkTableSourceModel();
         ~BookmarkTableSourceModel();
@@ -120,7 +120,7 @@ namespace GraphCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(BookmarkTableSortProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkTableSortProxyModel, AZ::SystemAllocator);
 
         BookmarkTableSortProxyModel(BookmarkTableSourceModel* sourceModel);
         ~BookmarkTableSortProxyModel() override = default;

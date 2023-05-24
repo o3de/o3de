@@ -1,0 +1,9 @@
+{
+    "O3DE": {
+        "Autoexec": {
+            "ConsoleCommands": {
+                "sys_PakLogInvalidFileAccess" : 1
+            }
+        }
+    }
+}

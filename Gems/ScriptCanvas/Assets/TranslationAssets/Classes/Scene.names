@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetOriginalSceneOrientation",
-                    "context": "Scene",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Original Scene Orientation"

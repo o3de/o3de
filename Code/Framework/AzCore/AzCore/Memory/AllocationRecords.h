@@ -36,6 +36,7 @@ namespace AZ
             size_t          m_namesBlockSize{};
 
             AZ::Debug::StackFrame*  m_stackFrames{};
+            unsigned int m_stackFramesCount{};
 
             AZ::u64         m_timeStamp{}; ///< Timestamp for sorting/tracking allocations
         };
@@ -64,7 +65,7 @@ namespace AZ
             bool m_isDetailed;      ///< True to print allocation line and allocation callstack, otherwise false.
             bool m_includeNameAndFilename;  /// < True to print the source name and source filename, otherwise skip
         };
-        
+
         /**
          * Guard value is used to guard different memory allocations for stomping.
          */
@@ -131,7 +132,7 @@ namespace AZ
             AZ_FORCE_INLINE Debug::AllocationRecordsType& GetMap()  { return m_records; }
 
             /// Enumerates all allocations in a thread safe manner.
-            void    EnumerateAllocations(AllocationInfoCBType cb);
+            void    EnumerateAllocations(AllocationInfoCBType cb) const;
 
             /// If marking is enabled it will set all memory we deallocate with 0xcd
             void    MarkUallocatedMemory(bool isMark)           { m_isMarkUnallocatedMemory = isMark; }
@@ -165,7 +166,7 @@ namespace AZ
 
         protected:
             Debug::AllocationRecordsType    m_records;
-            AZStd::spin_mutex               m_recordsMutex;
+            mutable AZStd::spin_mutex       m_recordsMutex;
             Mode                            m_mode;
             bool                            m_isAutoIntegrityCheck;
             bool                            m_isMarkUnallocatedMemory;      ///< True if we want to set value 0xcd in unallocated memory.

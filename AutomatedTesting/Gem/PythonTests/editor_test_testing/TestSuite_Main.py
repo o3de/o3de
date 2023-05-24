@@ -46,12 +46,24 @@ class TestEditorTest:
         for arg in sys.argv:
             if not arg.endswith(".py"):
                 TestEditorTest.args.append(arg)
-        try:
-            build_dir_arg_index = TestEditorTest.args.index("--build-directory")
-        except ValueError:
-            raise ValueError("Must pass --build-directory argument in order to run this test")
 
-        TestEditorTest.args[build_dir_arg_index+1] = os.path.abspath(TestEditorTest.args[build_dir_arg_index+1])
+        if "--build-directory" in TestEditorTest.args:
+            # passed as two args, flag and value
+            build_dir_arg_index = TestEditorTest.args.index("--build-directory")
+            TestEditorTest.args[build_dir_arg_index + 1] = os.path.abspath(
+                TestEditorTest.args[build_dir_arg_index + 1])
+        else:
+            # may instead be passed as one arg which includes equals-sign between flag and value
+            build_dir_arg_index = 0
+            for arg in TestEditorTest.args:
+                if arg.startswith("--build-directory"):
+                    first, second = arg.split("=", maxsplit=1)
+                    TestEditorTest.args[build_dir_arg_index] = f'{first}={os.path.abspath(second)}'
+                    break
+                build_dir_arg_index += 1
+        if build_dir_arg_index == len(TestEditorTest.args):
+            raise ValueError(f"Must pass --build-directory argument in order to run this test. Found args: {TestEditorTest.args}")
+
         TestEditorTest.args.append("-s")
         TestEditorTest.path = os.path.dirname(os.path.abspath(__file__))
         cls._asset_processor = None

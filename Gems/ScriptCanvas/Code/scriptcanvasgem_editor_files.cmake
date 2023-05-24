@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    Editor/ScriptCanvasContextIdentifiers.h
     Editor/ScriptCanvasEditorGem.cpp
     Editor/Settings.h
     Editor/Settings.cpp
@@ -239,8 +240,6 @@ set(FILES
     Editor/View/Windows/ScriptCanvasContextMenus.cpp
     Editor/View/Windows/ScriptCanvasContextMenus.h
     Editor/View/Windows/ScriptCanvasEditorResources.qrc
-    Editor/View/Windows/ScriptEventMenu.cpp
-    Editor/View/Windows/ScriptEventMenu.h
     Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.cpp
     Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.h
     Editor/View/Windows/Tools/InterpreterWidget/InterpreterWidget.ui

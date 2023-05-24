@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #ifndef SHADOWMAP
 #define SHADOWMAP 0
 #endif
@@ -15,11 +17,11 @@
 //! @param heightmapScale inout scale to adjust
 //! @param heightmapOffset inout offset to adjust
 //! @param shadowFactor 0-1 multiplier, where 1 is no-op and 0 squashes the displacement down to its lowest point.
- void AdjustParallaxShadowCaster(inout float heightmapScale, inout float heightmapOffset, float shadowFactor)
+ void AdjustParallaxShadowCaster(inout real heightmapScale, inout real heightmapOffset, real shadowFactor)
  {
 #if SHADOWMAP
-    float newHeightmapScale = heightmapScale * shadowFactor;
-    float newHeightmapOffset = newHeightmapScale - heightmapScale + heightmapOffset;
+    real newHeightmapScale = heightmapScale * shadowFactor;
+    real newHeightmapOffset = newHeightmapScale - heightmapScale + heightmapOffset;
     heightmapScale = newHeightmapScale;
     heightmapOffset = newHeightmapOffset;
 #endif

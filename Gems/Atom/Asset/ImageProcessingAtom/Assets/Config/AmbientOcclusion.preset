@@ -8,7 +8,10 @@
             "Name": "AmbientOcclusion",
             "SourceColor": "Linear",
             "DestColor": "Linear",
-            "PixelFormat": "BC4"
+            "PixelFormat": "BC4",
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
         },
         "PlatformsPresets": {
             "android": {
@@ -17,7 +20,10 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "MaxTextureSize": 2048,
-                "PixelFormat": "ASTC_4x4"
+                "PixelFormat": "ASTC_4x4",
+                "MipMapSetting": {
+                  "MipGenType": "Box"
+                }
             },
             "ios": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
@@ -25,21 +31,30 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "MaxTextureSize": 2048,
-                "PixelFormat": "ASTC_4x4"
+                "PixelFormat": "ASTC_4x4",
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
             },
             "mac": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
                 "Name": "AmbientOcclusion",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "BC4"
+                "PixelFormat": "BC4",
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
             },
             "provo": {
                 "UUID": "{02ED0ECE-B198-49D9-85BC-CEBA6C28546C}",
                 "Name": "AmbientOcclusion",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "BC4"
+                "PixelFormat": "BC4",
+                "MipMapSetting": {
+                  "MipGenType": "Box"
+                }
             }
         }
     }

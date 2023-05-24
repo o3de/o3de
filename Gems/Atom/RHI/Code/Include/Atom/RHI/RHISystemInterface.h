@@ -46,30 +46,26 @@ namespace AZ
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
             AZ_DISABLE_COPY_MOVE(RHISystemInterface);
 
-            virtual RHI::Device* GetDevice() = 0;
+            virtual RHI::Device* GetDevice(int deviceIndex = MultiDevice::DefaultDeviceIndex) = 0;
+
+            virtual int GetDeviceCount() = 0;
 
             virtual RHI::DrawListTagRegistry* GetDrawListTagRegistry() = 0;
 
             virtual RHI::PipelineStateCache* GetPipelineStateCache() = 0;
 
-            virtual const RHI::FrameSchedulerCompileRequest& GetFrameSchedulerCompileRequest() const = 0;
-
             virtual void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) = 0;
 
             virtual double GetCpuFrameTime() const = 0;
 
-            virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
-
-            virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
+            virtual uint16_t GetNumActiveRenderPipelines() const = 0;
 
             virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 
-            virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const = 0;
+            virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;
 
             virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
             
-            virtual const PhysicalDeviceDescriptor& GetPhysicalDeviceDescriptor() = 0;
-
             virtual XRRenderingInterface* GetXRSystem() const = 0;
         };
 

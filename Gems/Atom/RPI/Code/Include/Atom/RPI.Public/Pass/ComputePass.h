@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ComputePass, "{61464A74-BD35-4954-AB27-492644EA6C2A}", RenderPass);
-            AZ_CLASS_ALLOCATOR(ComputePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComputePass, SystemAllocator);
             virtual ~ComputePass();
 
             //! Creates a ComputePass
@@ -47,13 +47,12 @@ namespace AZ
             Data::Instance<Shader> GetShader() const;
 
         protected:
-            ComputePass(const PassDescriptor& descriptor);
+            ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant = AZ::Name(""));
 
             // Pass behavior overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions...
-            void SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph) override;
             void CompileResources(const RHI::FrameGraphCompileContext& context) override;
             void BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context) override;
 
@@ -79,7 +78,7 @@ namespace AZ
             void OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset) override;
             void OnShaderVariantReinitialized(const ShaderVariant& shaderVariant) override;
 
-            void LoadShader();
+            void LoadShader(AZ::Name supervariant = AZ::Name(""));
             PassDescriptor m_passDescriptor;
 
         };

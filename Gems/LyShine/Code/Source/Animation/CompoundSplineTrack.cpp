@@ -9,6 +9,7 @@
 
 #include "CompoundSplineTrack.h"
 #include "AnimSplineTrack.h"
+#include <AzCore/Serialization/SerializeContext.h>
 
 UiCompoundSplineTrack::UiCompoundSplineTrack(int nDims, EUiAnimValue inValueType, CUiAnimParamType subTrackParamTypes[MAX_SUBTRACKS])
     : m_refCount(0)

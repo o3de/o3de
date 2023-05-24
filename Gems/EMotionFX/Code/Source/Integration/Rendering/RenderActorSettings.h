@@ -18,7 +18,7 @@ namespace AZ::Render
     {
     public:
         AZ_RTTI(RenderActorSettings, "{240BDFE2-D7F5-4927-A8CA-D2945E41AFFD}");
-        AZ_CLASS_ALLOCATOR(RenderActorSettings, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RenderActorSettings, AZ::SystemAllocator)
 
         virtual ~RenderActorSettings() = default;
 

@@ -45,7 +45,7 @@ namespace AZ::Render
 {
     static constexpr uint32_t s_maxActiveWrinkleMasks = 16;
 
-    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AtomActorInstance, EMotionFX::Integration::EMotionFXAllocator)
 
     AtomActorInstance::AtomActorInstance(AZ::EntityId entityId,
         const EMotionFX::Integration::EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
@@ -239,7 +239,15 @@ namespace AZ::Render
     {
         if (m_meshFeatureProcessor)
         {
-            m_meshFeatureProcessor->SetMaterialAssignmentMap(*m_meshHandle, materials);
+            m_meshFeatureProcessor->SetCustomMaterials(*m_meshHandle, ConvertToCustomMaterialMap(materials));
+        }
+    }
+
+    void AtomActorInstance::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+    {
+        if (m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetRayTracingDirty(*m_meshHandle);
         }
     }
 
@@ -372,6 +380,24 @@ namespace AZ::Render
         if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
         {
             return m_meshFeatureProcessor->GetRayTracingEnabled(*m_meshHandle);
+        }
+
+        return false;
+    }
+
+    void AtomActorInstance::SetExcludeFromReflectionCubeMaps(bool enabled)
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(*m_meshHandle, enabled);
+        }
+    }
+
+    bool AtomActorInstance::GetExcludeFromReflectionCubeMaps() const
+    {
+        if (m_meshHandle->IsValid() && m_meshFeatureProcessor)
+        {
+            return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(*m_meshHandle);
         }
 
         return false;
@@ -649,9 +675,12 @@ namespace AZ::Render
 
             // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
             meshDescriptor.m_isRayTracingEnabled = false;
+            meshDescriptor.m_isAlwaysDynamic = true;
+            meshDescriptor.m_excludeFromReflectionCubeMaps = true;
 
             m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
+                m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials)));
+            m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(*m_meshHandle, m_objectSrgCreatedHandler);
         }
 
         // If render proxies already exist, they will be auto-freed
@@ -778,6 +807,11 @@ namespace AZ::Render
                 }
             }
         }
+    }
+
+    void AtomActorInstance::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
+    {
+        MeshComponentNotificationBus::Event(m_entityId, &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
     }
 
     const MeshFeatureProcessorInterface::MeshHandle* AtomActorInstance::GetMeshHandle() const

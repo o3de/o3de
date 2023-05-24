@@ -18,7 +18,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(BufferAssetView, "{D2A51B9F-4210-477E-B253-0095EAF68230}");
-            AZ_CLASS_ALLOCATOR(BufferAssetView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferAssetView, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

@@ -99,7 +99,7 @@ namespace AZ
 
             const char* startOfInt = reinterpret_cast<const char*>(&ppmData[pos]);
             char* endOfInt = nullptr;
-            uint32_t value = strtoul(startOfInt, &endOfInt, 10);
+            uint32_t value = static_cast<uint32_t>(strtoul(startOfInt, &endOfInt, 10));
             pos += endOfInt - startOfInt;
 
             return value;

@@ -38,8 +38,8 @@ namespace AZ
 
         void AliasingBarrierTracker::EndInternal()
         {
-            uint32_t numFencesNeeded = m_resourceFenceData.size();
-            uint32_t numFencesExist = m_resourceFences.size();
+            uint32_t numFencesNeeded = static_cast<uint32_t>(m_resourceFenceData.size());
+            uint32_t numFencesExist = static_cast<uint32_t>(m_resourceFences.size());
                         
             //Calculate the number of new fences we need to create.
             uint32_t numFencesNeededToCreate = 0;

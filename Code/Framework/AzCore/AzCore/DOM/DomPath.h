@@ -120,6 +120,7 @@ namespace AZ::Dom
         void Pop();
         void Clear();
         PathEntry At(size_t index) const;
+        PathEntry Back() const;
         size_t Size() const;
         bool IsEmpty() const;
 

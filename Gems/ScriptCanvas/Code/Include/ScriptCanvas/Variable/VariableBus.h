@@ -53,7 +53,7 @@ namespace ScriptCanvas
     public:
 
         AZ_RTTI(CopiedVariableData, "{84548415-DD9E-4943-8D1E-3E1CC49ADACB}");
-        AZ_CLASS_ALLOCATOR(CopiedVariableData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CopiedVariableData, AZ::SystemAllocator);
 
         virtual ~CopiedVariableData() = default;
 

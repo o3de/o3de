@@ -12,7 +12,7 @@
 
 namespace AWSCore
 {
-    using AttributionMetricTest = UnitTest::ScopedAllocatorSetupFixture;
+    using AttributionMetricTest = UnitTest::LeakDetectionFixture;
 
     TEST_F(AttributionMetricTest, Contruction_Test)
     {

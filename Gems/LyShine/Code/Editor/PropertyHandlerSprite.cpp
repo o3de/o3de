@@ -23,7 +23,7 @@
 
 #include "SpriteBorderEditorCommon.h"
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
@@ -39,7 +39,8 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
         this,
         [ this ]([[maybe_unused]] AZ::Data::AssetId newAssetID)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
             AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, m_propertyAssetCtrl);
         });
 
@@ -62,7 +63,7 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
 
         slicerButton->setFocusPolicy(Qt::StrongFocus);
 
-        slicerButton->setIcon(QIcon("Icons/PropertyEditor/open_in.png"));
+        slicerButton->setIcon(QIcon(":/stylesheet/img/UI20/open-in-internal-app.svg"));
 
         // The icon size needs to be smaller than the fixed size to make sure it visually aligns properly.
         QSize iconSize = QSize(fixedSize.width() - 2, fixedSize.height() - 2);
@@ -80,7 +81,8 @@ PropertySpriteCtrl::PropertySpriteCtrl(QWidget* parent)
                 }
 
                 AZStd::string assetPath;
-                EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, m_propertyAssetCtrl->GetCurrentAssetID());
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, m_propertyAssetCtrl->GetCurrentAssetID());
 
                 SpriteBorderEditor sbe(assetPath.c_str(), this->window());
                 if (sbe.GetHasBeenInitializedProperly())
@@ -145,7 +147,8 @@ void PropertyHandlerSprite::WriteGUIValuesIntoProperty(size_t index, PropertySpr
     (void)node;
 
     AZStd::string assetPath;
-    EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, GUI->GetPropertyAssetCtrl()->GetCurrentAssetID());
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+        assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, GUI->GetPropertyAssetCtrl()->GetCurrentAssetID());
 
     // Convert streaming image's product path to relative source path to assign to the SimpleAssetReference<Texture>
     AZStd::string sourcePath = CSprite::GetImageSourcePathFromProductPath(assetPath);
@@ -191,7 +194,8 @@ bool PropertyHandlerSprite::ReadValuesIntoGUI(size_t index, PropertySpriteCtrl* 
 
 void PropertyHandlerSprite::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerSprite());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerSprite());
 }
 
 #include <moc_PropertyHandlerSprite.cpp>

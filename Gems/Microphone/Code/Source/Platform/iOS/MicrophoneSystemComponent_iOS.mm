@@ -271,9 +271,7 @@ private:
         
         // Obtain recorded samples
         
-        OSStatus status;
-        
-        status = AudioUnitRender(impl->m_audioUnit, 
+        AudioUnitRender(impl->m_audioUnit, 
             ioActionFlags, 
             inTimeStamp, 
             inBusNumber, 

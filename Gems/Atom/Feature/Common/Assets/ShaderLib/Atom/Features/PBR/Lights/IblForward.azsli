@@ -17,11 +17,11 @@ option bool o_materialUseForwardPassIBLSpecular = false;
 
 void ApplyIblForward(Surface surface, inout LightingData lightingData)
 {
-#ifdef FORCE_IBL_IN_FORWARD_PASS
+#if FORCE_IBL_IN_FORWARD_PASS
     bool useDiffuseIbl = true;
     bool useSpecularIbl = true;
 #else
-    #ifdef FORCE_OPAQUE
+    #if FORCE_OPAQUE
         bool isTransparent = false;
     #else
         bool isTransparent = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);

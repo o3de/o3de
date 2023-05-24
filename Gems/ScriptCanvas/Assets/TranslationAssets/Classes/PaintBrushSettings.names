@@ -1,0 +1,366 @@
+{
+    "entries": [
+        {
+            "base": "PaintBrushSettings",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Paint Brush Settings"
+            },
+            "methods": [
+                {
+                    "base": "GetsmoothingRadius",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Smoothing Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "smoothing Radius"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsmoothingRadius",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Smoothing Radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "smoothing Radius"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetdistancePercent",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Distance Percent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "distance Percent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetdistancePercent",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Distance Percent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "distance Percent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GethardnessPercent",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Hardness Percent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "hardness Percent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SethardnessPercent",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Hardness Percent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "hardness Percent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetflowPercent",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Flow Percent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "flow Percent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetflowPercent",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Flow Percent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "flow Percent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getcolor",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setcolor",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetblendMode",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Blend Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "blend Mode"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetblendMode",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Blend Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "blend Mode"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Getsize",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Setsize",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetsmoothMode",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Smooth Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "smooth Mode"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetsmoothMode",
+                    "context": "Setter",
+                    "details": {
+                        "name": "Set Smooth Mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                                "name": "Paint Brush"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "smooth Mode"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

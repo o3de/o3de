@@ -31,7 +31,6 @@ namespace AZ
                 {
                     ec->Class<GpuQuerySystemDescriptor>("Gpu Query System Settings", "Settings for the Gpu Query System")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &GpuQuerySystemDescriptor::m_occlusionQueryCount, "Occlusion GPU Query Count", "The amount of available queries for Occlusion")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &GpuQuerySystemDescriptor::m_statisticsQueryCount, "Statistics GPU Query Count", "The amount of available queries for Pipeline Statistics")

@@ -31,7 +31,7 @@ namespace AZ::IO
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::FullFileDecompressorConfig, "{C96B7EC1-8C73-4493-A7CB-66F5D550FC3A}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(FullFileDecompressorConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FullFileDecompressorConfig, AZ::SystemAllocator);
 
         ~FullFileDecompressorConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(

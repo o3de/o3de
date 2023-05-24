@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <sys/prctl.h>
 #include <sys/resource.h> // for iopolicy
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -326,9 +327,19 @@ namespace AzFramework
         // This configures the write end of the pipe to close on calls to `exec`
         fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);
 
+        const pid_t parentPid = getpid();
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
+            if (processLaunchInfo.m_tetherLifetime)
+            {
+                prctl(PR_SET_PDEATHSIG, SIGTERM);
+                if (getppid() != parentPid)
+                {
+                    _exit(1);  // Close if we've already been orphaned from our original parent process.
+                }
+            }
+
             ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo, childErrorPipeFds);
         }
 

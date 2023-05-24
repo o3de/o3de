@@ -16,7 +16,7 @@
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DLLTestVirtualClass.h>
 
 #include "ModuleTestBus.h"
 
@@ -51,7 +51,7 @@ class DllModule
 {
 public:
     AZ_RTTI(DllModule, "{99C6BF95-847F-4EEE-BB60-9B26D02FF577}", AZ::Module);
-    AZ_CLASS_ALLOCATOR(DllModule, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(DllModule, AZ::SystemAllocator);
 
     DllModule()
     {
@@ -85,7 +85,7 @@ extern "C" AZ_DLL_EXPORT void DoTests()
 
     // Use the bus to fire a message on the bus to verify it works across modules
     AZ::EntityId hackEntityIdAddress((AZ::u64)address); // HACK to pass the address to another module, otherwise we need to create a common EBus
-    EBUS_EVENT(AZ::TransformNotificationBus, OnParentChanged, AZ::EntityId(), hackEntityIdAddress);
+    AZ::TransformNotificationBus::Broadcast(&AZ::TransformNotificationBus::Events::OnParentChanged, AZ::EntityId(), hackEntityIdAddress);
 }
 
 

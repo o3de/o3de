@@ -12,6 +12,10 @@
 #define ENABLE_CLEAR_COAT               1
 #endif
 
+#ifndef ENABLE_SPECULARAA
+#define ENABLE_SPECULARAA               1
+#endif
+
 #include <Atom/Features/PBR/MaterialUtils.azsli>
 #include <Atom/Features/PBR/SpecularAA.azsli>
 #include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
@@ -41,28 +45,30 @@ class Surface
 
     // ------- BasePbrSurfaceData -------
     
-    precise float3 position;    //!< Position in world-space
-    float3 normal;              //!< Normal in world-space
-    float3 vertexNormal;        //!< Vertex normal in world-space
-    float3 baseColor;           //!< Surface base color
-    float metallic;             //!< Surface metallic property
-    float roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
-    float roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
-    float roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
+    precise real3 position;    //!< Position in world-space
+    real3 normal;              //!< Normal in world-space
+    real3 vertexNormal;        //!< Vertex normal in world-space
+    real3 baseColor;           //!< Surface base color
+    real metallic;             //!< Surface metallic property
+    real roughnessLinear;      //!< Perceptually linear roughness value authored by artists. Must be remapped to roughnessA before use
+    real roughnessA;           //!< Actual roughness value ( a.k.a. "alpha roughness") to be used in microfacet calculations
+    real roughnessA2;          //!< Alpha roughness ^ 2 (i.e. roughnessA * roughnessA), used in GGX, cached here for perfromance
 
     // Increase opacity at grazing angles for surfaces with a low m_opacityAffectsSpecularFactor.
     // For m_opacityAffectsSpecularFactor values close to 0, that indicates a transparent surface
     // like glass, so it becomes less transparent at grazing angles. For m_opacityAffectsSpecularFactor
     // values close to 1.0, that indicates the absence of a surface entirely, so this effect should
     // not apply.
-    float opacityAffectsSpecularFactor;
+    real opacityAffectsSpecularFactor;
+
+    float opacityAffectsEmissiveFactor; //!< Allows emissive to be attenuated by alpha or not.
 
     //! Surface lighting data
-    float3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
-    float3 specularF0;          //!< Fresnel f0 spectral value of the surface
-    float3 emissiveLighting;    //!< Emissive lighting
-    float diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
-    float specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
+    real3 albedo;              //!< Albedo color of the non-metallic material, will be multiplied against the diffuse lighting value
+    real3 specularF0;          //!< Fresnel f0 spectral value of the surface
+    real3 emissiveLighting;    //!< Emissive lighting
+    real diffuseAmbientOcclusion; //!< Diffuse ambient occlusion factor - [0, 1] :: [Dark, Bright]
+    real specularOcclusion;       //!< Specular occlusion factor - [0, 1] :: [Dark, Bright]
 
     //! Applies specular anti-aliasing to roughnessA2 
     void ApplySpecularAA();
@@ -71,7 +77,7 @@ class Surface
     void CalculateRoughnessA();
 
     //! Sets albedo, base color, specularF0, and metallic properties using metallic workflow
-    void SetAlbedoAndSpecularF0(float3 baseColor, float specularF0Factor, float metallic);
+    void SetAlbedoAndSpecularF0(real3 baseColor, real specularF0Factor, real metallic);
 };
 
 // Specular Anti-Aliasing technique from this paper:
@@ -79,16 +85,19 @@ class Surface
 void Surface::ApplySpecularAA()
 {
     // Constants for formula below
-    const float screenVariance = 0.25f;
-    const float varianceThresh = 0.18f;
-
+    const float screenVariance = 0.25;
+    const float varianceThresh = 0.18;
+    
     // Specular Anti-Aliasing
-    float3 dndu = ddx_fine( normal );
-    float3 dndv = ddy_fine( normal );
+    float3 dndu = ddx_fine( float3(normal) );
+    float3 dndv = ddy_fine( float3(normal) );
     float variance = screenVariance * (dot( dndu , dndu ) + dot( dndv , dndv ));
     float kernelRoughnessA2 = min(2.0 * variance , varianceThresh );
     float filteredRoughnessA2 = saturate ( roughnessA2 + kernelRoughnessA2 );
-    roughnessA2 = filteredRoughnessA2;
+    roughnessA2 = real(filteredRoughnessA2);
+
+    roughnessA = sqrt(roughnessA2);
+    roughnessLinear = sqrt(roughnessA);
 }
 
 void Surface::CalculateRoughnessA()
@@ -100,22 +109,24 @@ void Surface::CalculateRoughnessA()
     // See Burley's Disney PBR: https://pdfs.semanticscholar.org/eeee/3b125c09044d3e2f58ed0e4b1b66a677886d.pdf
 
     roughnessA = max(roughnessLinear * roughnessLinear, MinRoughnessA);
-
     roughnessA2 = roughnessA * roughnessA;
+
+#if ENABLE_SPECULARAA
     if(o_applySpecularAA)
     {
         ApplySpecularAA();
     }
+#endif
 }
 
-void Surface::SetAlbedoAndSpecularF0(float3 newBaseColor, float specularF0Factor, float newMetallic)
+void Surface::SetAlbedoAndSpecularF0(real3 newBaseColor, real specularF0Factor, real newMetallic)
 {
     baseColor = newBaseColor;
     metallic = newMetallic;
 
-    float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
+    real3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
 
     // Compute albedo and specularF0 based on metalness
-    albedo = lerp(baseColor, float3(0.0f, 0.0f, 0.0f), metallic);
+    albedo = lerp(baseColor, real3(0.0, 0.0, 0.0), metallic);
     specularF0 = lerp(dielectricSpecularF0, baseColor, metallic);
 }

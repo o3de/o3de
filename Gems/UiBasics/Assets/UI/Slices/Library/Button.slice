@@ -246,7 +246,7 @@
 										<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
 											<Class name="AddressType" field="value1" value="AZStd::vector({21786AF0-2606-5B9A-86EB-0892E2820E6C})::Entities·0/AZ::Entity({75651658-8663-478D-9090-2432DFCAFA44})#17165234896122860168·2/AZStd::vector({13D58FF9-1088-5C69-9A1F-C2A144B57B78})::Components·0/UiTextComponent({5B3FB2A7-5DC4-4033-A970-001CEC85B6C4})#3068610810953516373·9/Color({7894072A-9050-4F0F-901B-34B1A0D29417})::Color·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
 											<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-												<Class name="Color" field="m_data" value="1.0000000 1.0000000 1.0000000 -107374176.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
+												<Class name="Color" field="m_data" value="1.0000000 1.0000000 1.0000000 1.0000000" type="{7894072A-9050-4F0F-901B-34B1A0D29417}"/>
 											</Class>
 										</Class>
 										<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">

@@ -31,7 +31,7 @@ namespace GraphCanvas
         friend class WrapperNodeLayoutComponent;
 
         AZ_TYPE_INFO(WrappedNodeConfiguration, "{55C674CA-2AB3-4D60-A687-D4DBC98F1E95}");
-        AZ_CLASS_ALLOCATOR(WrappedNodeConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WrappedNodeConfiguration, AZ::SystemAllocator);
 
         WrappedNodeConfiguration()
             : m_layoutOrder(std::numeric_limits<AZ::u32>::max())

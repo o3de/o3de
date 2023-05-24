@@ -35,7 +35,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AttributeDynamicScriptValue, "{46803928-11c9-4176-b2fe-2f0aed99bfeb}", Attribute); 
-            AZ_CLASS_ALLOCATOR(AttributeDynamicScriptValue, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(AttributeDynamicScriptValue, AZ::SystemAllocator)
 
             AttributeDynamicScriptValue(const DynamicSerializableField& value)
                 : m_value(value) {}
@@ -233,7 +233,7 @@ namespace AzToolsFramework
 
                     // Create an EntityId instance
                     const AZ::SerializeContext* context = nullptr;
-                    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+                    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                     const AZ::SerializeContext::ClassData* entityIdClassData = context->FindClassData(azrtti_typeid<AZ::EntityId>());
                     AZ_Assert(entityIdClassData && entityIdClassData->m_factory, "AZ::EntityId is missing ClassData or factory in the SerializeContext");
                     AZ::EntityId* entityId = static_cast<AZ::EntityId*>(entityIdClassData->m_factory->Create(name));
@@ -782,7 +782,7 @@ namespace AzToolsFramework
                 m_scriptComponent.m_context->GetDebugContext()->ConnectHook();
             }
 
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
         }
 
@@ -842,7 +842,7 @@ namespace AzToolsFramework
 
             SortProperties(m_scriptComponent.m_properties);
 
-            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+            ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
         }
 
         void ScriptEditorComponent::ClearDataElements()
@@ -904,7 +904,8 @@ namespace AzToolsFramework
             {
                 SetScript(asset);
                 ScriptHasChanged();
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, GetEntityId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntityId());
             }
         }
 
@@ -940,9 +941,11 @@ namespace AzToolsFramework
             AZStd::string scriptFilename;
             if (assetId.IsValid())
             {
-                EBUS_EVENT_RESULT(scriptFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(scriptFilename,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
             }
-            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, LaunchLuaEditor, scriptFilename.c_str());
+            AzToolsFramework::EditorRequests::Bus::Broadcast(
+                &AzToolsFramework::EditorRequests::Bus::Events::LaunchLuaEditor, scriptFilename.c_str());
         }
 
         void ScriptEditorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -1031,7 +1034,7 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Script.png")
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/lua-script/")
-                        ->DataElement("AssetRef", &ScriptEditorComponent::m_scriptAsset, "Script", "Which script to use")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &ScriptEditorComponent::m_scriptAsset, "Script", "Which script to use")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ScriptEditorComponent::ScriptHasChanged)
                             ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                             ->Attribute("EditButton", "")

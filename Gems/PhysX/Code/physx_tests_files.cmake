@@ -33,7 +33,8 @@ set(FILES
     Tests/PhysXMultithreadingTest.cpp
     Tests/PhysXScriptTest.cpp
     Tests/CharacterControllerTests.cpp
-    Tests/RagdollConfiguration.xml
+    Tests/CharacterGameplayControllerTests.cpp
+    Tests/RagdollConfiguration.h
     Tests/RagdollTestData.h
     Tests/RagdollTests.cpp
     Tests/Benchmarks/PhysXBenchmarksUtilities.cpp

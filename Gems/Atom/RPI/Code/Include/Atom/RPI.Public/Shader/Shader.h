@@ -52,13 +52,13 @@ namespace AZ
         //! If you need guarantee lifetime, it is safe to take a reference on the returned pipeline state.
         class Shader final
             : public Data::InstanceData
-            , public Data::AssetBus::MultiHandler
+            , public Data::AssetBus::Handler
             , public ShaderVariantFinderNotificationBus::Handler
         {
             friend class ShaderSystem;
         public:
             AZ_INSTANCE_DATA(Shader, "{232D8BD6-3BD4-4842-ABD2-F380BD5B0863}");
-            AZ_CLASS_ALLOCATOR(Shader, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Shader, SystemAllocator);
 
             //! Returns the shader instance associated with the provided asset.
             static Data::Instance<Shader> FindOrCreate(const Data::Asset<ShaderAsset>& shaderAsset, const Name& supervariantName);
@@ -212,11 +212,6 @@ namespace AZ
             //! PipelineLibrary file name
             char m_pipelineLibraryPath[AZ_MAX_PATH_LEN] = { 0 };
 
-            //! During OnAssetReloaded, the internal references to ShaderVariantAsset inside
-            //! ShaderAsset are not updated correctly. We store here a reference to the root ShaderVariantAsset
-            //! when it got reloaded, later when We get OnAssetReloaded for the ShaderAsset We update its internal
-            //! reference to the root variant asset.
-            Data::Asset<ShaderVariantAsset> m_reloadedRootShaderVariantAsset;
         };
     }
 }

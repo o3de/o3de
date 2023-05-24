@@ -8,8 +8,6 @@
 
 #pragma once 
 
-//#include <Atom/Features/SrgSemantics.azsli>
-
 #include "../MaterialInputs/BaseColorInput.azsli"
 #include "../MaterialInputs/RoughnessInput.azsli"
 #include "../MaterialInputs/MetallicInput.azsli"
@@ -20,9 +18,7 @@
 #include "../MaterialInputs/UvSetCount.azsli"
 #include "../MaterialInputs/DetailMapsInput.azsli"
 
-// Use human skin profile for thin object transmission (if enabled)
-// Remove this line to use a custom profile based on the scatter color
-#define USE_HUMAN_SKIN_PROFILE
+#include <Atom/Features/SrgSemantics.azsli>
 
 ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 {

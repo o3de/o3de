@@ -13,6 +13,7 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Utils/Utils.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -123,6 +124,10 @@ namespace AZ
             m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
             m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
+
+            //For instance creation/destruction use nullptr for VkAllocationCallbacks* as using VkSystemAllocator::Get() crashes RenderDoc when used with openxr
+            //enabled projects. We think its because RenderDoc maybe injecting something when doing allocations. Using nullptr when USE_RENDERDOC or enableRenderDoc
+            //is enabled is another option but it will not work for Android easily and will require further work, not to mention manually enabling this for Android renderdoc. 
             if (m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
@@ -166,6 +171,7 @@ namespace AZ
                 }
                 m_supportedDevices.clear();
 
+                //Using use nullptr for VkAllocationCallbacks*. Please see comments above related to Instance creation
                 m_context.DestroyInstance(m_instance, nullptr);
                 m_instance = VK_NULL_HANDLE;
             }
@@ -330,6 +336,8 @@ namespace AZ
 
                 //Update the native object from the passed by the XR module
                 m_instance = xrInstanceDescriptor->m_outputData.m_xrVkInstance;
+                //Update the context from the passed by the XR module
+                m_context = xrInstanceDescriptor->m_outputData.m_context;
 
                 //Re-add support for validation with the updated VkInstance
                 CreateDebugMessenger();

@@ -32,14 +32,14 @@ static const float TexelWeights[GaussianKernelSize] = {
     0.0000011022801820635918f
 };
 
-float3 GaussianFilter(uint2 screenCoords, int2 texelOffsets[GaussianKernelSize], RWTexture2D<float4> inputImage)
+float4 GaussianFilter(uint2 screenCoords, int2 texelOffsets[GaussianKernelSize], Texture2D<float4> inputImage)
 {
-    float3 result = float3(0.0f, 0.0f, 0.0f);
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
     [unroll]
     for (uint i = 0; i < GaussianKernelSize; ++i)
     {
-        result += inputImage[screenCoords + texelOffsets[i]].rgb * TexelWeights[i];
+        result += max(0.0f, inputImage[screenCoords + texelOffsets[i]] * TexelWeights[i]);
     }
 
     return result;

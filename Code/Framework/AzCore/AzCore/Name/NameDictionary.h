@@ -46,7 +46,7 @@ namespace AZ
     class NameDictionary final
     {
     public:
-        AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NameDictionary, AZ::OSAllocator);
     private:
 
         friend Module;

@@ -115,7 +115,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(IndirectBufferLayout, "{1D9A08FE-0C13-4AB4-9556-ECE97A27F42D}");
-            AZ_CLASS_ALLOCATOR(IndirectBufferLayout, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IndirectBufferLayout, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

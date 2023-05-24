@@ -28,7 +28,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(PvdWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PvdWidget, AZ::SystemAllocator);
 
             explicit PvdWidget(QWidget* parent = nullptr);
 

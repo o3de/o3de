@@ -5,9 +5,6 @@
       "timestamp": "${timestamp}",
       "build_config": "${build_config}"
     },
-    "jenkins": {
-      "use_test_impact_analysis": ${use_tiaf}
-    },
     "repo": {
       "root": "${repo_dir}",
       "build": "${bin_dir}"
@@ -49,13 +46,19 @@
     }
   },
   "native": {
+    "jenkins": {
+      "enabled": ${native_test_targets_enabled},
+      "use_test_impact_analysis": ${native_use_test_impact_analysis}
+    },
     "workspace": {
       "temp": {
         "root": "${native_temp_dir}",
         "run_artifact_dir": "${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}",
+        "sharded_run_artifact_dir": "${native_temp_dir}/Shard/Run",
         "coverage_artifact_dir": "${native_temp_dir}/Coverage",
+        "sharded_coverage_artifact_dir": "${native_temp_dir}/Shard/Coverage",
         "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache",
-        "change_list" : "${native_temp_dir}/Changelists",
+        "change_list" : "${native_temp_dir}",
         "reports" : "${native_temp_dir}/Reports"
       },
       "active": {
@@ -94,19 +97,21 @@
             ]
           }
         ]
-      },
-      "shard": [
-      ]
+      }
     }
   },
   "python": {
+    "jenkins": {
+      "enabled": ${python_test_targets_enabled},
+      "use_test_impact_analysis": true
+    },
     "workspace": {
       "temp": {
         "root": "${python_temp_dir}",
         "run_artifact_dir": "${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}",
         "coverage_artifact_dir": "${python_temp_dir}/Coverage",
         "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache",
-        "change_list" : "${python_temp_dir}/Changelists",
+        "change_list" : "${python_temp_dir}",
         "reports" : "${python_temp_dir}/Reports"
       },
       "active": {

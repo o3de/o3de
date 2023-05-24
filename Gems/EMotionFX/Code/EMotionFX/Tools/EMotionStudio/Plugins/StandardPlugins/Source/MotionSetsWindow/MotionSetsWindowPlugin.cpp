@@ -92,7 +92,7 @@ namespace EMStudio
         // create the motion set properties window
         m_motionSetWindow = new MotionSetWindow(this, m_dialogStack);
         m_motionSetWindow->Init();
-        m_dialogStack->Add(m_motionSetWindow, tr("Selected Motion Set"), /*closed=*/false, /*maximizeSize=*/true);
+        m_dialogStack->Add(m_motionSetWindow, tr("Motions"), /*closed=*/false, /*maximizeSize=*/true);
 
         ReInit();
         CommandSystem::CreateDefaultMotionSet();
@@ -446,7 +446,7 @@ namespace EMStudio
 
         AZStd::string filename;
         commandLine.GetValue("filename", command, filename);
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         CommandEditorLoadAnimGraph::RelocateFilename(filename);
 

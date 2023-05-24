@@ -30,8 +30,6 @@ namespace AzToolsFramework
             Instance& focusedInstance)
         {
             m_templateId = focusedInstance.GetTemplateId();
-            m_redoPatch.SetArray();
-            m_undoPatch.SetArray();
 
             PrefabDom& focusedTempalteDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
 
@@ -55,7 +53,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::RemoveValueInInstanceDom(cachedOwningInstanceDom, entityAliasPath);
+                    PrefabUndoUtils::RemoveValueInPrefabDom(cachedOwningInstanceDom, entityAliasPath);
                 }
             }
 
@@ -73,7 +71,7 @@ namespace AzToolsFramework
                 const AZStd::string parentEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(parentEntity->GetId());
 
                 PrefabDom parentEntityDomAfterRemovingChildren;
-                m_instanceToTemplateInterface->GenerateDomForEntity(parentEntityDomAfterRemovingChildren, *parentEntity);
+                m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterRemovingChildren, *parentEntity);
 
                 // If the parent is the focused container entity, we need to fetch from root template rather than
                 // retrieving from the focused template. The focused containter entity DOM in focused template does
@@ -82,7 +80,7 @@ namespace AzToolsFramework
                 if (parentEntity->GetId() == focusedInstance.GetContainerEntityId())
                 {
                     PrefabDom parentEntityDomBeforeRemoving;
-                    m_instanceDomGeneratorInterface->GenerateEntityDom(parentEntityDomBeforeRemoving, *parentEntity);
+                    m_instanceDomGeneratorInterface->GetEntityDomFromTemplate(parentEntityDomBeforeRemoving, *parentEntity);
 
                     if (parentEntityDomBeforeRemoving.IsNull())
                     {
@@ -91,9 +89,9 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    PrefabUndoUtils::AppendUpdateEntityPatch(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_redoPatch, parentEntityDomBeforeRemoving, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
-                    PrefabUndoUtils::AppendUpdateEntityPatch(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_undoPatch, parentEntityDomAfterRemovingChildren, parentEntityDomBeforeRemoving, parentEntityAliasPath);
                 }
                 else
@@ -113,9 +111,9 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
-                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_undoPatch, parentEntityDomAfterRemovingChildren, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
                     }
                 }
@@ -123,7 +121,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(
                         cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                 }
             }

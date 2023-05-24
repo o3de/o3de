@@ -42,7 +42,7 @@ namespace AZ
                 if (EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorAreaLightComponent>(
-                        "Light", "A light which emits from a point or goemetric shape.")
+                        "Light", "A light which emits from a point or geometric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
@@ -172,7 +172,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias",
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal shadow bias",
                             "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
                             "If this is 0, no biasing is applied.")
                             ->Attribute(Edit::Attributes::Min, 0.f)
@@ -180,8 +180,16 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+                        ->DataElement(
+                            Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_cacheShadows, "Cache shadows",
+                            "When turned on, shadows will only render when something in their field of view changes. This takes more memory "
+                            "because the shadow map texture needs to persist, but can be a performance improvement for largely static scenes.")
 
-                        ->ClassElement(Edit::ClassElements::Group, "Global Illumination")
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+
+                        ->ClassElement(Edit::ClassElements::Group, "Global illumination (GI)")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsAffectsGI)
                          ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_affectsGI, "Affects GI", "Controls whether this light affects diffuse global illumination.")
@@ -296,7 +304,8 @@ namespace AZ
             {
                 ComponentDescriptor::DependencyArrayType provided;
                 ComponentDescriptor* componentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    componentDescriptor, component->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(componentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", component->RTTI_GetTypeName());
                 componentDescriptor->GetProvidedServices(provided, component);
                 auto providedItr = AZStd::find(provided.begin(), provided.end(), AZ_CRC_CE("ShapeService"));

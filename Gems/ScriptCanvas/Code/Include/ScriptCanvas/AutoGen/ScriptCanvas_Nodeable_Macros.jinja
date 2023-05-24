@@ -242,7 +242,7 @@ void
 {%-      for return in returns -%}
 {%-         if returnTypes.append(return.attrib['Type']) -%}{%- endif -%}
 {%-      endfor -%}
-AZStd::tuple<{{returns|join(", ")}}>
+AZStd::tuple<{{returnTypes|join(", ")}}>
 {%-  endif -%}
 {%- endmacro -%}
 

@@ -19,7 +19,7 @@
 using namespace AWSNativeSDKInit;
 
 class AWSLogSystemInterfaceTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
     , public AZ::Debug::TraceMessageBus::Handler
 {
 public:

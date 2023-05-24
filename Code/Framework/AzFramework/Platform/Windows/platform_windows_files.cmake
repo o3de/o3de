@@ -16,6 +16,7 @@ set(FILES
     AzFramework/Process/ProcessWatcher_Win.cpp
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Win.cpp
+    AzFramework/Process/ProcessUtils_Win.cpp
     ../Common/WinAPI/AzFramework/IO/LocalFileIO_WinAPI.cpp
     AzFramework/IO/LocalFileIO_Windows.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp

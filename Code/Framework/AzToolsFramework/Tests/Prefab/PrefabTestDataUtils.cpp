@@ -57,6 +57,9 @@ namespace UnitTest
             EXPECT_EQ(expectedTemplateData.m_isValid, actualTemplate.IsValid());
             EXPECT_EQ(expectedTemplateData.m_isLoadedWithErrors, actualTemplate.IsLoadedWithErrors());
 
+            auto& actualTemplateDom = actualTemplate.GetPrefabDom();
+            EXPECT_FALSE(actualTemplateDom.HasMember(PrefabDomUtils::LinkIdName));
+
             auto& actualInstancesLinkIds = actualTemplate.GetLinks();
             EXPECT_EQ(expectedTemplateData.m_instancesData.size(), actualInstancesLinkIds.size());
             for (auto& actualLinkId : actualInstancesLinkIds)
@@ -83,7 +86,7 @@ namespace UnitTest
         {
             PrefabDom linkDom;
             actualLink.GetLinkDom(linkDom, linkDom.GetAllocator());
-            PrefabDomValueConstReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
+            PrefabDomValueReference patchesReference = PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
             if (!expectedTemplatePatches.IsNull())
             {

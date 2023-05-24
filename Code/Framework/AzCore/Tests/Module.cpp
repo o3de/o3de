@@ -74,6 +74,7 @@ namespace UnitTest
         , public ModuleTestRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(StaticModule, AZ::SystemAllocator)
         static bool s_loaded;
         static bool s_reflected;
 
@@ -118,7 +119,7 @@ namespace UnitTest
         modulesOut.push_back(new UnitTest::StaticModule());
     }
 
-    class ModuleManager : public UnitTest::AllocatorsTestFixture
+    class ModuleManager : public UnitTest::LeakDetectionFixture
     {
     };
 #if AZ_TRAIT_DISABLE_FAILED_MODULE_TESTS
@@ -144,6 +145,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::StartupParameters startupParams;
             startupParams.m_createStaticModulesCallback = AZCreateStaticModules;
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
             EXPECT_NE(nullptr, systemEntity);
             systemEntity->Init();
@@ -155,7 +157,7 @@ namespace UnitTest
 
             { // Query both modules via the ModuleTestRequestBus
                 EBusAggregateResults<const char*> moduleNames;
-                EBUS_EVENT_RESULT(moduleNames, ModuleTestRequestBus, GetModuleName);
+                ModuleTestRequestBus::BroadcastResult(moduleNames, &ModuleTestRequestBus::Events::GetModuleName);
 
                 EXPECT_TRUE(moduleNames.values.size() == 2);
                 bool foundStaticModule = false;
@@ -239,6 +241,7 @@ namespace UnitTest
             // Start up application
             ComponentApplication::Descriptor appDesc;
             ComponentApplication::StartupParameters startupParams;
+            startupParams.m_loadSettingsRegistry = false;
             Entity* systemEntity = app.Create(appDesc, startupParams);
 
             EXPECT_NE(nullptr, systemEntity);
@@ -366,6 +369,7 @@ namespace UnitTest
         // Start up application
         ComponentApplication::Descriptor appDesc;
         ComponentApplication::StartupParameters startupParams;
+        startupParams.m_loadSettingsRegistry = false;
         Entity* systemEntity = app.Create(appDesc, startupParams);
 
         ASSERT_NE(nullptr, systemEntity);

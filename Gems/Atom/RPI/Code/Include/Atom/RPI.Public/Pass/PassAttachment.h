@@ -26,7 +26,7 @@ namespace AZ
         struct PassAttachment final
             : AZStd::intrusive_refcount<AZStd::atomic_uint, AZStd::intrusive_default_delete>
         {
-            AZ_CLASS_ALLOCATOR(PassAttachment, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassAttachment, SystemAllocator);
 
             PassAttachment() = default;
             PassAttachment(const PassImageAttachmentDesc& attachmentDesc);

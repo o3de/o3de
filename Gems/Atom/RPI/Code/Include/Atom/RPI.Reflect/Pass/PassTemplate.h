@@ -30,7 +30,7 @@ namespace AZ
             friend class PassAsset;
 
             AZ_RTTI(PassTemplate, "{BF485F6D-02EC-4BAD-94BA-519248F59D14}");
-            AZ_CLASS_ALLOCATOR(PassTemplate, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassTemplate, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

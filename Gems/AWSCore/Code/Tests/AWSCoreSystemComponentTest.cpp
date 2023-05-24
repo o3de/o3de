@@ -32,7 +32,7 @@ class AWSCoreNotificationsBusMock
     : protected AWSCoreNotificationsBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(AWSCoreNotificationsBusMock, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AWSCoreNotificationsBusMock, AZ::SystemAllocator);
 
     AWSCoreNotificationsBusMock()
         : m_sdkInitialized(0)

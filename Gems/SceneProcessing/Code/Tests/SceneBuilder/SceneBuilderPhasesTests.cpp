@@ -40,6 +40,7 @@ class ComponentSingleton
     : public AZ::ComponentDescriptorDefault<ComponentType>
 {
 public:
+    AZ_CLASS_ALLOCATOR(ComponentSingleton, AZ::SystemAllocator)
     AZ::Component* CreateComponent() override { return m_component; }
     void SetComponent(ComponentType* c) { m_component = c; }
 private:
@@ -131,7 +132,7 @@ public:
 // This fixture attaches the SceneCore and SceneData libraries, and attaches
 // the AZ::Environment to them
 class SceneBuilderPhasesFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
@@ -144,7 +145,9 @@ public:
         registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-        m_app.Start(AZ::ComponentApplication::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app.Start(AZ::ComponentApplication::Descriptor(), startupParameters);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

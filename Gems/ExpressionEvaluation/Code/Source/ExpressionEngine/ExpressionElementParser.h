@@ -22,7 +22,7 @@ namespace ExpressionEvaluation
     class ExpressionElementParser
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExpressionElementParser, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExpressionElementParser, AZ::SystemAllocator);
 
         struct ParseResult
         {

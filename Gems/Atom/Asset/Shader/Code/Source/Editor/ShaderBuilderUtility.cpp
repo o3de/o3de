@@ -48,7 +48,7 @@ namespace AZ
         {
             [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
-            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
+            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile, bool warningsAsErrors)
             {
                 RPI::ShaderSourceData shaderSourceData;
 
@@ -68,12 +68,18 @@ namespace AZ
 
                 JsonSerialization::Load(shaderSourceData, document, settings);
 
-                if (reportingHelper.WarningsReported() || reportingHelper.ErrorsReported())
+                if (reportingHelper.ErrorsReported())
                 {
                     return AZ::Failure(reportingHelper.GetErrorMessage());
                 }
-
-                return AZ::Success(shaderSourceData);
+                else if (warningsAsErrors && reportingHelper.WarningsReported())
+                {
+                    return AZ::Failure(AZStd::string("Warnings treated as error, see above."));
+                }
+                else
+                {
+                    return AZ::Success(shaderSourceData);
+                }
             }
 
             void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteAzslPath)
@@ -128,7 +134,6 @@ namespace AZ
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
                 const char* builderName,
                 const AzslSubProducts::Paths& pathOfJsonFiles,
-                const bool platformUsesRegisterSpaces,
                 AzslData& azslData,
                 RPI::ShaderResourceGroupLayoutList& srgLayoutList,
                 RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
@@ -175,7 +180,7 @@ namespace AZ
                 }
 
                 // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, platformUsesRegisterSpaces, srgLayoutList))
+                if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(builderName, azslData.m_srgData, srgLayoutList))
                 {
                     AZ_Error(builderName, false, "Failed to obtain shader resource group assets");
                     return AssetBuilderSDK::ProcessJobResult_Failed;
@@ -586,20 +591,24 @@ namespace AZ
                     }
 
                     RHI::ShaderResourceGroupBindingInfo srgBindingInfo;
-                    srgBindingInfo.m_spaceId = srgResources->m_registerSpace;
+
                     const RHI::ShaderResourceGroupLayout* layout = srgLayout.get();
                     // Calculate the binding in for the constant data. All constant data share the same binding info.
                     srgBindingInfo.m_constantDataBindingInfo = {
                         getRHIShaderStageMask(srgResources->m_srgConstantsDependencies.m_binding.m_dependentFunctions),
-                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId};
+                        srgResources->m_srgConstantsDependencies.m_binding.m_registerId,
+                        srgResources->m_srgConstantsDependencies.m_binding.m_registerSpace
+                    };
                     // Calculate the binding info for each resource of the Shader Resource Group.
                     for (auto const& resource : srgResources->m_resources)
                     {
                         auto const& resourceInfo = resource.second;
                         srgBindingInfo.m_resourcesRegisterMap.insert(
-                            {AZ::Name(resourceInfo.m_selfName),
-                             RHI::ResourceBindingInfo(
-                                 getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId)});
+                            { AZ::Name(resourceInfo.m_selfName),
+                            RHI::ResourceBindingInfo(
+                                getRHIShaderStageMask(resourceInfo.m_dependentFunctions), resourceInfo.m_registerId,
+                                resourceInfo.m_registerSpace),
+                              });
                     }
                     pipelineLayoutDescriptor->AddShaderResourceGroupLayoutInfo(*layout, srgBindingInfo);
                     srgInfos.push_back(RHI::ShaderPlatformInterface::ShaderResourceGroupInfo{layout, srgBindingInfo});
@@ -610,7 +619,7 @@ namespace AZ
                 {
                     RHI::ShaderInputConstantDescriptor rootConstantDesc(
                         constantData.m_nameId, constantData.m_constantByteOffset, constantData.m_constantByteSize,
-                        rootConstantData.m_bindingInfo.m_registerId);
+                        rootConstantData.m_bindingInfo.m_registerId, rootConstantData.m_bindingInfo.m_space);
 
                     rootConstantsLayout->AddShaderInput(rootConstantDesc);
                 }
@@ -847,8 +856,25 @@ namespace AZ
 
             IncludedFilesParser::IncludedFilesParser()
             {
-                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|\-|\:]+)[>|"])", AZStd::regex::ECMAScript);
-                m_includeRegex.swap(regex);
+                #define FILE_PATH_REGEX R"([<|"]([\w|/|\\|\.|\-|\:]+)[>|"])"
+                #define INCLUDE_REGEX R"(#\s*include\s+)"
+
+                // TODO(MaterialPipeline): This is a very specialized hack to support material pipelines. The intermediate .azsli file looks like this:
+                //     #define MATERIAL_TYPE_AZSLI_FILE_PATH "D:\o3de\Gems\Atom\TestData\TestData\Materials\Types\MaterialPipelineTest_Animated.azsli" 
+                //     #include "D:\o3de\Gems\Atom\Feature\Common\Assets\Materials\Pipelines\LowEndPipeline\ForwardPass_BaseLighting.azsli"
+                // Then the ForwardPass_BaseLighting.azsli file has this line:
+                //     #include MATERIAL_TYPE_AZSLI_FILE_PATH
+                // So we treat "#define MATERIAL_TYPE_AZSLI_FILE_PATH" the same as an include directive.
+                // The "right" way to handle this would be to use an actual preprocessor which shouild not be done in CreateJobs. We could introduce
+                // an intermediate builder that just preprocesses the file and outputs that as an intermediate asset, then do the normal processing
+                // in a subsequent builder.
+                #define SPECIAL_DEFINE_REGEX R"(#\s*define\s+MATERIAL_TYPE_AZSLI_FILE_PATH\s+)"
+
+                m_includeRegex = AZStd::regex("(?:" INCLUDE_REGEX "|" SPECIAL_DEFINE_REGEX ")" FILE_PATH_REGEX, AZStd::regex::ECMAScript);
+
+                #undef FILE_PATH_REGEX
+                #undef INCLUDE_REGEX
+                #undef SPECIAL_DEFINE_REGEX
             }
 
             AZStd::vector<AZStd::string> IncludedFilesParser::ParseStringAndGetIncludedFiles(AZStd::string_view haystack) const

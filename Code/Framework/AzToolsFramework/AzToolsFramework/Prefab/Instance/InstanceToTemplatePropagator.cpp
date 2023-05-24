@@ -54,7 +54,7 @@ namespace AzToolsFramework
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 
-        bool InstanceToTemplatePropagator::GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity)
+        bool InstanceToTemplatePropagator::GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity)
         {
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity.GetId());
 
@@ -64,12 +64,12 @@ namespace AzToolsFramework
                 return false;
             }
 
-            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), generatedEntityDom);
+            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), entityDom);
         }
 
-        bool InstanceToTemplatePropagator::GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance)
+        bool InstanceToTemplatePropagator::GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance)
         {
-            return PrefabDomUtils::StoreInstanceInPrefabDom(instance, generatedInstanceDom);
+            return PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDom);
         }
 
         bool InstanceToTemplatePropagator::GeneratePatch(
@@ -113,7 +113,7 @@ namespace AzToolsFramework
 
             //get template id associated with instance
             TemplateId templateId = instanceOptionalReference->get().GetTemplateId();
-            AppendEntityAliasToPatchPaths(providedPatch, entityId);
+            PrependEntityAliasPathToPatchPaths(providedPatch, entityId);
             return PatchTemplate(providedPatch, templateId);
         }
 
@@ -176,26 +176,22 @@ namespace AzToolsFramework
             return AZStd::move(fullPathBetweenInstances);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix)
+        void InstanceToTemplatePropagator::PrependEntityAliasPathToPatchPaths(
+            PrefabDom& patches, AZ::EntityId entityId, const AZStd::string& pathPrefix)
         {
-            AppendEntityAliasPathToPatchPaths(providedPatch, prefix + GenerateEntityAliasPath(entityId));
+            PrependPathToPatchPaths(patches, pathPrefix + GenerateEntityAliasPath(entityId));
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath)
+        void InstanceToTemplatePropagator::PrependPathToPatchPaths(PrefabDom& patches, const AZStd::string& pathToPrepend)
         {
-            if (!providedPatch.IsArray())
-            {
-                AZ_Error("Prefab", false, "Patch is not an array of updates.  Update failed.");
-                return;
-            }
+            AZ_Assert(patches.IsArray(), "PrependPathToPatchPaths - Provided patches should be an array object DOM value.");
 
-            if (entityAliasPath.empty())
+            if (pathToPrepend.empty())
             {
                 return;
             }
 
-            //update all entities or just the single container
-            for (auto& patchValue : providedPatch.GetArray())
+            for (auto& patchValue : patches.GetArray())
             {
                 auto pathIter = patchValue.FindMember("path");
 
@@ -206,9 +202,8 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                AZStd::string path = entityAliasPath + pathIter->value.GetString();
-
-                pathIter->value.SetString(path.c_str(), static_cast<rapidjson::SizeType>(path.length()), providedPatch.GetAllocator());
+                AZStd::string newPath = pathToPrepend + pathIter->value.GetString();
+                pathIter->value.SetString(newPath.c_str(), static_cast<rapidjson::SizeType>(newPath.length()), patches.GetAllocator());
             }
         }
 
@@ -290,7 +285,7 @@ namespace AzToolsFramework
                 patchPathReference->get().SetString(patchPathString.c_str(), patches.GetAllocator());
             }
 
-            linkToApplyPatches.AddPatchesToLink(patches);
+            linkToApplyPatches.SetLinkPatches(patches);
             linkToApplyPatches.UpdateTarget();
 
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(linkToApplyPatches.GetTargetTemplateId(), true);

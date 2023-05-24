@@ -265,6 +265,8 @@ set(FILES
     Core/LevelEditorMenuHandler.h
     Core/Widgets/PrefabEditVisualModeWidget.h
     Core/Widgets/PrefabEditVisualModeWidget.cpp
+    Core/Widgets/ViewportSettingsWidgets.h
+    Core/Widgets/ViewportSettingsWidgets.cpp
     StartupTraceHandler.cpp
     StartupTraceHandler.h
     LevelTreeModel.cpp
@@ -274,16 +276,12 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IExportManager.h
-    Include/IGizmoManager.h
-    Include/IIconManager.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/ISourceControl.h
-    Include/ITransformManipulator.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -292,6 +290,8 @@ set(FILES
     AnimationContext.h
     AzAssetBrowser/AzAssetBrowserRequestHandler.cpp
     AzAssetBrowser/AzAssetBrowserRequestHandler.h
+    AzAssetBrowser/AzAssetBrowserMultiWindow.cpp
+    AzAssetBrowser/AzAssetBrowserMultiWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.cpp
     AzAssetBrowser/AzAssetBrowserWindow.h
     AzAssetBrowser/AzAssetBrowserWindow.ui
@@ -325,8 +325,6 @@ set(FILES
     Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/ImageHistogramCtrl.cpp
-    Controls/ImageHistogramCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -398,8 +396,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    StringDlg.cpp
-    StringDlg.h
     ToolbarCustomizationDialog.ui
     ToolbarCustomizationDialog.cpp
     ToolbarCustomizationDialog.h
@@ -419,12 +415,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    Export/ExportManager.cpp
-    Export/ExportManager.h
-    Export/OBJExporter.cpp
-    Export/OBJExporter.h
-    Export/OCMExporter.cpp
-    Export/OCMExporter.h
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
@@ -444,7 +434,6 @@ set(FILES
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
-    Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/DisplayContextShared.inl
     Objects/SelectionGroup.cpp
@@ -459,26 +448,10 @@ set(FILES
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
     Objects/EntityObject.h
-    Objects/AxisGizmo.cpp
-    Objects/Gizmo.cpp
-    Objects/GizmoManager.cpp
-    Objects/LineGizmo.cpp
-    Objects/TrackGizmo.cpp
-    Objects/AxisGizmo.h
-    Objects/Gizmo.h
-    Objects/GizmoManager.h
-    Objects/LineGizmo.h
-    Objects/TrackGizmo.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
-    QtUI/QCollapsibleGroupBox.h
-    QtUI/QCollapsibleGroupBox.cpp
-    QtUI/PixmapLabelPreview.h
-    QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    RenderHelpers/AxisHelper.cpp
-    RenderHelpers/AxisHelper.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -533,9 +506,6 @@ set(FILES
     DisplaySettingsPythonFuncs.cpp
     ErrorReport.cpp
     ErrorReport.h
-    IconManager.cpp
-    IconManager.h
-    ProcessInfo.cpp
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
@@ -687,8 +657,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
     WelcomeScreen/WelcomeScreenDialog.qrc
-    2DViewport.cpp
-    2DViewport.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
@@ -702,8 +670,6 @@ set(FILES
     EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    TopRendererWnd.cpp
-    TopRendererWnd.h
     ViewManager.cpp
     ViewManager.h
     ViewPane.cpp

@@ -68,7 +68,7 @@ namespace Benchmark
 namespace UnitTest
 {
     class Crc32Fixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
 
     };

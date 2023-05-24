@@ -23,6 +23,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
@@ -58,7 +59,6 @@ namespace AZ
     namespace ShaderBuilder
     {
         static constexpr char ShaderAssetBuilderName[] = "ShaderAssetBuilder";
-        static constexpr uint32_t ShaderAssetBuildTimestampParam = 0;
 
         //! The search will start in @currentFolderPath.
         //! if the file is not found then it searches in order of appearence in @includeDirectories.
@@ -150,22 +150,18 @@ namespace AZ
 
         void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
+            // Used to measure the duration of CreateJobs
+            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
+
             AZStd::string shaderAssetSourceFileFullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), shaderAssetSourceFileFullPath, true);
             ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
 
             AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", shaderAssetSourceFileFullPath.data());
 
-            // Used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            // Note it's probably important for this to be set once outside the platform loop so every platform's ShaderAsset
-            // has the same value, because later the ShaderVariantTreeAsset job will fetch this value from the local ShaderAsset
-            // which could cross platforms (i.e. building an android ShaderVariantTreeAsset on PC would fetch the tiemstamp from
-            // the PC's ShaderAsset).
-            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
-
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath, false);
             if (!descriptorParseOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -222,12 +218,11 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-                jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));
 
                 response.m_createJobOutputs.push_back(jobDescriptor);
             }  // for all request.m_enabledPlatforms
 
-            AZ_TracePrintf(
+            AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
                 AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
 
@@ -248,6 +243,9 @@ namespace AZ
                 return false;
             }
 
+            // This step is very important, because it declares product dependency between ShaderAsset and the root ShaderVariantAssets (one for each supervariant).
+            // This will guarantee that when the ShaderAsset is loaded at runtime, the ShaderAsset will report OnAssetReady only after the root ShaderVariantAssets
+            // are already fully loaded and ready.
             AssetBuilderSDK::JobProduct shaderJobProduct;
             if (!AssetBuilderSDK::OutputObject(shaderAsset.Get(), shaderAssetOutputPath, azrtti_typeid<RPI::ShaderAsset>(),
                 aznumeric_cast<uint32_t>(RPI::ShaderAssetSubId::ShaderAsset), shaderJobProduct))
@@ -329,8 +327,15 @@ namespace AZ
             AZStd::string shaderFileName;
             AzFramework::StringFunc::Path::GetFileName(request.m_sourceFile.c_str(), shaderFileName);
 
-            // No error checking because the same calls were already executed during CreateJobs()
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderFullPath);
+            if (!descriptorParseOutcome.IsSuccess())
+            {
+                AZ_Error(
+                    ShaderAssetBuilderName, false, "Failed to parse Shader Descriptor JSON: %s",
+                    descriptorParseOutcome.GetError().c_str());
+                return;
+            }
+
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderFullPath, shaderSourceData.m_source, azslFullPath);
@@ -362,36 +367,13 @@ namespace AZ
                 return;
             }
 
-            // Get the time stamp string as u64, and also convert back to string to make sure it was converted correctly.
-            AZ::u64 shaderAssetBuildTimestamp = 0;
-            auto shaderAssetBuildTimestampIterator = request.m_jobDescription.m_jobParameters.find(ShaderAssetBuildTimestampParam);
-            if (shaderAssetBuildTimestampIterator != request.m_jobDescription.m_jobParameters.end())
-            {
-                shaderAssetBuildTimestamp = AZStd::stoull(shaderAssetBuildTimestampIterator->second);
-
-                if (AZStd::to_string(shaderAssetBuildTimestamp) != shaderAssetBuildTimestampIterator->second)
-                {
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                    AZ_Assert(false, "Incorrect conversion of ShaderAssetBuildTimestampParam");
-                    return;
-                }
-            }
-            else
-            {
-                // CreateJobs was not successful if there's no timestamp property in m_jobParameters.
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                AZ_Assert(false, "Missing ShaderAssetBuildTimestampParam");
-                return;
-            }
-
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceData);
 
             RPI::ShaderAssetCreator shaderAssetCreator;
             shaderAssetCreator.Begin(Uuid::CreateRandom());
 
-            shaderAssetCreator.SetName(AZ::Name{shaderFileName.c_str()});
-            shaderAssetCreator.SetDrawListName(Name(shaderSourceData.m_drawListName));
-            shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
+            shaderAssetCreator.SetName(AZ::Name{shaderFileName});
+            shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because
             // there can be only a single ShaderVariantTreeAsset per ShaderAsset.
@@ -416,7 +398,6 @@ namespace AZ
 
             // Remark: In general, the work done by the ShaderVariantAssetBuilder is similar, but it will start from the HLSL file created; in step 2, mentioned above; by this builder,
             // for each supervariant.
-
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
                 AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
@@ -443,13 +424,6 @@ namespace AZ
                     response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     return;
                 }
-
-                // The register number only makes sense if the platform uses "spaces",
-                // since the register Id of the resource will not change even if the pipeline layout changes.
-                // We can pass in a default ShaderCompilerArguments because all we care about is whether the shaderPlatformInterface
-                // appends the "--use-spaces" flag.
-                const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
 
                 uint32_t supervariantIndex = 0;
                 for (const auto& supervariantInfo : supervariantList)
@@ -525,8 +499,8 @@ namespace AZ
                     BindingDependencies bindingDependencies;
                     RootConstantData rootConstantData;
                     AssetBuilderSDK::ProcessJobResultCode azslJsonReadResult = ShaderBuilderUtility::PopulateAzslDataFromJsonFiles(
-                        ShaderAssetBuilderName, subProductsPaths, platformUsesRegisterSpaces, azslData, srgLayoutList, shaderOptionGroupLayout,
-                        bindingDependencies, rootConstantData);
+                        ShaderAssetBuilderName, subProductsPaths, azslData, srgLayoutList,
+                        shaderOptionGroupLayout, bindingDependencies, rootConstantData);
                     if (azslJsonReadResult != AssetBuilderSDK::ProcessJobResult_Success)
 
                     {
@@ -627,13 +601,19 @@ namespace AZ
                         const RHI::TargetBlendState& globalTargetBlendState = shaderSourceData.m_globalTargetBlendState;
                         const auto& targetBlendStates = shaderSourceData.m_targetBlendStates;
 
+                        // There are three ways to set blend state in the .shader file: "BlendState", "GlobalTargetBlendState", and "TargetBlendStates".
+                        // "BlendState" is a raw serialization of the BlendState struct, and is not very convenient to work with because it requires
+                        // every target to be specified in order for the data to load successfully. Normally users will want to use "GlobalTargetBlendState"
+                        // or "TargetBlendStates".
                         for (size_t i = 0; i < colorAttachmentCount; ++i)
                         {
                             if (targetBlendStates.contains(static_cast<uint32_t>(i)))
                             {
                                 renderStates.m_blendState.m_targets[i] = targetBlendStates.at(static_cast<uint32_t>(i));
                             }
-                            else
+                            // We have to ensure this actually has data before applying it, otherwise this would stomp any
+                            // data in the "BlendState" or "TargetBlendStates" with default values.
+                            else if(globalTargetBlendState.m_enable) 
                             {
                                 renderStates.m_blendState.m_targets[i] = globalTargetBlendState;
                             }
@@ -681,7 +661,6 @@ namespace AZ
                         request.m_platformInfo,
                         buildArgsManager.GetCurrentArguments(),
                         request.m_tempDirPath,
-                        shaderAssetBuildTimestamp,
                         shaderSourceData,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -690,6 +669,10 @@ namespace AZ
                         hlslFullPath,
                         hlslSourceCode};
 
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto rootShaderVariantAssetOutcome = ShaderVariantAssetBuilder::CreateShaderVariantAsset(rootVariantInfo, shaderVariantCreationContext, outputByproducts);
@@ -768,11 +751,11 @@ namespace AZ
                 return;
             }
 
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-
             AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
 
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
+
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 
     } // ShaderBuilder

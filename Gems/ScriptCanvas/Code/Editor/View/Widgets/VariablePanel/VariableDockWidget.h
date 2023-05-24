@@ -113,7 +113,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(VariableDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableDockWidget, AZ::SystemAllocator);
 
         static AZStd::string ConstructDefaultVariableName(AZ::u32 variableCounter);
         static AZStd::string FindDefaultVariableName(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId);
@@ -194,8 +194,6 @@ namespace ScriptCanvasEditor
         VariablePropertiesComponent* AllocateComponent(const ScriptCanvas::VariableId& variableId);
         void ReleaseComponent(const ScriptCanvas::VariableId& variableId);
         void ResetPool();
-
-        bool m_manipulatingSelection;
 
         AZStd::unordered_map< ScriptCanvas::VariableId, VariablePropertiesComponent* > m_usedElements;
         AZStd::vector< VariablePropertiesComponent* > m_unusedPool;

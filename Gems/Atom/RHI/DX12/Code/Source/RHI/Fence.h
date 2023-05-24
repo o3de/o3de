@@ -49,7 +49,7 @@ namespace AZ
         class Fence final
         {
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
             RHI::ResultCode Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState);
 
@@ -112,7 +112,7 @@ namespace AZ
             : public RHI::Fence
         {
         public:
-            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
 
             static RHI::Ptr<FenceImpl> Create();
 

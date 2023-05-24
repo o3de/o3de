@@ -1,0 +1,23 @@
+{
+    "Shader" : "FullscreenShadow.shader",
+    "Variants": [
+        {
+            "StableId": 1,
+            "Options": {
+                "o_msaaMode": "MsaaMode::MsaaNone"
+            }
+        },
+        {
+            "StableId": 2,
+            "Options": {
+                "o_msaaMode": "MsaaMode::Msaa2x"
+            }
+        },
+        {
+            "StableId": 3,
+            "Options": {
+                "o_msaaMode": "MsaaMode::Msaa4x"
+            }
+        }
+    ] 
+}

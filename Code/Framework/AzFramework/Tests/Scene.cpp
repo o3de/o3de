@@ -36,6 +36,7 @@ namespace SceneUnitTest
     class TestComponentConfig : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(TestComponentConfig, "{DCD12D72-3BFE-43A9-9679-66B745814CAF}", ComponentConfig);
 
         typedef void(*ActivateFunction)(TestComponent* component);
@@ -95,14 +96,11 @@ namespace SceneUnitTest
     // Fixture that creates a bare-bones app with only the system components necesary.
 
     class SceneTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -113,7 +111,9 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
-            m_systemEntity = m_app.Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_systemEntity = m_app.Create(desc, startupParameters);
             m_systemEntity->Init();
 
             m_systemEntity->CreateComponent<SceneSystemComponent>();
@@ -133,9 +133,6 @@ namespace SceneUnitTest
             m_app.Destroy();
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         }
 
         AZ::IO::LocalFileIO m_fileIO;

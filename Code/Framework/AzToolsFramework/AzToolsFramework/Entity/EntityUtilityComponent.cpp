@@ -8,6 +8,8 @@
 
 #include <sstream>
 #include <AzCore/JSON/rapidjson.h>
+#include <AzCore/JSON/document.h>
+
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
@@ -15,7 +17,6 @@
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzToolsFramework/Entity/EntityUtilityComponent.h>
 #include <Entity/EditorEntityContextBus.h>
-#include <rapidjson/document.h>
 
 namespace AzToolsFramework
 {

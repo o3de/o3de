@@ -18,7 +18,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(EmptyAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EmptyAsset, AZ::SystemAllocator);
         AZ_RTTI(EmptyAsset, "{098E3F7F-13AC-414B-9B4E-49B5AD1BD7FE}", AZ::Data::AssetData);
 
         EmptyAsset(
@@ -35,7 +35,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(EmptyAssetWithNoHandler, "{81123022-8D45-4B5F-BBB6-3ED5DF2EFB7A}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(EmptyAssetWithNoHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EmptyAssetWithNoHandler, AZ::SystemAllocator);
     };
 
     // EmptyAssetWithInstanceCount:  asset with no stored data, keeps track of the global number of instances currently constructed.
@@ -43,7 +43,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(EmptyAssetWithInstanceCount, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EmptyAssetWithInstanceCount, AZ::SystemAllocator);
         AZ_RTTI(EmptyAssetWithInstanceCount, "{C0A5DE6F-590F-4DF0-86D6-9498D4C762D8}", AZ::Data::AssetData);
 
         EmptyAssetWithInstanceCount() { ++s_instanceCount; }
@@ -63,7 +63,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetWithCustomData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetWithCustomData, AZ::SystemAllocator);
         AZ_RTTI(AssetWithCustomData, "{73D60606-BDE5-44F9-9420-5649FE7BA5B8}", AZ::Data::AssetData);
 
         AssetWithCustomData()
@@ -96,7 +96,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(AssetWithSerializedData, "{BC15ABCC-0150-44C4-976B-79A91F8A8608}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(AssetWithSerializedData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetWithSerializedData, AZ::SystemAllocator);
         AssetWithSerializedData() = default;
         static void Reflect(AZ::SerializeContext& context)
         {
@@ -116,7 +116,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(AssetWithAssetReference, "{97383A2D-B84B-46D6-B3FA-FB8E49A4407F}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(AssetWithAssetReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetWithAssetReference, AZ::SystemAllocator);
         AssetWithAssetReference() = default;
         AssetWithAssetReference(const AssetWithAssetReference&) = delete;
         static void Reflect(AZ::SerializeContext& context)
@@ -134,7 +134,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(AssetWithQueueAndPreLoadReferences, "{B86F9FA2-7953-43F9-BBD2-31070452C841}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(AssetWithQueueAndPreLoadReferences, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetWithQueueAndPreLoadReferences, AZ::SystemAllocator);
         AssetWithQueueAndPreLoadReferences() :
             m_preLoad(AZ::Data::AssetLoadBehavior::PreLoad),
             m_queueLoad(AZ::Data::AssetLoadBehavior::QueueLoad)

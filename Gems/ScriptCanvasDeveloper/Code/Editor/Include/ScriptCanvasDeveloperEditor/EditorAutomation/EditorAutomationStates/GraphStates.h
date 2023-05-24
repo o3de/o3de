@@ -23,6 +23,7 @@ namespace ScriptCanvas::Developer
     : public StaticIdAutomationState<CreateRuntimeGraphStateId>
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateRuntimeGraphState, AZ::SystemAllocator)
 
         CreateRuntimeGraphState();
         ~CreateRuntimeGraphState() override = default;
@@ -46,6 +47,7 @@ namespace ScriptCanvas::Developer
         : public StaticIdAutomationState<CreateFunctionGraphStateId>
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateFunctionGraphState, AZ::SystemAllocator)
 
         CreateFunctionGraphState();
         ~CreateFunctionGraphState() override = default;
@@ -70,6 +72,7 @@ namespace ScriptCanvas::Developer
         : public StaticIdAutomationState<ForceCloseActiveGraphStateId>
     {
     public:
+        AZ_CLASS_ALLOCATOR(ForceCloseActiveGraphState, AZ::SystemAllocator)
 
         ForceCloseActiveGraphState();
         ~ForceCloseActiveGraphState() override = default;

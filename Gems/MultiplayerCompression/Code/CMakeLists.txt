@@ -37,6 +37,7 @@ ly_add_target(
 # use the MultiplayerCompression module everywhere except builders:
 ly_create_alias(NAME MultiplayerCompression.Clients NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
 ly_create_alias(NAME MultiplayerCompression.Servers NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
+ly_create_alias(NAME MultiplayerCompression.Unified NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME MultiplayerCompression.Tools   NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
 endif()
@@ -61,5 +62,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::MultiplayerCompression.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

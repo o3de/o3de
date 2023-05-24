@@ -129,11 +129,14 @@ namespace AZ::Dom
         //! @return The DomPrefixTree that is detached.
         DomPrefixTree<T> DetachSubTree(const Path& path);
 
-        //! Attaches a subtree provided at the node that matches the provided path. Attaching will overwrite the node at the path.
-        //! @param path The path which corresponds to the node at which the subtree should be attached.
-        //! @param subTree The subtree to attach at the provided path.
-        //! @return True if the subTree was attached successfully. Return false otherwise.
-        bool AttachSubTree(const Path& path, DomPrefixTree&& subTree);
+        //! Overwrites the subtree at the path and replaces it with the given subtree.
+        //! Old node and its children at the path would be destroyed. The new subtree will be moved to the path.
+        //! @param path The path which corresponds to the root node to which the subtree would be overwritten.
+        //! @param subtree The subtree to move to the provided path.
+        //! @param shouldCreateNodes Create nodes for the provided path if they are missing. Default to true.
+        //! @return True if the subtree was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
+        bool OverwritePath(const Path& path, DomPrefixTree&& subtree, bool shouldCreateNodes = true);
+
         //! Removes all entries from this tree.
         void Clear();
 
@@ -161,11 +164,13 @@ namespace AZ::Dom
         //! @return The Node that is detached.
         Node DetachNodeAtPath(const Path& path);
 
-        //! Attaches a node that matches the provided path. Attaching will overwrite the node at the path.
-        //! @param path The path which corresponds to the node at which the subtree should be attached.
-        //! @param node The node to be attached.
-        //! @return True if the node was attached successfully. Return false otherwise.
-        bool AttachNodeAtPath(const Path& path, Node&& node);
+        //! Overwrites the node at the path and replaces it with the given node.
+        //! Old node and its children at the path would be destroyed. New nodes will be moved to the path.
+        //! @param path The path which corresponds to the root node to be overwritten.
+        //! @param newNode The new node to move to the provided path.
+        //! @param shouldCreateNodes Create nodes for the provided path if they are missing. Default to true.
+        //! @return True if the node was overwritten successfully, false if shouldCreateNodes is off and no target path exists.
+        bool OverwritePath(const Path& path, Node&& newNode, bool shouldCreateNodes = true);
 
         Node m_rootNode;
     };

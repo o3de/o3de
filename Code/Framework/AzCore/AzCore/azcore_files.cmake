@@ -26,6 +26,7 @@ set(FILES
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
     Asset/AssetTypeInfoBus.h
+    Asset/AssetTypeInfoBus.cpp
     Asset/AssetInternal/WeakAsset.h
     base.h
     Casting/lossy_cast.h
@@ -97,6 +98,9 @@ set(FILES
     Debug/TraceMessageBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    Dependency/Dependency.h
+    Dependency/Dependency.inl
+    Dependency/Version.h
     Docs.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
@@ -144,6 +148,8 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
+    IO/AnsiTerminalUtils.cpp
+    IO/AnsiTerminalUtils.h
     IO/ByteContainerStream.h
     IO/CompressionBus.h
     IO/CompressionBus.cpp
@@ -252,6 +258,8 @@ set(FILES
     JSON/pointer.h
     JSON/prettywriter.h
     JSON/rapidjson.h
+    JSON/rapidjson.cpp
+    JSON/RapidJsonAllocator.h
     JSON/RapidjsonAllocatorAdapter.h
     JSON/reader.h
     JSON/schema.h
@@ -396,8 +404,6 @@ set(FILES
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
-    Memory/AllocatorDebug.cpp
-    Memory/AllocatorDebug.h
     Memory/AllocatorInstance.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
@@ -410,10 +416,9 @@ set(FILES
     Memory/HphaAllocator.cpp
     Memory/HphaAllocator.h
     Memory/IAllocator.h
+    Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
-    Memory/MemoryComponent.cpp
-    Memory/MemoryComponent.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
@@ -425,6 +430,8 @@ set(FILES
     Memory/SystemAllocator.h
     Metrics/EventLoggerFactoryImpl.h
     Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/EventLoggerReflectUtils.cpp
+    Metrics/EventLoggerReflectUtils.h
     Metrics/EventLoggerUtils.cpp
     Metrics/EventLoggerUtils.h
     Metrics/JsonTraceEventLogger.h
@@ -465,29 +472,44 @@ set(FILES
     PlatformId/PlatformId.h
     PlatformId/PlatformId.cpp
     PlatformIncl.h
-    Preprocessor/CodeGen.h
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
-    RTTI/RTTI.h
-    RTTI/TypeInfo.h
-    RTTI/TypeInfoSimple.h
-    RTTI/ReflectContext.h
-    RTTI/ReflectContext.cpp
-    RTTI/ReflectionManager.h
-    RTTI/ReflectionManager.cpp
+    Process/ProcessInfo.h
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
     RTTI/AzStdOnDemandReflectionSpecializations.cpp
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
+    RTTI/BehaviorClassBuilder.cpp
+    RTTI/BehaviorClassBuilder.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
-    RTTI/BehaviorContextEBusEventRawSignature.inl
-    RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorContextUtilities.h
+    RTTI/BehaviorEBusBuilder.cpp
+    RTTI/BehaviorEBusBuilder.inl
+    RTTI/BehaviorEBusEvent.cpp
+    RTTI/BehaviorEBusEvent.inl
+    RTTI/BehaviorEBusHandler.cpp
+    RTTI/BehaviorEBusHandler.inl
     RTTI/BehaviorInterfaceProxy.h
+    RTTI/BehaviorMethodImpl.cpp
+    RTTI/BehaviorMethodImpl.inl
     RTTI/BehaviorObjectSignals.h
+    RTTI/BehaviorObjectSignals.cpp
+    RTTI/ChronoReflection.cpp
+    RTTI/ChronoReflection.h
+    RTTI/ReflectContext.h
+    RTTI/ReflectContext.cpp
+    RTTI/ReflectionManager.h
+    RTTI/ReflectionManager.cpp
+    RTTI/RTTI.h
+    RTTI/RTTIMacros.h
+    RTTI/TemplateInfo.h
+    RTTI/TypeInfo.h
+    RTTI/TypeInfo.cpp
+    RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
     Script/lua/lua.h
     Script/ScriptAsset.cpp
@@ -534,6 +556,7 @@ set(FILES
     Serialization/ObjectStream.h
     Serialization/SerializeContext.cpp
     Serialization/SerializeContext.h
+    Serialization/SerializeContext_fwd.h
     Serialization/SerializeContextEnum.cpp
     Serialization/SerializeContextEnum.inl
     Serialization/DataPatch.h
@@ -599,6 +622,8 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigParser.cpp
+    Settings/ConfigParser.h
     Settings/ConfigurableStack.cpp
     Settings/ConfigurableStack.inl
     Settings/ConfigurableStack.h
@@ -616,6 +641,8 @@ set(FILES
     Settings/SettingsRegistryScriptUtils.h
     Settings/SettingsRegistryVisitorUtils.cpp
     Settings/SettingsRegistryVisitorUtils.h
+    Settings/TextParser.cpp
+    Settings/TextParser.h
     Slice/SliceAsset.cpp
     Slice/SliceAsset.h
     Slice/SliceAssetHandler.cpp
