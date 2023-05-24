@@ -10,6 +10,7 @@
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <Multiplayer/IMultiplayer.h>
 
 namespace Multiplayer
 {
@@ -75,10 +76,14 @@ namespace Multiplayer
         m_replicatorState = EntityReplicatorState::Rebasing;
     }
 
-    void PropertyPublisher::GenerateRecord(NetBindComponent* netBindComponent)
+    void PropertyPublisher::UpdatePendingRecord(NetBindComponent* netBindComponent)
     {
-        AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
-        netBindComponent->FillReplicationRecord(m_pendingRecord);
+        // Only update the pending record if we don't have a cached delete message already.
+        if (!m_cachedDeleteMessage.GetIsDelete())
+        {
+            AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
+            netBindComponent->FillReplicationRecord(m_pendingRecord);
+        }
     }
 
     bool PropertyPublisher::HasEntityChangesToSend()
@@ -167,19 +172,31 @@ namespace Multiplayer
 
     void PropertyPublisher::PrepareDeleteEntityRecord(NetBindComponent* netBindComponent)
     {
-        GenerateRecord(netBindComponent);
+        // Once the delete message is cached, there's nothing more that needs to be prepared.
+        if (!m_cachedDeleteMessage.GetIsDelete())
+        {
+            UpdatePendingRecord(netBindComponent);
 
-        // A delete entity record looks the same as an update but will have an extra deletion flag on it.
-        // This ensures that the replicated entity has correct and consistent state at the point of deletion.
-        return PrepareUpdateEntityRecord(netBindComponent);
+            // A delete entity record looks the same as an update but will have an extra deletion flag on it.
+            // This ensures that the replicated entity has correct and consistent state at the point of deletion.
+            PrepareUpdateEntityRecord(netBindComponent);
+        }
     }
 
     bool PropertyPublisher::SerializeEntityRecord(AzNetworking::ISerializer& serializer, NetBindComponent* netBindComponent)
     {
+        AZ_Assert(
+            m_replicatorState != PropertyPublisher::EntityReplicatorState::Invalid,
+            "EntityReplicator: Initialize() was not called on this entity replicator");
         AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
         m_pendingRecord.ResetConsumedBits();
         m_pendingRecord.Serialize(serializer);
         netBindComponent->SerializeStateDeltaMessage(m_pendingRecord, serializer);
+        if (!serializer.IsValid())
+        {
+            AZLOG_ERROR("EntityReplicator: Serialization failed");
+            AZ_Assert(false, "EntityReplicator: Serialization failed");
+        }
         return serializer.IsValid();
     }
 
@@ -314,36 +331,82 @@ namespace Multiplayer
         return true;
     }
 
-    bool PropertyPublisher::UpdateSerialization(AzNetworking::ISerializer& serializer, NetBindComponent* netBindComponent)
+    bool PropertyPublisher::CacheDeletePacket(NetBindComponent* netBindComponent, bool wasMigrated)
     {
-        bool success(true);
-        switch (m_replicatorState)
+        bool cacheDelete = PrepareSerialization(netBindComponent);
+        if (cacheDelete)
         {
-        case PropertyPublisher::EntityReplicatorState::Invalid:
-            AZ_Assert(false, "EntityReplicator: Initialize() was not called on this entity replicator");
-            break;
-        case PropertyPublisher::EntityReplicatorState::Creating:
-        case PropertyPublisher::EntityReplicatorState::Updating:
-        case PropertyPublisher::EntityReplicatorState::Deleting:
+            AZ_Assert(!m_cachedDeleteMessage.GetIsDelete(), "Double-creating the cached delete message.");
+            m_cachedDeleteMessage = GenerateUpdatePacket(netBindComponent, wasMigrated);
+            AZ_Assert(m_cachedDeleteMessage.GetIsDelete(), "Cached delete message wasn't created successfully.");
+
+            // We can't call "Finalize" because no packet was sent, so we'll just manually set the phase back to "Ready".
+            m_serializationPhase = PropertyPublisher::EntityReplicatorSerializationPhase::Ready;
+        }
+        return cacheDelete;
+    }
+
+    NetworkEntityUpdateMessage PropertyPublisher::GenerateUpdatePacket(NetBindComponent* netBindComponent, bool wasMigrated)
+    {
+        const bool sendPrefabId = !IsRemoteReplicatorEstablished();
+
+        // If the remote replicator is not established, we need to take ownership of the entity
+        const bool isDeleted = IsDeleting() && (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True);
+
+        if (isDeleted && m_cachedDeleteMessage.GetIsDelete())
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
-            success = SerializeEntityRecord(serializer, netBindComponent);
+            return m_cachedDeleteMessage;
         }
-        break;
-        default:
-            AZ_Assert(false, "EntityReplicator: Unexpected state");
-            break;
-        }
-        if (!success)
+
+        NetworkEntityUpdateMessage updateMessage(
+            m_pendingRecord.GetRemoteNetworkRole(), netBindComponent->GetNetEntityId(), isDeleted, wasMigrated);
+
+        // Only set the prefab id if the remote replicator hasn't been established yet. Once the remote replicator has been established
+        // it has received a copy of the prefab id. Sending it again would be redundant and wasted bandwidth since it doesn't change
+        // over the entity's lifetime.
+        if (sendPrefabId)
         {
-            AZLOG_ERROR("EntityReplicator: Serialization failed");
+            updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }
-        AZ_Assert(success, "EntityReplicator: Serialization failed");
-        return success;
+
+        InputSerializer inputSerializer(
+            updateMessage.ModifyData().GetBuffer(), static_cast<uint32_t>(updateMessage.ModifyData().GetCapacity()));
+        SerializeEntityRecord(inputSerializer, netBindComponent);
+        updateMessage.ModifyData().Resize(inputSerializer.GetSize());
+
+        return updateMessage;
+    }
+
+    EntityMigrationMessage PropertyPublisher::GenerateMigrationPacket(NetBindComponent* netBindComponent)
+    {
+        AZ_Assert(netBindComponent, "Trying to migrate when NetBindComponent is null.");
+        AZ_Assert(!IsDeleting(), "Trying to migrate a deleted entity");
+
+        EntityMigrationMessage message;
+        message.m_netEntityId = netBindComponent->GetNetEntityId();
+        message.m_prefabEntityId = netBindComponent->GetPrefabEntityId();
+
+        // Send an update packet if it needs one
+        UpdatePendingRecord(netBindComponent);
+        bool needsNetworkPropertyUpdate = PrepareSerialization(netBindComponent);
+        InputSerializer inputSerializer(
+            message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
+        if (needsNetworkPropertyUpdate)
+        {
+            // Write out entity state into the buffer
+            SerializeEntityRecord(inputSerializer, netBindComponent);
+        }
+        AZ_Assert(inputSerializer.IsValid(), "Failed to migrate entity from server");
+        message.m_propertyUpdateData.Resize(inputSerializer.GetSize());
+
+        return message;
     }
 
     void PropertyPublisher::FinalizeSerialization(AzNetworking::PacketId sentId)
     {
+        AZ_Assert(
+            m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
+
         switch (m_replicatorState)
         {
         case PropertyPublisher::EntityReplicatorState::Invalid:
@@ -352,7 +415,6 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Creating:
         case PropertyPublisher::EntityReplicatorState::Updating:
         {
-            AZ_Assert(m_serializationPhase == PropertyPublisher::EntityReplicatorSerializationPhase::Prepared, "Unexpected serialization phase");
             FinalizeUpdateEntityRecord(sentId);
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
         }

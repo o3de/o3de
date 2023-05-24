@@ -10,6 +10,7 @@
 
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <AzCore/std/containers/ring_buffer.h>
+#include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 
 namespace AzNetworking
 {
@@ -50,8 +51,20 @@ namespace Multiplayer
         //! the entity and an entity replicator.
         bool IsRemoteReplicatorEstablished() const;
 
+        //! Generate and cache a "delete" update packet for this entity.
+        //! For deletes, the entity data will no longer be available by the time GenerateUpdatePacket() is called,
+        //! so the update packet needs to get generated before the local entity delete is completed.
+        //! @return true if a delete packet was cached, false if it wasn't
+        //! If the delete packet wasn't cached, it's typically because it is unnecessary, since the add was never sent.
+        bool CacheDeletePacket(NetBindComponent* netBindComponent, bool wasMigrated);
+
+        //! Generate a migration packet for this entity.
+        //! Unlike GenerateUpdatePacket, this method expects that you have *not* called PrepareSerialization first.
+        EntityMigrationMessage GenerateMigrationPacket(NetBindComponent* netBindComponent);
+
         //! Append an updated list of changed fields to the pending record.
-        void GenerateRecord(NetBindComponent* netBindComponent);
+        //! This can get called multiple times in a frame without harm, the changes will just keep accumulating.
+        void UpdatePendingRecord(NetBindComponent* netBindComponent);
 
         //! Returns true if there are any changes pending to send, false if not.
         bool RequiresSerialization();
@@ -60,8 +73,9 @@ namespace Multiplayer
         //! add it to the sentRecords list.
         bool PrepareSerialization(NetBindComponent* netBindComponent);
 
-        //! Serialize the entity state into the given serializer based on the pending record's list of changed fields.
-        bool UpdateSerialization(AzNetworking::ISerializer& serializer, NetBindComponent* netBindComponent);
+        //! Generate an add/update/delete packet for this entity.
+        //! This method expects that UpdatePendingRecord and PrepareSerialization have been called prior to this.
+        NetworkEntityUpdateMessage GenerateUpdatePacket(NetBindComponent* netBindComponent, bool wasMigrated);
 
         //! Track the given packet id so that we can continue to send any fields currently changed until this packet
         //! (or later) has been acknowledged.
@@ -121,5 +135,10 @@ namespace Multiplayer
         AZStd::vector<AzNetworking::PacketId> m_deletePacketIds;
         //! True if the remote replicator has acknowledged at least one packet, which means that it exists and created the entity.
         bool m_remoteReplicatorEstablished = false;
+
+        // In the case of deletes, we need to produce our update message at the point of deletion
+        // and then keep it around until it's requested. By the time the message is requested, the entity
+        // is likely already deleted, so the data to serialize from it would no longer be available.
+        NetworkEntityUpdateMessage m_cachedDeleteMessage;
     };
 }

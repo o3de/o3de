@@ -155,10 +155,6 @@ namespace Multiplayer
         NetEntityRole m_boundLocalNetworkRole;
         NetEntityRole m_remoteNetworkRole;
 
-        // In the case of deletes, we need to produce our update message at the point of deletion
-        // and then keep it around until it's requested.
-        NetworkEntityUpdateMessage m_cachedDeleteMessage;
-
         bool m_wasMigrated = false;
         bool m_isForwardingRpc = false;
         bool m_prefabEntityIdSet = false;

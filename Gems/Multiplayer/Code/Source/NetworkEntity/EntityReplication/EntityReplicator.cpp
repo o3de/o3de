@@ -353,13 +353,9 @@ namespace Multiplayer
             m_onEntityDirtiedHandler.Disconnect();
 
             // Cache the delete packet here, since the data will no longer be available after this point.
-            if (m_propertyPublisher->PrepareSerialization(m_netBindComponent))
+            if (m_propertyPublisher->CacheDeletePacket(m_netBindComponent, WasMigrated()))
             {
                 AZLOG(NET_RepDeletes, "Caching delete message for entity %llu.", (AZ::u64)m_entityHandle.GetNetEntityId());
-
-                AZ_Assert(!m_cachedDeleteMessage.GetIsDelete(), "Double-creating the cached delete message.");
-                m_cachedDeleteMessage = GenerateUpdatePacket();
-                AZ_Assert(m_cachedDeleteMessage.GetIsDelete(), "Cached delete message wasn't created successfully.");
 
                 // Only send the delete message if one was cached. Otherwise, no delete message is necessary, the client
                 // never added the entity.
@@ -379,7 +375,7 @@ namespace Multiplayer
                         NET_RepDeletes, "Dropping delete message, never sent add for entity %llu.",
                         (AZ::u64)m_entityHandle.GetNetEntityId());
 
-                    // It's possible that adds/updates have already queued this entity for sending.
+                    // It's possible that adds/updates have already added this replicator to the pending send list.
                     // If we've also got a delete before we've sent anything, then remove the replicator from the send queue.
                     m_replicationManager.RemoveReplicatorFromPendingSend(*this);
                 }
@@ -538,13 +534,8 @@ namespace Multiplayer
 
     NetworkEntityUpdateMessage EntityReplicator::GenerateUpdatePacket()
     {
-        NetBindComponent* netBindComponent = GetNetBindComponent();
-        const bool sendPrefabId = !m_propertyPublisher->IsRemoteReplicatorEstablished();
-
-        // If the remote replicator is not established, we need to take ownership of the entity
-        const bool isDeleted = IsMarkedForRemoval() && OwnsReplicatorLifetime();
-
-        if (isDeleted && m_cachedDeleteMessage.GetIsDelete())
+        auto message = m_propertyPublisher->GenerateUpdatePacket(m_netBindComponent, WasMigrated());
+        if (message.GetIsDelete())
         {
             AZLOG(
                 NET_RepDeletes,
@@ -552,53 +543,13 @@ namespace Multiplayer
                 aznumeric_cast<AZ::u64>(GetEntityHandle().GetNetEntityId()),
                 WasMigrated() ? "true" : "false",
                 m_replicationManager.GetRemoteHostId().GetString().c_str());
-
-            return m_cachedDeleteMessage;
         }
-
-        NetworkEntityUpdateMessage updateMessage(GetRemoteNetworkRole(), GetEntityHandle().GetNetEntityId(), isDeleted, WasMigrated());
-
-        // Only set the prefab id if the remote replicator hasn't been established yet. Once the remote replicator has been established
-        // it has received a copy of the prefab id. Sending it again would be redundant and wasted bandwidth since it doesn't change
-        // over the entity's lifetime.
-        if (sendPrefabId)
-        {
-            updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
-        }
-
-        AZ_Assert(m_netBindComponent == m_entityHandle.GetNetBindComponent(), "NetBindComponent pointer changed?");
-
-        InputSerializer inputSerializer(
-            updateMessage.ModifyData().GetBuffer(), static_cast<uint32_t>(updateMessage.ModifyData().GetCapacity()));
-        m_propertyPublisher->UpdateSerialization(inputSerializer, m_netBindComponent);
-        updateMessage.ModifyData().Resize(inputSerializer.GetSize());
-
-        return updateMessage;
+        return message;
     }
 
     EntityMigrationMessage EntityReplicator::GenerateMigrationPacket()
     {
-        AZ_Assert(m_netBindComponent, "Trying to migrate when NetBindComponent is null.");
-
-        EntityMigrationMessage message;
-        message.m_netEntityId = GetEntityHandle().GetNetEntityId();
-        message.m_prefabEntityId = m_netBindComponent->GetPrefabEntityId();
-
-        // Gather the most recent network property state, including authoritative only network properties for migration
-
-        // Send an update packet if it needs one
-        bool needsNetworkPropertyUpdate = PrepareToGenerateUpdatePacket();
-        InputSerializer inputSerializer(
-            message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
-        if (needsNetworkPropertyUpdate)
-        {
-            // Write out entity state into the buffer
-            m_propertyPublisher->UpdateSerialization(inputSerializer, m_netBindComponent);
-        }
-        AZ_Assert(inputSerializer.IsValid(), "Failed to migrate entity from server");
-        message.m_propertyUpdateData.Resize(inputSerializer.GetSize());
-
-        return message;
+        return m_propertyPublisher->GenerateMigrationPacket(m_netBindComponent);
     }
 
     bool EntityReplicator::IsReadyToPublish() const
@@ -645,16 +596,8 @@ namespace Multiplayer
     {
         AZ_Assert(m_propertyPublisher, "Expected to have a property publisher");
 
-        // If this replicator owns the lifetime and the entity is deleted, then use the cached delete message
-        // to determine whether or not there is any data that needs to be serialized and sent.
-        if (IsMarkedForRemoval() && OwnsReplicatorLifetime())
-        {
-            return m_cachedDeleteMessage.GetIsDelete();
-        }
-
         // Otherwise, let the property publisher determine if any data should be sent.
-        AZ_Assert(m_netBindComponent == m_entityHandle.GetNetBindComponent(), "NetBindComponent pointer changed?");
-        m_propertyPublisher->GenerateRecord(m_netBindComponent);
+        m_propertyPublisher->UpdatePendingRecord(m_netBindComponent);
         return m_propertyPublisher->PrepareSerialization(m_netBindComponent);
     }
 
@@ -697,7 +640,7 @@ namespace Multiplayer
         AZ_Assert(m_propertyPublisher, "Expected to have a publisher, did we forget to disconnect?");
         if (m_propertyPublisher != nullptr)
         {
-            m_propertyPublisher->GenerateRecord(m_netBindComponent);
+            m_propertyPublisher->UpdatePendingRecord(m_netBindComponent);
             m_replicationManager.AddReplicatorToPendingSend(*this);
         }
     }
