@@ -8,4 +8,4 @@
 
 #pragma once
 
-#include "../../../Common/Apple/AzFramework/Utils/SystemUtilsApple.h"
+#include <Apple/AzCore/Utils/SystemUtilsApple.h>
