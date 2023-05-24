@@ -110,8 +110,6 @@ public:
     HWND GetNativeHandle();
 #endif // #ifdef Q_OS_WIN
 
-    ActionManager* GetActionManager() const;
-
     void Initialize();
 
     // Returns the old and original main frame which we're porting away from.
@@ -135,7 +133,6 @@ public:
 
     void SetActiveView(CLayoutViewPane* vp);
 
-    QMenu* createPopupMenu() override;
     bool IsCustomizingToolbars() const;
 
     /**
@@ -160,10 +157,6 @@ public:
     void ResetAutoSaveTimers();
     void ResetBackgroundUpdateTimer();
 
-    void UpdateToolsMenu();
-
-    int ViewPaneVersion() const;
-
     LevelEditorMenuHandler* GetLevelEditorMenuHandler() { return m_levelEditorMenuHandler; }
 
     bool event(QEvent* event) override;
@@ -187,7 +180,6 @@ protected:
     bool focusNextPrevChild(bool next) override;
 
 private:
-    void OnGameModeChanged(bool inGameMode);
     QWidget* CreateToolbarWidget(int id);
     void ShowCustomizeToolbarDialog();
     void OnGotoSelected();
@@ -195,11 +187,8 @@ private:
     void ToggleConsole();
     void RegisterOpenWndCommands();
     void InitCentralWidget();
-    void InitActions();
-    void InitToolActionHandlers();
     void InitToolBars();
     void InitStatusBar();
-    void OnViewPaneCreated(const QtViewPane* pane);
 
     template <class TValue>
     void ReadConfigValue(const QString& key, TValue& value)

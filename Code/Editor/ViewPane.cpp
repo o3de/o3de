@@ -61,100 +61,6 @@ static const std::pair<int, int> ViewportResolutions[] =
 static const size_t ViewportResolutionsCount = sizeof(ViewportResolutions) / sizeof(ViewportResolutions[0]);
 static constexpr int SortKeySpacing = 100;
 
-//////////////////////////////////////////////////////////////////////////
-// ViewportTitleExpanderWatcher
-//////////////////////////////////////////////////////////////////////////
-class ViewportTitleExpanderWatcher
-    : public QObject
-{
-public:
-    ViewportTitleExpanderWatcher(QObject* parent = nullptr, CViewportTitleDlg* viewportDlg = nullptr)
-        : QObject(parent)
-        , m_viewportDlg(viewportDlg)
-    {
-    }
-
-    bool eventFilter(QObject* obj, QEvent* event) override
-    {
-        if (m_viewportDlg)
-        {
-            switch (event->type())
-            {
-                case QEvent::MouseButtonPress:
-                case QEvent::MouseButtonRelease:
-                case QEvent::MouseButtonDblClick:
-                {
-                    if (qobject_cast<QToolButton*>(obj))
-                    {
-                        auto mouseEvent = static_cast<QMouseEvent*>(event);
-                        auto expansion = qobject_cast<QToolButton*>(obj);
-
-                        expansion->setPopupMode(QToolButton::InstantPopup);
-                        auto menu = new QMenu(expansion);
-
-                        auto toolbar = qobject_cast<QToolBar*>(expansion->parentWidget());
-
-                        auto toolWidgets = toolbar->findChildren<QWidget*>();
-
-                        if (toolWidgets.count() > 0)
-                        {
-                            for (auto toolWidget : toolWidgets)
-                            {
-                                if (AzQtComponents::Style::hasClass(toolWidget, "expanderMenu_hide"))
-                                {
-                                    continue;
-                                }
-
-                                // Handle labels with submenus
-                                if (auto toolLabel = qobject_cast<QToolButton*>(toolWidget))
-                                {
-                                    if (!toolLabel->isVisible())
-                                    {
-                                        // Manually turn the custom context menus into submenus
-                                        if (toolLabel->menu())
-                                        {
-                                            QAction* action = menu->addMenu(toolLabel->menu());
-                                            action->setText(toolLabel->text());
-                                            continue;
-                                        }
-                                    }
-                                }
-
-                                // Handle ToolButtons
-                                if (auto toolButton = qobject_cast<QToolButton*>(toolWidget))
-                                {
-                                    if (!toolButton->isVisible() && !toolButton->text().isEmpty())
-                                    {
-                                        QAction* action = new QAction(toolButton->text(), menu);
-
-                                        action->setEnabled(toolButton->isEnabled());
-                                        action->setCheckable(toolButton->isCheckable());
-                                        action->setChecked(toolButton->isChecked());
-
-                                        connect(action, &QAction::triggered, toolButton, &QToolButton::clicked);
-
-                                        menu->addAction(action);
-                                    }
-                                }
-                            }
-                        }
-
-                        menu->exec(mouseEvent->globalPos());
-                        return true;
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        return QObject::eventFilter(obj, event);
-    }
-
-private:
-    CViewportTitleDlg* m_viewportDlg = nullptr;
-};
-
 /////////////////////////////////////////////////////////////////////////////
 // CLayoutViewPane
 //////////////////////////////////////////////////////////////////////////
@@ -173,56 +79,19 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     m_viewportScrollArea->setContentsMargins(QMargins());
     m_viewportScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    if(!AzToolsFramework::IsNewActionManagerEnabled())
+    m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+    m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+    m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
+    if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
     {
-        m_viewportTitleDlg = new CViewportTitleDlg(this);
-        m_expanderWatcher = new ViewportTitleExpanderWatcher(this, m_viewportTitleDlg);
-
-        m_viewportTitleDlg->SetViewPane(this);
-
-        QWidget* viewportContainer = m_viewportTitleDlg->findChild<QWidget*>(QStringLiteral("ViewportTitleDlgContainer"));
-        QToolBar* toolbar = CreateToolBarFromWidget(viewportContainer,
-                                                    Qt::TopToolBarArea,
-                                                    QStringLiteral("Viewport Settings"));
-        toolbar->setMovable(false);
-        toolbar->installEventFilter(m_viewportTitleDlg);
-        toolbar->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(toolbar, &QWidget::customContextMenuRequested, m_viewportTitleDlg, &QWidget::customContextMenuRequested);
-        setContextMenuPolicy(Qt::NoContextMenu);
-    
-        if (QToolButton* expansion = AzQtComponents::ToolBar::getToolBarExpansionButton(toolbar))
-        {
-            expansion->installEventFilter(m_expanderWatcher);
-        }
-
-        AzQtComponents::BreadCrumbs* prefabsBreadcrumbs =
-            qobject_cast<AzQtComponents::BreadCrumbs*>(toolbar->findChild<QWidget*>("m_prefabFocusPath"));
-        QToolButton* backButton = qobject_cast<QToolButton*>(toolbar->findChild<QWidget*>("m_prefabFocusBackButton"));
-
-        AZ_Assert(prefabsBreadcrumbs, "Could not find Prefabs Breadcrumbs widget on CLayoutViewPane initialization!");
-        AZ_Assert(backButton, "Could not find Prefabs Breadcrumbs back button on CLayoutViewPane initialization!");
-
-        if (prefabsBreadcrumbs && backButton)
-        {
-            m_viewportTitleDlg->InitializePrefabViewportFocusPathHandler(prefabsBreadcrumbs, backButton);
-        }
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
-    else
-    {
-        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-        m_toolBarManagerInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInterface>::Get();
-        if (m_actionManagerInterface && m_menuManagerInterface && m_toolBarManagerInterface)
-        {
-            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
-        }
 
-        // If this is being instantiated after the Action Manager was alreadi initialized, add the toolbar.
-        // Else it will be added in OnToolBarRegistrationHook.
-        if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
-        {
-            addToolBar(Qt::TopToolBarArea, toolBar);
-        }
+    // If this is being instantiated after the Action Manager was alreadi initialized, add the toolbar.
+    // Else it will be added in OnToolBarRegistrationHook.
+    if (QToolBar* toolBar = m_toolBarManagerInterface->GenerateToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier))
+    {
+        addToolBar(Qt::TopToolBarArea, toolBar);
     }
 
     m_id = -1;
@@ -677,10 +546,6 @@ void CLayoutViewPane::SetViewClass(const QString& sClass)
     if (newPane)
     {
         newPane->setProperty("IsViewportWidget", true);
-        if (!AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            connect(newPane, &QWidget::windowTitleChanged, m_viewportTitleDlg, &CViewportTitleDlg::SetTitle, Qt::UniqueConnection);
-        }
         AttachViewport(newPane);
     }
 }
@@ -783,12 +648,6 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         else
         {
             OnFOVChanged(SandboxEditor::CameraDefaultFovRadians());
-        }
-
-        if (!AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            m_viewportTitleDlg->SetTitle(pViewport->windowTitle());
-            m_viewportTitleDlg->OnViewportSizeChanged(pViewport->width(), pViewport->height());
         }
     }
 }
@@ -1087,11 +946,6 @@ void CLayoutViewPane::SetFocusToViewport()
 //////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::OnFOVChanged(const float fovRadians)
 {
-    if (!AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        m_viewportTitleDlg->OnViewportFOVChanged(fovRadians);
-    }
-
     AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
         &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnCameraFovChanged, fovRadians);
 }
