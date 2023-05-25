@@ -41,6 +41,9 @@ namespace AzToolsFramework
         double step() const;
         double multiplier() const;
 
+        int GetDefaultDecimals() const;
+        int GetDefaultDisplayDecimals() const;
+
         QWidget* GetFirstInTabOrder();
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
@@ -66,6 +69,8 @@ namespace AzToolsFramework
     private:
         AzQtComponents::DoubleSpinBox* m_pSpinBox;
         double m_multiplier;
+        int m_defaultDecimals;
+        int m_defaultDisplayDecimals;
 
     protected:
         void focusInEvent(QFocusEvent* e) override;
@@ -95,8 +100,12 @@ namespace AzToolsFramework
 
         // common to all double spinners
         static void ConsumeAttributeCommon(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
+        static void ResetGUIToDefaultsCommon(PropertyDoubleSpinCtrl* GUI);
+        static bool GetDefaultDecimals(PropertyDoubleSpinCtrl* GUI);
+        static bool GetDefaultDisplayDecimals(PropertyDoubleSpinCtrl* GUI);
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        void ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;
@@ -113,6 +122,7 @@ namespace AzToolsFramework
         AZ_CLASS_ALLOCATOR(floatPropertySpinboxHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
+        void ResetGUIToDefaults(PropertyDoubleSpinCtrl* GUI) override;
         void ConsumeAttribute(PropertyDoubleSpinCtrl* GUI, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, PropertyDoubleSpinCtrl* GUI, property_t& instance, InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, PropertyDoubleSpinCtrl* GUI, const property_t& instance, InstanceDataNode* node)  override;

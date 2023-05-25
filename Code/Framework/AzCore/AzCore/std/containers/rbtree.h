@@ -796,14 +796,14 @@ namespace AZStd
         template <class InsertReturnType, class NodeHandle>
         InsertReturnType node_handle_insert_unique(NodeHandle&& nodeHandle);
         template <class NodeHandle>
-        auto node_handle_insert_unique(const iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        auto node_handle_insert_unique(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
 
         //! Returns an iterator pointing to the inserted element.
         //! If the nodeHandle is empty the end() iterator is returned
         template <class NodeHandle>
         auto node_handle_insert_equal(NodeHandle&& nodeHandle) -> iterator;
         template <class NodeHandle>
-        auto node_handle_insert_equal(const iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        auto node_handle_insert_equal(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
 
         //! Searches for an element which matches the value of key and extracts it from the hash_table
         //! @return A NodeHandle which can be used to insert the an element between unique and non-unique containers of the same type
@@ -2036,7 +2036,7 @@ namespace AZStd
 
     template <class Traits>
     template <class NodeHandle>
-    inline auto rbtree<Traits>::node_handle_insert_unique(const iterator hint, NodeHandle&& nodeHandle) -> iterator
+    inline auto rbtree<Traits>::node_handle_insert_unique(const_iterator hint, NodeHandle&& nodeHandle) -> iterator
     {
         if (nodeHandle.empty())
         {
@@ -2067,7 +2067,7 @@ namespace AZStd
     }
     template <class Traits>
     template <class NodeHandle>
-    inline auto rbtree<Traits>::node_handle_insert_equal(const iterator hint, NodeHandle&& nodeHandle) -> iterator
+    inline auto rbtree<Traits>::node_handle_insert_equal(const_iterator hint, NodeHandle&& nodeHandle) -> iterator
     {
         if (nodeHandle.empty())
         {

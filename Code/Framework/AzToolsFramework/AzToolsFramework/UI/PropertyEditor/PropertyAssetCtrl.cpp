@@ -1166,6 +1166,10 @@ namespace AzToolsFramework
         {
             m_browseEdit->setText(assetName.c_str());
         }
+        else
+        {
+            m_browseEdit->setText("");
+        }
     }
 
     void PropertyAssetCtrl::OnLineEditFocus(bool focus)
