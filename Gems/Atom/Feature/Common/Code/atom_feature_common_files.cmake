@@ -198,7 +198,7 @@ set(FILES
     Source/PostProcess/PaniniProjection/PaniniProjectionSettings.h
     Source/PostProcess/Ssao/SsaoSettings.cpp
     Source/PostProcess/Ssao/SsaoSettings.h
-	Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
+    Source/PostProcess/WhiteBalance/WhiteBalanceSettings.cpp
     Source/PostProcess/WhiteBalance/WhiteBalanceSettings.h
     Source/PostProcess/Vignette/VignetteSettings.cpp
     Source/PostProcess/Vignette/VignetteSettings.h
@@ -275,7 +275,7 @@ set(FILES
     Source/PostProcessing/SubsurfaceScatteringPass.h
     Source/PostProcessing/TaaPass.h
     Source/PostProcessing/TaaPass.cpp
-	Source/PostProcessing/WhiteBalancePass.h
+    Source/PostProcessing/WhiteBalancePass.h
     Source/PostProcessing/WhiteBalancePass.cpp
     Source/RayTracing/RayTracingFeatureProcessor.h
     Source/RayTracing/RayTracingFeatureProcessor.cpp

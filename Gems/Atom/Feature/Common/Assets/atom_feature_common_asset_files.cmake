@@ -493,7 +493,7 @@ set(FILES
     Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/UniformColor.azsl
     Shaders/PostProcessing/UniformColor.shader
-	Shaders/PostProcessing/WhiteBalance.azsl
+    Shaders/PostProcessing/WhiteBalance.azsl
     Shaders/PostProcessing/WhiteBalance.shader
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl

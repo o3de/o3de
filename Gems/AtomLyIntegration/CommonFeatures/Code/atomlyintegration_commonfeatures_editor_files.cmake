@@ -68,7 +68,7 @@ set(FILES
     Source/PostProcess/PaniniProjection/EditorPaniniProjectionComponent.h
     Source/PostProcess/FilmGrain/EditorFilmGrainComponent.cpp
     Source/PostProcess/FilmGrain/EditorFilmGrainComponent.h
-	Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
+    Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.cpp
     Source/PostProcess/WhiteBalance/EditorWhiteBalanceComponent.h
     Source/PostProcess/Vignette/EditorVignetteComponent.cpp
     Source/PostProcess/Vignette/EditorVignetteComponent.h

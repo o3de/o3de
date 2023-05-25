@@ -80,7 +80,7 @@ set(FILES
     Include/Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h
     Include/Atom/Feature/PostProcess/LookModification/LookModificationParams.inl
     Include/Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h
-	Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
+    Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceConstants.h
     Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceParams.inl
     Include/Atom/Feature/PostProcess/WhiteBalance/WhiteBalanceSettingsInterface.h
     Include/Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h
