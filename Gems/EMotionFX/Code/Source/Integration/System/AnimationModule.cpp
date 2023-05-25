@@ -10,6 +10,9 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Components/AnimAudioComponent.h>
 #include <Integration/Components/AnimGraphComponent.h>
+#if defined(CARBONATED)
+#include <Integration/Components/ApplyMotionSetComponent.h>
+#endif
 #include <Integration/Components/SimpleMotionComponent.h>
 #include <Integration/Components/SimpleLODComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -21,6 +24,9 @@
 #   include <Integration/Editor/Components/EditorActorComponent.h>
 #   include <Integration/Editor/Components/EditorAnimAudioComponent.h>
 #   include <Integration/Editor/Components/EditorAnimGraphComponent.h>
+#if defined(CARBONATED)
+#   include <Integration/Editor/Components/EditorApplyMotionSetComponent.h>
+#endif
 #   include <Integration/Editor/Components/EditorSimpleMotionComponent.h>
 #   include <Integration/Editor/Components/EditorSimpleLODComponent.h>
 #   include <SceneAPIExt/Behaviors/ActorGroupBehavior.h>
@@ -66,6 +72,9 @@ namespace EMotionFX
                     ActorComponent::CreateDescriptor(),
                     AnimAudioComponent::CreateDescriptor(),
                     AnimGraphComponent::CreateDescriptor(),
+#if defined(CARBONATED)
+                    ApplyMotionSetComponent::CreateDescriptor(),
+#endif
                     SimpleMotionComponent::CreateDescriptor(),
                     SimpleLODComponent::CreateDescriptor(),
 
@@ -77,6 +86,9 @@ namespace EMotionFX
                     EditorActorComponent::CreateDescriptor(),
                     EditorAnimAudioComponent::CreateDescriptor(),
                     EditorAnimGraphComponent::CreateDescriptor(),
+#if defined(CARBONATED)
+                    EditorApplyMotionSetComponent::CreateDescriptor(),
+#endif
                     EditorSimpleMotionComponent::CreateDescriptor(),
                     EditorSimpleLODComponent::CreateDescriptor(),
 
