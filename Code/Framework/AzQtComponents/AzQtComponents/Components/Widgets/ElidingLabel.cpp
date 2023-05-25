@@ -208,6 +208,11 @@ namespace AzQtComponents
         m_filterRegex = QRegExp(m_filterString, Qt::CaseInsensitive);
     }
 
+    bool ElidingLabel::TextMatchesFilter() const
+    {
+        return m_filterString.isEmpty() || m_text.contains(m_filterRegex);
+    }
+
     void ElidingLabel::paintEvent(QPaintEvent* event)
     {
         if (m_filterString.isEmpty())
