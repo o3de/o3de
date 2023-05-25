@@ -19,6 +19,7 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <QDockWidget>
+#include <QFont>
 #include <QFormLayout>
 #include <QLabel>
 #include <QLayout>
@@ -54,9 +55,9 @@ namespace AzToolsFramework
             void ClearPreview() override;
 
             void PopulateSourceDependencies(const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);
-
+            bool PopulateProductDependencies(const ProductAssetBrowserEntry* productEntry);
             void CreateSourceDependencyTree(AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing);
-
+            void CreateProductDependencyTree(AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing);
             void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
         private:
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
@@ -68,6 +69,7 @@ namespace AzToolsFramework
             QWidget* m_assetDetailWidget = nullptr;
             QTreeWidget* m_dependentProducts = nullptr;
             AzQtComponents::Card* m_dependentAssetsCard = nullptr;
+            QFont m_headerFont;
         };
 
     } // namespace AssetBrowser
