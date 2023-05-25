@@ -1,10 +1,15 @@
 {
     "template_name": "RemoteRepo",
-    "origin": "The primary repo for RemoteRepo goes here: i.e. http://www.mydomain.com",
-    "license": "What license RemoteRepo uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "RemoteRepo",
-    "summary": "A short description of RemoteRepo.",
-    "canonical_tags": [],
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Remote Repository",
+    "summary": "This is an O3DE remote repository template.",
+    "canonical_tags": [
+        "Template",
+        "Repo"
+    ],
     "user_tags": [
         "RemoteRepo"
     ],
