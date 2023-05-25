@@ -39,7 +39,7 @@ namespace EMotionFX
             virtual void Apply(const AZ::EntityId& id, const MotionSetGender& preferredGender) = 0;
 #else
             virtual void Apply(const AZ::EntityId& id) = 0;
-#endif			
+#endif
         };
 
         using ApplyMotionSetComponentRequestBus = AZ::EBus<ApplyMotionSetComponentRequests>;
