@@ -581,7 +581,7 @@ void CUiAnimViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 {
     const QPoint point = event->pos();
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -826,7 +826,7 @@ void CUiAnimViewSplineCtrl::AdjustTCB(float d_tension, float d_continuity, float
 void CUiAnimViewSplineCtrl::OnUserCommand(UINT cmd)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return; // no active sequence
@@ -903,7 +903,7 @@ void CUiAnimViewSplineCtrl::ClearSelection()
     // In this case, we should deselect all keys, even ones in other tracks.
     // So this overriding is necessary.
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         pSequence->DeselectAllKeys();
@@ -918,7 +918,7 @@ ISplineCtrlUndo* CUiAnimViewSplineCtrl::CreateSplineCtrlUndoObject(std::vector<I
 void CUiAnimViewSplineCtrl::mousePressEvent(QMouseEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         SplineWidget::mousePressEvent(event);
@@ -928,7 +928,7 @@ void CUiAnimViewSplineCtrl::mousePressEvent(QMouseEvent* event)
 void CUiAnimViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         SplineWidget::mouseReleaseEvent(event);
@@ -938,7 +938,7 @@ void CUiAnimViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
 void CUiAnimViewSplineCtrl::mouseDoubleClickEvent(QMouseEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         SplineWidget::mouseDoubleClickEvent(event);
@@ -948,7 +948,7 @@ void CUiAnimViewSplineCtrl::mouseDoubleClickEvent(QMouseEvent* event)
 void CUiAnimViewSplineCtrl::keyPressEvent(QKeyEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         SplineWidget::keyPressEvent(event);
@@ -963,7 +963,7 @@ void CUiAnimViewSplineCtrl::keyPressEvent(QKeyEvent* event)
 void CUiAnimViewSplineCtrl::wheelEvent(QWheelEvent* event)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         SplineWidget::wheelEvent(event);
@@ -974,7 +974,7 @@ void CUiAnimViewSplineCtrl::SelectKey(ISplineInterpolator* pSpline, int nKey, in
 {
     SplineWidget::SelectKey(pSpline, nKey, nDimension, bSelect);
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     pSequence->OnKeySelectionChanged();
 }
 
@@ -982,7 +982,7 @@ void CUiAnimViewSplineCtrl::SelectRectangle(const QRect& rc, bool bSelect)
 {
     SplineWidget::SelectRectangle(rc, bSelect);
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     pSequence->OnKeySelectionChanged();
 }
 

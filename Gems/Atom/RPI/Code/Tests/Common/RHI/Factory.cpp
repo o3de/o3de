@@ -46,7 +46,7 @@ namespace UnitTest
             AZ_Assert(physicalDevices.size() == 1, "Expected a single physical device.");
 
             RHI::Ptr<RHI::Device> device = Get().CreateDevice();
-            device->Init(*physicalDevices[0]);
+            device->Init(RHI::MultiDevice::DefaultDeviceIndex, *physicalDevices[0]);
 
             return device;
         }
@@ -64,6 +64,11 @@ namespace UnitTest
         RHI::APIType Factory::GetType()
         {
             return RHI::APIType(m_platformName.GetStringView());
+        }
+
+        bool Factory::SupportsXR() const
+        {
+            return false;
         }
 
         RHI::PhysicalDeviceList Factory::EnumeratePhysicalDevices()

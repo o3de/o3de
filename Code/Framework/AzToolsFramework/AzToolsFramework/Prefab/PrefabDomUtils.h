@@ -39,6 +39,7 @@ namespace AzToolsFramework
             inline static constexpr const char* PathMatchingInstances = "/Instances";
             inline static constexpr const char* PathMatchingContainerEntity = "/ContainerEntity";
             inline static constexpr const char* PathMatchingLinkId = "/LinkId";
+            inline static constexpr const char* PathMatchingSource = "/Source";
 
             /**
             * Find Prefab value from given parent value and target value's name.
@@ -212,6 +213,15 @@ namespace AzToolsFramework
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
             AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
+
+            //! Adds a nested instance to the prefab DOM and optionally initialize its contents.
+            //! @param prefabDom The prefab DOM to udpate.
+            //! @param nestedInstanceAlias The alias of the nested instance to be added.
+            //! @param nestedInstanceDom An optional value to assign to the added nested instance in the prefab DOM.
+            void AddNestedInstance(
+                PrefabDom& prefabDom,
+                const InstanceAlias& nestedInstanceAlias,
+                PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
 
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.

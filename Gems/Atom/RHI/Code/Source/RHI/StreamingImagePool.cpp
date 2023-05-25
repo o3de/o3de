@@ -74,7 +74,7 @@ namespace AZ
         ResultCode StreamingImagePool::Init(Device& device, const StreamingImagePoolDescriptor& descriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
-
+            SetName(AZ::Name("StreamingImagePool"));
             return ResourcePool::Init(
                 device, descriptor,
                 [this, &device, &descriptor]()
@@ -190,6 +190,11 @@ namespace AZ
             return SetMemoryBudgetInternal(newBudget) == ResultCode::Success;
         }
 
+        bool StreamingImagePool::SupportTiledImage() const
+        {
+            return SupportTiledImageInternal();
+        }
+
         ResultCode StreamingImagePool::InitInternal(Device&, const StreamingImagePoolDescriptor&)
         {
             return ResultCode::Success;
@@ -213,6 +218,11 @@ namespace AZ
         ResultCode StreamingImagePool::SetMemoryBudgetInternal([[maybe_unused]] size_t newBudget)
         {
             return ResultCode::Unimplemented;
+        }
+
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return false;
         }
     }
 }

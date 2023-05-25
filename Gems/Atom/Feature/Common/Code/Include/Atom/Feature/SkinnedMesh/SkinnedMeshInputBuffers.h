@@ -151,7 +151,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(SkinnedMeshInputBuffers, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinnedMeshInputBuffers, AZ::SystemAllocator);
 
             SkinnedMeshInputBuffers();
             ~SkinnedMeshInputBuffers();

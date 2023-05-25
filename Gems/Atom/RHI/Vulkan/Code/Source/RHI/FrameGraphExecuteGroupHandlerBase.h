@@ -32,7 +32,7 @@ namespace AZ
         class FrameGraphExecuteGroupHandlerBase
         {
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandlerBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandlerBase, AZ::SystemAllocator);
 
             FrameGraphExecuteGroupHandlerBase() = default;
             virtual ~FrameGraphExecuteGroupHandlerBase() = default;

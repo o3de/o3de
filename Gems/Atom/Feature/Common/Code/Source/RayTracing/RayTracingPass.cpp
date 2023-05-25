@@ -125,6 +125,9 @@ namespace AZ
             const auto& rayTracingMaterialSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingMaterialSrgBindingSlot);
             m_requiresRayTracingMaterialSrg = (rayTracingMaterialSrgLayout != nullptr);
 
+            const auto& rayTracingSceneSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingSceneSrgBindingSlot);
+            m_requiresRayTracingSceneSrg = (rayTracingSceneSrgLayout != nullptr);
+
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
@@ -148,6 +151,9 @@ namespace AZ
             // make sure the shader table rebuilds if we're hotreloading
             m_rayTracingRevision = 0;
 
+            // store the max ray length
+            m_maxRayLength = m_passData->m_maxRayLength;
+
             RPI::ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_rayGenerationShaderAssetReference.m_assetId);
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_closestHitShaderAssetReference.m_assetId);
@@ -169,6 +175,28 @@ namespace AZ
             }
 
             return RPI::Shader::FindOrCreate(shaderAsset);
+        }
+
+        bool RayTracingPass::IsEnabled() const
+        {
+            if (!RenderPass::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (!rayTracingFeatureProcessor)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         void RayTracingPass::FrameBeginInternal(FramePrepareParams params)
@@ -234,6 +262,12 @@ namespace AZ
 
             if (m_shaderResourceGroup != nullptr)
             {
+                auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxRayLength"));
+                if (constantIndex.IsValid())
+                {
+                    m_shaderResourceGroup->SetConstant(constantIndex, m_maxRayLength);
+                }
+
                 BindPassSrg(context, m_shaderResourceGroup);
                 m_shaderResourceGroup->Compile();
             }
@@ -312,11 +346,12 @@ namespace AZ
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs
             // [GFX TODO][ATOM-15610] Add RenderPass::SetSrgsForRayTracingDispatch
-            AZStd::vector<RHI::ShaderResourceGroup*> shaderResourceGroups =
+            AZStd::vector<RHI::ShaderResourceGroup*> shaderResourceGroups = { m_shaderResourceGroup->GetRHIShaderResourceGroup() };
+
+            if (m_requiresRayTracingSceneSrg)
             {
-                m_shaderResourceGroup->GetRHIShaderResourceGroup(),
-                rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
-            };
+                shaderResourceGroups.push_back(rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup());
+            }
 
             if (m_requiresViewSrg)
             {

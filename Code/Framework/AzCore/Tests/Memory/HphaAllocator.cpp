@@ -10,35 +10,38 @@
 #include <AzCore/Memory/HphaAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
-class HphaSchema_TestAllocator
-    : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
-{
-public:
-    AZ_TYPE_INFO(HphaSchema_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
-
-    using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchema>;
-
-    HphaSchema_TestAllocator()
-    {
-        Create();
-        PostCreate();
-    }
-
-    ~HphaSchema_TestAllocator() override
-    {
-        PreDestroy();
-    }
-};
-
-static const size_t s_kiloByte = 1024;
-static const size_t s_megaByte = s_kiloByte * s_kiloByte;
-using AllocationSizeArray = AZStd::array<size_t, 10>;
-static const AllocationSizeArray s_smallAllocationSizes = { 2, 16, 20, 59, 100, 128, 160, 250, 300, 512 };
-static const AllocationSizeArray s_bigAllocationSizes = { 513, s_kiloByte, 2 * s_kiloByte, 4 * s_kiloByte, 10 * s_kiloByte, 64 * s_kiloByte, 128 * s_kiloByte, 200 * s_kiloByte, s_megaByte, 2 * s_megaByte };
-static const AllocationSizeArray s_mixedAllocationSizes = { 2, s_kiloByte, 59, 4 * s_kiloByte, 128, 200 * s_kiloByte, 250, s_megaByte, 512, 2 * s_megaByte };
-
 namespace UnitTest
 {
+    class HphaSchema_TestAllocator : public AZ::SimpleSchemaAllocator<AZ::HphaSchema>
+    {
+    public:
+        AZ_TYPE_INFO(HphaSchema_TestAllocator, "{ACE2D6E5-4EB8-4DD2-AE95-6BDFD0476801}");
+
+        using Base = AZ::SimpleSchemaAllocator<AZ::HphaSchema>;
+
+        HphaSchema_TestAllocator()
+        {
+            Create();
+            PostCreate();
+        }
+
+        ~HphaSchema_TestAllocator() override
+        {
+            PreDestroy();
+        }
+    };
+
+    static const size_t s_kiloByte = 1024;
+    static const size_t s_megaByte = s_kiloByte * s_kiloByte;
+    using AllocationSizeArray = AZStd::array<size_t, 10>;
+    static const AllocationSizeArray s_smallAllocationSizes = { 2, 16, 20, 59, 100, 128, 160, 250, 300, 512 };
+    static const AllocationSizeArray s_bigAllocationSizes = {
+        513,        s_kiloByte,    2 * s_kiloByte, 4 * s_kiloByte, 10 * s_kiloByte, 64 * s_kiloByte, 128 * s_kiloByte, 200 * s_kiloByte,
+        s_megaByte, 2 * s_megaByte
+    };
+    static const AllocationSizeArray s_mixedAllocationSizes = { 2,   s_kiloByte, 59,  4 * s_kiloByte, 128, 200 * s_kiloByte,
+                                                                250, s_megaByte, 512, 2 * s_megaByte };
+
     class HphaSchemaTestParameters
     {
     public:
@@ -56,21 +59,11 @@ namespace UnitTest
         : public LeakDetectionFixture
         , public ::testing::WithParamInterface<HphaSchemaTestParameters>
     {
-    public:
-        void SetUp() override
-        {
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<HphaSchema_TestAllocator>::Destroy();
-        }
     };
 
     TEST_P(HphaSchemaTestFixture, Allocate)
     {
-        AZStd::vector<void*, AZ::AZStdAlloc<AZ::OSAllocator>> allocations;
+        AZStd::vector<void*, AZ::OSStdAllocator> allocations;
         const HphaSchemaTestParameters& testParameters = GetParam();
         const size_t totalNumberOfAllocations = testParameters.m_allocationSizes.size() * testParameters.m_numberOfAllocationsPerSize;
         for (size_t i = 0; i < totalNumberOfAllocations; ++i)
@@ -78,7 +71,7 @@ namespace UnitTest
             const size_t allocationIndex = allocations.size();
             const size_t allocationSize = testParameters.m_allocationSizes[allocationIndex % testParameters.m_allocationSizes.size()];
             void* allocation = AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().Allocate(allocationSize, 0);
-            EXPECT_NE(nullptr, allocation);
+            ASSERT_NE(nullptr, allocation);
             EXPECT_LE(allocationSize, AZ::AllocatorInstance<HphaSchema_TestAllocator>::Get().AllocationSize(allocation));
             allocations.emplace_back(allocation);
         }

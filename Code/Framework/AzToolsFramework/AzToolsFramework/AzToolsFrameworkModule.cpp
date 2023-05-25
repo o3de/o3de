@@ -62,6 +62,7 @@
 #include <AzToolsFramework/Viewport/ViewBookmarkSystemComponent.h>
 #include <Metadata/MetadataManager.h>
 #include <Prefab/ProceduralPrefabSystemComponent.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 AZ_DEFINE_BUDGET(AzToolsFramework);
 
@@ -123,6 +124,7 @@ namespace AzToolsFramework
             AzToolsFramework::Script::LuaEditorSystemComponent::CreateDescriptor(),
             AzToolsFramework::GlobalPaintBrushSettingsSystemComponent::CreateDescriptor(),
             AzToolsFramework::MetadataManager::CreateDescriptor(),
+            AzToolsFramework::UuidUtilComponent::CreateDescriptor(),
         });
     }
 }

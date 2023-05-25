@@ -23,7 +23,7 @@ namespace AZ
             using Base = FrameGraphExecuteGroupHandlerBase;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMergedHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupMergedHandler, AZ::SystemAllocator);
 
             FrameGraphExecuteGroupMergedHandler() = default;
             ~FrameGraphExecuteGroupMergedHandler() = default;

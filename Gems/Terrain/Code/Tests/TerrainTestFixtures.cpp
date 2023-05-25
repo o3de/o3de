@@ -419,6 +419,10 @@ namespace UnitTest
         m_rpiSystem = AZStd::make_unique<AZ::RPI::RPISystem>();
         m_rpiSystem->Initialize(rpiSystemDescriptor);
 
+        AZ::RPI::ImageSystemDescriptor imageSystemDescriptor;
+        m_imageSystem = AZStd::make_unique<AZ::RPI::ImageSystem>();
+        m_imageSystem->Init(imageSystemDescriptor);
+
         // Now that the RPISystem is activated, activate the system entity.
         m_systemEntity->Init();
         m_systemEntity->Activate();
@@ -426,6 +430,7 @@ namespace UnitTest
 
     void TerrainSystemTestFixture::TearDown()
     {
+        m_imageSystem->Shutdown();
         m_rpiSystem->Shutdown();
         m_rpiSystem = nullptr;
         m_rhiFactory = nullptr;

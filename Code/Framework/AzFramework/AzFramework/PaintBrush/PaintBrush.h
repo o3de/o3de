@@ -34,7 +34,7 @@ namespace AzFramework
 
     public:
         AZ_RTTI(PaintBrush, "{D003175F-12BF-4E7E-BD51-2F4B010C9B5E}");
-        AZ_CLASS_ALLOCATOR(PaintBrush, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrush, AZ::SystemAllocator);
 
         PaintBrush() = delete;
         PaintBrush(const PaintBrush&) = delete;

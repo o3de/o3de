@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignmentId.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 

@@ -211,3 +211,5 @@ namespace AZ
     //! Used by components to make requests of the component application.
     using ComponentApplicationBus = AZ::EBus<ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits>;
 }
+
+DECLARE_EBUS_EXTERN_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);

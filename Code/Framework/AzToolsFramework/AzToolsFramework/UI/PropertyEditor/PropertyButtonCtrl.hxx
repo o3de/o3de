@@ -27,7 +27,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyButtonCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyButtonCtrl, AZ::SystemAllocator);
 
         PropertyButtonCtrl(QWidget* pParent = NULL);
         virtual ~PropertyButtonCtrl();
@@ -51,7 +51,7 @@ Q_SIGNALS:
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ButtonHandlerCommon, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ButtonHandlerCommon, AZ::SystemAllocator);
         QWidget* CreateGUICommon(QWidget* pParent);
         void ConsumeAttributeCommon(PropertyButtonCtrl* widget, AZ::u32 attrib, PropertyAttributeReader* attrValue, const char* debugName);
     };
@@ -62,7 +62,7 @@ Q_SIGNALS:
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ButtonGenericHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ButtonGenericHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         AZ::u32 GetHandlerName() const override { return AZ::Edit::UIHandlers::Button; }
@@ -77,7 +77,7 @@ Q_SIGNALS:
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ButtonBoolHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ButtonBoolHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         AZ::u32 GetHandlerName() const override { return AZ::Edit::UIHandlers::Button; }
@@ -92,7 +92,7 @@ Q_SIGNALS:
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ButtonStringHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ButtonStringHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* pParent) override;
         AZ::u32 GetHandlerName() const override { return AZ::Edit::UIHandlers::Button; }

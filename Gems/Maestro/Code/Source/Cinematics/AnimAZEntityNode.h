@@ -35,7 +35,7 @@ class CAnimAzEntityNode
     struct SAnimState;
 
 public:
-    AZ_CLASS_ALLOCATOR(CAnimAzEntityNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimAzEntityNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimAzEntityNode, "{28C02702-3498-488C-BF93-B5FC3FECC9F1}", CAnimNode);
 
     CAnimAzEntityNode(const int id);

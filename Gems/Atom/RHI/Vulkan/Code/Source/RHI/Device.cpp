@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
@@ -29,6 +30,7 @@
 #include <RHI/SwapChain.h>
 #include <RHI/WSISurface.h>
 #include <Vulkan_Traits_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -98,6 +100,11 @@ namespace AZ
             m_enabledDeviceFeatures.sampleRateShading = deviceFeatures.sampleRateShading;
             m_enabledDeviceFeatures.shaderImageGatherExtended = deviceFeatures.shaderImageGatherExtended;
             m_enabledDeviceFeatures.shaderInt64 = deviceFeatures.shaderInt64;
+            m_enabledDeviceFeatures.sparseBinding = deviceFeatures.sparseBinding;
+            m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
+            m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
+            m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
+            m_enabledDeviceFeatures.independentBlend = deviceFeatures.independentBlend;
 
             if (deviceFeatures.geometryShader)
             {
@@ -313,8 +320,8 @@ namespace AZ
             }
             else
             {
-                const VkResult vkResult =
-                    instance.GetContext().CreateDevice(physicalDevice.GetNativePhysicalDevice(), &deviceInfo, nullptr, &m_nativeDevice);
+                const VkResult vkResult = instance.GetContext().CreateDevice(
+                    physicalDevice.GetNativePhysicalDevice(), &deviceInfo, VkSystemAllocator::Get(), &m_nativeDevice);
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
 
@@ -382,8 +389,23 @@ namespace AZ
             poolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
             poolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
             poolDesc.m_budgetInBytes = m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
+            m_stagingBufferPool->SetName(AZ::Name("Device_StagingBufferPool"));
             result = m_stagingBufferPool->Init(*this, poolDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            {
+                m_constantBufferPool = BufferPool::Create();
+                static int index = 0;
+                m_constantBufferPool->SetName(Name(AZStd::string::format("ConstantPool_%d", ++index)));
+
+                BufferPoolDescriptor bufferPoolDescriptor;
+                bufferPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
+                bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+                bufferPoolDescriptor.m_bufferPoolPageSizeInBytes =
+                    m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+                result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
 
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
@@ -454,7 +476,8 @@ namespace AZ
                 // Need to create an image to get the requirements.
                 // This will not allocate or bind memory.
                 Image image;
-                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor);
+                const bool tryUseSparse = false;
+                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor, tryUseSparse);
                 AZ_Assert(result == RHI::ResultCode::Success, "Failed to get memory requirements");
                 auto it2 = cache.insert(hash, image.m_memoryRequirements);
                 return it2.first->second;
@@ -621,6 +644,7 @@ namespace AZ
 
             m_bindlessDescriptorPool.Shutdown();
             m_stagingBufferPool.reset();
+            m_constantBufferPool.reset();
             m_renderPassCache.first.Clear();
             m_framebufferCache.first.Clear();
             m_descriptorSetLayoutCache.first.Clear();
@@ -646,7 +670,7 @@ namespace AZ
             {
                 if (m_nativeDevice != VK_NULL_HANDLE)
                 {
-                    m_context.DestroyDevice(m_nativeDevice, nullptr);
+                    m_context.DestroyDevice(m_nativeDevice, VkSystemAllocator::Get());
                     m_nativeDevice = VK_NULL_HANDLE;
                 }
             }
@@ -847,7 +871,7 @@ namespace AZ
             m_releaseQueue.Notify(notifyFunction);
         }
 
-        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate)
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
         {
             ShadingRateImageMode mode = GetImageShadingRateMode();
             if (mode == ShadingRateImageMode::ImageAttachment)
@@ -942,7 +966,7 @@ namespace AZ
             m_features.m_geometryShader = (m_enabledDeviceFeatures.geometryShader == VK_TRUE);
             m_features.m_computeShader = true;
             m_features.m_independentBlend = (m_enabledDeviceFeatures.independentBlend == VK_TRUE);
-            m_features.m_customResolvePositions = physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation);
+            m_features.m_customSamplePositions = physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation);
 #if AZ_TRAIT_ATOM_VULKAN_DISABLE_DUAL_SOURCE_BLENDING
             // [ATOM-1448] Dual source blending may not work on certain devices due to driver issues.
             m_features.m_dualSourceBlending = false;
@@ -980,6 +1004,20 @@ namespace AZ
             m_features.m_indirectDrawStartInstanceLocationSupported = m_enabledDeviceFeatures.drawIndirectFirstInstance == VK_TRUE;
             m_features.m_renderTargetSubpassInputSupport = RHI::SubpassInputSupportType::Native;
             m_features.m_depthStencilSubpassInputSupport = RHI::SubpassInputSupportType::Native;
+
+            const VkPhysicalDeviceProperties& deviceProperties = physicalDevice.GetPhysicalDeviceProperties();
+            // Our sparse image implementation requires the device support sparse binding and particle residency for 2d and 3d images
+            // And it should use standard block shape (64k).
+            // It also requires memory alias support so resources can use the same block repeatedly (this may reduce performance based on implementation)
+            m_features.m_tiledResource = m_enabledDeviceFeatures.sparseBinding
+                && m_enabledDeviceFeatures.sparseResidencyImage2D
+                && m_enabledDeviceFeatures.sparseResidencyImage3D
+                && m_enabledDeviceFeatures.sparseResidencyAliased
+                && deviceProperties.sparseProperties.residencyStandard2DBlockShape
+                && deviceProperties.sparseProperties.residencyStandard3DBlockShape;
+
+            // Check if the Vulkan device support subgroup operations
+            m_features.m_waveOperation = physicalDevice.IsFeatureSupported(DeviceFeature::SubgroupOperation);
 
             // check for the VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME in the list of physical device extensions
             // to determine if ray tracing is supported on this device
@@ -1048,6 +1086,9 @@ namespace AZ
             m_limits.m_maxImageDimensionCube = deviceLimits.maxImageDimensionCube;
             m_limits.m_maxImageArraySize = deviceLimits.maxImageArrayLayers;
             m_limits.m_minConstantBufferViewOffset = static_cast<uint32_t>(deviceLimits.minUniformBufferOffsetAlignment);
+            m_limits.m_minTexelBufferOffsetAlignment = static_cast<uint32_t>(deviceLimits.minTexelBufferOffsetAlignment);
+            m_limits.m_minStorageBufferOffsetAlignment = static_cast<uint32_t>(deviceLimits.minStorageBufferOffsetAlignment);
+            m_limits.m_maxMemoryAllocationCount = deviceLimits.maxMemoryAllocationCount;
             m_limits.m_maxIndirectDrawCount = deviceLimits.maxDrawIndirectCount;
             m_limits.m_maxConstantBufferSize = deviceLimits.maxUniformBufferRange;
             m_limits.m_maxBufferSize = deviceLimits.maxStorageBufferRange;
@@ -1128,7 +1169,7 @@ namespace AZ
                 // remove some of them and try again.
                 memoryFlags = RHI::ResetBits(memoryFlags, filterFlags[filterIndex]);
             }
-
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(false);
             AZ_Assert(memory, "Failed to allocate memory size %llu bytes with flags %u, and memory types %u", static_cast<unsigned long long>(sizeInBytes), flags, memoryTypeMask);
             return memory;
         }
@@ -1183,19 +1224,24 @@ namespace AZ
             createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
 
             VkBuffer vkBuffer = VK_NULL_HANDLE;
-            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, nullptr, &vkBuffer);
+            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &vkBuffer);
             AssertSuccess(vkResult);
             return vkBuffer;
         }
 
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
-            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
+            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, VkSystemAllocator::Get());
         }
 
         Device::ShadingRateImageMode Device::GetImageShadingRateMode() const
         {
             return m_imageShadingRateMode;
+        }
+
+        RHI::Ptr<BufferPool> Device::GetConstantBufferPool()
+        {
+            return m_constantBufferPool;
         }
     }
 }

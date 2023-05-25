@@ -18,12 +18,12 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorJointPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorSingleJointHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiJointHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiWeightedJointHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorJointElementHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorWeightedJointElementHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorJointPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorSingleJointHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiJointHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorMultiWeightedJointHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorJointElementHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(ActorWeightedJointElementHandler, EditorAllocator)
 
     ActorJointPicker::ActorJointPicker(bool singleSelection, const QString& dialogTitle, const QString& dialogDescriptionLabelText, QWidget* parent)
         : QWidget(parent)
@@ -90,7 +90,7 @@ namespace EMotionFX
 
         for (size_t i = 0; i < numJointNames; ++i)
         {
-            weightedJointNames[i] = AZStd::make_pair<AZStd::string, float>(jointNames[i], 0.0f);
+            weightedJointNames[i] = AZStd::make_pair(jointNames[i], 0.0f);
         }
 
         SetWeightedJointNames(weightedJointNames);
@@ -225,8 +225,12 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                    {
+                        handler->RequestWrite(picker);
+                        handler->OnEditingFinished(picker);
+                    });
         });
 
         return picker;
@@ -269,9 +273,13 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                    {
+                        handler->RequestWrite(picker);
+                        handler->OnEditingFinished(picker);
+                        handler->RequestRefresh(AzToolsFramework::Refresh_EntireTree);
+                    });
         });
 
         return picker;
@@ -314,9 +322,13 @@ namespace EMotionFX
 
         connect(picker, &ActorJointPicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, picker);
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::Refresh_EntireTree);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                [picker](AzToolsFramework::PropertyEditorGUIMessages* handler)
+                {
+                    handler->RequestWrite(picker);
+                    handler->OnEditingFinished(picker);
+                    handler->RequestRefresh(AzToolsFramework::Refresh_EntireTree);
+                });
         });
 
         return picker;

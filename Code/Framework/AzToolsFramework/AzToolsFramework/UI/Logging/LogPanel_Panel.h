@@ -17,7 +17,6 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/UserSettings/UserSettings.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
@@ -128,7 +127,7 @@ namespace AzToolsFramework
             Q_OBJECT
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code (from .ui files)
-            //AZ_CLASS_ALLOCATOR(Panel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(Panel, AZ::SystemAllocator);
             BaseLogPanel(QWidget* pParent = nullptr);
             virtual ~BaseLogPanel();
 
@@ -269,7 +268,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(LogPanelLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogPanelLayout, AZ::SystemAllocator);
             LogPanelLayout(QWidget* pParent);
             virtual ~LogPanelLayout();
             virtual void addItem(QLayoutItem*);
@@ -293,7 +292,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(LogPanelItemDelegate, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LogPanelItemDelegate, AZ::SystemAllocator);
             LogPanelItemDelegate(QWidget* pParent, int messageColumn);
             virtual ~LogPanelItemDelegate();
 
@@ -323,28 +322,12 @@ Q_SIGNALS:
         {
         public:
             AZ_RTTI(SavedState, "{38930360-DB02-445A-9CA0-3D1FB07B8236}", AZ::UserSettings);
-            AZ_CLASS_ALLOCATOR(SavedState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SavedState, AZ::SystemAllocator);
             AZStd::vector<LogPanel::TabSettings> m_tabSettings;
 
             SavedState() {}
 
-            static void Reflect(AZ::ReflectContext* context)
-            {
-                AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-                if (serialize)
-                {
-                    serialize->Class<SavedState>()
-                        ->Version(1)
-                        ->Field("m_tabSettings", &SavedState::m_tabSettings);
-
-                    serialize->Class<TabSettings>()
-                        ->Version(1)
-                        ->Field("window", &TabSettings::m_window)
-                        ->Field("tabName", &TabSettings::m_tabName)
-                        ->Field("textFilter", &TabSettings::m_textFilter)
-                        ->Field("filterFlags", &TabSettings::m_filterFlags);
-                }
-            }
+            static void Reflect(AZ::ReflectContext* context);
         };
     } // namespace LogPanel
 } // namespace AzToolsFramework

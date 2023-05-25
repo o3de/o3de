@@ -29,7 +29,7 @@ namespace PhysX
         public:
             friend class HeightFieldAssetHandler;
 
-            AZ_CLASS_ALLOCATOR(HeightFieldAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HeightFieldAsset, AZ::SystemAllocator);
             AZ_RTTI(HeightFieldAsset, "{B61189FE-B2D7-4AF1-8951-CB5C0F7834FC}", AZ::Data::AssetData);
 
             ~HeightFieldAsset();

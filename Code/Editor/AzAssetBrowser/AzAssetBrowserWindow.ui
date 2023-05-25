@@ -48,8 +48,8 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>671</width>
-        <height>534</height>
+        <width>691</width>
+        <height>554</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="scrollAreaVerticalLayout">
@@ -82,6 +82,47 @@
          <property name="bottomMargin">
           <number>5</number>
          </property>
+         <item>
+          <widget class="AzToolsFramework::AssetBrowser::SearchWidget" name="m_searchWidget" native="true">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="m_createButton">
+           <property name="text">
+            <string>...</string>
+           </property>
+           <property name="icon">
+            <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
+             <normaloff>:/Gallery/Add.svg</normaloff>:/Gallery/Add.svg</iconset>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QWidget" name="m_breadcrumbsWrapper" native="true">
            <property name="sizePolicy">
@@ -171,18 +212,43 @@
           </widget>
          </item>
          <item>
-          <widget class="AzToolsFramework::AssetBrowser::SearchWidget" name="m_searchWidget" native="true">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
+          <spacer name="horizontalSpacer">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
            </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>4</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QFrame" name="frame">
            <property name="minimumSize">
             <size>
-             <width>150</width>
+             <width>1</width>
              <height>0</height>
             </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QFrame { color : white;}</string>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Plain</enum>
+           </property>
+           <property name="lineWidth">
+            <number>1</number>
+           </property>
+           <property name="midLineWidth">
+            <number>0</number>
            </property>
           </widget>
          </item>
@@ -255,7 +321,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget">
+            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserListView" name="m_assetBrowserListViewWidget">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -316,54 +382,14 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="QWidget" name="m_thumbnailView">
-           <layout class="QVBoxLayout" name="m_thumbnailViewLayout">
-            <property name="spacing">
-             <number>0</number>
-            </property>
-            <item>
-             <widget class="QLabel" name="m_thumbnailViewPlaceholder">
-              <property name="text">
-               <string>Thumbnail view placeholder</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="m_tableView">
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView"/>
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
             <property name="spacing">
              <number>0</number>
             </property>
-            <item>
-             <widget class="QLabel" name="m_tableViewPlaceholder">
-              <property name="text">
-               <string>Table view placeholder</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
-         </widget>
-         <widget class="QWidget" name="previewWidgetWrapper">
-          <layout class="QVBoxLayout" name="m_rightLayout">
-           <item>
-            <widget class="AzToolsFramework::AssetBrowser::PreviewerFrame" name="m_previewerFrame">
-             <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
-             </property>
-             <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
-             </property>
-            </widget>
-           </item>
-          </layout>
          </widget>
         </widget>
        </item>
@@ -381,20 +407,14 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>AzQtComponents::TableView</class>
-   <extends>QTreeView</extends>
-   <header>AzQtComponents/Components/Widgets/TableView.h</header>
-  </customwidget>
-  <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTreeView</class>
    <extends>QTreeView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::PreviewerFrame</class>
-   <extends>QFrame</extends>
-   <header>AzToolsFramework/AssetBrowser/Previewer/PreviewerFrame.h</header>
-   <container>1</container>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserListView</class>
+   <extends>QTableView</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h</header>
   </customwidget>
   <customwidget>
    <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
@@ -405,6 +425,11 @@
    <class>AzQtComponents::BreadCrumbs</class>
    <extends>QWidget</extends>
    <header>AzQtComponents/Components/Widgets/BreadCrumbs.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView</class>
+   <extends>QWidget</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

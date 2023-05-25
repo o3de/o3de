@@ -33,7 +33,7 @@ namespace AWSCore
 
     public:
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(ServiceJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceJob, AZ::SystemAllocator);
 
         ServiceJob(bool isAutoDelete, IConfig* config)
             : HttpRequestJob(isAutoDelete, config)

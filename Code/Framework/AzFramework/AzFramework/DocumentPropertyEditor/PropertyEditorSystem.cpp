@@ -27,13 +27,11 @@ namespace AZ::DocumentPropertyEditor
         Nodes::Reflect(this);
 
         AZ::Interface<PropertyEditorSystemInterface>::Register(this);
-        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Create();
     }
 
     PropertyEditorSystem::~PropertyEditorSystem()
     {
         AZ::Interface<PropertyEditorSystemInterface>::Unregister(this);
-        AZ::AllocatorInstance<AZ::Dom::ValueAllocator>::Destroy();
     }
 
     void PropertyEditorSystem::RegisterNode(NodeMetadata metadata)
@@ -69,7 +67,27 @@ namespace AZ::DocumentPropertyEditor
                 attribute->GetName().GetCStr());
             return;
         }
-        m_attributeMetadata[attribute->GetName()][parentNodeName] = attribute;
+
+        // Prevent duplication of (parentNodeName, attribute) pairs in case the same attribute definition
+        // was registered multiple times for the same node
+        if (m_attributeMetadata[attribute->GetName()].contains(parentNodeName))
+        {
+            auto relatedAttributes = m_attributeMetadata[attribute->GetName()].equal_range(parentNodeName);
+            for (auto iter = relatedAttributes.first; iter != relatedAttributes.second; ++iter)
+            {
+                if (iter->second == attribute)
+                {
+                    AZ_Warning(
+                        "PropertyEditorSystem",
+                        false,
+                        "Detected attempt to re-register a registered attribute definition interface for attribute %s",
+                        attribute->GetName().GetCStr());
+                    return;
+                }
+            }
+        }
+
+        m_attributeMetadata[attribute->GetName()].insert({ parentNodeName, attribute });
     }
 
     const NodeMetadata* PropertyEditorSystem::FindNode(AZ::Name name) const

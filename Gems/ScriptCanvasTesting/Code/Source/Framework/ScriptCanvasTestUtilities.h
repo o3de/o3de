@@ -463,7 +463,7 @@ namespace ScriptCanvasTests
     class ConvertibleToString
     {
     public:
-        AZ_TYPE_INFO(StringView, "{DBF947E7-4097-4C5D-AF0D-E2DB311E8958}");
+        AZ_TYPE_INFO(ConvertibleToString, "{DBF947E7-4097-4C5D-AF0D-E2DB311E8958}");
 
         static AZStd::string ConstCharPtrToString(const char* inputStr)
         {
@@ -501,7 +501,7 @@ namespace ScriptCanvasTests
         , public AzFramework::SliceEntityOwnershipServiceRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(UnitTestEntityContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnitTestEntityContext, AZ::SystemAllocator);
 
         UnitTestEntityContext() { AzFramework::EntityContextRequestBus::Handler::BusConnect(GetOwningContextId()); }
         //// EntityIdContextQueryBus::MultiHandler
@@ -683,7 +683,7 @@ namespace ScriptCanvasTests
         : private ScriptCanvas::NodeNotificationsBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptUnitTestNodeNotificationHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptUnitTestNodeNotificationHandler, AZ::SystemAllocator);
 
         ScriptUnitTestNodeNotificationHandler(AZ::EntityId nodeId)
         {
@@ -726,7 +726,7 @@ namespace ScriptCanvasTests
     public:
 
         AZ_RTTI(TestNodeableObject, "{5FA6967F-AB4D-4077-91C9-1C2CE36733AF}", Nodeable);
-        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {

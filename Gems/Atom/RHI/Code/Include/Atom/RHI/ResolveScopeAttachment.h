@@ -23,7 +23,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ResolveScopeAttachment, "{DC1236D5-69B6-478C-9B7D-3732383A4D61}", ImageScopeAttachment);
-            AZ_CLASS_ALLOCATOR(ResolveScopeAttachment, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResolveScopeAttachment, AZ::PoolAllocator);
 
             ResolveScopeAttachment(
                 Scope& scope,

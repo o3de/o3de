@@ -34,7 +34,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(DescriptorSetLayout, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DescriptorSetLayout, AZ::ThreadPoolAllocator);
             AZ_RTTI(DescriptorSetLayout, "25C09E30-F46B-424D-B97A-7F32592A76D7", Base);
 
             struct Descriptor

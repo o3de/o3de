@@ -29,7 +29,7 @@ namespace ScriptCanvas
     struct RuntimeInputs
     {
         AZ_TYPE_INFO(RuntimeInputs, "{CFF0820B-EE0D-4E02-B847-2B295DD5B5CF}");
-        AZ_CLASS_ALLOCATOR(RuntimeInputs, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeInputs, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 

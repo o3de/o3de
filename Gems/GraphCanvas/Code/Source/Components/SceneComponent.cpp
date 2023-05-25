@@ -341,15 +341,15 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_PROFILE_FUNCTION();
 
+        // Once we finalize the node, we want to release the undo state, and push a new undo.
+        ScopedGraphUndoBatch undoBatch(GetSceneId());
+
         m_spliceTimer.stop();
 
         m_displayStateStateSetter.ResetStateSetter();
 
         if (m_splicingNode.IsValid())
         {
-            // Once we finalize the node, we want to release the undo state, and push a new undo.
-            GraphModelRequestBus::Event(GetSceneId(), &GraphModelRequests::RequestUndoPoint);
-
             SceneRequestBus::Event(GetSceneId(), &SceneRequests::ClearSelection);
             SceneMemberUIRequestBus::Event(m_splicingNode, &SceneMemberUIRequests::SetSelected, true);
 
@@ -366,7 +366,6 @@ namespace GraphCanvas
             m_splicingPath = QPainterPath();
 
             AssignLastCreationToGroup();
-
             return;
         }
 
@@ -1246,23 +1245,22 @@ namespace GraphCanvas
         saveData->ClearConstructData();
         for (AZ::Entity* currentEntity : m_graphData.m_nodes)
         {
-            GraphCanvasConstructSaveData* constructSaveData = nullptr;
-
             if (GraphUtils::IsComment(currentEntity->GetId()))
             {
-                constructSaveData = aznew GraphCanvasConstructSaveData();
+                GraphCanvasConstructSaveData* constructSaveData = aznew GraphCanvasConstructSaveData();
                 constructSaveData->m_constructType = ConstructType::CommentNode;
-            }
-            else if (GraphUtils::IsNodeGroup(currentEntity->GetId()))
-            {
-                constructSaveData = aznew GraphCanvasConstructSaveData();
-                constructSaveData->m_constructType = ConstructType::NodeGroup;
-            }
-
-            if (constructSaveData)
-            {
                 EntitySaveDataRequestBus::Event(currentEntity->GetId(), &EntitySaveDataRequests::WriteSaveData, constructSaveData->m_saveDataContainer);
                 saveData->m_constructs.push_back(constructSaveData);
+                continue;
+            }
+
+            if (GraphUtils::IsNodeGroup(currentEntity->GetId()))
+            {
+                GraphCanvasConstructSaveData* constructSaveData = aznew GraphCanvasConstructSaveData();
+                constructSaveData->m_constructType = ConstructType::NodeGroup;
+                EntitySaveDataRequestBus::Event(currentEntity->GetId(), &EntitySaveDataRequests::WriteSaveData, constructSaveData->m_saveDataContainer);
+                saveData->m_constructs.push_back(constructSaveData);
+                continue;
             }
         }
 
@@ -1271,10 +1269,8 @@ namespace GraphCanvas
         for (AZ::Entity* currentEntity : m_graphData.m_bookmarkAnchors)
         {
             GraphCanvasConstructSaveData* constructSaveData = aznew GraphCanvasConstructSaveData();
-
             constructSaveData->m_constructType = ConstructType::BookmarkAnchor;
             EntitySaveDataRequestBus::Event(currentEntity->GetId(), &EntitySaveDataRequests::WriteSaveData, constructSaveData->m_saveDataContainer);
-
             saveData->m_constructs.push_back(constructSaveData);
         }
 
@@ -1731,9 +1727,7 @@ namespace GraphCanvas
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
         if (node.IsValid())
         {
-            const AZ::EntityId& entityId = GetEntityId();
-
-            GraphModelRequestBus::Event(entityId, &GraphModelRequests::RequestPushPreventUndoStateUpdate);
+            ScopedGraphUndoBatch undoBatch(GetEntityId());
 
             float explosionDensity = 0.6f;
 
@@ -1745,9 +1739,6 @@ namespace GraphCanvas
             ExplodeSceneMember(node, explosionDensity);
             GraphUtils::DetachNodeAndStitchConnections(node);
             Delete({ node });
-
-            GraphModelRequestBus::Event(entityId, &GraphModelRequests::RequestPopPreventUndoStateUpdate);
-            GraphModelRequestBus::Event(entityId, &GraphModelRequests::RequestUndoPoint);
         }
     }
 

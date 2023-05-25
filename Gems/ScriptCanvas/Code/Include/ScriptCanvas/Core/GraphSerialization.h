@@ -27,7 +27,7 @@ namespace ScriptCanvas
     class SourceTree
     {
     public:
-        AZ_CLASS_ALLOCATOR(SourceTree, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceTree, AZ::SystemAllocator);
 
         SourceHandle m_source;
         AZStd::vector<SourceTree> m_dependencies;

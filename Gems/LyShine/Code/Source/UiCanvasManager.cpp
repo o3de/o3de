@@ -80,7 +80,7 @@ namespace
         }
 
         // Normalize path
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, assetPath);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, assetPath);
 
         // Check for any leading slashes as the specified path should be a relative path to the @products@ alias.
         // This eliminates inconsistencies between lower level file opens on different platforms
@@ -196,7 +196,7 @@ AZ::EntityId UiCanvasManager::LoadCanvas(const AZStd::string& assetIdPathname)
         // The game entity context needs to know its corresponding canvas entity for instantiating dynamic slices
         entityContext->SetCanvasEntity(canvasEntityId);
 
-        EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasLoaded, canvasEntityId);
+        UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasLoaded, canvasEntityId);
     }
 
     return canvasEntityId;
@@ -255,11 +255,11 @@ void UiCanvasManager::OnCanvasEnabledStateChanged(AZ::EntityId canvasEntityId, b
     if (enabled)
     {
         bool isConsumingAllInputEvents = false;
-        EBUS_EVENT_ID_RESULT(isConsumingAllInputEvents, canvasEntityId, UiCanvasBus, GetIsConsumingAllInputEvents);
+        UiCanvasBus::EventResult(isConsumingAllInputEvents, canvasEntityId, &UiCanvasBus::Events::GetIsConsumingAllInputEvents);
         if (isConsumingAllInputEvents)
         {
             AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-            EBUS_EVENT(UiCanvasBus, ClearAllInteractables);
+            UiCanvasBus::Broadcast(&UiCanvasBus::Events::ClearAllInteractables);
         }
     }
 
@@ -319,7 +319,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 {
     // get AssetInfo from asset id
     AZ::Data::AssetInfo assetInfo;
-    EBUS_EVENT_RESULT(assetInfo, AZ::Data::AssetCatalogRequestBus, GetAssetInfoById, assetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
     if (assetInfo.m_assetType != LyShine::CanvasAsset::TYPEINFO_Uuid())
     {
         // this is not a UI canvas asset
@@ -328,7 +328,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 
     // get pathname from asset id
     AZStd::string assetPath;
-    EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
 
     CanvasList reloadedCanvases;  // keep track of the reloaded canvases and add them to m_loadedCanvases after the loop
     AZStd::vector<AZ::EntityId> unloadedCanvases;  // also keep track of any canvases that fail to reload and are unloaded
@@ -385,13 +385,14 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
     // notify any listeners of any UI canvases that were reloaded
     for (auto reloadedCanvasComponent : reloadedCanvases)
     {
-        EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasReloaded, reloadedCanvasComponent->GetEntityId());
+        UiCanvasManagerNotificationBus::Broadcast(
+            &UiCanvasManagerNotificationBus::Events::OnCanvasReloaded, reloadedCanvasComponent->GetEntityId());
     }
 
     // notify any listeners of any UI canvases that were unloaded
     for (auto unloadedCanvas : unloadedCanvases)
     {
-        EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasUnloaded, unloadedCanvas);
+        UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasUnloaded, unloadedCanvas);
     }
 }
 
@@ -478,7 +479,7 @@ void UiCanvasManager::ReleaseCanvas(AZ::EntityId canvasEntityId, bool forEditor)
     }
 
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
     AZ_Assert(canvasEntity, "Canvas entity not found by ID");
 
     if (canvasEntity)
@@ -498,7 +499,7 @@ void UiCanvasManager::ReleaseCanvas(AZ::EntityId canvasEntityId, bool forEditor)
                 stl::find_and_erase(m_loadedCanvases, canvasComponent);
                 delete canvasEntity;
 
-                EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasUnloaded, canvasEntityId);
+                UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasUnloaded, canvasEntityId);
 
                 // Update hover state for loaded canvases
                 m_generateMousePositionInputEvent = true;
@@ -516,7 +517,7 @@ void UiCanvasManager::ReleaseCanvasDeferred(AZ::EntityId canvasEntityId)
         return;
     }
     AZ::Entity* canvasEntity = nullptr;
-    EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+    AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
     AZ_Assert(canvasEntity, "Canvas entity not found by ID");
 
     if (canvasEntity)
@@ -535,7 +536,7 @@ void UiCanvasManager::ReleaseCanvasDeferred(AZ::EntityId canvasEntityId)
             // Deactivate the canvas element
             canvasEntity->Deactivate();
 
-            EBUS_EVENT(UiCanvasManagerNotificationBus, OnCanvasUnloaded, canvasEntityId);
+            UiCanvasManagerNotificationBus::Broadcast(&UiCanvasManagerNotificationBus::Events::OnCanvasUnloaded, canvasEntityId);
 
             // Queue UI canvas deletion. This is because this function could have been triggered in input processing of
             // a component within the canvas. i.e. there could be a member function of the canvas or one of it's child entities
@@ -962,7 +963,7 @@ AZ::EntityId UiCanvasManager::LoadCanvasInternal(const AZStd::string& assetIdPat
             if (canvasComponent->GetEnabled() && canvasComponent->GetIsConsumingAllInputEvents())
             {
                 AzFramework::InputChannelRequestBus::Broadcast(&AzFramework::InputChannelRequests::ResetState);
-                EBUS_EVENT(UiCanvasBus, ClearAllInteractables);
+                UiCanvasBus::Broadcast(&UiCanvasBus::Events::ClearAllInteractables);
             }
             m_loadedCanvases.push_back(canvasComponent);
             SortCanvasesByDrawOrder();
@@ -992,7 +993,7 @@ void UiCanvasManager::DeleteCanvasesQueuedForDeletion()
         for (auto canvasEntityId : m_canvasesQueuedForDeletion)
         {
             AZ::Entity* canvasEntity = nullptr;
-            EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, canvasEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, canvasEntityId);
             delete canvasEntity;
         }
 
@@ -1303,14 +1304,14 @@ AZStd::string UiCanvasManager::DebugGetElementName(AZ::EntityId entityId, int ma
 {
     AZStd::string name = "None";
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
     if (entity)
     {
         name = entity->GetName();
         if (name.length() < maxLength)
         {
             AZ::Entity* parent = nullptr;
-            EBUS_EVENT_ID_RESULT(parent, entityId, UiElementBus, GetParent);
+            UiElementBus::EventResult(parent, entityId, &UiElementBus::Events::GetParent);
             if (parent)
             {
                 name = parent->GetName() + "/" + name;

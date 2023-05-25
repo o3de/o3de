@@ -27,7 +27,7 @@ namespace AZ
                 /// No additional members.
             };
 
-            AZ_CLASS_ALLOCATOR(LinearAllocator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LinearAllocator, AZ::SystemAllocator);
 
             LinearAllocator() = default;
 

@@ -40,6 +40,16 @@ import DccScriptingInterface.config as dccsi_core_config
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
+
+import DccScriptingInterface.azpy.shared.ui.samples
+from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
+
+# O3DE imports
+import az_qt_helpers
+import azlmbr
+import azlmbr.bus
+import azlmbr.paths
+import azlmbr.action
 # -------------------------------------------------------------------------
 
 
@@ -59,11 +69,25 @@ def click_action_sampleui():
                   title='Dccsi: SampleUI')
     ui.show()
     return
+# - hook ------------------------------------------------------------------
+def hook_register_action_sampleui(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_sampleui')
+    action_properties = azlmbr.action.ActionProperties()
+    action_properties.name = 'SampleUI'
+    action_properties.description = "Open an Example SampleUI Dialog"
+    action_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                'o3de.context.editor.mainwindow',
+                                                'o3de.action.python.dccsi.examples.sampleui',
+                                                action_properties,
+                                                click_action_sampleui)
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-def add_action(parent: QMenu,
+def add_action_OLD(parent: QMenu,
                title: str = "SampleUI",
                action_slot = click_action_sampleui) -> QAction:
     """! adds an action to the parent QMenu
@@ -92,7 +116,7 @@ def add_action(parent: QMenu,
 
 
 # -------------------------------------------------------------------------
-def create_menu(parent: QMenu, title: str = 'StudioTools') -> QMenu:
+def create_menu_OLD(parent: QMenu, title: str = 'StudioTools') -> QMenu:
     """! Creates a 'Studio Tools' menu for the DCCsi functionality
     :param parent: The parent QMenu (or QMenuBar)
     :param : The UI text str for the submenu

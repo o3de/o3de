@@ -9,18 +9,19 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/TypeInfo.h>
-#include <AzCore/std/string/alphanum.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/std/string/tokenize.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzCore/RTTI/AzStdOnDemandReflection.inl>
 #include <AzCore/RTTI/AzStdOnDemandReflectionLuaFunctions.inl>
+
 namespace AZ::CommonOnDemandReflections
 {
-    void ReflectCommonString(ReflectContext* context)
+    template<class T>
+    void ReflectCommonStringAPI(ReflectContext* context)
     {
-        using ContainerType = AZStd::string;
+        using ContainerType = T;
         using SizeType = typename ContainerType::size_type;
         using ValueType = typename ContainerType::value_type;
         if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
@@ -29,7 +30,7 @@ namespace AZ::CommonOnDemandReflections
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->template Constructor<typename ContainerType::value_type*>()
-                        ->Attribute(AZ::Script::Attributes::ConstructorOverride, &OnDemandLuaFunctions::ConstructBasicString<ContainerType::value_type, ContainerType::traits_type, ContainerType::allocator_type>)
+                    ->Attribute(AZ::Script::Attributes::ConstructorOverride, &OnDemandLuaFunctions::ConstructBasicString<ContainerType>)
                     ->Attribute(AZ::Script::Attributes::ReaderWriterOverride, ScriptContext::CustomReaderWriter(&OnDemandLuaFunctions::StringTypeToLua<ContainerType>, &OnDemandLuaFunctions::StringTypeFromLua<ContainerType>))
                 ->template WrappingMember<const char*>(&ContainerType::c_str)
                 ->Method("c_str", &ContainerType::c_str)
@@ -49,7 +50,7 @@ namespace AZ::CommonOnDemandReflections
                     return thisPtr->substr(pos, len);
                 })
                 ->Method("Replace", [](ContainerType* thisPtr, const ContainerType& stringToReplace, const ContainerType& replacementString)
-                { 
+                {
                     SizeType startPos = 0;
                     while ((startPos = thisPtr->find(stringToReplace, startPos)) != ContainerType::npos && !stringToReplace.empty())
                     {
@@ -87,7 +88,7 @@ namespace AZ::CommonOnDemandReflections
                     for (auto itr = thisPtr->begin(); itr < thisPtr->end(); itr++)
                     {
                         toLowerString.push_back(static_cast<ValueType>(tolower(*itr)));
-                    }                    
+                    }
                     return toLowerString;
                 })
                 ->Method("ToUpper", [](ContainerType* thisPtr)
@@ -102,27 +103,31 @@ namespace AZ::CommonOnDemandReflections
                 ->Method("Join", [](AZStd::vector<ContainerType>* stringsToJoinPtr, const ContainerType& joinStr)
                 {
                     ContainerType joinString;
-                    for (auto& stringToJoin : *stringsToJoinPtr)
-                    {
-                        joinString.append(stringToJoin).append(joinStr);
-                    }
-                    //Cut off the last join str
-                    if (!stringsToJoinPtr->empty())
-                    {
-                        joinString = joinString.substr(0, joinString.length() - joinStr.length());
-                    }
+                    AZ::StringFunc::Join(joinString, *stringsToJoinPtr, joinStr);
                     return joinString;
                 })
-
                 ->Method("Split", [](ContainerType* thisPtr, const ContainerType& splitter)
                 {
                     AZStd::vector<ContainerType> splitStringList;
-                    AZStd::tokenize(*thisPtr, splitter, splitStringList);
+                    auto SplitString = [&splitStringList](AZStd::string_view token)
+                    {
+                        splitStringList.emplace_back(token);
+                    };
+                    AZ::StringFunc::TokenizeVisitor(*thisPtr, SplitString, splitter);
                     return splitStringList;
-                })
-                ;
+                });
         }
     }
+
+    void ReflectCommonString(ReflectContext* context)
+    {
+        ReflectCommonStringAPI<AZStd::string>(context);
+    }
+    void ReflectCommonFixedString(ReflectContext* context)
+    {
+        ReflectCommonStringAPI<AZ::IO::FixedMaxPathString>(context);
+    }
+
     void ReflectCommonStringView(ReflectContext* context)
     {
         using ContainerType = AZStd::string_view;

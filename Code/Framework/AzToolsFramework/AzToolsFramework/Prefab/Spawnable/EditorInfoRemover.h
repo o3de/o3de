@@ -34,7 +34,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : public PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorInfoRemover, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorInfoRemover, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover,
             "{50B48C7E-C9DE-48DE-8438-1A186A8EEAC8}", PrefabProcessor);
 

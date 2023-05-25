@@ -54,7 +54,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroup, "{88B52D0C-9CBF-4B4D-B9E2-180BA602E1EA}");
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
 
             /// Instantiates a unique shader resource group instance using its paired asset but with a random InstanceId.
             /// This version uses the system-wide supervariant (if available) specified by the ShaderSystem or the Default supervariant.

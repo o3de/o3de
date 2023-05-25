@@ -38,6 +38,9 @@ namespace AZ::Vulkan
         //! Add/Update a read write image descriptor to the global bindless heap 
         uint32_t AttachReadWriteImage(ImageView* view);
 
+        //! Add/Update a read only cubemap image descriptor to the global bindless heap 
+        uint32_t AttachReadCubeMapImage(ImageView* view);
+
         //! Remove the index associated with a read only buffer descriptor from the free list allocator
         void DetachReadBuffer(uint32_t index);
 
@@ -49,6 +52,9 @@ namespace AZ::Vulkan
 
         //! Remove the index associated with a read write image descriptor from the free list allocator
         void DetachReadWriteImage(uint32_t index);
+
+        //! Remove the index associated with a read only cubemapimage descriptor from the free list allocator
+        void DetachReadCubeMapImage(uint32_t index);
 
         //! Garbage collect all the free list allocators related to all the bindless resource types
         void GarbageCollect();

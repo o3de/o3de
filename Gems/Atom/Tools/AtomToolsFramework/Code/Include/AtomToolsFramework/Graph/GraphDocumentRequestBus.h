@@ -30,6 +30,21 @@ namespace AtomToolsFramework
 
         // Convert the document file name into one that can be used as a symbol.
         virtual AZStd::string GetGraphName() const = 0;
+
+        //! Set a list of all of the generated files from the last time this graph was compiled.
+        virtual void SetGeneratedFilePaths(const AZStd::vector<AZStd::string>& pathas) = 0;
+
+        //! Get a list of all of the generated files from the last time this graph was compiled.
+        virtual const AZStd::vector<AZStd::string>& GetGeneratedFilePaths() const = 0;
+
+        //! Evaluate the graph nodes, slots, values, and settings to generate and export data.
+        virtual bool CompileGraph() = 0;
+
+        //! Schedule the graph to be compiled on the next system tick.
+        virtual void QueueCompileGraph() = 0;
+
+        //! Returns true if graph compilation has already been scheduled.
+        virtual bool IsCompileGraphQueued() const = 0;
     };
 
     using GraphDocumentRequestBus = AZ::EBus<GraphDocumentRequests>;

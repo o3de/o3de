@@ -27,7 +27,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::ReflectionProbeComponentConfig, "{D61730A1-CAF5-448C-B2A3-50D5DC909F31}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             float m_outerHeight = DefaultReflectionProbeExtents;
@@ -60,7 +60,7 @@ namespace AZ
         public:
             friend class EditorReflectionProbeComponent;
 
-            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReflectionProbeComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::ReflectionProbeComponentController, "{EFFA88F1-7ED2-4552-B6F6-5E6B2B6D9311}");
 
             static void Reflect(AZ::ReflectContext* context);

@@ -16,6 +16,8 @@
 
 namespace ${GemName}
 {
+    AZ_COMPONENT_IMPL(${SanitizedCppName}Component, "${SanitizedCppName}Component", "{${Random_Uuid}}");
+
     void ${SanitizedCppName}Component::Activate()
     {
         ${SanitizedCppName}RequestBus::Handler::BusConnect(GetEntityId());
@@ -28,7 +30,7 @@ namespace ${GemName}
 
     void ${SanitizedCppName}Component::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<${SanitizedCppName}Component, AZ::Component>()
                 ->Version(1)

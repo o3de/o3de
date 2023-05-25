@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsRequestBus.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsSystemComponent.h>
@@ -30,11 +31,23 @@ namespace AzToolsFramework
     void GlobalPaintBrushSettingsSystemComponent::Activate()
     {
         GlobalPaintBrushSettingsRequestBus::Handler::BusConnect();
+        ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GlobalPaintBrushSettingsSystemComponent::Deactivate()
     {
+        ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GlobalPaintBrushSettingsRequestBus::Handler::BusDisconnect();
+    }
+
+    void GlobalPaintBrushSettingsSystemComponent::OnActionRegistrationHook()
+    {
+        PaintBrushManipulator::RegisterActions();
+    }
+
+    void GlobalPaintBrushSettingsSystemComponent::OnMenuBindingHook()
+    {
+        PaintBrushManipulator::BindActionsToMenus();
     }
 
     GlobalPaintBrushSettings* GlobalPaintBrushSettingsSystemComponent::GetSettingsPointerForPropertyEditor()
@@ -47,22 +60,22 @@ namespace AzToolsFramework
         return m_settings;
     }
 
-    AzFramework::PaintBrushMode GlobalPaintBrushSettingsSystemComponent::GetBrushMode() const
+    PaintBrushMode GlobalPaintBrushSettingsSystemComponent::GetBrushMode() const
     {
         return m_settings.GetBrushMode();
     }
 
-    void GlobalPaintBrushSettingsSystemComponent::SetBrushMode(AzFramework::PaintBrushMode brushMode)
+    void GlobalPaintBrushSettingsSystemComponent::SetBrushMode(PaintBrushMode brushMode)
     {
         m_settings.SetBrushMode(brushMode);
     }
 
-    AzFramework::PaintBrushColorMode GlobalPaintBrushSettingsSystemComponent::GetBrushColorMode() const
+    PaintBrushColorMode GlobalPaintBrushSettingsSystemComponent::GetBrushColorMode() const
     {
         return m_settings.GetColorMode();
     }
 
-    void GlobalPaintBrushSettingsSystemComponent::SetBrushColorMode(AzFramework::PaintBrushColorMode colorMode)
+    void GlobalPaintBrushSettingsSystemComponent::SetBrushColorMode(PaintBrushColorMode colorMode)
     {
         m_settings.SetColorMode(colorMode);
     }

@@ -350,9 +350,16 @@ namespace EMotionFX
          * Get the normalized percentage that the calculated bounding box is expanded with.
          * This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early.
          * A static bounding box together with the expansion is the recommended way for maximum performance.
-         * @result A value of 1.0 means that the calculated bounding box won't be expanded at all, while 2.0 means it is twice the size.
+         * @result A value of 0.0 means that the calculated bounding box won't be expanded at all, while .25 means it will become 125% the original size.
          */
         float GetExpandBoundsBy() const { return m_boundsExpandBy; }
+
+        /**
+        * Expand a bounding box by a given percentage
+        * @param aabb The bounding box to expand
+        * @param expandBoundsBy Percentage to expand the bounds by. A value of 0.0 means that the calculated bounding box won't be expanded at all, while .25 means it will become 125% the original size.
+        */
+        static void ExpandBounds(AZ::Aabb& aabb, float expandByPercentage);
 
         /**
          * Get the bounding volume auto-update item frequency.

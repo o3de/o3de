@@ -52,6 +52,9 @@ namespace AZ
         constexpr Uuid(const char* string, size_t stringLength);
 
         static constexpr Uuid CreateNull();
+        // In some cases it may be preferred to use a non-null, but clearly invalid UUID. For example, a material with a texture reference tracked
+        // via UUID would use the null UUID for when no texture is set, but the Invalid UUID when the texture is set but does not resolve to an asset.
+        static constexpr Uuid CreateInvalid();
         /// Create a Uuid (VAR_RFC_4122,VER_RANDOM)
         static Uuid Create();
         /**
@@ -188,6 +191,9 @@ namespace AZ
 
 namespace AZStd
 {
+    // extern the fixed_string<39> class required to hold a Uuid string
+    extern template class basic_fixed_string<char, AZ::Uuid::MaxStringBuffer>;
+
     // hash specialization
     template <>
     struct hash<AZ::Uuid>

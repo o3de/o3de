@@ -32,7 +32,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(NodePaletteWidget::EventHandler, EMotionFX::EventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(NodePaletteWidget::EventHandler, EMotionFX::EventHandlerAllocator)
 
     NodePaletteWidget::EventHandler::EventHandler(NodePaletteWidget* widget)
         : m_widget(widget)

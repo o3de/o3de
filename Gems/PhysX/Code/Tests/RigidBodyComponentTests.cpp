@@ -65,13 +65,13 @@ namespace PhysXEditorTests
 
         // Set collider to be a sphere
         const Physics::ShapeType shapeType = Physics::ShapeType::Sphere;
-        PhysX::EditorColliderComponentRequestBus::Event(
-            idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, shapeType);
 
         // Set collider sphere radius
         const float sphereRadius = 1.0f;
-        PhysX::EditorColliderComponentRequestBus::Event(
-            idPair, &PhysX::EditorColliderComponentRequests::SetSphereRadius, sphereRadius);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(
+            idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetSphereRadius, sphereRadius);
 
         // Notify listeners that collider has changed
         Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -114,14 +114,14 @@ namespace PhysXEditorTests
 
         // Set collider to be a cylinder
         const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, shapeType);
 
         // Set collider cylinder radius and height
         const float cylinderRadius = 0.5f;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderRadius, cylinderRadius);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderRadius, cylinderRadius);
 
         const float cylinderHeight = 4.0f;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderHeight, cylinderHeight);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderHeight, cylinderHeight);
 
         // Notify listeners that collider has changed
         Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
@@ -149,14 +149,14 @@ namespace PhysXEditorTests
         EXPECT_EQ(pxShape->getGeometryType(), physx::PxGeometryType::eCONVEXMESH);
     }
 
-    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderZeroRadius_NoColliderCreated)
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderSetZeroRadius_ErrorIssued)
     {
         // Create editor entities
         EntityPtr editorEntity = CreateInactiveEditorEntity("ZeroRadius");
 
         UnitTest::ErrorHandler expectedError("SetCylinderRadius: radius must be greater than zero.");
 
-        const auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
 
         editorEntity->Activate();
@@ -165,28 +165,21 @@ namespace PhysXEditorTests
 
         // Set collider to be a cylinder
         const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, shapeType);
 
         // Set collider cylinder radius to zero
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderRadius, 0.0f);
-
-        // Notify listeners that collider has changed
-        Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-
-        // Verify no shapes are created and there's an expected error
-        const AzPhysics::RigidBody* rigidBody = rigidBodyComponent->GetRigidBody();
-        EXPECT_EQ(rigidBody->GetShapeCount(), 0);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderRadius, 0.0f);
         EXPECT_EQ(expectedError.GetErrorCount(), 1);
     }
 
-    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderZeroHeight_NoColliderCreated)
+    TEST_F(PhysXEditorFixture, EditorRigidBodyComponent_CylinderColliderSetZeroHeight_ErrorIssued)
     {
         // Create editor entities
-        EntityPtr editorEntity =  CreateInactiveEditorEntity("ZeroHeight");
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ZeroHeight");
 
         UnitTest::ErrorHandler expectedError("SetCylinderHeight: height must be greater than zero.");
 
-        const auto* rigidBodyComponent = editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
+        editorEntity->CreateComponent<PhysX::EditorRigidBodyComponent>();
         const auto* colliderComponent = editorEntity->CreateComponent<PhysX::EditorColliderComponent>();
 
         editorEntity->Activate();
@@ -195,17 +188,10 @@ namespace PhysXEditorTests
 
         // Set collider to be a cylinder
         const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, shapeType);
 
         // Set collider cylinder height to zero
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderHeight, 0.0f);
-
-        // Notify listeners that collider has changed
-        Physics::ColliderComponentEventBus::Event(editorEntity->GetId(), &Physics::ColliderComponentEvents::OnColliderChanged);
-
-        // Verify no shapes are created and there's an expected error
-        const AzPhysics::RigidBody* rigidBody = rigidBodyComponent->GetRigidBody();
-        EXPECT_EQ(rigidBody->GetShapeCount(), 0);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderHeight, 0.0f);
         EXPECT_EQ(expectedError.GetErrorCount(), 1);
     }
 
@@ -225,15 +211,15 @@ namespace PhysXEditorTests
 
         // Set collider to be a cylinder
         const Physics::ShapeType shapeType = Physics::ShapeType::Cylinder;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetShapeType, shapeType);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetShapeType, shapeType);
 
         // Set collider subdivision values outside the allowed range
         const AZ::u8 subdivisionsTooSmall = PhysX::Utils::MinFrustumSubdivisions - 1;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooSmall);
         EXPECT_EQ(expectedError.GetExpectedWarningCount(), 1);
 
         const AZ::u8 subdivisionsTooLarge = PhysX::Utils::MaxFrustumSubdivisions + 1;
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
+        PhysX::EditorPrimitiveColliderComponentRequestBus::Event(idPair, &PhysX::EditorPrimitiveColliderComponentRequests::SetCylinderSubdivisionCount, subdivisionsTooLarge);
         EXPECT_EQ(expectedError.GetExpectedWarningCount(), 2);
     }
 

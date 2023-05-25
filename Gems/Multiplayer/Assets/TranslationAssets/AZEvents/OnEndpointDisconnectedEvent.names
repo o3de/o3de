@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "On Endpoint Disconnected Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Endpoint Disconnected Event"
+            },
+            "slots": [
+                {
+                    "base": "Type of Multiplayer Agent that disconnected",
+                    "details": {
+                        "name": "Type of Multiplayer Agent that disconnected"
+                    }
+                },
+                {
+                    "base": "On Endpoint Disconnected Event",
+                    "details": {
+                        "name": "On Endpoint Disconnected Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

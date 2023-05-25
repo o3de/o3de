@@ -130,7 +130,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(CollisionGroupsWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CollisionGroupsWidget, AZ::SystemAllocator);
 
             explicit CollisionGroupsWidget(QWidget* parent = nullptr);
 

@@ -8,6 +8,7 @@
  */
 // {END_LICENSE}
 
+#include <${Name}/${Name}TypeIds.h>
 #include <${Name}ModuleInterface.h>
 #include "${Name}EditorSystemComponent.h"
 
@@ -23,8 +24,8 @@ namespace ${SanitizedCppName}
         : public ${SanitizedCppName}ModuleInterface
     {
     public:
-        AZ_RTTI(${SanitizedCppName}EditorModule, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}EditorModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}EditorModule, ${SanitizedCppName}EditorModuleTypeId, ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}EditorModule, AZ::SystemAllocator);
 
         ${SanitizedCppName}EditorModule()
         {

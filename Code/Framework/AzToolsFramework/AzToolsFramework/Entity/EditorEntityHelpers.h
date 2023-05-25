@@ -100,6 +100,7 @@ namespace AzToolsFramework
     AZ::Uuid GetComponentTypeId(const AZ::Component* component);
     const AZ::SerializeContext::ClassData* GetComponentClassData(const AZ::Component* component);
     const AZ::SerializeContext::ClassData* GetComponentClassDataForType(const AZ::Uuid& componentTypeId);
+    AZStd::string GetNameFromComponentClassData(const AZ::Component* component);
     AZStd::string GetFriendlyComponentName(const AZ::Component* component);
     const char* GetFriendlyComponentDescription(const AZ::Component* component);
     AZ::ComponentDescriptor* GetComponentDescriptor(const AZ::Component* component);
@@ -214,5 +215,8 @@ namespace AzToolsFramework
     /// Return a set of entities, culling any that have an ancestor in the list.
     /// e.g. This is useful for getting a concise set of entities that need to be duplicated.
     EntityIdSet GetCulledEntityHierarchy(const EntityIdList& entities);
+
+    /// Checks if the selected entities and the new parent entity belong to the same prefab.
+    bool EntitiesBelongToSamePrefab(const EntityIdList& selectedEntities, const AZ::EntityId newParentId);
 
 }; // namespace AzToolsFramework

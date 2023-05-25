@@ -32,7 +32,7 @@ namespace AZ
 
         public:
             AZ_RTTI(OutputTransformPass, "{1703EB2E-2415-41AE-9C10-06151F795A4A}", DisplayMapperFullScreenPass);
-            AZ_CLASS_ALLOCATOR(OutputTransformPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OutputTransformPass, SystemAllocator);
             virtual ~OutputTransformPass();
 
             /// Creates a OutputTransformPass

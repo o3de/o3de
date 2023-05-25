@@ -139,6 +139,10 @@ namespace AtomToolsFramework
         //! transform (this is usually zero).
         AZ::Transform CombinedCameraTransform() const;
 
+        //! Reconnect the current view matrix change handler after the viewport context view group has changed.
+        //! @note: This happens after switching to track a different camera/viewport transform.
+        void ReconnectViewMatrixChangeHandler();
+
         //! The current mode the camera controller is in.
         enum class CameraMode
         {
@@ -158,7 +162,6 @@ namespace AtomToolsFramework
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
         AzFramework::Camera m_targetCamera; //!< The target (next) camera state that m_camera is catching up to.
-        AzFramework::Camera m_previousCamera; //!< The state of the camera from the previous frame.
         AZStd::optional<AzFramework::Camera> m_storedCamera; //!< A potentially stored camera for when a transform is being tracked.
         AzFramework::CameraSystem m_cameraSystem; //!< The camera system responsible for managing all CameraInputs.
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.

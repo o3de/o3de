@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <MCore/Source/StringIdPool.h>
 #include <MCore/Source/Distance.h>

@@ -24,7 +24,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SwapChainFrameAttachment, "{6DBAE3A9-45F9-4B0A-AFF4-0965C456D4C0}", ImageFrameAttachment);
-            AZ_CLASS_ALLOCATOR(SwapChainFrameAttachment, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChainFrameAttachment, AZ::PoolAllocator);
 
             SwapChainFrameAttachment(
                 const AttachmentId& attachmentId,

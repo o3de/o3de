@@ -22,7 +22,7 @@ namespace Maestro
         {
         public:
             virtual ~AnimationData() { }
-            AZ_CLASS_ALLOCATOR(AnimationData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AnimationData, AZ::SystemAllocator);
             AZ_RTTI(AnimationData, "{1CC687A8-9331-4314-A0F9-C75C50C10268}");
             AZStd::string m_serializedData;
         };

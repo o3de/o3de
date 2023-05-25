@@ -20,6 +20,7 @@ namespace AZ
               private Data::AssetBus::MultiHandler
         {
         public:
+            AZ_CLASS_ALLOCATOR(ReflectionProbeFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::ReflectionProbeFeatureProcessor, "{A08C591F-D2AB-4550-852A-4436533DB137}", AZ::Render::ReflectionProbeFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);

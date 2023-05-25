@@ -25,7 +25,7 @@ namespace MCore
     class MCORE_API AttributeQuaternion
         : public Attribute
     {
-        AZ_CLASS_ALLOCATOR(AttributeQuaternion, AttributeAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AttributeQuaternion, AttributeAllocator)
 
         friend class AttributeFactory;
     public:

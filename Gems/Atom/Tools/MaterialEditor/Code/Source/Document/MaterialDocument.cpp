@@ -680,7 +680,7 @@ namespace MaterialEditor
                         // image and formatting.
                         propertyConfig.m_description +=
                             "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties with "
-                            "overridden values that are different from the parent material, or material type if there is no parent.";
+                            "overridden values that are different from the parent material, or material type if there is no parent.\n";
 
                         // The dynamic property uses the group name and display name to forward as attributes to the RPE and property asset
                         // control. The control will then use the attributes to display a context sensitive title when opening the asset

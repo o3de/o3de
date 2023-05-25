@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(DepthOfFieldComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::DepthOfFieldComponentConfig, "{41E878A3-7DE6-4F27-AD14-FC115DE506F5}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

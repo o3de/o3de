@@ -33,7 +33,7 @@ namespace AZ
             , public AzFramework::ExclusiveFullScreenRequestBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(WindowContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WindowContext, AZ::SystemAllocator);
 
             WindowContext() = default;
             ~WindowContext() = default;

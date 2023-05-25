@@ -56,7 +56,7 @@ namespace AZ
             using AuxGeomNormal = AuxGeomPosition;
 
             AZ_TYPE_INFO(FixedShapeProcessor, "{20A11645-F8B1-4BAC-847D-F8F49FD2E339}");
-            AZ_CLASS_ALLOCATOR(FixedShapeProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FixedShapeProcessor, AZ::SystemAllocator);
 
             FixedShapeProcessor() = default;
             ~FixedShapeProcessor() = default;
@@ -70,8 +70,11 @@ namespace AZ
             //! Processes all the fixed shape objects for a frame
             void ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
 
-            //! do any cleanup from last frame.
+            //! Prepare frame.
             void PrepareFrame();
+                        
+            //! Do any cleanup after current frame is rendered.
+            void FrameEnd();
 
             //! Notify this FixedShapeProcessor to update its pipeline states
             void SetUpdatePipelineStates();

@@ -43,7 +43,7 @@ namespace AZ
             friend class ImageSystem;
         public:
             AZ_INSTANCE_DATA(StreamingImagePool, "{2F87FE52-4D20-49CA-9418-E544FB450B81}");
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
 
             //! Instantiates or returns an existing runtime streaming image pool using its paired asset.
             //! @param streamingImagePoolAsset The asset used to instantiate an instance of the streaming image pool.
@@ -98,9 +98,6 @@ namespace AZ
 
             // The controller used to manage streaming events on the pool.
             AZStd::unique_ptr<StreamingImageController> m_controller;
-
-            // The streamable image count
-            AZStd::atomic_uint m_streamableImageCount = 0;
         };
     }
 }

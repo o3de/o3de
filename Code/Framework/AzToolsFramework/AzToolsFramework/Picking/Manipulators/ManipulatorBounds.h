@@ -47,7 +47,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundSphere, "{64D1B863-F574-4B31-A4F2-C9744D8567B3}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundSphere, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundSphere, AZ::SystemAllocator);
 
             explicit ManipulatorBoundSphere(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -65,7 +65,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundBox, "{3AD46067-933F-49B4-82E1-DBF12C7BC02E}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundBox, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundBox, AZ::SystemAllocator);
 
             explicit ManipulatorBoundBox(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -86,7 +86,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundCylinder, "{D248F9E4-22E6-41A8-898D-704DF307B533}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundCylinder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundCylinder, AZ::SystemAllocator);
 
             explicit ManipulatorBoundCylinder(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -106,7 +106,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundCone, "{9430440D-DFF2-4A60-9073-507C4E9DD65D}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundCone, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundCone, AZ::SystemAllocator);
 
             explicit ManipulatorBoundCone(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -129,7 +129,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundQuad, "{3CDED61C-5786-4299-B5F2-5970DE4457AD}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundQuad, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundQuad, AZ::SystemAllocator);
 
             explicit ManipulatorBoundQuad(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -149,7 +149,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundTorus, "{46E4711C-178A-4F97-BC14-A048D096E7A1}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundTorus, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundTorus, AZ::SystemAllocator);
 
             explicit ManipulatorBoundTorus(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -172,7 +172,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundLineSegment, "{66801554-1C1A-4E79-B1E7-342DFA779D53}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundLineSegment, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundLineSegment, AZ::SystemAllocator);
 
             explicit ManipulatorBoundLineSegment(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)
@@ -191,7 +191,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(ManipulatorBoundSpline, "{777760FF-8547-45AD-876F-16BA4D9D0584}", BoundShapeInterface);
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundSpline, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundSpline, AZ::SystemAllocator);
 
             explicit ManipulatorBoundSpline(RegisteredBoundId boundId)
                 : BoundShapeInterface(boundId)

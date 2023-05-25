@@ -123,7 +123,7 @@ namespace AZ::Data
         : public AssetDatabaseAsyncJob
     {
     public:
-        AZ_CLASS_ALLOCATOR(LoadAssetJob, ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LoadAssetJob, ThreadPoolAllocator);
 
         LoadAssetJob(AssetManager* owner, const Asset<AssetData>& asset,
             AZStd::shared_ptr<AssetDataStream> dataStream, bool isReload, AZ::IO::IStreamerTypes::RequestStatus requestState,
@@ -248,7 +248,7 @@ namespace AZ::Data
         : public BlockingAssetLoadBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(WaitForAsset, ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WaitForAsset, ThreadPoolAllocator);
 
 
         WaitForAsset(const Asset<AssetData>& assetToWaitFor, bool shouldDispatchEvents)
@@ -404,7 +404,7 @@ namespace AZ::Data
         : public AssetDatabaseAsyncJob
     {
     public:
-        AZ_CLASS_ALLOCATOR(SaveAssetJob, ThreadPoolAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SaveAssetJob, ThreadPoolAllocator);
 
         SaveAssetJob(JobContext* jobContext, AssetManager* owner, const Asset<AssetData>& asset, AssetHandler* assetHandler)
             : AssetDatabaseAsyncJob(jobContext, true, owner, asset, assetHandler)

@@ -169,6 +169,11 @@ AZ::Event<{{ Property.attrib['Type'] }}>
 {%     set paramDefines = [] %}
 {%     set PropertyName = UpperFirst(Property.attrib['Name']) %}
 {{     ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
+{% if HandleOn == "Server" or HandleOn == "Authority" %}
+#if AZ_TRAIT_SERVER
+{% else %}
+#if AZ_TRAIT_CLIENT
+{% endif %}
 {% if IsOverride %}
 {%     if paramDefines|count > 0 %}
 void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ ', '.join(paramDefines) }}) override {}
@@ -185,6 +190,7 @@ virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection
 virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection* invokingConnection) {}
 {%     endif %}
 {% endif %}
+#endif
 {% endmacro %}
 {#
 

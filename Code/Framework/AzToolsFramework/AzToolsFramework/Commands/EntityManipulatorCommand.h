@@ -38,7 +38,7 @@ namespace AzToolsFramework
     class EntityManipulatorCommand : public UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityManipulatorCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityManipulatorCommand, AZ::SystemAllocator);
         AZ_RTTI(EntityManipulatorCommand, "{A50E3220-B690-4DB3-B067-549626F477D8}");
 
         struct PivotOverride

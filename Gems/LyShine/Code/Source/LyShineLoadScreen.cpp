@@ -185,7 +185,8 @@ namespace LyShine
             // Release the game canvas.
             if (m_gameCanvasEntityId.IsValid())
             {
-                EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, m_gameCanvasEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_gameCanvasEntityId);
                 if (canvasEntity)
                 {
                     AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_gameCanvasEntityId, false);
@@ -196,7 +197,8 @@ namespace LyShine
             // Release the level canvas.
             if (m_levelCanvasEntityId.IsValid())
             {
-                EBUS_EVENT_RESULT(canvasEntity, AZ::ComponentApplicationBus, FindEntity, m_levelCanvasEntityId);
+                AZ::ComponentApplicationBus::BroadcastResult(
+                    canvasEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_levelCanvasEntityId);
                 if (canvasEntity)
                 {
                     AZ::Interface<ILyShine>::Get()->ReleaseCanvas(m_levelCanvasEntityId, false);
@@ -244,10 +246,10 @@ namespace LyShine
             return AZ::EntityId();
         }
 
-        EBUS_EVENT_ID(canvasId, UiCanvasBus, SetKeepLoadedOnLevelUnload, true);
+        UiCanvasBus::Event(canvasId, &UiCanvasBus::Events::SetKeepLoadedOnLevelUnload, true);
 
         // Set the load screen draw order so it renders in front of other canvases that may load during the level load
-        EBUS_EVENT_ID(canvasId, UiCanvasBus, SetDrawOrder, std::numeric_limits<int>::max());
+        UiCanvasBus::Event(canvasId, &UiCanvasBus::Events::SetDrawOrder, std::numeric_limits<int>::max());
 
         ICVar* autoPlayVar = gEnv->pConsole->GetCVar(autoPlayVarName);
         AZStd::string sequence = autoPlayVar ? autoPlayVar->GetString() : "";
@@ -258,7 +260,7 @@ namespace LyShine
         }
 
         IUiAnimationSystem* animSystem = nullptr;
-        EBUS_EVENT_ID_RESULT(animSystem, canvasId, UiCanvasBus, GetAnimationSystem);
+        UiCanvasBus::EventResult(animSystem, canvasId, &UiCanvasBus::Events::GetAnimationSystem);
         if (!animSystem)
         {
             // Nothing can be auto-played.

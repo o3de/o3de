@@ -24,7 +24,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyIntSpinCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyIntSpinCtrl, AZ::SystemAllocator);
 
         PropertyIntSpinCtrl(QWidget* parent = NULL);
         virtual ~PropertyIntSpinCtrl();
@@ -75,7 +75,7 @@ namespace AzToolsFramework
     {
         using BaseHandler = IntWidgetHandler<ValueType, PropertyIntSpinCtrl, IntSpinBoxHandlerQObject>;
     public:
-        AZ_CLASS_ALLOCATOR(IntSpinBoxHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntSpinBoxHandler, AZ::SystemAllocator);
     protected:
         bool IsDefaultHandler() const override;
         AZ::u32 GetHandlerName(void) const override;

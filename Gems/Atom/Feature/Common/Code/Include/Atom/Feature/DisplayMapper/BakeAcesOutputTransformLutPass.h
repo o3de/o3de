@@ -39,7 +39,7 @@ namespace AZ
 
         public:
             AZ_RTTI(BakeAcesOutputTransformLutPass, "{383C28CD-D744-4B48-A30D-086EF66E7BFB}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(BakeAcesOutputTransformLutPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BakeAcesOutputTransformLutPass, SystemAllocator);
             virtual ~BakeAcesOutputTransformLutPass();
 
             /// Creates a DisplayMapperPass

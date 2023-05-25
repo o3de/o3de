@@ -53,6 +53,9 @@ namespace PhysX
 
         m_config.m_followerEntity = GetEntityId();
 
+        m_cachedWorldTM = GetWorldTM();
+
+        AZ::TransformNotificationBus::Handler::BusConnect(m_config.m_followerEntity);
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(m_config.m_followerEntity);
         AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler::BusConnect(m_config.m_followerEntity);
         PhysX::EditorJointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(m_config.m_followerEntity, GetId()));
@@ -69,6 +72,26 @@ namespace PhysX
         AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
+    }
+
+    void EditorJointComponent::OnTransformChanged(
+        [[maybe_unused]] const AZ::Transform& localTM, const AZ::Transform& worldTM)
+    {
+        if (m_config.m_fixJointLocation)
+        {
+            const AZ::Transform localJoint = GetTransformValue(JointsComponentModeCommon::ParameterNames::Transform);
+            const AZ::Transform worldJoint = m_cachedWorldTM * localJoint;
+
+            const AZ::Transform localFromWorld = worldTM.GetInverse();
+            const AZ::Transform newLocalJoint = localFromWorld * worldJoint;
+            m_config.m_localPosition = newLocalJoint.GetTranslation();
+            m_config.m_localRotation = newLocalJoint.GetEulerDegrees();
+
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        }
+        m_cachedWorldTM = worldTM;
     }
 
     AZ::Aabb EditorJointComponent::GetEditorSelectionBoundsViewport(
@@ -134,7 +157,7 @@ namespace PhysX
 
     bool EditorJointComponent::GetBoolValue(const AZStd::string& parameterName)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::ComponentMode)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::ComponentMode)
         {
             return m_config.m_inComponentMode;
         }
@@ -145,7 +168,7 @@ namespace PhysX
 
     AZ::EntityId EditorJointComponent::GetEntityIdValue(const AZStd::string& parameterName)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::LeadEntity)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::LeadEntity)
         {
             return m_config.m_leadEntity;
         }
@@ -157,11 +180,11 @@ namespace PhysX
 
     float EditorJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
@@ -178,7 +201,7 @@ namespace PhysX
 
     AZ::Transform EditorJointComponent::GetTransformValue(const AZStd::string& parameterName)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::Transform)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::Transform)
         {
             return AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateFromEulerAnglesDegrees(m_config.m_localRotation),
                 m_config.m_localPosition);
@@ -189,11 +212,11 @@ namespace PhysX
 
     AZ::Vector3 EditorJointComponent::GetVector3Value(const AZStd::string& parameterName)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::Position)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::Position)
         {
             return m_config.m_localPosition;
         }
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::Rotation)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::Rotation)
         {
             return m_config.m_localRotation;
         }
@@ -201,27 +224,27 @@ namespace PhysX
         return AZ::Vector3::CreateZero();
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorJointComponent::GetSubComponentModesState()
     {
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModes;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModes;
         if (m_config.m_breakable)
         {
-            subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
-                JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce, JointsComponentModeCommon::ParamaterNames::MaxForce });
-            subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+            subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
+                JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce, JointsComponentModeCommon::ParameterNames::MaxForce });
+            subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
                 JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque,
-                JointsComponentModeCommon::ParamaterNames::MaxTorque });
+                JointsComponentModeCommon::ParameterNames::MaxTorque });
         }
         return subModes;
     }
 
     void EditorJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
@@ -235,11 +258,11 @@ namespace PhysX
 
     void EditorJointComponent::SetVector3Value(const AZStd::string& parameterName, const AZ::Vector3& value)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::Position)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::Position)
         {
             m_config.m_localPosition = value;
         }
-        else if (parameterName == JointsComponentModeCommon::ParamaterNames::Rotation)
+        else if (parameterName == JointsComponentModeCommon::ParameterNames::Rotation)
         {
             m_config.m_localRotation = value;
         }
@@ -247,7 +270,7 @@ namespace PhysX
 
     void EditorJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::ComponentMode)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::ComponentMode)
         {
             m_config.m_inComponentMode = value;
 
@@ -259,7 +282,7 @@ namespace PhysX
 
     void EditorJointComponent::SetEntityIdValue(const AZStd::string& parameterName, AZ::EntityId value)
     {
-        if (parameterName == JointsComponentModeCommon::ParamaterNames::LeadEntity)
+        if (parameterName == JointsComponentModeCommon::ParameterNames::LeadEntity)
         {
             m_config.SetLeadEntityId(value);
         }

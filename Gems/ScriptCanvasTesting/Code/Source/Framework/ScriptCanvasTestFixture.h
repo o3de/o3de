@@ -11,9 +11,6 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/vector.h>
@@ -80,7 +77,7 @@ namespace ScriptCanvasTests
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     s_application->Start(descriptor, appStartup);
                     // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
                     // in the unit tests.
                     AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, false);
@@ -101,7 +98,7 @@ namespace ScriptCanvasTests
                 AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
                 AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
             }
-            
+
             AZ::TickBus::AllowFunctionQueuing(true);
 
             auto m_serializeContext = s_application->GetSerializeContext();
@@ -404,13 +401,13 @@ namespace ScriptCanvasTests
 
     protected:
         static ScriptCanvasTests::Application* GetApplication() { return s_application; }
-        
+
     private:
 
         static bool s_setupSucceeded;
         static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         AZStd::unordered_set< AZ::ComponentDescriptor* > m_descriptors;
-        
+
     };
 }

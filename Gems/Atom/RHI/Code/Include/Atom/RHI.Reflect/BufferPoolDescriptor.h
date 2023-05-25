@@ -22,6 +22,7 @@ namespace AZ
         {
         public:
             virtual ~BufferPoolDescriptor() = default;
+            AZ_CLASS_ALLOCATOR(BufferPoolDescriptor, SystemAllocator)
             AZ_RTTI(BufferPoolDescriptor, "{53074556-41D1-4246-8BF0-E5B096997C65}", ResourcePoolDescriptor);
             static void Reflect(AZ::ReflectContext* context);
 

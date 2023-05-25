@@ -42,7 +42,7 @@ AZ_CVAR(
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(VertexTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(VertexTranslationModifier, AZ::SystemAllocator)
 
     static bool IsAxisValid(const int axisIndex)
     {

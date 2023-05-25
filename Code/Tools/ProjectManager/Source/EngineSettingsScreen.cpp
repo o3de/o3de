@@ -53,6 +53,10 @@ namespace O3DE::ProjectManager
         engineName->lineEdit()->setReadOnly(true);
         layout->addWidget(engineName);
 
+        FormLineEditWidget* engineDisplayVersion = new FormLineEditWidget(tr("Engine Display Version"), engineInfo.m_displayVersion, this);
+        engineDisplayVersion->lineEdit()->setReadOnly(true);
+        layout->addWidget(engineDisplayVersion);
+
         FormLineEditWidget* engineVersion = new FormLineEditWidget(tr("Engine Version"), engineInfo.m_version, this);
         engineVersion->lineEdit()->setReadOnly(true);
         layout->addWidget(engineVersion);

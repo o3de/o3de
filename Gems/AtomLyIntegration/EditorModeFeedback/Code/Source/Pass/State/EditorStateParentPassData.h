@@ -19,7 +19,7 @@ namespace AZ::RPI
         : public RPI::RenderPassData
     {
         AZ_RTTI(EditorStateParentPassData, "{0E0FD1EE-906C-45B5-B65E-463719A90712}", RenderPassData);
-        AZ_CLASS_ALLOCATOR(EditorStateParentPassData, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorStateParentPassData, SystemAllocator);
 
         EditorStateParentPassData() = default;
         virtual ~EditorStateParentPassData() = default;

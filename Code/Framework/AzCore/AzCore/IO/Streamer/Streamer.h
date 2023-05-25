@@ -37,7 +37,7 @@ namespace AZ::IO
     {
     public:
         AZ_RTTI(Streamer, "{3D880982-6E3F-4913-9947-55E01030D4AA}", IStreamer);
-        AZ_CLASS_ALLOCATOR(Streamer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Streamer, SystemAllocator);
 
         //
         // Streamer commands.

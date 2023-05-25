@@ -79,7 +79,7 @@ namespace SaveData
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Default factory create function

@@ -24,7 +24,7 @@ namespace GraphCanvas
         : public QGraphicsWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasLabel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasLabel, AZ::SystemAllocator);
 
         enum class WrapMode
         {

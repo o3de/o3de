@@ -37,10 +37,10 @@ namespace AZ
             : public AZStd::intrusive_base
         {
             friend class DynamicBufferAllocator;
-            AZ_RTTI(AZ::RPI::DynamicBuffer, "{812ED1A6-9E9C-4ED0-9D47-6615DB7A2226}");
-            AZ_CLASS_ALLOCATOR(DynamicBuffer, AZ::SystemAllocator, 0);
 
         public:
+            AZ_RTTI(AZ::RPI::DynamicBuffer, "{812ED1A6-9E9C-4ED0-9D47-6615DB7A2226}");
+            AZ_CLASS_ALLOCATOR(DynamicBuffer, AZ::SystemAllocator);
             //! Write data to the DyanmicBuffer. The write size can't be larger than this buffer's size
             bool Write(const void* data, uint32_t size);
 

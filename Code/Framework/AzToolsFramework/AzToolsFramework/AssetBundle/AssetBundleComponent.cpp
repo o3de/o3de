@@ -265,7 +265,7 @@ namespace AzToolsFramework
         AZStd::vector<AZStd::string> dependentBundleNames;
         AZStd::vector<AZ::IO::Path> levelDirs;
         AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> bundlePathDeltaCatalogPair;
-        bundlePathDeltaCatalogPair.emplace_back(AZStd::make_pair(tempBundleFilePath, DeltaCatalogName));
+        bundlePathDeltaCatalogPair.emplace_back(tempBundleFilePath, DeltaCatalogName);
 
         AZStd::vector<AZStd::string> fileEntries; // this is used to add files to the archive
         AZStd::vector<AZStd::string> deltaCatalogEntries; // this is used to create the delta catalog
@@ -711,7 +711,7 @@ namespace AzToolsFramework
 
         // deserialize the manifest
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
         if (nullptr == serializeContext->FindClassData(AZ::AzTypeInfo<AzFramework::AssetBundleManifest>::Uuid()))
         {

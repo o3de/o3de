@@ -184,16 +184,16 @@ namespace AssetProcessor
         for (const AssetFileInfo& fileInfo : m_filesInAssetScanner)
         {
             bool isDir = fileInfo.m_isDirectory;
-            QString scanFolderName;
+            QString scanFolderPath;
             QString relativeFileName;
 
-            if (!m_platformConfig->ConvertToRelativePath(fileInfo.m_filePath, relativeFileName, scanFolderName))
+            if (!m_platformConfig->ConvertToRelativePath(fileInfo.m_filePath, relativeFileName, scanFolderPath))
             {
                 AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to convert full path to relative for file %s", fileInfo.m_filePath.toUtf8().constData());
                 continue;
             }
 
-            const ScanFolderInfo* scanFolderInfo = m_platformConfig->GetScanFolderForFile(fileInfo.m_filePath);
+            const ScanFolderInfo* scanFolderInfo = m_platformConfig->GetScanFolderByPath(scanFolderPath);
             if (!scanFolderInfo)
             {
                 AZ_Error(AssetProcessor::ConsoleChannel, false, "Failed to find the scan folder for file %s", fileInfo.m_filePath.toUtf8().constData());

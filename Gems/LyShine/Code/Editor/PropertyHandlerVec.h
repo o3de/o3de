@@ -94,7 +94,7 @@ class PropertyHandlerVec2
     : public LegacyVectorPropertyHandlerBase<Vec2>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerVec2, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerVec2, AZ::SystemAllocator);
 
     PropertyHandlerVec2()
         : LegacyVectorPropertyHandlerBase(2)
@@ -110,7 +110,7 @@ class PropertyHandlerVec3
     : public LegacyVectorPropertyHandlerBase<Vec3>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator);
 
     PropertyHandlerVec3()
         : LegacyVectorPropertyHandlerBase(3)
@@ -126,7 +126,7 @@ class PropertyHandlerVec4
     : public LegacyVectorPropertyHandlerBase<Vec4>
 {
 public:
-    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(PropertyHandlerVec3, AZ::SystemAllocator);
 
     PropertyHandlerVec4()
         : LegacyVectorPropertyHandlerBase(4)

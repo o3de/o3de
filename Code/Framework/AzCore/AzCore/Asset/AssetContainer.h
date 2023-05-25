@@ -32,7 +32,7 @@ namespace AZ
             AZ::Data::AssetLoadBus::MultiHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetContainer, SystemAllocator);
 
             AssetContainer() = default;
 

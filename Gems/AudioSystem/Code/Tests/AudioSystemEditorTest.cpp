@@ -24,7 +24,6 @@ namespace CustomMocks
         : public AZ::IO::MockFileIOBase
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioControlsEditorTest_FileIOMock);
 
         AudioControlsEditorTest_FileIOMock()
         {
@@ -58,8 +57,6 @@ class AudioControlsEditorTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(AudioControlsEditorTestEnvironment)
-
     ~AudioControlsEditorTestEnvironment() override = default;
 
 protected:

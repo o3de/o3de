@@ -10,11 +10,22 @@ if (NOT PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     return()
 endif()
 
+o3de_restricted_path(${gem_json} gem_restricted_path gem_parent_relative_path)
+o3de_pal_dir(pal_source_dir "${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME}" "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+
+include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+if (NOT PAL_TRAIT_AWSGAMELIFTSERVER_SUPPORTED)
+    return()
+endif()
+
+
 ly_add_target(
     NAME AWSGameLift.Server.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
         awsgamelift_server_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             ../AWSGameLiftCommon/Include
@@ -25,7 +36,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
             3rdParty::AWSGameLiftServerSDK
     )
 
@@ -63,12 +74,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzCore
                 AZ::AzTest
-                Gem::Multiplayer.Static
+                Gem::Multiplayer.Unified.Static
                 Gem::AWSGameLift.Server.Static
                 3rdParty::AWSGameLiftServerSDK
     )
     # Add AWSGameLift.Server.Tests to googletest
     ly_add_googletest(
         NAME Gem::AWSGameLift.Server.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

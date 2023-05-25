@@ -5,7 +5,7 @@
     "ClassData": {
         "m_scriptCanvas": {
             "Id": {
-                "id": 1333446933043246
+                "id": 612856513135783
             },
             "Name": "Script Canvas Graph",
             "Components": {
@@ -16,7 +16,7 @@
                         "m_nodes": [
                             {
                                 "Id": {
-                                    "id": 1333455522977838
+                                    "id": 612860808103079
                                 },
                                 "Name": "10866505360144",
                                 "Components": {
@@ -160,7 +160,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 1333451228010542
+                                    "id": 612865103070375
                                 },
                                 "Name": "10673231831824",
                                 "Components": {
@@ -192,7 +192,7 @@
                         "m_connections": [
                             {
                                 "Id": {
-                                    "id": 1333459817945134
+                                    "id": 612869398037671
                                 },
                                 "Name": "srcEndpoint=(On Graph Start: Out), destEndpoint=(Expect True: In)",
                                 "Components": {
@@ -201,7 +201,7 @@
                                         "Id": 15873901507416889624,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 1333451228010542
+                                                "id": 612865103070375
                                             },
                                             "slotId": {
                                                 "m_id": "{5C216872-1394-4D0B-A474-AA8B65A1F104}"
@@ -209,7 +209,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 1333455522977838
+                                                "id": 612860808103079
                                             },
                                             "slotId": {
                                                 "m_id": "{3BF3F81E-F633-49EF-B53B-026EE5A20018}"
@@ -230,7 +230,7 @@
                     "GraphCanvasData": [
                         {
                             "Key": {
-                                "id": 1333446933043246
+                                "id": 612856513135783
                             },
                             "Value": {
                                 "ComponentData": {
@@ -247,33 +247,7 @@
                         },
                         {
                             "Key": {
-                                "id": 1333451228010542
-                            },
-                            "Value": {
-                                "ComponentData": {
-                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
-                                        "$type": "NodeSaveData"
-                                    },
-                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
-                                        "$type": "GeometrySaveData",
-                                        "Position": [
-                                            -980.0,
-                                            -3080.0
-                                        ]
-                                    },
-                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
-                                        "$type": "StylingComponentSaveData"
-                                    },
-                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
-                                        "$type": "PersistentIdComponentSaveData",
-                                        "PersistentId": "{E8FDC3CB-9968-490A-BB37-40FC70FB7F70}"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "id": 1333455522977838
+                                "id": 612860808103079
                             },
                             "Value": {
                                 "ComponentData": {
@@ -301,8 +275,46 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "Key": {
+                                "id": 612865103070375
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            -980.0,
+                                            -3080.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{E8FDC3CB-9968-490A-BB37-40FC70FB7F70}"
+                                    }
+                                }
+                            }
                         }
-                    ]
+                    ],
+                    "StatisticsHelper": {
+                        "InstanceCounter": [
+                            {
+                                "Key": 4199610336680704683,
+                                "Value": 1
+                            },
+                            {
+                                "Key": 12033332465728181077,
+                                "Value": 1
+                            }
+                        ]
+                    }
                 },
                 "Component_[3443229490917141335]": {
                     "$type": "EditorGraphVariableManagerComponent",
@@ -315,6 +327,7 @@
                                 },
                                 "Value": {
                                     "Datum": {
+                                        "isOverloadedStorage": false,
                                         "scriptCanvasType": {
                                             "m_type": 0
                                         },

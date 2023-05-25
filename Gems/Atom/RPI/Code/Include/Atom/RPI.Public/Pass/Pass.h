@@ -64,11 +64,10 @@ namespace AZ
         class AttachmentReadback;
         class ImageAttachmentCopy;
 
-        using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
 
         const uint32_t PassAttachmentBindingCountMax = 32;
-        const uint32_t PassInputBindingCountMax = 16;
+        const uint32_t PassInputBindingCountMax = PassAttachmentBindingCountMax;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
                 
@@ -112,16 +111,12 @@ namespace AZ
 
                 RHI::FrameGraphBuilder* m_frameGraphBuilder = nullptr;
 
-                // This should include SRGs that are higher level than
-                // the Pass, like per-frame and per-scene SRGs.
-                const ShaderResourceGroupList* m_shaderResourceGroupsToBind = nullptr;
-
                 RHI::Scissor m_scissorState;
                 RHI::Viewport m_viewportState;
             };
 
             AZ_RTTI(Pass, "{EA34FF66-631D-433B-B449-71F5647E7BB5}", AZStd::intrusive_base);
-            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Pass, SystemAllocator);
 
             virtual ~Pass();
 
@@ -210,7 +205,7 @@ namespace AZ
             // --- Virtual functions which may need to be override by derived classes ---
 
             //! Collect all different view tags from this pass 
-            virtual void GetPipelineViewTags(SortedPipelineViewTags& outTags) const;
+            virtual void GetPipelineViewTags(PipelineViewTags& outTags) const;
 
             //! Adds this pass' DrawListTags to the outDrawListMask.
             virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;

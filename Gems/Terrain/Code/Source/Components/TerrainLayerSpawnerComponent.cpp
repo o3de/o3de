@@ -172,8 +172,8 @@ namespace Terrain
 
         // Notify the terrain system that the entire layer has changed, so both height and surface data can be affected.
         TerrainSystemServiceRequestBus::Broadcast(
-            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            static_cast<Terrain::TerrainDataChangedMask>(Terrain::HeightData | Terrain::SurfaceData)
-        );
+            &TerrainSystemServiceRequestBus::Events::RefreshArea,
+            GetEntityId(),
+            Terrain::TerrainDataChangedMask::HeightData | Terrain::TerrainDataChangedMask::SurfaceData);
     }
 }

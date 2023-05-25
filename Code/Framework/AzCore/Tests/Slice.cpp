@@ -101,7 +101,7 @@ namespace UnitTest
         AZStd::vector<AZ::Data::AssetId> m_mockAssetIds;
 
     public:
-        AZ_CLASS_ALLOCATOR(SliceTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceTest_MockCatalog, AZ::SystemAllocator);
 
         SliceTest_MockCatalog()
         {
@@ -207,9 +207,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = aznew AZ::SerializeContext(true, true);
             m_sliceDescriptor = AZ::SliceComponent::CreateDescriptor();
 
@@ -244,9 +241,6 @@ namespace UnitTest
             AZ::Interface<AZ::IO::IStreamer>::Unregister(m_streamer);
             delete m_streamer;
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }
@@ -567,7 +561,7 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceTest_RecursionDetection_Catalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceTest_RecursionDetection_Catalog, AZ::SystemAllocator);
 
         AZ::Uuid randomUuid = AZ::Uuid::CreateRandom();
 
@@ -826,11 +820,9 @@ namespace Benchmark
 
         AZ::ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-
-        AZ::ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-        componentApp.Create(desc, startupParams);
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        componentApp.Create(desc, startupParameters);
 
         UnitTest::MyTestComponent1::Reflect(componentApp.GetSerializeContext());
         UnitTest::MyTestComponent2::Reflect(componentApp.GetSerializeContext());

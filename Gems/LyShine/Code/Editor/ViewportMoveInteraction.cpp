@@ -37,7 +37,7 @@ ViewportMoveInteraction::ViewportMoveInteraction(
         for (auto element : topLevelSelectedElements)
         {
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, element->GetId(), UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
             m_startingOffsets[element->GetId()] = offsets;
         }
     }
@@ -46,7 +46,7 @@ ViewportMoveInteraction::ViewportMoveInteraction(
         for (auto element : topLevelSelectedElements)
         {
             UiTransform2dInterface::Anchors anchors;
-            EBUS_EVENT_ID_RESULT(anchors, element->GetId(), UiTransform2dBus, GetAnchors);
+            UiTransform2dBus::EventResult(anchors, element->GetId(), &UiTransform2dBus::Events::GetAnchors);
             m_startingAnchors[element->GetId()] = anchors;
         }
     }
@@ -65,14 +65,15 @@ ViewportMoveInteraction::ViewportMoveInteraction(
         m_secondarySelectedElements = topLevelSelectedElements;
 
         // store whether snapping is enabled for this canvas
-        EBUS_EVENT_ID_RESULT(m_isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+        UiEditorCanvasBus::EventResult(m_isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
         // remember the parent of the primary element also
         m_primaryElementParent = EntityHelpers::GetParentElement(m_primaryElement);
 
         // store the starting pivots of the primary element for snapping (in local and canvas space)
         m_startingPrimaryLocalPivot = GetPivotRelativeToTopLeftAnchor(m_primaryElement->GetId());
-        EBUS_EVENT_ID_RESULT(m_startingPrimaryCanvasSpacePivot, m_primaryElement->GetId(), UiTransformBus, GetCanvasSpacePivot);
+        UiTransformBus::EventResult(
+            m_startingPrimaryCanvasSpacePivot, m_primaryElement->GetId(), &UiTransformBus::Events::GetCanvasSpacePivot);
     }
     else
     {
@@ -178,7 +179,7 @@ void ViewportMoveInteraction::SnapMouseDeltas(AZ::Vector2& canvasSpaceMouseDelta
     if (m_isSnapping)
     {
         float snapDistance = 1.0f;
-        EBUS_EVENT_ID_RESULT(snapDistance, m_canvasId, UiEditorCanvasBus, GetSnapDistance);
+        UiEditorCanvasBus::EventResult(snapDistance, m_canvasId, &UiEditorCanvasBus::Events::GetSnapDistance);
 
         if (m_coordinateSystem == ViewportInteraction::CoordinateSystem::LOCAL)
         {
@@ -268,7 +269,7 @@ void ViewportMoveInteraction::MovePrimaryElement(bool restrictDirection, AZ::Vec
         }
     }
 
-    EBUS_EVENT_ID(m_primaryElement->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+    UiElementChangeNotificationBus::Event(m_primaryElement->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
 }
 
 void ViewportMoveInteraction::MoveSecondaryElement(AZ::Entity* element, bool restrictDirection, const AZ::Vector2& canvasSpaceMouseDelta)
@@ -290,20 +291,20 @@ void ViewportMoveInteraction::MoveSecondaryElement(AZ::Entity* element, bool res
         EntityHelpers::MoveByLocalDeltaUsingAnchors(element->GetId(), parentElement->GetId(), startingAnchors, localMouseDelta, restrictDirection);
     }
 
-    EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+    UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
 }
 
 AZ::Vector2 ViewportMoveInteraction::GetPivotRelativeToTopLeftAnchor(AZ::EntityId entityId)
 {
     UiTransform2dInterface::Offsets currentOffsets;
-    EBUS_EVENT_ID_RESULT(currentOffsets, entityId, UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(currentOffsets, entityId, &UiTransform2dBus::Events::GetOffsets);
 
     // Get the width and height in canvas space no scale rotate.
     AZ::Vector2 elementSize;
-    EBUS_EVENT_ID_RESULT(elementSize, entityId, UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(elementSize, entityId, &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, entityId, UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, entityId, &UiTransformBus::Events::GetPivot);
 
     AZ::Vector2 pivotRelativeToTopLeftAnchor(currentOffsets.m_left + (elementSize.GetX() * pivot.GetX()),
         currentOffsets.m_top + (elementSize.GetY() * pivot.GetY()));

@@ -66,7 +66,7 @@ namespace WhiteBox
 
         const char* WhiteBoxMeshAssetHandler::GetBrowserIcon() const
         {
-            return "Editor/Icons/Components/WhiteBoxMesh.png";
+            return "Editor/Icons/Components/WhiteBox.svg";
         }
 
         const char* WhiteBoxMeshAssetHandler::GetGroup() const

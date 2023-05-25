@@ -16,7 +16,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SubMeshInfo, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SubMeshInfo, EMStudio::UIAllocator)
 
     SubMeshInfo::SubMeshInfo([[maybe_unused]] EMotionFX::Actor* actor, [[maybe_unused]] size_t lodLevel, EMotionFX::SubMesh* subMesh)
     {

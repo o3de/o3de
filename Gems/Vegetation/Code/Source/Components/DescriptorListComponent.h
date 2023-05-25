@@ -29,7 +29,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DescriptorListConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DescriptorListConfig, AZ::SystemAllocator);
         AZ_RTTI(DescriptorListConfig, "{902F6253-A8FA-4350-B9F1-C176F3E2D305}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

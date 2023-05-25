@@ -42,7 +42,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using ProcessedObjectStoreContainer = AZStd::vector<ProcessedObjectStore>;
         using ProductAssetDependencyContainer = AZStd::unordered_multimap<AZ::Data::AssetId, AssetDependencyInfo>;
 
-        AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabProcessorContext, AZ::SystemAllocator);
         AZ_RTTI(PrefabProcessorContext, "{C7D77E3A-C544-486B-B774-7C82C38FE22F}");
 
         explicit PrefabProcessorContext(const AZ::Uuid& sourceUuid);

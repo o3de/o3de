@@ -68,12 +68,33 @@ namespace GraphModel
     void BaseInputOutputNode::RegisterCommonSlots(AZStd::string_view directionName)
     {
         GraphModel::DataTypePtr stringDataType = GetGraphContext()->GetDataType<AZStd::string>();
-        RegisterSlot(GraphModel::SlotDefinition::CreateProperty("name", "Name", stringDataType, stringDataType->GetDefaultValue(), 
-            AZStd::string::format("The official name for this %s", directionName.data())));
-        RegisterSlot(GraphModel::SlotDefinition::CreateProperty("displayName", "Display Name", stringDataType, stringDataType->GetDefaultValue(), 
-            AZStd::string::format("The name for this %s, displayed to the user. Will use the above Name if left blank.", directionName.data())));
-        RegisterSlot(GraphModel::SlotDefinition::CreateProperty("description", "Description", stringDataType, stringDataType->GetDefaultValue(), 
-            AZStd::string::format("A description of this %s, used for tooltips", directionName.data())));
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Property,
+            "name",
+            "Name",
+            AZStd::string::format("The official name for this %s", directionName.data()),
+            GraphModel::DataTypeList{ stringDataType },
+            stringDataType->GetDefaultValue()));
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Property,
+            "displayName",
+            "Display Name",
+            AZStd::string::format("The name for this %s, displayed to the user. Will use the above Name if left blank.", directionName.data()),
+            GraphModel::DataTypeList{ stringDataType },
+            stringDataType->GetDefaultValue()));
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Property,
+            "description",
+            "Description",
+            AZStd::string::format("A description of this %s, used for tooltips", directionName.data()),
+            GraphModel::DataTypeList{ stringDataType },
+            stringDataType->GetDefaultValue()));
     }
 
 
@@ -116,14 +137,26 @@ namespace GraphModel
     void GraphInputNode::RegisterSlots()
     {
         // Register just a single output slot for the data that is input through this node
-        RegisterSlot(GraphModel::SlotDefinition::CreateOutputData("value", "Value", m_dataType, "An external value provided as input to this graph"));
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Output,
+            GraphModel::SlotType::Data,
+            "value",
+            "Value",
+            "An external value provided as input to this graph",
+            GraphModel::DataTypeList{ m_dataType }));
 
         // Register meta-data properties
         RegisterCommonSlots("input");
-        RegisterSlot(GraphModel::SlotDefinition::CreateProperty("defaultValue", "Default Value", m_dataType, m_dataType->GetDefaultValue(),
-            "The default value for this input when no data is provided externally"));
-    }
 
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Property,
+            "defaultValue",
+            "Default Value",
+            "The default value for this input when no data is provided externally",
+            GraphModel::DataTypeList{ m_dataType },
+            m_dataType->GetDefaultValue()));
+    }
 
     //////////////////////////////////////////////////////////////////////////////
     // GraphOutputNode
@@ -159,7 +192,14 @@ namespace GraphModel
     void GraphOutputNode::RegisterSlots()
     {
         // Register just a single input slot for the data that is output through this node
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData("value", "Value", m_dataType, m_dataType->GetDefaultValue(), "A value output by this graph for external use"));
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
+            "value",
+            "Value",
+            "A value output by this graph for external use",
+            GraphModel::DataTypeList{ m_dataType },
+            m_dataType->GetDefaultValue()));
 
         // Register meta-data properties
         RegisterCommonSlots("output");

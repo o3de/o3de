@@ -57,8 +57,10 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_entityID = pSourceEntity->GetId();
-        EBUS_EVENT_ID_RESULT(m_entityContextId, m_entityID, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
-        EBUS_EVENT_RESULT(m_isSelected, AzToolsFramework::ToolsApplicationRequests::Bus, IsSelected, m_entityID);
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            m_entityContextId, m_entityID, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(m_isSelected,
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsSelected, m_entityID);
 
         AZ::SliceComponent::EntityRestoreInfo& sliceRestoreInfo = captureUndo ? m_undoSliceRestoreInfo : m_redoSliceRestoreInfo;
         sliceRestoreInfo = AZ::SliceComponent::EntityRestoreInfo();
@@ -67,7 +69,7 @@ namespace AzToolsFramework
         AZ_Assert(PreemptiveUndoCache::Get(), "You need a pre-emptive undo cache instance to exist for this to work.");
         AZ_Assert((!captureUndo) || (m_undoState.empty()), "You can't capture undo more than once");
         AZ::SerializeContext* sc = nullptr;
-        EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(sc, "Serialization context not found!");
 
         m_entityState = pSourceEntity->GetState();
@@ -120,7 +122,7 @@ namespace AzToolsFramework
         AZ_Assert(bufferSizeBytes, "Undo data is empty.");
 
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Serialization context not found!");
         AZ::IO::MemoryStream memoryStream(reinterpret_cast<const char*>(buffer), bufferSizeBytes);
 
@@ -134,11 +136,11 @@ namespace AzToolsFramework
 
         // We have to delete the entity. If it's currently selected, make sure we re-select after re-creating.
         AzToolsFramework::EntityIdList selectedEntities;
-        EBUS_EVENT_RESULT(selectedEntities, ToolsApplicationRequests::Bus, GetSelectedEntities);
+        ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
         AZ::Entity* entity = nullptr;
 
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityID);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityID);
         EntityStateCommandNotificationBus::Event(m_entityID, &EntityStateCommandNotificationBus::Events::PreRestore);
 
         bool isSliceMetadataEntity = false;
@@ -161,7 +163,7 @@ namespace AzToolsFramework
         else
         {
             // Normal entities will be deleted and loaded anew
-            //EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
+            //AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
             AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
         }
 
@@ -185,7 +187,8 @@ namespace AzToolsFramework
             {
                 if (!m_entityContextId.IsNull() && !isSliceMetadataEntity)
                 {
-                    EBUS_EVENT_ID(m_entityContextId, AzFramework::EntityContextRequestBus, AddEntity, entity);
+                    AzFramework::EntityContextRequestBus::Event(
+                        m_entityContextId, &AzFramework::EntityContextRequestBus::Events::AddEntity, entity);
                 }
 
                 if (m_entityState == AZ::Entity::State::Init || m_entityState == AZ::Entity::State::Active)
@@ -228,7 +231,7 @@ namespace AzToolsFramework
             EntityStateCommandNotificationBus::Event(m_entityID, &EntityStateCommandNotificationBus::Events::PostRestore, entity);
         }
 
-        EBUS_EVENT(ToolsApplicationRequests::Bus, SetSelectedEntities, selectedEntities);
+        ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
     }
 
     void EntityStateCommand::Undo()
@@ -260,7 +263,7 @@ namespace AzToolsFramework
     void EntityDeleteCommand::Redo()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
         PreemptiveUndoCache::Get()->PurgeCache(m_entityID);
     }
 
@@ -278,7 +281,7 @@ namespace AzToolsFramework
     void EntityCreateCommand::Undo()
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        EBUS_EVENT(AZ::ComponentApplicationBus, DeleteEntity, m_entityID);
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::DeleteEntity, m_entityID);
         PreemptiveUndoCache::Get()->PurgeCache(m_entityID);
     }
 

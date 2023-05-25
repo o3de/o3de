@@ -41,7 +41,7 @@ namespace AZ
             friend class StreamingImagePoolAssetTester;
         public:
             AZ_RTTI(StreamingImagePoolAsset, "{877B2DA2-BBE7-42E7-AED3-F571929820FE}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(StreamingImagePoolAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePoolAsset, SystemAllocator);
 
             static const char* DisplayName;
             static const char* Extension;

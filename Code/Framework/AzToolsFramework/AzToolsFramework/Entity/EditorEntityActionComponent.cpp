@@ -326,7 +326,7 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::EnableComponents(const AZStd::vector<AZ::Component*>& components)
         {
-            ScopedUndoBatch undoBatch("Enabling components.");
+            ScopedUndoBatch undoBatch("Enable Component(s)");
 
             // Enable all the components requested
             for (auto component : components)
@@ -334,7 +334,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = component->GetEntity();
 
                 bool isEntityEditable = false;
-                EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                 if (!isEntityEditable)
                 {
                     continue;
@@ -382,7 +383,7 @@ namespace AzToolsFramework
 
         void EditorEntityActionComponent::DisableComponents(const AZStd::vector<AZ::Component*>& components)
         {
-            ScopedUndoBatch undoBatch("Disabling components.");
+            ScopedUndoBatch undoBatch("Disable Component(s)");
 
             // Disable all the components requested
             for (auto component : components)
@@ -390,7 +391,8 @@ namespace AzToolsFramework
                 AZ::Entity* entity = component->GetEntity();
 
                 bool isEntityEditable = false;
-                EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                 if (!isEntityEditable)
                 {
                     continue;
@@ -440,7 +442,7 @@ namespace AzToolsFramework
         {
             EntityToRemoveComponentsResultMap resultMap;
             {
-                ScopedUndoBatch undoBatch("Removing components.");
+                ScopedUndoBatch undoBatch("Remove Component(s)");
 
                 // Only remove, do not delete components until we know it was successful
                 AZStd::vector<AZ::Component*> removedComponents;
@@ -461,7 +463,8 @@ namespace AzToolsFramework
                     AZ::Entity* entity = componentToRemove->GetEntity();
 
                     bool isEntityEditable = false;
-                    EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entity->GetId());
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(isEntityEditable,
+                        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entity->GetId());
                     if (!isEntityEditable)
                     {
                         continue;
@@ -577,7 +580,7 @@ namespace AzToolsFramework
                 componentsToAddClassData.push_back(componentClassData);
             }
 
-            ScopedUndoBatch undo("Adding components to entity");
+            ScopedUndoBatch undo("Add Component(s) to Entity");
             EntityToAddedComponentsMap entityToAddedComponentsMap;
             {
                 for (auto& entityId : entityIds)
@@ -605,7 +608,8 @@ namespace AzToolsFramework
                         bool isEditorComponent = componentClassData->m_azRtti && componentClassData->m_azRtti->IsTypeOf(Components::EditorComponentBase::RTTI_Type());
                         if (isEditorComponent)
                         {
-                            EBUS_EVENT_ID_RESULT(component, componentClassData->m_typeId, AZ::ComponentDescriptorBus, CreateComponent);
+                            AZ::ComponentDescriptorBus::EventResult(
+                                component, componentClassData->m_typeId, &AZ::ComponentDescriptorBus::Events::CreateComponent);
                         }
                         else
                         {
@@ -640,7 +644,7 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Null entity provided to AddExistingComponentsToEntity"));
             }
 
-            ScopedUndoBatch undo("Add existing components to entity");
+            ScopedUndoBatch undo("Add Existing Component(s) to Entity");
 
             AddComponentsResults addComponentsResults;
 
@@ -689,6 +693,9 @@ namespace AzToolsFramework
 
                     // Set the entity on the component (but do not add yet) so that existing systems such as UI will work properly and understand who this component belongs to.
                     GetEditorComponent(component)->SetEntity(entity);
+
+                    // Needed to set up the serialized identifier for the pending component.
+                    GetEditorComponent(component)->OnAfterEntitySet();
 
                     // Add component to pending for entity
                     AzToolsFramework::EditorPendingCompositionRequestBus::Event(entityId, &AzToolsFramework::EditorPendingCompositionRequests::AddPendingComponent, component);

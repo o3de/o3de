@@ -30,7 +30,7 @@ namespace AZ
         class DescriptorContext
         {
         public:
-            AZ_CLASS_ALLOCATOR(DescriptorContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DescriptorContext, AZ::SystemAllocator);
 
             DescriptorContext() = default;
 

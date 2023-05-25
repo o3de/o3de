@@ -28,7 +28,7 @@ namespace PhysX
     class RigidBodyConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(RigidBodyConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RigidBodyConfiguration, AZ::SystemAllocator);
         AZ_RTTI(PhysX::RigidBodyConfiguration, "{006A06B1-E2E9-47DF-A49D-C60CAB3727C4}");
 
         RigidBodyConfiguration() = default;
@@ -49,7 +49,7 @@ namespace PhysX
     public:
         friend class RigidBodyComponent;
 
-        AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator);
         AZ_RTTI(PhysX::RigidBody, "{30CD41DD-9783-47A1-B935-9E5634238F45}", AzPhysics::RigidBody);
 
         RigidBody() = default;

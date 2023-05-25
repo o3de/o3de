@@ -27,7 +27,7 @@ namespace AZ
 
         public:
             AZ_RTTI(MSAAResolvePass, "{0234AE92-3EE3-4796-9138-C9B28F9F7AEE}", RenderPass);
-            AZ_CLASS_ALLOCATOR(MSAAResolvePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MSAAResolvePass, SystemAllocator);
             virtual ~MSAAResolvePass() = default;
 
             static Ptr<MSAAResolvePass> Create(const PassDescriptor& descriptor);

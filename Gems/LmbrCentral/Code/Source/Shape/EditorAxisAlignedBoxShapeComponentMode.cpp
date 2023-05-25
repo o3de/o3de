@@ -10,12 +10,25 @@
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorAxisAlignedBoxShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorAxisAlignedBoxShapeComponentMode, AZ::SystemAllocator)
 
     EditorAxisAlignedBoxShapeComponentMode::EditorAxisAlignedBoxShapeComponentMode(
-        const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType)
-        : BoxComponentMode(entityComponentIdPair, componentType)
+        const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType, bool allowAsymmetricalEditing)
+        : BoxComponentMode(entityComponentIdPair, componentType, allowAsymmetricalEditing)
     {
+    }
+
+    void EditorAxisAlignedBoxShapeComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorAxisAlignedBoxShapeComponentMode>(context);
+    }
+
+    void EditorAxisAlignedBoxShapeComponentMode::BindActionsToModes()
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        BaseShapeComponentMode::BindActionsToModes(
+            "box", serializeContext->FindClassData(azrtti_typeid<EditorAxisAlignedBoxShapeComponentMode>())->m_name);
     }
 
     AZStd::string EditorAxisAlignedBoxShapeComponentMode::GetComponentModeName() const
@@ -25,6 +38,6 @@ namespace LmbrCentral
 
     AZ::Uuid EditorAxisAlignedBoxShapeComponentMode::GetComponentModeType() const
     {
-        return azrtti_typeid<EditorAxisAlignedBoxShapeComponentMode>();
+        return AZ::AzTypeInfo<EditorAxisAlignedBoxShapeComponentMode>::Uuid();
     }
 } // namespace LmbrCentral

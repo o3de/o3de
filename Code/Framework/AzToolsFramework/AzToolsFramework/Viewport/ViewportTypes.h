@@ -94,6 +94,12 @@ namespace AzToolsFramework
                 return m_keyModifiers == static_cast<AZ::u32>(KeyboardModifier::None);
             }
 
+            //! Given the current keyboard modifiers, is the specified modifier held.
+            bool IsHeld(KeyboardModifier keyboardModifier) const
+            {
+                return m_keyModifiers & static_cast<AZ::u32>(keyboardModifier);
+            }
+
             bool operator==(const KeyboardModifiers& keyboardModifiers) const
             {
                 return m_keyModifiers == keyboardModifiers.m_keyModifiers;

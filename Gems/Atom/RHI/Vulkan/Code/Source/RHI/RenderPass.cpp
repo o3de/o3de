@@ -11,6 +11,7 @@
 #include <RHI/RenderPass.h>
 #include <AzCore/std/hash.h>
 #include <memory>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -138,8 +139,8 @@ namespace AZ
                 RenderPassResult Create<VkRenderPassCreateInfo>(VkRenderPassCreateInfoType& createInfo)
                 {
                     VkRenderPass renderPass = VK_NULL_HANDLE;
-                    VkResult result =
-                        m_device.GetContext().CreateRenderPass(m_device.GetNativeDevice(), &createInfo, nullptr, &renderPass);
+                    VkResult result = m_device.GetContext().CreateRenderPass(
+                        m_device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &renderPass);
                     return AZStd::make_tuple(result, renderPass);
                 }
 
@@ -148,8 +149,8 @@ namespace AZ
                 RenderPassResult Create<VkRenderPassCreateInfo2>(VkRenderPassCreateInfoType& createInfo)
                 {
                     VkRenderPass renderPass = VK_NULL_HANDLE;
-                    VkResult result =
-                        m_device.GetContext().CreateRenderPass2KHR(m_device.GetNativeDevice(), &createInfo, nullptr, &renderPass);
+                    VkResult result = m_device.GetContext().CreateRenderPass2KHR(
+                        m_device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &renderPass);
                     return AZStd::make_tuple(result, renderPass);
                 }
 
@@ -374,7 +375,7 @@ namespace AZ
                 const RenderPass::Descriptor* m_descriptor = nullptr;
             };
 
-            template<typename T, VkStructureType type = static_cast<VkStructureType>(-1)>
+            template<typename T, VkStructureType type = AZStd::numeric_limits<VkStructureType>::max()>
             struct StructureTypeTraits
             {
                 static const VkStructureType struct_type = type;
@@ -582,7 +583,7 @@ namespace AZ
             if (m_nativeRenderPass != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyRenderPass(device.GetNativeDevice(), m_nativeRenderPass, nullptr);
+                device.GetContext().DestroyRenderPass(device.GetNativeDevice(), m_nativeRenderPass, VkSystemAllocator::Get());
                 m_nativeRenderPass = VK_NULL_HANDLE;
             }
             Base::Shutdown();

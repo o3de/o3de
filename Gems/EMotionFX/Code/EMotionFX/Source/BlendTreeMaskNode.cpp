@@ -18,9 +18,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::Mask, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::Mask, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeMaskNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
     const size_t BlendTreeMaskNode::s_numMasks = 4;
 
     BlendTreeMaskNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)

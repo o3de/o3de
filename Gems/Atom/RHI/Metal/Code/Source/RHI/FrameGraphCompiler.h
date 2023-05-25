@@ -19,7 +19,7 @@ namespace AZ
         {
             using Base = RHI::FrameGraphCompiler;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphCompiler> Create();
 

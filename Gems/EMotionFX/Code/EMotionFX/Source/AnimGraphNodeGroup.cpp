@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator)
 
     AnimGraphNodeGroup::AnimGraphNodeGroup()
         : m_color(AZ::Color::CreateU32(255, 255, 255, 255))

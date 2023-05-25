@@ -11,10 +11,10 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/RTTI/BehaviorContext.h>
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace Presence
 {
@@ -49,7 +49,7 @@ namespace Presence
         struct SetPresenceParams
         {
             AZ_TYPE_INFO(SetPresenceParams, "{1AD2919C-9403-4100-A1C0-B8E642B20AB8}");
-            
+
             //! Callback function to be called on main thread after successful set request
             using OnPresenceSet = AZStd::function<void(const AzFramework::LocalUserId&)>;
 
@@ -75,10 +75,10 @@ namespace Presence
         struct QueryPresenceParams
         {
             AZ_TYPE_INFO(QueryPresenceParams, "{89BCF0BA-834C-4216-AAE0-B167429AA890}");
-            
+
             //! Callback function to be called on main thread after successful query request
             using OnQueryPresence = AZStd::function<void(const PresenceDetails&)>;
-            
+
             //! ID of the user for whom we are setting presence
             AzFramework::LocalUserId localUserId = AzFramework::LocalUserIdNone;
 

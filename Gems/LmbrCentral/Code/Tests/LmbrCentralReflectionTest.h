@@ -120,8 +120,6 @@ protected:
 template<class ApplicationT, class ModuleT>
 void ModuleReflectionTest<ApplicationT, ModuleT>::SetUp()
 {
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
     s_application.reset(new ModuleReflectionTest::InternalApplication);
 
     AZ::ComponentApplication::Descriptor appDescriptor;
@@ -149,8 +147,6 @@ void ModuleReflectionTest<ApplicationT, ModuleT>::TearDown()
     s_systemEntity = nullptr;
     s_application->Destroy();
     s_application.reset();
-
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
 }
 
 template<class ApplicationT, class ModuleT>

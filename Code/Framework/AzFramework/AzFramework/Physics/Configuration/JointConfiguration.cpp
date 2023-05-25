@@ -14,7 +14,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointConfiguration, AZ::SystemAllocator);
 
     void JointConfiguration::Reflect(AZ::ReflectContext* context)
     {

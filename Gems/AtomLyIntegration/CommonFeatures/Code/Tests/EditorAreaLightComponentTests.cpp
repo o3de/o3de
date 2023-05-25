@@ -28,20 +28,7 @@
 
 namespace UnitTest
 {
-    class EditorAreaLightComponentFixture
-        : public ::testing::Test
-        , RegistryTestHelper
-    {
-        void SetUp() override
-        {
-            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
-        }
-
-        void TearDown() override
-        {
-            RegistryTestHelper::TearDown();
-        }
-    };
+    using EditorAreaLightComponentFixture = ::testing::Test;
 
     AZ::Render::AreaLightComponentConfig CreateAreaLightComponentConfig(
         const AZ::Render::AreaLightComponentConfig::LightType lightType,

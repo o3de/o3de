@@ -54,6 +54,7 @@ namespace AtomToolsFramework
 
         virtual void PopulateSettingsInspector(InspectorWidget* inspector) const;
         virtual void OpenSettingsDialog();
+        virtual void OnSettingsDialogClosed();
 
         virtual AZStd::string GetHelpDialogText() const;
         virtual void OpenHelpDialog();

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzCore/Math/Crc.h>
 #include <AzCore/EBus/EBus.h>
 
 namespace AZ
@@ -50,7 +51,7 @@ namespace AZ
         //////////////////////////////////////////////////////////////////////////
         u32 EBusEnvironmentTLSAccessors::GetId()
         {
-            return AZ_CRC("EBusEnvironmentTLSAccessors", 0x2fe98c39);
+            return AZ_CRC_CE("EBusEnvironmentTLSAccessors");
         }
 
         //////////////////////////////////////////////////////////////////////////

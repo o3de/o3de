@@ -39,7 +39,7 @@ namespace UnitTest
     protected:
         struct MoveOnlyType
         {
-            AZ_CLASS_ALLOCATOR(MoveOnlyType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MoveOnlyType, AZ::SystemAllocator);
             MoveOnlyType() = delete;
             MoveOnlyType(AZStd::tuple<AZ::s32&&, AZStd::string_view&&> tuplePair)
                 : m_valueInt(AZStd::move(AZStd::get<0>(tuplePair)))

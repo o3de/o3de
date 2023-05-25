@@ -25,7 +25,7 @@ namespace AZ
             friend class ShaderResourceGroup;
 
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
             AZ_RTTI(ShaderResourceGroupPool, "593C5F3B-67FD-415C-8305-8C5D272649B7", Base);
 
             static RHI::Ptr<ShaderResourceGroupPool> Create();

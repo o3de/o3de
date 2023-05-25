@@ -263,6 +263,11 @@ namespace AZ::IO
         return m_path.empty();
     }
 
+    constexpr const char PathView::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
+    }
+
     [[nodiscard]] constexpr bool PathView::HasRootName() const
     {
         return !root_name_view().empty();
@@ -1153,6 +1158,12 @@ namespace AZ::IO
     [[nodiscard]] constexpr bool BasicPath<StringType>::empty() const noexcept
     {
         return m_path.empty();
+    }
+
+    template <typename StringType>
+    constexpr const char BasicPath<StringType>::PreferredSeparator() const noexcept
+    {
+        return m_preferred_separator;
     }
 
     template <typename StringType>

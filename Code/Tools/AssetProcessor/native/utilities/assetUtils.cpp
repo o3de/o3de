@@ -39,6 +39,7 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzToolsFramework/UI/Logging/LogLine.h>
 #include <xxhash/xxhash.h>
+#include <native/utilities/UuidManager.h>
 
 #if defined(AZ_PLATFORM_WINDOWS)
 #   include <windows.h>
@@ -88,7 +89,8 @@ namespace AssetUtilsInternal
                 {
                     if (!failureOccurredOnce)
                     {
-                        AZ_Warning(AssetProcessor::ConsoleChannel, false, "Warning: Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
+                        // This is not a warning because there is retry logic in place.
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Unable to remove file %s to copy source file %s in... (We may retry)\n", outputFile.toUtf8().constData(), sourceFile.toUtf8().constData());
                         failureOccurredOnce = true;
                     }
                     //not able to remove the file
@@ -822,25 +824,32 @@ namespace AssetUtilities
     QString NormalizeFilePath(const QString& filePath)
     {
         // do NOT convert to absolute paths here, we just want to manipulate the string itself.
-
-        // note that according to the Qt Documentation, in QDir::toNativeSeparators,
-        // "The returned string may be the same as the argument on some operating systems, for example on Unix.".
-        // in other words, what we need here is a custom normalization - we want always the same
-        // direction of slashes on all platforms.s
-
         QString returnString = filePath;
-        returnString.replace(QChar('\\'), QChar('/'));
+
+        // QDir::cleanPath only replaces backslashes with forward slashes in the input string if the OS
+        // it is currently natively running on uses backslashes as its native path separator.
+        // see https://github.com/qt/qtbase/blob/40143c189b7c1bf3c2058b77d00ea5c4e3be8b28/src/corelib/io/qdir.cpp#L2357
+        // This assumption is incorrect in this application - it can receive file paths from data files created on
+        // backslash operating systems even if its a non-backslash operating system.
+
+        // we can skip this step in the cases where cleanPath will do it for us:
+        if (QDir::separator() == QLatin1Char('/'))
+        {
+            returnString.replace(QLatin1Char('\\'), QLatin1Char('/'));
+        }
+
+        // cleanPath to remove/resolve .. and . and any extra slashes, and remove any trailing slashes.
         returnString = QDir::cleanPath(returnString);
 
 #if defined(AZ_PLATFORM_WINDOWS)
         // windows has an additional idiosyncrasy - it returns upper and lower case drive letters
         // from various APIs differently.  we will settle on upper case as the standard.
-        if ((returnString.length() > 1) && (returnString[1] == ':'))
+        if ((returnString.length() > 1) && (returnString.at(1) == ':'))
         {
-            returnString[0] = returnString[0].toUpper();
+            QCharRef firstChar = returnString[0]; // QCharRef allows you to modify the string in place.
+            firstChar = firstChar.toUpper();
         }
 #endif
-
         return returnString;
     }
 
@@ -863,6 +872,37 @@ namespace AssetUtilities
         }
         AzFramework::StringFunc::Replace(lowerVersion, '\\', '/');
         return AZ::Uuid::CreateName(lowerVersion.c_str());
+    }
+
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        if (!sourceAsset)
+        {
+            return {};
+        }
+
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetUuid(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
+    }
+
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset)
+    {
+        auto* uuidRequests = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+
+        if (uuidRequests)
+        {
+            return uuidRequests->GetLegacyUuids(sourceAsset);
+        }
+
+        AZ_Assert(false, "Programmer Error: GetSourceUuid called before IUuidRequests interface is available.");
+        return {};
     }
 
     void NormalizeFilePaths(QStringList& filePaths)
@@ -1035,9 +1075,10 @@ namespace AssetUtilities
         // now the other jobs, which this job depends on:
         for (const AssetProcessor::JobDependencyInternal& jobDependencyInternal : jobDetail.m_jobDependencyList)
         {
-            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
+            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce ||
+                jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnly)
             {
-                // we do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce.
+                // We do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce or OrderOnly.
                 continue;
             }
             AssetProcessor::JobDesc jobDesc(AssetProcessor::SourceAssetReference(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),
@@ -1426,6 +1467,28 @@ namespace AssetUtilities
         } while (db->GetSourcesByProductName(GetIntermediateAssetDatabaseName(source.m_sourceName.c_str()).c_str(), sources));
 
         return source;
+    }
+
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db)
+    {
+        auto topLevelSourceDbEntry = GetTopLevelSourceForIntermediateAsset(sourceAsset, db);
+
+        if (!topLevelSourceDbEntry)
+        {
+            return {};
+        }
+
+        AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolderForTopLevelSource;
+        if(!db->GetScanFolderByScanFolderID(topLevelSourceDbEntry->m_scanFolderPK, scanfolderForTopLevelSource))
+        {
+            return {};
+        }
+
+        AZ::IO::Path fullPath = scanfolderForTopLevelSource.m_scanFolder;
+        fullPath /= topLevelSourceDbEntry->m_sourceName;
+
+        return fullPath;
     }
 
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(

@@ -69,7 +69,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(NodeGroupFrameComponentSaveData, "{6F4811ED-BD83-4A2A-8831-58EEA4020D57}", ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(NodeGroupFrameComponentSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodeGroupFrameComponentSaveData, AZ::SystemAllocator);
 
             NodeGroupFrameComponentSaveData();
             NodeGroupFrameComponentSaveData(NodeGroupFrameComponent* nodeFrameComponent);
@@ -352,7 +352,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(NodeGroupFrameTitleWidget, "{FC062E52-CA81-4DA5-B9BF-48FD7BE6E374}");
-        AZ_CLASS_ALLOCATOR(NodeGroupFrameTitleWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupFrameTitleWidget, AZ::SystemAllocator);
 
         NodeGroupFrameTitleWidget();
 
@@ -382,7 +382,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(NodeGroupFrameBlockAreaWidget, "{9278BBBC-5872-4CA0-9F09-10BAE77ECA7E}");
-        AZ_CLASS_ALLOCATOR(NodeGroupFrameBlockAreaWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupFrameBlockAreaWidget, AZ::SystemAllocator);
 
         NodeGroupFrameBlockAreaWidget();
 
@@ -414,7 +414,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(NodeGroupFrameGraphicsWidget, "{708C3817-C668-47B7-A4CB-0896425E634A}");
-        AZ_CLASS_ALLOCATOR(NodeGroupFrameGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupFrameGraphicsWidget, AZ::SystemAllocator);
 
         // Do not allow Serialization of Graphics Ui classes
         static void Reflect(AZ::ReflectContext*) = delete;

@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzCore/std/string/string_view.h>
-
 namespace O3DELauncher
 {
     bool WaitForAssetProcessorConnect()

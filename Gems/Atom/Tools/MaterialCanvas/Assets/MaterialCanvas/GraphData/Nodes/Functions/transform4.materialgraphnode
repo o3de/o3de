@@ -7,6 +7,7 @@
         "category": "Math Functions",
         "title": "Transform4",
         "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns a float4 transformed by a matrix4",
         "slotDataTypeGroups": [
             "inVector|outVector",
             "inMatrix"
@@ -16,17 +17,8 @@
                 "name": "inVector",
                 "displayName": "Vector",
                 "description": "Vector",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
                 "defaultDataType": "float4",
-                "defaultValue": {
-                    "$type": "Vector4",
-                    "Value": [
-                        0.0,
-                        0.0,
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"
@@ -39,35 +31,6 @@
                 "description": "Matrix",
                 "supportedDataTypeRegex": "(bool|int|uint|float)[4]x[1-4]",
                 "defaultDataType": "float4x4",
-                "defaultValue": {
-                    "$type": "AZStd::array<Vector4, 4>",
-                    "Value": [
-                        [
-                            1.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ],
-                        [
-                            0.0,
-                            1.0,
-                            0.0,
-                            0.0
-                        ],
-                        [
-                            0.0,
-                            0.0,
-                            1.0,
-                            0.0
-                        ],
-                        [
-                            0.0,
-                            0.0,
-                            0.0,
-                            1.0
-                        ]
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

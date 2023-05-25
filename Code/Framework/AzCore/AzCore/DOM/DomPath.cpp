@@ -271,6 +271,11 @@ namespace AZ::Dom
         return {};
     }
 
+    PathEntry Path::Back() const
+    {
+        return m_entries.back();
+    }
+
     size_t Path::Size() const
     {
         return m_entries.size();

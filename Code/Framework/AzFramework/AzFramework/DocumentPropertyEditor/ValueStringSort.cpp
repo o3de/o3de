@@ -16,14 +16,6 @@ namespace AZ::DocumentPropertyEditor
     {
     }
 
-    void ValueStringSort::SetReversed(bool reverseSort)
-    {
-        m_reverseSort = reverseSort;
-
-        // TODO: generate incremental patch here instead, no need to re-cache info
-        InvalidateSort();
-    }
-
     void ValueStringSort::SetSortAttribute(AZStd::string_view attributeName)
     {
         m_sortAttributeName = Name::FromStringLiteral(attributeName, AZ::Interface<AZ::NameDictionary>::Get());
@@ -38,11 +30,7 @@ namespace AZ::DocumentPropertyEditor
 
     RowSortAdapter::SortInfoNode* ValueStringSort::NewSortInfoNode() const
     {
-        auto capturedSortFunction = [this](SortInfoNode* lhs, SortInfoNode* rhs)
-        {
-            return LessThan(lhs, rhs);
-        };
-        return new StringSortNode(capturedSortFunction);
+        return new StringSortNode(this);
     }
 
     void ValueStringSort::CacheDomInfoForNode(const Dom::Value& domValue, RowSortAdapter::SortInfoNode* sortNode) const
@@ -120,18 +108,22 @@ namespace AZ::DocumentPropertyEditor
     {
         auto leftNode = static_cast<StringSortNode*>(lhs);
         auto rightNode = static_cast<StringSortNode*>(rhs);
-        
-        if (m_reverseSort)
+        bool isLess = AZStd::lexicographical_compare(
+            leftNode->m_string.begin(), leftNode->m_string.end(),
+            rightNode->m_string.begin(), rightNode->m_string.end());
+
+        if (!isLess)
         {
-            return AZStd::lexicographical_compare(
-                rightNode->m_string.begin(), rightNode->m_string.end(), 
-                leftNode->m_string.begin(), leftNode->m_string.end());
+            // it's not less, but we need to make sure there aren't any ties
+            const bool isGreater = AZStd::lexicographical_compare(
+                rightNode->m_string.begin(), rightNode->m_string.end(), leftNode->m_string.begin(), leftNode->m_string.end());
+
+            if (!isGreater)
+            {
+                // it's neither less or greater, use the base implementation (initial domIndex) to break the tie)
+                isLess = RowSortAdapter::LessThan(lhs, rhs);
+            }
         }
-        else
-        {
-            return AZStd::lexicographical_compare(
-                leftNode->m_string.begin(), leftNode->m_string.end(), 
-                rightNode->m_string.begin(), rightNode->m_string.end());
-        }
+        return isLess;
     }
 } // namespace AZ::DocumentPropertyEditor

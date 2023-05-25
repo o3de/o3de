@@ -6,26 +6,31 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import os
 
+from constructs import Construct
+
 from aws_cdk import (
+    CfnOutput,
+    Fn,
+    RemovalPolicy,
+    Stack,
     aws_lambda as lambda_,
     aws_iam as iam,
     aws_s3 as s3,
     aws_s3_deployment as s3_deployment,
     aws_dynamodb as dynamo,
-    core
 )
 
 from .auth import AuthPolicy
 
 
-class ExampleResources(core.Stack):
+class ExampleResources(Stack):
     """
     Defines a set of resources to use with AWSCore's ScriptBehaviours and examples. The example resources are:
     * An S3 bucket with a text file
     * A python 'echo' lambda
-    * A small dynamodb table with the a primary 'id': str key
+    * A small dynamodb table with a primary 'id': str key
     """
-    def __init__(self, scope: core.Construct, id_: str, project_name: str, feature_name: str, **kwargs) -> None:
+    def __init__(self, scope: Construct, id_: str, project_name: str, feature_name: str, **kwargs) -> None:
         super().__init__(scope, id_, **kwargs,
                          description=f'Contains resources for the AWSCore examples as part of the '
                                      f'{project_name} project')
@@ -47,12 +52,12 @@ class ExampleResources(core.Stack):
         user_group = iam.Group.from_group_arn(
             self,
             f'{self._project_name}-{self._feature_name}-ImportedUserGroup',
-            core.Fn.import_value(f'{self._project_name}:UserGroup')
+            Fn.import_value(f'{self._project_name}:UserGroup')
         )
         admin_group = iam.Group.from_group_arn(
             self,
             f'{self._project_name}-{self._feature_name}-ImportedAdminGroup',
-            core.Fn.import_value(f'{self._project_name}:AdminGroup')
+            Fn.import_value(f'{self._project_name}:AdminGroup')
         )
 
         # Provide the admin and user groups permissions to read the example S3 bucket.
@@ -123,12 +128,12 @@ class ExampleResources(core.Stack):
             server_access_logs_bucket = s3.Bucket.from_bucket_name(
                 self,
                 f'{self._project_name}-{self._feature_name}-ImportedAccessLogsBucket',
-                core.Fn.import_value(f"{self._project_name}:ServerAccessLogsBucket")
+                Fn.import_value(f"{self._project_name}:ServerAccessLogsBucket")
             )
 
         # Auto cleanup bucket and data if requested
         _remove_storage = self.node.try_get_context('remove_all_storage_on_destroy') == 'true'
-        _removal_policy = core.RemovalPolicy.DESTROY if _remove_storage else core.RemovalPolicy.RETAIN
+        _removal_policy = RemovalPolicy.DESTROY if _remove_storage else RemovalPolicy.RETAIN
 
         example_bucket = s3.Bucket(
             self,
@@ -159,9 +164,9 @@ class ExampleResources(core.Stack):
         function = lambda_.Function(
             self,
             f'{self._project_name}-{self._feature_name}-Lambda-Function',
-            runtime=lambda_.Runtime.PYTHON_3_8,
+            runtime=lambda_.Runtime.PYTHON_3_9,
             handler="lambda-handler.main",
-            code=lambda_.Code.asset(os.path.join(os.path.dirname(__file__), 'lambda'))
+            code=lambda_.Code.from_asset(os.path.join(os.path.dirname(__file__), 'lambda'))
         )
         return function
 
@@ -179,14 +184,14 @@ class ExampleResources(core.Stack):
 
         # Auto-delete the table when requested
         if self.node.try_get_context('remove_all_storage_on_destroy') == 'true':
-            demo_table.apply_removal_policy(core.RemovalPolicy.DESTROY)
+            demo_table.apply_removal_policy(RemovalPolicy.DESTROY)
 
         return demo_table
 
     def __create_outputs(self) -> None:
         # Define exports
         # Export resource group
-        self._s3_output = core.CfnOutput(
+        self._s3_output = CfnOutput(
             self,
             id=f'ExampleBucketOutput',
             description='An example S3 bucket name to use with AWSCore ScriptBehaviors',
@@ -195,7 +200,7 @@ class ExampleResources(core.Stack):
 
         # Define exports
         # Export resource group
-        self._lambda_output = core.CfnOutput(
+        self._lambda_output = CfnOutput(
             self,
             id=f'ExampleLambdaOutput',
             description='An example Lambda name to use with AWSCore ScriptBehaviors',
@@ -203,7 +208,7 @@ class ExampleResources(core.Stack):
             value=self._lambda.function_name)
 
         # Export DynamoDB Table
-        self._table_output = core.CfnOutput(
+        self._table_output = CfnOutput(
             self,
             id=f'ExampleDynamoTableOutput',
             description='An example DynamoDB Table name to use with AWSCore ScriptBehaviors',
@@ -211,7 +216,7 @@ class ExampleResources(core.Stack):
             value=self._table.table_name)
 
         # Export user policy
-        self._user_policy = core.CfnOutput(
+        self._user_policy = CfnOutput(
             self,
             id=f'ExampleUserPolicyOutput',
             description='A User policy to invoke example resources',

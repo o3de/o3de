@@ -12,4 +12,5 @@
 ly_add_pytest(
     NAME RemoteConsole_UnitTests_main_no_gpu
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit/
+    LABELS REQUIRES_tiaf
 )

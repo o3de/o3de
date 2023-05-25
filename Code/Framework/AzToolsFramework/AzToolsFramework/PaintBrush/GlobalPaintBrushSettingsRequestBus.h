@@ -32,16 +32,16 @@ namespace AzToolsFramework
         virtual GlobalPaintBrushSettings GetSettings() const = 0;
 
         //! Returns the current brush mode for the paint brush settings
-        virtual AzFramework::PaintBrushMode GetBrushMode() const = 0;
+        virtual PaintBrushMode GetBrushMode() const = 0;
 
         //! Sets the brush mode for the paint brush settings.
-        virtual void SetBrushMode(AzFramework::PaintBrushMode brushMode) = 0;
+        virtual void SetBrushMode(PaintBrushMode brushMode) = 0;
 
         //! Returns the current color mode for the paint brush settings
-        virtual AzFramework::PaintBrushColorMode GetBrushColorMode() const = 0;
+        virtual PaintBrushColorMode GetBrushColorMode() const = 0;
 
         //! Sets the color mode for the paint brush settings.
-        virtual void SetBrushColorMode(AzFramework::PaintBrushColorMode colorMode) = 0;
+        virtual void SetBrushColorMode(PaintBrushColorMode colorMode) = 0;
 
         // Paint Brush Stroke settings
 

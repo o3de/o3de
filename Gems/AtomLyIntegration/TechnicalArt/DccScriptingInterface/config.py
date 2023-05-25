@@ -11,7 +11,7 @@
 
 :file: < DCCsi >/config.py
 :Status: Prototype
-:Version: 0.0.1, first significant refactor
+:Version: 0.0.2, first significant refactor
 
 This module handles core configuration of the dccsi
 -   It initializes and generates a dynamic, and synthetic, environment context,
@@ -108,6 +108,14 @@ except ImportError as e:
     _LOGGER.warning(f'Most likely the application loading this module does not have DCCsi pkg dependancies installed. Use foundation.py to install pkgs for ')
     _LOGGER.exception(f'{e} , traceback =', exc_info=True)
     raise e
+
+# dynaconf boilerplate
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+
+settings.setenv() # ensure default file based settings are in the env
 #-------------------------------------------------------------------------
 
 

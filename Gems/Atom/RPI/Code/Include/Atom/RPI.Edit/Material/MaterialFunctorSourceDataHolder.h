@@ -27,7 +27,7 @@ namespace AZ
 
         public:
             AZ_RTTI(MaterialFunctorSourceDataHolder, "{073C98F6-9EA4-411A-A6D2-A47428A0EFD4}");
-            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceDataHolder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceDataHolder, AZ::SystemAllocator);
 
             MaterialFunctorSourceDataHolder() = default;
             MaterialFunctorSourceDataHolder(Ptr<MaterialFunctorSourceData> actualSourceData);

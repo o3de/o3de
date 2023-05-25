@@ -12,8 +12,10 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_Skin(IN)
+#define EvaluateVertexGeometry EvaluateVertexGeometry_Skin
 #endif
+
+#include <Atom/Features/InstancedTransforms.azsli>
 
 // Indicates whether the vertex input struct's "m_optional_blendMask" is bound. If false, it is not safe to read from m_optional_blendMask.
 // This option gets set automatically by the system at runtime; there is a soft naming convention that associates it with m_optional_blendMask.
@@ -27,11 +29,12 @@ VsOutput EvaluateVertexGeometry_Skin(
     float4 tangent,
     float2 uv0_tiled,
     float2 uv1_unwrapped,
-    float4 optionalBlendMask)
+    float4 optionalBlendMask,
+    uint instanceId)
 {
     VsOutput output;
 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
     output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
@@ -65,10 +68,14 @@ VsOutput EvaluateVertexGeometry_Skin(
     output.normal = normal;
     output.tangent = tangent;
 
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
+    
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_Skin(VsInput IN)
+VsOutput EvaluateVertexGeometry_Skin(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_Skin(
         IN.position,
@@ -76,5 +83,6 @@ VsOutput EvaluateVertexGeometry_Skin(VsInput IN)
         IN.tangent,
         IN.uv0_tiled,
         IN.uv1_unwrapped,
-        IN.m_optional_blendMask);
+        IN.m_optional_blendMask,
+        SV.m_instanceId);
 }

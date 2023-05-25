@@ -20,7 +20,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     ly_append_configurations_options(
         DEFINES
             LINUX64
-            __ARM_NEON__
             _LINUX
             LINUX
             ANDROID
@@ -55,9 +54,6 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             -stdlib=libc++
 
             -u ANativeActivity_onCreate
-
-            -L${LY_NDK_ABI_ROOT}/usr/lib
-            -L${LY_NDK_SRC_ROOT}/cxx-stl/llvm-libc++/libs/${ANDROID_ABI}
 
         LINK_NON_STATIC_DEBUG
             -Wl,--build-id       # Android Studio needs the libraries to have an id in order to match them with what"s running on the device.

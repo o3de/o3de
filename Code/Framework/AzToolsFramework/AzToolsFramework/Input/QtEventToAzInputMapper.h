@@ -133,6 +133,7 @@ namespace AzToolsFramework
         class EditorQtMouseDevice : public AzFramework::InputDeviceMouse
         {
         public:
+            AZ_CLASS_ALLOCATOR(EditorQtMouseDevice, AZ::SystemAllocator)
             EditorQtMouseDevice(AzFramework::InputDeviceId id);
 
             // AzFramework::InputDeviceMouse overrides ...

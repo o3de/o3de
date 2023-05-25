@@ -42,6 +42,13 @@ namespace AzToolsFramework
         bool m_interacting;
     };
 
+    //! The button that was used to start the manipulator behavior.
+    enum class ManipulatorMouseDownButton
+    {
+        Left,
+        Right
+    };
+
     //! This class serves to manage all relevant mouse events and coordinate all registered manipulators to function properly.
     //! ManipulatorManager does not manage the life cycle of specific manipulators. The users of manipulators are responsible
     //! for creating and deleting them at right time, as well as registering and unregistering accordingly.
@@ -50,7 +57,7 @@ namespace AzToolsFramework
         , private EditorEntityInfoNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ManipulatorManager, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorManager, AZ::SystemAllocator)
 
         explicit ManipulatorManager(ManipulatorManagerId managerId);
         ~ManipulatorManager();
@@ -115,13 +122,15 @@ namespace AzToolsFramework
         ManipulatorManagerId m_manipulatorManagerId; //!< This manipulator manager's id.
         ManipulatorId m_nextManipulatorIdToGenerate; //!< Id to use for the next manipulator that is registered with this manager.
 
-        AZStd::unordered_map<ManipulatorId, AZStd::shared_ptr<BaseManipulator>>
-            m_manipulatorIdToPtrMap; //!< Mapping from a manipulatorId to the corresponding manipulator.
-        AZStd::unordered_map<Picking::RegisteredBoundId, ManipulatorId>
-            m_boundIdToManipulatorIdMap; //!< Mapping from a boundId to the corresponding manipulatorId.
+        //! Mapping from a manipulatorId to the corresponding manipulator.
+        AZStd::unordered_map<ManipulatorId, AZStd::shared_ptr<BaseManipulator>> m_manipulatorIdToPtrMap;
+        //! Mapping from a boundId to the corresponding manipulatorId.
+        AZStd::unordered_map<Picking::RegisteredBoundId, ManipulatorId> m_boundIdToManipulatorIdMap;
 
         AZStd::shared_ptr<BaseManipulator> m_activeManipulator; //!< The manipulator we are currently interacting with.
         Picking::ManipulatorBoundManager m_boundManager; //!< All active manipulator bounds that could be interacted with.
+        //! The mouse button that is currently pressed (empty if no button is held).
+        AZStd::optional<ManipulatorMouseDownButton> m_mouseDownButton;
     };
 
     // The main/default ManipulatorManagerId to be used for

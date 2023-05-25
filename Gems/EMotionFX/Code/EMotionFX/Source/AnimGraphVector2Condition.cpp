@@ -23,7 +23,7 @@ namespace EMotionFX
     const char* AnimGraphVector2Condition::s_operationGetX = "Get X";
     const char* AnimGraphVector2Condition::s_operationGetY = "Get Y";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphVector2Condition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphVector2Condition, AnimGraphAllocator)
 
     AnimGraphVector2Condition::AnimGraphVector2Condition()
         : AnimGraphTransitionCondition()

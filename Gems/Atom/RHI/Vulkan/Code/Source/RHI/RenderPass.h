@@ -32,7 +32,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(RenderPass, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderPass, AZ::SystemAllocator);
             AZ_RTTI(RenderPass, "6F23B984-E6CF-40E2-9A8B-9605D82DFE27", Base);
 
             ~RenderPass() = default;

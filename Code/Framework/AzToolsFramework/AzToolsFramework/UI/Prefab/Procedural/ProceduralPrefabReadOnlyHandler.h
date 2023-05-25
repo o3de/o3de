@@ -27,8 +27,8 @@ namespace AzToolsFramework
             , public PrefabFocusNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(ProceduralPrefabReadOnlyHandler, AZ::SystemAllocator, 0);
-            AZ_RTTI(AzToolsFramework::ProceduralPrefabReadOnlyHandler, "{A2D72461-8CA3-45EE-81D2-4976BC0B6AE9}");
+            AZ_CLASS_ALLOCATOR(ProceduralPrefabReadOnlyHandler, AZ::SystemAllocator);
+            AZ_RTTI(ProceduralPrefabReadOnlyHandler, "{A2D72461-8CA3-45EE-81D2-4976BC0B6AE9}");
 
             ProceduralPrefabReadOnlyHandler();
             ~ProceduralPrefabReadOnlyHandler() override;

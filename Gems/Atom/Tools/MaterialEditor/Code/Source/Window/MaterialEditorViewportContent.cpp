@@ -66,7 +66,7 @@ namespace MaterialEditor
 
         // Avoid z-fighting with the cube model when double-sided rendering is enabled
         AZ::TransformBus::Event(
-            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01);
+            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01f);
 
         AZ::Render::MeshComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId,

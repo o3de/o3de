@@ -52,7 +52,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(DynamicPrimitiveProcessor, "{30391207-E4CB-4FCC-B407-05E361CF6815}");
-            AZ_CLASS_ALLOCATOR(DynamicPrimitiveProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DynamicPrimitiveProcessor, AZ::SystemAllocator);
 
             DynamicPrimitiveProcessor() = default;
             ~DynamicPrimitiveProcessor() = default;
@@ -66,8 +66,11 @@ namespace AZ
             //! Process the list of primitives in the buffer data and add them to the views in the feature processor packet
             void ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
 
-            //! do any cleanup from last frame.
+            //! Prepare frame.
             void PrepareFrame();
+                        
+            //! Do any cleanup after current frame is rendered.
+            void FrameEnd();
 
             //! Notify this DynamicPrimitiveProcessor to update its pipeline states
             void SetUpdatePipelineStates();

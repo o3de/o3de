@@ -3,6 +3,6 @@
     "Version": 1,
     "ClassName": "DynamicNodeConfig",
     "ClassData": {
-        "category": "Default",
+        "category": "Default"
     }
 }

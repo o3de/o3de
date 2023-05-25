@@ -25,7 +25,7 @@ namespace ScriptCanvas
         struct OutInterpreted
         {
             AZ_TYPE_INFO(OutInterpreted, "{171EC052-7A51-42FB-941C-CFF0F78F9373}");
-            AZ_CLASS_ALLOCATOR(OutInterpreted, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OutInterpreted, AZ::SystemAllocator);
 
             int m_lambdaRegistryIndex;
             lua_State* m_lua;
@@ -49,7 +49,7 @@ namespace ScriptCanvas
         struct OutInterpretedResult
         {
             AZ_TYPE_INFO(OutInterpretedResult, "{F0FB088C-2FA2-473A-8548-CA7D0B372ABE}");
-            AZ_CLASS_ALLOCATOR(OutInterpretedResult, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(OutInterpretedResult, AZ::SystemAllocator);
 
             int m_lambdaRegistryIndex;
             lua_State* m_lua;

@@ -132,6 +132,7 @@ namespace UnitTest
         : public MockLoadAssetCatalogAndHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockLoadAssetWithNonZeroSizeCatalogAndHandler, AZ::SystemAllocator)
         MockLoadAssetWithNonZeroSizeCatalogAndHandler(
             AZStd::unordered_set<AZ::Data::AssetId> ids
             , AZ::Data::AssetType assetType

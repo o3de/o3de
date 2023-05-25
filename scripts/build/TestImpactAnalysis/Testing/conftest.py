@@ -15,6 +15,9 @@ BUILD_INFO_KEY = 'build_info'
 CONFIG_PATH_KEY = 'config'
 BINARY_PATH_KEY = 'runtime_bin'
 COMMON_CONFIG_KEY = "common"
+JENKINS_KEY = "jenkins"
+RUNTIME_BIN_KEY = "runtime_bin"
+ENABLED_KEY = "enabled"
 WORKSPACE_KEY = "workspace"
 ROOT_KEY = "root"
 TEMP_KEY = "temp"
@@ -61,6 +64,13 @@ def storage_config(runtime_type, config_data):
     args_from_config['temp_workspace'] = config_data[runtime_type][WORKSPACE_KEY][TEMP_KEY][ROOT_KEY]
     return args_from_config
 
+@pytest.fixture
+def skip_if_test_targets_disabled(runtime_type, config_data):
+    tiaf_bin = Path(config_data[runtime_type][RUNTIME_BIN_KEY])
+    # We need the runtime to be enabled and the runtime binary to exist to run tests
+    if not config_data[runtime_type][JENKINS_KEY][ENABLED_KEY] or not tiaf_bin.is_file():
+        pytest.skip("Test targets are disabled for this runtime, test will be skipped.")
+
 
 @pytest.fixture
 def config_path(build_type, test_data_file):
@@ -91,7 +101,7 @@ def tiaf_args(config_path):
     args['dst_branch'] = "123"
     args['commit'] = "foobar"
     args['build_number'] = 1
-    args['suite'] = "main"
+    args['suites'] = "main"
     args['test_failure_policy'] = "continue"
     return args
 
@@ -126,7 +136,7 @@ def default_runtime_args(mock_uuid, report_path):
     runtime_args['test_failure_policy'] = "--fpolicy=continue"
     runtime_args['report'] = "--report=" + \
         str(report_path).replace("/", "\\")
-    runtime_args['suite'] = "--suite=main"
+    runtime_args['suites'] = "--suites=main"
     return runtime_args
 
 

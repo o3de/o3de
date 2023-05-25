@@ -30,6 +30,8 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <AzToolsFramework/Metadata/UuidUtils.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AssetBuilderApplication.h>
@@ -38,7 +40,6 @@
 #include <AzCore/Interface/Interface.h>
 #include <Entity/EntityUtilityComponent.h>
 #include <AssetBuilderStatic.h>
-#include <Metadata/MetadataManager.h>
 
 namespace AssetBuilder
 {
@@ -85,6 +86,7 @@ AZ::ComponentTypeList AssetBuilderApplication::GetRequiredSystemComponents() con
         azrtti_typeid<AzToolsFramework::Prefab::PrefabSystemComponent>(),
         azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
         azrtti_typeid<AzToolsFramework::MetadataManager>(),
+        azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
         });
 
     return components;

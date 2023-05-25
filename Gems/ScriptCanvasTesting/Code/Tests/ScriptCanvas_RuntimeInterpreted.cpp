@@ -28,7 +28,7 @@ using namespace ScriptCanvasEditor;
 class GlobalHandler : ScriptCanvasTesting::GlobalEBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(GlobalHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(GlobalHandler, AZ::SystemAllocator);
 
     AZ::Event<> m_zeroParam;
     AZ::Event<AZStd::vector<AZStd::string>&> m_byReference;

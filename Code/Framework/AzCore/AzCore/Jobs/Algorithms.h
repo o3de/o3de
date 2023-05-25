@@ -43,7 +43,7 @@ namespace AZ
             : public Job
         {
         public:
-            AZ_CLASS_ALLOCATOR(ParallelForChunkJob, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ParallelForChunkJob, ThreadPoolAllocator);
 
             typedef ParallelForChunkJob<Function, Partition> ThisType;
 
@@ -250,7 +250,7 @@ namespace AZ
             : public JobEmpty
         {
         public:
-            AZ_CLASS_ALLOCATOR(ParallelForFinishJob, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ParallelForFinishJob, ThreadPoolAllocator);
 
             ParallelForFinishJob(const Function& function, JobContext* jobContext, const Partition& partition, bool isAutoDelete)
                 : JobEmpty(isAutoDelete, jobContext)
@@ -283,7 +283,7 @@ namespace AZ
 
             typedef typename AZStd::iterator_traits<ForwardIterator>::value_type value_type;
 
-            AZ_CLASS_ALLOCATOR(ParallelForEachForwardFinishJobChunkHelper, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ParallelForEachForwardFinishJobChunkHelper, ThreadPoolAllocator);
 
             ParallelForEachForwardFinishJobChunkHelper(ForwardIterator start, ForwardIterator end, const Function& function, const Partition& partition, JobContext* jobContext, bool isAutoDelete)
                 : Job(isAutoDelete, jobContext)
@@ -334,7 +334,7 @@ namespace AZ
             : public JobEmpty
         {
         public:
-            AZ_CLASS_ALLOCATOR(ParallelForEachForwardFinishJob, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ParallelForEachForwardFinishJob, ThreadPoolAllocator);
 
             typedef ParallelForEachForwardFinishJobChunkHelper<ForwardIterator, Function, Partition> ChunkHelperJob;
 
@@ -389,7 +389,7 @@ namespace AZ
             : public JobEmpty
         {
         public:
-            AZ_CLASS_ALLOCATOR(ParallelForEachRandomFinishJob, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ParallelForEachRandomFinishJob, ThreadPoolAllocator);
 
             typedef typename AZStd::iterator_traits<RandomIterator>::value_type value_type;
 

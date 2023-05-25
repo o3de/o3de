@@ -12,21 +12,24 @@
 // EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
 //
 #ifndef EvaluateVertexGeometry
-#define EvaluateVertexGeometry(IN)      EvaluateVertexGeometry_BasePBR(IN)
+#define EvaluateVertexGeometry EvaluateVertexGeometry_BasePBR
 #endif
 
+#include <viewsrg.srgi>
 #include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_BasePBR(
     float3 position,
     float3 normal,
     float4 tangent,
     float2 uv0,
-    float2 uv1)
+    float2 uv1,
+    uint instanceId)
 {
     VsOutput output;
 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
     output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
@@ -38,15 +41,20 @@ VsOutput EvaluateVertexGeometry_BasePBR(
     output.normal = normal;
     output.tangent = tangent;
 
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
+
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN)
+VsOutput EvaluateVertexGeometry_BasePBR(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_BasePBR(
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
-        IN.uv1);
+        IN.uv1,
+        SV.m_instanceId);
 }

@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorScriptCanvasComponentSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(EditorScriptCanvasComponentSerializer, SystemAllocator);
 
     JsonSerializationResult::Result EditorScriptCanvasComponentSerializer::Load
         ( void* outputValue

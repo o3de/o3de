@@ -21,7 +21,7 @@ namespace ScriptCanvas
     struct RuntimeComponentUserData
     {
         AZ_TYPE_INFO(RuntimeComponentUserData, "{584AC6C4-0A75-49DE-93A1-1B81E58F878E}");
-        AZ_CLASS_ALLOCATOR(RuntimeComponentUserData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeComponentUserData, AZ::SystemAllocator);
 
         RuntimeComponent& component;
         const AZ::EntityId entity;

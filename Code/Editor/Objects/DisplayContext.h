@@ -29,7 +29,6 @@
 struct IDisplayViewport;
 struct IRenderer;
 struct IRenderAuxGeom;
-struct IIconManager;
 class CDisplaySettings;
 class QPoint;
 
@@ -64,7 +63,6 @@ struct SANDBOX_API DisplayContext
     CDisplaySettings* settings;
     IDisplayViewport* view;
     IRenderAuxGeom* pRenderAuxGeom;
-    IIconManager* pIconManager;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AABB    box;    // Bounding box of volume that need to be repainted.
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING

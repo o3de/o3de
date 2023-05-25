@@ -37,7 +37,7 @@ namespace DebugDraw
     class DebugDrawAabbElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawAabbElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawAabbElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawAabbElement, "{3B3E45AC-95B5-477F-BC34-58765A031BF1}");
 
         AZ::EntityId            m_targetEntityId;

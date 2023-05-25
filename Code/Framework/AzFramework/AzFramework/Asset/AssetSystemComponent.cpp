@@ -29,6 +29,8 @@
 #include <AzFramework/Asset/Benchmark/BenchmarkCommands.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 
+DECLARE_EBUS_INSTANTIATION(AzFramework::AssetSystem::AssetSystemRequests);
+
 AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
@@ -673,7 +675,8 @@ namespace AzFramework
             {
                 if (NegotiationWithAssetProcessorFailed())
                 {
-                    EBUS_EVENT(AzFramework::AssetSystemConnectionNotificationsBus, NegotiationFailed);
+                    AzFramework::AssetSystemConnectionNotificationsBus::Broadcast(
+                        &AzFramework::AssetSystemConnectionNotificationsBus::Events::NegotiationFailed);
                     StartDisconnectingAssetProcessor();
                     return false;
                 }

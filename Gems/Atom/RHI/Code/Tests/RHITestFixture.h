@@ -30,22 +30,10 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::ReflectionManager> m_reflectionManager;
 
     public:
-        RHITestFixture()
-        {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-        }
-
 
         AZ::SerializeContext* GetSerializeContext()
         {
             return m_reflectionManager ? m_reflectionManager->GetReflectContext<AZ::SerializeContext>() : nullptr;
-        }
-
-        virtual ~RHITestFixture()
-        {
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void SetUp() override

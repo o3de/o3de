@@ -8,6 +8,8 @@
 
 set(FILES
     Include/Atom/RPI.Public/AssetInitBus.h
+    Include/Atom/RPI.Public/AssetQuality.h
+    Include/Atom/RPI.Public/AssetTagBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/BlockCompression.h
     Include/Atom/RPI.Public/Culling.h
@@ -28,6 +30,7 @@ set(FILES
     Include/Atom/RPI.Public/ViewportContextBus.h
     Include/Atom/RPI.Public/ViewportContextManager.h
     Include/Atom/RPI.Public/ViewProviderBus.h
+    Include/Atom/RPI.Public/VisibleObjectContext.h
     Include/Atom/RPI.Public/WindowContext.h
     Include/Atom/RPI.Public/WindowContextBus.h
     Include/Atom/RPI.Public/AuxGeom/AuxGeomDraw.h
@@ -46,6 +49,7 @@ set(FILES
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
     Include/Atom/RPI.Public/Image/ImageSystem.h
     Include/Atom/RPI.Public/Image/ImageSystemInterface.h
+    Include/Atom/RPI.Public/Image/ImageTagSystemComponent.h
     Include/Atom/RPI.Public/Image/StreamingImage.h
     Include/Atom/RPI.Public/Image/StreamingImageContext.h
     Include/Atom/RPI.Public/Image/StreamingImageController.h
@@ -56,6 +60,7 @@ set(FILES
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h
     Include/Atom/RPI.Public/Model/ModelSystem.h
+    Include/Atom/RPI.Public/Model/ModelTagSystemComponent.h
     Include/Atom/RPI.Public/Model/UvStreamTangentBitmask.h
     Include/Atom/RPI.Public/Pass/AttachmentReadback.h
     Include/Atom/RPI.Public/Pass/ComputePass.h
@@ -77,6 +82,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/MSAAResolvePass.h
     Include/Atom/RPI.Public/Pass/SlowClearPass.h
     Include/Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h
+    Include/Atom/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.h
     Include/Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h
     Include/Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h
     Include/Atom/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.h
@@ -114,6 +120,7 @@ set(FILES
     Source/RPI.Public/ViewGroup.cpp
     Source/RPI.Public/ViewportContext.cpp
     Source/RPI.Public/ViewportContextManager.cpp
+    Source/RPI.Public/VisibleObjectContext.cpp
     Source/RPI.Public/WindowContext.cpp
     Source/RPI.Public/AuxGeomFeatureProcessorInterface.cpp
     Source/RPI.Public/Buffer/Buffer.cpp
@@ -126,6 +133,7 @@ set(FILES
     Source/RPI.Public/Image/AttachmentImage.cpp
     Source/RPI.Public/Image/AttachmentImagePool.cpp
     Source/RPI.Public/Image/ImageSystem.cpp
+    Source/RPI.Public/Image/ImageTagSystemComponent.cpp
     Source/RPI.Public/Image/StreamingImage.cpp
     Source/RPI.Public/Image/StreamingImageContext.cpp
     Source/RPI.Public/Image/StreamingImageController.cpp
@@ -136,6 +144,7 @@ set(FILES
     Source/RPI.Public/Model/ModelLod.cpp
     Source/RPI.Public/Model/ModelLodUtils.cpp
     Source/RPI.Public/Model/ModelSystem.cpp
+    Source/RPI.Public/Model/ModelTagSystemComponent.cpp
     Source/RPI.Public/Model/UvStreamTangentBitmask.cpp
     Source/RPI.Public/Pass/AttachmentReadback.cpp
     Source/RPI.Public/Pass/ComputePass.cpp
@@ -155,6 +164,7 @@ set(FILES
     Source/RPI.Public/Pass/MSAAResolvePass.cpp
     Source/RPI.Public/Pass/SlowClearPass.cpp
     Source/RPI.Public/Pass/Specific/DownsampleMipChainPass.cpp
+    Source/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.cpp
     Source/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.cpp
     Source/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.cpp
     Source/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.cpp

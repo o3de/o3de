@@ -19,7 +19,7 @@ namespace AZ
     bool DynamicModuleHandle::Load(bool isInitializeFunctionRequired)
     {
         LoadStatus status = LoadModule();
-        switch (status) 
+        switch (status)
         {
             case LoadStatus::LoadFailure:
                 return false;
@@ -36,12 +36,12 @@ namespace AZ
             // been initialized in this context.  Has it been initialized in THIS context?
             // in order not to collide with other environment variable names, we'll pick one that is likely to be unique to this
             // usage of it by prepending "module_init_token: " to the file name.
-            AZ::OSString variableName = AZ::OSString::format("module_init_token: %s", m_fileName.c_str());
+            AZ::IO::FixedMaxPathString variableName = AZ::IO::FixedMaxPathString::format("module_init_token: %s", m_fileName.c_str());
             m_initialized = AZ::Environment::FindVariable<bool>(variableName.c_str());
 
             // note here we are not checking the value of m_initialized, we're checking whether the variable exists or not
             // the first one to create the variable also owns it, so we only care about its existence.
-            if (!m_initialized) 
+            if (!m_initialized)
             {
                 // if we get here, it means nobody has initialized this module yet.  We will initialize it and create the variable.
                 m_initialized = AZ::Environment::CreateVariable<bool>(variableName.c_str());
@@ -73,7 +73,7 @@ namespace AZ
         if (m_initialized)
         {
             // the owner is whoever created the variable, and is also thus the one that initialized it, so it can uninitalize it.
-            if (m_initialized.IsOwner()) 
+            if (m_initialized.IsOwner())
             {
                 auto uninitFunc = GetFunction<UninitializeDynamicModuleFunction>(UninitializeDynamicModuleFunctionName);
                 AZ_Error("Module", uninitFunc, "Unable to locate required entry point '%s' within module '%s'.",
@@ -83,7 +83,7 @@ namespace AZ
                     uninitFunc();
                 }
             }
-            
+
             m_initialized.Reset(); // drop our ref.
         }
 

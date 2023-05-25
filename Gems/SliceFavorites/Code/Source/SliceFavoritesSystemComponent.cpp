@@ -26,7 +26,6 @@ namespace SliceFavorites
             {
                 ec->Class<SliceFavoritesSystemComponent>("SliceFavorites", "[Adds the ability for users to mark slices as favorites for easy instantiation via context menus in the editor]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

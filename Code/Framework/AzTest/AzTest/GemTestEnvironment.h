@@ -29,20 +29,23 @@ namespace AZ
             /// be added here because it cannot be loaded using the usual module loading process, as that would result
             /// in attempting to create the gem's environment a second time.
             /// @param dynamicModulePaths Dynamic module paths to be added to the existing collection.
-            void AddDynamicModulePaths(const AZStd::vector<AZStd::string>& dynamicModulePaths);
+            void AddDynamicModulePaths(AZStd::span<AZStd::string_view const> dynamicModulePaths);
+            void AddDynamicModulePaths(AZStd::initializer_list<AZStd::string_view const> dynamicModulePaths);
 
             /// Adds to the collection of component descriptors which should be registered during the environment setup.
             /// Generally this will be the same as the descriptors which are registered in the gem's Module function,
             /// or a subset of those if only certain components are required during testing.
             /// @param componentDescriptors Component descriptors to be added to the existing collection.
-            void AddComponentDescriptors(const AZStd::vector<AZ::ComponentDescriptor*>& componentDescriptors);
+            void AddComponentDescriptors(AZStd::span<AZ::ComponentDescriptor* const> componentDescriptors);
+            void AddComponentDescriptors(AZStd::initializer_list<AZ::ComponentDescriptor* const> componentDescriptors);
 
             /// Adds to the sorted list of components which should be activated during the environment setup.
             /// Any required components, for example the gem's system component, should be added here.  Dependency
             /// sorting is not performed, so it is up to the caller to ensure that all dependencies are met and the
             /// components are provided in a valid activation order.
             /// @param requiredComponents Components to be appended to the existing collection of required components.
-            void AddRequiredComponents(const AZStd::vector<AZ::TypeId>& requiredComponents);
+            void AddRequiredComponents(AZStd::span<AZ::TypeId const> requiredComponents);
+            void AddRequiredComponents(AZStd::initializer_list<AZ::TypeId const> requiredComponents);
 
             /// Allows derived environments to set up which gems, components etc the environment should load.
             virtual void AddGemsAndComponents() {}

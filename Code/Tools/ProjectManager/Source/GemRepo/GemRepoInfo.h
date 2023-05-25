@@ -29,6 +29,14 @@ namespace O3DE::ProjectManager
 
         bool operator<(const GemRepoInfo& gemRepoInfo) const;
 
+        enum class BadgeType
+        {
+            NoBadge = 0,
+            BlueBadge,
+            GreenBadge,
+            NumBadgeTypes
+        };
+
         QString m_path = "";
         QString m_name = "Unknown Repo Name";
         QString m_origin = "Unknown Creator";
@@ -37,7 +45,7 @@ namespace O3DE::ProjectManager
         QString m_additionalInfo = "";
         QString m_directoryLink = "";
         QString m_repoUri = "";
-        QStringList m_includedGemUris = {};
         QDateTime m_lastUpdated;
+        BadgeType m_badgeType = BadgeType::NoBadge;
     };
 } // namespace O3DE::ProjectManager

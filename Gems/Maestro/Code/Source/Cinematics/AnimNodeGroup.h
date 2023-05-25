@@ -22,7 +22,7 @@ class CAnimNodeGroup
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimNodeGroup, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimNodeGroup, AZ::SystemAllocator);
     AZ_RTTI(CAnimNodeGroup, "{6BDA5C06-7C15-4622-9550-68368E84D653}", CAnimNode);
 
     CAnimNodeGroup();

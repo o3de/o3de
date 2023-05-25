@@ -12,6 +12,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/DocumentPropertyEditor/AggregateAdapter.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -58,8 +59,18 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
+        using VisitComponentAdapterContentsCallback = AZStd::function<void(const AZ::Dom::Value&)>;
+        using ComponentAdapterFactory = AZStd::function<AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>()>;
+
         explicit ComponentEditor(
-            AZ::SerializeContext* context, IPropertyEditorNotify* notifyTarget = nullptr, QWidget* parent = nullptr);
+            AZ::SerializeContext* context,
+            IPropertyEditorNotify* notifyTarget = nullptr,
+            QWidget* parent = nullptr,
+            ComponentAdapterFactory adapterFactory =
+                []() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
+            {
+                return nullptr;
+            });
         ~ComponentEditor();
 
         void AddInstance(AZ::Component* componentInstance, AZ::Component* aggregateInstance, AZ::Component* compareInstance);
@@ -97,6 +108,10 @@ namespace AzToolsFramework
         AZStd::vector<AZ::Component*>& GetComponents();
         const AZStd::vector<AZ::Component*>& GetComponents() const;
 
+        //! Visits the contents of the DPEComponentAdapter used by this ComponentEditor.
+        //! @param callback The callback to use to visit the DPEComponentAdapter contents.
+        void VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const;
+
         const AZ::Uuid& GetComponentType() const { return m_componentType; }
 
         void SetComponentOverridden(const bool overridden);
@@ -104,6 +119,10 @@ namespace AzToolsFramework
         void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes);
         void ActiveComponentModeChanged(const AZ::Uuid& componentType);
+
+        // Subscribe to document property editor change events
+        void ConnectPropertyChangeHandler(
+            const AZStd::function<void(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)>& callback);
 
     Q_SIGNALS:
         void OnExpansionContractionDone();
@@ -116,6 +135,7 @@ namespace AzToolsFramework
             const AZStd::vector<AZ::ComponentServiceType>& services,
             const AZStd::vector<AZ::ComponentServiceType>& incompatibleServices);
         void OnRequestSelectionChange(const QPoint& position);
+        void OnComponentIconClicked(const QPoint& position);
 
     private:
         /// Set up header for this component type.
@@ -129,6 +149,7 @@ namespace AzToolsFramework
 
         void OnExpanderChanged(bool expanded);
         void OnContextMenuClicked(const QPoint& position);
+        void OnIconLabelClicked(const QPoint& position);
 
         AzQtComponents::CardNotification* CreateNotification(const QString& message);
         AzQtComponents::CardNotification* CreateNotificationForConflictingComponents(const QString& message, const AZ::Entity::ComponentArrayType& conflictingComponents);
@@ -146,8 +167,10 @@ namespace AzToolsFramework
 
         ReflectedPropertyEditor* m_propertyEditor = nullptr;
 
+        ComponentAdapterFactory m_adapterFactory;
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> m_adapter;
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringFilter> m_filterAdapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter> m_aggregateAdapter;
         DocumentPropertyEditor* m_dpe = nullptr;
 
         AZ::SerializeContext* m_serializeContext = nullptr;
@@ -157,6 +180,8 @@ namespace AzToolsFramework
 
         AZStd::vector<AZ::Component*> m_components;
         AZ::Crc32 m_savedKeySeed;
+
+        AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler m_propertyChangeHandler;
     };
 
 } // namespace AzToolsFramework

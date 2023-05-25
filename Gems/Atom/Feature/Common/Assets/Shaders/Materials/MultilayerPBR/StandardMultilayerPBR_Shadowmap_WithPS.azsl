@@ -25,5 +25,3 @@ COMMON_OPTIONS_PARALLAX(o_layer3_)
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
 #include "../MaterialFunctions/MultilayerParallaxDepth.azsli"
-
-#include "../DepthPass_WithPS.azsli"

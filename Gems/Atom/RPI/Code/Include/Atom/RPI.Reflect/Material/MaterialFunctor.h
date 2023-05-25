@@ -301,7 +301,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::RPI::MaterialFunctor, "{4F2EDF30-71C0-4E00-9CB0-9EA97587712E}");
-            AZ_CLASS_ALLOCATOR(MaterialFunctor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialFunctor, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

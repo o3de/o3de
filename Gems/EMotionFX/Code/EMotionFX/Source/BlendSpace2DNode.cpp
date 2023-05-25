@@ -94,8 +94,8 @@ namespace EMotionFX
 {
     const float BlendSpace2DNode::s_epsilonForBarycentricCoords = 0.001f;
 
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace2DNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendSpace2DNode::Triangle::Triangle(uint16_t indexA, uint16_t indexB, uint16_t indexC)
     {

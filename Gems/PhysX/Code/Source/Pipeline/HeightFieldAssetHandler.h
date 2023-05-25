@@ -30,7 +30,7 @@ namespace PhysX
         public:
             static const char* s_assetFileExtension;
 
-            AZ_CLASS_ALLOCATOR(HeightFieldAssetHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HeightFieldAssetHandler, AZ::SystemAllocator);
 
             HeightFieldAssetHandler();
             ~HeightFieldAssetHandler();

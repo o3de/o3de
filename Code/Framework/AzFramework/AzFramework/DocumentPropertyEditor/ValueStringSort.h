@@ -16,14 +16,14 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         ValueStringSort();
-        void SetReversed(bool reverseSort);
+
         void SetSortAttribute(AZStd::string_view attributeName);
         void SetSortColumn(size_t sortColumn);
 
         struct StringSortNode : public RowSortAdapter::SortInfoNode
         {
-            StringSortNode(SortInfoNode::AdapterSortType sortFunction)
-                : SortInfoNode(sortFunction)
+            StringSortNode(const RowSortAdapter* owningAdapter)
+                : SortInfoNode(owningAdapter)
             {
             }
             AZStd::string m_string;

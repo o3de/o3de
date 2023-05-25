@@ -1761,7 +1761,7 @@ namespace AZ
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!context)
             {
                 AZ_Error("Serialization", false, "Not serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or input serialize context should not be null!");
@@ -1841,7 +1841,7 @@ namespace AZ
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!context)
             {
                 AZ_Error("Serialization", false, "No serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or input serialize context should not be null!");

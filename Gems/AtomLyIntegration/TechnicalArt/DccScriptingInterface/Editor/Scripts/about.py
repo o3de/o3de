@@ -48,7 +48,7 @@ class DccsiAbout(QDialog):
 
         dccsi_blender_readme_url = 'https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/readme.md'
 
-        dccsi_blender_scene_exporter_url = 'https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/Scripts/AddOns/SceneExporter/README.md'
+        dccsi_blender_scene_exporter_url = 'https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/Scripts/addons/SceneExporter/README.md'
 
         dccsi_wing_readme_url = 'https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/IDE/Wing/readme.md'
 

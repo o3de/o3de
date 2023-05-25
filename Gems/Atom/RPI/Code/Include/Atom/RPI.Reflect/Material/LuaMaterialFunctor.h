@@ -313,7 +313,7 @@ namespace AZ
                 , public LuaMaterialFunctorAPI::ConfigureShaders
             {
             public:
-                AZ_TYPE_INFO(LuaMaterialFunctorAPI::LuaMaterialFunctorPipelineRuntimeContext, "{632F1E52-79EE-4184-A7B0-55C0EEEC5AB2}");
+                AZ_TYPE_INFO(PipelineRuntimeContext, "{632F1E52-79EE-4184-A7B0-55C0EEEC5AB2}");
 
                 static void Reflect(BehaviorContext* behaviorContext);
 
@@ -406,7 +406,7 @@ namespace AZ
             friend class UnitTest::LuaMaterialFunctorTests;
         public:
             AZ_RTTI(AZ::RPI::LuaMaterialFunctor, "{1EBDFEC1-FC45-4506-9B0F-AE05FA3779E1}", RPI::MaterialFunctor);
-            AZ_CLASS_ALLOCATOR(AZ::RPI::LuaMaterialFunctor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::RPI::LuaMaterialFunctor, SystemAllocator);
             
             static void Reflect(ReflectContext* context);
 

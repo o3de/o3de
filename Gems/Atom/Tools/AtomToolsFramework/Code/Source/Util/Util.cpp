@@ -21,6 +21,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -86,31 +87,68 @@ namespace AtomToolsFramework
         return mainWindow;
     }
 
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue)
+    {
+        for (const auto& value : values)
+        {
+            if (!value.empty())
+            {
+                return value;
+            }
+        }
+
+        return defaultValue;
+    }
+
+    void ReplaceSymbolsInContainer(const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container)
+    {
+        const AZStd::regex findRegex(findText);
+        for (auto& sourceText : container)
+        {
+            sourceText = AZStd::regex_replace(sourceText, findRegex, replaceText);
+        }
+    }
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container)
+    {
+        for (const auto& substitutionSymbolPair : substitutionSymbols)
+        {
+            ReplaceSymbolsInContainer(substitutionSymbolPair.first, substitutionSymbolPair.second, container);
+        }
+    }
+
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
         QString symbolName(text.c_str());
-        // Replace non alphanumeric characters with space
-        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
-        // Insert a space between a lowercase or numeric character followed by an uppercase character
-        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Remove all leading whitespace
+        symbolName.replace(QRegExp("^\\s+"), "");
         // Remove all trailing whitespace
-        symbolName.replace(QRegExp("\\s+\\Z"), "");
+        symbolName.replace(QRegExp("\\s+$"), "");
+        // Replace non alphanumeric characters with _
+        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), "_");
+        // Insert a _ between a lowercase or numeric character followed by an uppercase character
+        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1_\\2");
         // Insert an underscore at the beginning of the string if it starts with a digit
-        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        symbolName.replace(QRegExp("^(\\d)"), "_\\1");
         // Replace every sequence of whitespace characters with underscores
         symbolName.replace(QRegExp("\\s+"), "_");
+        // Replace Sequences of _ with a single _
+        symbolName.replace(QRegExp("_+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
 
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
         QString displayName(text.c_str());
+        // Remove all leading whitespace
+        displayName.replace(QRegExp("^\\s+"), "");
+        // Remove all trailing whitespace
+        displayName.replace(QRegExp("\\s+$"), "");
         // Replace non alphanumeric characters with space
         displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
         // Insert a space between a lowercase or numeric character followed by an uppercase character
         displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
-        // Remove all trailing whitespace
-        displayName.replace(QRegExp("\\s+\\Z"), "");
         // Tokenize the string where separated by whitespace
         QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)
@@ -312,23 +350,30 @@ namespace AtomToolsFramework
             path = GetPathWithoutAlias(path);
         }
 
-        // Build a string list from the supported extensions container that will be used in a regular expression wild card for the asset
-        // selection model.
-        QStringList extensionList;
-        for (const auto& extensionPair : supportedExtensions)
+        // Create a custom filter function to plug into the asset selection model. The filter function will only display source assets
+        // matching one of the supported extensions. It will also ignore files in the cache folder, usually intermediate assets. This is
+        // much faster than the previous iteration using regular expressions.
+        auto filterFn = [&](const AssetBrowserEntry* entry)
         {
-            if (!extensionPair.second.empty())
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
             {
-                extensionList.append(extensionPair.second.c_str());
+                return false;
             }
-        }
 
-        // This expression so the selection model only matches files that match any of the valid extensions.
-        const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-        const QRegExp filter(expression, Qt::CaseInsensitive);
+            const auto& path = entry->GetFullPath();
+            return !AZ::StringFunc::Contains(path, "cache") &&
+                AZStd::any_of(
+                    supportedExtensions.begin(),
+                    supportedExtensions.end(),
+                    [&](const auto& extensionPair)
+                    {
+                        return path.ends_with(AZStd::fixed_string<32>::format(".%s", extensionPair.second.c_str()));
+                    });
+        };
 
-        // Create the selection models of the asset picture only displays files matching the filter.
-        auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
+        AssetSelectionModel selection;
+        selection.SetDisplayFilter(FilterConstType(new CustomFilter(filterFn)));
+        selection.SetSelectionFilter(FilterConstType(new CustomFilter(filterFn)));
         selection.SetTitle(title.c_str());
         selection.SetMultiselect(multiSelect);
         selection.SetSelectedFilePaths(selectedFilePathsWithoutAliases);
@@ -398,13 +443,9 @@ namespace AtomToolsFramework
 
     bool IsDocumentPathInSupportedFolder(const AZStd::string& path)
     {
-        bool assetFoldersRetrieved = false;
-        AZStd::vector<AZStd::string> assetFolders;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
-
-        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(GetPathWithoutAlias(path)).LexicallyNormal();
-        for (const auto& assetFolder : assetFolders)
+        const auto& fullPath = GetPathWithoutAlias(path);
+        const AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(fullPath).LexicallyNormal();
+        for (const auto& assetFolder : GetNonCacheSourceFolders())
         {
             // Check if the path is relative to the asset folder
             if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
@@ -623,7 +664,7 @@ namespace AtomToolsFramework
     void VisitFilesInFolder(
         const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
-        if (!visitorFn)
+        if (!visitorFn || AZ::StringFunc::Contains(folder, "cache"))
         {
             return;
         }
@@ -655,10 +696,7 @@ namespace AtomToolsFramework
                     return visitorFn(fullPath);
                 }
 
-                if (recurse && !AZ::StringFunc::Contains(fullPath, "cache"))
-                {
-                    VisitFilesInFolder(fullPath, visitorFn, recurse);
-                }
+                VisitFilesInFolder(fullPath, visitorFn, recurse);
                 return true;
             });
     }
@@ -670,12 +708,7 @@ namespace AtomToolsFramework
             return;
         }
 
-        AZStd::vector<AZStd::string> scanFolders;
-        scanFolders.reserve(100);
-        AzToolsFramework::AssetSystemRequestBus::Broadcast(
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
-
-        for (const AZStd::string& scanFolder : scanFolders)
+        for (const AZStd::string& scanFolder : GetNonCacheSourceFolders())
         {
             VisitFilesInFolder(scanFolder, visitorFn, true);
         }
@@ -683,16 +716,12 @@ namespace AtomToolsFramework
 
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn)
     {
-        AZStd::vector<AZStd::string> scanFolders;
-        scanFolders.reserve(100);
-        AzToolsFramework::AssetSystemRequestBus::Broadcast(
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+        const auto& scanFolders = GetNonCacheSourceFolders();
 
-        AZStd::recursive_mutex resultsMutex;
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
 
-        AZ::parallel_for_each(
+        AZStd::for_each(
             scanFolders.begin(),
             scanFolders.end(),
             [&](const AZStd::string& scanFolder)
@@ -703,7 +732,6 @@ namespace AtomToolsFramework
                     {
                         if (!filterFn || filterFn(path))
                         {
-                            AZStd::scoped_lock lock(resultsMutex);
                             results.emplace_back(path);
                         }
                         return true;
@@ -718,13 +746,31 @@ namespace AtomToolsFramework
         return results;
     }
 
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension)
     {
+        if (extension.empty())
+        {
+            return {};
+        }
+
+        const AZStd::string& extensionWithDot = (extension[0] == '.') ? extension : AZStd::string::format(".%s", extension.c_str());
         return GetPathsInSourceFoldersMatchingFilter(
             [&](const AZStd::string& path)
             {
-                return AZ::IO::NameMatchesFilter(path, wildcard) && IsDocumentPathEditable(path);
+                return path.ends_with(extensionWithDot) && IsDocumentPathEditable(path);
             });
+    }
+
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders()
+    {
+        AZStd::vector<AZStd::string> scanFolders;
+        scanFolders.reserve(100);
+
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        AZStd::erase_if(scanFolders, [](const AZStd::string& path){ return AZ::StringFunc::Contains(path, "cache"); });
+        return scanFolders;
     }
 
     void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
@@ -817,7 +863,18 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetPathToExteralReference", GetPathToExteralReference, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingExtension", GetPathsInSourceFoldersMatchingExtension, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetNonCacheSourceFolders", GetNonCacheSourceFolders, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_bool", GetSettingsValue<bool>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_bool", SetSettingsValue<bool>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_s64", GetSettingsValue<AZ::s64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_s64", SetSettingsValue<AZ::s64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_u64", GetSettingsValue<AZ::u64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_u64", SetSettingsValue<AZ::u64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_double", GetSettingsValue<double>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_double", SetSettingsValue<double>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_string", GetSettingsValue<AZStd::string>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_string", SetSettingsValue<AZStd::string>, nullptr, ""));
         }
     }
 } // namespace AtomToolsFramework

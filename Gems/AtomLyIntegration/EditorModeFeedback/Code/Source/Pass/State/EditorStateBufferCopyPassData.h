@@ -19,7 +19,7 @@ namespace AZ::RPI
         : public RPI::FullscreenTrianglePassData
     {
         AZ_RTTI(EditorStateBufferCopyPassData, "{3782A63C-4FFE-417B-86B5-C61E986CCBE6}", FullscreenTrianglePassData);
-        AZ_CLASS_ALLOCATOR(EditorStateBufferCopyPassData, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorStateBufferCopyPassData, SystemAllocator);
 
         EditorStateBufferCopyPassData() = default;
         virtual ~EditorStateBufferCopyPassData() = default;

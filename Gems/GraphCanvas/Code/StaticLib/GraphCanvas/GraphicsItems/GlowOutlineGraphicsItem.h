@@ -65,7 +65,7 @@ namespace GraphCanvas
         , public AssetEditorSettingsNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(GlowOutlineGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GlowOutlineGraphicsItem, AZ::SystemAllocator);
 
         GlowOutlineGraphicsItem(const FixedGlowOutlineConfiguration& configuration);
         GlowOutlineGraphicsItem(const SceneMemberGlowOutlineConfiguration& configuration);

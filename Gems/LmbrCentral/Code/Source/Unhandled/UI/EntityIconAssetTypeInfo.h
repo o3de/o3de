@@ -20,7 +20,7 @@ namespace LmbrCentral
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(EntityIconAssetTypeInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIconAssetTypeInfo, AZ::SystemAllocator);
 
         ~EntityIconAssetTypeInfo() override;
 

@@ -17,6 +17,7 @@ set(FILES
     ActionManager/Action/ActionManagerNotificationBus.h
     ActionManager/Action/EditorAction.cpp
     ActionManager/Action/EditorAction.h
+    ActionManager/Action/EditorActionUtils.h
     ActionManager/Action/EditorActionContext.cpp
     ActionManager/Action/EditorActionContext.h
     ActionManager/Action/EditorWidgetAction.cpp
@@ -24,6 +25,10 @@ set(FILES
     ActionManager/HotKey/HotKeyManager.cpp
     ActionManager/HotKey/HotKeyManager.h
     ActionManager/HotKey/HotKeyManagerInterface.h
+    ActionManager/HotKey/HotKeyManagerInternalInterface.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.cpp
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -49,6 +54,8 @@ set(FILES
     AssetEditor/AssetEditorHeader.cpp
     AssetEditor/AssetEditorHeader.h
     AssetEditor/AssetEditorUtils.h
+    AssetEditor/AssetEditorTab.cpp
+    AssetEditor/AssetEditorTab.h
     AssetEditor/Resources/AssetEditorResources.qrc
     UI/Logging/LogLine.h
     UI/Logging/LogLine.cpp
@@ -59,10 +66,13 @@ set(FILES
     AzToolsFrameworkModule.h
     AzToolsFrameworkModule.cpp
     API/ToolsApplicationAPI.h
+    API/ToolsApplicationAPI.cpp
     API/EditorAssetSystemAPI.h
+    API/EditorAssetSystemAPI.cpp
     API/AssetDatabaseBus.h
     API/ComponentEntityObjectBus.h
     API/ComponentEntitySelectionBus.h
+    API/ComponentEntitySelectionBus.cpp
     API/ComponentModeCollectionInterface.h
     API/EditorCameraBus.h
     API/EditorCameraBus.cpp
@@ -150,6 +160,10 @@ set(FILES
     ContainerEntity/ContainerEntityNotificationBus.h
     ContainerEntity/ContainerEntitySystemComponent.cpp
     ContainerEntity/ContainerEntitySystemComponent.h
+    Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h
+    Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h
     Editor/ActionManagerUtils.cpp
     Editor/ActionManagerUtils.h
     Editor/EditorContextMenuBus.h
@@ -212,6 +226,7 @@ set(FILES
     Manipulators/BaseManipulator.cpp
     Manipulators/BaseManipulator.h
     Manipulators/BoxManipulatorRequestBus.h
+    Manipulators/CapsuleManipulatorRequestBus.h
     Manipulators/EditorVertexSelection.h
     Manipulators/EditorVertexSelection.cpp
     Manipulators/EditorVertexSelectionBus.h
@@ -239,12 +254,14 @@ set(FILES
     Manipulators/PaintBrushManipulator.h
     Manipulators/PlanarManipulator.cpp
     Manipulators/PlanarManipulator.h
+    Manipulators/RadiusManipulatorRequestBus.h
     Manipulators/RotationManipulators.cpp
     Manipulators/RotationManipulators.h
     Manipulators/ScaleManipulators.cpp
     Manipulators/ScaleManipulators.h
     Manipulators/SelectionManipulator.cpp
     Manipulators/SelectionManipulator.h
+    Manipulators/ShapeManipulatorRequestBus.h
     Manipulators/SplineHoverSelection.h
     Manipulators/SplineHoverSelection.cpp
     Manipulators/SplineSelectionManipulator.h
@@ -255,6 +272,10 @@ set(FILES
     Manipulators/TranslationManipulators.h
     Metadata/MetadataManager.h
     Metadata/MetadataManager.cpp
+    Metadata/UuidUtils.h
+    Metadata/UuidUtils.cpp
+    Metadata/MetaUuidEntry.h
+    Metadata/MetaUuidEntry.cpp
     Maths/TransformUtils.h
     PaintBrush/PaintBrushSubModeCluster.cpp
     PaintBrush/PaintBrushSubModeCluster.h
@@ -384,26 +405,28 @@ set(FILES
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
+    UI/DocumentPropertyEditor/GenericButtonHandler.cpp
+    UI/DocumentPropertyEditor/GenericButtonHandler.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
+    UI/DocumentPropertyEditor/KeyQueryDPE.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
-    UI/DocumentPropertyEditor/IPropertyEditor.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
-    UI/DocumentPropertyEditor/KeyQueryDPE.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/SettingsRegistrar.cpp
     UI/DocumentPropertyEditor/SettingsRegistrar.h
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
@@ -465,6 +488,8 @@ set(FILES
     UI/PropertyEditor/GenericComboBoxCtrl.inl
     UI/PropertyEditor/InstanceDataHierarchy.cpp
     UI/PropertyEditor/InstanceDataHierarchy.h
+    UI/PropertyEditor/LabelHandler.h
+    UI/PropertyEditor/LabelHandler.cpp
     UI/PropertyEditor/PropertyAssetCtrl.hxx
     UI/PropertyEditor/PropertyAssetCtrl.cpp
     UI/PropertyEditor/PropertyAudioCtrl.h
@@ -629,12 +654,26 @@ set(FILES
     ComponentMode/ComponentModeViewportUiRequestBus.h
     ComponentMode/EditorBaseComponentMode.h
     ComponentMode/EditorBaseComponentMode.cpp
+    ComponentModes/BaseShapeComponentMode.h
+    ComponentModes/BaseShapeComponentMode.cpp
+    ComponentModes/BaseShapeViewportEdit.h
+    ComponentModes/BaseShapeViewportEdit.cpp
     ComponentModes/BoxComponentMode.h
     ComponentModes/BoxComponentMode.cpp
     ComponentModes/BoxViewportEdit.h
     ComponentModes/BoxViewportEdit.cpp
+    ComponentModes/CapsuleComponentMode.h
+    ComponentModes/CapsuleComponentMode.cpp
     ComponentModes/CapsuleViewportEdit.h
     ComponentModes/CapsuleViewportEdit.cpp
+    ComponentModes/ShapeComponentModeBus.h
+    ComponentModes/ShapeTranslationOffsetViewportEdit.h
+    ComponentModes/ShapeTranslationOffsetViewportEdit.cpp
+    ComponentModes/SphereComponentMode.h
+    ComponentModes/SphereComponentMode.cpp
+    ComponentModes/SphereViewportEdit.h
+    ComponentModes/SphereViewportEdit.cpp
+    ComponentModes/ViewportEditUtilities.h
     ViewportSelection/EditorBoxSelect.h
     ViewportSelection/EditorBoxSelect.cpp
     ViewportSelection/EditorDefaultSelection.h
@@ -663,10 +702,18 @@ set(FILES
     AssetBrowser/AssetBrowserComponent.cpp
     AssetBrowser/AssetBrowserComponent.h
     AssetBrowser/AssetBrowserEntry.h
+    AssetBrowser/AssetBrowserEntityInspectorWidget.h
+    AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
+    AssetBrowser/AssetBrowserTableFilterModel.cpp
+    AssetBrowser/AssetBrowserTableFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
-    AssetBrowser/AssetBrowserTableModel.cpp
-    AssetBrowser/AssetBrowserTableModel.h
+    AssetBrowser/AssetBrowserListModel.cpp
+    AssetBrowser/AssetBrowserListModel.h
+    AssetBrowser/AssetBrowserTableViewProxyModel.cpp
+    AssetBrowser/AssetBrowserTableViewProxyModel.h
+    AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
+    AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp
     AssetBrowser/AssetBrowserModel.h
     AssetBrowser/AssetEntryChange.h
@@ -679,8 +726,14 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTreeView.h
     AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
+    AssetBrowser/Views/AssetBrowserListView.cpp
+    AssetBrowser/Views/AssetBrowserListView.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
+    AssetBrowser/Views/AssetBrowserThumbnailView.cpp
+    AssetBrowser/Views/AssetBrowserThumbnailView.h
+    AssetBrowser/Views/AssetBrowserViewUtils.cpp
+    AssetBrowser/Views/AssetBrowserViewUtils.h
     AssetBrowser/Views/EntryDelegate.cpp
     AssetBrowser/Views/EntryDelegate.h
     AssetBrowser/Views/AssetBrowserFolderWidget.cpp
@@ -741,13 +794,19 @@ set(FILES
     UI/PropertyEditor/Model/AssetCompleterModel.cpp
     UI/PropertyEditor/View/AssetCompleterListView.h
     UI/PropertyEditor/View/AssetCompleterListView.cpp
+    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h
+    Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.cpp
+    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h
+    Prefab/DocumentPropertyEditor/PrefabComponentAdapter.cpp
+    Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h
+    Prefab/DocumentPropertyEditor/Resources/OverrideResources.qrc
     Prefab/EditorPrefabComponent.h
     Prefab/EditorPrefabComponent.cpp
+    Prefab/PrefabEditorPreferences.h
+    Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabDomTypes.h
     Prefab/PrefabDomUtils.h
     Prefab/PrefabDomUtils.cpp
-    Prefab/PrefabEditorPreferences.h
-    Prefab/PrefabEditorPreferences.cpp
     Prefab/PrefabFocusHandler.h
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
@@ -861,6 +920,10 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.h
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.h
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.cpp
     Prefab/Undo/PrefabUndoDelete.h
     Prefab/Undo/PrefabUndoDelete.cpp
     Prefab/Undo/PrefabUndoDeleteAsOverride.h
@@ -869,6 +932,8 @@ set(FILES
     Prefab/Undo/PrefabUndoBase.cpp
     Prefab/Undo/PrefabUndoRevertOverrides.h
     Prefab/Undo/PrefabUndoRevertOverrides.cpp
+    Prefab/Undo/PrefabUndoEntityOverrides.h
+    Prefab/Undo/PrefabUndoEntityOverrides.cpp
     Prefab/Undo/PrefabUndoUpdateLink.h
     Prefab/Undo/PrefabUndoUpdateLink.cpp
     Prefab/Undo/PrefabUndoUtils.h
@@ -883,6 +948,7 @@ set(FILES
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
+    UI/Outliner/EntityOutlinerRequestBus.h
     UI/Outliner/EntityOutlinerSearchWidget.h
     UI/Outliner/EntityOutlinerSearchWidget.cpp
     UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx
@@ -897,6 +963,7 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
     UI/Layer/LayerUiHandler.h
     UI/Layer/LayerUiHandler.cpp
+    UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/PrefabIntegrationBus.h
@@ -905,6 +972,7 @@ set(FILES
     UI/Prefab/PrefabIntegrationInterface.h
     UI/Prefab/PrefabSaveLoadHandler.h
     UI/Prefab/PrefabSaveLoadHandler.cpp
+    UI/Prefab/Constants.h
     UI/Prefab/PrefabUiHandler.h
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
@@ -929,10 +997,6 @@ set(FILES
     Script/LuaSymbolsReporterBus.h
     Script/LuaSymbolsReporterSystemComponent.h
     Script/LuaSymbolsReporterSystemComponent.cpp
-    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.h
-    Physics/Material/Legacy/LegacyPhysicsMaterialConversionUtils.cpp
-    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.h
-    Physics/Material/Legacy/LegacyPhysicsPrefabConversionUtils.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

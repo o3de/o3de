@@ -41,7 +41,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::PostProcessSettings, "{E4BD5945-F4C6-4B68-B1D3-28700BD2BF88}",
                 AZ::Render::PostProcessSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(PostProcessSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PostProcessSettings, SystemAllocator);
 
             PostProcessSettings(PostProcessFeatureProcessor* featureProcessor);
 

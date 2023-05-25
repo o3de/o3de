@@ -189,6 +189,8 @@ namespace AZ
                     ->Event("SetQualityDecayRate", &MeshComponentRequestBus::Events::SetQualityDecayRate)
                     ->Event("GetQualityDecayRate", &MeshComponentRequestBus::Events::GetQualityDecayRate)
                     ->Event("SetRayTracingEnabled", &MeshComponentRequestBus::Events::SetRayTracingEnabled)
+                    ->Event("GetExcludeFromReflectionCubeMaps", &MeshComponentRequestBus::Events::GetExcludeFromReflectionCubeMaps)
+                    ->Event("SetExcludeFromReflectionCubeMaps", &MeshComponentRequestBus::Events::SetExcludeFromReflectionCubeMaps)
                     ->Event("GetRayTracingEnabled", &MeshComponentRequestBus::Events::GetRayTracingEnabled)
                     ->Event("SetVisibility", &MeshComponentRequestBus::Events::SetVisibility)
                     ->Event("GetVisibility", &MeshComponentRequestBus::Events::GetVisibility)
@@ -201,6 +203,7 @@ namespace AZ
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ->VirtualProperty("RayTracingEnabled", "GetRayTracingEnabled", "SetRayTracingEnabled")
+                    ->VirtualProperty("ExcludeFromReflectionCubeMaps", "GetExcludeFromReflectionCubeMaps", "SetExcludeFromReflectionCubeMaps")
                     ->VirtualProperty("Visibility", "GetVisibility", "SetVisibility")
                     ;
                 
@@ -356,7 +359,15 @@ namespace AZ
         {
             if (m_meshFeatureProcessor)
             {
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_meshHandle, materials);
+                m_meshFeatureProcessor->SetCustomMaterials(m_meshHandle, ConvertToCustomMaterialMap(materials));
+            }
+        }
+
+        void MeshComponentController::OnMaterialPropertiesUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        {
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetRayTracingDirty(m_meshHandle);
             }
         }
 
@@ -397,6 +408,11 @@ namespace AZ
             }
         }
 
+        void MeshComponentController::HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg)
+        {
+            MeshComponentNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &MeshComponentNotificationBus::Events::OnObjectSrgCreated, objectSrg);
+        }
+
         void MeshComponentController::RegisterModel()
         {
             if (m_meshFeatureProcessor && m_configuration.m_modelAsset.GetId().IsValid())
@@ -412,17 +428,18 @@ namespace AZ
                 meshDescriptor.m_useForwardPassIblSpecular = m_configuration.m_useForwardPassIblSpecular;
                 meshDescriptor.m_requiresCloneCallback = RequiresCloning;
                 meshDescriptor.m_isRayTracingEnabled = m_configuration.m_isRayTracingEnabled;
-                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials);
+                meshDescriptor.m_excludeFromReflectionCubeMaps = m_configuration.m_excludeFromReflectionCubeMaps;
+                meshDescriptor.m_isAlwaysDynamic = m_configuration.m_isAlwaysDynamic;
+                m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, ConvertToCustomMaterialMap(materials));
                 m_meshFeatureProcessor->ConnectModelChangeEventHandler(m_meshHandle, m_changeEventHandler);
+                m_meshFeatureProcessor->ConnectObjectSrgCreatedEventHandler(m_meshHandle, m_objectSrgCreatedHandler);
 
                 const AZ::Transform& transform =
                     m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
-                m_meshFeatureProcessor->SetIsAlwaysDynamic(m_meshHandle, m_configuration.m_isAlwaysDynamic);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
                 m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
-                m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
                 m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, meshDescriptor.m_isRayTracingEnabled);
                 // [GFX TODO] This should happen automatically. m_changeEventHandler should be passed to AcquireMesh
@@ -634,6 +651,25 @@ namespace AZ
             if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
             {
                 return m_meshFeatureProcessor->GetRayTracingEnabled(m_meshHandle);
+            }
+
+            return false;
+        }
+
+        void MeshComponentController::SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps)
+        {
+            m_configuration.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+            if (m_meshFeatureProcessor)
+            {
+                m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, excludeFromReflectionCubeMaps);
+            }
+        }
+
+        bool MeshComponentController::GetExcludeFromReflectionCubeMaps() const
+        {
+            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
+            {
+                return m_meshFeatureProcessor->GetExcludeFromReflectionCubeMaps(m_meshHandle);
             }
 
             return false;

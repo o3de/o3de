@@ -72,3 +72,4 @@ namespace AZ
     using AssetTypeInfoBus = AZ::EBus<AssetTypeInfo>;
 } // namespace AZ
 
+DECLARE_EBUS_EXTERN(AssetTypeInfo);

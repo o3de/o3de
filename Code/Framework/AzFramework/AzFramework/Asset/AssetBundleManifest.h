@@ -21,18 +21,19 @@ namespace AZ
 
 namespace AzFramework
 {
+    constexpr const char* AssetBundleManifestTypeId = "{8628A669-7B19-4C48-A7CB-F670CC9586FD}";
     // Class to describe metadata about an AssetBundle in Open 3D Engine
     class AssetBundleManifest
     {
     public:
-        AZ_TYPE_INFO(AssetBundleManifest, "{8628A669-7B19-4C48-A7CB-F670CC9586FD}");
-        AZ_CLASS_ALLOCATOR(AssetBundleManifest, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(AssetBundleManifest, AssetBundleManifestTypeId);
+        AZ_CLASS_ALLOCATOR(AssetBundleManifest, AZ::SystemAllocator);
 
         AssetBundleManifest();
         ~AssetBundleManifest();
 
         static void ReflectSerialize(AZ::SerializeContext* serializeContext);
-        
+
         // Each AssetBundle contains a Catalog file with a unique name used to describe the list
         // of files within the AssetBundle in order to update the Asset Registry at runtime when
         // loading the bundle
@@ -47,7 +48,7 @@ namespace AzFramework
 
         static const char s_manifestFileName[];
         static const int CurrentBundleVersion;
-        
+
     private:
         AZStd::string m_catalogName;
         AZStd::vector<AZStd::string> m_dependentBundleNames;

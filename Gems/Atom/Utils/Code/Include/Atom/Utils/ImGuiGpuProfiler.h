@@ -284,8 +284,9 @@ namespace AZ
             void SortPoolTable(ImGuiTableSortSpecs* sortSpecs);
             void SortResourceTable(ImGuiTableSortSpecs* sortSpecs);
 
-            // Save and load data to and from CSV files
-            void SaveToCSV();
+            // Save and load data to and from CSV/JSON files
+            void SaveToJSON();
+            void LoadFromJSON(const AZStd::string& fileName);
             void LoadFromCSV(const AZStd::string& fileName);
 
             struct PoolTableRow
@@ -294,9 +295,10 @@ namespace AZ
 
                 bool m_deviceHeap = false;
                 size_t m_budgetBytes = 0;
-                size_t m_reservedBytes = 0;
-                size_t m_residentBytes = 0;
+                size_t m_allocatedBytes = 0;
+                size_t m_usedBytes = 0;
                 float m_fragmentation = 0.f;
+                size_t m_uniqueBytes = 0;
             };
 
             struct ResourceTableRow
@@ -312,6 +314,7 @@ namespace AZ
             bool m_includeBuffers = true;
             bool m_includeImages = true;
             bool m_includeTransientAttachments = true;
+            bool m_hideEmptyBufferPools = true;
 
             ImGuiTextFilter m_nameFilter;
 

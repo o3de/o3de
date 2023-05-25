@@ -80,7 +80,7 @@ namespace AzQtComponents
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StyledTreeView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StyledTreeView, AZ::SystemAllocator);
 
         explicit StyledTreeView(QWidget* parent = nullptr);
 
@@ -105,7 +105,7 @@ namespace AzQtComponents
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(StyledTreeWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StyledTreeWidget, AZ::SystemAllocator);
 
         explicit StyledTreeWidget(QWidget* parent = nullptr);
 

@@ -53,7 +53,7 @@ namespace AZ
         MoveFunctorsToDeferredHead(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const char* command,
         ConsoleSilentMode silentMode,
@@ -83,7 +83,7 @@ namespace AZ
         return PerformCommand(commandView, commandArgsView, silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const ConsoleCommandContainer& commandAndArgs,
         ConsoleSilentMode silentMode,
@@ -94,13 +94,13 @@ namespace AZ
     {
         if (commandAndArgs.empty())
         {
-            return false;
+            return AZ::Failure("CommandAndArgs is empty.");
         }
 
         return PerformCommand(commandAndArgs.front(), ConsoleCommandContainer(commandAndArgs.begin() + 1, commandAndArgs.end()), silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         AZStd::string_view command,
         const ConsoleCommandContainer& commandArgs,
@@ -110,7 +110,24 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
-        return DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear);
+        if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
+        {
+            // If the command could not be dispatched at this time add it to the deferred commands queue
+            DeferredCommand deferredCommand{ AZStd::string_view{ command },
+                                             DeferredCommand::DeferredArguments{ commandArgs.begin(), commandArgs.end() },
+                                             silentMode,
+                                             invokedFrom,
+                                             requiredSet,
+                                             requiredClear };
+
+            CVarFixedString commandLowercase(command);
+            AZStd::to_lower(commandLowercase.begin(), commandLowercase.end());
+            m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
+            return AZ::Failure(AZStd::string::format(
+                "Command \"%s\" is not yet registered. Deferring to attempt execution later.", commandLowercase.c_str()));
+        }
+
+        return AZ::Success();
     }
 
     void Console::ExecuteConfigFile(AZStd::string_view configFileName)
@@ -191,12 +208,12 @@ namespace AZ
         m_deferredCommands = {};
     }
 
-    bool Console::HasCommand(AZStd::string_view command)
+    bool Console::HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
-        return FindCommand(command) != nullptr;
+        return FindCommand(command, ignoreAnyFlags) != nullptr;
     }
 
-    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command)
+    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
         CVarFixedString lowerName(command);
         AZStd::to_lower(lowerName.begin(), lowerName.end());
@@ -206,7 +223,7 @@ namespace AZ
         {
             for (ConsoleFunctorBase* curr : iter->second)
             {
-                if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
+                if ((curr->GetFlags() & ignoreAnyFlags) != ConsoleFunctorFlags::Null)
                 {
                     // Filter functors marked as invisible
                     continue;
@@ -584,24 +601,8 @@ namespace AZ
                     commandTrace += commandArg;
                 }
 
-                if (!m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
-                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null))
-                {
-                    // If the command could not be dispatched at this time add it to the
-                    // deferred commands queue
-                    using DeferredCommand = Console::DeferredCommand;
-                    DeferredCommand deferredCommand
-                    {
-                        AZStd::string_view{command},
-                        DeferredCommand::DeferredArguments{commandArgs.begin(), commandArgs.end()},
-                        ConsoleSilentMode::NotSilent,
-                        ConsoleInvokedFrom::AzConsole,
-                        ConsoleFunctorFlags::Null,
-                        ConsoleFunctorFlags::Null
-                    };
-
-                    m_console.m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
-                }
+                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
+                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
             }
         }
 

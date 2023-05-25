@@ -118,8 +118,8 @@ namespace AZ
             subObjects[currentIndex++] = shaderConfigSubObject;
 
             // add global root signature
-            const PipelineLayout& pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout();
-            m_globalRootSignature = pipelineLayout.Get();
+            const PipelineLayout* pipelineLayout = static_cast<const PipelineState*>(descriptor->GetPipelineState())->GetPipelineLayout();
+            m_globalRootSignature = pipelineLayout->Get();
             D3D12_STATE_SUBOBJECT globalRootSignatureSubObject = {};
             globalRootSignatureSubObject.Type = D3D12_STATE_SUBOBJECT_TYPE_GLOBAL_ROOT_SIGNATURE;
             globalRootSignatureSubObject.pDesc = &m_globalRootSignature;

@@ -1,0 +1,607 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+    
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
+
+#include <Atom/Feature/Common/Assets/Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli>
+
+// TODO(MaterialPipeline): There is no good reason for StandardMultilayerPBR to have o_opacity_mode, it doesn't support transparency or alpha cutout.
+// It is only needed because it's part of the "Standard" lighting model's surface structure, but we can't use "Base" lighting because it uses things like
+// emission and clear coat. One option would be to add a new "StandardOpaque" lighting model. But really I think we should get rid of the "lighting model"
+// concept from the material pipeline interface and instead let the .materialtype communicate the specific combination features it wants, and this would
+// configure preprocessor flags to do something like omit transparency features. 
+option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opacity_mode = OpacityMode::Opaque;
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE || MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    #define VsInput VsInput_StandardMultilayerPBR
+    #define VsSystemValues VsSystemValues_StandardMultilayerPBR
+    #define VsOutput VsOutput_StandardMultilayerPBR
+    #define EvaluateVertexGeometry EvaluateVertexGeometry_StandardMultilayerPBR
+    #define PixelGeometryData PixelGeometryData_StandardMultilayerPBR
+    #define EvaluatePixelGeometry EvaluatePixelGeometry_StandardMultilayerPBR
+    
+    #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+        #define EvaluateSurface EvaluateSurface_StandardMultilayerPBR
+    #endif
+
+    struct VsInput_StandardMultilayerPBR 
+    {
+        // TODO: If we can make the shader builder understand class inheritance for reflection data, then
+        // we could make this a class that inherits from VsInput_BasePBR instead of repeating the fields here.
+        float3 position : POSITION;
+        float3 normal : NORMAL;
+        float4 tangent : TANGENT;
+        float2 uv0 : UV0;
+        float2 uv1 : UV1;
+
+        // This gets set automatically by the system at runtime only if it's available.
+        // There is a soft naming convention that associates this with o_blendMask_isBound, which will be set to true whenever m_optional_blendMask is available.
+        // (search "m_optional_" in ShaderVariantAssetBuilder for details on the naming convention).
+        // [GFX TODO][ATOM-14475]: Come up with a more elegant way to associate the isBound flag with the input stream.
+        float4 m_optional_blendMask : COLOR0;
+    };
+
+    struct VsSystemValues_StandardMultilayerPBR
+    {
+        uint m_instanceId;
+    };
+
+    struct VsOutput_StandardMultilayerPBR
+    {
+        // TODO: If we can make the shader builder understand class inheritance for reflection data, then
+        // we could make this a class that inherits from VsInput_BasePBR instead of repeating the fields here.
+        precise linear centroid 
+        float4 position : SV_Position;
+        float3 normal: NORMAL;
+        float4 tangent : TANGENT;
+        float3 worldPosition : UV0;
+        float2 uvs[UvSetCount] : UV1;
+
+        float3 m_blendMask : UV7;
+        uint m_instanceId : SV_InstanceID;
+    };
+    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
+    
+    VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(
+        float3 position,
+        float3 normal,
+        float4 tangent,
+        float2 uv0,
+        float2 uv1,
+        float3 vertexBlendMask,
+        uint instanceId,
+        bool useVertexBlendMask)
+    {
+        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId);
+
+        if(useVertexBlendMask)
+        {
+            output.m_blendMask = vertexBlendMask;
+        }
+        else
+        {
+            output.m_blendMask = float3(0,0,0);
+        }
+    
+        return output;
+    }
+
+    VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(VsInput IN, VsSystemValues SV)
+    {
+        return EvaluateVertexGeometry_StandardMultilayerPBR(
+            IN.position,
+            IN.normal,
+            IN.tangent,
+            IN.uv0,
+            IN.uv1,
+            IN.m_optional_blendMask.rgb,
+            SV.m_instanceId,
+            o_blendMask_isBound
+            );
+    }
+
+    // Have to declare NeedsTangentFrame and ShouldHandleParallax before including StandardPBR_PixelGeometryData.azsli
+    // TODO(MaterialPipeline): consider moving this forward declaration inside StandardPBR_PixelGeometryData.azsli (and similar files that call it)
+    bool NeedsTangentFrame();
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli>
+
+    class PixelGeometryData_StandardMultilayerPBR : PixelGeometryData_StandardPBR
+    {
+        float3 m_vertexBlendMask;
+    };
+    
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli>
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/MaterialFunctions/MultilayerParallaxDepth.azsli>
+
+    bool ShouldHandleParallax();
+
+    PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(
+        inout float4 positionSV,
+        float3 positionWS,
+        real3 normalWS,
+        real3 tangentWS,
+        real3 bitangentWS,
+        float2 uvs[UvSetCount],
+        bool isFrontFace,
+        real4x4 objectToWorld,
+        float3 vertexBlendMask)
+    {
+        PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
+
+        geoData.isDisplacementClipped = false;
+        geoData.m_vertexBlendMask = vertexBlendMask;
+
+        if(ShouldHandleParallax())
+        {
+            MultilayerSetPixelDepth(vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
+                geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+        }
+
+        return geoData;
+    }
+    
+    PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN, bool isFrontFace)
+    {
+        real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+        real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
+
+        real3 normalWS, tangentWS, bitangentWS;
+        ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+        return EvaluatePixelGeometry_StandardMultilayerPBR(
+            IN.position,
+            IN.worldPosition,
+            normalWS,
+            tangentWS,
+            bitangentWS,
+            IN.uvs,
+            isFrontFace,
+            objectToWorld,
+            IN.m_blendMask);
+    }
+    
+    bool CanHandleParallax()
+    {
+        // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+        // Also, all the debug draw modes avoid parallax (they early-return before parallax code actually) so you can see exactly where the various maps appear on the surface UV space.
+        return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_debugDrawMode == DebugDrawMode::None;
+    }
+
+#else
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexData.azsli>
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/DepthPass_VertexEval.azsli>
+
+#endif
+
+#if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE
+
+    #define DEFINE_LAYER_OPTIONS(prefix) \
+    COMMON_OPTIONS_BASE_COLOR(prefix)    \
+    COMMON_OPTIONS_ROUGHNESS(prefix)     \
+    COMMON_OPTIONS_METALLIC(prefix)      \
+    COMMON_OPTIONS_SPECULAR_F0(prefix)   \
+    COMMON_OPTIONS_NORMAL(prefix)        \
+    COMMON_OPTIONS_CLEAR_COAT(prefix)    \
+    COMMON_OPTIONS_OCCLUSION(prefix)     \
+    COMMON_OPTIONS_EMISSIVE(prefix)
+
+    DEFINE_LAYER_OPTIONS(o_layer1_)
+    DEFINE_LAYER_OPTIONS(o_layer2_)
+    DEFINE_LAYER_OPTIONS(o_layer3_)
+    
+    bool ShouldHandleParallax()
+    {
+        return CanHandleParallax();
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax()
+            || o_layer1_o_normal_useTexture
+            || o_layer2_o_normal_useTexture
+            || o_layer3_o_normal_useTexture
+    #if ENABLE_CLEAR_COAT
+            || o_layer1_o_clearCoat_normal_useTexture
+            || o_layer2_o_clearCoat_normal_useTexture
+            || o_layer3_o_clearCoat_normal_useTexture
+    #endif
+            ;
+    }
+
+    //! Collects all the raw Standard material inputs for a single layer. See ProcessStandardMaterialInputs().
+    struct StandardMaterialInputs
+    {
+        COMMON_SRG_INPUTS_BASE_COLOR()
+        COMMON_SRG_INPUTS_ROUGHNESS()
+        COMMON_SRG_INPUTS_METALLIC()
+        COMMON_SRG_INPUTS_SPECULAR_F0()
+        COMMON_SRG_INPUTS_NORMAL()
+        COMMON_SRG_INPUTS_CLEAR_COAT()
+        COMMON_SRG_INPUTS_OCCLUSION()
+        COMMON_SRG_INPUTS_EMISSIVE()
+        // Note parallax is omitted here because that requires special handling.
+
+        bool m_normal_useTexture;
+        bool m_baseColor_useTexture;
+        bool m_metallic_useTexture;
+        bool m_specularF0_useTexture;
+        bool m_roughness_useTexture;
+        bool m_emissiveEnabled;
+        bool m_emissive_useTexture;
+        bool m_diffuseOcclusion_useTexture;
+        bool m_specularOcclusion_useTexture;
+        
+    #if ENABLE_CLEAR_COAT
+        bool m_clearCoatEnabled;
+        bool m_clearCoat_factor_useTexture;
+        bool m_clearCoat_roughness_useTexture;
+        bool m_clearCoat_normal_useTexture;
+    #endif
+
+        TextureBlendMode m_baseColorTextureBlendMode;
+
+        float2 m_vertexUv[UvSetCount];
+        float3x3 m_uvMatrix;
+        real3 m_normal;
+        real3 m_tangents[UvSetCount];
+        real3 m_bitangents[UvSetCount];
+
+        sampler m_sampler;
+
+        bool m_isFrontFace;
+    };
+    
+    #if ENABLE_CLEAR_COAT
+    #include <Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli>
+    #endif
+
+    //! Holds the final processed material inputs, after all flags have been checked, textures have been sampled, factors have been applied, etc.
+    //! This data is ready to be copied into a Surface and/or LightingData struct for the lighting system to consume.
+    class ProcessedMaterialInputs
+    {
+        real3 m_normalTS;   //!< Normal in tangent-space
+        real3 m_baseColor;
+        real m_specularF0Factor;
+        real m_metallic;
+        real m_roughness;
+        real3 m_emissiveLighting;
+        real m_diffuseAmbientOcclusion;
+        real m_specularOcclusion;
+    #if ENABLE_CLEAR_COAT
+        ClearCoatSurfaceData m_clearCoat;
+    #endif
+    
+        void InitializeToZero()
+        {
+            m_normalTS = real3(0,0,0);
+            m_baseColor = real3(0,0,0);
+            m_specularF0Factor = 0;
+            m_metallic = 0.0;
+            m_roughness = 0.0;
+            m_emissiveLighting = real3(0,0,0);
+            m_diffuseAmbientOcclusion = 0;
+            m_specularOcclusion = 0;
+    #if ENABLE_CLEAR_COAT
+            m_clearCoat.InitializeToZero();
+    #endif
+        }
+    };
+
+    //! Processes the set of Standard material inputs for a single layer.
+    //! The FILL_STANDARD_MATERIAL_INPUTS() macro below can be used to fill the StandardMaterialInputs struct.
+    ProcessedMaterialInputs ProcessStandardMaterialInputs(StandardMaterialInputs inputs)
+    {
+        ProcessedMaterialInputs result;
+    
+        float2 transformedUv[UvSetCount];
+        transformedUv[0] = mul(inputs.m_uvMatrix, float3(inputs.m_vertexUv[0], 1.0)).xy;
+        transformedUv[1] = inputs.m_vertexUv[1];
+    
+        real3x3 normalUvMatrix = inputs.m_normalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : real3x3(CreateIdentity3x3());
+        result.m_normalTS = GetNormalInputTS(inputs.m_normalMap, inputs.m_sampler, transformedUv[inputs.m_normalMapUvIndex], inputs.m_flipNormalX, inputs.m_flipNormalY, normalUvMatrix, inputs.m_normal_useTexture, real(inputs.m_normalFactor));
+    
+        real3 sampledBaseColor = GetBaseColorInput(inputs.m_baseColorMap, inputs.m_sampler, transformedUv[inputs.m_baseColorMapUvIndex], real3(inputs.m_baseColor.rgb), inputs.m_baseColor_useTexture);
+        result.m_baseColor = BlendBaseColor(sampledBaseColor, real3(inputs.m_baseColor.rgb), real(inputs.m_baseColorFactor), inputs.m_baseColorTextureBlendMode, inputs.m_baseColor_useTexture);
+        result.m_specularF0Factor = GetSpecularInput(inputs.m_specularF0Map, inputs.m_sampler, transformedUv[inputs.m_specularF0MapUvIndex], real(inputs.m_specularF0Factor), inputs.m_specularF0_useTexture);
+        result.m_metallic = GetMetallicInput(inputs.m_metallicMap, inputs.m_sampler, transformedUv[inputs.m_metallicMapUvIndex], real(inputs.m_metallicFactor), inputs.m_metallic_useTexture);
+        result.m_roughness = GetRoughnessInput(inputs.m_roughnessMap, MaterialSrg::m_sampler, transformedUv[inputs.m_roughnessMapUvIndex], real(inputs.m_roughnessFactor), real(inputs.m_roughnessLowerBound), real(inputs.m_roughnessUpperBound), inputs.m_roughness_useTexture);
+
+        result.m_emissiveLighting = GetEmissiveInput(inputs.m_emissiveMap, inputs.m_sampler, transformedUv[inputs.m_emissiveMapUvIndex], real(inputs.m_emissiveIntensity), real3(inputs.m_emissiveColor.rgb), 0.0, 1.0, inputs.m_emissiveEnabled, inputs.m_emissive_useTexture);
+        result.m_diffuseAmbientOcclusion = GetOcclusionInput(inputs.m_diffuseOcclusionMap, inputs.m_sampler, transformedUv[inputs.m_diffuseOcclusionMapUvIndex], real(inputs.m_diffuseOcclusionFactor), inputs.m_diffuseOcclusion_useTexture);
+        result.m_specularOcclusion = GetOcclusionInput(inputs.m_specularOcclusionMap, MaterialSrg::m_sampler, transformedUv[inputs.m_specularOcclusionMapUvIndex], real(inputs.m_specularOcclusionFactor), inputs.m_specularOcclusion_useTexture);
+    
+    #if ENABLE_CLEAR_COAT
+        result.m_clearCoat.InitializeToZero();
+        if(inputs.m_clearCoatEnabled)
+        {
+            real3x3 clearCoatUvMatrix = inputs.m_clearCoatNormalMapUvIndex == 0 ? real3x3(inputs.m_uvMatrix) : real3x3(CreateIdentity3x3());
+
+            GetClearCoatInputs(inputs.m_clearCoatInfluenceMap, transformedUv[inputs.m_clearCoatInfluenceMapUvIndex], real(inputs.m_clearCoatFactor), inputs.m_clearCoat_factor_useTexture,
+                                inputs.m_clearCoatRoughnessMap, transformedUv[inputs.m_clearCoatRoughnessMapUvIndex], real(inputs.m_clearCoatRoughness), inputs.m_clearCoat_roughness_useTexture,
+                                inputs.m_clearCoatNormalMap,    transformedUv[inputs.m_clearCoatNormalMapUvIndex], inputs.m_normal, inputs.m_clearCoat_normal_useTexture, real(inputs.m_clearCoatNormalStrength),
+                                clearCoatUvMatrix, inputs.m_tangents[inputs.m_clearCoatNormalMapUvIndex], inputs.m_bitangents[inputs.m_clearCoatNormalMapUvIndex],
+                                inputs.m_sampler, inputs.m_isFrontFace,
+                                result.m_clearCoat.factor, result.m_clearCoat.roughness, result.m_clearCoat.normal);
+        }
+    #endif
+
+        return result;
+    }
+
+    //! Fills a StandardMaterialInputs struct with data from the MaterialSrg, shader options, and local vertex data.
+    #define FILL_STANDARD_MATERIAL_INPUTS(inputs, srgLayerPrefix, optionsLayerPrefix, blendWeight)                     \
+        inputs.m_sampler = MaterialSrg::m_sampler;                                                                     \
+        inputs.m_vertexUv = uvs;                                                                                       \
+        inputs.m_uvMatrix = srgLayerPrefix##m_uvMatrix;                                                                \
+        inputs.m_normal = normalWS;                                                                                \
+        inputs.m_tangents = tangents;                                                                                  \
+        inputs.m_bitangents = bitangents;                                                                              \
+        inputs.m_isFrontFace = isFrontFace;                                                                            \
+                                                                                                                       \
+        inputs.m_normalMapUvIndex = srgLayerPrefix##m_normalMapUvIndex;                                                \
+        inputs.m_normalMap = srgLayerPrefix##m_normalMap;                                                              \
+        inputs.m_flipNormalX = srgLayerPrefix##m_flipNormalX;                                                          \
+        inputs.m_flipNormalY = srgLayerPrefix##m_flipNormalY;                                                          \
+        inputs.m_normal_useTexture = optionsLayerPrefix##o_normal_useTexture;                                          \
+        inputs.m_normalFactor = srgLayerPrefix##m_normalFactor * blendWeight;                                          \
+        inputs.m_baseColorMap = srgLayerPrefix##m_baseColorMap;                                                        \
+        inputs.m_baseColorMapUvIndex = srgLayerPrefix##m_baseColorMapUvIndex;                                          \
+        inputs.m_baseColor = srgLayerPrefix##m_baseColor;                                                              \
+        inputs.m_baseColor_useTexture = optionsLayerPrefix##o_baseColor_useTexture;                                    \
+        inputs.m_baseColorFactor = srgLayerPrefix##m_baseColorFactor;                                                  \
+        inputs.m_baseColorTextureBlendMode = optionsLayerPrefix##o_baseColorTextureBlendMode;                          \
+        inputs.m_metallicMap = srgLayerPrefix##m_metallicMap;                                                          \
+        inputs.m_metallicMapUvIndex = srgLayerPrefix##m_metallicMapUvIndex;                                            \
+        inputs.m_metallicFactor = srgLayerPrefix##m_metallicFactor;                                                    \
+        inputs.m_metallic_useTexture = optionsLayerPrefix##o_metallic_useTexture;                                      \
+        inputs.m_specularF0Map = srgLayerPrefix##m_specularF0Map;                                                      \
+        inputs.m_specularF0MapUvIndex = srgLayerPrefix##m_specularF0MapUvIndex;                                        \
+        inputs.m_specularF0Factor = srgLayerPrefix##m_specularF0Factor;                                                \
+        inputs.m_specularF0_useTexture = optionsLayerPrefix##o_specularF0_useTexture;                                  \
+        inputs.m_roughnessMap = srgLayerPrefix##m_roughnessMap;                                                        \
+        inputs.m_roughnessMapUvIndex = srgLayerPrefix##m_roughnessMapUvIndex;                                          \
+        inputs.m_roughnessFactor = srgLayerPrefix##m_roughnessFactor;                                                  \
+        inputs.m_roughnessLowerBound = srgLayerPrefix##m_roughnessLowerBound;                                          \
+        inputs.m_roughnessUpperBound = srgLayerPrefix##m_roughnessUpperBound;                                          \
+        inputs.m_roughness_useTexture = optionsLayerPrefix##o_roughness_useTexture;                                    \
+                                                                                                                       \
+        inputs.m_emissiveMap = srgLayerPrefix##m_emissiveMap;                                                          \
+        inputs.m_emissiveMapUvIndex = srgLayerPrefix##m_emissiveMapUvIndex;                                            \
+        inputs.m_emissiveIntensity = srgLayerPrefix##m_emissiveIntensity;                                              \
+        inputs.m_emissiveColor = srgLayerPrefix##m_emissiveColor;                                                      \
+        inputs.m_emissiveAffectedByAlpha = srgLayerPrefix##m_emissiveAffectedByAlpha;                                  \
+        inputs.m_emissiveEnabled = optionsLayerPrefix##o_emissiveEnabled;                                              \
+        inputs.m_emissive_useTexture = optionsLayerPrefix##o_emissive_useTexture;                                      \
+                                                                                                                       \
+        inputs.m_diffuseOcclusionMap = srgLayerPrefix##m_diffuseOcclusionMap;                                          \
+        inputs.m_diffuseOcclusionMapUvIndex = srgLayerPrefix##m_diffuseOcclusionMapUvIndex;                            \
+        inputs.m_diffuseOcclusionFactor = srgLayerPrefix##m_diffuseOcclusionFactor;                                    \
+        inputs.m_diffuseOcclusion_useTexture = optionsLayerPrefix##o_diffuseOcclusion_useTexture;                      \
+                                                                                                                       \
+        inputs.m_specularOcclusionMap = srgLayerPrefix##m_specularOcclusionMap;                                        \
+        inputs.m_specularOcclusionMapUvIndex = srgLayerPrefix##m_specularOcclusionMapUvIndex;                          \
+        inputs.m_specularOcclusionFactor = srgLayerPrefix##m_specularOcclusionFactor;                                  \
+        inputs.m_specularOcclusion_useTexture = optionsLayerPrefix##o_specularOcclusion_useTexture;                    
+                                                                                                                       
+             
+    #if ENABLE_CLEAR_COAT
+    #define FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, srgLayerPrefix, optionsLayerPrefix, blendWeight)        \
+        inputs.m_clearCoatEnabled = o_clearCoat_feature_enabled && optionsLayerPrefix##o_clearCoat_enabled;          \
+        inputs.m_clearCoatInfluenceMap = srgLayerPrefix##m_clearCoatInfluenceMap;                                    \
+        inputs.m_clearCoatInfluenceMapUvIndex = srgLayerPrefix##m_clearCoatInfluenceMapUvIndex;                      \
+        inputs.m_clearCoatFactor = srgLayerPrefix##m_clearCoatFactor;                                                \
+        inputs.m_clearCoat_factor_useTexture = optionsLayerPrefix##o_clearCoat_factor_useTexture;                    \
+        inputs.m_clearCoatRoughnessMap = srgLayerPrefix##m_clearCoatRoughnessMap;                                    \
+        inputs.m_clearCoatRoughnessMapUvIndex = srgLayerPrefix##m_clearCoatRoughnessMapUvIndex;                      \
+        inputs.m_clearCoatRoughness = srgLayerPrefix##m_clearCoatRoughness;                                          \
+        inputs.m_clearCoat_roughness_useTexture = optionsLayerPrefix##o_clearCoat_roughness_useTexture;              \
+        inputs.m_clearCoatNormalMap = srgLayerPrefix##m_clearCoatNormalMap;                                          \
+        inputs.m_clearCoatNormalMapUvIndex = srgLayerPrefix##m_clearCoatNormalMapUvIndex;                            \
+        inputs.m_clearCoat_normal_useTexture = optionsLayerPrefix##o_clearCoat_normal_useTexture;                    \
+        inputs.m_clearCoatNormalStrength = srgLayerPrefix##m_clearCoatNormalStrength;
+    #else
+    #define FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, srgLayerPrefix, optionsLayerPrefix, blendWeight)
+    #endif
+
+    #include <Atom/Feature/Common/Assets/Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli>
+
+    Surface EvaluateSurface_StandardMultilayerPBR(
+        float3 positionWS,
+        real3 normalWS,
+        real3 tangents[UvSetCount],
+        real3 bitangents[UvSetCount],
+        float2 uvs[UvSetCount],
+        bool isFrontFace,
+        bool isDisplacementClipped,
+        float3 vertexBlendMask)
+    {        
+        LayerBlendSource blendSource = GetFinalLayerBlendSource();
+        
+        // ------- Debug Modes -------
+
+        if(o_debugDrawMode == DebugDrawMode::BlendMask)
+        {
+            float3 blendMaskValues = GetApplicableBlendMaskValues(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
+            return MakeDebugSurface(positionWS, normalWS, real3(blendMaskValues));
+        }
+    
+        if(o_debugDrawMode == DebugDrawMode::Displacement)
+        {
+            real startDepth = real(-MaterialSrg::m_displacementMax);
+            real stopDepth = real(-MaterialSrg::m_displacementMin);
+            real depth = GetNormalizedDepth(startDepth, stopDepth, uvs[MaterialSrg::m_parallaxUvIndex], real2(0,0), real2(0,0));
+            real height = 1 - saturate(depth);
+            return MakeDebugSurface(positionWS, normalWS, real3(height,height,height));
+        }
+    
+        if(o_debugDrawMode == DebugDrawMode::FinalBlendWeights)
+        {
+            float3 blendWeights = GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask);
+            return MakeDebugSurface(positionWS, normalWS, real3(blendWeights));
+        }
+
+        // ------- Calculate Layer Blend Mask Values -------
+    
+        // Now that any parallax has been calculated, we calculate the blend factors for any layers that are impacted by the parallax.
+        real3 blendWeights = (GetBlendWeights(blendSource, uvs[MaterialSrg::m_blendMaskUvIndex], vertexBlendMask));
+        
+        // ------- Layer 1 (base layer) -----------
+
+        ProcessedMaterialInputs lightingInputLayer1;
+        if(blendWeights.r > 0)
+        {
+            StandardMaterialInputs inputs;
+            FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
+            FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, MaterialSrg::m_layer1_, o_layer1_, blendWeights.r)
+            lightingInputLayer1 = ProcessStandardMaterialInputs(inputs);
+        }
+        else
+        {
+            lightingInputLayer1.InitializeToZero();
+            blendWeights.r = 0;
+        }
+    
+        // ----------- Layer 2 -----------
+
+        ProcessedMaterialInputs lightingInputLayer2; 
+        if(o_layer2_enabled && blendWeights.g > 0)
+        {
+            StandardMaterialInputs inputs;
+            FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
+            FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, MaterialSrg::m_layer2_, o_layer2_, blendWeights.g)
+            lightingInputLayer2 = ProcessStandardMaterialInputs(inputs);
+        }
+        else
+        {
+            lightingInputLayer2.InitializeToZero();
+            blendWeights.g = 0;
+        }
+    
+        // ----------- Layer 3 -----------
+
+        ProcessedMaterialInputs lightingInputLayer3;
+        if(o_layer3_enabled && blendWeights.b > 0)
+        {
+            StandardMaterialInputs inputs;
+            FILL_STANDARD_MATERIAL_INPUTS(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
+            FILL_STANDARD_MATERIAL_INPUTS_CLEAR_COAT(inputs, MaterialSrg::m_layer3_, o_layer3_, blendWeights.b)
+            lightingInputLayer3 = ProcessStandardMaterialInputs(inputs);
+        }
+        else
+        {
+            lightingInputLayer3.InitializeToZero();
+            blendWeights.b = 0;
+        }
+
+        // ------- Combine all layers ---------
+    
+        Surface surface;
+        surface.position = positionWS;
+
+        // ------- Combine Normals ---------
+
+        real3 normalTS = real3(0,0,1);
+        if(blendWeights.r > 0)
+        {
+            normalTS = lightingInputLayer1.m_normalTS;
+        }
+        if(o_layer2_enabled && blendWeights.g > 0)
+        {
+            normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer2.m_normalTS);
+        }
+        if(o_layer3_enabled && blendWeights.b > 0)
+        {
+            normalTS = ReorientTangentSpaceNormal(normalTS, lightingInputLayer3.m_normalTS);
+        }
+        // [GFX TODO][ATOM-14591]: This will only work if the normal maps all use the same UV stream. We would need to add support for having them in different UV streams.
+        surface.vertexNormal = normalWS;
+        surface.normal = normalize(TangentSpaceToWorld(normalTS, normalWS, tangents[MaterialSrg::m_parallaxUvIndex], bitangents[MaterialSrg::m_parallaxUvIndex]));
+        
+        // ------- Combine Albedo, roughness, specular, roughness ---------
+
+        real3 baseColor = BlendLayers(lightingInputLayer1.m_baseColor, lightingInputLayer2.m_baseColor, lightingInputLayer3.m_baseColor, blendWeights);
+        real specularF0Factor = BlendLayers(lightingInputLayer1.m_specularF0Factor, lightingInputLayer2.m_specularF0Factor, lightingInputLayer3.m_specularF0Factor, blendWeights);
+        real metallic = BlendLayers(lightingInputLayer1.m_metallic, lightingInputLayer2.m_metallic, lightingInputLayer3.m_metallic, blendWeights);
+    
+        if(o_parallax_highlightClipping && isDisplacementClipped)
+        {
+            ApplyParallaxClippingHighlight(baseColor);
+        }
+
+        surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+
+        surface.roughnessLinear = BlendLayers(lightingInputLayer1.m_roughness, lightingInputLayer2.m_roughness, lightingInputLayer3.m_roughness, blendWeights);
+        surface.CalculateRoughnessA();
+    
+        // ------- Init and Combine Lighting Data -------
+
+        surface.emissiveLighting = BlendLayers(lightingInputLayer1.m_emissiveLighting, lightingInputLayer2.m_emissiveLighting, lightingInputLayer3.m_emissiveLighting, blendWeights);
+        surface.specularOcclusion = BlendLayers(lightingInputLayer1.m_specularOcclusion, lightingInputLayer2.m_specularOcclusion, lightingInputLayer3.m_specularOcclusion, blendWeights);
+        surface.diffuseAmbientOcclusion = BlendLayers(lightingInputLayer1.m_diffuseAmbientOcclusion, lightingInputLayer2.m_diffuseAmbientOcclusion, lightingInputLayer3.m_diffuseAmbientOcclusion, blendWeights);
+
+        // ------- Combine Clearcoat -------
+
+    #if ENABLE_CLEAR_COAT
+        if(o_clearCoat_feature_enabled)
+        {
+            surface.clearCoat.factor = BlendLayers(lightingInputLayer1.m_clearCoat.factor, lightingInputLayer2.m_clearCoat.factor, lightingInputLayer3.m_clearCoat.factor, blendWeights);
+            surface.clearCoat.roughness = BlendLayers(lightingInputLayer1.m_clearCoat.roughness, lightingInputLayer2.m_clearCoat.roughness, lightingInputLayer3.m_clearCoat.roughness, blendWeights);
+
+            // [GFX TODO][ATOM-14592] This is not the right way to blend the normals. We need to use ReorientTangentSpaceNormal(), and that requires GetClearCoatInputs() to return the normal in TS instead of WS.
+            surface.clearCoat.normal = BlendLayers(lightingInputLayer1.m_clearCoat.normal, lightingInputLayer2.m_clearCoat.normal, lightingInputLayer3.m_clearCoat.normal, blendWeights);
+            surface.clearCoat.normal = normalize(surface.clearCoat.normal);
+        
+            ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
+        }
+    #endif
+
+        return surface;
+    }
+
+    Surface EvaluateSurface_StandardMultilayerPBR(VsOutput IN, PixelGeometryData geoData)
+    {
+        return EvaluateSurface_StandardMultilayerPBR(
+            geoData.positionWS,
+            geoData.vertexNormal,
+            geoData.tangents,
+            geoData.bitangents,
+            geoData.uvs,
+            geoData.isFrontFace,
+            geoData.isDisplacementClipped,
+            geoData.m_vertexBlendMask);
+    }
+
+#elif MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
+
+    bool ShouldHandleParallax()
+    {
+        // The depth pass shaders need to calculate parallax when the result could affect the depth buffer (or when
+        // parallax could affect texel clipping but we don't have alpha/clipping support in multilayer PBR).
+        return CanHandleParallax() && o_parallax_enablePixelDepthOffset;
+    }
+
+    bool NeedsTangentFrame()
+    {
+        return ShouldHandleParallax();
+    }
+    
+    void EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
+    {
+        // do nothing, this is where alpha clip can be done if it's supported
+    }
+
+#endif

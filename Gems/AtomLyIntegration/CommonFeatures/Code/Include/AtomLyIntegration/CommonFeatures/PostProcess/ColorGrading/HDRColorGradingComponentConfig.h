@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(HDRColorGradingComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::HDRColorGradingComponentConfig, "{8613EA4A-6E1C-49AD-87F3-9FECCB7EA36D}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

@@ -31,7 +31,6 @@ namespace AzToolsFramework
                     "AzToolsFramework Configuration Component", "System component responsible for configuring AzToolsFramework")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }

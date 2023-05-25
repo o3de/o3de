@@ -75,7 +75,6 @@ namespace LocalUser
             {
                 ec->Class<LocalUserSystemComponent>("LocalUser", "Provides functionality for mapping local user ids to local player slots and managing local user profiles.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -128,7 +127,7 @@ namespace LocalUser
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void LocalUserSystemComponent::Activate()
     {
-        m_pimpl.reset(Implementation::Create(*this));
+        m_pimpl.reset(Implementation::Create());
         LocalUserRequestBus::Handler::BusConnect();
     }
 

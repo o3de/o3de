@@ -35,7 +35,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(VectorEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VectorEventFilter, AZ::SystemAllocator);
         VectorEventFilter(VectorNodePropertyDisplay* owner);
         ~VectorEventFilter() = default;
 
@@ -48,7 +48,7 @@ namespace GraphCanvas
     class IconLayoutItem
         : public QGraphicsWidget{
     public:
-        AZ_CLASS_ALLOCATOR(IconLayoutItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IconLayoutItem, AZ::SystemAllocator);
         IconLayoutItem(QGraphicsItem *parent = nullptr);
         ~IconLayoutItem();
 
@@ -61,7 +61,7 @@ namespace GraphCanvas
         : public QGraphicsWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReadOnlyVectorControl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReadOnlyVectorControl, AZ::SystemAllocator);
         ReadOnlyVectorControl(int index, const VectorDataInterface& dataInterface);
         ~ReadOnlyVectorControl();
         
@@ -93,7 +93,7 @@ namespace GraphCanvas
         friend class VectorEventFilter;
 
     public:
-        AZ_CLASS_ALLOCATOR(VectorNodePropertyDisplay, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VectorNodePropertyDisplay, AZ::SystemAllocator);
         VectorNodePropertyDisplay(VectorDataInterface* dataInterface);
         virtual ~VectorNodePropertyDisplay();
     
@@ -132,7 +132,5 @@ namespace GraphCanvas
         QGraphicsWidget* m_displayWidget{};
         IconLayoutItem* m_iconDisplay{};
         AZStd::vector<ReadOnlyVectorControl*> m_vectorDisplays{};
-
-        bool m_releaseLayout{};
     };
 } // namespace GraphCanvas

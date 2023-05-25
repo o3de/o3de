@@ -17,7 +17,7 @@ namespace AWSClientAuth
     class IAuthenticationProviderScriptCanvasRequests
     {
     public:
-        AZ_TYPE_INFO(IAuthenticationProviderRequests, "{A8FD915F-9FF2-4BA3-8AA0-8CF7A94A323B}");
+        AZ_TYPE_INFO(IAuthenticationProviderScriptCanvasRequests, "{A8FD915F-9FF2-4BA3-8AA0-8CF7A94A323B}");
 
         //! Parse the settings file for required settings for authentication providers. Instantiate and initialize authentication providers
         //! @param providerNames List of provider names to instantiate and initialize for Authentication.

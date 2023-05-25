@@ -17,6 +17,7 @@ class AWSScriptBehaviorDynamoDBNotificationBusHandlerMock
     : public AWSScriptBehaviorDynamoDBNotificationBusHandler
 {
 public:
+    AZ_CLASS_ALLOCATOR(AWSScriptBehaviorDynamoDBNotificationBusHandlerMock, AZ::SystemAllocator)
     AWSScriptBehaviorDynamoDBNotificationBusHandlerMock()
     {
         AWSScriptBehaviorDynamoDBNotificationBus::Handler::BusConnect();

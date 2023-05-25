@@ -39,8 +39,6 @@ namespace UnitTest
         void SetUp() override;
         void TearDown() override;
 
-        AZ::RHI::Device* GetDevice();
-
         //! Performs processing that would normally be done by the frame scheduler, 
         //! which has to happen in order to recompile the same SRG instance multiple times.
         void ProcessQueuedSrgCompilations(AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset, const AZ::Name& srgName);

@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 
+#include <AzCore/Math/Crc.h>
 // For attributes
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -28,6 +29,8 @@
 namespace AZ
 {
     class ReflectContext;
+
+    class Attribute;
 
     /// Function type to called for on demand reflection within methods, properties, etc.
     /// OnDemandReflection functions must be static, so we can optimize by just using function pointer instead of object
@@ -83,7 +86,7 @@ namespace AZ
         void NoSpecializationFunction();
     };
 
-    AZ_HAS_MEMBER(NoOnDemandReflection, NoSpecializationFunction, void, ())
+    AZ_HAS_MEMBER(NoOnDemandReflection, NoSpecializationFunction, void, ());
 
     /**
      * Base class for all reflection contexts.
@@ -101,7 +104,8 @@ namespace AZ
     class ReflectContext
     {
     public:
-        AZ_RTTI(ReflectContext, "{B18D903B-7FAD-4A53-918A-3967B3198224}")
+        AZ_TYPE_INFO_WITH_NAME_DECL(ReflectContext);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         ReflectContext();
         virtual ~ReflectContext() = default;
@@ -132,7 +136,83 @@ namespace AZ
 
         friend OnDemandReflectionOwner;
     };
+}
 
+namespace AZ::Internal
+{
+    template<class RetType, class... Args>
+    struct ClassToVoidInvoker;
+
+    // Specialization for function object with no parameters
+    template<class RetType>
+    struct ClassToVoidInvoker<RetType>
+    {
+        explicit ClassToVoidInvoker(AZStd::function<RetType()> callable)
+            : m_callable(AZStd::move(callable))
+        {}
+
+        // In the case of the function object not accepting at least one argument, then the class type is assumed to be non-existent
+        RetType operator()() const
+        {
+            return m_callable();
+        }
+
+    private:
+        AZStd::function<RetType()> m_callable;
+    };
+
+    // Specialization for function object with at least one parameter
+    // The first parameter is assumed to be the class type
+    // The void pointer instance will be cast to that type
+    template<class RetType, class ClassType, class... Args>
+    struct ClassToVoidInvoker<RetType, ClassType, Args...>
+    {
+        explicit ClassToVoidInvoker(AZStd::function<RetType(ClassType, Args...)> callable)
+            : m_callable(AZStd::move(callable))
+        {}
+        RetType operator()(void* instancePtr, Args... args) const
+        {
+            if constexpr (AZStd::is_pointer_v<ClassType>)
+            {
+                // ClassType is a pointer so cast directly from the void pointer
+                return m_callable(static_cast<ClassType>(instancePtr), static_cast<Args&&>(args)...);
+            }
+            else
+            {
+                // If the ClassType parameter accepts a value type, then cast the void pointer to a class type pointer
+                // and deference
+                return m_callable(*static_cast<AZStd::remove_cvref_t<ClassType>*>(instancePtr), static_cast<Args&&>(args)...);
+            }
+        }
+
+    private:
+        AZStd::function<RetType(ClassType, Args...)> m_callable;
+    };
+
+    template<class RetType>
+    struct FunctionObjectInvoker
+    {
+        template<class... Args>
+        using ClassToVoidArgsInvoker = ClassToVoidInvoker<RetType, Args...>;
+    };
+
+    // Custom struct to use as a unique_ptr deleter which can selectively deletes an attribute if
+    // the caller should the pointer
+    struct AttributeDeleter
+    {
+        AttributeDeleter();
+        AttributeDeleter(bool deletePtr);
+
+        void operator()(AZ::Attribute* attribute);
+
+    private:
+        bool m_deletePtr{ true };
+    };
+} // namespace AZ::Internal
+
+namespace AZ
+{
+    using AttributeUniquePtr = AZStd::unique_ptr<AZ::Attribute, Internal::AttributeDeleter>;
     // Attributes to be used by reflection contexts
 
     /**
@@ -144,12 +224,9 @@ namespace AZ
     public:
         using ContextDeleter = void(*)(void* contextData);
 
-        static const AZ::Name s_typeField;
-        static constexpr AZStd::string_view s_typeName = "AZ::Attribute";
-        static const AZ::Name s_instanceField;
-        static const AZ::Name s_attributeField;
+        AZ_TYPE_INFO_WITH_NAME_DECL(Attribute);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
-        AZ_RTTI(AZ::Attribute, "{2C656E00-12B0-476E-9225-5835B92209CC}");
         Attribute()
             : m_contextData(nullptr, &DefaultDelete)
         { }
@@ -171,6 +248,12 @@ namespace AZ
             return false;
         }
 
+        virtual AttributeUniquePtr GetVoidInstanceAttributeInvocable()
+        {
+            constexpr bool deleteAttribute = false;
+            return AttributeUniquePtr(this, Internal::AttributeDeleter{ deleteAttribute });
+        }
+
         /// Returns true if this attribute is invokable, given a set of arguments.
         /// @param arguments A Dom::Value that must contain an Array of arguments for this invokable attribute.
         virtual bool CanDomInvoke([[maybe_unused]] const AZ::Dom::Value& arguments) const
@@ -187,19 +270,43 @@ namespace AZ
         }
 
         /// Gets a marshaleld Dom::Value representation of this attribute bound to a given instance.
-        /// By default this just serializes a pointer to the instance and this attribute, but for non-invokable
-        /// attributes this is just abbreviated to a marshalled version of the data stored in the attribute.
+        /// By default this is just abbreviated to a marshalled version of the data stored in the attribute,
+        /// but for invokable attributes, override this method to serializes a pointer to the instance and this attribute
         virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance)
         {
             AZ::Dom::Value result(AZ::Dom::Type::Object);
-            result[s_typeField] = Dom::Value(s_typeName, false);
-            result[s_instanceField] = AZ::Dom::Utils::ValueFromType(instance);
+            result[s_typeField] = Dom::Value(GetTypeName(), false);
             result[s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
             return result;
         }
 
+        static const char* GetTypeName()
+        {
+            return "AZ::Attribute";
+        }
+
+        static AZ::Name GetTypeField()
+        {
+            return s_typeField;
+        }
+
+        static AZ::Name GetInstanceField()
+        {
+            return s_instanceField;
+        }
+
+        static AZ::Name GetAttributeField()
+        {
+            return s_attributeField;
+        }
+
         bool m_describesChildren = false;
         bool m_childClassOwned = false;
+
+    protected:
+        static const AZ::Name s_typeField;
+        static const AZ::Name s_instanceField;
+        static const AZ::Name s_attributeField;
 
     private:
         AZStd::unique_ptr<void, ContextDeleter> m_contextData; ///< a generic value you can use to store extra data associated with the attribute
@@ -233,16 +340,16 @@ namespace AZ
         : public Attribute
     {
     public:
-        AZ_RTTI((AttributeData<T>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", T), Attribute);
-        AZ_CLASS_ALLOCATOR(AttributeData<T>, SystemAllocator, 0);
+        AZ_RTTI((AttributeData, "{24248937-86FB-406C-8DD5-023B10BD0B60}", T), Attribute);
+        AZ_CLASS_ALLOCATOR(AttributeData<T>, SystemAllocator);
         template<class U>
         explicit AttributeData(U&& data)
             : m_data(AZStd::forward<U>(data)) {}
-        virtual const T& Get(void* instance) const { (void)instance; return m_data; }
+        virtual const T& Get(const void* instance) const { (void)instance; return m_data; }
         T& operator = (T& data) { m_data = data; return m_data; }
         T& operator = (const T& data) { m_data = data; return m_data; }
 
-        AZ::Dom::Value GetAsDomValue(void*) override
+        AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance) override
         {
             if constexpr (AZStd::is_copy_constructible_v<T>)
             {
@@ -257,6 +364,8 @@ namespace AZ
         T   m_data;
     };
 
+    extern template class AttributeData<Crc32>;
+
     /**
     * Generic attribute for class member data, we use the object instance to access member data.
     * In general since the AttributeData::Get function already takes the instance there is no reason to cast (azrtti)
@@ -270,13 +379,13 @@ namespace AZ
         : public AttributeData<T>
     {
     public:
-        AZ_RTTI((AZ::AttributeMemberData<T C::*>, "{00E5F991-6B96-43CC-9869-F371548581D9}", T, C), AttributeData<T>);
-        AZ_CLASS_ALLOCATOR(AttributeMemberData<T C::*>, SystemAllocator, 0);
+        AZ_RTTI((AttributeMemberData, "{00E5F991-6B96-43CC-9869-F371548581D9}", T C::*), AttributeData<T>);
+        AZ_CLASS_ALLOCATOR(AttributeMemberData<T C::*>, SystemAllocator);
         typedef T C::* DataPtr;
         explicit AttributeMemberData(DataPtr p)
             : AttributeData<T>(T())
             , m_dataPtr(p) {}
-        const T& Get(void* instance) const override { return (reinterpret_cast<C*>(instance)->*m_dataPtr); }
+        const T& Get(const void* instance) const override { return (reinterpret_cast<const C*>(instance)->*m_dataPtr); }
         DataPtr GetMemberDataPtr() const { return m_dataPtr; }
 
         AZ::Dom::Value GetAsDomValue(void* instance) override
@@ -398,8 +507,9 @@ namespace AZ
     class AttributeFunction<R(Args...)> : public Attribute
     {
     public:
-        AZ_RTTI((AZ::AttributeFunction<R(Args...)>, "{EE535A42-940C-42DE-848D-9C6CE57D8A62}", R, Args...), Attribute);
-        AZ_CLASS_ALLOCATOR(AttributeFunction<R(Args...)>, SystemAllocator, 0);
+        AZ_RTTI((AttributeFunction, "{EE535A42-940C-42DE-848D-9C6CE57D8A62}",
+            R(Args...)), Attribute);
+        AZ_CLASS_ALLOCATOR(AttributeFunction<R(Args...)>, SystemAllocator);
         typedef R(*FunctionPtr)(Args...);
         explicit AttributeFunction(FunctionPtr f)
                 : m_function(f)
@@ -437,21 +547,44 @@ namespace AZ
         FunctionPtr m_function;
     };
 
-    // Wraps a type that implements the C++ callable concept(i.e has either an overloaded operator() or a function pointer,
-    // pointer to member data or pointer to member function)
-    // If the type doesn't implement the callable concept stores the type as is
+    // Wraps a type that implements the C++ callable concept[i.e has either an overloaded operator() or a function pointer,
+    // pointer to member data or pointer to member function]
+    // If the type doesn't implement the callable concept stores the raw value type
     template<typename Invocable>
     class AttributeInvocable
         : public Attribute
     {
-        using Callable = AZStd::conditional_t<AZStd::function_traits<Invocable>::value, AZStd::function<typename AZStd::function_traits<Invocable>::function_type>, Invocable>;
+        using Callable = AZStd::conditional_t<AZStd::function_traits<Invocable>::value,
+            AZStd::function<typename AZStd::function_traits<Invocable>::function_type>,
+            AZStd::remove_cvref_t<Invocable>>;
     public:
-        AZ_RTTI((AttributeInvocable<Invocable>, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}", Invocable), AZ::Attribute);
-        AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator, 0);
+        AZ_RTTI((AttributeInvocable, "{60D5804F-9AF4-4EB1-8F5A-62AFB4883F9D}", Invocable), AZ::Attribute);
+        AZ_CLASS_ALLOCATOR(AttributeInvocable<Invocable>, SystemAllocator);
         template<typename CallableType>
         explicit AttributeInvocable(CallableType&& invocable)
             : m_callable(AZStd::forward<CallableType>(invocable))
         {
+        }
+
+        AttributeUniquePtr GetVoidInstanceAttributeInvocable() override
+        {
+            // Make a temporary AttributeInvocable attribute that can cast from a void pointer
+            // to the class type needed by this AttributeInvocable
+
+            if constexpr (AZStd::function_traits<Callable>::value)
+            {
+                using CallableReturnType = typename AZStd::function_traits<Callable>::return_type;
+                using VoidInstanceCallWrapper = typename AZStd::function_traits<Callable>::template expand_args<
+                    Internal::FunctionObjectInvoker<CallableReturnType>::template ClassToVoidArgsInvoker>;
+                return AttributeUniquePtr(new AttributeInvocable<typename AZStd::function_traits<VoidInstanceCallWrapper>::function_type>(
+                    VoidInstanceCallWrapper{ m_callable }));
+            }
+            else
+            {
+                // Otherwise if the type being wrapped is not callable then assume it is a regular value type and
+                // invoke base class version of this function
+                return Attribute::GetVoidInstanceAttributeInvocable();
+            }
         }
 
         template<typename... FuncArgs>
@@ -482,6 +615,12 @@ namespace AZ
         {
             return DomInvokeHelper<Callable>::Invoke(m_callable, arguments);
         }
+
+        const Callable& GetCallable() const
+        {
+            return m_callable;
+        }
+
     private:
         Callable m_callable;
     };
@@ -490,7 +629,9 @@ namespace AZ
     // If the type has valid function traits(i.e it fits the callable concept, then the function_type is retrieved from the function type),
     // otherwise the type is used without modification
     template<typename Invocable>
-    AttributeInvocable(Invocable&&) -> AttributeInvocable<AZStd::conditional_t<AZStd::function_traits<Invocable>::value, typename AZStd::function_traits<Invocable>::function_type, Invocable>>;
+    AttributeInvocable(Invocable&&) -> AttributeInvocable<AZStd::conditional_t<AZStd::function_traits<Invocable>::value,
+        typename AZStd::function_traits<Invocable>::function_type,
+        AZStd::remove_cvref_t<Invocable>>>;
 
     /**
     * Generic attribute member function pointer container. All function must return non void result (we can implement this)
@@ -505,8 +646,9 @@ namespace AZ
         : public AttributeFunction<R(Args...)>
     {
     public:
-        AZ_RTTI((AZ::AttributeMemberFunction<R(C::*)(Args...)>, "{F41F655D-87F7-4A87-9412-9AF4B528B142}", R, C, Args...), AttributeFunction<R(Args...)>);
-        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...)>, SystemAllocator, 0);
+        AZ_RTTI((AttributeMemberFunction, "{F41F655D-87F7-4A87-9412-9AF4B528B142}",
+            R(C::*)(Args...)), AttributeFunction<R(Args...)>);
+        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...)>, SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...);
 
         explicit AttributeMemberFunction(FunctionPtr f)
@@ -546,6 +688,16 @@ namespace AZ
                 return Invoke(instance, args...);
             }), arguments);
         }
+
+        AZ::Dom::Value GetAsDomValue(void* instance) override
+        {
+            auto classInstance = reinterpret_cast<C*>(instance);
+            AZ::Dom::Value result(AZ::Dom::Type::Object);
+            result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
+            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+            result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+            return result;
+        }
     private:
         FunctionPtr m_memFunction;
     };
@@ -556,8 +708,9 @@ namespace AZ
         : public AttributeFunction<R(Args...)>
     {
     public:
-        AZ_RTTI((AZ::AttributeMemberFunction<R(C::*)(Args...) const>, "{4E21155A-0FB0-4F11-999A-B946B5954A0A}", R, C, Args...), AttributeFunction<R(Args...)>);
-        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...) const>, SystemAllocator, 0);
+        AZ_RTTI((AttributeMemberFunction, "{4E21155A-0FB0-4F11-999A-B946B5954A0A}",
+            R(C::*)(Args...) const), AttributeFunction<R(Args...)>);
+        AZ_CLASS_ALLOCATOR(AttributeMemberFunction<R(C::*)(Args...) const>, SystemAllocator);
         typedef R(C::* FunctionPtr)(Args...) const;
 
         explicit AttributeMemberFunction(FunctionPtr f)
@@ -573,6 +726,16 @@ namespace AZ
         AZ::Uuid GetInstanceType() const override
         {
             return AzTypeInfo<C>::Uuid();
+        }
+
+        AZ::Dom::Value GetAsDomValue(void* instance) override
+        {
+            auto classInstance = reinterpret_cast<C*>(instance);
+            AZ::Dom::Value result(AZ::Dom::Type::Object);
+            result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
+            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+            result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+            return result;
         }
 
         FunctionPtr GetMemberFunctionPtr() const

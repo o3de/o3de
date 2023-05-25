@@ -69,10 +69,10 @@ namespace EMotionFX
 
     SkeletonModel::~SkeletonModel()
     {
-        m_characterRootNode->Destroy();
-
         // Calling Reset will trigger the modelReset signal, thus notify other widgets to clear cached information about this model.
         Reset();
+
+        m_characterRootNode->Destroy();
 
         ActorEditorNotificationBus::Handler::BusDisconnect();
     }

@@ -26,6 +26,7 @@ namespace AZ::Render
         , protected Data::AssetBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(StarsFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(AZ::Render::StarsFeatureProcessor, "{34B9EE52-2893-4D02-AC19-8C5DCAFFE608}", AZ::Render::StarsFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -24,7 +24,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoAddEntityAsOverride, "{45CD5DB2-7A78-45A0-AC85-D2F48F90CA1E}", PrefabUndoUpdateLink);
-            AZ_CLASS_ALLOCATOR(PrefabUndoAddEntityAsOverride, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoAddEntityAsOverride, AZ::SystemAllocator);
 
             explicit PrefabUndoAddEntityAsOverride(const AZStd::string& undoOperationName);
 

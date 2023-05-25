@@ -31,7 +31,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SMAABasePass, "{D879B4E8-DEDC-422D-950A-8B5341A8FD48}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(SMAABasePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SMAABasePass, SystemAllocator);
             virtual ~SMAABasePass();
 
         protected:

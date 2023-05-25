@@ -39,7 +39,7 @@ namespace AZ
             friend class CommandQueue;
 
         public:
-            AZ_CLASS_ALLOCATOR(Queue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Queue, AZ::SystemAllocator);
             AZ_RTTI(Queue, "C3420514-4BB2-4416-A6A1-FEFFF041BCB4", Base);
 
             struct Descriptor

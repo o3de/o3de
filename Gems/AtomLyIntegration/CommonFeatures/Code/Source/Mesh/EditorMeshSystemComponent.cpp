@@ -27,7 +27,6 @@ namespace AZ
                 {
                     ec->Class<EditorMeshSystemComponent>("EditorMeshSystemComponent", "System component that sets up necessary logic related to EditorMeshComponent..")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }

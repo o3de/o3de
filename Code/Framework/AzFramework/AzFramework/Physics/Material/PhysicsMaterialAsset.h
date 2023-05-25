@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 
 #include <AzFramework/Physics/Material/PhysicsMaterialPropertyValue.h>
-#include <AzFramework/Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h>
 
 namespace Physics
 {
@@ -21,7 +20,7 @@ namespace Physics
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(Physics::MaterialAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Physics::MaterialAsset, AZ::SystemAllocator);
         AZ_RTTI(Physics::MaterialAsset, "{E4EF58EE-B1D1-46C8-BE48-BB62B8247386}", AZ::Data::AssetData);
 
         static constexpr const char* FileExtension = "physicsmaterial";
@@ -46,9 +45,6 @@ namespace Physics
         AZ::u32 GetVersion() const;
         const MaterialProperties& GetMaterialProperties() const;
 
-        PhysicsLegacy::MaterialId GetLegacyPhysicsMaterialId() const;
-        void SetLegacyPhysicsMaterialId(PhysicsLegacy::MaterialId legacyPhysicsMaterialId);
-
     protected:
         //! String that identifies the type of the material.
         //! Each physics backend must provide a different one.
@@ -60,9 +56,5 @@ namespace Physics
 
         //! List of material properties.
         MaterialProperties m_materialProperties;
-
-        // Legacy Physics material Id is only used when converting from old physics material asset,
-        // which holds a library of materials, to the new physx material asset.
-        PhysicsLegacy::MaterialId m_legacyPhysicsMaterialId;
     };
 } // namespace Physics

@@ -71,10 +71,10 @@ namespace AZ { class ReflectContext; }
 namespace AZ::MeshBuilder
 {
     using MeshBuilderVertexAttributeLayerColor = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::Color>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator, 0)
-        
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator)
+
     using MeshBuilderVertexAttributeLayerSkinInfluence = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::ISkinWeightData::Link>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator)
 
 } // namespace AZ::MeshBuilder
 
@@ -412,7 +412,14 @@ namespace AZ::SceneGenerationComponents
                 const AZStd::string name =
                     SceneAPI::Utilities::SceneGraphSelector::GenerateOptimizedMeshNodeName(graph, nodeIndex, meshGroup);
                 const NodeIndex optimizedMeshNodeIndex =
-                    graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));            
+                    graph.AddChild(graph.GetNodeParent(nodeIndex), name.c_str(), AZStd::move(optimizedMesh));
+
+                if (!optimizedMeshNodeIndex.IsValid())
+                {
+                    // An invalid node index usually happens when the name is invalid.
+                    // An error will already be printed so no need for one here.
+                    return ProcessingResult::Failure;
+                }
 
                 // Copy any custom properties from the original mesh to the optimized mesh
                 ICustomPropertyData::PropertyMap& optimizedPropertyMap = FindOrCreateCustomPropertyData(graph, optimizedMeshNodeIndex);
@@ -424,7 +431,7 @@ namespace AZ::SceneGenerationComponents
 
                 // Add the optimized node index to the original mesh's custom property map so it can be looked up later
                 unoptimizedPropertyMap[SceneAPI::Utilities::OptimizedMeshPropertyMapKey] =
-                    AZStd::make_any<NodeIndex>(optimizedMeshNodeIndex);    
+                    AZStd::make_any<NodeIndex>(optimizedMeshNodeIndex);
 
                 auto addOptimizedNodes = [&graph, &optimizedMeshNodeIndex](const auto& originalNodeIndexes, auto& optimizedNodes)
                 {
@@ -746,7 +753,7 @@ namespace AZ::SceneGenerationComponents
                 const AZ::MeshBuilder::MeshBuilderVertexLookup& vertexLookup = subMesh->GetVertex(subMeshVertexIndex);
                 optimizedMesh->AddPosition(posLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
                 optimizedMesh->AddNormal(normalsLayer->GetVertexValue(vertexLookup.mOrgVtx, vertexLookup.mDuplicateNr));
-                
+
                 int modelVertexIndex = optimizedMesh->GetVertexCount() - 1;
                 optimizedMesh->SetVertexIndexToControlPointIndexMap(
                     modelVertexIndex,

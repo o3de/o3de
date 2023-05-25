@@ -68,8 +68,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SharedData, ImporterAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ChunkProcessor, ImporterAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SharedData, ImporterAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SharedHelperData, ImporterAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ChunkProcessor, ImporterAllocator)
 
     bool ForwardFullAttribute(MCore::File* file, MCore::Endian::EEndianType endianType)
     {

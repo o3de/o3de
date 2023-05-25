@@ -18,18 +18,18 @@ function GetMaterialPropertyDependencies()
         "blend.enableLayer3",
         "parallax.enable",
         "parallax.pdo",
-        "layer1_parallax.textureMap",
-        "layer2_parallax.textureMap",
-        "layer3_parallax.textureMap",
-        "layer1_parallax.useTexture",
-        "layer2_parallax.useTexture",
-        "layer3_parallax.useTexture",
-        "layer1_parallax.factor",
-        "layer2_parallax.factor",
-        "layer3_parallax.factor",
-        "layer1_parallax.offset",
-        "layer2_parallax.offset",
-        "layer3_parallax.offset"
+        "layer1.parallax.textureMap",
+        "layer2.parallax.textureMap",
+        "layer3.parallax.textureMap",
+        "layer1.parallax.useTexture",
+        "layer2.parallax.useTexture",
+        "layer3.parallax.useTexture",
+        "layer1.parallax.factor",
+        "layer2.parallax.factor",
+        "layer3.parallax.factor",
+        "layer1.parallax.offset",
+        "layer2.parallax.offset",
+        "layer3.parallax.offset"
     }
 end
 
@@ -62,7 +62,7 @@ function IsParallaxNeededForLayer(context, layerNumber)
         return false
     end
     
-    local parallaxGroupName = "layer" .. layerNumber .. "_parallax."
+    local parallaxGroupName = "layer" .. layerNumber .. ".parallax."
 
     local factor = context:GetMaterialPropertyValue_float(parallaxGroupName .. "factor")
     local offset = context:GetMaterialPropertyValue_float(parallaxGroupName .. "offset")
@@ -111,25 +111,25 @@ function CalcOverallHeightRange(context)
     local enableParallax = context:GetMaterialPropertyValue_bool("parallax.enable")
 
     if(enableParallax or BlendSourceUsesDisplacement(context)) then
-        local hasTextureLayer1 = nil ~= context:GetMaterialPropertyValue_Image("layer1_parallax.textureMap")
-        local hasTextureLayer2 = nil ~= context:GetMaterialPropertyValue_Image("layer2_parallax.textureMap")
-        local hasTextureLayer3 = nil ~= context:GetMaterialPropertyValue_Image("layer3_parallax.textureMap")
+        local hasTextureLayer1 = nil ~= context:GetMaterialPropertyValue_Image("layer1.parallax.textureMap")
+        local hasTextureLayer2 = nil ~= context:GetMaterialPropertyValue_Image("layer2.parallax.textureMap")
+        local hasTextureLayer3 = nil ~= context:GetMaterialPropertyValue_Image("layer3.parallax.textureMap")
         
-        local useTextureLayer1 = context:GetMaterialPropertyValue_bool("layer1_parallax.useTexture")
-        local useTextureLayer2 = context:GetMaterialPropertyValue_bool("layer2_parallax.useTexture")
-        local useTextureLayer3 = context:GetMaterialPropertyValue_bool("layer3_parallax.useTexture")
+        local useTextureLayer1 = context:GetMaterialPropertyValue_bool("layer1.parallax.useTexture")
+        local useTextureLayer2 = context:GetMaterialPropertyValue_bool("layer2.parallax.useTexture")
+        local useTextureLayer3 = context:GetMaterialPropertyValue_bool("layer3.parallax.useTexture")
 
-        local factorLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.factor")
-        local factorLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.factor")
-        local factorLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.factor")
+        local factorLayer1 = context:GetMaterialPropertyValue_float("layer1.parallax.factor")
+        local factorLayer2 = context:GetMaterialPropertyValue_float("layer2.parallax.factor")
+        local factorLayer3 = context:GetMaterialPropertyValue_float("layer3.parallax.factor")
 
         if not hasTextureLayer1 or not useTextureLayer1 then factorLayer1 = 0 end
         if not hasTextureLayer2 or not useTextureLayer2 then factorLayer2 = 0 end
         if not hasTextureLayer3 or not useTextureLayer3 then factorLayer3 = 0 end
 
-        local offsetLayer1 = context:GetMaterialPropertyValue_float("layer1_parallax.offset")
-        local offsetLayer2 = context:GetMaterialPropertyValue_float("layer2_parallax.offset")
-        local offsetLayer3 = context:GetMaterialPropertyValue_float("layer3_parallax.offset")
+        local offsetLayer1 = context:GetMaterialPropertyValue_float("layer1.parallax.offset")
+        local offsetLayer2 = context:GetMaterialPropertyValue_float("layer2.parallax.offset")
+        local offsetLayer3 = context:GetMaterialPropertyValue_float("layer3.parallax.offset")
         
         local enableLayer2 = context:GetMaterialPropertyValue_bool("blend.enableLayer2")
         local enableLayer3 = context:GetMaterialPropertyValue_bool("blend.enableLayer3")
@@ -161,6 +161,9 @@ function Process(context)
     end
     
     context:SetShaderOptionValue_bool("o_parallax_feature_enabled", parallaxFeatureEnabled)
+    
+    local pixelDepthOffsetEnabled = context:GetMaterialPropertyValue_bool("parallax.pdo")
+    context:SetInternalMaterialPropertyValue_bool("hasPerPixelDepth", parallaxFeatureEnabled and pixelDepthOffsetEnabled)
 end
 
 function ProcessEditor(context)

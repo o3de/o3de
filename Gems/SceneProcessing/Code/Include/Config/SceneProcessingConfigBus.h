@@ -25,7 +25,7 @@ namespace AZ
             static const EBusHandlerPolicy HandlerPolicy = EBusHandlerPolicy::Single;
             static const EBusAddressPolicy AddressPolicy = EBusAddressPolicy::Single;
             
-            virtual const AZStd::vector<SoftNameSetting*>* GetSoftNames() = 0;
+            virtual const AZStd::vector<AZStd::unique_ptr<SoftNameSetting>>* GetSoftNames() = 0;
             
             /**
              * @brief Adds a virtual type for matching against the name of scene nodes.

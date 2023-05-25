@@ -10,20 +10,20 @@
 
 namespace PhysX::JointsComponentModeCommon
 {
-    const AZStd::string_view ParamaterNames::TwistLimits = "Twist Limits";
-    const AZStd::string_view ParamaterNames::Damping = "Damping";
-    const AZStd::string_view ParamaterNames::MaxForce = "Maximum Force";
-    const AZStd::string_view ParamaterNames::MaxTorque = "Maximum Torque";
-    const AZStd::string_view ParamaterNames::Position = "Position";
-    const AZStd::string_view ParamaterNames::Rotation = "Rotation";
-    const AZStd::string_view ParamaterNames::SnapPosition = "Snap Position";
-    const AZStd::string_view ParamaterNames::SnapRotation = "Snap Rotation";
-    const AZStd::string_view ParamaterNames::Stiffness = "Stiffness";
-    const AZStd::string_view ParamaterNames::SwingLimit = "Swing Limits";
-    const AZStd::string_view ParamaterNames::Transform = "Transform";
-    const AZStd::string_view ParamaterNames::ComponentMode = "Component Mode";
-    const AZStd::string_view ParamaterNames::LeadEntity = "Lead Entity";
-    const AZStd::string_view ParamaterNames::LinearLimits = "Linear Limits";
-    const AZStd::string_view ParamaterNames::EnableLimits = "Enable Limits";
-    const AZStd::string_view ParamaterNames::EnableSoftLimits = "Enable SoftLimits";
+    const AZStd::string_view ParameterNames::TwistLimits = "Twist Limits";
+    const AZStd::string_view ParameterNames::Damping = "Damping";
+    const AZStd::string_view ParameterNames::MaxForce = "Maximum Force";
+    const AZStd::string_view ParameterNames::MaxTorque = "Maximum Torque";
+    const AZStd::string_view ParameterNames::Position = "Position";
+    const AZStd::string_view ParameterNames::Rotation = "Rotation";
+    const AZStd::string_view ParameterNames::SnapPosition = "Snap Position";
+    const AZStd::string_view ParameterNames::SnapRotation = "Snap Rotation";
+    const AZStd::string_view ParameterNames::Stiffness = "Stiffness";
+    const AZStd::string_view ParameterNames::SwingLimit = "Swing Limits";
+    const AZStd::string_view ParameterNames::Transform = "Transform";
+    const AZStd::string_view ParameterNames::ComponentMode = "Component Mode";
+    const AZStd::string_view ParameterNames::LeadEntity = "Lead Entity";
+    const AZStd::string_view ParameterNames::LinearLimits = "Linear Limits";
+    const AZStd::string_view ParameterNames::EnableLimits = "Enable Limits";
+    const AZStd::string_view ParameterNames::EnableSoftLimits = "Enable SoftLimits";
 } // namespace PhysX::JointsComponentModeCommon

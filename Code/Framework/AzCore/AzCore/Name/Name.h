@@ -82,7 +82,7 @@ namespace AZ
         using Hash = Internal::NameData::Hash;
 
         AZ_TYPE_INFO(Name, "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}");
-        AZ_CLASS_ALLOCATOR(Name, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Name, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         Name();

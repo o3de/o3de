@@ -13,38 +13,20 @@
 #include "IObjectManager.h"
 #include "BaseObject.h"
 #include "SelectionGroup.h"
-#include "ObjectManagerEventBus.h"
 
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Component/Component.h>
 #include <Include/SandboxAPI.h>
 
 // forward declarations.
-class CGizmoManager;
 class CEntityObject;
 class CObjectArchive;
 class CObjectClassDesc;
 class CWaitProgress;
 
 enum class ImageRotationDegrees;
-
-//////////////////////////////////////////////////////////////////////////
-// Helper class to signal when we are exporting a level to game
-//////////////////////////////////////////////////////////////////////////
-class CObjectManagerLevelIsExporting
-{
-public:
-    CObjectManagerLevelIsExporting()
-    {
-        AZ::ObjectManagerEventBus::Broadcast(&AZ::ObjectManagerEventBus::Events::OnExportingStarting);
-    }
-
-    ~CObjectManagerLevelIsExporting()
-    {
-        AZ::ObjectManagerEventBus::Broadcast(&AZ::ObjectManagerEventBus::Events::OnExportingFinished);
-    }
-};
 
 /*!
  *  CObjectManager is a singleton object that
@@ -73,9 +55,6 @@ public:
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     void GetObjects(CBaseObjectsArray& objects) const override;
-
-    //! Display objects on display context.
-    void    Display(DisplayContext& dc) override;
 
     //! Send event to all objects.
     //! Will cause OnEvent handler to be called on all objects.
@@ -138,10 +117,6 @@ public:
     void ChangeObjectId(REFGUID oldId, REFGUID newId) override;
 
     //////////////////////////////////////////////////////////////////////////
-    //! Get access to gizmo manager.
-    IGizmoManager* GetGizmoManager() override;
-
-    //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.
     void InvalidateVisibleList() override;
 
@@ -198,9 +173,6 @@ private:
 
     //! Default selection.
     CSelectionGroup m_defaultSelection;
-
-    // Object manager also handles Gizmo manager.
-    CGizmoManager* m_gizmoManager;
 
     //////////////////////////////////////////////////////////////////////////
 

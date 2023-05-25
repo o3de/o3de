@@ -26,7 +26,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GenericComboBoxDelegate, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GenericComboBoxDelegate, AZ::SystemAllocator);
 
         // Some large Qt field. Should be larger then 256 which is the Qt::UserRole
         // Don't want to make it too close to avoid Running into other custom user controls.

@@ -25,7 +25,7 @@ namespace EMotionFX
     {
         public:
             AZ_RTTI(ConstraintTransform, "{8C821457-C3C2-4DAD-B552-A7318B420A9C}", Constraint)
-            AZ_CLASS_ALLOCATOR(ConstraintTransform, EMotionFX::Integration::EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(ConstraintTransform, EMotionFX::Integration::EMotionFXAllocator)
 
             ConstraintTransform() : Constraint()                    { m_transform.Identity(); }
             ~ConstraintTransform() override                         { }

@@ -448,18 +448,12 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
         }
 
         void TearDown() override
         {
             m_serializeContext.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             LeakDetectionFixture::TearDown();
         }

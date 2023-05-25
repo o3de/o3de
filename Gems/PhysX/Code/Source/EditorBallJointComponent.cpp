@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <Source/EditorBallJointComponent.h>
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
@@ -55,7 +56,7 @@ namespace PhysX
     void EditorBallJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
     }
 
     void EditorBallJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -99,19 +100,19 @@ namespace PhysX
 
     float EditorBallJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             return m_swingLimit.m_standardLimitConfig.m_damping;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             return m_swingLimit.m_standardLimitConfig.m_stiffness;
         }
@@ -121,7 +122,7 @@ namespace PhysX
 
     AngleLimitsFloatPair EditorBallJointComponent::GetLinearValuePair(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::SwingLimit)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::SwingLimit)
         {
             return AngleLimitsFloatPair(m_swingLimit.m_limitY, m_swingLimit.m_limitZ);
         }
@@ -129,18 +130,18 @@ namespace PhysX
         return AngleLimitsFloatPair();
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorBallJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorBallJointComponent::GetSubComponentModesState()
     {
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModes;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModes;
 
-        subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+        subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
             JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition,
-            JointsComponentModeCommon::ParamaterNames::SnapPosition });
-        subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
+            JointsComponentModeCommon::ParameterNames::SnapPosition });
+        subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
             JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation,
-            JointsComponentModeCommon::ParamaterNames::SnapRotation });
+            JointsComponentModeCommon::ParameterNames::SnapRotation });
 
-        if (AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> baseSubModes =
+        if (AZStd::vector<JointsComponentModeCommon::SubModeParameterState> baseSubModes =
                 EditorJointComponent::GetSubComponentModesState();
             !baseSubModes.empty())
         {
@@ -150,16 +151,16 @@ namespace PhysX
         if (m_swingLimit.m_standardLimitConfig.m_isLimited)
         {
             subModes.emplace_back(
-                JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits,
-                                                                  JointsComponentModeCommon::ParamaterNames::SwingLimit });
+                JointsComponentModeCommon::SubModeParameterState{ JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits,
+                                                                  JointsComponentModeCommon::ParameterNames::SwingLimit });
 
             if (m_swingLimit.m_standardLimitConfig.m_isSoftLimit)
             {
-                subModes.emplace_back(JointsComponentModeCommon::SubModeParamaterState{
-                    JointsComponentModeCommon::SubComponentModes::ModeType::Damping, JointsComponentModeCommon::ParamaterNames::Damping });
+                subModes.emplace_back(JointsComponentModeCommon::SubModeParameterState{
+                    JointsComponentModeCommon::SubComponentModes::ModeType::Damping, JointsComponentModeCommon::ParameterNames::Damping });
                 subModes.emplace_back(
-                    JointsComponentModeCommon::SubModeParamaterState{ JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
-                                                                      JointsComponentModeCommon::ParamaterNames::Stiffness });
+                    JointsComponentModeCommon::SubModeParameterState{ JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
+                                                                      JointsComponentModeCommon::ParameterNames::Stiffness });
             }
         }
         
@@ -168,19 +169,19 @@ namespace PhysX
 
     void EditorBallJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             m_swingLimit.m_standardLimitConfig.m_damping = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             m_swingLimit.m_standardLimitConfig.m_stiffness = value;
         }
@@ -188,7 +189,7 @@ namespace PhysX
 
     void EditorBallJointComponent::SetLinearValuePair(const AZStd::string& parameterName, const AngleLimitsFloatPair& valuePair)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::SwingLimit)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::SwingLimit)
         {
             m_swingLimit.m_limitY = valuePair.first;
             m_swingLimit.m_limitZ = valuePair.second;
@@ -197,7 +198,7 @@ namespace PhysX
 
     void EditorBallJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::ComponentMode)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::ComponentMode)
         {
             m_swingLimit.m_standardLimitConfig.m_inComponentMode = value;
             m_config.m_inComponentMode = value;
@@ -221,35 +222,31 @@ namespace PhysX
         }
 
         const AZ::EntityId entityId = GetEntityId();
-
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
-
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(localTransform,
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue, 
-            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();
 
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
+        debugDisplay.PushMatrix(jointWorldTransform);
 
-        const float xAxisArrowLength = 2.0f;
+        const float xAxisArrowLength = 2.0f * scaleMultiply;
         debugDisplay.SetColor(AZ::Color(1.0f, 0.0f, 0.0f, 1.0f));
-        debugDisplay.DrawArrow(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisArrowLength, 0.0f, 0.0f));
+        debugDisplay.DrawArrow(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(xAxisArrowLength, 0.0f, 0.0f), scaleMultiply);
 
         AngleLimitsFloatPair yzSwingAngleLimits(m_swingLimit.m_limitY, m_swingLimit.m_limitZ);
 
         const AZ::u32 numEllipseSamples = 16;
         AZ::Vector3 ellipseSamples[numEllipseSamples];
-        float coneHeight = 3.0f;
+        float coneHeight = 3.0f * scaleMultiply;
 
         // Draw inverted cone if angles are larger than 90 deg.
         if (yzSwingAngleLimits.first > 90.0f || yzSwingAngleLimits.second > 90.0f)
         {
-            coneHeight = -3.0f;
+            coneHeight = -3.0f * scaleMultiply;
         }
 
         const float coney = tan(AZ::DegToRad(yzSwingAngleLimits.first)) * coneHeight;
@@ -273,8 +270,7 @@ namespace PhysX
             debugDisplay.DrawTri(AZ::Vector3(0.0f, 0.0f, 0.0f), ellipseSamples[i], ellipseSamples[nextIndex]);
         }
 
-        debugDisplay.PopMatrix();//pop local transform
-        debugDisplay.PopMatrix();//pop world transform
+        debugDisplay.PopMatrix();//pop joint world transform
 
         debugDisplay.SetState(stateBefore);
     }

@@ -211,7 +211,7 @@ namespace LmbrCentral
         if (shapeDrawParams.m_filled)
         {
             debugDisplay.SetColor(shapeDrawParams.m_shapeColor.GetAsVector4());
-            debugDisplay.DrawDisk(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), diskConfig.m_radius);
+            debugDisplay.DrawDisk(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(), diskConfig.m_radius, false);
         }
 
         debugDisplay.SetColor(shapeDrawParams.m_wireColor.GetAsVector4());

@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::DepthOfFieldBokehBlurPass, "{B6C292B1-0360-4472-9955-E74CBD5EFC25}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(DepthOfFieldBokehBlurPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DepthOfFieldBokehBlurPass, SystemAllocator);
             virtual ~DepthOfFieldBokehBlurPass() = default;
 
             //! Creates a DepthOfFieldBokehBlurPass

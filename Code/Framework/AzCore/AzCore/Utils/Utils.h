@@ -87,6 +87,20 @@ namespace AZ
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
         AZ::IO::FixedMaxPathString GetProjectUserPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
+        //! Retrieves the full path to the project log path from the settings registry
+        //! This path defaults to <project-user-path>/logs, but can be overridden via the --project-log-path option
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectLogPath(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
+        //! Retrieves the full path to the project  path for the current asset platform from the settings registry
+        //! This path is based on <project-cache-path>/<asset-platform>,
+        //! where on Windows <asset-platform> = "pc", Linux  <asset-platform> = linux, etc...
+        //! The list of OS -> asst platforms is available in the `AZ::PlatformDefaults::OSPlatformToDefaultAssetPlatform` fuction
+        //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
+        //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
+        AZ::IO::FixedMaxPathString GetProjectProductPathForPlatform(AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
+
         //! Retrieves the project name from the settings registry
         //! @param settingsRegistry pointer to the SettingsRegistry to use for lookup
         //! If nullptr, the AZ::Interface instance of the SettingsRegistry is used
@@ -149,9 +163,43 @@ namespace AZ
         AZ::Outcome<Container, AZStd::string> ReadFile(
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
 
+        //! error code value returned when GetEnv fails
+        enum class GetEnvErrorCode
+        {
+            EnvNotSet = 1,
+            BufferTooSmall,
+            NotImplemented
+        };
+
+        //! Return result from GetEnv when an environment variable value
+        //! fails to be returned
+        //! The `m_requiredSize` value is set to the needed size of the buffer
+        //! when the GetEnvErrorCode is set to `BufferTooSmall`
+        struct GetEnvErrorResult
+        {
+            //! Contains the error code of the GetEnv operation
+            GetEnvErrorCode m_errorCode{};
+            //! Set only when the error code is `BufferTooSmall`
+            size_t m_requiredSize{};
+        };
+        using GetEnvOutcome = AZ::Outcome<AZStd::string_view, GetEnvErrorResult>;
+
+        //! Queries the value of an environment variable
+        //! @param envvalueBuffer Span of buffer to populate with environment variable value if found
+        //! @param envname The environment variable name
+        //! @return Return an outcome with a string_view of the environment varaible if successful,
+        //! otherwise if the environment variable is not set or the span size cannot fit the environment
+        //! variable value, a GetEnvErrorResult will be returned
+        GetEnvOutcome GetEnv(AZStd::span<char> envvalueBuffer, const char* envname);
+
+        //! Queries if environment variable is set
+        //! @param envname The environment variable name
+        //! @return Return true if successful, otherwise false
+        bool IsEnvSet(const char* envname);
+
         //! Create or modify environment variable.
         //! @param envname The environment variable name
-        //! @param envvalue The environment variable name
+        //! @param envvalue The environment variable value
         //! @param overwrite If name does exist in the environment, then its value is changed to value if overwrite is nonzero;
         //! if overwrite is zero, then the value of name is not changed
         //! @returns Return true if successful, otherwise false

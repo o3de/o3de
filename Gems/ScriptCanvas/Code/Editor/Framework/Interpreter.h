@@ -47,7 +47,7 @@ namespace ScriptCanvasEditor
 
     public:
         AZ_TYPE_INFO(Interpreter, "{B77E5BC8-766A-4657-A30F-67797D04D10E}");
-        AZ_CLASS_ALLOCATOR(Interpreter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Interpreter, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 

@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "ToString",
-                    "context": "GameplayNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToString"
@@ -43,7 +42,6 @@
                 },
                 {
                     "base": "Equal",
-                    "context": "GameplayNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -81,7 +79,6 @@
                 },
                 {
                     "base": "Clone",
-                    "context": "GameplayNotificationId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Clone"

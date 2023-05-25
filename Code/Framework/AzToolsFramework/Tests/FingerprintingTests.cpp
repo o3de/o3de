@@ -18,7 +18,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ReflectedTestClass, "{AE55A3D4-845B-457F-94BA-A708BBDD6307}");
-        AZ_CLASS_ALLOCATOR(ReflectedTestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectedTestClass, AZ::SystemAllocator);
 
         ~ReflectedTestClass()
         {

@@ -47,8 +47,6 @@
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
-#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
@@ -496,7 +494,8 @@ namespace AzToolsFramework
                             entity->SetName(newName);
                             undo.MarkEntityDirty(entity->GetId());
 
-                            EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_EntireTree);
+                            ToolsApplicationEvents::Bus::Broadcast(
+                                &ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_EntireTree);
                         }
                     }
                     else
@@ -853,43 +852,9 @@ namespace AzToolsFramework
             return false;
         }
 
-        // Check if we're in focus mode
-        auto entityContextId = AzFramework::EntityContextId::CreateNull();
-        EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-        AZ::EntityId focusRoot = m_focusModeInterface->GetFocusRoot(entityContextId);
-        if (focusRoot.IsValid())
+        if (!EntitiesBelongToSamePrefab(selectedEntityIds, newParentId))
         {
-            // Only allow reparenting the selected entities if they are all under the same instance.
-            // We check the parent entity separately because it may be a container entity and
-            // container entities consider their owning instance to be the parent instance
-            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-            AZ_Assert(prefabPublicInterface, "EntityOutlinerListModel requires a PrefabPublicInterface instance on Initialize.");
-            if (!prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntityIds))
-            {
-                return false;
-            }
-
-            // Disable parenting to a different owning instance
-            auto instanceEntityMapperInterface = AZ::Interface<AzToolsFramework::Prefab::InstanceEntityMapperInterface>::Get();
-            if (instanceEntityMapperInterface)
-            {
-                auto parentInstanceReference = instanceEntityMapperInterface->FindOwningInstance(newParentId);
-
-                AZ::EntityId firstSelectedEntityId = selectedEntityIds.front();
-                auto selectedInstanceReference = instanceEntityMapperInterface->FindOwningInstance(firstSelectedEntityId);
-                // If the selected entity id is a container entity id, then we need get its parent owning instance.
-                // This is because containers, despite representing the nested instance in the parent, are owned by the child.
-                if ((selectedInstanceReference->get().GetContainerEntityId() == firstSelectedEntityId) &&
-                    !prefabPublicInterface->IsLevelInstanceContainerEntity(firstSelectedEntityId))
-                {
-                    selectedInstanceReference = selectedInstanceReference->get().GetParentInstance();
-                }
-
-                if (&(parentInstanceReference->get()) != &(selectedInstanceReference->get()))
-                {
-                    return false;
-                }
-            }
+            return false;
         }
 
         // Ignore entities not owned by the editor context. It is assumed that all entities belong
@@ -904,7 +869,8 @@ namespace AzToolsFramework
             }
 
             bool isEntityEditable = true;
-            EBUS_EVENT_RESULT(isEntityEditable, ToolsApplicationRequests::Bus, IsEntityEditable, entityId);
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                isEntityEditable, &ToolsApplicationRequests::Bus::Events::IsEntityEditable, entityId);
             if (!isEntityEditable)
             {
                 return false;
@@ -988,21 +954,21 @@ namespace AzToolsFramework
             return false;
         }
 
-        ScopedUndoBatch undo("Reparent Entities");
+        ScopedUndoBatch undo("Reparent Entity(s)");
         // The new parent is dirty due to sort change(s)
         undo.MarkEntityDirty(GetEntityIdForSortInfo(newParentId));
 
         EntityIdList processedEntityIds;
         {
-            ScopedUndoBatch undo2("Reparent Entities");
+            ScopedUndoBatch undo2("Reparent Entity(s)");
 
             for (AZ::EntityId entityId : selectedEntityIds)
             {
                 AZ::EntityId oldParentId;
-                EBUS_EVENT_ID_RESULT(oldParentId, entityId, AZ::TransformBus, GetParentId);
+                AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
-                EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, newParentId);
 
                 // The old parent is dirty due to sort change
                 undo2.MarkEntityDirty(GetEntityIdForSortInfo(oldParentId));
@@ -1057,7 +1023,7 @@ namespace AzToolsFramework
         // reselect the entities to ensure they're visible if appropriate
         ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, processedEntityIds);
 
-        EBUS_EVENT(ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, Refresh_Values);
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, Refresh_Values);
         return true;
     }
 
@@ -1267,7 +1233,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
     {
-        if (!Prefab::IsPrefabOverridesUxEnabled())
+        if (!Prefab::IsOutlinerOverrideManagementEnabled())
         {
             // Trigger a refresh of all direct children so that they can be shown or hidden appropriately.
             QueueEntityUpdate(entityId);
@@ -1349,12 +1315,20 @@ namespace AzToolsFramework
             ExpandAncestors(entityId);
         }
 
-        //notify observers
-        emit SelectEntity(entityId, selected);
+        if (!m_suppressNextSelectEntity)
+        {
+            // notify observers
+            emit SelectEntity(entityId, selected);
+        }
+
+        m_suppressNextSelectEntity = false;
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedLocked(AZ::EntityId entityId, bool /*locked*/)
     {
+        // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
+        m_suppressNextSelectEntity = true;
+
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
         QueueAncestorUpdate(entityId);
@@ -1362,6 +1336,9 @@ namespace AzToolsFramework
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedVisibility(AZ::EntityId entityId, bool /*visible*/)
     {
+        // Prevent a SelectEntity call occurring during the update to stop the item clicked from scrolling away.
+        m_suppressNextSelectEntity = true;
+
         //update all ancestors because they will show partial state for descendants
         QueueEntityUpdate(entityId);
         QueueAncestorUpdate(entityId);
@@ -1864,7 +1841,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityOutlinerListModel::OnContextReset()
+    void EntityOutlinerListModel::OnPrepareForContextReset()
     {
         if (m_filterString.size() > 0 || m_componentFilters.size() > 0)
         {
@@ -2264,7 +2241,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& /*index*/) const
+    QSize EntityOutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
         // Get the height of a tall character...
         // we do this only once per 'tick'
@@ -2279,8 +2256,15 @@ namespace AzToolsFramework
 
             QTimer::singleShot(0, resetFunction);
         }
-  
-        return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
+        
+        if (!index.parent().isValid())
+        {
+            return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacingForLevel);
+        }
+        else
+        {
+            return QSize(0, m_cachedBoundingRectOfTallCharacter.height() + EntityOutlinerListModel::s_OutlinerSpacing);
+        }
     }
 
     bool EntityOutlinerItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)

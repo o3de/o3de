@@ -229,7 +229,8 @@ namespace AZ
 
         AZ::u32 EditorAttachmentComponent::OnTargetOffsetChanged()
         {
-            EBUS_EVENT_ID(GetEntityId(), LmbrCentral::AttachmentComponentRequestBus, SetAttachmentOffset, GetTargetOffset());
+            LmbrCentral::AttachmentComponentRequestBus::Event(
+                GetEntityId(), &LmbrCentral::AttachmentComponentRequestBus::Events::SetAttachmentOffset, GetTargetOffset());
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
@@ -250,12 +251,17 @@ namespace AZ
         {
             if (m_attachedInitially && m_targetId.IsValid())
             {
-                EBUS_EVENT_ID(
-                    GetEntityId(), LmbrCentral::AttachmentComponentRequestBus, Attach, m_targetId, m_targetBoneName.c_str(), GetTargetOffset());
+                LmbrCentral::AttachmentComponentRequestBus::Event(
+                    GetEntityId(),
+                    &LmbrCentral::AttachmentComponentRequestBus::Events::Attach,
+                    m_targetId,
+                    m_targetBoneName.c_str(),
+                    GetTargetOffset());
             }
             else
             {
-                EBUS_EVENT_ID(GetEntityId(), LmbrCentral::AttachmentComponentRequestBus, Detach);
+                LmbrCentral::AttachmentComponentRequestBus::Event(
+                    GetEntityId(), &LmbrCentral::AttachmentComponentRequestBus::Events::Detach);
             }
         }
     } // namespace Render

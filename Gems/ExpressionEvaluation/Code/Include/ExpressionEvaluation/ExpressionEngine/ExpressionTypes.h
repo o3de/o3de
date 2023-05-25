@@ -48,7 +48,7 @@ namespace ExpressionEvaluation
     // All of the information required to
     struct ExpressionToken
     {
-        AZ_TYPE_INFO(ElementInformation, "{7E6DF1F4-97AC-4553-B839-9A3C88DF1C50}");
+        AZ_TYPE_INFO(ExpressionToken, "{7E6DF1F4-97AC-4553-B839-9A3C88DF1C50}");
 
         // The interface id that produced the information
         ExpressionParserId m_parserId;

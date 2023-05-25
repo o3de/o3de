@@ -20,7 +20,6 @@
 #include "ScriptVarNode.h"
 #include "SceneNode.h"
 #include "StlUtils.h"
-#include "MaterialNode.h"
 #include "EventNode.h"
 #include "LayerNode.h"
 #include "CommentNode.h"
@@ -32,6 +31,8 @@
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
+
+#include <AzCore/Serialization/SerializeContext.h>
 
 //////////////////////////////////////////////////////////////////////////
 CAnimSequence::CAnimSequence(IMovieSystem* pMovieSystem, uint32 id, SequenceType sequenceType)
@@ -102,19 +103,6 @@ void CAnimSequence::SetName(const char* name)
 
     m_name = name;
     m_pMovieSystem->OnSequenceRenamed(originalName.c_str(), m_name.c_str());
-
-    // the sequence named LIGHT_ANIMATION_SET_NAME is a singleton sequence to hold all light animations.
-    if (m_name == LIGHT_ANIMATION_SET_NAME)
-    {
-        // ensure it stays a singleton. If one already exists, deregister it.
-        if (CLightAnimWrapper::GetLightAnimSet())
-        {
-            CLightAnimWrapper::InvalidateAllNodes();
-            CLightAnimWrapper::SetLightAnimSet(0);
-        }
-
-        CLightAnimWrapper::SetLightAnimSet(this);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -248,7 +236,7 @@ bool CAnimSequence::AddNode(IAnimNode* animNode)
             }
         }
     }
-     
+
     if (animNode->NeedToRender())
     {
         AddNodeNeedToRender(animNode);
@@ -295,9 +283,6 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
         case AnimNodeType::Director:
             animNode = aznew CAnimSceneNode(nNodeId);
             break;
-        case AnimNodeType::Material:
-            animNode = aznew CAnimMaterialNode(nNodeId);
-            break;
         case AnimNodeType::Event:
             animNode = aznew CAnimEventNode(nNodeId);
             break;
@@ -321,7 +306,7 @@ IAnimNode* CAnimSequence::CreateNodeInternal(AnimNodeType nodeType, uint32 nNode
         case AnimNodeType::ScreenFader:
             animNode = aznew CAnimScreenFaderNode(nNodeId);
             break;
-        default:     
+        default:
             m_pMovieSystem->LogUserNotificationMsg("AnimNode cannot be added because it is an unsupported object type.");
             break;
     }
@@ -376,7 +361,7 @@ IAnimNode* CAnimSequence::CreateNode(XmlNodeRef node)
     CAnimNode* newAnimNode = static_cast<CAnimNode*>(pNewNode);
 
     // Make sure de-serializing this node didn't just create an id conflict. This can happen sometimes
-    // when copy/pasting nodes from a different sequence to this one. 
+    // when copy/pasting nodes from a different sequence to this one.
     for (const auto& curNode : m_nodes)
     {
         CAnimNode* animNode = static_cast<CAnimNode*>(curNode.get());
@@ -1306,7 +1291,7 @@ void CAnimSequence::RemoveNodeNeedToRender(IAnimNode* pNode)
 
 //////////////////////////////////////////////////////////////////////////
 void CAnimSequence::SetSequenceEntityId(const AZ::EntityId& sequenceEntityId)
-{ 
+{
     m_sequenceEntityId = sequenceEntityId;
 }
 //////////////////////////////////////////////////////////////////////////

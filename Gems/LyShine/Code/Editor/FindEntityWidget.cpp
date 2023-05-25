@@ -52,7 +52,7 @@ FindEntityWidget::FindEntityWidget(AZ::EntityId canvasEntityId, QWidget* pParent
     m_objectTree->setModel(m_proxyModel);
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
     if (serializeContext)
     {
@@ -182,8 +182,13 @@ void FindEntityWidget::SetupUI()
 void FindEntityWidget::GetUsedComponents(AZ::EntityId canvasEntityId, AZStd::unordered_set<AZ::Uuid>& usedComponents)
 {
     LyShine::EntityArray entities;
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasBus, FindElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiCanvasBus::Event(
+        canvasEntityId,
+        &UiCanvasBus::Events::FindElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         entities);
 
     for (AZ::Entity* entity : entities)

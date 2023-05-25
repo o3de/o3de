@@ -26,7 +26,7 @@
 #include <AtomLyIntegration/CommonFeatures/PostProcess/PostFxLayerComponentConstants.h>
 #include <AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
-#include <AtomToolsFramework/Graph/GraphCompilerRequestBus.h>
+#include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -68,11 +68,11 @@ namespace PassCanvas
 
         // Avoid z-fighting with the cube model when double-sided rendering is enabled
         AZ::TransformBus::Event(
-            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01);
+            GetShadowCatcherEntityId(), &AZ::TransformInterface::SetWorldZ, -0.01f);
 
         AZ::Render::MeshComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MeshComponentRequestBus::Events::SetModelAssetId,
-            AZ::RPI::AssetUtils::GetAssetIdForProductPath("passeditor/viewportmodels/plane_1x1.azmodel"));
+            AZ::RPI::AssetUtils::GetAssetIdForProductPath("materialeditor/viewportmodels/plane_1x1.azmodel"));
 
         AZ::Render::MaterialComponentRequestBus::Event(
             GetShadowCatcherEntityId(), &AZ::Render::MaterialComponentRequestBus::Events::SetMaterialAssetId,
@@ -93,13 +93,13 @@ namespace PassCanvas
             });
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
-        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusConnect(m_toolId);
+        AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     PassCanvasViewportContent::~PassCanvasViewportContent()
     {
-        AtomToolsFramework::GraphCompilerNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::GraphDocumentNotificationBus::Handler::BusDisconnect();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
@@ -216,7 +216,7 @@ namespace PassCanvas
     void PassCanvasViewportContent::ApplyPass(const AZ::Uuid& documentId)
     {
         AZStd::vector<AZStd::string> generatedFiles;
-        AtomToolsFramework::GraphCompilerRequestBus::EventResult(
-            generatedFiles, documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::GetGeneratedFilePaths);
+        AtomToolsFramework::GraphDocumentRequestBus::EventResult(
+            generatedFiles, documentId, &AtomToolsFramework::GraphDocumentRequestBus::Events::GetGeneratedFilePaths);
     }
 } // namespace PassCanvas

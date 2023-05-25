@@ -121,6 +121,12 @@ namespace AZ
                           dialog.m_sourcePath.toUtf8().constData();
                           materialData.m_parentMaterial = "";
                           AZ::RPI::JsonUtils::SaveObjectToFile(dialog.m_targetPath.toUtf8().constData(), materialData);
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                              AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                              &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                              dialog.m_targetPath.toUtf8().constData(),
+                              AZ::Crc32(),
+                              false);
                       }
                   } });
 
@@ -156,6 +162,12 @@ namespace AZ
                       {
                           AZ::IO::FileIOBase::GetInstance()->Copy(
                               dialog.m_sourcePath.toUtf8().constData(), dialog.m_targetPath.toUtf8().constData());
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                              AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                              &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                              dialog.m_targetPath.toUtf8().constData(),
+                              AZ::Crc32(),
+                              false);
                       }
                   } });
         }

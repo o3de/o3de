@@ -32,7 +32,7 @@ namespace ScriptCanvas
         friend class GraphVariable;
         
     public:
-        AZ_CLASS_ALLOCATOR(ModifiableDatumView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModifiableDatumView, AZ::SystemAllocator);
 
         ModifiableDatumView();
         ModifiableDatumView(const AZ::EntityId& uniqueId, const VariableId& variableId);

@@ -19,8 +19,6 @@
 #include "DisplaySettings.h"
 #include "EntityObject.h"
 #include "Viewport.h"
-#include "GizmoManager.h"
-#include "AxisGizmo.h"
 #include "GameEngine.h"
 #include "WaitProgress.h"
 #include "Util/Image.h"
@@ -82,7 +80,6 @@ CObjectManager* g_pObjectManager = nullptr;
 CObjectManager::CObjectManager()
     : m_currSelection(&m_defaultSelection)
     , m_bSelectionChanged(false)
-    , m_gizmoManager(new CGizmoManager())
     , m_bExiting(false)
     , m_isUpdateVisibilityList(false)
     , m_currentHideCount(CBaseObject::s_invalidHiddenID)
@@ -97,8 +94,6 @@ CObjectManager::~CObjectManager()
 {
     m_bExiting = true;
     DeleteAllObjects();
-
-    delete m_gizmoManager;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -380,7 +375,8 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
         else
         {
             AZ::EntityId id;
-            EBUS_EVENT_ID_RESULT(id, object, AzToolsFramework::ComponentEntityObjectRequestBus, GetAssociatedEntityId);
+            AzToolsFramework::ComponentEntityObjectRequestBus::EventResult(
+                id, object, &AzToolsFramework::ComponentEntityObjectRequestBus::Events::GetAssociatedEntityId);
             if (id.IsValid())
             {
                 selectedComponentEntities.push_back(id);
@@ -391,11 +387,13 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
     // Delete AZ (component) entities.
     if (QApplication::keyboardModifiers() & Qt::ShiftModifier)
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, DeleteEntities, selectedComponentEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteEntities, selectedComponentEntities);
     }
     else
     {
-        EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, DeleteEntitiesAndAllDescendants, selectedComponentEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteEntitiesAndAllDescendants, selectedComponentEntities);
     }
 }
 
@@ -766,7 +764,8 @@ void CObjectManager::UnselectCurrent()
 
     // Unselect all component entities as one bulk operation instead of individually
     AzToolsFramework::EntityIdList selectedEntities;
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, SetSelectedEntities, selectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationRequests::Bus::Events::SetSelectedEntities, selectedEntities);
 
     for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
@@ -781,37 +780,6 @@ void CObjectManager::UnselectCurrent()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::Display(DisplayContext& dc)
-{
-    AZ_PROFILE_FUNCTION(Editor);
-
-    int currentHideMask = GetIEditor()->GetDisplaySettings()->GetObjectHideMask();
-    if (m_lastHideMask != currentHideMask)
-    {
-        // a setting has changed which may cause the set of currently visible objects to change, so invalidate the serial number
-        // so that viewports and anyone else that needs to update settings knows it has to.
-        m_lastHideMask = currentHideMask;
-        ++m_visibilitySerialNumber;
-    }
-
-    // the object manager itself has a visibility list, so it also has to update its cache when the serial has changed
-    if (m_visibilitySerialNumber != m_lastComputedVisibility)
-    {
-        m_lastComputedVisibility = m_visibilitySerialNumber;
-        UpdateVisibilityList();
-    }
-
-    if (dc.settings->IsDisplayHelpers())
-    {
-        // Also broadcast for anyone else that needs to draw global debug to do so now
-        AzFramework::DebugDisplayEventBus::Broadcast(&AzFramework::DebugDisplayEvents::DrawGlobalDebugInfo);
-    }
-
-    if (m_gizmoManager)
-    {
-        m_gizmoManager->Display(dc);
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
@@ -1071,16 +1039,6 @@ void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 
     pObject->SetSelected(bSelect);
     m_bSelectionChanged = true;
-
-
-    if (bSelect && !GetIEditor()->GetTransformManipulator())
-    {
-        if (CAxisGizmo::GetGlobalAxisGizmoCount() < 1 /*legacy axisGizmoMaxCount*/)
-        {
-            // Create axis gizmo for this object.
-            m_gizmoManager->AddGizmo(new CAxisGizmo(pObject));
-        }
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1094,12 +1052,6 @@ void CObjectManager::GatherUsedResources(CUsedResources& resources)
         CBaseObject* pObject = objects[i];
         pObject->GatherUsedResources(resources);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-IGizmoManager* CObjectManager::GetGizmoManager()
-{
-    return m_gizmoManager;
 }
 
 //////////////////////////////////////////////////////////////////////////

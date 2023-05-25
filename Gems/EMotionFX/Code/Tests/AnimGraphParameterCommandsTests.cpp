@@ -18,6 +18,7 @@
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 
 #include <AzCore/std/sort.h>
+#include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -59,6 +60,7 @@ namespace AnimGraphParameterCommandsTests
         // Import real implementations that are not mocked
         using ::EMotionFX::AnimGraphNodeId;
         using ::EMotionFX::AnimGraphConnectionId;
+        using ::EMotionFX::AnimGraphAllocator;
 
         // Forward declare types that will be mocked
         class Actor;

@@ -31,7 +31,7 @@ namespace LandscapeCanvas
     class BaseNode : public GraphModel::Node
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseNode, AZ::SystemAllocator);
         AZ_RTTI(BaseNode, "{94ECF2FF-C46C-4CCA-878C-5C47B943B6B7}", Node);
 
         using BaseNodePtr = AZStd::shared_ptr<BaseNode>;

@@ -23,7 +23,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(CapsuleShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CapsuleShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(CapsuleShapeConfig, "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}", ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

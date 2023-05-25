@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Memory/AllocationRecords.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Serialization/Utils.h>
@@ -49,7 +48,7 @@ namespace UnitTest
             : public AzToolsFramework::ToolsApplication
         {
         public:
-            AZ_CLASS_ALLOCATOR(TestbedApplication, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TestbedApplication, AZ::SystemAllocator);
 
             TestbedApplication(EntityTestbed& testbed)
                 : m_testbed(testbed) {}
@@ -97,7 +96,7 @@ namespace UnitTest
                 []()
                 {
                     AZ::TickBus::ExecuteQueuedEvents();
-                    EBUS_EVENT(AZ::TickBus, OnTick, 0.3f, AZ::ScriptTimePoint());
+                    AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.3f, AZ::ScriptTimePoint());
                 }
                 );
 
@@ -118,7 +117,7 @@ namespace UnitTest
             m_propertyEditor = aznew AzToolsFramework::EntityPropertyEditor(nullptr);
 
             AZ::SerializeContext* serializeContext = nullptr;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
             m_window->setMinimumHeight(600);
             m_propertyEditor->setMinimumWidth(600);
@@ -219,7 +218,8 @@ namespace UnitTest
 
         void DeleteSelected()
         {
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, DeleteSelected);
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationRequests::Bus::Events::DeleteSelected);
         }
 
         void SaveRoot()
@@ -237,7 +237,8 @@ namespace UnitTest
 
         void ResetRoot()
         {
-            EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
+            AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
         }
     };
 } // namespace UnitTest;

@@ -43,3 +43,4 @@ ly_create_alias(NAME ScriptedEntityTweener.Tools    NAMESPACE Gem TARGETS Gem::S
 ly_create_alias(NAME ScriptedEntityTweener.Clients  NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
 ly_create_alias(NAME ScriptedEntityTweener.Builders NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
 ly_create_alias(NAME ScriptedEntityTweener.Servers  NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)
+ly_create_alias(NAME ScriptedEntityTweener.Unified  NAMESPACE Gem TARGETS Gem::ScriptedEntityTweener)

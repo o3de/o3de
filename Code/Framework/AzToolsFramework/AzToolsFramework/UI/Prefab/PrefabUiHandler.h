@@ -26,7 +26,7 @@ namespace AzToolsFramework
     class PrefabUiHandler : public EditorEntityUiHandlerBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabUiHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::PrefabUiHandler, "{598154A2-89E3-45CB-A3CB-337CB1C73DE7}", EditorEntityUiHandlerBase);
 
         PrefabUiHandler();
@@ -73,11 +73,6 @@ namespace AzToolsFramework
             const QColor borderColor) const;
 
         static AzFramework::EntityContextId s_editorEntityContextId;
-
-        int m_prefabCapsuleRadius = 6;
-        int m_prefabBorderThickness = 2;
-        int m_prefabFileNameFontSize = 10;
-        int m_prefabEditIconSize = 16;
 
         QColor m_backgroundColor = QColor("#444444");
         QColor m_backgroundHoverColor = QColor("#5A5A5A");

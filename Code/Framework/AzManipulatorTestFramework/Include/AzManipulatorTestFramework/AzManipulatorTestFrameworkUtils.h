@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 
 namespace AzManipulatorTestFramework
 {
@@ -41,4 +42,15 @@ namespace AzManipulatorTestFramework
 
     //! Default viewport size (1080p) in 16:9 aspect ratio.
     inline const auto DefaultViewportSize = AzFramework::ScreenSize(1920, 1080);
+
+    //! Converts the provided world start and end positions into screen space co-ordinates for the given camera state,
+    //! and drags the mouse from the start to the end position.
+    //! A keyboard modifier can optionally be provided.
+    void DragMouse(
+        const AzFramework::CameraState& cameraState,
+        AzManipulatorTestFramework::ImmediateModeActionDispatcher* actionDispatcher,
+        const AZ::Vector3& worldStart,
+        const AZ::Vector3& worldEnd,
+        const AzToolsFramework::ViewportInteraction::KeyboardModifier keyboardModifier =
+            AzToolsFramework::ViewportInteraction::KeyboardModifier::None);
 } // namespace AzManipulatorTestFramework

@@ -51,7 +51,7 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
     connect(ui->filter, &FilteredSearchWidget::TextFilterChanged, this, &EditorPreferencesDialog::SetFilter);
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Serialization context not available");
 
     static bool bAlreadyRegistered = false;

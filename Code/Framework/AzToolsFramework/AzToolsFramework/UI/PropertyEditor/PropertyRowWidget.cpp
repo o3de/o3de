@@ -326,7 +326,8 @@ namespace AzToolsFramework
 
             // --------------------- HANDLER discovery:
             // in order to discover this, we need the property type and handler type.
-            EBUS_EVENT_RESULT(m_handler, PropertyTypeRegistrationMessages::Bus, ResolvePropertyHandler, m_handlerName, typeUuid);
+            PropertyTypeRegistrationMessages::Bus::BroadcastResult(
+                m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, typeUuid);
 
             
             if (m_handler)
@@ -953,7 +954,7 @@ namespace AzToolsFramework
                 }
             }
         }
-        else if (attributeName == AZ_CRC("ValueText", 0x251534d1))
+        else if (attributeName == AZ::Edit::Attributes::ValueText)
         {
             m_defaultValueString.clear();
             reader.Read<AZStd::string>(m_defaultValueString);

@@ -23,7 +23,7 @@ namespace GraphModelIntegration
     class IntegerDataInterface : public GraphCanvas::NumericDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(IntegerDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IntegerDataInterface, AZ::SystemAllocator);
 
         IntegerDataInterface(GraphModel::SlotPtr slot)
             : m_slot(slot)
@@ -40,28 +40,19 @@ namespace GraphModelIntegration
 
         void SetNumber(double value)
         {
-            if (GraphModel::SlotPtr slot = m_slot.lock())
+            GraphModel::SlotPtr slot = m_slot.lock();
+            if (slot && slot->GetValue<T>() != static_cast<T>(value))
             {
-                if (static_cast<T>(value) != slot->GetValue<T>())
-                {
-                    const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
-                    GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
+                const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
+                GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
-                    slot->SetValue(static_cast<T>(value));
-                    GraphControllerNotificationBus::Event(
-                        graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
-                    GraphControllerNotificationBus::Event(
-                        graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
-                }
+                slot->SetValue(static_cast<T>(value));
+                GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
 
         int GetDecimalPlaces() const
-        {
-            return 0;
-        }
-
-        int GetDisplayDecimalPlaces() const
         {
             return 0;
         }

@@ -446,7 +446,7 @@ namespace EMStudio
 
         AZStd::string filename;
         commandLine.GetValue("filename", command, filename);
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         CommandEditorLoadAnimGraph::RelocateFilename(filename);
 

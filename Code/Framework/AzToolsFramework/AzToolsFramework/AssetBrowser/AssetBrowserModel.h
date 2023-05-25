@@ -50,7 +50,7 @@ namespace AzToolsFramework
                 EntryRole = Qt::UserRole + 100,
             };
 
-            AZ_CLASS_ALLOCATOR(AssetBrowserModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserModel, AZ::SystemAllocator);
 
             explicit AssetBrowserModel(QObject* parent = nullptr);
             ~AssetBrowserModel();
@@ -97,9 +97,11 @@ namespace AzToolsFramework
             void SetFilterModel(AssetBrowserFilterModel* filterModel);
 
             static void SourceIndexesToAssetIds(const QModelIndexList& indexes, AZStd::vector<AZ::Data::AssetId>& assetIds);
-            static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<AssetBrowserEntry*>& entries);
+            static void SourceIndexesToAssetDatabaseEntries(const QModelIndexList& indexes, AZStd::vector<const AssetBrowserEntry*>& entries);
 
-            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32());
+            void HandleAssetCreatedInEditor(const AZStd::string& assetPath, const AZ::Crc32& creatorBusId = AZ::Crc32(), const bool initialFilenameChange = true);
+
+            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
 
         Q_SIGNALS:
             void RequestOpenItemForEditing(const QModelIndex& index);
@@ -115,7 +117,6 @@ namespace AzToolsFramework
             AZStd::unordered_map<AssetBrowserEntry*, AZ::Crc32> m_assetEntriesToCreatorBusIds;
             AZStd::unordered_map<AZStd::string, AZ::Crc32> m_newlyCreatedAssetPathsToCreatorBusIds;
 
-            bool GetEntryIndex(AssetBrowserEntry* entry, QModelIndex& index) const;
             void WatchForExpectedAssets(AssetBrowserEntry* entry);
         };
     } // namespace AssetBrowser

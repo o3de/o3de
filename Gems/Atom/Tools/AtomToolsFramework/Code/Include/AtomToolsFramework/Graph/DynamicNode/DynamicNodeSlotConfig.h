@@ -21,12 +21,12 @@
 namespace AtomToolsFramework
 {
     // Contains tables of strings representing application or context specific settings for each node
-    using DynamicNodeSettingsMap = AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>>;
+    using DynamicNodeSettingsMap = AZStd::map<AZStd::string, AZStd::vector<AZStd::string>>;
 
     //! Contains all of the settings for an individual input or output slot on a DynamicNode
     struct DynamicNodeSlotConfig final
     {
-        AZ_CLASS_ALLOCATOR(DynamicNodeSlotConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicNodeSlotConfig, AZ::SystemAllocator);
         AZ_RTTI(DynamicNodeSlotConfig, "{F2C95A99-41FD-4077-B9A7-B0BF8F76C2CE}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -71,6 +71,12 @@ namespace AtomToolsFramework
         //! @returns the name of this object that will be displayed in the reflected property editor.
         AZStd::string GetDisplayNameForEditor() const;
 
+        //! Automatically fill in the display name and description based off of the slot name if they are empty.
+        void AutoFillMissingData();
+
+        //! Prompt the user to select and add a settings group to the node configuration
+        AZ::Crc32 AddRegisteredSettingGroups();
+
         //! Unique name or ID of a slot
         AZStd::string m_name = "untitled";
         //! Name displayed next to a slot in the node UI
@@ -83,6 +89,8 @@ namespace AtomToolsFramework
         AZStd::string m_supportedDataTypeRegex;
         //! Name of the default data type from the set of supported data types if no value is assigned
         AZStd::string m_defaultDataType;
+        //! A set of strings used as potential slot values
+        AZStd::vector<AZStd::string> m_enumValues;
         //! Container of generic or application specific settings for a slot
         DynamicNodeSettingsMap m_settings;
         //! Specifies whether or not the slot will appear on the node UI

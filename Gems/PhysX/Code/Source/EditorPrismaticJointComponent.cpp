@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 #include <Source/EditorPrismaticJointComponent.h>
 #include <Source/PrismaticJointComponent.h>
@@ -23,8 +24,9 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorPrismaticJointComponent, EditorJointComponent>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Linear Limit", &EditorPrismaticJointComponent::m_linearLimit)
+                ->Field("Motor", &EditorPrismaticJointComponent::m_motorConfiguration)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -36,6 +38,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &EditorPrismaticJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->DataElement(
                         0,
                         &EditorPrismaticJointComponent::m_linearLimit,
@@ -53,7 +56,7 @@ namespace PhysX
     void EditorPrismaticJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
     }
 
     void EditorPrismaticJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -84,26 +87,24 @@ namespace PhysX
     {
         m_config.m_followerEntity = GetEntityId(); // joint is always in the same entity as the follower body.
         gameEntity->CreateComponent<PrismaticJointComponent>(
-            m_config.ToGameTimeConfig(),
-            m_config.ToGenericProperties(),
-            m_linearLimit.ToGameTimeConfig());
+            m_config.ToGameTimeConfig(), m_config.ToGenericProperties(), m_linearLimit.ToGameTimeConfig(), m_motorConfiguration);
     }
 
     float EditorPrismaticJointComponent::GetLinearValue(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             return m_config.m_forceMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             return m_config.m_torqueMax;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             return m_linearLimit.m_standardLimitConfig.m_damping;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             return m_linearLimit.m_standardLimitConfig.m_stiffness;
         }
@@ -113,7 +114,7 @@ namespace PhysX
 
     LinearLimitsFloatPair EditorPrismaticJointComponent::GetLinearValuePair(const AZStd::string& parameterName)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::LinearLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::LinearLimits)
         {
             return LinearLimitsFloatPair(m_linearLimit.m_limitUpper, m_linearLimit.m_limitLower);
         }
@@ -121,18 +122,18 @@ namespace PhysX
         return LinearLimitsFloatPair();
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorPrismaticJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorPrismaticJointComponent::GetSubComponentModesState()
     {
         return {};
     }
 
     void EditorPrismaticJointComponent::SetBoolValue(const AZStd::string& parameterName, bool value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableLimits)
         {
             m_linearLimit.m_standardLimitConfig.m_isLimited = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::EnableSoftLimits)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::EnableSoftLimits)
         {
             m_linearLimit.m_standardLimitConfig.m_isSoftLimit = value;
         }
@@ -140,19 +141,19 @@ namespace PhysX
 
     void EditorPrismaticJointComponent::SetLinearValue(const AZStd::string& parameterName, float value)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxForce)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxForce)
         {
             m_config.m_forceMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::MaxTorque)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::MaxTorque)
         {
             m_config.m_torqueMax = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Damping)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Damping)
         {
             m_linearLimit.m_standardLimitConfig.m_damping = value;
         }
-        else if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::Stiffness)
+        else if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::Stiffness)
         {
             m_linearLimit.m_standardLimitConfig.m_stiffness = value;
         }
@@ -160,7 +161,7 @@ namespace PhysX
 
     void EditorPrismaticJointComponent::SetLinearValuePair(const AZStd::string& parameterName, const LinearLimitsFloatPair& valuePair)
     {
-        if (parameterName == PhysX::JointsComponentModeCommon::ParamaterNames::LinearLimits)
+        if (parameterName == PhysX::JointsComponentModeCommon::ParameterNames::LinearLimits)
         {
             m_linearLimit.m_limitUpper = valuePair.first;
             m_linearLimit.m_limitLower = valuePair.second;
@@ -178,7 +179,6 @@ namespace PhysX
             return;
         }
 
-        const float size = 1.0f;
         const float alpha = 0.6f;
         const AZ::Color colorDefault = AZ::Color(1.0f, 1.0f, 1.0f, alpha);
         const AZ::Color colorLimitLower = AZ::Color(1.0f, 0.0f, 0.0f, alpha);
@@ -190,16 +190,16 @@ namespace PhysX
 
         const AZ::EntityId& entityId = GetEntityId();
 
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
 
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(localTransform,
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue,
-            PhysX::JointsComponentModeCommon::ParamaterNames::Transform);
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
+        const float size = 1.0f * scaleMultiply;
+
+        debugDisplay.PushMatrix(jointWorldTransform);
 
         debugDisplay.SetColor(colorDefault);
         debugDisplay.DrawLine(AZ::Vector3::CreateAxisX(m_linearLimit.m_limitLower), AZ::Vector3::CreateAxisX(m_linearLimit.m_limitUpper));
@@ -218,8 +218,7 @@ namespace PhysX
             AZ::Vector3(m_linearLimit.m_limitUpper, size, size),
             AZ::Vector3(m_linearLimit.m_limitUpper, size, -size));
 
-        debugDisplay.PopMatrix(); // pop local transform
-        debugDisplay.PopMatrix(); // pop world transform
+        debugDisplay.PopMatrix(); // pop joint world transform
         debugDisplay.SetState(stateBefore);
     }
 } // namespace PhysX

@@ -39,7 +39,7 @@ namespace ScriptCanvasEditor
         : public QSortFilterProxyModel
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageFilterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetNodeUsageFilterModel, AZ::SystemAllocator);
 
         ScriptCanvasAssetNodeUsageFilterModel();
 
@@ -63,7 +63,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(StatisticsDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StatisticsDialog, AZ::SystemAllocator);
 
         StatisticsDialog(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* scriptCanvasAssetModel, QWidget* widget = nullptr);
         ~StatisticsDialog();

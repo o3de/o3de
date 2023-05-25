@@ -20,6 +20,8 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
 
+#include <dx12ma/D3D12MemAlloc.h>
+
 namespace AZ
 {
     namespace DX12
@@ -35,8 +37,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Device");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
 
                 if (S_OK == dxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &memoryInfo))
@@ -44,8 +46,8 @@ namespace AZ
                     RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
                     heapStats->m_name = Name("Host");
                     heapStats->m_memoryUsage.m_budgetInBytes = memoryInfo.Budget;
-                    heapStats->m_memoryUsage.m_reservedInBytes = memoryInfo.CurrentReservation;
-                    heapStats->m_memoryUsage.m_residentInBytes = memoryInfo.CurrentUsage;
+                    heapStats->m_memoryUsage.m_totalResidentInBytes = memoryInfo.CurrentReservation;
+                    heapStats->m_memoryUsage.m_usedResidentInBytes = memoryInfo.CurrentUsage;
                 }
             }
 
@@ -193,21 +195,22 @@ namespace AZ
                 {
                     EnableGPUBasedValidation();
                 }
-            }
 
+                // DRED has a perf cost on some drivers/hw so only enable it if RHI validation is enabled.
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings1> pDredSettings;
 #else
-            Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
+                Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
 #endif
-            if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
-            {
-                // Turn on auto-breadcrumbs and page fault reporting.
-                pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
-                pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings))))
+                {
+                    // Turn on auto-breadcrumbs and page fault reporting.
+                    pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #ifdef __ID3D12DeviceRemovedExtendedDataSettings1_INTERFACE_DEFINED__
-                pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+                    pDredSettings->SetBreadcrumbContextEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
 #endif
+                }
             }
 
             Microsoft::WRL::ComPtr<ID3D12DeviceX> dx12Device;
@@ -420,14 +423,7 @@ namespace AZ
 
         bool Device::AssertSuccess(HRESULT hr)
         {
-            if (hr == DXGI_ERROR_DEVICE_REMOVED)
-            {
-                OnDeviceRemoved();
-            }
-
-            bool success = SUCCEEDED(hr);
-            AZ_Assert(success, "HRESULT not a success %x", hr);
-            return success;
+            return DX12::AssertSuccess(hr);
         }
 
         void Device::OnDeviceRemoved()
@@ -885,6 +881,13 @@ namespace AZ
 
         RHI::ResultCode Device::BeginFrameInternal()
         {
+#ifdef USE_AMD_D3D12MA
+            static uint32_t frameIndex = 0;
+            if (m_dx12MemAlloc)
+            {
+                m_dx12MemAlloc->SetCurrentFrameIndex(++frameIndex);
+            }
+#endif
             m_commandQueueContext.Begin();
             return RHI::ResultCode::Success;
         }

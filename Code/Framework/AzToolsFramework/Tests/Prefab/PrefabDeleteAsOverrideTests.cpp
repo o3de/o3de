@@ -279,4 +279,97 @@ namespace UnitTest
         ValidateEntityUnderInstance(secondCarInstance->get().GetContainerEntityId(), tireEntityAlias, tireEntityName);
         ValidateNestedInstanceUnderInstance(secondCarInstance->get().GetContainerEntityId(), childInstanceAlias);
     }
+
+    TEST_F(PrefabDeleteAsOverrideTests, DeleteEntitiesAndAllDescendantsInInstance_FocusOnDeletedPrefabFromRootSucceeds)
+    {
+        // Level            <-- deletes Wheel instance as an override
+        // | Car            <-- focuses on Car to make Wheel available
+        //   | Wheel        <-- focuses on Wheel
+        //     | Tire
+
+        const AZStd::string carPrefabName = "CarPrefab";
+        const AZStd::string wheelPrefabName = "WheelPrefab";
+        const AZStd::string tireEntityName = "Tire";
+
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        AZ::IO::Path carPrefabFilepath = engineRootPath / carPrefabName;
+        AZ::IO::Path wheelPrefabFilepath = engineRootPath / wheelPrefabName;
+
+        // Create Car prefab hierarchy
+        AZ::EntityId tireEntityId = CreateEditorEntityUnderRoot(tireEntityName);
+        AZ::EntityId wheelContainerId = CreateEditorPrefab(wheelPrefabFilepath, { tireEntityId });
+        AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelContainerId });
+
+        // Find the Wheel instance under the Car instance
+        InstanceAlias wheelInstanceAlias = FindNestedInstanceAliasInInstance(carContainerId, wheelPrefabName);
+        ASSERT_FALSE(wheelInstanceAlias.empty());
+        InstanceOptionalReference carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
+        AZ::EntityId wheelInstanceContainerId;
+        carInstance->get().GetNestedInstances(
+            [&wheelInstanceContainerId, wheelInstanceAlias](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                if (nestedInstance->GetInstanceAlias() == wheelInstanceAlias)
+                {
+                    wheelInstanceContainerId = nestedInstance->GetContainerEntityId();
+                    return;
+                }
+            });
+        ASSERT_TRUE(wheelInstanceContainerId.IsValid()) << "Cannot get wheel container entity id in the car.";
+
+        // Delete the Wheel instance. This adds an override on the level/root prefab
+        PrefabOperationResult result = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance({ wheelInstanceContainerId });
+        ASSERT_TRUE(result.IsSuccess());
+
+        // Propagate changes after deleting the Wheel instance
+        ProcessDeferredUpdates();
+
+        // Validate that the Wheel instance is not under the Car instance
+        ValidateNestedInstanceNotUnderInstance(carContainerId, wheelInstanceAlias);
+
+        // Focus on the Car instance
+        auto* prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        EXPECT_TRUE(prefabFocusPublicInterface != nullptr);
+        PrefabFocusOperationResult focusResult = prefabFocusPublicInterface->FocusOnOwningPrefab(carContainerId);
+        EXPECT_TRUE(focusResult.IsSuccess());
+
+        // Propagate changes after the focus change
+        ProcessDeferredUpdates();
+
+        // Find the focused Car instance
+        AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+        AZ::EntityId focusedCarContainerId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+        ASSERT_TRUE(focusedCarContainerId.IsValid()) << "Cannot get the focused instance.";
+
+        // Validate that the Wheel instance exists again
+        InstanceAlias wheelInstanceAliasInFocusedCar = FindNestedInstanceAliasInInstance(focusedCarContainerId, wheelPrefabName);
+        EXPECT_TRUE(!wheelInstanceAliasInFocusedCar.empty());
+
+        // Find the Wheel instance under the focused Car instance
+        AZ::EntityId wheelInstanceContainerIdInFocusedCar;
+        InstanceOptionalReference focusedCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(focusedCarContainerId);
+        focusedCarInstance->get().GetNestedInstances(
+            [&wheelInstanceContainerIdInFocusedCar, wheelInstanceAliasInFocusedCar](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                if (nestedInstance->GetInstanceAlias() == wheelInstanceAliasInFocusedCar)
+                {
+                    wheelInstanceContainerIdInFocusedCar = nestedInstance->GetContainerEntityId();
+                    return;
+                }
+            });
+        ASSERT_TRUE(wheelInstanceContainerIdInFocusedCar.IsValid()) << "Cannot get wheel container entity id after focusing on Car.";
+
+        // Focus on the Wheel instance
+        focusResult = prefabFocusPublicInterface->FocusOnOwningPrefab(wheelInstanceContainerIdInFocusedCar);
+        EXPECT_TRUE(focusResult.IsSuccess());
+
+        // Propagate changes after the focus change
+        ProcessDeferredUpdates();
+
+        // Verify that the parent of the wheel container entity is valid
+        AZ::EntityId focusedWheelContainerId = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+        AZ::EntityId parentEntityId;
+        AZ::TransformBus::EventResult(parentEntityId, focusedWheelContainerId, &AZ::TransformInterface::GetParentId);
+        EXPECT_TRUE(parentEntityId.IsValid());
+    }
 } // namespace UnitTest

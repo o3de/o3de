@@ -10,4 +10,9 @@
 
 namespace AtomToolsFramework
 {
+    AZStd::string GetStringValueFromSlot(GraphModel::ConstSlotPtr slot, const AZStd::string& defaultValue)
+    {
+        const auto& value = slot ? slot->GetValue<AZStd::string>() : "";
+        return !value.empty() ? value : defaultValue;
+    }
 } // namespace AtomToolsFramework

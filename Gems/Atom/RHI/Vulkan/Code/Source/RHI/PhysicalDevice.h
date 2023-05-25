@@ -33,6 +33,7 @@ namespace AZ
             SeparateDepthStencil,
             DescriptorIndexing,
             BufferDeviceAddress,
+            SubgroupOperation,
             Count // Must be last
         };
 
@@ -68,7 +69,7 @@ namespace AZ
         {
             using Base = RHI::PhysicalDevice;
         public:
-            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
             AZ_RTTI(PhysicalDevice, "AD5F2BAD-A9B3-48F4-962F-C6D0760EEE17", Base);
             PhysicalDevice() = default;
             ~PhysicalDevice() = default;

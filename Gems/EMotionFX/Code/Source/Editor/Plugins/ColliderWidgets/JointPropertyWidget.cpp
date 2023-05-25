@@ -110,6 +110,10 @@ namespace EMotionFX
 
     void JointPropertyWidget::Reset()
     {
+        hide();
+        m_propertyWidget->ClearInstances();
+        m_propertyWidget->InvalidateAll();
+
         SkeletonModel* skeletonModel = nullptr;
         SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
         if (!skeletonModel)
@@ -122,9 +126,6 @@ namespace EMotionFX
         {
             return;
         }
-
-        m_propertyWidget->ClearInstances();
-        m_propertyWidget->InvalidateAll();
 
         Node* node = nullptr;
         SkeletonOutlinerRequestBus::BroadcastResult(node, &SkeletonOutlinerRequests::GetSingleSelectedNode);
@@ -152,8 +153,8 @@ namespace EMotionFX
             return;
         }
 
+        show();
         m_propertyWidget->Setup(serializeContext, nullptr, false);
-        m_propertyWidget->show();
         m_propertyWidget->ExpandAll();
         m_propertyWidget->InvalidateAll();
     }
@@ -253,7 +254,13 @@ namespace EMotionFX
         {
             return;
         }
+
         auto selectedIndices = skeletonModel->GetSelectionModel().selectedIndexes();
+        if (selectedIndices.empty())
+        {
+            AZ_Assert(false, "The Add Collider Button in JointPropertyWidget is being clicked on while there is empty selection. This button should be hidden.");
+            return;
+        }
 
         delete model;
         model = new QStandardItemModel;

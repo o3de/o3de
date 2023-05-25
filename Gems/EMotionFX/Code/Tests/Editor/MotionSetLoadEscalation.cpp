@@ -53,7 +53,6 @@ namespace EMotionFX
 
     struct MotionSetFixture
         : ComponentFixture<
-            AZ::MemoryComponent,
             AZ::AssetManagerComponent,
             AZ::JobManagerComponent,
             AZ::StreamerComponent,

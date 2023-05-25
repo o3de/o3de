@@ -119,6 +119,8 @@ public:
 
     void Rescan();
 
+    void FastScan();
+
     bool IsAssetProcessorManagerIdle() const override;
     bool CheckFullIdle();
 
@@ -135,6 +137,8 @@ public:
         const char* m_helpText;
     };
 
+    virtual WId GetWindowId() const;
+
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();
     void ConnectionStatusMsg(QString message);
@@ -147,7 +151,8 @@ public Q_SLOTS:
 
 protected:
     virtual void InitAssetProcessorManager(AZStd::vector<APCommandLineSwitch>& commandLineInfo);//Deletion of assetProcessor Manager will be handled by the ThreadController
-    virtual void InitAssetCatalog();//Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
+    virtual void InitAssetCatalog(); // Deletion of AssetCatalog will be handled when the ThreadController is deleted by the base ApplicationManager
+    virtual void ConnectAssetCatalog();
     virtual void InitRCController();
     virtual void DestroyRCController();
     virtual void InitAssetScanner();

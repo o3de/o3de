@@ -20,7 +20,7 @@ namespace UnitTest
         : public AZ::RHI::IndirectBufferWriter
     {
     public:
-        AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::SystemAllocator);
 
         uint8_t* GetData() const { return GetTargetMemory(); };
 
@@ -38,7 +38,7 @@ namespace UnitTest
         : public AZ::RHI::IndirectBufferSignature
     {
     public:
-        AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::SystemAllocator);
 
         MOCK_METHOD2(InitInternal, AZ::RHI::ResultCode(AZ::RHI::Device& device, const AZ::RHI::IndirectBufferSignatureDescriptor& descriptor));
         MOCK_CONST_METHOD0(GetByteStrideInternal, uint32_t());

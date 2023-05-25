@@ -26,7 +26,7 @@ class CUiAnimAzEntityNode
     struct SAnimState;
 
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimAzEntityNode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(CUiAnimAzEntityNode, AZ::SystemAllocator)
     AZ_RTTI(CUiAnimAzEntityNode, "{1C6FAEE1-92E4-42ED-8EEB-3483C36A0B77}", CUiAnimNode);
 
     CUiAnimAzEntityNode(const int id);

@@ -42,7 +42,6 @@ namespace AtomToolsFramework
             {
                 editContext->Class<EntityPreviewViewportSettingsSystem>("EntityPreviewViewportSettingsSystem", "Manages and serializes settings for the application viewport")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -590,6 +589,7 @@ namespace AtomToolsFramework
         AZ::Job* job = AZ::CreateJobFunction(
             [toolId = m_toolId]()
             {
+                AZ_TracePrintf("EntityPreviewViewportSettingsSystem", "Enumerating presets started.");
                 auto filterFn = [](const AZStd::string& path)
                 {
                     return
@@ -599,6 +599,8 @@ namespace AtomToolsFramework
                 };
 
                 const auto& paths = GetPathsInSourceFoldersMatchingFilter(filterFn);
+                AZ_TracePrintf("EntityPreviewViewportSettingsSystem", "Enumerating presets finished.");
+
                 AZ::TickBus::QueueFunction(
                     [toolId, paths]()
                     {

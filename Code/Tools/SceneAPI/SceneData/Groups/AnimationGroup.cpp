@@ -45,7 +45,7 @@ namespace AZ
 
         namespace SceneData
         {            
-            AZ_CLASS_ALLOCATOR_IMPL(AnimationGroup, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(AnimationGroup, SystemAllocator);
 
             AnimationGroup::AnimationGroup()
                 : m_id(Uuid::CreateRandom())
@@ -159,6 +159,7 @@ namespace AZ
                             ->Attribute("AutoExpand", true)
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/motions-tab/")
                         ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &AnimationGroup::m_name, "Group name",
                             "Name for the group. This name will also be used as the name for the generated file.")
                             ->Attribute("FilterType", DataTypes::IAnimationGroup::TYPEINFO_Uuid())

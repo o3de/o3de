@@ -22,13 +22,6 @@ namespace Benchmark
     {
         void internalSetUp()
         {
-            // Create the SystemAllocator if not available
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-                m_ownsSystemAllocator = true;
-            }
-
             if (!AZ::NameDictionary::IsReady())
             {
                 AZ::NameDictionary::Create();
@@ -82,12 +75,6 @@ namespace Benchmark
 
             m_queryDataArray.clear();
             m_queryDataArray.shrink_to_fit();
-
-            // Destroy system allocator only if it was created by this environment
-            if (m_ownsSystemAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
         }
 
     public:
@@ -132,7 +119,6 @@ namespace Benchmark
             AZ::Frustum frustum;
         };
 
-        bool m_ownsSystemAllocator = false;
         AZStd::vector<AzFramework::VisibilityEntry> m_dataArray;
         AZStd::vector<QueryData> m_queryDataArray;
         AzFramework::OctreeSystemComponent* m_octreeSystemComponent = nullptr;

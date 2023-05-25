@@ -21,6 +21,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(PhysicalSkyComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::PhysicalSkyComponentConfig, "{D0A40D6B-F838-46AB-A79C-CC2218C0146C}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

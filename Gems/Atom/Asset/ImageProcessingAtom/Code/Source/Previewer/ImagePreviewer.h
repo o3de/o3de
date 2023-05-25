@@ -45,7 +45,7 @@ namespace ImageProcessingAtom
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ImagePreviewer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImagePreviewer, AZ::SystemAllocator);
 
         explicit ImagePreviewer(QWidget* parent = nullptr);
         ~ImagePreviewer();

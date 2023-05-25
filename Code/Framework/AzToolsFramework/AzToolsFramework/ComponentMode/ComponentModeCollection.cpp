@@ -16,7 +16,7 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator)
 
         static const char* const s_nextActiveComponentModeTitle = "Edit Next";
         static const char* const s_previousActiveComponentModeTitle = "Edit Previous";

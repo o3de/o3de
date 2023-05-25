@@ -43,12 +43,6 @@ namespace AZ
                 const AZStd::string& imageFilePath,
                 AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
                 AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencies);
-
-            //! Materials assets can either be finalized during asset-processing time or when materials are loaded at runtime.
-            //! Finalizing during asset processing reduces load times and obfuscates the material data.
-            //! Waiting to finalize at load time reduces dependencies on the material type data, resulting in fewer asset rebuilds and less time spent processing assets.
-            //! Removing the dependency on the material type data will require special handling of material type asset dependencies when loading and reloading materials.
-            bool BuildersShouldFinalizeMaterialAssets();
         }
 
     } // namespace RPI

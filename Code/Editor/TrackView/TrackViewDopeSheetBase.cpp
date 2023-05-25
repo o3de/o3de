@@ -2051,7 +2051,8 @@ void CTrackViewDopeSheetBase::OnCurrentColorChange(const AZ::Color& color)
 
 void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo)
 {
-    ColorF colArray(static_cast<f32>(color.redF()), static_cast<f32>(color.greenF()), static_cast<f32>(color.blueF()), static_cast<f32>(color.alphaF()));
+    ColorF colArray(static_cast<f32>(color.red()), static_cast<f32>(color.green()), static_cast<f32>(color.blue()), static_cast<f32>(color.alpha()));
+
 
     CTrackViewSequence* sequence = m_colorUpdateTrack->GetSequence();
     if (nullptr != sequence)

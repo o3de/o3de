@@ -23,7 +23,7 @@ namespace AZ
             using Base = RHI::ResourcePoolResolver;
             
         public:
-            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePoolResolver, AZ::SystemAllocator);
             AZ_RTTI(ImagePoolResolver, "{85943BB1-AAE9-47C6-B05A-4B0BFBF1E0A8}", Base);
             
             ImagePoolResolver(Device& device);

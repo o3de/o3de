@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AtomToolsFramework/Graph/GraphCompiler.h>
+#include <AtomToolsFramework/Graph/GraphTemplateFileDataCacheRequestBus.h>
 #include <GraphModel/Model/Node.h>
 
 namespace MaterialCanvas
@@ -20,30 +21,32 @@ namespace MaterialCanvas
     {
     public:
         AZ_RTTI(MaterialGraphCompiler, "{570E3923-48C4-4B91-BC44-3145BE771E9B}", AtomToolsFramework::GraphCompiler);
-        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialGraphCompiler, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(MaterialGraphCompiler);
 
         static void Reflect(AZ::ReflectContext* context);
 
         MaterialGraphCompiler() = default;
-        MaterialGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId);
+        MaterialGraphCompiler(const AZ::Crc32& toolId);
         virtual ~MaterialGraphCompiler();
 
         // AtomToolsFramework::GraphCompiler overrides...
         AZStd::string GetGraphPath() const override;
-        bool CompileGraph() override;
+        bool CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath) override;
 
     private:
+        void BuildSlotValueTable();
+        void BuildDependencyTables();
+        void BuildTemplatePathsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
+        bool LoadTemplatesForCurrentNode();
+        void PreprocessTemplatesForCurrentNode();
+        void BuildInstructionsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
+        void BuildMaterialSrgForCurrentNode();
+        bool BuildMaterialTypeForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
+        bool ExportTemplatesMatchingRegex(const AZStd::string& pattern);
+
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;
-
-        // Find and replace a whole word or symbol using regular expressions.
-        void ReplaceSymbolsInContainer(
-            const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container) const;
-
-        void ReplaceSymbolsInContainer(
-            const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols,
-            AZStd::vector<AZStd::string>& container) const;
 
         // Functions assisting with conversions between different vector and scalar types. Functions like these will eventually be moved out
         // of the document class so that they can be registered more flexibly and extensively.
@@ -107,13 +110,13 @@ namespace MaterialCanvas
         AZStd::string GetSymbolNameFromSlot(GraphModel::ConstSlotPtr slot) const;
 
         // Convert a material input node into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromSlot(
+        AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromSlot(
             GraphModel::ConstNodePtr node,
             const AtomToolsFramework::DynamicNodeSlotConfig& slotConfig,
             const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols) const;
 
         // Convert all material input nodes into AZSL lines of variables that can be injected into the material SRG
-        AZStd::vector<AZStd::string> GetMaterialInputsFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
+        AZStd::vector<AZStd::string> GetMaterialPropertySrgMemberFromNodes(const AZStd::vector<GraphModel::ConstNodePtr>& instructionNodes) const;
 
         // Creates and exports a material type source file by loading an existing template, replacing special tokens, and injecting
         // properties defined in material input nodes
@@ -123,27 +126,35 @@ namespace MaterialCanvas
             const AZStd::string& templateInputPath,
             const AZStd::string& templateOutputPath) const;
 
-        void BuildSlotValueTable();
+        // Returns the name that will be used to replace material graph name during any substitutions 
+        AZStd::string GetUniqueGraphName() const;
 
+        // All slots and nodes will be visited to collect all of the unique include paths.
+        AZStd::set<AZStd::string> m_includePaths;
+
+        // There's probably no reason to distinguish between function and class definitions.
+        // This could really be any globally defined function, class, struct, define.
+        AZStd::vector<AZStd::string> m_classDefinitions;
+        AZStd::vector<AZStd::string> m_functionDefinitions;
+
+        // Container of unique node configurations IDs visited on the graph to collect include paths, class definitions, and function definitions.
+        AZStd::unordered_set<AZ::Uuid> m_configIdsVisited;
+
+        // Table of values for every slot, on every node, including values redirected from incoming connections, and values upgraded to
+        // match types and sizes of values on related slots.
         AZStd::map<GraphModel::ConstSlotPtr, AZStd::any> m_slotValueTable;
 
-        // Utility type wrapping repeated load and save logic for most template files that only require basic insertions and substitutions.
-        // Files will be read in and then tokenized into a vector of strings for each line in the file. This allows for easier and
-        // individual processing of each line.
-        struct TemplateFileData
-        {
-            AZStd::string m_inputPath;
-            AZStd::string m_outputPath;
-            AZStd::vector<AZStd::string> m_lines;
+        // This counter will be used as a suffix for graph name substitutions in case multiple template nodes are included in the same graph
+        int m_templateNodeCount = 0;
 
-            bool Load();
-            bool Save() const;
+        // Container of paths for template files that need to be evaluated and have products generated for the current node.
+        AZStd::set<AZStd::string> m_templatePathsForCurrentNode;
 
-            using LineGenerationFn = AZStd::function<AZStd::vector<AZStd::string>(const AZStd::string&)>;
+        // Container of template source file data and lines they need to be transformed as part of compiling the graph. 
+        AZStd::list<AtomToolsFramework::GraphTemplateFileData> m_templateFileDataVecForCurrentNode;
 
-            // Search for marked up blocks of text from a template and replace lines between them with lines provided by a function.
-            void ReplaceLinesInBlock(
-                const AZStd::string& blockBeginToken, const AZStd::string& blockEndToken, const LineGenerationFn& lineGenerationFn);
-        };
+        // A container of all nodes contributing instructions to the current node
+        AZStd::mutex m_instructionNodesForCurrentNodeMutex;
+        AZStd::vector<GraphModel::ConstNodePtr> m_instructionNodesForCurrentNode;
     };
 } // namespace MaterialCanvas

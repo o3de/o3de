@@ -11,7 +11,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonTransformSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonTransformSerializer, AZ::SystemAllocator);
 
     JsonSerializationResult::Result JsonTransformSerializer::Load(
         void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,

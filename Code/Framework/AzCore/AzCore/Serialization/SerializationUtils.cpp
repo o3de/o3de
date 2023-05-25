@@ -28,7 +28,7 @@ namespace AZ::Utils
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
         }
 
@@ -74,7 +74,7 @@ namespace AZ::Utils
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
         }
 
@@ -113,7 +113,7 @@ namespace AZ::Utils
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
         }
 
@@ -185,7 +185,7 @@ namespace AZ::Utils
 
         if (!context)
         {
-            EBUS_EVENT_RESULT(context, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
 
             if(!context)
             {

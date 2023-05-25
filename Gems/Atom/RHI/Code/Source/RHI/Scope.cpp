@@ -9,6 +9,7 @@
 #include <Atom/RHI/ResourcePoolDatabase.h>
 #include <Atom/RHI/ImagePoolBase.h>
 #include <Atom/RHI/BufferPoolBase.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -30,6 +31,28 @@ namespace AZ
             AZ_Assert(IsInitialized() == false, "Scope was previously initialized.");
             SetName(scopeId);
             m_id = scopeId;
+
+            if (Validation::IsEnabled())
+            {
+                // Cache the string views for better gpu marker verbosity
+                size_t firstDotPos = m_id.GetStringView().find_first_of(".");
+                if (firstDotPos == AZStd::string::npos)
+                {
+                    m_markerWithPipelineName = m_id.GetStringView();
+                    m_marker = m_id.GetStringView();
+                }
+                else
+                {
+                    // Strip the first token before the first "." to extract the marker label with pipeline name
+                    m_markerWithPipelineName = m_id.GetStringView().substr(firstDotPos + 1, m_id.GetStringView().length() - firstDotPos + 1);
+
+                    // Strip the second token before "." to extract the marker label without pipeline name
+                    firstDotPos = m_markerWithPipelineName.find_first_of(".");
+                    m_marker = firstDotPos != AZStd::string::npos ? m_markerWithPipelineName.substr(firstDotPos + 1, m_markerWithPipelineName.length() - firstDotPos + 1)
+                        : m_markerWithPipelineName;
+                }
+            }
+
             m_hardwareQueueClass = hardwareQueueClass;
             InitInternal();
             m_isInitialized = true;
@@ -113,6 +136,23 @@ namespace AZ
         const ScopeId& Scope::GetId() const
         {
             return m_id;
+        }
+
+        AZStd::string_view Scope::GetMarkerLabel() const
+        {
+            if(!Validation::IsEnabled())
+            {
+                return m_id.GetStringView();
+            }
+
+            if (RHI::RHISystemInterface::Get()->GetNumActiveRenderPipelines() > 1)
+            {
+                return m_markerWithPipelineName;
+            }
+            else
+            {
+                return m_marker;
+            }
         }
 
         uint32_t Scope::GetIndex() const

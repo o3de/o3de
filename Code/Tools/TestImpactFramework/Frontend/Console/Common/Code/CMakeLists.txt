@@ -6,6 +6,7 @@
 #
 #
 
+set(common_dir "${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common/${PAL_TRAIT_COMPILER_ID}")
 ly_add_target(
     NAME TestImpact.Frontend.Console.Common.Headers HEADERONLY
     NAMESPACE AZ
@@ -24,6 +25,8 @@ ly_add_target(
     NAMESPACE AZ
     FILES_CMAKE
         testimpactframework_frontend_console_common_files.cmake
+    PLATFORM_INCLUDE_FILES
+        "${common_dir}/testimpactframework_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake"
     INCLUDE_DIRECTORIES
         PRIVATE
             Source

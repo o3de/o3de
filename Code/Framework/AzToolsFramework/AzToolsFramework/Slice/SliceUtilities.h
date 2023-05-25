@@ -487,7 +487,7 @@ namespace AzToolsFramework
             : public AZ::UserSettings
         {
         public:
-            AZ_CLASS_ALLOCATOR(SliceUserSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SliceUserSettings, AZ::SystemAllocator);
             AZ_RTTI(SliceUserSettings, "{56EC1A8F-1ADB-4CC7-A3C3-3F462750C31F}", AZ::UserSettings);
 
             AZStd::string m_saveLocation;

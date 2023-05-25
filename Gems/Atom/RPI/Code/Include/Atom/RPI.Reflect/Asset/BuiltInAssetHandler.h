@@ -96,7 +96,7 @@ namespace AZ
             : public Data::AssetHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(BuiltInAssetHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BuiltInAssetHandler, AZ::SystemAllocator);
             AZ_RTTI(BuiltInAssetHandler, "{C6615D6C-72AF-4444-8C27-8B88D89074E8}", Data::AssetHandler);
 
             static void StandardDestroyFunction(AZ::Data::AssetPtr ptr);

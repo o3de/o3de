@@ -12,8 +12,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventHandler, EventHandlerAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphInstanceEventHandler, AnimGraphEventHandlerAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(MotionInstanceEventHandler, MotionEventHandlerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventHandler, EventHandlerAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphInstanceEventHandler, AnimGraphEventHandlerAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionInstanceEventHandler, MotionEventHandlerAllocator)
 
 }

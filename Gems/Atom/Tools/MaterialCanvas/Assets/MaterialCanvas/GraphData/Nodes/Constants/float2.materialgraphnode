@@ -17,15 +17,8 @@
                 "name": "inValue",
                 "displayName": "Value",
                 "description": "Value",
-                "supportedDataTypeRegex": "color|(bool|int|uint|float)[1-4]?",
+                "supportedDataTypeRegex": "float2",
                 "defaultDataType": "float2",
-                "defaultValue": {
-                    "$type": "Vector2",
-                    "Value": [
-                        0.0,
-                        0.0
-                    ]
-                },
                 "settings": {
                     "instructions": [
                         "SLOTTYPE SLOTNAME = SLOTVALUE;"

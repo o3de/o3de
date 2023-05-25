@@ -34,6 +34,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateVariableState, AZ::SystemAllocator)
         CreateVariableState(AutomationStateModelId dataTypeId, AutomationStateModelId nameId, bool errorOnNameMismatch = true, CreateVariableAction::CreationType creationType = CreateVariableAction::CreationType::AutoComplete, AutomationStateModelId outputId = "");
         ~CreateVariableState() override = default;
 
@@ -60,6 +61,7 @@ namespace ScriptCanvas::Developer
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateVariableNodeFromGraphPaletteState, AZ::SystemAllocator)
         CreateVariableNodeFromGraphPaletteState(AutomationStateModelId variableNameId, AutomationStateModelId scenePoint, Qt::KeyboardModifier modifier, AutomationStateModelId outputId);
         ~CreateVariableNodeFromGraphPaletteState() override = default;
 

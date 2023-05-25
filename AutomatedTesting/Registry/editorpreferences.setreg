@@ -7,7 +7,8 @@
     "O3DE": {
         "Preferences": {
             "Prefabs": {
-                "EnableOverridesUx": false
+                "EnableOutlinerOverrideManagement": true,
+                "EnableInspectorOverrideManagement": false
             }
         }
     }

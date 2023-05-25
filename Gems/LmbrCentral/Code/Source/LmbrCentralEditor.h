@@ -25,6 +25,7 @@ namespace LmbrCentral
         , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(LmbrCentralEditorModule, AZ::SystemAllocator)
         AZ_RTTI(LmbrCentralEditorModule, "{1BF648D7-3703-4B52-A688-67C253A059F2}", LmbrCentralModule);
 
         LmbrCentralEditorModule();
@@ -35,5 +36,6 @@ namespace LmbrCentral
         void OnActionRegistrationHook() override;
         void OnActionContextModeBindingHook() override;
         void OnMenuBindingHook() override;
+        void OnPostActionManagerRegistrationHook() override;
     };
 } // namespace LmbrCentral

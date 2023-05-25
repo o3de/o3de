@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -120,7 +121,8 @@ namespace AZ
             if (m_nativeDescriptorSetLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyDescriptorSetLayout(device.GetNativeDevice(), m_nativeDescriptorSetLayout, nullptr);
+                device.GetContext().DestroyDescriptorSetLayout(
+                    device.GetNativeDevice(), m_nativeDescriptorSetLayout, VkSystemAllocator::Get());
                 m_nativeDescriptorSetLayout = VK_NULL_HANDLE;
             }
             m_shaderResourceGroupLayout = nullptr;
@@ -150,8 +152,8 @@ namespace AZ
             createInfo.pBindings = m_descriptorSetLayoutBindings.size() ? m_descriptorSetLayoutBindings.data() : nullptr;
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result =
-                device.GetContext().CreateDescriptorSetLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorSetLayout);
+            const VkResult result = device.GetContext().CreateDescriptorSetLayout(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeDescriptorSetLayout);
 
             return ConvertResult(result);
         }
@@ -377,6 +379,9 @@ namespace AZ
                     {
                     case RHI::ShaderInputBufferType::Typed:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+                        break;
+                    case RHI::ShaderInputBufferType::AccelerationStructure:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
                         break;
                     default:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;

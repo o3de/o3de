@@ -40,7 +40,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LookModificationCompositePass, "{D7DF3E8A-B642-4D51-ABC2-ADB2B60FCE1D}", AZ::RPI::FullscreenTrianglePass);
-            AZ_CLASS_ALLOCATOR(LookModificationCompositePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LookModificationCompositePass, SystemAllocator);
 
             enum class SampleQuality : uint8_t
             {

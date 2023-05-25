@@ -12,11 +12,21 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        enum class PatchType
+        {
+            Add,
+            Remove,
+            Edit // Replace
+        };
+
         enum class OverrideType
         {
             AddEntity,
             RemoveEntity,
             EditEntity,
+            AddComponent,
+            RemoveComponent,
+            EditComponent,
             RemovePrefab
         };
     } // namespace Prefab

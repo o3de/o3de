@@ -17,7 +17,7 @@ namespace GradientSignal
 {
     struct GradientSampleParams final
     {
-        AZ_CLASS_ALLOCATOR(GradientSampleParams, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientSampleParams, AZ::SystemAllocator);
         AZ_TYPE_INFO(GradientSampleParams, "{DC4B9269-CB3C-4071-989D-C885FB9946A5}");
 
         GradientSampleParams() {}

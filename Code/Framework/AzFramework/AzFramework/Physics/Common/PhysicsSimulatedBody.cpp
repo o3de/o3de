@@ -19,7 +19,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBody, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBody, AZ::SystemAllocator);
 
     namespace Internal
     {

@@ -12,7 +12,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/string/wildcard.h>
-#include <AzFramework/Dependency/Dependency.h>
+#include <AzCore/Dependency/Dependency.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -282,14 +282,14 @@ namespace CopyDependencyBuilder
             return result;
         }
 
-        bool MatchesVersionConstraints(const AzFramework::Version<MaxVersionPartsCount>& version, const AZStd::vector<AZStd::string>& versionConstraints)
+        bool MatchesVersionConstraints(const AZ::Version<MaxVersionPartsCount>& version, const AZStd::vector<AZStd::string>& versionConstraints)
         {
             if (versionConstraints.size() == 0)
             {
                 return true;
             }
 
-            AzFramework::Dependency<MaxVersionPartsCount> dependency;
+            AZ::Dependency<MaxVersionPartsCount> dependency;
             AZ::Outcome<void, AZStd::string> parseOutcome = dependency.ParseVersions(versionConstraints);
             if (!parseOutcome.IsSuccess())
             {
@@ -297,12 +297,12 @@ namespace CopyDependencyBuilder
                 return false;
             }
 
-            return dependency.IsFullfilledBy(AzFramework::Specifier<MaxVersionPartsCount>(AZ::Uuid::CreateNull(), version));
+            return dependency.IsFullfilledBy(AZ::Specifier<MaxVersionPartsCount>(AZ::Uuid::CreateNull(), version));
         }
 
-        AZ::Outcome<AzFramework::Version<MaxVersionPartsCount>, AZStd::string> ParseFromString(const AZStd::string& versionStr)
+        AZ::Outcome<AZ::Version<MaxVersionPartsCount>, AZStd::string> ParseFromString(const AZStd::string& versionStr)
         {
-            AzFramework::Version<MaxVersionPartsCount> result;
+            AZ::Version<MaxVersionPartsCount> result;
             AZStd::vector<AZStd::string> versionParts;
             AzFramework::StringFunc::Tokenize(versionStr.c_str(), versionParts, VERSION_SEPARATOR_CHAR);
 
@@ -353,10 +353,9 @@ namespace CopyDependencyBuilder
         AssetBuilderSDK::AssetBuilderDesc xmlSchemaBuilderDescriptor;
         xmlSchemaBuilderDescriptor.m_name = "XmlBuilderWorker";
         xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("(?!.*libs\\/gameaudio\\/).*\\.xml", AssetBuilderSDK::AssetBuilderPattern::PatternType::Regex));
-        xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.ent", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         xmlSchemaBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.vegdescriptorlist", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
         xmlSchemaBuilderDescriptor.m_busId = azrtti_typeid<XmlBuilderWorker>();
-        xmlSchemaBuilderDescriptor.m_version = 8;
+        xmlSchemaBuilderDescriptor.m_version = 9;
         xmlSchemaBuilderDescriptor.m_createJobFunction =
             AZStd::bind(&XmlBuilderWorker::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         xmlSchemaBuilderDescriptor.m_processJobFunction =
@@ -572,14 +571,14 @@ namespace CopyDependencyBuilder
         AZ::rapidxml::xml_node<char>* xmlFileRootNode = rootNodeOutcome.GetValue();
 
         AZStd::string sourceFileVersionStr = Internal::GetSourceFileVersion(xmlFileRootNode, schemaAsset.GetVersionSearchRule().GetRootNodeAttributeName());
-        AZ::Outcome <AzFramework::Version<MaxVersionPartsCount>, AZStd::string> SourceFileVersionOutcome = Internal::ParseFromString(sourceFileVersionStr);
+        AZ::Outcome <AZ::Version<MaxVersionPartsCount>, AZStd::string> SourceFileVersionOutcome = Internal::ParseFromString(sourceFileVersionStr);
         if (!SourceFileVersionOutcome.IsSuccess())
         {
             AZ_Warning("XmlBuilderWorker", false, SourceFileVersionOutcome.TakeError().c_str());
             // This isn't a blocking error, the error was on this schema, so try checking the next schema for a match.
             return SchemaMatchResult::NoMatchFound;
         }
-        AzFramework::Version<MaxVersionPartsCount> version = SourceFileVersionOutcome.GetValue();
+        AZ::Version<MaxVersionPartsCount> version = SourceFileVersionOutcome.GetValue();
 
         AZ::Outcome <void, bool> matchingRuleOutcome = SearchForMatchingRule(sourceFilePath, schemaFilePath, version, schemaAsset.GetMatchingRules(), watchFolderPath);
         if (!matchingRuleOutcome.IsSuccess())
@@ -623,7 +622,7 @@ namespace CopyDependencyBuilder
     AZ::Outcome <void, bool> XmlBuilderWorker::SearchForMatchingRule(
         const AZStd::string& sourceFilePath, 
         [[maybe_unused]] const AZStd::string& schemaFilePath,
-        const AzFramework::Version<MaxVersionPartsCount>& version,
+        const AZ::Version<MaxVersionPartsCount>& version,
         const AZStd::vector<AzFramework::MatchingRule>& matchingRules,
         [[maybe_unused]] const AZStd::string& watchFolderPath) const
     {
@@ -663,7 +662,7 @@ namespace CopyDependencyBuilder
     bool XmlBuilderWorker::SearchForDependencySearchRule(
         AZ::rapidxml::xml_node<char>* xmlFileRootNode,
         [[maybe_unused]] const AZStd::string& schemaFilePath,
-        const AzFramework::Version<MaxVersionPartsCount>& version,
+        const AZ::Version<MaxVersionPartsCount>& version,
         const AZStd::vector<AzFramework::DependencySearchRule>& dependencySearchRules,
         AZStd::vector<AssetBuilderSDK::ProductDependency>& productDependencies,
         AssetBuilderSDK::ProductPathDependencySet& pathDependencies,

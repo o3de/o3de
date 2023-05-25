@@ -16,7 +16,7 @@ namespace ImageProcessingAtom
     struct BuilderSettings
     {
         AZ_TYPE_INFO(BuilderSettings, "{3C70C3C0-E395-4948-97AB-31541847147F}");
-        AZ_CLASS_ALLOCATOR(BuilderSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderSettings, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         //global settings

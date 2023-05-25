@@ -9,6 +9,8 @@
 
 #include "EditorPreferencesPageFiles.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 

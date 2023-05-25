@@ -25,7 +25,7 @@ namespace AZ
             AZ_RPI_PASS(RayTracingAccelerationStructurePass);
 
             AZ_RTTI(RayTracingAccelerationStructurePass, "{6BAA1755-D7D2-497F-BCDB-CA28B42728DC}", Pass);
-            AZ_CLASS_ALLOCATOR(RayTracingAccelerationStructurePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingAccelerationStructurePass, SystemAllocator);
 
             //! Creates a RayTracingAccelerationStructurePass
             static RPI::Ptr<RayTracingAccelerationStructurePass> Create(const RPI::PassDescriptor& descriptor);

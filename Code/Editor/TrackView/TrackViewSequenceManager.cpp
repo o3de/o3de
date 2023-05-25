@@ -151,12 +151,13 @@ void CTrackViewSequenceManager::CreateSequence(QString name, [[maybe_unused]] Se
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
     AZ::EntityId newEntityId;   // initialized with InvalidEntityId
-    EBUS_EVENT_RESULT(newEntityId, AzToolsFramework::EditorRequests::Bus, CreateNewEntity, AZ::EntityId());
+    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+        newEntityId, &AzToolsFramework::EditorRequests::Bus::Events::CreateNewEntity, AZ::EntityId());
     if (newEntityId.IsValid())
     {
         // set the entity name
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, newEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, newEntityId);
         if (entity)
         {
             entity->SetName(static_cast<const char*>(name.toUtf8().data()));

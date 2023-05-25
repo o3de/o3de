@@ -23,7 +23,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SelectSceneElementAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SelectSceneElementAction, AZ::SystemAllocator);
         AZ_RTTI(SelectSceneElementAction, "{D1EA3B23-D7FD-411A-87BC-4D9D88D35A03}", CompoundAction);
 
         SelectSceneElementAction(AZ::EntityId sceneMemberId);
@@ -52,7 +52,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AltClickSceneElementAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AltClickSceneElementAction, AZ::SystemAllocator);
         AZ_RTTI(AltClickSceneElementAction, "{FF99EC14-53B3-474E-A7A1-6D30800B9583}", CompoundAction);
 
         AltClickSceneElementAction(AZ::EntityId sceneMemberId);
@@ -92,7 +92,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(MouseToNodePropertyEditorAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MouseToNodePropertyEditorAction, AZ::SystemAllocator);
         AZ_RTTI(MouseToNodePropertyEditorAction, "{03BE0BBE-B977-4103-BC6D-0357B7CEA46E}", CompoundAction);
 
         MouseToNodePropertyEditorAction(GraphCanvas::SlotId slotId);

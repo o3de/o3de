@@ -14,6 +14,7 @@ namespace UnitTest
         : public AZ::RPI::FeatureProcessor
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestFeatureProcessor1, AZ::SystemAllocator)
         AZ_RTTI(TestFeatureProcessor1, "{CCC3EB15-D80E-4F5A-93F4-B0F993A5E7F5}", AZ::RPI::FeatureProcessor);
 
         static void Reflect(AZ::ReflectContext* context)
@@ -104,6 +105,7 @@ namespace UnitTest
         : public TestFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestFeatureProcessorImplementation, AZ::SystemAllocator)
         AZ_RTTI(TestFeatureProcessorImplementation, "{2FEB6299-A03E-4341-9234-47786F5A53C3}", TestFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context)
@@ -126,6 +128,7 @@ namespace UnitTest
         : public TestFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestFeatureProcessorImplementation2, AZ::SystemAllocator)
         AZ_RTTI(TestFeatureProcessorImplementation2, "{48E98E91-373E-43D4-BFD2-991B9FF8CEE8}", TestFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context)

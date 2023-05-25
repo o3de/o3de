@@ -48,7 +48,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

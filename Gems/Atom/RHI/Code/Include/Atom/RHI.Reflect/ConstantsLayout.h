@@ -13,6 +13,17 @@
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Utils/TypeHash.h>
 
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
+
 namespace AZ
 {
     class ReflectContext;
@@ -32,7 +43,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(ConstantsLayout, "{66EDAC32-7730-4F05-AF9D-B3CB0F5D90E0}");
-            AZ_CLASS_ALLOCATOR(ConstantsLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ConstantsLayout, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ConstantsLayout> Create();
@@ -90,7 +101,10 @@ namespace AZ
             ConstantsLayout() = default;
 
         private:
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             bool ValidateConstantInputs() const;
 

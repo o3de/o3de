@@ -601,7 +601,9 @@ bool OutlinerListModel::setData(const QModelIndex& index, const QVariant& value,
                         entity->SetName(newName);
                         undo.MarkEntityDirty(entity->GetId());
 
-                        EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+                        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                            &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay,
+                            AzToolsFramework::Refresh_EntireTree);
                     }
                 }
                 else
@@ -988,7 +990,8 @@ bool OutlinerListModel::DropMimeDataAssets(const QMimeData* data, [[maybe_unused
         if (createdNewEntity && &pair == &componentAssetPairs.front())
         {
             AZStd::string assetPath;
-            EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
             if (!assetPath.empty())
             {
                 AZStd::string entityName;
@@ -1068,7 +1071,8 @@ bool OutlinerListModel::CanReparentEntities(const AZ::EntityId& newParentId, con
         }
 
         bool isEntityEditable = true;
-        EBUS_EVENT_RESULT(isEntityEditable, AzToolsFramework::ToolsApplicationRequests::Bus, IsEntityEditable, entityId);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            isEntityEditable, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::IsEntityEditable, entityId);
         if (!isEntityEditable)
         {
             return false;
@@ -1161,7 +1165,7 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
         for (AZ::EntityId entityId : selectedEntityIds)
         {
             AZ::EntityId oldParentId;
-            EBUS_EVENT_ID_RESULT(oldParentId, entityId, AZ::TransformBus, GetParentId);
+            AZ::TransformBus::EventResult(oldParentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
             if (oldParentId != newParentId
                 && AzToolsFramework::SliceUtilities::IsReparentNonTrivial(entityId, newParentId))
@@ -1171,7 +1175,7 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
             else
             {
                 //  Guarding this to prevent the entity from being marked dirty when the parent doesn't change.
-                EBUS_EVENT_ID(entityId, AZ::TransformBus, SetParent, newParentId);
+                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, newParentId);
             }
 
             // The old parent is dirty due to sort change
@@ -1223,7 +1227,8 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
     // reselect the entities to ensure they're visible if appropriate
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::SetSelectedEntities, processedEntityIds);
 
-    EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+        &AzToolsFramework::ToolsApplicationEvents::Bus::Events::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
     return true;
 }
 
@@ -2031,7 +2036,7 @@ void OutlinerListModel::OnEntityCompositionChanged(const AzToolsFramework::Entit
     }
 }
 
-void OutlinerListModel::OnContextReset()
+void OutlinerListModel::OnPrepareForContextReset()
 {
     if (m_filterString.size() > 0 || m_componentFilters.size() > 0)
     {

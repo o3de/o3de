@@ -2,34 +2,5 @@
     "materialType": "ReflectionProbeVisualization.materialtype",
     "materialTypeVersion": 1,
     "properties": {
-        "general": {
-            "enableShadows": false,
-            "enableDirectionalLights": false,
-            "enablePunctualLights": false,
-            "enableAreaLights": false,
-            "enableIBL":  true
-        },
-        "baseColor": {
-           "color": [ 1.0, 1.0, 1.0 ],
-           "factor": 1.0,
-           "useTexture": false,
-           "textureMap": ""
-        },
-        "specularF0": {
-            "factor": 0.5,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "normal": {
-            "factor": 1.0,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "metallic": {
-            "factor": 1.0
-        },
-        "roughness": {
-            "factor": 0.0
-        }
     }
 }

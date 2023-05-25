@@ -24,20 +24,10 @@ namespace EMotionFX
 {
     namespace EMotionFXBuilder
     {
-        AZ::EnvironmentVariable<EMotionFXAllocatorInitializer> EMotionFXBuilderComponent::s_EMotionFXAllocator = nullptr;
-
-        EMotionFXBuilderComponent::EMotionFXBuilderComponent()
-        {
-        }
-
-        EMotionFXBuilderComponent::~EMotionFXBuilderComponent() = default;
-
         void EMotionFXBuilderComponent::Activate()
         {
             m_motionSetBuilderWorker.RegisterBuilderWorker();
             m_animGraphBuilderWorker.RegisterBuilderWorker();
-
-            s_EMotionFXAllocator = AZ::Environment::CreateVariable<EMotionFXAllocatorInitializer>(EMotionFXAllocatorInitializer::EMotionFXAllocatorInitializerTag);
 
             // Initialize asset handlers.
             m_assetHandlers.emplace_back(aznew EMotionFX::Integration::ActorAssetHandler);
@@ -67,7 +57,6 @@ namespace EMotionFX
             m_animGraphBuilderWorker.BusDisconnect();
 
             m_assetHandlers.clear();
-            s_EMotionFXAllocator = nullptr;
         }
 
         void EMotionFXBuilderComponent::Reflect(AZ::ReflectContext* context)

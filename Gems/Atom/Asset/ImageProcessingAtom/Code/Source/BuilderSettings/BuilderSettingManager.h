@@ -47,7 +47,7 @@ namespace ImageProcessingAtom
 
     public:
         AZ_TYPE_INFO(BuilderSettingManager, "{8E95726D-4E3A-446C-99A6-D02863640EAC}");
-        AZ_CLASS_ALLOCATOR(BuilderSettingManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BuilderSettingManager, AZ::SystemAllocator);
         
         static BuilderSettingManager* Instance();
         // life cycle management:

@@ -23,7 +23,7 @@ namespace PhysX
     public:
         friend class RagdollComponent;
 
-        AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Ragdoll, AZ::SystemAllocator);
         AZ_RTTI(PhysX::Ragdoll, "{55D477B5-B922-4D3E-89FE-7FB7B9FDD635}", Physics::Ragdoll);
         static void Reflect(AZ::ReflectContext* context);
 

@@ -34,9 +34,11 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData, "{14085B6F-42E8-447D-9833-E1E45C2510B2}");
-            AZ_CLASS_ALLOCATOR(MaterialTypeSourceData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialTypeSourceData, SystemAllocator);
 
             static constexpr const char Extension[] = "materialtype";
+
+            static constexpr AZ::u32 IntermediateMaterialTypeSubId = 0;
 
             static void Reflect(ReflectContext* context);
 
@@ -75,7 +77,7 @@ namespace AZ
             {
                 friend class MaterialTypeSourceData;
                 
-                AZ_CLASS_ALLOCATOR(PropertyGroup, SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(PropertyGroup, SystemAllocator);
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyGroup, "{BA3AA0E4-C74D-4FD0-ADB2-00B060F06314}");
 
             public:
@@ -104,7 +106,10 @@ namespace AZ
                 //! @param name a unique for the property group. Must be a C-style identifier.
                 //! @return the new PropertyGroup, or null if the name was not valid.
                 PropertyGroup* AddPropertyGroup(AZStd::string_view name);
-                
+
+                //! Sort child groups and properties by name
+                void SortProperties();
+
             private:
 
                 static PropertyGroup* AddPropertyGroup(AZStd::string_view name, AZStd::vector<AZStd::unique_ptr<PropertyGroup>>& toPropertyGroupList);
@@ -248,6 +253,9 @@ namespace AZ
             //! @return the found MaterialPropertySourceData or null if it doesn't exist.
             const MaterialPropertySourceData* FindProperty(AZStd::string_view propertyId) const;
             MaterialPropertySourceData* FindProperty(AZStd::string_view propertyId);
+
+            //! Sort child groups and properties by name
+            void SortProperties();
 
             //! Tokenizes an ID string like "itemA.itemB.itemC" into a vector like ["itemA", "itemB", "itemC"].
             static AZStd::vector<AZStd::string_view> TokenizeId(AZStd::string_view id);

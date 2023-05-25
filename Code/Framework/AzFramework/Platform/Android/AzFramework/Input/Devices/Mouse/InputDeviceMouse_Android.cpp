@@ -69,7 +69,7 @@ namespace AzFramework
         , public RawMouseConnectionNotificationsBusAndroid::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseAndroid, AZ::SystemAllocator);
 
 
         InputDeviceMouseAndroid(InputDeviceMouse& inputDevice);

@@ -26,7 +26,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(SlotConnectionPin, "{4E4A8C30-584A-434B-B8FC-0514C1E7D290}", QGraphicsLayoutItem, QGraphicsItem);
-        AZ_CLASS_ALLOCATOR(SlotConnectionPin, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotConnectionPin, AZ::SystemAllocator);
 
         SlotConnectionPin(const AZ::EntityId& slotId);
         ~SlotConnectionPin() override;

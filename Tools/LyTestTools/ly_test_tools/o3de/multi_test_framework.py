@@ -329,7 +329,7 @@ class MultiTestSuite(object):
     # Tests usually run with no renderer, however some tests require a renderer and will disable this
     use_null_renderer = True
     # Maximum time in seconds for a single executable to stay open across the set of shared tests
-    timeout_shared_test = 300
+    timeout_shared_test = 900
     # Name of the executable's log file.
     log_name = ""
     # Executable name to look for if the test is an Atom Tools test, leave blank if not an Atom Tools test.
@@ -793,7 +793,9 @@ class MultiTestSuite(object):
         if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
             test_cmdline_args += [
                 "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
+                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}",
+                "--log_IncludeTime=1"
+            ]
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
         if any([t.attach_debugger for t in test_spec_list]):
@@ -896,8 +898,15 @@ class MultiTestSuite(object):
             return_code = executable.get_returncode()
             executable_log_content = log_content_function(run_id, log_name, workspace)
             # Save the executable log.
+            workspace.artifact_manager.set_dest_path(request.node.originalname)
             workspace.artifact_manager.save_artifact(
                 os.path.join(log_path_function(run_id, workspace), log_name), f'({run_id}){log_name}')
+            server_log_name = os.path.join(workspace.paths.project_log(), 'Server.log')
+            game_log_name = os.path.join(workspace.paths.project_log(), 'Game.log')
+            if os.path.exists(server_log_name) and os.path.getsize(server_log_name):
+                workspace.artifact_manager.save_artifact(server_log_name)
+            if os.path.exists(game_log_name) and os.path.getsize(game_log_name):
+                workspace.artifact_manager.save_artifact(game_log_name)
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, executable_log_content)
             else:
@@ -1193,11 +1202,7 @@ class MultiTestSuite(object):
             try:
                 full_log_name = f'({run_id}){log_name}'
                 path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
-                if type(executable) in [WinEditor, LinuxEditor]:
-                    destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
-                    editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
-                elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
-                    workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test

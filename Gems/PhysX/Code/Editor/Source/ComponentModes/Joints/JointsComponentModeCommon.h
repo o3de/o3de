@@ -44,7 +44,7 @@ namespace PhysX::JointsComponentModeCommon
     } // namespace SubComponentModes
 
     //! Name Identifiers for the joint components sub modes.
-    struct ParamaterNames
+    struct ParameterNames
     {
         static const AZStd::string_view TwistLimits;
         static const AZStd::string_view Damping;
@@ -65,7 +65,7 @@ namespace PhysX::JointsComponentModeCommon
     };
 
     //! A pairing of Sub component Names, and Id.
-    struct SubModeParamaterState
+    struct SubModeParameterState
     {
         SubComponentModes::ModeType m_modeType = SubComponentModes::ModeType::ModeCount; //!< The Id of the sub component mode.
         AZStd::string m_parameterName; //!< The name of the sub component mode.

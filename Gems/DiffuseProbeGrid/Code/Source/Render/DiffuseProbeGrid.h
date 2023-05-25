@@ -55,6 +55,116 @@ namespace AZ
 
             // render drawlist tag
             RHI::DrawListTag m_drawListTag;
+
+            // Srg input indices
+            RHI::ShaderInputNameIndex m_prepareSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_prepareSrgGridDataInitializedNameIndex = "m_gridDataInitialized";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridOriginNameIndex = "m_probeGrid.origin";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridRotationNameIndex = "m_probeGrid.rotation";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRayRotationNameIndex = "m_probeGrid.probeRayRotation";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridMovementTypeNameIndex = "m_probeGrid.movementType";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeSpacingNameIndex = "m_probeGrid.probeSpacing";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeCountsNameIndex = "m_probeGrid.probeCounts";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNumRaysNameIndex = "m_probeGrid.probeNumRays";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNumIrradianceTexelsNameIndex = "m_probeGrid.probeNumIrradianceTexels";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNumDistanceTexelsNameIndex = "m_probeGrid.probeNumDistanceTexels";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeHysteresisNameIndex = "m_probeGrid.probeHysteresis";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeMaxRayDistanceNameIndex = "m_probeGrid.probeMaxRayDistance";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeNormalBiasNameIndex = "m_probeGrid.probeNormalBias";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeViewBiasNameIndex = "m_probeGrid.probeViewBias";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeDistanceExponentNameIndex = "m_probeGrid.probeDistanceExponent";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceThresholdNameIndex = "m_probeGrid.probeIrradianceThreshold";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeBrightnessThresholdNameIndex = "m_probeGrid.probeBrightnessThreshold";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceEncodingGammaNameIndex = "m_probeGrid.probeIrradianceEncodingGamma";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRandomRayBackfaceThresholdNameIndex = "m_probeGrid.probeRandomRayBackfaceThreshold";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeFixedRayBackfaceThresholdNameIndex = "m_probeGrid.probeFixedRayBackfaceThreshold";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeMinFrontfaceDistanceNameIndex = "m_probeGrid.probeMinFrontfaceDistance";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollOffsetsNameIndex = "m_probeGrid.probeScrollOffsets";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRayDataFormatNameIndex = "m_probeGrid.probeRayDataFormat";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeIrradianceFormatNameIndex = "m_probeGrid.probeIrradianceFormat";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeRelocationEnabledNameIndex = "m_probeGrid.probeRelocationEnabled";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeClassificationEnabledNameIndex = "m_probeGrid.probeClassificationEnabled";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollClear0NameIndex = "m_probeGrid.probeScrollClear[0]";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollClear1NameIndex = "m_probeGrid.probeScrollClear[1]";
+            RHI::ShaderInputNameIndex m_prepareSrgProbeGridProbeScrollClear2NameIndex = "m_probeGrid.probeScrollClear[2]";
+
+            RHI::ShaderInputNameIndex m_rayTraceSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_rayTraceSrgProbeRayTraceNameIndex = "m_probeRayTrace";
+            RHI::ShaderInputNameIndex m_rayTraceSrgProbeIrradianceNameIndex = "m_probeIrradiance";
+            RHI::ShaderInputNameIndex m_rayTraceSrgProbeDistanceNameIndex = "m_probeDistance";
+            RHI::ShaderInputNameIndex m_rayTraceSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_rayTraceSrgAmbientMultiplierNameIndex = "m_ambientMultiplier";
+            RHI::ShaderInputNameIndex m_rayTraceSrgGiShadowsNameIndex = "m_giShadows";
+            RHI::ShaderInputNameIndex m_rayTraceSrgUseDiffuseIblNameIndex = "m_useDiffuseIbl";
+            RHI::ShaderInputNameIndex m_rayTraceSrgFrameUpdateCountNameIndex = "m_frameUpdateCount";
+            RHI::ShaderInputNameIndex m_rayTraceSrgFrameUpdateIndexNameIndex = "m_frameUpdateIndex";
+            RHI::ShaderInputNameIndex m_rayTraceSrgTransparencyModeNameIndex = "m_transparencyMode";
+            RHI::ShaderInputNameIndex m_rayTraceSrgEmissiveMultiplierNameIndex = "m_emissiveMultiplier";
+
+            RHI::ShaderInputNameIndex m_blendIrradianceSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_blendIrradianceSrgProbeRayTraceNameIndex = "m_probeRayTrace";
+            RHI::ShaderInputNameIndex m_blendIrradianceSrgProbeIrradianceNameIndex = "m_probeIrradiance";
+            RHI::ShaderInputNameIndex m_blendIrradianceSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_blendIrradianceSrgFrameUpdateCountNameIndex = "m_frameUpdateCount";
+            RHI::ShaderInputNameIndex m_blendIrradianceSrgFrameUpdateIndexNameIndex = "m_frameUpdateIndex";
+
+            RHI::ShaderInputNameIndex m_blendDistanceSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_blendDistanceSrgProbeRayTraceNameIndex = "m_probeRayTrace";
+            RHI::ShaderInputNameIndex m_blendDistanceSrgProbeDistanceNameIndex = "m_probeDistance";
+            RHI::ShaderInputNameIndex m_blendDistanceSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_blendDistanceSrgFrameUpdateCountNameIndex = "m_frameUpdateCount";
+            RHI::ShaderInputNameIndex m_blendDistanceSrgFrameUpdateIndexNameIndex = "m_frameUpdateIndex";
+
+            RHI::ShaderInputNameIndex m_borderUpdateRowIrradianceSrgProbeTextureNameIndex = "m_probeTexture";
+            RHI::ShaderInputNameIndex m_borderUpdateRowIrradianceSrgNumTexelsNameIndex = "m_numTexels";
+            RHI::ShaderInputNameIndex m_borderUpdateColumnIrradianceSrgProbeTextureNameIndex = "m_probeTexture";
+            RHI::ShaderInputNameIndex m_borderUpdateColumnIrradianceSrgNumTexelsNameIndex = "m_numTexels";
+            RHI::ShaderInputNameIndex m_borderUpdateRowDistanceSrgProbeTextureNameIndex = "m_probeTexture";
+            RHI::ShaderInputNameIndex m_borderUpdateRowDistanceSrgNumTexelsNameIndex = "m_numTexels";
+            RHI::ShaderInputNameIndex m_borderUpdateColumnDistanceSrgProbeTextureNameIndex = "m_probeTexture";
+            RHI::ShaderInputNameIndex m_borderUpdateColumnDistanceSrgNumTexelsNameIndex = "m_numTexels";
+
+            RHI::ShaderInputNameIndex m_relocationSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_relocationSrgProbeRayTraceNameIndex = "m_probeRayTrace";
+            RHI::ShaderInputNameIndex m_relocationSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_relocationSrgFrameUpdateCountNameIndex = "m_frameUpdateCount";
+            RHI::ShaderInputNameIndex m_relocationSrgFrameUpdateIndexNameIndex = "m_frameUpdateIndex";
+
+            RHI::ShaderInputNameIndex m_classificationSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_classificationSrgProbeRayTraceNameIndex = "m_probeRayTrace";
+            RHI::ShaderInputNameIndex m_classificationSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_classificationSrgFrameUpdateCountNameIndex = "m_frameUpdateCount";
+            RHI::ShaderInputNameIndex m_classificationSrgFrameUpdateIndexNameIndex = "m_frameUpdateIndex";
+
+            RHI::ShaderInputNameIndex m_renderSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_renderSrgModelToWorldNameIndex = "m_modelToWorld";
+            RHI::ShaderInputNameIndex m_renderSrgModelToWorldInverseNameIndex = "m_modelToWorldInverse";
+            RHI::ShaderInputNameIndex m_renderSrgObbHalfLengthsNameIndex = "m_obbHalfLengths";
+            RHI::ShaderInputNameIndex m_renderSrgEnableDiffuseGiNameIndex = "m_enableDiffuseGI";
+            RHI::ShaderInputNameIndex m_renderSrgAmbientMultiplierNameIndex = "m_ambientMultiplier";
+            RHI::ShaderInputNameIndex m_renderSrgEdgeBlendIblNameIndex = "m_edgeBlendIbl";
+            RHI::ShaderInputNameIndex m_renderSrgProbeIrradianceNameIndex = "m_probeIrradiance";
+            RHI::ShaderInputNameIndex m_renderSrgProbeDistanceNameIndex = "m_probeDistance";
+            RHI::ShaderInputNameIndex m_renderSrgProbeDataNameIndex = "m_probeData";
+
+            RHI::ShaderInputNameIndex m_visualizationPrepareSrgTlasInstancesNameIndex = "m_tlasInstances";
+            RHI::ShaderInputNameIndex m_visualizationPrepareSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_visualizationPrepareSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_visualizationPrepareSrgProbeSphereRadiusNameIndex = "m_probeSphereRadius";
+
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgTlasNameIndex = "m_tlas";
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgProbeIrradianceNameIndex = "m_probeIrradiance";
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgProbeDistanceNameIndex = "m_probeDistance";
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgShowInactiveProbesNameIndex = "m_showInactiveProbes";
+            RHI::ShaderInputNameIndex m_visualizationRayTraceSrgOutputNameIndex = "m_output";
+
+            RHI::ShaderInputNameIndex m_querySrgGridDataNameIndex = "m_gridData";
+            RHI::ShaderInputNameIndex m_querySrgProbeIrradianceNameIndex = "m_probeIrradiance";
+            RHI::ShaderInputNameIndex m_querySrgProbeDistanceNameIndex = "m_probeDistance";
+            RHI::ShaderInputNameIndex m_querySrgProbeDataNameIndex = "m_probeData";
+            RHI::ShaderInputNameIndex m_querySrgAmbientMultiplierNameIndex = "m_ambientMultiplier";
         };
 
         //! This class manages contains the functionality necessary to update diffuse probes and
@@ -116,6 +226,9 @@ namespace AZ
 
             DiffuseProbeGridTransparencyMode GetTransparencyMode() const { return m_transparencyMode; }
             void SetTransparencyMode(DiffuseProbeGridTransparencyMode transparencyMode) { m_transparencyMode = transparencyMode; }
+
+            float GetEmissiveMultiplier() const { return m_emissiveMultiplier; }
+            void SetEmissiveMultiplier(float emissiveMultiplier) { m_emissiveMultiplier = emissiveMultiplier; }
 
             bool GetVisualizationEnabled() const { return m_visualizationEnabled; }
             void SetVisualizationEnabled(bool visualizationEnabled);
@@ -249,8 +362,8 @@ namespace AZ
 
             // grid settings
             bool  m_enabled = true;
-            float m_normalBias = 0.6f;
-            float m_viewBias = 0.01f;
+            float m_normalBias = DefaultDiffuseProbeGridNormalBias;
+            float m_viewBias = DefaultDiffuseProbeGridViewBias;
             float m_probeMaxRayDistance = 30.0f;
             float m_probeDistanceExponent = 50.0f;
             float m_probeHysteresis = 0.95f;
@@ -260,14 +373,15 @@ namespace AZ
             float m_probeMinFrontfaceDistance = 1.0f;
             float m_probeRandomRayBackfaceThreshold = 0.1f;
             float m_probeFixedRayBackfaceThreshold = 0.25f;
-            float m_ambientMultiplier = 1.0f;
+            float m_ambientMultiplier = DefaultDiffuseProbeGridAmbientMultiplier;
             bool  m_giShadows = true;
             bool  m_useDiffuseIbl = true;
             bool  m_scrolling = false;
             bool  m_edgeBlendIbl = true;
+            float m_emissiveMultiplier = DefaultDiffuseProbeGridEmissiveMultiplier;
 
-            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DiffuseProbeGridNumRaysPerProbe::NumRaysPerProbe_288;
-            DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
+            DiffuseProbeGridNumRaysPerProbe m_numRaysPerProbe = DefaultDiffuseProbeGridNumRaysPerProbe;
+            DiffuseProbeGridTransparencyMode m_transparencyMode = DefaultDiffuseProbeGridTransparencyMode;
 
             // frame count and current frame index for alternating probe updates across frames
             uint32_t m_frameUpdateCount = 1;
@@ -349,7 +463,7 @@ namespace AZ
             // probe visualization
             bool m_visualizationEnabled = false;
             bool m_visualizationShowInactiveProbes = false;
-            float m_visualizationSphereRadius = 0.5f;
+            float m_visualizationSphereRadius = DefaultVisualizationSphereRadius;
             RHI::Ptr<RHI::RayTracingTlas> m_visualizationTlas;
             bool m_visualizationTlasUpdateRequired = false;
             RHI::AttachmentId m_visualizationTlasAttachmentId;

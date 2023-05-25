@@ -16,5 +16,5 @@ set(FILES
     Tests/SceneBuilder/SceneBuilderPhasesTests.cpp
     Tests/SceneBuilder/SceneBuilderTests.cpp
     Tests/SceneBuilder/SceneBuilderConfigTests.cpp
-    Tests/SceneProcessingConfigTest.cpp
+    Tests/SceneProcessingConfigEditorTest.cpp
 )

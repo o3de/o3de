@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(AddSlotMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddSlotMenuAction, AZ::SystemAllocator);
 
         AddSlotMenuAction(QObject* parent);
         virtual ~AddSlotMenuAction() = default;
@@ -33,7 +33,7 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveSlotMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveSlotMenuAction, AZ::SystemAllocator);
 
         RemoveSlotMenuAction(QObject* parent);
         virtual ~RemoveSlotMenuAction() = default;
@@ -50,7 +50,7 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ClearConnectionsMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClearConnectionsMenuAction, AZ::SystemAllocator);
         
         ClearConnectionsMenuAction(QObject* parent);
         virtual ~ClearConnectionsMenuAction() = default;
@@ -70,7 +70,7 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ResetToDefaultValueMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ResetToDefaultValueMenuAction, AZ::SystemAllocator);
 
         ResetToDefaultValueMenuAction(QObject* parent);
         virtual ~ResetToDefaultValueMenuAction() = default;
@@ -86,7 +86,7 @@ namespace GraphCanvas
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ToggleReferenceStateAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ToggleReferenceStateAction, AZ::SystemAllocator);
 
         ToggleReferenceStateAction(QObject* parent);
         virtual ~ToggleReferenceStateAction() = default;
@@ -102,7 +102,7 @@ namespace GraphCanvas
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(PromoteToVariableAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PromoteToVariableAction, AZ::SystemAllocator);
 
         PromoteToVariableAction(QObject* parent);
         virtual ~PromoteToVariableAction() = default;

@@ -14,6 +14,7 @@
 #include <AzCore/Component/Component.h>
 #include "PropertyEditorAPI.h"
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h>
+#include <AzToolsFramework/Undo/UndoSystem.h>
 
 // the property manager component's job is to provide the services for registration of property editors.
 // it also registers all of our built-in property manager types
@@ -80,6 +81,8 @@ namespace AzToolsFramework
             DefaultHandlerMap m_DefaultHandlers;
 
             AZStd::vector<PropertyHandlerBase*> m_builtInHandlers; // exists purely to delete them later.
+
+            AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoBatch = nullptr;
 
             void CreateBuiltInHandlers();
         };

@@ -73,7 +73,7 @@ namespace AZ
         {
             friend class FrameGraphCompiler;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraph, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraph, AZ::SystemAllocator);
 
             FrameGraph() = default;
             ~FrameGraph();

@@ -52,7 +52,7 @@ ReflectedPropertyControl::ReflectedPropertyControl(QWidget *parent /*= nullptr*/
     , m_initialized(false)
     , m_isTwoColumnSection(false)
 {
-    EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "Serialization context not available");
     qRegisterMetaType<IVariable*>("IVariablePtr");
 

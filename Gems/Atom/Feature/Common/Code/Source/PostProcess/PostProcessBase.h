@@ -28,7 +28,7 @@ namespace AZ
             friend class PostProcessFeatureProcessor;
         public:
             AZ_RTTI(AZ::Render::PostProcessBase, "{DDA620D0-12AB-471A-82F8-701BCD1A00D8}");
-            AZ_CLASS_ALLOCATOR(PostProcessBase, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PostProcessBase, SystemAllocator);
 
             PostProcessBase(PostProcessFeatureProcessor* featureProcessor);
 

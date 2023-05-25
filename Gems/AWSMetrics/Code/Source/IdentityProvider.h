@@ -14,8 +14,6 @@
 
 namespace AWSMetrics
 {
-    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
-
     //! Base class to be implemented by IdentityProvider to retrive an ID for identity.
     class IdentityProvider
     {

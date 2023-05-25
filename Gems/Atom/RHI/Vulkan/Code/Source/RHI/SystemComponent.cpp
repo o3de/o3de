@@ -121,6 +121,12 @@ namespace AZ
             return Vulkan::RHIType;
         }
 
+        bool SystemComponent::SupportsXR() const
+        {
+            // Vulkan RHI supports Openxr
+            return true;
+        }
+
         RHI::PhysicalDeviceList SystemComponent::EnumeratePhysicalDevices()
         {
             RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();

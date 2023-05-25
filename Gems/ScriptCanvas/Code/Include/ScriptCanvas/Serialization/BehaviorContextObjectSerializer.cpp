@@ -15,7 +15,7 @@ using namespace ScriptCanvas;
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BehaviorContextObjectSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(BehaviorContextObjectSerializer, SystemAllocator);
 
     JsonSerializationResult::Result BehaviorContextObjectSerializer::Load
         ( void* outputValue

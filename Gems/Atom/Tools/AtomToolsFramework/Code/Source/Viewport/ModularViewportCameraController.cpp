@@ -172,13 +172,11 @@ namespace AtomToolsFramework
         controller->SetupCameraControllerPriority(m_priorityFn);
         controller->SetupCameraControllerViewportContext(m_modularCameraViewportContext);
 
-        auto handleCameraChange = [this]([[maybe_unused]] const AZ::Matrix4x4& cameraView)
+        auto handleCameraChangeFn = [this]([[maybe_unused]] const AZ::Matrix4x4& cameraView)
         {
             // ignore these updates if the camera is being updated internally
             if (!m_updatingTransformInternally)
             {
-                m_previousCamera = m_targetCamera;
-
                 const AZ::Transform transform = m_modularCameraViewportContext->GetCameraTransform();
                 const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(transform));
                 UpdateCameraFromTranslationAndRotation(m_targetCamera, transform.GetTranslation(), eulerAngles);
@@ -189,7 +187,7 @@ namespace AtomToolsFramework
             }
         };
 
-        m_cameraViewMatrixChangeHandler = AZ::RPI::MatrixChangedEvent::Handler(handleCameraChange);
+        m_cameraViewMatrixChangeHandler = AZ::RPI::MatrixChangedEvent::Handler(handleCameraChangeFn);
         m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
 
         ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
@@ -198,6 +196,7 @@ namespace AtomToolsFramework
 
     ModularViewportCameraControllerInstance::~ModularViewportCameraControllerInstance()
     {
+        m_cameraViewMatrixChangeHandler.Disconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler::BusDisconnect();
         ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
     }
@@ -381,7 +380,7 @@ namespace AtomToolsFramework
     {
         if (!m_storedCamera.has_value())
         {
-            m_storedCamera = m_previousCamera;
+            m_storedCamera = m_targetCamera;
         }
 
         const auto angles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(worldFromLocal.GetRotation()));
@@ -390,6 +389,11 @@ namespace AtomToolsFramework
         m_targetCamera.m_offset = AZ::Vector3::CreateZero();
         m_targetCamera.m_pivot = worldFromLocal.GetTranslation();
         m_targetRoll = angles.GetY();
+
+        m_camera = m_targetCamera;
+        m_roll = m_targetRoll;
+
+        ReconnectViewMatrixChangeHandler();
     }
 
     void ModularViewportCameraControllerInstance::StopTrackingTransform()
@@ -398,9 +402,14 @@ namespace AtomToolsFramework
         {
             m_targetCamera = m_storedCamera.value();
             m_targetRoll = 0.0f;
+
+            m_camera = m_targetCamera;
+            m_roll = m_targetRoll;
         }
 
         m_storedCamera.reset();
+
+        ReconnectViewMatrixChangeHandler();
     }
 
     bool ModularViewportCameraControllerInstance::IsTrackingTransform() const
@@ -411,6 +420,12 @@ namespace AtomToolsFramework
     void ModularViewportCameraControllerInstance::OnViewportFocusOut()
     {
         ResetCameras();
+    }
+
+    void ModularViewportCameraControllerInstance::ReconnectViewMatrixChangeHandler()
+    {
+        m_cameraViewMatrixChangeHandler.Disconnect();
+        m_modularCameraViewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
     }
 
     AZ::Transform PlaceholderModularCameraViewportContextImpl::GetCameraTransform() const

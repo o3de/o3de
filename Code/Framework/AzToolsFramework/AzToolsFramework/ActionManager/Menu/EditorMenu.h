@@ -33,11 +33,11 @@ namespace AzToolsFramework
     class EditorMenu final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorMenu, AZ::SystemAllocator);
         AZ_RTTI(EditorMenu, "{6B6F6802-C587-4734-A5DB-5732329EED03}");
 
         EditorMenu();
-        explicit EditorMenu(const AZStd::string& name);
+        EditorMenu(AZStd::string identifier, const AZStd::string& name);
 
         static void Initialize(QWidget* defaultParentWidget);
         static void Reflect(AZ::ReflectContext* context);
@@ -66,6 +66,10 @@ namespace AzToolsFramework
         QMenu* GetMenu();
         const QMenu* GetMenu() const;
 
+        // Displays the Menu
+        void DisplayAtPosition(QPoint screenPosition) const;
+        void DisplayUnderCursor() const;
+
         // Clears the menu and creates a new one from the EditorMenu information.
         void RefreshMenu();
 
@@ -80,7 +84,7 @@ namespace AzToolsFramework
 
         struct MenuItem final
         {
-            AZ_CLASS_ALLOCATOR(MenuItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MenuItem, AZ::SystemAllocator);
             AZ_RTTI(MenuItem, "{1AB076C8-CF8F-42C1-98DB-856A067A4D21}");
 
             explicit MenuItem(
@@ -95,7 +99,12 @@ namespace AzToolsFramework
             QWidgetAction* m_widgetAction = nullptr;
         };
 
+        // Record if this menu was empty at the last refresh.
+        // Used to trigger a refresh on the parents when the situation changes.
+        bool m_empty = true;
+
         QMenu* m_menu = nullptr;
+        AZStd::string m_identifier;
         AZStd::map<int, AZStd::vector<MenuItem>> m_menuItems;
         AZStd::unordered_map<AZStd::string, int> m_actionToSortKeyMap;
         AZStd::unordered_map<AZStd::string, int> m_widgetToSortKeyMap;

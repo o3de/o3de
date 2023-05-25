@@ -12,6 +12,9 @@
 #include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
+#include <AzFramework/AzFramework_Traits_Platform.h> // Need to know the state of AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -235,14 +238,16 @@ namespace AzFramework
 
         // register default app script context if there is one
         AZ::ScriptContext* defaultScriptContext = nullptr;
-        EBUS_EVENT_RESULT(defaultScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            defaultScriptContext, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
         if (defaultScriptContext)
         {
             RegisterContext(defaultScriptContext, "Default");
         }
 
         AZ::ScriptContext* cryScriptContext = nullptr;
-        EBUS_EVENT_RESULT(cryScriptContext, AZ::ScriptSystemRequestBus, GetContext, AZ::ScriptContextIds::CryScriptContextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            cryScriptContext, &AZ::ScriptSystemRequestBus::Events::GetContext, AZ::ScriptContextIds::CryScriptContextId);
         if (cryScriptContext)
         {
             RegisterContext(cryScriptContext, "Cry");
@@ -416,6 +421,23 @@ namespace AzFramework
         {
             m_executionState = SDA_STATE_PAUSED;
 
+#if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+            // We are about to block the main thread, only allowing to process
+            // network events. This works fine on Windows, but on Linux the mouse
+            // pointer doesn't show up when the user ALT+TAB out of the Editor window.
+            // We need to make mouse cursor visible again and it fixes all the Linux
+            // problems, and it doesn't hurt Windows either.
+            SystemCursorState systemCursorState{}; // Remember the state of the cursor.
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id,
+                [&systemCursorState](AzFramework::InputSystemCursorRequests* requests)
+                {
+                    systemCursorState = requests->GetSystemCursorState();
+                    requests->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
+                }
+            );
+#endif
+
             ScriptDebugAckBreakpoint response;
             response.m_id = AZ_CRC("BreakpointHit", 0xf1a38e0b);
             response.m_moduleName = breakpoint->m_sourceName;
@@ -443,6 +465,15 @@ namespace AzFramework
                 AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
                 AZStd::this_thread::yield();
             }
+
+#if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+            // Restore the state of the mouse cursor, and the game should continue running as usual.
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                systemCursorState);
+#endif
+
         }
     }
     //-------------------------------------------------------------------------
@@ -754,7 +785,6 @@ namespace AzFramework
                     "Script Debug Agent", "Provides remote debugging services for script contexts")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Profiling")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -763,8 +793,11 @@ namespace AzFramework
         static bool registeredComponentUuidWithMetricsAlready = false;
         if (!registeredComponentUuidWithMetricsAlready)
         {
-            // have to let the metrics system know that it's ok to send back the name of the ScriptDebugAgent component to Amazon as plain text, without hashing
-            EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, AZStd::vector<AZ::Uuid>{ azrtti_typeid<ScriptDebugAgent>() });
+            // have to let the metrics system know that it's ok to send back the name of the ScriptDebugAgent component to Amazon as plain
+            // text, without hashing
+            AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+                &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending,
+                AZStd::vector<AZ::Uuid>{ azrtti_typeid<ScriptDebugAgent>() });
 
             // only ever do this once
             registeredComponentUuidWithMetricsAlready = true;

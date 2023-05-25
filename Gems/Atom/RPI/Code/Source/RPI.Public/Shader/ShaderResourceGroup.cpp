@@ -88,6 +88,8 @@ namespace AZ
 
             m_pool = ShaderResourceGroupPool::FindOrCreate(
                 AZ::Data::Asset<ShaderAsset>(&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad), supervariantIndex, srgName);
+            AZ_Assert(m_layout->GetHash() == m_pool->GetRHIPool()->GetLayout()->GetHash(), "This can happen if two shaders are including the same partial srg from different .azsl shader files and adding more custom entries to the srg. Recommendation is to just make a bigger SRG that can be shared between the two shaders.");
+            
             if (!m_pool)
             {
                 return RHI::ResultCode::Fail;

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 namespace AzToolsFramework
 {
@@ -48,6 +49,7 @@ namespace AzToolsFramework
     inline constexpr float DefaultManipulatorViewBaseScale = 1.0f;
     inline constexpr float MinManipulatorViewBaseScale = 0.25f;
     inline constexpr float MaxManipulatorViewBaseScale = 2.0f;
+    inline constexpr ViewportInteraction::KeyboardModifier DefaultSymmetricalEditingModifier = ViewportInteraction::KeyboardModifier::Shift;
 
     bool FlipManipulatorAxesTowardsView();
     void SetFlipManipulatorAxesTowardsView(bool enabled);

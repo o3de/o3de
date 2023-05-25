@@ -242,7 +242,7 @@ namespace AZ
             : public GenericStream
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileIOStream, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileIOStream, SystemAllocator);
             FileIOStream();
             FileIOStream(HandleType fileHandle, AZ::IO::OpenMode mode, bool ownsHandle);
             FileIOStream(const char* path, AZ::IO::OpenMode mode, bool errorOnFailure = false);

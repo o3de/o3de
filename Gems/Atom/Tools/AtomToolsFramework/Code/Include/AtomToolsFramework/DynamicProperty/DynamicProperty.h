@@ -21,7 +21,7 @@ namespace AtomToolsFramework
     struct DynamicPropertyConfig
     {
         AZ_TYPE_INFO(DynamicPropertyConfig, "{9CA40E92-7F03-42BE-B6AA-51F30EE5796C}");
-        AZ_CLASS_ALLOCATOR(DynamicPropertyConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicPropertyConfig, AZ::SystemAllocator);
 
         AZ::Name m_id; //!< The full property ID, which will normally be "groupName.propertyName"
         AZStd::string m_name;
@@ -53,7 +53,7 @@ namespace AtomToolsFramework
     struct DynamicProperty
     {
         AZ_TYPE_INFO(DynamicProperty, "{B0E7DCC6-65D9-4F0C-86AE-AE768BC027F3}");
-        AZ_CLASS_ALLOCATOR(DynamicProperty, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicProperty, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
         static const AZ::Edit::ElementData* GetPropertyEditData(const void* handlerPtr, const void* elementPtr, const AZ::Uuid& elementType);

@@ -71,6 +71,7 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME Meshlets.Clients NAMESPACE Gem TARGETS Gem::Meshlets)
 ly_create_alias(NAME Meshlets.Servers NAMESPACE Gem TARGETS Gem::Meshlets)
+ly_create_alias(NAME Meshlets.Unified NAMESPACE Gem TARGETS Gem::Meshlets)
 
 # If we are on a host platform, we want to add the host tools targets like the Meshlets.Editor target which
 # will also depend on Meshlets.Static

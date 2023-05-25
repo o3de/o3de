@@ -32,7 +32,7 @@ namespace AZ
             , public AzFramework::ViewportRequestBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(ViewportContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ViewportContext, AZ::SystemAllocator);
 
             //! Used by ViewportContextManager, use AZ::Interface<ViewportContextRequestsInterface>::Get()->CreateViewportContext to create a viewport
             //! context from outside of the ViewportContextManager.

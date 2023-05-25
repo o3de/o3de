@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{AFE06E24-AAB9-4843-8C25-12EAA76A5779}",
+        "category": "Vertex",
+        "title": "Tangent",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The surface tangent of the current vertex or fragment",
+        "slotDataTypeGroups": [
+            "outTangent",
+            "outX|outY|outZ"
+        ],
+        "outputSlots": [
+            {
+                "name": "outTangent",
+                "displayName": "Tangent",
+                "description": "Tangent",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_TANGENT.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

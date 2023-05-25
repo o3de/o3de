@@ -36,7 +36,6 @@ namespace AZ
                 {
                     ec->Class<AtomFontSystemComponent>("Font", "Manages lifetime of the font subsystem")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                         ;
                 }

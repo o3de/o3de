@@ -57,11 +57,11 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
+            imagePool->SetName(AZ::Name(poolAsset.GetPoolName()));
             RHI::ResultCode resultCode = imagePool->Init(device, *desc);
             if (resultCode == RHI::ResultCode::Success)
             {
                 m_pool = imagePool;
-                m_pool->SetName(AZ::Name{ poolAsset.GetPoolName() });
             }
             return resultCode;
         }

@@ -40,7 +40,7 @@ class UiAnimationSystem
     typedef AZStd::vector<PlayingUIAnimSequence> PlayingSequences;
 
 public:
-    AZ_CLASS_ALLOCATOR(UiAnimationSystem, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(UiAnimationSystem, AZ::SystemAllocator)
     AZ_RTTI(UiAnimationSystem, "{2592269B-EF74-4409-B29F-682DC0B45DAF}", IUiAnimationSystem)
 
     UiAnimationSystem();

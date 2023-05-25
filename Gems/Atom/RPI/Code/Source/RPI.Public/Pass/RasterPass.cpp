@@ -245,7 +245,7 @@ namespace AZ
         {
             RHI::CommandList* commandList = context.GetCommandList();
 
-            if (!m_drawListView.empty())
+            if (context.GetSubmitRange().m_startIndex != context.GetSubmitRange().m_endIndex)
             {
                 commandList->SetViewport(m_viewportState);
                 commandList->SetScissor(m_scissorState);

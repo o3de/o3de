@@ -7,7 +7,7 @@
 #
 
 set(FILES
-    Source/AudioEngineWwiseModule.cpp
     Source/AudioEngineWwiseGemSystemComponent.cpp
     Source/AudioEngineWwiseGemSystemComponent.h
+    Source/AudioEngineWwiseModule.cpp
 )

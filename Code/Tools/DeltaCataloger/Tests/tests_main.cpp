@@ -17,6 +17,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleAPI.h>
 #include <AzToolsFramework/AssetBundle/AssetBundleComponent.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -172,4 +173,4 @@ TEST_F(AssetBundleComponentTests, RemoveNonAssetEntries_PakAssetEntryWasRemoved_
     EXPECT_EQ(itr, fileEntriesHasCatalog.end());
 }
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);

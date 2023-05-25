@@ -568,6 +568,9 @@ endfunction()
 # \arg:ly_THIRD_PARTY_LIBRARIES name of the target libraries to validate existance of through the find_package command.
 #
 function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
+    # Support for deprecated LY_VERSION_ENGINE_NAME used in 3p-package-source and misc 3p packages
+    set(LY_VERSION_ENGINE_NAME ${O3DE_ENGINE_NAME})
+
     # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
     # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
     foreach(dependency ${ly_THIRD_PARTY_LIBRARIES})

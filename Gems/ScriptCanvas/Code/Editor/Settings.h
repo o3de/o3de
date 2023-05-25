@@ -37,7 +37,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(ScriptCanvasConstructPresets, "{191DCCB3-670F-4243-813E-DF23BE838F45}", GraphCanvas::EditorConstructPresets);
-            AZ_CLASS_ALLOCATOR(ScriptCanvasConstructPresets, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasConstructPresets, AZ::SystemAllocator);
 
             ScriptCanvasConstructPresets();
             ~ScriptCanvasConstructPresets() override = default;
@@ -62,7 +62,7 @@ namespace ScriptCanvasEditor
 
         
             AZ_RTTI(EditorWorkspace, "{67DACC4D-B92C-4B5A-8884-6AF7C7B74246}", AZ::UserSettings);
-            AZ_CLASS_ALLOCATOR(EditorWorkspace, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorWorkspace, AZ::SystemAllocator);
 
             static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootDataElementNode);
             static void Reflect(AZ::ReflectContext* context);
@@ -102,7 +102,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(ToggleableConfiguration, "{24E8CAE7-0B5E-4B5E-94CC-08B9148B4AB5}");
-            AZ_CLASS_ALLOCATOR(ToggleableConfiguration, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ToggleableConfiguration, AZ::SystemAllocator);
 
             ToggleableConfiguration()
                 : ToggleableConfiguration(false, 1000)
@@ -127,7 +127,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(AutoSaveSettings, "{FAB6437B-8BC2-46E1-B364-986DEBD8376A}");
-            AZ_CLASS_ALLOCATOR(AutoSaveSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AutoSaveSettings, AZ::SystemAllocator);
 
             AutoSaveSettings(bool enabled = false, int timeSeconds = 10)
                 : m_enabled(enabled)
@@ -147,7 +147,7 @@ namespace ScriptCanvasEditor
             friend class ScriptCanvasEditorSettings;
         public:
             AZ_RTTI(ShakeToDespliceSettings, "{6401FA20-7A17-407E-81E3-D1389C9C70B7}");
-            AZ_CLASS_ALLOCATOR(ShakeToDespliceSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShakeToDespliceSettings, AZ::SystemAllocator);
 
             ShakeToDespliceSettings()
                 : m_enabled(true)
@@ -194,7 +194,7 @@ namespace ScriptCanvasEditor
             friend class ScriptCanvasEditorSettings;
         public:
             AZ_RTTI(ZoomSettings, "{276D3E97-B38C-4A3D-A484-E5A5D0A2D942}");
-            AZ_CLASS_ALLOCATOR(ZoomSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ZoomSettings, AZ::SystemAllocator);
 
             ZoomSettings()
                 : m_zoomInSetting(2.0f)
@@ -219,7 +219,7 @@ namespace ScriptCanvasEditor
             friend class ScriptCanvasEditorSettings;
         public:
             AZ_RTTI(EdgePanningSettings, "{38399A9B-8D4B-4198-AAA2-D1E8761F5563}");
-            AZ_CLASS_ALLOCATOR(EdgePanningSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EdgePanningSettings, AZ::SystemAllocator);
 
             EdgePanningSettings()
                 : m_edgeScrollPercent(5.0f)
@@ -253,7 +253,7 @@ namespace ScriptCanvasEditor
             friend class ScriptCanvasEditorSettings;
         public:
             AZ_RTTI(ExperimentalSettings, "{13B275AF-A2D4-4D18-8236-CC0D19043C85}");
-            AZ_CLASS_ALLOCATOR(ExperimentalSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ExperimentalSettings, AZ::SystemAllocator);
 
             ExperimentalSettings()
                 : m_showNetworkProperties(false)
@@ -277,7 +277,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(StylingSettings, "{2814140B-0679-492F-BE37-F89DA1414E67}");
-            AZ_CLASS_ALLOCATOR(StylingSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StylingSettings, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -307,7 +307,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_RTTI(ScriptCanvasEditorSettings, "{D8D5453C-BFB8-4C71-BBAF-0F10FDD69B3F}", AZ::UserSettings);
-            AZ_CLASS_ALLOCATOR(ScriptCanvasEditorSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasEditorSettings, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
             static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);

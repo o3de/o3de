@@ -18,7 +18,7 @@ namespace AzToolsFramework
 {
     const int GrowTextEdit::s_padding = 10;
 
-    AZ_CLASS_ALLOCATOR_IMPL(GrowTextEdit, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(GrowTextEdit, AZ::SystemAllocator)
 
     GrowTextEdit::GrowTextEdit(QWidget* parent)
         : QTextEdit(parent)

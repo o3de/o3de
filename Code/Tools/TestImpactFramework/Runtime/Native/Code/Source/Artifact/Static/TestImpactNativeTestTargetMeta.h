@@ -9,6 +9,7 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactRepoPath.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <Artifact/Static/TestImpactTestTargetMeta.h>
 

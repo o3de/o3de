@@ -33,7 +33,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(Model, "{C30F5522-B381-4B38-BBAF-6E0B1885C8B9}");
-            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator);
 
             static Data::Instance<Model> FindOrCreate(const Data::Asset<ModelAsset>& modelAsset);
 

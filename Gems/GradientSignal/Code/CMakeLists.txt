@@ -40,7 +40,7 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
         PUBLIC
             AZ::AzCore
             Gem::GradientSignal.Static
@@ -52,6 +52,7 @@ ly_add_target(
 # Load the "Gem::GradientSignal" module in Clients and Servers
 ly_create_alias(NAME GradientSignal.Clients NAMESPACE Gem TARGETS Gem::GradientSignal)
 ly_create_alias(NAME GradientSignal.Servers NAMESPACE Gem TARGETS Gem::GradientSignal)
+ly_create_alias(NAME GradientSignal.Unified NAMESPACE Gem TARGETS Gem::GradientSignal)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     
@@ -84,8 +85,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::GradientSignal.Static
                 Gem::SurfaceData
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
+                Gem::LmbrCentral.Editor.Static
     )
 
     ly_add_target(
@@ -101,7 +101,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::GradientSignal.Editor.Static
-                Gem::LmbrCentral.Editor
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
@@ -142,6 +141,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzTestShared
+                Gem::Atom_RPI.TestUtils.Static
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
                 Gem::LmbrCentral.Mocks
@@ -173,6 +173,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_googlebenchmark(
@@ -206,6 +207,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::GradientSignal.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 

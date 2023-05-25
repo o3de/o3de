@@ -19,7 +19,7 @@ class CSequenceTrack
     : public TAnimTrack<ISequenceKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CSequenceTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CSequenceTrack, AZ::SystemAllocator);
     AZ_RTTI(CSequenceTrack, "{5801883A-5289-4FA1-BECE-9EF02C1D62F5}", IAnimTrack);
 
     void GetKeyInfo(int key, const char*& description, float& duration);

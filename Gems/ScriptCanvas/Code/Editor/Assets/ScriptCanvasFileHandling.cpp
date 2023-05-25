@@ -33,7 +33,7 @@ namespace ScriptCanvasFileHandlingCpp
     class SourceTreeLoader
     {
     public:
-        AZ_CLASS_ALLOCATOR(SourceTreeLoader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceTreeLoader, AZ::SystemAllocator);
 
         ScriptCanvas::SourceHandle m_source;
         AZStd::vector<SourceTreeLoader> m_dependencies;

@@ -47,7 +47,7 @@ namespace AzFramework
         virtual void SetColor(const AZ::Color& color) { (void)color; }
         virtual void SetAlpha(float a) { (void)a; }
         virtual void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) { (void)p1; (void)p2; (void)p3; (void)p4; }
-        virtual void DrawQuad(float width, float height) { (void)width; (void)height; }
+        virtual void DrawQuad(float width, float height, bool drawShaded = true) { (void)width; (void)height; (void)drawShaded; }
         virtual void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) { (void)p1; (void)p2; (void)p3; (void)p4; }
         virtual void DrawWireQuad(float width, float height) { (void)width; (void)height; }
         virtual void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) { (void)p1; (void)p2; (void)p3; (void)p4; (void)firstColor; (void)secondColor; }
@@ -91,7 +91,7 @@ namespace AzFramework
         virtual void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) { (void)pos; (void)axis; (void)radius; }
         virtual void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) { (void)pos; (void)dir; (void)radius; }
         virtual void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded = true) { (void)pos; (void)radius; (void)drawShaded; }
-        virtual void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) { (void)pos; (void)dir; (void)radius; }
+        virtual void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded = true) { (void)pos; (void)dir; (void)radius; (void)drawShaded; }
         virtual void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float fHeadScale = 1, bool b2SidedArrow = false) { (void)src; (void)trg; (void)fHeadScale; (void)b2SidedArrow; }
         virtual void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) { (void)pos; (void)size; (void)text; (void)bCenter; (void)srcOffsetX; (void)srcOffsetY; }
         virtual void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) { (void)x; (void)y; (void)size; (void)text; (void)bCenter; }

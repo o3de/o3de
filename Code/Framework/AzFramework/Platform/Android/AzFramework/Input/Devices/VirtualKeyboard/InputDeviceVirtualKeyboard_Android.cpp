@@ -40,7 +40,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceVirtualKeyboardAndroid, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor

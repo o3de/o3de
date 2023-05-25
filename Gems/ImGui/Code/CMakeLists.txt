@@ -93,6 +93,7 @@ ly_add_target(
 # Load the above "Gem::ImGui" module in Clients and Servers:
 ly_create_alias(NAME ImGui.Clients NAMESPACE Gem TARGETS Gem::ImGui)
 ly_create_alias(NAME ImGui.Servers NAMESPACE Gem TARGETS Gem::ImGui)
+ly_create_alias(NAME ImGui.Unified NAMESPACE Gem TARGETS Gem::ImGui)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

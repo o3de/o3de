@@ -25,7 +25,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationMac, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationMac, AZ::SystemAllocator);
         ApplicationMac();
         ~ApplicationMac() override;
 

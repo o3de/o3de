@@ -26,7 +26,6 @@ namespace Audio
                 editContext->Class<MicrophoneSystemComponent>("Microphone", "Provides access to a connected Microphone Device to capture and read the data")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Audio")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

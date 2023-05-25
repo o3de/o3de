@@ -33,7 +33,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasComboBoxFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasComboBoxFilterProxyModel, AZ::SystemAllocator);
 
         GraphCanvasComboBoxFilterProxyModel(QObject* parent = nullptr);
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
@@ -125,7 +125,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasComboBox, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasComboBox, AZ::SystemAllocator);
         
         GraphCanvasComboBox(ComboBoxItemModelInterface* comboBoxModel, QWidget* parent = nullptr);
         ~GraphCanvasComboBox();

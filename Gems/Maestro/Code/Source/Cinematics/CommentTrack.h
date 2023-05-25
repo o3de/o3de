@@ -19,7 +19,7 @@ class CCommentTrack
     : public TAnimTrack<ICommentKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CCommentTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CCommentTrack, AZ::SystemAllocator);
     AZ_RTTI(CCommentTrack, "{A28FE42D-5B42-4E47-9813-4290D275D5A9}", IAnimTrack);
 
     //-----------------------------------------------------------------------------

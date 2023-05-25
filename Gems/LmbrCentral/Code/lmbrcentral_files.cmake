@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    Source/Ai/NavigationSystemComponent.h
-    Source/Ai/NavigationSystemComponent.cpp
     Source/Audio/AudioAreaEnvironmentComponent.h
     Source/Audio/AudioAreaEnvironmentComponent.cpp
     Source/Audio/AudioEnvironmentComponent.h

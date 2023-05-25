@@ -121,9 +121,6 @@ public:
 
     void SetUpFixture(bool mockSettingsRegistry = true)
     {
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
         m_localFileIO = aznew AZ::IO::LocalFileIO();
         m_otherFileIO = AZ::IO::FileIOBase::GetInstance();
         AZ::IO::FileIOBase::SetInstance(nullptr);
@@ -187,9 +184,6 @@ public:
         {
             AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
         }
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
     bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)

@@ -141,6 +141,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
         AZ_RTTI(MyTestAssetData, "{B78C6629-95F4-4211-AE7F-4DE58C0D3C33}", AZ::Data::AssetData);
+        AZ_CLASS_ALLOCATOR(MyTestAssetData, AZ::SystemAllocator)
         AZ::u64 m_number = 0;
 
         void SetUseCount(AZ::s32 value)

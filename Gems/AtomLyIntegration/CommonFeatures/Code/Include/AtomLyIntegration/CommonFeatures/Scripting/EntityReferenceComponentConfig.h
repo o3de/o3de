@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(EntityReferenceComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::EntityReferenceComponentConfig, "{12D214C7-878A-48D2-AFDD-4FCFF0BBC876}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

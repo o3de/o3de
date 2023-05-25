@@ -75,6 +75,19 @@ namespace PhysX::Benchmarks
             //! Number of iterations for each test
             static const int NumIterations = 3;
         } // namespace BenchmarkRange
+
+        //! Settings used to setup the activation benchmark
+        namespace ActivationBenchmarkSettings
+        {
+            //! Values passed to activation benchmark to select the number of rigid bodies to activate during each test
+            //! Current values will run tests between StartRange to EndRange (inclusive), multiplying by RangeMultiplier each step.
+            static const int StartRange = 100;
+            static const int EndRange = 100000;
+            static const int RangeMultipler = 10;
+
+            //! Number of iterations for each test
+            static const int NumIterations = 10;
+        } // namespace ActivationBenchmarkSettings
     } // namespace RigidBodyConstants
 
     namespace Utils
@@ -132,6 +145,58 @@ namespace PhysX::Benchmarks
             AzPhysics::SimulatedBodyEvents::OnCollisionPersist::Handler m_onCollisionPersistHandler;
             AzPhysics::SimulatedBodyEvents::OnCollisionEnd::Handler m_onCollisionEndHandler;
         };
+
+        //! Class to mock a runtime component that needs a rigid body during activation.
+        class MockRigidBodyDependantComponent
+            : public AZ::Component
+            , protected Physics::RigidBodyNotificationBus::Handler
+        {
+        public:
+            AZ_COMPONENT(MockRigidBodyDependantComponent, "{3122D81F-525A-4577-A8D7-5F0A2D474F78}");
+            static void Reflect(AZ::ReflectContext* context)
+            {
+                if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+                {
+                    serializeContext->Class<MockRigidBodyDependantComponent, AZ::Component>()
+                        ->Version(1);
+                }
+            }
+
+            MockRigidBodyDependantComponent() = default;
+            ~MockRigidBodyDependantComponent() = default;
+
+        protected:
+            static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+            {
+                required.push_back(AZ_CRC_CE("TransformService"));
+                required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
+            }
+
+            void Activate() override
+            {
+                // During activation the simulated bodies are not created yet.
+                // Connect to RigidBodyNotificationBus to listen when it's enabled after creation.
+                Physics::RigidBodyNotificationBus::Handler::BusConnect(GetEntityId());
+            }
+
+            void Deactivate() override
+            {
+                Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
+            }
+
+            void OnPhysicsEnabled(const AZ::EntityId& entityId) override
+            {
+                m_physicsRigidBodyComponent = Physics::RigidBodyRequestBus::FindFirstHandler(entityId);
+                AZ_Assert(m_physicsRigidBodyComponent, "Physics Rigid Body is required on entity %s", GetEntity()->GetName().c_str());
+            }
+
+            void OnPhysicsDisabled([[maybe_unused]] const AZ::EntityId& entityId) override
+            {
+                m_physicsRigidBodyComponent = nullptr;
+            }
+
+            Physics::RigidBodyRequests* m_physicsRigidBodyComponent = nullptr;
+        };
     } // namespace Utils
 
     //! Rigid body performance fixture.
@@ -142,6 +207,16 @@ namespace PhysX::Benchmarks
     protected:
         virtual void internalSetUp()
         {
+            // Register MockRigidBodyDependantComponent with the serialize context
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            if (serializeContext)
+            {
+                m_mockRigidBodyDependantComponentDescriptor =
+                    AZStd::unique_ptr<AZ::ComponentDescriptor>(Utils::MockRigidBodyDependantComponent::CreateDescriptor());
+                m_mockRigidBodyDependantComponentDescriptor->Reflect(serializeContext);
+            }
+
             PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
             m_system = AZ::Interface<Physics::System>::Get();
@@ -153,6 +228,15 @@ namespace PhysX::Benchmarks
         {
             m_terrainEntity = nullptr;
             PhysXBaseBenchmarkFixture::TearDownInternal();
+
+            // Unregister MockRigidBodyDependantComponent with the serialize context
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            if (serializeContext)
+            {
+                serializeContext->UnregisterType(azrtti_typeid<Utils::MockRigidBodyDependantComponent>());
+            }
+            m_mockRigidBodyDependantComponentDescriptor.reset();
         }
     public:
         void SetUp(const benchmark::State&) override
@@ -188,6 +272,7 @@ namespace PhysX::Benchmarks
 
         Physics::System *m_system;
         EntityPtr m_terrainEntity;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_mockRigidBodyDependantComponentDescriptor;
     };
 
     void PhysXRigidbodyBenchmarkFixture::SetLabel(benchmark::State& state, int rigidBodyType)
@@ -370,6 +455,98 @@ namespace PhysX::Benchmarks
         Utils::ReportFrameStandardDeviationAndMeanCounters(state, tickTimes, subTickTracker.GetSubTickTimes());
 
         SetLabel(state, bodyType);
+    }
+
+    //! BM_RigidBody_Activation - This test will create the requested number of rigid bodies, including
+    //! mock components that depend on the rigid bodies, and measure the time it takes to activate them.
+    BENCHMARK_DEFINE_F(PhysXRigidbodyBenchmarkFixture, BM_RigidBody_Activation)(benchmark::State& state)
+    {
+        // get the request number of rigid bodies and prepare to spawn them
+        const int numRigidBodies = aznumeric_cast<int>(state.range(0));
+
+        const float boxSize = 1.0f;
+        const float boxSpacing = 0.25f;
+
+        // common settings for each rigid body
+        const float boxSizeWithSpacing = boxSize + boxSpacing;
+        const int boxesPerCol = static_cast<const int>(RigidBodyConstants::TerrainSize / boxSizeWithSpacing) - 1;
+        int spawnColIndex = 0;
+        int spawnRowIndex = 0;
+
+        // function to generate the rigid bodies position / orientation / mass
+        Utils::GenerateSpawnPositionFuncPtr posGenerator =
+            [boxSize, boxSizeWithSpacing, boxesPerCol, &spawnColIndex, &spawnRowIndex]([[maybe_unused]] int idx) -> const AZ::Vector3
+        {
+            const float x = boxSizeWithSpacing + (boxSizeWithSpacing * spawnColIndex);
+            const float y = boxSizeWithSpacing + (boxSizeWithSpacing * spawnRowIndex);
+            const float z = boxSize / 2.0f;
+
+            // advance to the next position to spawn the next rigid body
+            spawnColIndex++;
+            if (spawnColIndex >= boxesPerCol)
+            {
+                spawnColIndex = 0;
+                spawnRowIndex++;
+            }
+            return AZ::Vector3(x, y, z);
+        };
+
+        auto boxShapeConfiguration =
+            AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));
+        Utils::GenerateColliderFuncPtr colliderGenerator = [&boxShapeConfiguration]([[maybe_unused]] int idx)
+        {
+            return boxShapeConfiguration;
+        };
+
+        // spawn the rigid bodies without activating them
+        Utils::BenchmarkRigidBodies rigidBodies = Utils::CreateRigidBodies(
+            numRigidBodies,
+            GetDefaultSceneHandle(),
+            RigidBodyConstants::CCDEnabled,
+            RigidBodyEntity,
+            &colliderGenerator,
+            &posGenerator,
+            nullptr /*genSpawnOriFuncPtr*/,
+            nullptr /*genMassFuncPtr*/,
+            nullptr /*genEntityIdFuncPtr*/,
+            false /*activateEntities*/);
+
+        auto& entityList = AZStd::get<PhysX::EntityList>(rigidBodies);
+
+        // Add mock components that depend on rigid body during activation and
+        // therefore are required to use RigidBodyNotification bus.
+        for (auto& entity : entityList)
+        {
+            entity->CreateComponent<Utils::MockRigidBodyDependantComponent>();
+        }
+
+        Types::TimeList activationTimes;
+
+        for ([[maybe_unused]] auto _ : state)
+        {
+            // Measure time to activate the entities
+            auto start = AZStd::chrono::steady_clock::now();
+
+            for (auto& entity : entityList)
+            {
+                entity->Activate();
+            }
+
+            auto tickElapsedMilliseconds = Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
+            activationTimes.emplace_back(tickElapsedMilliseconds.count());
+
+            // Deactivate the entities for the next state iteration
+            for (auto& entity : entityList)
+            {
+                entity->Deactivate();
+            }
+        }
+
+        entityList.clear();
+
+        // sort the activation times and get the P50, P90, P99 percentiles
+        Utils::ReportPercentiles(state, activationTimes);
+        Utils::ReportStandardDeviationAndMeanCounters(state, activationTimes);
     }
 
     //! Same as the PhysXRigidbodyBenchmarkFixture, adds a world event handler to receive collision events
@@ -588,6 +765,14 @@ namespace PhysX::Benchmarks
                    { RigidBodyApiObject, RigidBodyEntity } })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RigidBodyConstants::BenchmarkSettings::NumIterations)
+        ->MeasureProcessCPUTime();
+        ;
+
+    BENCHMARK_REGISTER_F(PhysXRigidbodyBenchmarkFixture, BM_RigidBody_Activation)
+        ->RangeMultiplier(RigidBodyConstants::ActivationBenchmarkSettings::RangeMultipler)
+        ->Ranges({ { RigidBodyConstants::ActivationBenchmarkSettings::StartRange, RigidBodyConstants::ActivationBenchmarkSettings::EndRange } })
+        ->Unit(benchmark::kMillisecond)
+        ->Iterations(RigidBodyConstants::ActivationBenchmarkSettings::NumIterations)
         ->MeasureProcessCPUTime();
         ;
 

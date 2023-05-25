@@ -21,7 +21,7 @@ namespace JsonSerializationTests
         : public JsonSerializerMock
     {
     public:
-        AZ_CLASS_ALLOCATOR(JsonSerializerTemplatedMock, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JsonSerializerTemplatedMock, AZ::SystemAllocator);
         
         ~JsonSerializerTemplatedMock() override = default;
 

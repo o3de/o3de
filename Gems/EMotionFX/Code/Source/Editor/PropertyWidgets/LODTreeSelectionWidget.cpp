@@ -16,7 +16,7 @@ namespace EMotionFX
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionWidget, PropertyWidgetAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionWidget, PropertyWidgetAllocator)
 
             LODTreeSelectionWidget::LODTreeSelectionWidget(QWidget* parent)
                 : NodeTreeSelectionWidget(parent)

@@ -22,7 +22,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : public EditorOnlyEntityHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(WorldEditorOnlyEntityHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(WorldEditorOnlyEntityHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::WorldEditorOnlyEntityHandler, "{55587AE2-B583-48E4-9634-6BFACF6CBF04}", EditorOnlyEntityHandler);
 
         bool IsEntityUniquelyForThisHandler(AZ::Entity* entity) const override;

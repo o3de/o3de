@@ -25,7 +25,7 @@ namespace AzFramework
         //! Custom data struct for two dimensional axis data
         struct AxisData2D : public InputChannel::CustomData
         {
-            AZ_CLASS_ALLOCATOR(AxisData2D, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AxisData2D, AZ::SystemAllocator);
             AZ_RTTI(AxisData2D, "{AA0FF4D4-ED98-4AEE-A3AB-B442287E2B7B}", CustomData);
             ~AxisData2D() override = default;
 
@@ -36,7 +36,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelAxis2D, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelAxis2D, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

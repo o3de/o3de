@@ -35,7 +35,6 @@ namespace EMotionFX
     // This fixture is responsible for creating the scene description used by
     // the actor builder pipeline tests
     using ActorBuilderPipelineFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
