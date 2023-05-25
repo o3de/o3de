@@ -93,6 +93,6 @@ namespace AZ
             constexpr int DefaultDeviceIndex = 0;
         }
 
-        constexpr uint32_t InvalidIndex = aznumeric_cast<uint32_t>(-1);
+        constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();
     }
 }

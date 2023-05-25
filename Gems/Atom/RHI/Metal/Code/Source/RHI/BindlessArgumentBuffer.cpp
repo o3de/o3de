@@ -61,7 +61,7 @@ namespace AZ::Metal
             argDescriptor.access = MTLArgumentAccessReadOnly;
             argDescriptor.textureType = MTLTextureTypeCube;
             argBufferDescriptors[0] = argDescriptor;
-            m_bindlessRWTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWTextures");
+            m_bindlessCubeTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessCubeROTextures");
             mtlArgBuffers.push_back(m_bindlessCubeTextureArgBuffer->GetArgEncoderBuffer());
             mtlArgBufferOffsets.push_back(m_bindlessCubeTextureArgBuffer->GetOffset());
 
@@ -76,7 +76,7 @@ namespace AZ::Metal
             //Unbounded read write buffers
             argDescriptor.access = MTLArgumentAccessReadWrite;
             argBufferDescriptors[0] = argDescriptor;
-            m_bindlessRWBufferArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWTextures");
+            m_bindlessRWBufferArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWBuffers");
             mtlArgBuffers.push_back(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
             mtlArgBufferOffsets.push_back(m_bindlessRWBufferArgBuffer->GetOffset());
             
@@ -101,40 +101,40 @@ namespace AZ::Metal
             //For the bounded approach we have one AB that holds all the bindless resource types
             for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
             {
-                MTLArgumentDescriptor* textureArgDescriptor = [[MTLArgumentDescriptor alloc] init];
+                MTLArgumentDescriptor* resourceArgDescriptor = [[MTLArgumentDescriptor alloc] init];
                 
-                textureArgDescriptor.arrayLength = RHI::Limits::Pipeline::UnboundedArraySize;
-                textureArgDescriptor.dataType = MTLDataTypeTexture;
-                textureArgDescriptor.access = MTLArgumentAccessReadOnly;
+                resourceArgDescriptor.arrayLength = RHI::Limits::Pipeline::UnboundedArraySize;
+                resourceArgDescriptor.dataType = MTLDataTypeTexture;
+                resourceArgDescriptor.access = MTLArgumentAccessReadOnly;
 
-                if (i == m_bindlessSrgDesc.m_roTextureIndex)
+                if(i == m_bindlessSrgDesc.m_roTextureIndex)
                 {
-                    textureArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureIndex;
-                    textureArgDescriptor.textureType = MTLTextureType2D;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureIndex;
+                    resourceArgDescriptor.textureType = MTLTextureType2D;
                 }
-                else if (i == m_bindlessSrgDesc.m_rwTextureIndex)
+                else if(i == m_bindlessSrgDesc.m_rwTextureIndex)
                 {
-                    textureArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwTextureIndex;
-                    textureArgDescriptor.textureType = MTLTextureType2D;
-                    textureArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwTextureIndex;
+                    resourceArgDescriptor.textureType = MTLTextureType2D;
+                    resourceArgDescriptor.access = MTLArgumentAccessReadWrite;
                 }
-                else if (i == m_bindlessSrgDesc.m_roTextureCubeIndex)
+                else if(i == m_bindlessSrgDesc.m_roTextureCubeIndex)
                 {
-                    textureArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureCubeIndex;
-                    textureArgDescriptor.textureType = MTLTextureTypeCube;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureCubeIndex;
+                    resourceArgDescriptor.textureType = MTLTextureTypeCube;
                 }
-                else if (i == m_bindlessSrgDesc.m_roBufferIndex)
+                else if(i == m_bindlessSrgDesc.m_roBufferIndex)
                 {
-                    textureArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roBufferIndex;
-                    textureArgDescriptor.dataType = MTLDataTypePointer;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roBufferIndex;
+                    resourceArgDescriptor.dataType = MTLDataTypePointer;
                 }
-                else if (i == m_bindlessSrgDesc.m_rwBufferIndex)
+                else if(i == m_bindlessSrgDesc.m_rwBufferIndex)
                 {
-                    textureArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwBufferIndex;
-                    textureArgDescriptor.dataType = MTLDataTypePointer;
-                    textureArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwBufferIndex;
+                    resourceArgDescriptor.dataType = MTLDataTypePointer;
+                    resourceArgDescriptor.access = MTLArgumentAccessReadWrite;
                 }
-                argBufferDescriptors.push_back(textureArgDescriptor);
+                argBufferDescriptors.push_back(resourceArgDescriptor);
             }
 
             m_boundedArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessSrg");
