@@ -62,7 +62,7 @@ namespace EMotionFX
 
 #if defined(CARBONATED)
             if (m_motionSetAsset.GetId().IsValid())
-#else			
+#else
             if (cfg.m_motionSetAsset.GetId().IsValid())
 #endif
             {
@@ -172,7 +172,7 @@ namespace EMotionFX
             {
                 m_motionSetAsset = asset;
             }
-#else			
+#else
             auto& cfg = m_configuration;
             // Keep the previous asset around until the anim graph instances are removed
             AZ::Data::Asset<AZ::Data::AssetData> prevMotionSetAsset = cfg.m_motionSetAsset;
