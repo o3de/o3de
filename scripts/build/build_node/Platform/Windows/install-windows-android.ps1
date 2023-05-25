@@ -37,14 +37,14 @@ Install-ChocolateyZipPackage $packageName $url $installDir -Checksum $gradle_che
 $gradle_home = Join-Path $installDir "$packageName-$gradle_version"
 [Environment]::SetEnvironmentVariable("GRADLE_BUILD_HOME", $gradle_home, [EnvironmentVariableTarget]::Machine)
 [Environment]::SetEnvironmentVariable(
-    "Path",
-    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";$gradle_home\bin",
+    "PATH",
+    [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) + ";$gradle_home\bin",
     [EnvironmentVariableTarget]::Machine)
 
 Write-Host "Installing Ninja"
 $ninja_version = 1.10.0
 choco install -y ninja --version=$ninja_version --package-parameters="/installDir:C:\Ninja"
 [Environment]::SetEnvironmentVariable(
-    "Path",
-    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";C:\Ninja",
+    "PATH",
+    [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) + ";C:\Ninja",
     [EnvironmentVariableTarget]::Machine)

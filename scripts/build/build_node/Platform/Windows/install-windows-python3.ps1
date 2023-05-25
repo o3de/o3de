@@ -10,8 +10,8 @@ choco install -y python3 --version=3.10.5
 
 Write-Host "Ensure Python paths are set"
 [Environment]::SetEnvironmentVariable(
-    "Path",
-    [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine) + ";C:\Python310;C:\Python310\Scripts",
+    "PATH",
+    [Environment]::GetEnvironmentVariable("PATH", [EnvironmentVariableTarget]::Machine) + ";C:\Python310;C:\Python310\Scripts",
     [EnvironmentVariableTarget]::Machine)
 
 Write-Host "Installing packages" # requirements.txt hould be in the "Platforms\Common" folder
