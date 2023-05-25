@@ -1,0 +1,19 @@
+{
+    "template_name": "RemoteRepo",
+    "origin": "The primary repo for RemoteRepo goes here: i.e. http://www.mydomain.com",
+    "license": "What license RemoteRepo uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "RemoteRepo",
+    "summary": "A short description of RemoteRepo.",
+    "canonical_tags": [],
+    "user_tags": [
+        "RemoteRepo"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "repo.json",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": []
+}

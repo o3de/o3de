@@ -1,0 +1,13 @@
+{
+    "repo_name":"${Name}",
+    "repo_uri": "${RepoURI}",
+    "repo_path": "${RepoPath}",
+    "version": "${Version}",
+    "origin":"Origin for the ${Name} Gem Repository",
+    "summary": "${Summary}",
+    "additional_info": "Additional info for ${Name}",
+    "last_updated": "",
+    "gems_data": [],
+    "projects_data": [],
+    "template_data":[]
+}
