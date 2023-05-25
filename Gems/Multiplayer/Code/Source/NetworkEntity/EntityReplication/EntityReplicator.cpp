@@ -428,7 +428,7 @@ namespace Multiplayer
         {
             AZLOG(
                 NET_RepDeletes,
-                "Setting pending removal for entity %llu with time %ll ms.",
+                "Setting pending removal for entity %llu with time %lld ms.",
                 aznumeric_cast<AZ::u64>(m_entityHandle.GetNetEntityId()),
                 aznumeric_cast<AZ::s64>(pendingRemovalTimeMs));
 
