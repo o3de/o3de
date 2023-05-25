@@ -9,9 +9,15 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/set.h>
+#include <AzCore/std/utils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
 #include <QDockWidget>
 #include <QFormLayout>
 #include <QLabel>
@@ -46,6 +52,12 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
             void ClearPreview() override;
+
+            void PopulateSourceDependencies(const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);
+
+            void CreateSourceDependencyTree(AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing);
+
+            void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
         private:
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
             QLabel* m_previewImage = nullptr;
@@ -53,15 +65,9 @@ namespace AzToolsFramework
             QWidget* m_emptyLayoutWidget = nullptr;
             QWidget* m_populatedLayoutWidget = nullptr;
             QFormLayout* m_assetDetailLayout = nullptr;
-            AzQtComponents::ElidingLabel* m_nameLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_locationLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_fileTypeLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_assetTypeLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_diskSizeLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_dimensionLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_verticesLabel = nullptr;
-            AzQtComponents::ElidingLabel* m_lastModified = nullptr;
+            QWidget* m_assetDetailWidget = nullptr;
             QTreeWidget* m_dependentProducts = nullptr;
+            AzQtComponents::Card* m_dependentAssetsCard = nullptr;
         };
 
     } // namespace AssetBrowser

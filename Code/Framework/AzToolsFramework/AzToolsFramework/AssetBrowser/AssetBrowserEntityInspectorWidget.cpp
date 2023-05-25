@@ -9,18 +9,12 @@
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
-#include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/utils.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
-//#include <C:/o3de/Code/Tools/AssetProcessor/native/ui/ProductAssetDetailsPanel.h>
 
 #include <QPixmap>
 
@@ -67,34 +61,22 @@ namespace AzToolsFramework
             cardLayout->addWidget(assetDetails);
 
             // Create a two column layout for the labels and data inside of the asset details card
-            auto assetDetailWidget = new QWidget(assetDetails);
-            m_assetDetailLayout = new QFormLayout(assetDetailWidget);
+            m_assetDetailWidget = new QWidget(assetDetails);
+            m_assetDetailLayout = new QFormLayout(m_assetDetailWidget);
             m_assetDetailLayout->setLabelAlignment(Qt::AlignRight);
-            m_nameLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_locationLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_fileTypeLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_assetTypeLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_diskSizeLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_dimensionLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_verticesLabel = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_lastModified = new AzQtComponents::ElidingLabel(assetDetailWidget);
-            m_assetDetailLayout->addRow(QObject::tr("Name:"), m_nameLabel);
-            m_assetDetailLayout->addRow(QObject::tr("Location:"), m_locationLabel);
-            m_assetDetailLayout->addRow(QObject::tr("File Type:"), m_fileTypeLabel);
-            m_assetDetailLayout->addRow(QObject::tr("Asset Type:"), m_assetTypeLabel);
-            m_assetDetailLayout->addRow(QObject::tr("Disk Size (KB):"), m_diskSizeLabel);
-            m_assetDetailLayout->addRow(QObject::tr("Dimensions:"), m_dimensionLabel);
-            m_assetDetailLayout->addRow(QObject::tr("Vertices:"), m_verticesLabel);
-            m_assetDetailLayout->addRow(QObject::tr("Last Modified:"), m_lastModified);
-            assetDetailWidget->setLayout(m_assetDetailLayout);
-            assetDetails->setContentWidget(assetDetailWidget);
+            m_assetDetailWidget->setLayout(m_assetDetailLayout);
+            assetDetails->setContentWidget(m_assetDetailWidget);
 
             // Create the layout for the dependent assets card
-            auto dependent = new AzQtComponents::Card();
-            dependent->setTitle(QObject::tr("Dependent Assets"));
-            dependent->header()->setHasContextMenu(false);
-            dependent->hideFrame();
-            cardLayout->addWidget(dependent);
+            m_dependentAssetsCard = new AzQtComponents::Card();
+            m_dependentProducts = new QTreeWidget(m_dependentAssetsCard);
+            m_dependentProducts->setColumnCount(1);
+            m_dependentProducts->setHeaderHidden(true);
+            m_dependentAssetsCard->setContentWidget(m_dependentProducts);
+            m_dependentAssetsCard->setTitle(QObject::tr("Dependent Assets"));
+            m_dependentAssetsCard->header()->setHasContextMenu(false);
+            m_dependentAssetsCard->hideFrame();
+            cardLayout->addWidget(m_dependentAssetsCard);
             cardLayout->addStretch(1);
 
             // Add the image preview and the card layouts to a single layout, spacing them appropriately
@@ -107,16 +89,6 @@ namespace AzToolsFramework
             m_layoutSwitcher->addWidget(m_emptyLayoutWidget);
             m_layoutSwitcher->addWidget(m_populatedLayoutWidget);
             setLayout(m_layoutSwitcher);
-
-            m_dependentProducts = new QTreeWidget(dependent);
-            m_dependentProducts->setColumnCount(1);
-            m_dependentProducts->setHeaderHidden(true);
-            dependent->setContentWidget(m_dependentProducts);
-            /*m_dependentProducts->setRootIsDecorated(false);
-            m_dependentProducts->setUniformRowHeights(true);
-            m_dependentProducts->setSortingEnabled(false);
-            m_dependentProducts->setHeaderHidden(true);
-            m_dependentProducts->header()->setDefaultSectionSize(42);*/
 
             AssetDatabaseLocationNotificationBus::Handler::BusConnect();
             AssetBrowserPreviewRequestBus::Handler::BusConnect();
@@ -147,6 +119,11 @@ namespace AzToolsFramework
                 m_layoutSwitcher->setCurrentWidget(m_populatedLayoutWidget);
             }
 
+            int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
+            for (assetDetailIndex; assetDetailIndex >= 0; --assetDetailIndex)
+            {
+                m_assetDetailLayout->removeRow(assetDetailIndex);
+            }
             m_dependentProducts->clear();
 
             const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(selectedEntry);
@@ -158,55 +135,108 @@ namespace AzToolsFramework
             }
 
             const QString name = selectedEntry->GetDisplayName();
-            m_nameLabel->setText(name);
+            if (!name.isEmpty())
+            {
+                auto nameLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                nameLabel->setText(name);
+                m_assetDetailLayout->addRow(QObject::tr("Name:"), nameLabel);
+            }
 
             const auto fullPath = selectedEntry->GetFullPath();
             const auto location = QString::fromUtf8(fullPath.c_str(), static_cast<int>(fullPath.size()));
-            m_locationLabel->setText(location);
+            if (!location.isEmpty())
+            {
+                auto locationLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                locationLabel->setText(location);
+                m_assetDetailLayout->addRow(QObject::tr("Location:"), locationLabel);
+            }
 
             QString fileType;
             QString assetEntryType;
+            QFont font;
+            font.setBold(true);
             if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
             {
                 const auto extension = sourceEntry->GetExtension();
                 fileType = QString::fromUtf8(extension.c_str(), static_cast<int>(extension.size()));
                 assetEntryType = QObject::tr("Source");
+
+                AZStd::vector<const ProductAssetBrowserEntry*> productChildren;
+                sourceEntry->GetChildren(productChildren);
+
+                if (!productChildren.empty())
+                {
+                    m_dependentAssetsCard->show();
+                    PopulateSourceDependencies(sourceEntry, productChildren);
+                    auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                    headerItem->setText(0, QObject::tr("Product Assets"));
+                    headerItem->setFont(0, font);
+                    headerItem->setExpanded(true);
+                    for (const auto productChild : productChildren)
+                    {
+                        auto assetEntry = azrtti_cast<const AssetBrowserEntry*>(productChild);
+                        AddAssetBrowserEntryToTree(assetEntry, headerItem);
+                    }
+                }
+                else
+                {
+                    m_dependentAssetsCard->hide();
+                }
             }
             else if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(selectedEntry))
             {
+                AZStd::set<AZ::Data::AssetId> incomingDependencyIds;
+                AZStd::set<AZ::Data::AssetId> outgoingDependencyIds;
                 AZ::AssetTypeInfoBus::EventResult(fileType, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
                 assetEntryType = QObject::tr("Product");
 
-                QFont font;
-                font.setBold(true);
-
-                AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer container;
-                bool found = false;
-                bool succeeded = m_databaseConnection->QueryDirectProductDependencies(
+                m_databaseConnection->QueryDirectProductDependencies(
                     productEntry->GetProductID(),
-                    [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
+                    [&, productEntry](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& ProductDatabaseEntry)
                     {
-                        found = true;
-                        container.emplace_back() = AZStd::move(entry);
-                        return true; // return true to keep iterating over further rows.
+                        if (ProductDatabaseEntry.m_productID != productEntry->GetProductID())
+                        {
+                            m_databaseConnection->QuerySourceByProductID(
+                                ProductDatabaseEntry.m_productID,
+                                [&outgoingDependencyIds,
+                                 &ProductDatabaseEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& SourceDatabaseEntry)
+                                {
+                                    AZ::Data::AssetId assetId(SourceDatabaseEntry.m_sourceGuid, ProductDatabaseEntry.m_subID);
+                                    outgoingDependencyIds.insert(assetId);
+                                    return false;
+                                });
+                        }
+                        return true;
                     });
-                if (found && succeeded)
+
+                m_databaseConnection->QueryDirectReverseProductDependenciesBySourceGuidSubId(
+                    productEntry->GetAssetId().m_guid,
+                    productEntry->GetAssetId().m_subId,
+                    [&, productEntry](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& ProductDatabaseEntry)
+                    {
+                        if (ProductDatabaseEntry.m_productID != productEntry->GetProductID())
+                        {
+                            m_databaseConnection->QuerySourceByProductID(
+                                ProductDatabaseEntry.m_productID,
+                                [&incomingDependencyIds,
+                                 ProductDatabaseEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& SourceDatabaseEntry)
+                                {
+                                    AZ::Data::AssetId assetId(SourceDatabaseEntry.m_sourceGuid, ProductDatabaseEntry.m_subID);
+                                    incomingDependencyIds.insert(assetId);
+                                    return false;
+                                });
+                        }
+                        return true;
+                    });
+
+                if (!outgoingDependencyIds.empty())
                 {
                     auto headerItem = new QTreeWidgetItem(m_dependentProducts);
                     headerItem->setText(0, QObject::tr("Outgoing Product Dependencies"));
                     headerItem->setFont(0, font);
-                    for (AzToolsFramework::AssetDatabase::ProductDatabaseEntry& dependency : container)
+                    for (AZ::Data::AssetId productId : outgoingDependencyIds)
                     {
-                        AZ::Uuid sourceGuid;
-                        m_databaseConnection->QuerySourceByProductID(
-                            dependency.m_productID,
-                            [&sourceGuid](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-                            {
-                                sourceGuid = entry.m_sourceGuid;
-                                return false;
-                            });
-                        AZ::Data::AssetId productID(sourceGuid, dependency.m_subID);
-                        auto product = ProductAssetBrowserEntry::GetProductByAssetId(productID);
+                        auto product = ProductAssetBrowserEntry::GetProductByAssetId(productId);
                         if (product)
                         {
                             auto item = new QTreeWidgetItem(headerItem);
@@ -214,7 +244,7 @@ namespace AzToolsFramework
                             item->setText(0, namer);
                             item->setToolTip(0, namer);
                             const auto& qvar =
-                                AssetBrowserViewUtils::GetThumbnail(azrtti_cast<const AssetBrowserEntry*>(selectedEntry), true);
+                                AssetBrowserViewUtils::GetThumbnail(azrtti_cast<const AssetBrowserEntry*>(product), true);
                             if (const auto& path = qvar.value<QString>(); !path.isEmpty())
                             {
                                 QIcon icon;
@@ -226,35 +256,15 @@ namespace AzToolsFramework
                     }
                     headerItem->setExpanded(true);
                 }
-
-                AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer incomingContainer;
-                found = false;
-                succeeded = m_databaseConnection->QueryDirectReverseProductDependenciesBySourceGuidSubId(
-                    productEntry->GetAssetId().m_guid,
-                    productEntry->GetAssetId().m_subId,
-                    [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& incomingDependency)
-                    {
-                        found = true;
-                        incomingContainer.emplace_back() = AZStd::move(incomingDependency);
-                        return true; // return true to keep iterating over further rows.
-                    });
-                if (found && succeeded)
+                
+                if (!incomingDependencyIds.empty())
                 {
                     auto secondheaderItem = new QTreeWidgetItem(m_dependentProducts);
                     secondheaderItem->setText(0, QObject::tr("Incoming Product Dependencies"));
                     secondheaderItem->setFont(0, font);
-                    for (AzToolsFramework::AssetDatabase::ProductDatabaseEntry& dependency : incomingContainer)
+                    for (AZ::Data::AssetId productId : incomingDependencyIds)
                     {
-                        AZ::Uuid sourceGuid;
-                        m_databaseConnection->QuerySourceByProductID(
-                            dependency.m_productID,
-                            [&sourceGuid](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
-                            {
-                                sourceGuid = entry.m_sourceGuid;
-                                return false;
-                            });
-                        AZ::Data::AssetId productID(sourceGuid, dependency.m_subID);
-                        auto product = ProductAssetBrowserEntry::GetProductByAssetId(productID);
+                        auto product = ProductAssetBrowserEntry::GetProductByAssetId(productId);
                         if (product)
                         {
                             auto item = new QTreeWidgetItem(secondheaderItem);
@@ -262,7 +272,7 @@ namespace AzToolsFramework
                             item->setText(0, namer2);
                             item->setToolTip(0, namer2);
                             const auto& qvar =
-                                AssetBrowserViewUtils::GetThumbnail(azrtti_cast<const AssetBrowserEntry*>(selectedEntry), true);
+                                AssetBrowserViewUtils::GetThumbnail(azrtti_cast<const AssetBrowserEntry*>(product), true);
                             if (const auto& path = qvar.value<QString>(); !path.isEmpty())
                             {
                                 QIcon icon;
@@ -275,37 +285,156 @@ namespace AzToolsFramework
                     secondheaderItem->setExpanded(true);
                 }
             }
-            m_fileTypeLabel->setText(fileType);
-            m_assetTypeLabel->setText(assetEntryType);
+            if (!fileType.isEmpty())
+            {
+                auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                fileTypeLabel->setText(fileType);
+                m_assetDetailLayout->addRow(QObject::tr("File Type:"), fileTypeLabel);
+            }
+
+            if (!assetEntryType.isEmpty())
+            {
+                auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                assetTypeLabel->setText(assetEntryType);
+                m_assetDetailLayout->addRow(QObject::tr("Asset Type:"), assetTypeLabel);
+            }
 
             const float diskSize = static_cast<float>(selectedEntry->GetDiskSize());
-            m_diskSizeLabel->setText(QString::number(diskSize / 1000));
+            if (diskSize != 0)
+            {
+                auto diskSizeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                diskSizeLabel->setText(QString::number(diskSize / 1000));
+                m_assetDetailLayout->addRow(QObject::tr("Disk Size (KB):"), diskSizeLabel);
+            }
 
             const AZ::Vector3 dimension = selectedEntry->GetDimension();
-            QString dimensionString;
-            if (AZStd::isnan(dimension.GetX()) || AZStd::isnan(dimension.GetY()) || AZStd::isnan(dimension.GetZ()))
+            if (!AZStd::isnan(dimension.GetX()) && !AZStd::isnan(dimension.GetY()) && !AZStd::isnan(dimension.GetZ()))
             {
-                dimensionString = QObject::tr("0 x 0 x 0");
-            }
-            else
-            {
-                dimensionString = QString::number(dimension.GetX()) +
-                    QObject::tr(" x ") + QString::number(dimension.GetY()) +
+                const auto dimensionString = QString::number(dimension.GetX()) + QObject::tr(" x ") + QString::number(dimension.GetY()) +
                     QObject::tr(" x ") + QString::number(dimension.GetZ());
+                auto dimensionLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                dimensionLabel->setText(dimensionString);
+                m_assetDetailLayout->addRow(QObject::tr("Dimensions:"), dimensionLabel);
             }
-            m_dimensionLabel->setText(dimensionString);
+           
 
             const auto vertices = selectedEntry->GetNumVertices();
-            m_verticesLabel->setText(QString::number(vertices));
+            if (vertices != 0)
+            {
+                auto verticesLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                verticesLabel->setText(QString::number(vertices));
+                m_assetDetailLayout->addRow(QObject::tr("Vertices:"), verticesLabel);
+            }
 
             const auto modificationTime = selectedEntry->GetModificationTime();
-            m_lastModified->setText(QString::number(modificationTime));
+            if (modificationTime != 0)
+            {
+                auto lastModified = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                lastModified->setText(QString::number(modificationTime));
+                m_assetDetailLayout->addRow(QObject::tr("Last Modified:"), lastModified);
+            }
         }
 
         void AssetBrowserEntityInspectorWidget::ClearPreview()
         {
             m_previewImage->clear();
             m_layoutSwitcher->setCurrentWidget(m_emptyLayoutWidget);
+        }
+
+        void AssetBrowserEntityInspectorWidget::PopulateSourceDependencies(
+            const SourceAssetBrowserEntry* sourceEntry,AZStd::vector<const ProductAssetBrowserEntry*> productList)
+        {
+            AZStd::set<AZ::Uuid> outgoingDependencyUuids;
+            AZStd::set<AZ::Uuid> incomingDependencyUuids;
+            for (const ProductAssetBrowserEntry* productChild : productList)
+            {
+                // Create a set of all sources whose products are depended on by any of the products of the specified source
+                m_databaseConnection->QueryDirectProductDependencies(
+                    productChild->GetProductID(),
+                    [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
+                    {
+                        m_databaseConnection->QuerySourceByProductID(
+                            entry.m_productID,
+                            [&outgoingDependencyUuids, sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                            {
+                                if (entry.m_sourceGuid != sourceEntry->GetSourceUuid())
+                                {
+                                    outgoingDependencyUuids.insert(entry.m_sourceGuid);
+                                }
+                                return false;
+                            });
+                        return true;
+                    });
+
+                // Create a set of all sources whose products depend on any of the products of the specified source
+                m_databaseConnection->QueryDirectReverseProductDependenciesBySourceGuidSubId(
+                    productChild->GetAssetId().m_guid,
+                    productChild->GetAssetId().m_subId,
+                    [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
+                    {
+                        m_databaseConnection->QuerySourceByProductID(
+                            entry.m_productID,
+                            [&incomingDependencyUuids, sourceEntry](const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
+                            {
+                                if (entry.m_sourceGuid != sourceEntry->GetSourceUuid())
+                                {
+                                    incomingDependencyUuids.insert(entry.m_sourceGuid);
+                                }
+                                return false;
+                            });
+                        return true;
+                    });
+            }
+            CreateSourceDependencyTree(outgoingDependencyUuids, true);
+            CreateSourceDependencyTree(incomingDependencyUuids, false);
+        }
+
+        void AssetBrowserEntityInspectorWidget::CreateSourceDependencyTree(AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing)
+        {
+            if (!sourceUuids.empty())
+            {
+                auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                QFont font;
+                font.setBold(true);
+                headerItem->setFont(0, font);
+                headerItem->setExpanded(false);
+                if (isOutgoing)
+                {
+                    headerItem->setText(0, QObject::tr("Outgoing Source Dependencies"));
+                    headerItem->setToolTip(
+                        0, QObject::tr("Outgoing Source Dependencies lists all source assets that this asset depends on"));
+                }
+                else
+                {
+                    headerItem->setText(0, QObject::tr("Incoming Source Dependencies"));
+                    headerItem->setToolTip(
+                        0, QObject::tr("Incoming Source Dependencies lists all source assets that depend on this asset"));
+                }
+                for (AZ::Uuid sourceUuid : sourceUuids)
+                {
+                    auto sourceDependency = azrtti_cast<const AssetBrowserEntry*>(SourceAssetBrowserEntry::GetSourceByUuid(sourceUuid));
+                    AddAssetBrowserEntryToTree(sourceDependency, headerItem);
+                }
+            }
+        }
+
+        void AssetBrowserEntityInspectorWidget::AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem)
+        {
+            if (entry)
+            {
+                auto item = new QTreeWidgetItem(headerItem);
+                const auto entryName = QString::fromUtf8(entry->GetName().c_str(), static_cast<int>(entry->GetName().size()));
+                item->setText(0, entryName);
+                item->setToolTip(0, entryName);
+                const auto& qvar = AssetBrowserViewUtils::GetThumbnail(entry, true);
+                if (const auto& path = qvar.value<QString>(); !path.isEmpty())
+                {
+                    QIcon icon;
+                    QSize iconSize(item->sizeHint(0).height(), item->sizeHint(0).height());
+                    icon.addFile(path, iconSize, QIcon::Normal, QIcon::Off);
+                    item->setIcon(0, icon);
+                }
+            }
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
