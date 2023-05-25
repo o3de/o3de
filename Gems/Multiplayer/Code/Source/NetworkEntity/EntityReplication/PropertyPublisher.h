@@ -108,7 +108,7 @@ namespace Multiplayer
         bool HasEntityChangesToSend();
 
         //! Phase 1, setup of the record
-        void PrepareAddEntityRecord(NetBindComponent* netBindComponent);
+        void PrepareFullReplicationEntityRecord(NetBindComponent* netBindComponent);
         void PrepareRebaseEntityRecord(NetBindComponent* netBindComponent);
         void PrepareUpdateEntityRecord(NetBindComponent* netBindComponent);
         void PrepareDeleteEntityRecord(NetBindComponent* netBindComponent);

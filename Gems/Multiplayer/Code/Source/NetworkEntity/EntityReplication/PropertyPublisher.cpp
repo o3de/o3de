@@ -116,11 +116,12 @@ namespace Multiplayer
         return true;
     }
 
-    void PropertyPublisher::PrepareAddEntityRecord(NetBindComponent* netBindComponent)
+    void PropertyPublisher::PrepareFullReplicationEntityRecord(NetBindComponent* netBindComponent)
     {
         AZ_Assert(netBindComponent, "NetBindComponent is nullptr");
 
-        // On an "Add", create a change record that contains all the serialized fields for the entity.
+        // On initial entity replication or after too many unacknowledged updates,
+        // create a change record that contains all the serialized fields for the entity.
         m_sentRecords.clear();
         netBindComponent->FillTotalReplicationRecord(m_pendingRecord);
         m_sentRecords.push_front(m_pendingRecord);
@@ -148,7 +149,7 @@ namespace Multiplayer
             // If we reach the maximum outstanding records, reset the replication state by creating a change record
             // that serializes the state of *all* the networked properties. This is necessary because we'll no longer
             // have accurate bookkeeping on which sent changes have been acknowledged.
-            PrepareAddEntityRecord(netBindComponent);
+            PrepareFullReplicationEntityRecord(netBindComponent);
         }
         else
         {
@@ -301,7 +302,7 @@ namespace Multiplayer
         case PropertyPublisher::EntityReplicatorState::Creating:
             if (m_ownsLifetime == PropertyPublisher::OwnsLifetime::True)
             {
-                PrepareAddEntityRecord(netBindComponent);
+                PrepareFullReplicationEntityRecord(netBindComponent);
             }
             // After the first create, transition to updating.
             m_replicatorState = PropertyPublisher::EntityReplicatorState::Updating;
