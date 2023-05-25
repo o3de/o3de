@@ -52,14 +52,22 @@ namespace AZ
         protected:
             // Pass behavior overrides
             void BuildInternal() override final;
+            void CreateChildPassesInternal() override final;
             void FrameBeginInternal(FramePrepareParams params) override final;
             
             // WindowNotificationBus::Handler overrides ...
+            // The m_pipelinOutputAttachment need to be recreated when render resolution changed
             void OnResolutionChanged(uint32_t width, uint32_t height) override;
+            // Swapchain may get resized when window is resized
+            void OnWindowResized(uint32_t width, uint32_t height) override;
 
         private:
             // Sets up a swap chain PassAttachment using the swap chain id from the window context 
             void SetupSwapChainAttachment();
+
+            // Create a copy pass to copy pipeline output to swapchain
+            // It's needed if device doesn't support swapchain scaling
+            void CreateCopyPass();
 
             // The WindowContext that owns the SwapChain this pass renders to
             const WindowContext* m_windowContext = nullptr;
@@ -67,7 +75,15 @@ namespace AZ
             // The SwapChain used when rendering this pass
             Ptr<PassAttachment> m_swapChainAttachment;
 
-            RHI::SwapChainDimensions m_swapChainDimensions;
+            // The intermediate attachment used for render pipeline's output
+            Ptr<PassAttachment> m_pipelinOutputAttachment;
+
+            // The pass which copies pipeline output to swapchain 
+            Ptr<Pass> m_copyOutputPass;
+
+            // If the SwapchainPass need a child pass to copy pipeline output to swapchain
+            // It's true only if the pipeline output has a different resolution than the swapchain
+            bool m_needCopyOutput = false;
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;

@@ -64,6 +64,11 @@ namespace AZ
             // Return the index of a XR swapchain
             // as you can have multiple XR swapchains (one per view).
             uint32_t m_xrSwapChainIndex = 0;
+
+            // The scaling mode when presents the swapchain's back buffer to the target
+            // Note: not all platforms support stretch or stretch with aspect ratio.
+            // Use DeviceFeature::m_swapChainScalingFlags to find out supported stretch modes
+            Scaling m_scalingMode = RHI::Scaling::None;
         };
     }
 }

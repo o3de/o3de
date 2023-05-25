@@ -130,7 +130,23 @@ namespace AZ
             DepthThenKey,
             ReverseDepthThenKey
         };
+        
+        enum class Scaling : uint32_t
+        {
+            None = 0,               // No scaling
+            Stretch,                // Scale the source to fit the target
+            AspectRatioStretch,     // Scale the source to fit the target while preserving the aspect ratio of the source
+        };
 
+        //! Flags for specifying supported Scaling modes
+        enum class ScalingFlags : uint32_t
+        {
+            None = 0,
+            Stretch = AZ_BIT(static_cast<uint32_t>(Scaling ::Stretch)),
+            AspectRatioStretch = AZ_BIT(static_cast<uint32_t>(Scaling ::AspectRatioStretch)),
+            All = Stretch | AspectRatioStretch
+        };
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::ScalingFlags);
     }
 
     AZ_TYPE_INFO_SPECIALIZE(RHI::DrawListSortType, "{D43AF0B7-7314-4B57-AA98-6209235B91BB}");

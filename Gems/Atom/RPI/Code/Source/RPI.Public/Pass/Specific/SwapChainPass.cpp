@@ -24,6 +24,12 @@ namespace AZ
             , m_viewType(viewType)
         {
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
+            
+            // Need an intermediate output and a copy pass if the render resolution is different than swapchain's size
+            // Ideally, this should be set based on the size of window's render resolution and swapchain's size
+            // The pass system has problem to update the pass tree properly when the m_needCopyOutput state changes
+            // Now we set it to true if the window context doesn't have swapchain scaling
+            m_needCopyOutput = windowContext->GetSwapChainScalingMode() == RHI::Scaling::None;
         }
 
         Ptr<ParentPass> SwapChainPass::Recreate() const
@@ -40,9 +46,9 @@ namespace AZ
 
         RHI::Format SwapChainPass::GetSwapChainFormat() const
         {
-            if (m_attachmentBindings.size() > 0 && m_attachmentBindings[0].GetAttachment())
+            if (m_swapChainAttachment)
             {
-                return m_attachmentBindings[0].GetAttachment()->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                return m_swapChainAttachment->m_descriptor.m_image.m_format;
             }
             return RHI::Format::Unknown;
         }
@@ -59,25 +65,83 @@ namespace AZ
 
         void SwapChainPass::SetupSwapChainAttachment()
         {
-            m_swapChainDimensions = m_windowContext->GetSwapChain(m_viewType)->GetDescriptor().m_dimensions;
+            // Find "PipelineOutput" slot from the render pipeline's root pass 
+            PassAttachmentBinding* pipelineOutput = FindAttachmentBinding(Name("PipelineOutput"));
+            AZ_Assert(pipelineOutput != nullptr &&
+                      pipelineOutput->m_slotType == PassSlotType::InputOutput,
+                      "PassTemplate used to create SwapChainPass must have an InputOutput called PipelineOutput");
 
+            AzFramework::WindowSize renderSize;
+            AzFramework::WindowRequestBus::EventResult(
+                renderSize, m_windowContext->GetWindowHandle(), &AzFramework::WindowRequestBus::Events::GetRenderResolution);
+
+            RHI::SwapChainDimensions swapChainDimensions = m_windowContext->GetSwapChain(m_viewType)->GetDescriptor().m_dimensions;
+
+            // Note: we can't add m_swapChainAttachment to m_ownedAttachments then it would be imported to frame graph's attachment database as a regular image. 
             m_swapChainAttachment = aznew PassAttachment();
             m_swapChainAttachment->m_name = "SwapChainOutput";
             m_swapChainAttachment->m_path = m_windowContext->GetSwapChainAttachmentId(m_viewType);
 
             RHI::ImageDescriptor swapChainImageDesc;
             swapChainImageDesc.m_bindFlags = RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite;
-            swapChainImageDesc.m_size.m_width = m_swapChainDimensions.m_imageWidth;
-            swapChainImageDesc.m_size.m_height = m_swapChainDimensions.m_imageHeight;
-            swapChainImageDesc.m_format = m_swapChainDimensions.m_imageFormat;
+            swapChainImageDesc.m_size.m_width = swapChainDimensions.m_imageWidth;
+            swapChainImageDesc.m_size.m_height = swapChainDimensions.m_imageHeight;
+            swapChainImageDesc.m_format = swapChainDimensions.m_imageFormat;
             m_swapChainAttachment->m_descriptor = swapChainImageDesc;
 
-            PassAttachmentBinding* swapChainOutput = FindAttachmentBinding(Name("PipelineOutput"));
-            AZ_Assert(swapChainOutput != nullptr &&
-                      swapChainOutput->m_slotType == PassSlotType::InputOutput,
-                      "PassTemplate used to create SwapChainPass must have an InputOutput called PipelineOutput");
+            if (m_needCopyOutput)
+            {
+                // Create a new binding for swapchain output
+                // It's used to connect to child pass's Output slot
+                PassAttachmentBinding outputBinding;
+                outputBinding.m_name = "SwapChainOutput";
+                outputBinding.m_slotType = PassSlotType::Output;
+                outputBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
+                outputBinding.SetAttachment(m_swapChainAttachment);
+                m_attachmentBindings.push_back(outputBinding);
 
-            swapChainOutput->SetAttachment(m_swapChainAttachment);
+                // create an intermediate attachment which has window render resolution
+                RHI::ImageDescriptor outputImageDesc;
+                outputImageDesc = swapChainImageDesc;
+                outputImageDesc.m_size.m_width = renderSize.m_width;
+                outputImageDesc.m_size.m_height = renderSize.m_height;
+                m_pipelinOutputAttachment = aznew PassAttachment();
+                m_pipelinOutputAttachment->m_lifetime = RHI::AttachmentLifetimeType::Transient;
+                m_pipelinOutputAttachment->m_descriptor = outputImageDesc;
+                m_pipelinOutputAttachment->m_name = "PipelineOutput";
+                m_pipelinOutputAttachment->ComputePathName(GetPathName());
+                m_ownedAttachments.push_back(m_pipelinOutputAttachment);
+
+                // use the intermediate attachment as pipeline's output
+                pipelineOutput->SetAttachment(m_pipelinOutputAttachment);
+            }
+            else
+            {
+                // use swapchain attachment as pipeline's output
+                pipelineOutput->SetAttachment(m_swapChainAttachment);
+            }
+        }
+
+        void SwapChainPass::CreateCopyPass()
+        {
+            // create the a child pass to copy data from m_pipelinOutputAttachment to m_swapChainAttachment
+            PassRequest childRequest;
+            childRequest.m_templateName = "FullscreenCopyTemplate";
+            childRequest.m_passName = "CopyOutputToSwapChain";
+            
+            PassConnection childInputConnection;
+            childInputConnection.m_localSlot = "Input";
+            childInputConnection.m_attachmentRef.m_pass = "PipelineGlobal";
+            childInputConnection.m_attachmentRef.m_attachment = "PipelineOutput";
+            childRequest.m_connections.emplace_back(childInputConnection);
+            PassConnection childOutputConnection;;
+            childOutputConnection.m_localSlot = "Output";
+            childOutputConnection.m_attachmentRef.m_pass = "Parent";
+            childOutputConnection.m_attachmentRef.m_attachment = "SwapChainOutput";
+            childRequest.m_connections.emplace_back(childOutputConnection);
+
+            PassSystemInterface* passSystem = PassSystemInterface::Get();
+            m_copyOutputPass = passSystem->CreatePassFromRequest(&childRequest);
         }
 
         // --- Pass behavior overrides ---
@@ -97,11 +161,20 @@ namespace AZ
             ParentPass::BuildInternal();
         }
 
+        void SwapChainPass::CreateChildPassesInternal()
+        {
+            if (m_needCopyOutput)
+            {
+                if (!m_copyOutputPass)
+                {
+                    CreateCopyPass();
+                }
+                AddChild(m_copyOutputPass);
+            }
+        }
+
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
         {
-            params.m_scissorState = m_scissorState;
-            params.m_viewportState = m_viewportState;
-
             if (m_windowContext->GetSwapChainsSize() == 0 || m_windowContext->GetSwapChain(m_viewType) == nullptr ||
                 m_windowContext->GetSwapChain(m_viewType)->GetImageCount() == 0)
             {
@@ -141,6 +214,11 @@ namespace AZ
         }
         
         void SwapChainPass::OnResolutionChanged([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
+        {
+            QueueForBuildAndInitialization();
+        }
+
+        void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
             QueueForBuildAndInitialization();
         }

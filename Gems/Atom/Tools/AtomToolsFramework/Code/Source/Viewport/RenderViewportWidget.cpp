@@ -290,7 +290,7 @@ namespace AtomToolsFramework
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
         AzFramework::WindowNotificationBus::Event(
-            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, windowSize.width(), windowSize.height());
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, uiWindowSize.width(), uiWindowSize.height());
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
@@ -413,7 +413,8 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetClientAreaSize() const
     {
-        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
+        const auto pixelRatio = devicePixelRatioF();
+        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()*pixelRatio), aznumeric_cast<uint32_t>(height()*pixelRatio)};
     }
 
     void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize, [[maybe_unused]] const AzFramework::WindowPosOptions& options)
@@ -461,7 +462,7 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
     {
-        return GetClientAreaSize();
+        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
     }
 
     void RenderViewportWidget::SetRenderResolution([[maybe_unused]]AzFramework::WindowSize resolution)
