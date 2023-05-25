@@ -6,9 +6,7 @@
  *
  */
 
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
 #include <Document/PassGraphCompiler.h>
@@ -25,8 +23,8 @@ namespace PassCanvas
         }
     }
 
-    PassGraphCompiler::PassGraphCompiler(const AZ::Crc32& toolId, const AZ::Uuid& documentId)
-        : AtomToolsFramework::GraphCompiler(toolId, documentId)
+    PassGraphCompiler::PassGraphCompiler(const AZ::Crc32& toolId)
+        : AtomToolsFramework::GraphCompiler(toolId)
     {
     }
 
@@ -44,14 +42,14 @@ namespace PassCanvas
         return AZStd::string::format("%s/Assets/Passes/Generated/untitled.passgraph", AZ::Utils::GetProjectPath().c_str());
     }
 
-    bool PassGraphCompiler::CompileGraph()
+    bool PassGraphCompiler::CompileGraph(GraphModel::GraphPtr graph, const AZStd::string& graphName, const AZStd::string& graphPath)
     {
-        if (!AtomToolsFramework::GraphCompiler::CompileGraph())
+        if (!AtomToolsFramework::GraphCompiler::CompileGraph(graph, graphName, graphPath))
         {
             return false;
         }
 
-        CompileGraphCompleted();
+        SetState(State::Complete);
         return true;
     }
 } // namespace PassCanvas

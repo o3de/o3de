@@ -30,7 +30,7 @@ namespace GraphCanvas
         , public StyleNotificationBus::Handler        
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExecutionSlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionSlotLayout, AZ::SystemAllocator);
 
         ExecutionSlotLayout(ExecutionSlotLayoutComponent& owner);
         ~ExecutionSlotLayout();

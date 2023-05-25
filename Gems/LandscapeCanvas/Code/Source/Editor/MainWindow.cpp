@@ -16,9 +16,11 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -525,6 +527,16 @@ namespace LandscapeCanvasEditor
         m_sceneContextMenu->AddMenuAction(aznew FindSelectedNodesAction(this));
 
         UpdateGraphEnabled();
+
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            static constexpr AZStd::string_view LandscapeCanvasActionContextIdentifier = "o3de.context.editor.landscapecanvas";
+
+            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->AssignWidgetToActionContext(LandscapeCanvasActionContextIdentifier, this);
+            }
+        }
     }
 
     MainWindow::~MainWindow()
@@ -3414,7 +3426,11 @@ namespace LandscapeCanvasEditor
         // Handle if this node has an image asset slot to parse
         HandleImageAssetSlot(node, nodeMaps[EntityIdNodeMapEnum::Gradients], connections);
 
-        auto handleIndexedSlots = [this, graphId, node, &connections](AzToolsFramework::EntityIdList entityIds, const EntityIdNodeMap& sourceNodeMap, GraphModel::SlotName outboundSlotId, LandscapeCanvas::LandscapeCanvasDataTypeEnum slotDataType)
+        auto handleIndexedSlots = [this, graphId, node, &connections](
+                                      const AzToolsFramework::EntityIdList& entityIds,
+                                      const EntityIdNodeMap& sourceNodeMap,
+                                      const GraphModel::SlotName& outboundSlotId,
+                                      LandscapeCanvas::LandscapeCanvasDataTypeEnum slotDataType)
         {
             if (entityIds.empty())
             {

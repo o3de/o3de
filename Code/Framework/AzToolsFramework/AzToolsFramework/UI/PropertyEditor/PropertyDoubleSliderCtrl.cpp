@@ -272,7 +272,7 @@ namespace AzToolsFramework
         PropertyDoubleSliderCtrl* newCtrl = aznew PropertyDoubleSliderCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSliderCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSliderCtrl::editingFinished, this, [newCtrl]()
         {
@@ -291,7 +291,7 @@ namespace AzToolsFramework
         PropertyDoubleSliderCtrl* newCtrl = aznew PropertyDoubleSliderCtrl(pParent);
         connect(newCtrl, &PropertyDoubleSliderCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         connect(newCtrl, &PropertyDoubleSliderCtrl::editingFinished, this, [newCtrl]()
         {
@@ -421,8 +421,10 @@ namespace AzToolsFramework
 
     void RegisterDoubleSliderHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew doublePropertySliderHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew floatPropertySliderHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew doublePropertySliderHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew floatPropertySliderHandler());
     }
 
 }

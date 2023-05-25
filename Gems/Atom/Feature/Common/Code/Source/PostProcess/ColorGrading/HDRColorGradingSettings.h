@@ -30,7 +30,7 @@ namespace AZ
 
         public:
             AZ_RTTI(HDRColorGradingSettings, "{EA8C05D4-66D0-4141-8D4D-68E5D764C2ED}", HDRColorGradingSettingsInterface, PostProcessBase);
-            AZ_CLASS_ALLOCATOR(HDRColorGradingSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HDRColorGradingSettings, SystemAllocator);
 
             HDRColorGradingSettings(PostProcessFeatureProcessor* featureProcessor);
             ~HDRColorGradingSettings() = default;

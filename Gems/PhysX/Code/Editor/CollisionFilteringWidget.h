@@ -35,7 +35,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(CollisionFilteringWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CollisionFilteringWidget, AZ::SystemAllocator);
 
             explicit CollisionFilteringWidget(QWidget* parent = nullptr);
 

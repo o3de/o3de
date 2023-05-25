@@ -63,7 +63,8 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "newLevel.prefab"));
+        m_rootInstance =
+            AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab(AzToolsFramework::EntityList{}, {}, "newLevel.prefab"));
         m_sliceOwnershipService.BusConnect(m_entityContextId);
         m_sliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
         m_editorSliceOwnershipService.BusConnect();
@@ -428,14 +429,13 @@ namespace AzToolsFramework
             filePath, instanceToParentUnder,
             [this](const EntityList& entities)
             {
-                HandleEntitiesAdded(entities);
+                HandleEntitiesAdded(entities); // includes container entity
             });
 
         if (instantiatedPrefabInstance)
         {
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
                 AZStd::move(instantiatedPrefabInstance));
-            HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }
 
@@ -610,11 +610,17 @@ namespace AzToolsFramework
 
             // Game entity cleanup is queued onto the next tick via the DespawnEntities call.
             // To avoid both game entities and Editor entities active at the same time
-            // we flush the tick queue to ensure the game entities are cleared first.
+            // we flush the tick queue and the spawnable queue to ensure the game entities are cleared first.
             // The Alert callback that follows the DespawnEntities call will then reactivate the editor entities
             // This should be considered temporary as a move to a less rigid event sequence that supports async entity clean up
             // is the desired direction forward.
             AZ::TickBus::ExecuteQueuedEvents();
+            auto* rootSpawnableInterface = AzFramework::RootSpawnableInterface::Get();
+            if (rootSpawnableInterface)
+            {
+                rootSpawnableInterface->ProcessSpawnableQueue();
+                AzFramework::RootSpawnableNotificationBus::ExecuteQueuedEvents();
+            }
         }
 
         m_playInEditorData.m_isEnabled = false;

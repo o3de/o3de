@@ -29,7 +29,7 @@ namespace AZ
             public IStreamerStackConfig
         {
             AZ_RTTI(AZ::IO::ReadSplitterConfig, "{EDDD6CE5-D7BC-4FAB-8EBA-68F5C0390B05}", IStreamerStackConfig);
-            AZ_CLASS_ALLOCATOR(ReadSplitterConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReadSplitterConfig, AZ::SystemAllocator);
 
             ~ReadSplitterConfig() override = default;
             AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(

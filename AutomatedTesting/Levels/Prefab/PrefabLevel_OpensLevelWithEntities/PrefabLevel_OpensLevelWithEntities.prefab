@@ -64,6 +64,10 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 11161653124805884473
                 },
+                "Component_[11880342253837797716]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 11880342253837797716
+                },
                 "Component_[13116773315299882093]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 13116773315299882093
@@ -77,7 +81,7 @@
                     "Id": 3861913165076405600
                 },
                 "Component_[7103333782129541775]": {
-                    "$type": "EditorColliderComponent",
+                    "$type": "EditorMeshColliderComponent",
                     "Id": 7103333782129541775,
                     "ColliderConfiguration": {
                         "MaterialSlots": {

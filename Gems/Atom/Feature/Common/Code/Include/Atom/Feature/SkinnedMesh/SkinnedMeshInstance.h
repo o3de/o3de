@@ -28,7 +28,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(SkinnedMeshInstance, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinnedMeshInstance, AZ::SystemAllocator);
 
             //! The target model, which is used by the MeshFeatureProcessor to render the mesh
             Data::Instance<RPI::Model> m_model;

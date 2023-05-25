@@ -24,6 +24,7 @@
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <DiffuseProbeGrid_Traits_Platform.h>
 
 namespace AZ
 {
@@ -34,7 +35,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DiffuseProbeGridComponentConfig>()
-                    ->Version(5) // Added EdgeBlendIbl
+                    ->Version(6) // Added EmissiveMultiplier
                     ->Field("ProbeSpacing", &DiffuseProbeGridComponentConfig::m_probeSpacing)
                     ->Field("Extents", &DiffuseProbeGridComponentConfig::m_extents)
                     ->Field("AmbientMultiplier", &DiffuseProbeGridComponentConfig::m_ambientMultiplier)
@@ -45,6 +46,7 @@ namespace AZ
                     ->Field("EdgeBlendIbl", &DiffuseProbeGridComponentConfig::m_edgeBlendIbl)
                     ->Field("FrameUpdateCount", &DiffuseProbeGridComponentConfig::m_frameUpdateCount)
                     ->Field("TransparencyMode", &DiffuseProbeGridComponentConfig::m_transparencyMode)
+                    ->Field("EmissiveMultiplier", &DiffuseProbeGridComponentConfig::m_emissiveMultiplier)
                     ->Field("EditorMode", &DiffuseProbeGridComponentConfig::m_editorMode)
                     ->Field("RuntimeMode", &DiffuseProbeGridComponentConfig::m_runtimeMode)
                     ->Field("BakedIrradianceTextureRelativePath", &DiffuseProbeGridComponentConfig::m_bakedIrradianceTextureRelativePath)
@@ -101,6 +103,11 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::Activate(AZ::EntityId entityId)
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
             m_entityId = entityId;
 
             TransformNotificationBus::Handler::BusConnect(m_entityId);
@@ -152,6 +159,7 @@ namespace AZ
             m_featureProcessor->SetEdgeBlendIbl(m_handle, m_configuration.m_edgeBlendIbl);
             m_featureProcessor->SetFrameUpdateCount(m_handle, m_configuration.m_frameUpdateCount);
             m_featureProcessor->SetTransparencyMode(m_handle, m_configuration.m_transparencyMode);
+            m_featureProcessor->SetEmissiveMultiplier(m_handle, m_configuration.m_emissiveMultiplier);
             m_featureProcessor->SetVisualizationEnabled(m_handle, m_configuration.m_visualizationEnabled);
             m_featureProcessor->SetVisualizationShowInactiveProbes(m_handle, m_configuration.m_visualizationShowInactiveProbes);
             m_featureProcessor->SetVisualizationSphereRadius(m_handle, m_configuration.m_visualizationSphereRadius);
@@ -220,6 +228,11 @@ namespace AZ
 
         void DiffuseProbeGridComponentController::Deactivate()
         {
+            if (!AZ_TRAIT_DIFFUSE_GI_PASSES_SUPPORTED)
+            {
+                // GI is not supported on this platform
+                return;
+            }
             if (m_featureProcessor)
             {
                 m_featureProcessor->RemoveProbeGrid(m_handle);
@@ -400,6 +413,17 @@ namespace AZ
 
             m_configuration.m_transparencyMode = transparencyMode;
             m_featureProcessor->SetTransparencyMode(m_handle, m_configuration.m_transparencyMode);
+        }
+
+        void DiffuseProbeGridComponentController::SetEmissiveMultiplier(float emissiveMultiplier)
+        {
+            if (!m_featureProcessor)
+            {
+                return;
+            }
+
+            m_configuration.m_emissiveMultiplier = emissiveMultiplier;
+            m_featureProcessor->SetEmissiveMultiplier(m_handle, m_configuration.m_emissiveMultiplier);
         }
 
         void DiffuseProbeGridComponentController::SetEditorMode(DiffuseProbeGridMode editorMode)

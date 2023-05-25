@@ -94,6 +94,7 @@ namespace AZ
         {
             m_drawListMask.reset();
             m_drawListContext.Shutdown();
+            m_visibleObjectContext.Shutdown();
             m_passesByDrawList = nullptr;
         }
 
@@ -113,11 +114,24 @@ namespace AZ
             m_drawListContext.AddDrawPacket(drawPacket, depth);
         }        
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition)
+        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
             AddDrawPacket(drawPacket, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, float depth)
+        {
+            // This function is thread safe since VisibleObjectContext has storage per thread for draw item data.
+            m_visibleObjectContext.AddVisibleObject(userData, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, const Vector3& worldPosition)
+        {
+            Vector3 cameraToObject = worldPosition - m_position;
+            float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
+            AddVisibleObject(userData, depth);
         }
 
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
@@ -159,6 +173,10 @@ namespace AZ
 
             m_worldToViewMatrix = worldToView;
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
@@ -197,6 +215,10 @@ namespace AZ
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Only signal an update when there is a change, otherwise this might block
@@ -249,6 +271,20 @@ namespace AZ
             m_unprojectionConstants.SetW(float(tanHalfFovY));
 
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
+        }
+
+        void View::SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude)
+        {
+            if (viewToClipExclude)
+            {
+                m_viewToClipExcludeMatrix = *viewToClipExclude;
+                m_worldToClipExcludeMatrix = *viewToClipExclude * m_worldToViewMatrix;
+            }
+            else
+            {
+                m_viewToClipExcludeMatrix.reset();
+                m_worldToClipExcludeMatrix.reset();
+            }
         }
 
         void View::SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth)
@@ -336,6 +372,11 @@ namespace AZ
             return m_viewToClipMatrix;
         }
 
+        const AZ::Matrix4x4* View::GetWorldToClipExcludeMatrix() const
+        {
+            return m_worldToClipExcludeMatrix.has_value() ? &m_worldToClipExcludeMatrix.value() : nullptr;
+        }
+
         const AZ::Matrix4x4& View::GetWorldToClipMatrix() const
         {
             return m_worldToClipMatrix;
@@ -354,6 +395,16 @@ namespace AZ
         RHI::DrawListView View::GetDrawList(RHI::DrawListTag drawListTag)
         {
             return m_drawListContext.GetList(drawListTag);
+        }
+
+        VisibleObjectListView View::GetVisibleObjectList()
+        {
+            return m_visibleObjectContext.GetList();
+        }
+
+        void View::FinalizeVisibleObjectList()
+        {
+            m_visibleObjectContext.FinalizeLists();
         }
 
         void View::FinalizeDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent)
@@ -433,8 +484,14 @@ namespace AZ
 
         void View::SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag)
         {
-            const Pass* passWithDrawListTag = (*m_passesByDrawList)[tag];
-            passWithDrawListTag->SortDrawList(drawList);
+            // Note: it's possible that the m_passesByDrawList doesn't have a pass for the input tag.
+            // This is because a View can be used for multiple render pipelines.
+            // So it may contains draw list tag which exists in one render pipeline but not others. 
+            auto itr = m_passesByDrawList->find(tag);
+            if (itr != m_passesByDrawList->end())
+            {
+                itr->second->SortDrawList(drawList);
+            }
         }
 
         void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)

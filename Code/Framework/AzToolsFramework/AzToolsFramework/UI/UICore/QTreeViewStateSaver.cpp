@@ -24,7 +24,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(QTreeViewStateSaverData, "{CA0FBE7A-232C-4595-9824-F4B5C50FA7B4}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(QTreeViewStateSaverData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QTreeViewStateSaverData, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_expandedElements;
         AZStd::vector<AZStd::string> m_collapsedElements;

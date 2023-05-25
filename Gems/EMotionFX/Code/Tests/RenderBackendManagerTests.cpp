@@ -29,7 +29,7 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(TestRenderActor, "{560849A4-7767-4654-8C61-EDA9A0059BE1}", RenderActor)
-            AZ_CLASS_ALLOCATOR(TestRenderActor, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(TestRenderActor, EMotionFXAllocator)
 
             TestRenderActor(ActorAsset* actorAsset)
                 : RenderActor()
@@ -46,19 +46,17 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(TestRenderActorInstance, "{8F5CD404-9661-4A71-9583-EB8E66F3C0E8}", RenderActorInstance)
-            AZ_CLASS_ALLOCATOR(TestRenderActorInstance, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(TestRenderActorInstance, EMotionFXAllocator)
 
             TestRenderActorInstance(AZ::EntityId entityId,
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<ActorAsset>& asset,
-                const ActorAsset::MaterialList& materialPerLOD,
                 SkinningMethod skinningMethod,
                 const AZ::Transform& worldTransform)
                 : RenderActorInstance(asset, actorInstance.get(), entityId)
                 , m_entityId(entityId)
                 , m_actorAsset(asset)
                 , m_actorInstance(actorInstance)
-                , m_materialPerLOD(materialPerLOD)
                 , m_skinningMethod(skinningMethod)
                 , m_worldTransform(worldTransform)
             {
@@ -68,16 +66,15 @@ namespace EMotionFX
             MOCK_METHOD1(DebugDraw, void(const EMotionFX::ActorRenderFlags&));
             MOCK_CONST_METHOD0(IsVisible, bool());
             MOCK_METHOD1(SetIsVisible, void(bool));
-            MOCK_METHOD1(SetMaterials, void(const ActorAsset::MaterialList&));
             MOCK_METHOD0(UpdateBounds, void());
             MOCK_METHOD0(GetWorldBounds, AZ::Aabb());
             MOCK_METHOD0(GetLocalBounds, AZ::Aabb());
+            MOCK_METHOD1(SetExcludeFromReflectionCubeMaps, void(bool));
 
         public:
             AZ::EntityId m_entityId;
             AZ::Data::Asset<ActorAsset> m_actorAsset;
             EMotionFXPtr<EMotionFX::ActorInstance> m_actorInstance;
-            ActorAsset::MaterialList m_materialPerLOD;
             SkinningMethod m_skinningMethod = SkinningMethod::Linear;
             AZ::Transform m_worldTransform = AZ::Transform::CreateIdentity();
         };
@@ -87,7 +84,7 @@ namespace EMotionFX
         {
         public:
             AZ_RTTI(TestRenderBackend, "{22CC2C55-8019-4302-8DFD-E08E0CA48114}", RenderBackend)
-            AZ_CLASS_ALLOCATOR(TestRenderBackend, EMotionFXAllocator, 0)
+            AZ_CLASS_ALLOCATOR(TestRenderBackend, EMotionFXAllocator)
 
             RenderActor* CreateActor(ActorAsset* actorAsset) override
             {
@@ -97,11 +94,10 @@ namespace EMotionFX
             RenderActorInstance* CreateActorInstance(AZ::EntityId entityId,
                 const EMotionFXPtr<EMotionFX::ActorInstance>& actorInstance,
                 const AZ::Data::Asset<ActorAsset>& asset,
-                const ActorAsset::MaterialList& materialPerLOD,
                 SkinningMethod skinningMethod,
                 const AZ::Transform& worldTransform) override
             {
-                return aznew TestRenderActorInstance(entityId, actorInstance, asset, materialPerLOD, skinningMethod, worldTransform);
+                return aznew TestRenderActorInstance(entityId, actorInstance, asset, skinningMethod, worldTransform);
             }
         };
 
@@ -161,7 +157,6 @@ namespace EMotionFX
                 m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
                     m_actorInstance,
                     m_actorAsset,
-                    /*materialPerLOD=*/{},
                     SkinningMethod::Linear,
                     /*transform=*/{}));
             }

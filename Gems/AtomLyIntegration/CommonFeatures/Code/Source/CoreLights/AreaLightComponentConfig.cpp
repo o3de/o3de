@@ -191,13 +191,14 @@ namespace AZ
 
         bool AreaLightComponentConfig::IsShadowPcfDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
+            return ShadowsDisabled() || !(m_shadowFilterMethod == ShadowFilterMethod::Pcf ||
                 m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
 
         bool AreaLightComponentConfig::IsEsmDisabled() const
         {
-            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+            return ShadowsDisabled() ||
+                !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
     }
 }

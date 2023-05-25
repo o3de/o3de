@@ -628,7 +628,7 @@ namespace LUAEditor
                 AZ_TracePrintf("Debug", "URL: %s\n", path.toUtf8().data());
 
                 AZStd::string assetId(path.toUtf8().data());
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, assetId, true);
+                Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::OnLoadDocument, assetId, true);
             }
         }
         else

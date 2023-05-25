@@ -100,12 +100,12 @@ namespace AZ
 
                 AZ_FORCE_INLINE interval_type interval() const
                 {
-                    return AZStd::make_pair<key_type, key_type>(interval_begin(), interval_end());
+                    return AZStd::make_pair(interval_begin(), interval_end());
                 }
 
                 pair<interval_type, reference_value> operator*() const
                 {
-                    return AZStd::make_pair<interval_type, reference_value>(interval(), value());
+                    return AZStd::pair<interval_type, reference_value>(interval(), value());
                 }
 
                 AZ_FORCE_INLINE this_type& operator++()

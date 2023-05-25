@@ -26,7 +26,7 @@ namespace AZ
         struct ImageViewDescriptor
         {
             AZ_TYPE_INFO(ImageViewDescriptor, "{7dc08a6e-5a1d-4730-b1fa-3a6e11bb7178}");
-            AZ_CLASS_ALLOCATOR(ImageViewDescriptor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageViewDescriptor, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

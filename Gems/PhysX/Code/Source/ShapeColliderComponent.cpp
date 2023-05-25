@@ -13,6 +13,8 @@
 #include <LmbrCentral/Shape/CapsuleShapeComponentBus.h>
 #include <Source/Utils.h>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace PhysX
 {
     namespace Utils

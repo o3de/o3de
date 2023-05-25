@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::DiffuseProbeGridComponentConfig, "{BF190F2A-D7F7-453B-9D42-5CE940180DCE}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             DiffuseProbeGridComponentConfig() = default;
@@ -39,7 +39,8 @@ namespace AZ
             bool m_scrolling = false;
             bool m_edgeBlendIbl = true;
             uint32_t m_frameUpdateCount = 1;
-            DiffuseProbeGridTransparencyMode m_transparencyMode = DiffuseProbeGridTransparencyMode::Full;
+            DiffuseProbeGridTransparencyMode m_transparencyMode = DefaultDiffuseProbeGridTransparencyMode;
+            float m_emissiveMultiplier = DefaultDiffuseProbeGridEmissiveMultiplier;
 
             DiffuseProbeGridMode m_editorMode = DiffuseProbeGridMode::RealTime;
             DiffuseProbeGridMode m_runtimeMode = DiffuseProbeGridMode::RealTime;
@@ -67,7 +68,7 @@ namespace AZ
         public:
             friend class EditorDiffuseProbeGridComponent;
 
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::DiffuseProbeGridComponentController, "{108588E8-355E-4A19-94AC-955E64A37CE2}");
 
             static void Reflect(AZ::ReflectContext* context);
@@ -114,6 +115,7 @@ namespace AZ
             void SetEdgeBlendIbl(bool edgeBlendIbl);
             void SetFrameUpdateCount(uint32_t frameUpdateCount);
             void SetTransparencyMode(DiffuseProbeGridTransparencyMode transparencyMode);
+            void SetEmissiveMultiplier(float emissiveMultiplier);
             void SetEditorMode(DiffuseProbeGridMode editorMode);
             void SetRuntimeMode(DiffuseProbeGridMode runtimeMode);
             void SetVisualizationEnabled(bool visualizationEnabled);

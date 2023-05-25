@@ -38,6 +38,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(Splat3Functor, SystemAllocator)
             AZ_RTTI(Splat3Functor, "{4719BBAD-21A1-4909-88E9-C190208BDD00}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -67,6 +68,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(DummyShaderCollectionFunctor, SystemAllocator)
             AZ_RTTI(DummyShaderCollectionFunctor, "{6ED031DC-DADC-4A47-B858-DDA9748700A6}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -105,6 +107,16 @@ namespace UnitTest
                     { Name{ "from" }, AZStd::string(from) },
                     { Name{ "to"   }, AZStd::string(to)   }
                 } ));
+        };
+
+        static void AddRenamePrefixAction(MaterialVersionUpdate& versionUpdate, const char* from, const char* to)
+        {
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{"renamePrefix"},
+                {
+                    { Name{ "from" }, AZStd::string(from) },
+                    { Name{ "to"   }, AZStd::string(to)   }
+                }));
         };
 
         static void AddSetValueAction(MaterialVersionUpdate& versionUpdate, const char* name, const MaterialPropertyValue& val)
@@ -594,22 +606,22 @@ namespace UnitTest
         MaterialAssetCreator materialCreator;
 
         Data::Asset<MaterialAsset> materialAssetV1;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAssetV1));
 
         Data::Asset<MaterialAsset> materialAssetV3;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(3);
         EXPECT_TRUE(materialCreator.End(materialAssetV3));
 
         Data::Asset<MaterialAsset> materialAssetV6;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(6);
         EXPECT_TRUE(materialCreator.End(materialAssetV6));
 
         Data::Asset<MaterialAsset> materialAssetV9;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(9);
         EXPECT_TRUE(materialCreator.End(materialAssetV9));
 
@@ -699,7 +711,7 @@ namespace UnitTest
         // Add the MaterialTypeAsset to a MaterialAsset to trigger the value updates
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAsset));
 
@@ -786,6 +798,102 @@ namespace UnitTest
         propertyId = AZ::Name{"otherGroup.bazB"};
         EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
         EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
+    }
+
+    TEST_F(MaterialTypeAssetTests, ApplyPropertyRenamePrefixes)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        // Version updates
+        materialTypeCreator.SetVersion(10);
+
+        MaterialVersionUpdate versionUpdate2(2);
+        AddRenamePrefixAction(versionUpdate2, "layer1_", "layer1.");
+        AddRenamePrefixAction(versionUpdate2, "layer2_", "layer2.");
+        materialTypeCreator.AddVersionUpdate(versionUpdate2);
+
+        MaterialVersionUpdate versionUpdate4(4);
+        AddRenamePrefixAction(versionUpdate4, "layer1.", "layerA.");
+        AddRenamePrefixAction(versionUpdate4, "layer2.", "layerB.");
+        materialTypeCreator.AddVersionUpdate(versionUpdate4);
+
+        materialTypeCreator.BeginMaterialProperty(Name{"blend.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerA.baseColor.color"}, MaterialPropertyDataType::Color);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerA.baseColor.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerB.baseColor.color"}, MaterialPropertyDataType::Color);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerB.baseColor.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        AZ::Name propertyId;
+
+        // Handle version 1 style names
+
+        propertyId = AZ::Name{"layer1_baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.color");
+
+        propertyId = AZ::Name{"layer1_baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.factor");
+
+        propertyId = AZ::Name{"layer2_baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.color");
+
+        propertyId = AZ::Name{"layer2_baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.factor");
+
+        // Handle version 2 style names
+
+        propertyId = AZ::Name{"layer1.baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.color");
+
+        propertyId = AZ::Name{"layer1.baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.factor");
+
+        propertyId = AZ::Name{"layer2.baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.color");
+
+        propertyId = AZ::Name{"layer2.baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.factor");
+
+        // Other cases...
+
+        propertyId = AZ::Name{"doesNotExist"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "doesNotExist");
+
+        propertyId = AZ::Name{"blend.factor"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "blend.factor");
+
+        propertyId = AZ::Name{"shouldNotBeRenamed_layer1_isNotAPrefix"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "shouldNotBeRenamed_layer1_isNotAPrefix");
+
+        // The first "layer1_" is a prefix but the other is not
+        propertyId = AZ::Name{"layer1_theNext_layer1_isNotAPrefix"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.theNext_layer1_isNotAPrefix");
+
+        // The replacement is case sensitive
+        propertyId = AZ::Name{"Layer1_foo"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "Layer1_foo");
     }
 
     TEST_F(MaterialTypeAssetTests, Error_InternalPipelineProperty_ConnectToSRG)

@@ -1,0 +1,259 @@
+{
+    "entries": [
+        {
+            "base": "PaintBrushSessionBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Paint Brush Session Bus",
+                "tooltip": "Commands that start, end, and control a paint brush session."
+            },
+            "methods": [
+                {
+                    "base": "ResetBrushStrokeTracking",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reset Brush Stroke Tracking"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reset Brush Stroke Tracking is invoked"
+                    },
+                    "details": {
+                        "name": "Reset Brush Stroke Tracking",
+                        "tooltip": "Reset the brush tracking so that the next action will be considered the start of a stroke movement instead of a continuation."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SmoothToLocation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Smooth To Location"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Smooth To Location is invoked"
+                    },
+                    "details": {
+                      "name": "Smooth To Location",
+                      "tooltip":  "Smooth the underlying data from the previous location to the provided location based on brush settings."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                              "name": "Location",
+                              "tooltip":  "The world space location to smooth to."
+                            }
+                        },
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                              "name": "Paint Brush Settings",
+                              "tooltip":  "The paint brush settings to use for smoothing."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EndBrushStroke",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke End Brush Stroke"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after End Brush Stroke is invoked"
+                    },
+                    "details": {
+                      "name": "End Brush Stroke",
+                      "tooltip": "End the current brush stroke for this paint brush session."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "BeginBrushStroke",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Begin Brush Stroke"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Begin Brush Stroke is invoked"
+                    },
+                    "details": {
+                      "name": "Begin Brush Stroke",
+                      "tooltip":  "Start a new brush stroke for this paint brush session."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        },
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                            "details": {
+                              "name": "Paint Brush Settings",
+                              "tooltip":  "The paint brush settings to use for this brush stroke."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsInBrushStroke",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is In Brush Stroke"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is In Brush Stroke is invoked"
+                    },
+                    "details": {
+                        "name": "Is In Brush Stroke"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                              "name": "In Brush Stroke",
+                              "tooltip":  "true if this paint brush session is currently in a brush stroke, false if not."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "EndPaintSession",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke End Paint Session"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after End Paint Session is invoked"
+                    },
+                    "details": {
+                      "name": "End Paint Session",
+                      "tooltip":  "Finish a paint brush session and clean up any helper structures."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StartPaintSession",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Start Paint Session"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Start Paint Session is invoked"
+                    },
+                    "details": {
+                      "name": "Start Paint Session",
+                      "tooltip":  "Start a paint brush session and create any temporary buffers needed for data modification."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Paintable Entity Id",
+                                "tooltip": "An entity containing a component that supports runtime paintbrush controls."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PaintToLocation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Paint To Location"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Paint To Location is invoked"
+                    },
+                  "details": {
+                    "name": "Paint To Location",
+                    "tooltip": "Paint the underlying data from the previous location to the provided location based on brush settings."
+                  },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                              "name": "Paint Brush Session Id",
+                              "tooltip":  "The paint brush session to manipulate."
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                          "details": {
+                            "name": "Location",
+                            "tooltip": "The world space location to smooth to."
+                          }
+                        },
+                        {
+                            "typeid": "{CE5EFFE2-14E5-4A9F-9B0F-695F66744A50}",
+                          "details": {
+                            "name": "Paint Brush Settings",
+                            "tooltip": "The paint brush settings to use for this brush stroke."
+                          }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

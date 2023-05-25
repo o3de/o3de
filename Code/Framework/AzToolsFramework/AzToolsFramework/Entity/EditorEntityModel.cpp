@@ -30,6 +30,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityInfoRequests);
+
 #include <QtWidgets/QMessageBox>
 
 namespace
@@ -583,7 +585,7 @@ namespace AzToolsFramework
         //when an editor entity is created and registered, add it to a pending list.
         //once all entities in the pending list are activated, add them to model.
         bool isEditorEntity = false;
-        EBUS_EVENT_RESULT(isEditorEntity, EditorEntityContextRequestBus, IsEditorEntity, entityId);
+        EditorEntityContextRequestBus::BroadcastResult(isEditorEntity, &EditorEntityContextRequestBus::Events::IsEditorEntity, entityId);
         if (isEditorEntity)
         {
             // As an optimization, new entities are queued.
@@ -692,8 +694,9 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorEntityModel::OnContextReset()
+    void EditorEntityModel::OnPrepareForContextReset()
     {
+        m_preparingForContextReset = true;
         Reset();
     }
 

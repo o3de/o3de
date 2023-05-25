@@ -66,8 +66,11 @@
                     "Value": 0.0
                 },
                 "settings": {
-                    "materialInputs": [
-                        "SLOTSTANDARDSRGMEMBER"
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
                     ]
                 }
             }

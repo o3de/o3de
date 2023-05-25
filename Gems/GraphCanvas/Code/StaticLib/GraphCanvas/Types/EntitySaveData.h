@@ -19,7 +19,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(ComponentSaveData, "{359ACEC7-D0FA-4FC0-8B59-3755BB1A9836}");
-        AZ_CLASS_ALLOCATOR(ComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentSaveData, AZ::SystemAllocator);
 
         ComponentSaveData() = default;
         virtual ~ComponentSaveData() = default;
@@ -74,7 +74,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(EntitySaveDataContainer, "{DCCDA882-AF72-49C3-9AAD-BA601322BFBC}");
-        AZ_CLASS_ALLOCATOR(EntitySaveDataContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntitySaveDataContainer, AZ::SystemAllocator);
 
         template<class DataType>
         static AZ::Uuid GetDataTypeKey()

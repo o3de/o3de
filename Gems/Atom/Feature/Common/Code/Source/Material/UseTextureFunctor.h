@@ -23,6 +23,7 @@ namespace AZ
         {
             friend class UseTextureFunctorSourceData;
         public:
+            AZ_CLASS_ALLOCATOR(UseTextureFunctor , SystemAllocator)
             AZ_RTTI(UseTextureFunctor, "{CFAC6159-840A-4696-8699-D3850D8A3930}", RPI::MaterialFunctor);
 
             static void Reflect(ReflectContext* context);

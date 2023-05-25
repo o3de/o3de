@@ -32,6 +32,18 @@ function MaterialTypeSetup(context)
         return true
     end
     
+    if(lightingModel == "Skin") then
+        Error("The low end pipeline does not support the Skin lighting model. This combination should not be used at runtime.")
+        -- This returns 'true' to pass the build, the surface won't be rendered at runtime.
+        -- TODO(MaterialPipeline): Instead of rendering nothing, either render an error shader (like a magenta surface) or fall back to StandardLighting.
+        --                         For an error shader, .materialtype needs to have new field for an ObjectSrg azsli file separate from "materialShaderCode", so that
+        --                         the error shader can use the same ObjectSrg as the other shaders (depth/shadow) without including the unsupported materialShaderCode.
+        --                         Using StandardLighting as a fallback is even more difficult because it requires some kind of adapter to move data from the Surface that
+        --                         the material type wants to use, to the Surface that the lighting model supports. (It's a natural fit for downgrading from Enhanced to
+        --                         Standard but there is compatibility issues between Skin and Standard).
+        return true
+    end
+
     Error('Unsupported lighting model "' .. lightingModel .. '".')
     return false
 end

@@ -53,7 +53,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(BaseLogView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BaseLogView, AZ::SystemAllocator);
             BaseLogView(QWidget* pParent);
             virtual ~BaseLogView();
 

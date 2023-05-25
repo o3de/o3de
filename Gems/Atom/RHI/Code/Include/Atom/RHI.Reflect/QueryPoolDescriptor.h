@@ -71,6 +71,7 @@ namespace AZ
         public:
             virtual ~QueryPoolDescriptor() = default;
             AZ_RTTI(QueryPoolDescriptor, "{770C9C44-8E5D-4A23-87A4-2308CD2C5162}", ResourcePoolDescriptor);
+            AZ_CLASS_ALLOCATOR(QueryPoolDescriptor, SystemAllocator)
             static void Reflect(AZ::ReflectContext* context);
 
             QueryPoolDescriptor() = default;

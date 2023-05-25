@@ -26,6 +26,7 @@ namespace AZ
         {
             friend class UnitTest::LuaMaterialFunctorTests;
         public:
+            AZ_CLASS_ALLOCATOR(LuaMaterialFunctorSourceData, AZ::SystemAllocator)
             AZ_RTTI(AZ::RPI::LuaMaterialFunctorSourceData, "{E6F6D022-340C-47E3-A0BA-4EFE79C0CD1A}", RPI::MaterialFunctorSourceData);
 
             static void Reflect(AZ::ReflectContext* context);

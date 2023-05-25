@@ -110,10 +110,6 @@ namespace AZ
 
         void FixedShapeProcessor::PrepareFrame()
         {
-            AZ_PROFILE_SCOPE(AzRender, "FixedShapeProcessor: PrepareFrame");
-            m_processSrgs.clear();
-            m_drawPackets.clear();
-
             if (m_needUpdatePipelineStates)
             {
                 // for created pipeline state, re-set their data from scene
@@ -124,6 +120,12 @@ namespace AZ
                 }
                 m_needUpdatePipelineStates = false;
             }
+        }
+        
+        void FixedShapeProcessor::FrameEnd()
+        {
+            m_processSrgs.clear();
+            m_drawPackets.clear();
         }
 
         void FixedShapeProcessor::ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)

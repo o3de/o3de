@@ -138,15 +138,23 @@ float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, f
     DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
     calc.ComputeShadowCoords();
 
-    if (calc.m_cascadeIndex < cascadeCount)
+    if (calc.m_maxCascade < cascadeCount)
     {
+        // Each cascade has an assigned color. Pixels that are a blend of cascades will blend the colors.
         static const float3 debuggingColors[ViewSrg::MaxCascadeCount] = 
         {
             float3(1., 0., 0.), 
             float3(0., 1., 0.), 
             float3(0., 0., 1.), 
-            float3(1., 1., 0.)};
-        color = color * 0.75 + debuggingColors[calc.m_cascadeIndex] * 0.25;
+            float3(1., 1., 0.)
+        };
+        float3 debugColor = float3(0.0, 0.0, 0.0);
+        for (int i = calc.m_minCascade; i <= calc.m_maxCascade; ++i)
+        {
+            debugColor += debuggingColors[i];
+        }
+        debugColor *= rcp(calc.m_maxCascade - calc.m_minCascade + 1.0);
+        color = color * 0.75 + debugColor * 0.25;
     }
     return color;
 }

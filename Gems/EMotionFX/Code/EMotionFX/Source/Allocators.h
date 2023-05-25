@@ -20,9 +20,6 @@ namespace EMotionFX
      * Every time we create a new allocator we need:
      * 1) to create a class that inherits from an another allocator type e.g. AZ::AllocatorBase<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>,  AZ::AllocatorBase<AZ::ChildAllocatorSchema<AZ::PoolAllocator>>
      * 2) that class will contain the UUID
-     * 3) we need to add them to the "Create" method so they are created during component creation
-     * 4) during the creation, we need to configure the allocator if it is a sub-allocator
-     * 5) we need to add them to the "Destroy" method so they are destroyed during component destruction
      *
      * Forgetting one of this will either cause a compilation error or a runtime error on the first allocation with that allocator (which is sometimes hard to track)
      * To avoid forgetting anything and to help the developer that wants to add/remove a new allocator, we built this table and a set of macros that expand into the above steps
@@ -109,33 +106,60 @@ namespace EMotionFX
 
 
     // Define the pool allocators
+    class AnimGraphConditionAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph condition allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphConditionAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphConditionAllocator final
         : public AZ::ThreadPoolBase<AnimGraphConditionAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimGraphConditionAllocator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimGraphConditionAllocator, AZ::SystemAllocator)
         AZ_TYPE_INFO(AnimGraphConditionAllocator, "{F5406A89-3F11-4791-9F83-6A71D0F8DD81}")
 
         using Base = AZ::ThreadPoolBase<AnimGraphConditionAllocator>;
     };
 
 
+    class AnimGraphObjectDataAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph object data allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectDataAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphObjectDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimGraphObjectDataAllocator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimGraphObjectDataAllocator, AZ::SystemAllocator)
         AZ_TYPE_INFO(AnimGraphObjectDataAllocator, "{E00ADC25-A311-4003-849E-85C125089C74}")
 
         using Base = AZ::ThreadPoolBase<AnimGraphObjectDataAllocator>;
     };
 
 
+    class AnimGraphObjectUniqueDataAllocator;
+}
+namespace AZ::Internal
+{
+    // extern the threadsafe PoolAllocator schema for the graph object unique data allocator
+    extern template class PoolAllocatorHelper<ThreadPoolSchemaHelper<EMotionFX::AnimGraphObjectUniqueDataAllocator>>;
+}
+namespace EMotionFX
+{
     class AnimGraphObjectUniqueDataAllocator final
         : public AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimGraphObjectUniqueDataAllocator, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AnimGraphObjectUniqueDataAllocator, AZ::SystemAllocator)
             AZ_TYPE_INFO(AnimGraphObjectUniqueDataAllocator, "{C74F51E0-E6B0-4EF8-A3BF-0968CAEF1333}")
 
         using Base = AZ::ThreadPoolBase<AnimGraphObjectUniqueDataAllocator>;
@@ -144,9 +168,6 @@ namespace EMotionFX
     class Allocators
     {
     public:
-        static void Create();
-        static void Destroy();
-
         static void ShrinkPools();
     };
 

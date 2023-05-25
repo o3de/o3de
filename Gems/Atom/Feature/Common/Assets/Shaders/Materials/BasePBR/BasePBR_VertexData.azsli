@@ -15,6 +15,10 @@
 #define VsInput         VsInput_BasePBR
 #endif
 
+#ifndef VsSystemValues
+#define VsSystemValues  VsSystemValues_BasePBR
+#endif
+
 #ifndef VsOutput
 #define VsOutput        VsOutput_BasePBR
 #endif
@@ -33,6 +37,11 @@ struct VsInput_BasePBR
     float2 uv1 : UV1;
 };
 
+struct VsSystemValues_BasePBR
+{
+    uint m_instanceId;
+};
+
 struct VsOutput_BasePBR
 {
     // Base fields (required by the template azsli file)...
@@ -45,4 +54,5 @@ struct VsOutput_BasePBR
 
     // Extended fields (only referenced in this azsl file)...
     float2 uvs[UvSetCount] : UV1;
+    uint m_instanceId : SV_InstanceID;
 };

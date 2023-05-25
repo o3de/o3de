@@ -24,9 +24,6 @@ class TestAutomation(EditorTestSuite):
     class test_GradientPreviewSettings_ClearingPinnedEntitySetsPreviewToOrigin(EditorBatchedTest):
         from .EditorScripts import GradientPreviewSettings_ClearingPinnedEntitySetsPreviewToOrigin as test_module
 
-    class test_GradientPreviewSettings_DefaultPinnedEntityIsSelf(EditorBatchedTest):
-        from .EditorScripts import GradientPreviewSettings_DefaultPinnedEntityIsSelf as test_module
-
     class test_GradientSampling_GradientReferencesAddRemoveSuccessfully(EditorBatchedTest):
         from .EditorScripts import GradientSampling_GradientReferencesAddRemoveSuccessfully as test_module
 

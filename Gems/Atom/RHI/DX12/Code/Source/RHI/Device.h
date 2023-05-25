@@ -27,6 +27,14 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
+#define USE_AMD_D3D12MA
+#ifdef USE_AMD_D3D12MA
+#include <dx12ma/D3D12MemAlloc.h>
+
+AZ_DX12_REFCOUNTED(D3D12MA::Allocator);
+AZ_DX12_REFCOUNTED(D3D12MA::Allocation);
+#endif
+
 namespace AZ
 {
     namespace RHI
@@ -47,7 +55,7 @@ namespace AZ
         {
             using Base = Device_Platform;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "{89670048-DC28-434D-A0BE-C76165419769}", Base);
 
             static RHI::Ptr<Device> Create();
@@ -69,6 +77,12 @@ namespace AZ
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);
 
+#ifdef USE_AMD_D3D12MA
+            MemoryView CreateD3d12maBuffer(
+                const RHI::BufferDescriptor& bufferDescriptor,
+                D3D12_RESOURCE_STATES initialState,
+                D3D12_HEAP_TYPE heapType);
+#endif
             MemoryView CreateBufferCommitted(
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
@@ -167,7 +181,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             RHI::ResultCode CompactSRGMemory() override;
-            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);
@@ -175,11 +189,25 @@ namespace AZ
 
             void InitDeviceRemovalHandle();
 
+#ifdef USE_AMD_D3D12MA
+            RHI::ResultCode InitD3d12maAllocator();
+#endif
             void InitFeatures();
+
+            void ConvertBufferDescriptorToResourceDesc(
+                const RHI::BufferDescriptor& bufferDescriptor,
+                D3D12_RESOURCE_STATES initialState,
+                D3D12_RESOURCE_DESC& output
+            );
 
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
+
+#ifdef USE_AMD_D3D12MA
+            RHI::Ptr<D3D12MA::Allocator> m_dx12MemAlloc;
+            D3d12maReleaseQueue m_D3d12maReleaseQueue;
+#endif
 
             ReleaseQueue m_releaseQueue;
 

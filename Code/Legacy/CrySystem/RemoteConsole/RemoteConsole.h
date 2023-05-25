@@ -65,9 +65,6 @@ public:
 
 #if defined(USE_REMOTE_CONSOLE)
     SRemoteServer* m_pServer;
-    ICVar* m_pLogEnableRemoteConsole = nullptr;
-    ICVar* m_remoteConsoleAllowedHostList = nullptr;
-    ICVar* m_remoteConsolePort = nullptr;
 #endif
 };
 

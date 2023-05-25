@@ -78,7 +78,7 @@ namespace AZ::Settings
 
     ParseOutcome ParseConfigFile(AZ::IO::GenericStream& configStream, const ConfigParserSettings& configParserSettings)
     {
-        // The trace system is not being used here as this function INI system is available
+        // The trace system is not being used here as this function is available
         // before any allocators or initialization of any systems take place
 
         ParseOutcome parseOutcome;

@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FloatSliderParameter, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FloatSliderParameter, AnimGraphAllocator)
 
 
     void FloatSliderParameter::Reflect(AZ::ReflectContext* context)

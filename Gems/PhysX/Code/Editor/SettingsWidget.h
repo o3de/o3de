@@ -28,7 +28,7 @@ namespace PhysX
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(SettingsWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SettingsWidget, AZ::SystemAllocator);
 
             explicit SettingsWidget(QWidget* parent = nullptr);
 

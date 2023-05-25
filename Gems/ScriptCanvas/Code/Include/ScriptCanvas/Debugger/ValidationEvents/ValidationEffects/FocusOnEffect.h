@@ -18,7 +18,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(FocusOnEntityEffect, "{583D7B85-6088-4C44-A254-70B04F294BB4}");
-        AZ_CLASS_ALLOCATOR(FocusOnEntityEffect, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FocusOnEntityEffect, AZ::SystemAllocator);
 
         FocusOnEntityEffect() = default;
         virtual ~FocusOnEntityEffect() = default;

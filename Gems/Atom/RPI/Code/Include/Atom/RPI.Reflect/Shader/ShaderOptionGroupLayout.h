@@ -16,8 +16,18 @@
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
@@ -27,7 +37,7 @@ namespace AZ
     {
         class ShaderOptionGroupLayout;
         class ShaderOptionGroup;
-        
+
         /**
          * This struct describes compile time hints for the shader option group layout building.
          * The builder (ShaderAssetBuilder or other) is free to ignore or enforce these options.
@@ -69,7 +79,7 @@ namespace AZ
             //! @param optionType     Type hint for the option - bool, enum, integer range, etc.
             //! @param bitOffset      Bit offset must match the ShaderOptionGroupLayout where this Option will be added
             //! @param order          The order (rank) of the shader option. Must be unique within a group. Lower order is higher priority.
-            //! @param nameIndexList  List of valid (valueName, value) pairs for this Option. See "Create*ShaderOptionValues" utility functions above.  
+            //! @param nameIndexList  List of valid (valueName, value) pairs for this Option. See "Create*ShaderOptionValues" utility functions above.
             //! @param defaultValue   Default value name, which must also be in the nameIndexList. In the cases where the list
             //!                       defines a range (IntegerRange for instance) defaultValue must be within the range instead.
             //!                       If omitted, the first entry in @nameIndexList will be used.
@@ -144,6 +154,9 @@ namespace AZ
             //! Gets the name for the option value.
             Name GetValueName(ShaderOptionValue value) const;
 
+            //! Gets the name for the option value.
+            Name GetValueName(uint32_t valueIndex) const;
+
             bool operator == (const ShaderOptionDescriptor&) const;
             bool operator != (const ShaderOptionDescriptor&) const;
 
@@ -193,7 +206,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(AZ::RPI::ShaderOptionGroupLayout, "{32E269DE-12A2-4B65-B4F8-BAE93DD39D7E}");
-            AZ_CLASS_ALLOCATOR(ShaderOptionGroupLayout, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderOptionGroupLayout, AZ::ThreadPoolAllocator);
             static void Reflect(ReflectContext* context);
 
             static Ptr<ShaderOptionGroupLayout> Create();
@@ -248,7 +261,10 @@ namespace AZ
         private:
             ShaderOptionGroupLayout() = default;
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             static const char* DebugCategory;
 

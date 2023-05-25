@@ -40,6 +40,7 @@ namespace WhiteBox
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorWhiteBoxComponentMode, "{F05B83A8-6F3A-43C6-A742-11BAB2D8A7C1}", EditorBaseComponentMode)
 
         constexpr static const char* const WhiteboxModeClusterEdgeRestoreTooltip = "Switch to Edge Restore mode";
         constexpr static const char* const WhiteboxModeClusterDefaultTooltip = "Switch to Sketch mode";
@@ -49,6 +50,14 @@ namespace WhiteBox
         EditorWhiteBoxComponentMode(EditorWhiteBoxComponentMode&&) = delete;
         EditorWhiteBoxComponentMode& operator=(EditorWhiteBoxComponentMode&&) = delete;
         ~EditorWhiteBoxComponentMode() override;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActionContextModes();
+        static void RegisterActionUpdaters();
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
 
         // EditorBaseComponentMode ...
         void Refresh() override;

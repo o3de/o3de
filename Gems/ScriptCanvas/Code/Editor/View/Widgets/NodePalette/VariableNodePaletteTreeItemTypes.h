@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateGetVariableNodeMimeEvent, "{A9784FF3-E749-4EB4-B5DB-DF510F7CD151}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateGetVariableNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateGetVariableNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -45,7 +45,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(GetVariableNodePaletteTreeItem, "{0589E084-2E57-4650-96BF-E42DA17D7731}", GraphCanvas::DraggableNodePaletteTreeItem)
-        AZ_CLASS_ALLOCATOR(GetVariableNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GetVariableNodePaletteTreeItem, AZ::SystemAllocator);
         static const QString& GetDefaultIcon();
 
         GetVariableNodePaletteTreeItem();
@@ -71,7 +71,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateSetVariableNodeMimeEvent, "{D855EE9C-74E0-4760-AA0F-239ADF7507B6}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateSetVariableNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateSetVariableNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -91,7 +91,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(SetVariableNodePaletteTreeItem, "{BCFD5653-6621-4BAC-BD8E-71EC6190062F}", GraphCanvas::DraggableNodePaletteTreeItem)
-        AZ_CLASS_ALLOCATOR(SetVariableNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SetVariableNodePaletteTreeItem, AZ::SystemAllocator);
         static const QString& GetDefaultIcon();
 
         SetVariableNodePaletteTreeItem();
@@ -116,7 +116,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateVariableChangedNodeMimeEvent, "{C117AC91-FBB5-410D-BA7F-B4C15140EA6F}", CreateEBusHandlerEventMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateVariableChangedNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateVariableChangedNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -139,7 +139,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(VariableChangedNodePaletteTreeItem, "{209D877C-9D15-4B4F-ADF0-2D1A127A4A0D}", GraphCanvas::DraggableNodePaletteTreeItem);
-        AZ_CLASS_ALLOCATOR(VariableChangedNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableChangedNodePaletteTreeItem, AZ::SystemAllocator);
         static const QString& GetDefaultIcon();
 
         VariableChangedNodePaletteTreeItem();
@@ -164,7 +164,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateVariableSpecificNodeMimeEvent, "{924C1192-C32A-4A35-B146-2739AB4383DB}", MultiCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateVariableSpecificNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateVariableSpecificNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -188,7 +188,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::NodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(VariableCategoryNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableCategoryNodePaletteTreeItem, AZ::SystemAllocator);
         VariableCategoryNodePaletteTreeItem(AZStd::string_view displayName);
         ~VariableCategoryNodePaletteTreeItem() = default;
 
@@ -206,7 +206,7 @@ namespace ScriptCanvasEditor
         , public GraphItemCommandNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(LocalVariablesListNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalVariablesListNodePaletteTreeItem, AZ::SystemAllocator);
         LocalVariablesListNodePaletteTreeItem(AZStd::string_view displayName);
         ~LocalVariablesListNodePaletteTreeItem() = default;
 
@@ -244,7 +244,7 @@ namespace ScriptCanvasEditor
         , public ScriptCanvas::VariableNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(LocalVariableNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LocalVariableNodePaletteTreeItem, AZ::SystemAllocator);
         LocalVariableNodePaletteTreeItem(ScriptCanvas::VariableId variableTreeItem, const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
         ~LocalVariableNodePaletteTreeItem();
 

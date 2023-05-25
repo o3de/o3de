@@ -41,10 +41,6 @@ namespace AZ::Internal
     #define AZ_SIZE_ALIGN(_size, _align)         AZ_SIZE_ALIGN_UP(_size, _align)
 #endif // AZ_SIZE_ALIGN
 
-#define AZ_JOIN(X, Y) AZSTD_DO_JOIN(X, Y)
-#define AZSTD_DO_JOIN(X, Y) AZSTD_DO_JOIN2(X, Y)
-#define AZSTD_DO_JOIN2(X, Y) X##Y
-
 /**
  * Macros for calling into strXXX functions. These are simple wrappers that call into the platform
  * implementation. Definitions provide inputs for destination size to allow calling to strXXX_s functions
@@ -136,6 +132,18 @@ namespace AZ::Internal
 #   define azstrtime                                        _strtime
 #   define azstrdate                                        _strdate
 #   define azlocaltime                                      localtime_r
+#endif
+
+// When using -ffast-math flag INFs and NaNs are not handled and
+// it is expected that isfinite() have undefined behaviour.
+// In this case we will provide a replacement following IEEE 754 standard.
+#ifdef __FAST_MATH__
+    #undef azisfinite
+    constexpr bool azisfinite(float f) noexcept
+    {
+        union { float f; uint32_t x; } u = { f };
+        return (u.x & 0x7F800000U) != 0x7F800000U;
+    }
 #endif
 
 #if AZ_TRAIT_USE_POSIX_STRERROR_R

@@ -14,8 +14,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(DebugDraw, Integration::EMotionFXAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(DebugDraw::ActorInstanceData, Integration::EMotionFXAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(DebugDraw, Integration::EMotionFXAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(DebugDraw::ActorInstanceData, Integration::EMotionFXAllocator)
 
     void DebugDraw::ActorInstanceData::Clear()
     {

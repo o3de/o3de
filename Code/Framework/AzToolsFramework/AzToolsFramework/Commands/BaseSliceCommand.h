@@ -19,7 +19,7 @@ namespace AzToolsFramework
         : public UndoSystem::URSequencePoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseSliceCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseSliceCommand, AZ::SystemAllocator);
         AZ_RTTI(BaseSliceCommand, "{87CB1C80-7D75-423B-964A-CF1964A9AB26}");
 
         BaseSliceCommand(const AZStd::string& friendlyName);

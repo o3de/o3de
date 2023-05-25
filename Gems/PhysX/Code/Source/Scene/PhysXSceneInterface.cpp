@@ -186,6 +186,16 @@ namespace PhysX
         return AzPhysics::SceneQueryHits();
     }
 
+    bool PhysXSceneInterface::QueryScene(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits& result)
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->QueryScene(request, result);
+        }
+        return false;
+    }
+
     AzPhysics::SceneQueryHitsList PhysXSceneInterface::QuerySceneBatch(
         AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequests& requests)
     {

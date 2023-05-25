@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    Include/Atom/RHI.Reflect/VkAllocator.h
+    Source/RHI.Reflect/VkAllocator.cpp
     Source/RHI.Reflect/BufferPoolDescriptor.cpp
     Include/Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h
     Source/RHI.Reflect/ImagePoolDescriptor.cpp

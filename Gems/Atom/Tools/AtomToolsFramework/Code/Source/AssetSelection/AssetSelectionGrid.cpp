@@ -91,6 +91,11 @@ namespace AtomToolsFramework
 
         const auto& pathWithAlias = GetPathWithAlias(path);
         const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!QFileInfo::exists(pathWithoutAlias.c_str()))
+        {
+            return;
+        }
+
         const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
         const QString title(GetDisplayNameFromPath(pathWithAlias).c_str());
 
@@ -101,6 +106,25 @@ namespace AtomToolsFramework
             if (pathItemData == item->data(Qt::UserRole))
             {
                 return;
+            }
+        }
+
+        // Compare the item title against all other items and append a suffix until the new title is unique
+        QString uniqueTitle = title;
+        int uniqueTitleSuffix = 0;
+        bool uniqueTitleFound = true;
+        while (uniqueTitleFound)
+        {
+            uniqueTitleFound = false;
+            for (int i = 0; i < m_ui->m_assetList->count(); ++i)
+            {
+                QListWidgetItem* item = m_ui->m_assetList->item(i);
+                if (uniqueTitle == item->data(Qt::DisplayRole))
+                {
+                    uniqueTitle = title + QString(" (%1)").arg(++uniqueTitleSuffix);
+                    uniqueTitleFound = true;
+                    break;
+                }
             }
         }
 
@@ -117,8 +141,9 @@ namespace AtomToolsFramework
             AZStd::max(gridSize.height(), m_tileSize.height() + itemSpacing + headerHeight)));
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_assetList);
-        item->setData(Qt::DisplayRole, title);
+        item->setData(Qt::DisplayRole, uniqueTitle);
         item->setData(Qt::UserRole, pathItemData);
+        item->setData(Qt::ToolTipRole, pathWithoutAlias.c_str());
         item->setSizeHint(m_tileSize + QSize(itemBorder, itemBorder + headerHeight));
         m_ui->m_assetList->addItem(item);
 
@@ -128,7 +153,7 @@ namespace AtomToolsFramework
         itemWidget->layout()->setMargin(0);
 
         AzQtComponents::ElidingLabel* header = new AzQtComponents::ElidingLabel(itemWidget);
-        header->setText(title);
+        header->setText(uniqueTitle);
         header->setFixedSize(QSize(m_tileSize.width(), headerHeight));
         header->setMargin(0);
         header->setStyleSheet("background-color: rgb(35, 35, 35)");

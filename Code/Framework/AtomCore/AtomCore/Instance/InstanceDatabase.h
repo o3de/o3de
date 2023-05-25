@@ -158,7 +158,7 @@ namespace AZ
         {
             static_assert(AZStd::is_base_of<InstanceData, Type>::value, "Type must inherit from Data::Instance to be used in Data::InstanceDatabase.");
         public:
-            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceDatabase, AZ::SystemAllocator);
 
             /**
              * Create the InstanceDatabase with a single handler.
@@ -345,11 +345,11 @@ namespace AZ
             if (!assetLocal.IsReady())
             {
                 return nullptr;
-            }         
-            
+            }
+
             // Take a lock to guard the insertion.  Note that this will not guard against recursive insertions on the same thread.
             AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
-            return EmplaceInstance(id, assetLocal, param);            
+            return EmplaceInstance(id, assetLocal, param);
         }
 
         template<typename Type>
@@ -387,6 +387,14 @@ namespace AZ
         Data::Instance<Type> InstanceDatabase<Type>::EmplaceInstance(
             const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param)
         {
+            // This assert is here to catch any potential non-randomness in our id generation. If it triggers,
+            // there might be a bug / race condition in the id generator. The same assert also occurs *after*
+            // instance creation to help differentiate between a non-random id vs recursive creation of the same id.
+            AZ_Assert(
+                !m_database.contains(id),
+                "Database already contains an instance for this id (%s), possibly a random id generation collision?",
+                id.ToString<AZStd::fixed_string<64>>().c_str());
+
             // Emplace a new instance and return it.
             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
             // the contents of m_database may change within this call.
@@ -403,10 +411,10 @@ namespace AZ
             if (instance)
             {
                 AZ_Assert(
-                    m_database.find(id) == m_database.end(),
+                    !m_database.contains(id),
                     "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
                     "This asset might be erroneously referencing itself as a dependent asset.",
-                    id.ToString<AZStd::string>().c_str());
+                    asset.GetHint().c_str());
 
                 instance->m_id = id;
                 instance->m_parentDatabase = this;

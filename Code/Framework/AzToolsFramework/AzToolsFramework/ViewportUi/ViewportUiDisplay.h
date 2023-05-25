@@ -14,6 +14,7 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 
 #include <QLabel>
@@ -33,6 +34,10 @@ namespace AzToolsFramework::ViewportUi::Internal
     //! Used to track info for each widget in the Viewport UI.
     struct ViewportUiElementInfo
     {
+        ViewportUiElementInfo();
+        ViewportUiElementInfo(AZStd::shared_ptr<QWidget> widget, ViewportUiElementId elementId,
+            bool anchored);
+        ~ViewportUiElementInfo();
         AZStd::shared_ptr<QWidget> m_widget; //!< Reference to the widget.
         ViewportUiElementId m_viewportUiElementId; //!< Corresponding ViewportUiElementId of the widget.
         bool m_anchored = true; //!< Whether the widget is anchored to one position or moves with camera/entity.

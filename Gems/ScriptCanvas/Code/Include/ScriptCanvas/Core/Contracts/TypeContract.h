@@ -18,7 +18,7 @@ namespace ScriptCanvas
         : public Contract
     {
     public:
-        AZ_CLASS_ALLOCATOR(RestrictedTypeContract, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RestrictedTypeContract, AZ::SystemAllocator);
         AZ_RTTI(RestrictedTypeContract, "{92343025-F306-4457-B646-1E0989521D2C}", Contract);
 
         static void Reflect(AZ::ReflectContext* reflection);

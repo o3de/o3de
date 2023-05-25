@@ -68,7 +68,7 @@ namespace LmbrCentral
                 AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
 
                 AZ::EBusAggregateResults<AZ::EntityId> results;
-                EBUS_EVENT_ID_RESULT(results, id, TagGlobalRequestBus, RequestTaggedEntities);
+                TagGlobalRequestBus::EventResult(results, id, &TagGlobalRequestBus::Events::RequestTaggedEntities);
                 for (const AZ::EntityId& entity : results.values)
                 {
                     handler->OnEntityTagAdded(entity);

@@ -21,7 +21,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationIos, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationIos, AZ::SystemAllocator);
         ApplicationIos();
         ~ApplicationIos() override;
 

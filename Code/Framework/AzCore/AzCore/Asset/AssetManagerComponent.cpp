@@ -19,6 +19,10 @@
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Crc.h>
 
+DECLARE_EBUS_INSTANTIATION(Data::AssetManagerNotifications);
+DECLARE_EBUS_INSTANTIATION(Data::AssetCatalogRequests);
+DECLARE_EBUS_INSTANTIATION(Data::AssetManagerEvents);
+
 namespace AZ
 {
     namespace Data
@@ -183,7 +187,6 @@ namespace AZ
                     "Asset Database", "Asset database system functionality")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }

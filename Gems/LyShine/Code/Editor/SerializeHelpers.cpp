@@ -28,7 +28,7 @@ namespace SerializeHelpers
     {
     public:
         virtual ~SerializedElementContainer() { }
-        AZ_CLASS_ALLOCATOR(SerializedElementContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SerializedElementContainer, AZ::SystemAllocator);
         AZ_RTTI(SerializedElementContainer, "{4A12708F-7EC5-4F56-827A-6E67C3C49B3D}");
         AZStd::vector<AZ::Entity*> m_entities;
         AZStd::vector<AZ::Entity*> m_childEntities;
@@ -95,7 +95,7 @@ namespace SerializeHelpers
         if (!s_initializedReflection)
         {
             AZ::SerializeContext* context = nullptr;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
 
             context->Class<SerializedElementContainer>()
@@ -180,7 +180,8 @@ namespace SerializeHelpers
                     sliceRestoreInfo.m_instanceId = sliceInstanceMap[sliceRestoreInfo.m_instanceId];
                 }
 
-                EBUS_EVENT_ID(entityContext->GetContextId(), UiEditorEntityContextRequestBus, RestoreSliceEntity, entity, sliceRestoreInfo);
+                UiEditorEntityContextRequestBus::Event(
+                    entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::RestoreSliceEntity, entity, sliceRestoreInfo);
             }
             else
             {
@@ -197,12 +198,14 @@ namespace SerializeHelpers
         if (AZ::Data::AssetManager::IsReady())
         {
             bool areRequestsPending = false;
-            EBUS_EVENT_ID_RESULT(areRequestsPending, entityContext->GetContextId(), UiEditorEntityContextRequestBus, HasPendingRequests);
+            UiEditorEntityContextRequestBus::EventResult(
+                areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
             while (areRequestsPending)
             {
                 AZ::Data::AssetManager::Instance().DispatchEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
-                EBUS_EVENT_ID_RESULT(areRequestsPending, entityContext->GetContextId(), UiEditorEntityContextRequestBus, HasPendingRequests);
+                UiEditorEntityContextRequestBus::EventResult(
+                    areRequestsPending, entityContext->GetContextId(), &UiEditorEntityContextRequestBus::Events::HasPendingRequests);
             }
         }
 
@@ -213,7 +216,7 @@ namespace SerializeHelpers
         for (auto entityId : idsOfNewlyCreatedTopLevelElements)
         {
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
             // Only add it to the validated list if the entity still exists
             if (entity)
@@ -224,9 +227,9 @@ namespace SerializeHelpers
 
         // Fixup the created entities, we do this before adding the top level element to the parent so that
         // MakeUniqueChileName works correctly
-        EBUS_EVENT_ID(canvasEntityId,
-            UiCanvasBus,
-            FixupCreatedEntities,
+        UiCanvasBus::Event(
+            canvasEntityId,
+            &UiCanvasBus::Events::FixupCreatedEntities,
             validatedListOfNewlyCreatedTopLevelElements,
             isCopyOperation,
             parent);
@@ -235,12 +238,7 @@ namespace SerializeHelpers
         for (auto entity : validatedListOfNewlyCreatedTopLevelElements)
         {
             // add this new entity as a child of the parent (insertionPoint or root)
-            EBUS_EVENT_ID(canvasEntityId,
-                UiCanvasBus,
-                AddElement,
-                entity,
-                parent,
-                insertBefore);
+            UiCanvasBus::Event(canvasEntityId, &UiCanvasBus::Events::AddElement, entity, parent, insertBefore);
         }
 
         // if a list of entities was passed then add all the entities that we added
@@ -274,8 +272,13 @@ namespace SerializeHelpers
             entitiesToSerialize.m_entityRestoreInfos.push_back(sliceRestoreInfo);
 
             LyShine::EntityArray childElements;
-            EBUS_EVENT_ID(element->GetId(), UiElementBus, FindDescendantElements,
-                []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+            UiElementBus::Event(
+                element->GetId(),
+                &UiElementBus::Events::FindDescendantElements,
+                []([[maybe_unused]] const AZ::Entity* entity)
+                {
+                    return true;
+                },
                 childElements);
 
             for (auto child : childElements)
@@ -343,7 +346,7 @@ namespace SerializeHelpers
         if (makeNewIDs)
         {
             AZ::SerializeContext* context = nullptr;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialization context found");
 
             AZ::SliceComponent::EntityIdToEntityIdMap entityIdMap;

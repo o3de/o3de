@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 class QMenu;
 class QMenuBar;
@@ -42,6 +44,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual MenuManagerOperationResult QueueRefreshForMenusContainingAction(const AZStd::string& actionIdentifier) = 0;
 
+        //! Queues up all menus containing the sub-menu for a refresh at the end of this tick.
+        //! @param subMenuIdentifier The identifier for the sub-menu triggering the refresh for menus containing it.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult QueueRefreshForMenusContainingSubMenu(const AZStd::string& subMenuIdentifier) = 0;
+
         //! Queues up a menuBar for a refresh at the end of this tick.
         //! @param menuIdentifier The identifier for the menuBar to refresh.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
@@ -58,6 +65,11 @@ namespace AzToolsFramework
 
         //! Serialize a menu bar by its identifier.
         virtual MenuManagerStringResult SerializeMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+
+        //! Completely reset the Menu Manager from all items registered after initialization.
+        //! Clears all Menus and Menu Bars.
+        //! Used in Unit tests to allow clearing the environment between runs.
+        virtual void Reset() = 0;
     };
 
 } // namespace AzToolsFramework

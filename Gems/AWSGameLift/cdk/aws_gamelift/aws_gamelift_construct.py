@@ -7,14 +7,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import copy
 
-from aws_cdk import core
+from aws_cdk import Environment
+from constructs import Construct
 
 from aws_gamelift.fleet_configurations import FLEET_CONFIGURATIONS
 from aws_gamelift.gamelift_stack import GameLiftStack
 from aws_gamelift.support_stack import SupportStack
 
 
-class AWSGameLift(core.Construct):
+class AWSGameLift(Construct):
     """
     Orchestrates setting up the AWS GameLift Stack(s).
 
@@ -22,12 +23,12 @@ class AWSGameLift(core.Construct):
     aws_gamelift/fleet_configurations.py to set up the GameLift stacks.
     """
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id_: str,
                  project_name: str,
                  feature_name: str,
                  tags: dict,
-                 env: core.Environment) -> None:
+                 env: Environment) -> None:
         super().__init__(scope, id_)
 
         stack_name = f'{project_name}-{feature_name}-{env.region}'

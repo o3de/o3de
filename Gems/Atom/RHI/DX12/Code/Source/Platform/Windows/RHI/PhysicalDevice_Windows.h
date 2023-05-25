@@ -19,7 +19,7 @@ namespace AZ
         {
             using Base = RHI::PhysicalDevice;
         public:
-            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
             AZ_RTTI(PhysicalDevice, "{ACAE4F02-720E-4CAD-AECF-A999B3CAC49E}", Base);
             ~PhysicalDevice() = default;
 

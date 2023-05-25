@@ -21,6 +21,7 @@ namespace AZ
         struct AreaLightComponentConfig final
             : public ComponentConfig
         {
+            AZ_CLASS_ALLOCATOR(AreaLightComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::AreaLightComponentConfig, "{11C08FED-7F94-4926-8517-46D08E4DD837}", ComponentConfig);
             static void Reflect(AZ::ReflectContext* context);
 

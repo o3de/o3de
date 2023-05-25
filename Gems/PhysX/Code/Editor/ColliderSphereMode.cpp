@@ -6,123 +6,75 @@
  *
  */
 
-#include "ColliderSphereMode.h"
-#include <PhysX/EditorColliderComponentRequestBus.h>
-#include <Source/Utils.h>
+#include <Editor/ColliderSphereMode.h>
 
-#include <AzToolsFramework/Manipulators/LinearManipulator.h>
-#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
-#include <AzFramework/Viewport/ViewportColors.h>
-#include <AzFramework/Viewport/ViewportConstants.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderSphereMode, AZ::SystemAllocator, 0);
-
-    static const float MinSphereRadius = 0.01f;
-    static const AZ::Vector3 ManipulatorAxis = AZ::Vector3::CreateAxisX();
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderSphereMode, AZ::SystemAllocator);
 
     void ColliderSphereMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
-        AZ::Transform colliderWorldTransform = AZ::Transform::Identity();
-        AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-
-        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-
-        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-
-        float sphereRadius = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(sphereRadius, idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
-
-        m_radiusManipulator = AzToolsFramework::LinearManipulator::MakeShared(colliderWorldTransform);
-        m_radiusManipulator->AddEntityComponentIdPair(idPair);
-        m_radiusManipulator->SetAxis(ManipulatorAxis);
-        m_radiusManipulator->Register(AzToolsFramework::g_mainManipulatorManagerId);
-        m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(ManipulatorAxis * sphereRadius));
-        m_radiusManipulator->SetNonUniformScale(nonUniformScale);
-        m_radiusManipulator->SetBoundsDirty();
-
-        AzToolsFramework::ManipulatorViews views;
-        views.emplace_back(AzToolsFramework::CreateManipulatorViewQuadBillboard(AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
-        m_radiusManipulator->SetViews(AZStd::move(views));
-
-        m_radiusManipulator->InstallMouseMoveCallback([this, idPair]
-        (const AzToolsFramework::LinearManipulator::Action& action)
-        {
-            OnManipulatorMoved(action, idPair);
-        });
+        m_entityComponentIdPair = idPair;
+        m_sphereViewportEdit = AZStd::make_unique<AzToolsFramework::SphereViewportEdit>();
+        AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_sphereViewportEdit.get(), idPair);
+        m_sphereViewportEdit->InstallGetSphereRadius(
+            [this]()
+            {
+                float capsuleRadius = 0.0f;
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleRadius, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetSphereRadius);
+                return capsuleRadius;
+            });
+        m_sphereViewportEdit->InstallSetSphereRadius(
+            [this](float radius)
+            {
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetSphereRadius, radius);
+            });
+        m_sphereViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
+        m_sphereViewportEdit->AddEntityComponentIdPair(idPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }
 
-    void ColliderSphereMode::Refresh(const AZ::EntityComponentIdPair& idPair)
+    void ColliderSphereMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        AZ::Transform colliderWorldTransform = AZ::Transform::Identity();
-        AZ::TransformBus::EventResult(colliderWorldTransform, idPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        m_radiusManipulator->SetSpace(colliderWorldTransform);
-
-        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(nonUniformScale, idPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-
-        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-
-        float sphereRadius = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(sphereRadius, idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
-        m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(ManipulatorAxis * sphereRadius));
-        m_radiusManipulator->SetBoundsDirty();
+        if (m_sphereViewportEdit)
+        {
+            m_sphereViewportEdit->UpdateManipulators();
+        }
     }
 
-    void ColliderSphereMode::Teardown(const AZ::EntityComponentIdPair& idPair)
+    void ColliderSphereMode::Teardown([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-        m_radiusManipulator->RemoveEntityComponentIdPair(idPair);
-        m_radiusManipulator->Unregister();
+        if (m_sphereViewportEdit)
+        {
+            m_sphereViewportEdit->Teardown();
+            m_sphereViewportEdit.reset();
+        }
+        m_entityComponentIdPair = AZ::EntityComponentIdPair();
     }
 
-    void ColliderSphereMode::ResetValues(const AZ::EntityComponentIdPair& idPair)
+    void ColliderSphereMode::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetSphereRadius, 0.5f);
+        if (m_sphereViewportEdit)
+        {
+            m_sphereViewportEdit->ResetValues();
+        }
     }
 
     void ColliderSphereMode::DisplayEntityViewport(
         const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_UNUSED(debugDisplay);
-
-        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
-
-        if (!m_radiusManipulator->EntityComponentIdPairs().empty())
+        if (m_sphereViewportEdit)
         {
-            const AZ::EntityComponentIdPair idPair = *m_radiusManipulator->EntityComponentIdPairs().begin();
-            float radius = 0.0f;
-            PhysX::EditorColliderComponentRequestBus::EventResult(radius, idPair, &PhysX::EditorColliderComponentRequests::GetSphereRadius);
-            const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-            m_radiusManipulator->SetAxis(cameraState.m_side);
-            m_radiusManipulator->SetLocalTransform(colliderLocalTransform * AZ::Transform::CreateTranslation(cameraState.m_side * radius));
+            const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+            m_sphereViewportEdit->OnCameraStateChanged(cameraState);
         }
-    }
-
-    void ColliderSphereMode::OnManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair)
-    {
-        // manipulator offsets do not take transform scale into account, need to handle it here
-        const AZ::Transform colliderLocalTransform = Utils::GetColliderLocalTransform(idPair);
-        const AZ::Vector3 manipulatorPosition = AzToolsFramework::GetPositionInManipulatorFrame(
-            m_radiusManipulator->GetSpace().GetUniformScale(), colliderLocalTransform, action);
-
-        // Get the distance the manipulator has moved along the axis.
-        float extent = manipulatorPosition.Dot(action.m_fixed.m_axis);
-
-        // Clamp the distance to a small value to prevent it going negative.
-        extent = AZ::GetMax(extent, MinSphereRadius);
-
-        // Update the manipulator and sphere radius
-        m_radiusManipulator->SetLocalTransform(
-            Utils::GetColliderLocalTransform(idPair) * AZ::Transform::CreateTranslation(extent * action.m_fixed.m_axis));
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetSphereRadius, extent);
     }
 }

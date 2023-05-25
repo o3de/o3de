@@ -12,7 +12,7 @@
 #include <GradientSignal/Ebuses/GradientPreviewRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
 #include <GradientSignal/Editor/EditorGradientBakerComponent.h>
-#include <Editor/EditorGradientImageCreatorUtils.h>
+#include <GradientSignal/Editor/EditorGradientImageCreatorUtils.h>
 
 namespace GradientSignal
 {

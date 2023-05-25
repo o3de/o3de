@@ -365,7 +365,9 @@ namespace AtomToolsFramework
                   "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
                   "Auto Save Interval",
                   "How often (in milliseconds) auto save occurs",
-                  aznumeric_cast<AZ::s64>(250)) });
+                  aznumeric_cast<AZ::s64>(250),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
 
         inspector->AddGroup(
             m_documentSystemSettingsGroup->m_name,
@@ -468,7 +470,7 @@ namespace AtomToolsFramework
         m_tabWidget->setTabsClosable(true);
         m_tabWidget->setUsesScrollButtons(true);
 
-        // Update document tab styling to fix the close button and be conformant with similar windows 
+        // Update document tab styling to fix the close button and be conformant with similar windows
         AzQtComponents::TabWidget::applySecondaryStyle(m_tabWidget);
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
@@ -587,7 +589,7 @@ namespace AtomToolsFramework
             // The user can manually reorder tabs which will invalidate any association by index.
             // We need to store the document ID with the tab using the tab instead of a separate mapping.
             const int tabIndex = m_tabWidget->addTab(viewWidget, QString());
-            m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
+            m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(QString::fromUtf8(documentId.ToFixedString().c_str())));
             m_tabWidget->setVisible(true);
             m_tabWidget->setCurrentIndex(tabIndex);
             UpdateDocumentTab(documentId);
@@ -604,7 +606,7 @@ namespace AtomToolsFramework
         // We are not blocking signals here because we want closing tabs to close the document and automatically select the next document.
         if (const int tabIndex = GetDocumentTabIndex(documentId); tabIndex >= 0)
         {
-            // removeTab does not destroy the widget contained in a tab. It must be manually deleted. 
+            // removeTab does not destroy the widget contained in a tab. It must be manually deleted.
             auto viewWidget = m_tabWidget->widget(tabIndex);
             m_tabWidget->removeTab(tabIndex);
             m_tabWidget->setVisible(m_tabWidget->count() > 0);
@@ -759,7 +761,7 @@ namespace AtomToolsFramework
     }
 
     void AtomToolsDocumentMainWindow::closeEvent(QCloseEvent* closeEvent)
-    {   
+    {
         if (!CloseDocuments(GetOpenDocumentIds()))
         {
             closeEvent->ignore();

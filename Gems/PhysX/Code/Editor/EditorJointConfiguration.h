@@ -19,7 +19,7 @@ namespace PhysX
     class EditorJointLimitBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorJointLimitBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitBase, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitBase, "{7D6BD28B-6DAF-42F7-8EFF-0F5ACBBDBAE7}");
 
         static const float s_springMax; ///< Maximum value for spring stiffness and damping.
@@ -31,7 +31,7 @@ namespace PhysX
     class EditorJointLimitConfig : public EditorJointLimitBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorJointLimitConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitConfig, "{3A874895-D9A7-404A-95E4-8C05D032FA0B}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -46,9 +46,6 @@ namespace PhysX
         float m_stiffness = 100.0f;
 
     private:
-        static bool VersionConverter(AZ::SerializeContext& context,
-            AZ::SerializeContext::DataElementNode& classElement);
-
         bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
     };
 
@@ -59,7 +56,7 @@ namespace PhysX
         static const float s_angleMax;
         static const float s_angleMin;
 
-        AZ_CLASS_ALLOCATOR(EditorJointLimitPairConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitPairConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitPairConfig, "{319BD38C-A48F-43E2-B7F5-E6E40C88C61C}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -75,7 +72,7 @@ namespace PhysX
     class EditorJointLimitLinearPairConfig : public EditorJointLimitBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorJointLimitLinearPairConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitLinearPairConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitLinearPairConfig, "{20A3AE4C-1B92-4541-ACA7-5FA2BFDDEDC0}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -100,7 +97,7 @@ namespace PhysX
         static const float s_angleMax;
         static const float s_angleMin;
 
-        AZ_CLASS_ALLOCATOR(EditorJointLimitConeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitConeConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitConeConfig, "{FF481FEF-7033-440B-8046-B459AC309976}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -115,10 +112,10 @@ namespace PhysX
     class EditorJointConfig
     {
     public:
-        static const float s_breakageMax;
-        static const float s_breakageMin;
+        static const float BreakageMax;
+        static const float BreakageMin;
 
-        AZ_CLASS_ALLOCATOR(EditorJointConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointConfig, "{8A966D65-CA97-4786-A13C-ACAA519D97EA}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -148,15 +145,14 @@ namespace PhysX
         float m_torqueMax = 1.0f;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
-        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to follower body.
+
+        bool m_fixJointLocation = false; //!< When moving entity, the joint location and rotation will be recalculated to stay the same.
 
     private:
-        static bool VersionConverter(AZ::SerializeContext& context,
-            AZ::SerializeContext::DataElementNode& classElement);
+        bool IsInComponentMode() const; //!< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
 
-        bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
-
-        void ValidateLeadEntityId(); ///< Issues warning if lead entity does not contain required components for a joint to function correctly.
+        AZ::Crc32 OnLeadEntityChanged() const; //!< Issues warning if lead entity does not contain required components for a joint to function correctly.
     };
 
 } // namespace PhysX

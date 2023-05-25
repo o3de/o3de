@@ -21,7 +21,7 @@ namespace AZ
         {
             using Base = RHI::ImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
             AZ_RTTI(ImagePool, "{04E85806-9E84-4BD0-99F6-EEBA32B1C4F7}", RHI::ImagePool);
             
             static RHI::Ptr<ImagePool> Create();

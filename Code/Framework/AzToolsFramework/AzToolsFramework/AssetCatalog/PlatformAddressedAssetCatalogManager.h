@@ -10,7 +10,6 @@
 
 #include <AzToolsFramework/AssetCatalog/PlatformAddressedAssetCatalog.h>
 #include <AzFramework/Asset/NetworkAssetNotification_private.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -21,7 +20,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_TYPE_INFO(PlatformAddressedAssetCatalogManager, "{985263D2-1C04-4811-9EC6-6A069641512A}");
-        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogManager, AZ::SystemAllocator);
 
         PlatformAddressedAssetCatalogManager();
         PlatformAddressedAssetCatalogManager(AzFramework::PlatformId platformId);

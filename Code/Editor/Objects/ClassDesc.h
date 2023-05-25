@@ -53,7 +53,6 @@ public:
     //! Ex. Object with creation order 200 will be created after any object with order 100.
     virtual int GameCreationOrder() { return 100; };
     virtual QString GetTextureIcon() { return QString(); };
-    int GetTextureIconId();
     virtual bool RenderTextureOnTop() const { return false; }
 
     virtual QString GetToolClassName() { return "EditTool.ObjectCreate"; }

@@ -12,7 +12,6 @@
 #include <AzCore/std/containers/vector.h>
 
 #include <AzToolsFramework/Application/ToolsApplication.h>
-#include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 
 namespace AzToolsFramework
 {

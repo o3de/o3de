@@ -19,7 +19,7 @@ namespace TestImpact
 {
     //! Generates job information for the instrumented test job runner.
     class PythonInstrumentedTestRunJobInfoGenerator
-        : public TestJobInfoGenerator<PythonInstrumentedTestRunnerBase, PythonTestTarget>
+        : public TestJobInfoGeneratorBase<PythonInstrumentedTestRunnerBase, PythonTestTarget>
     {
     public:
         //! Configures the test job info generator with the necessary path information for launching test targets.
@@ -29,9 +29,7 @@ namespace TestImpact
         PythonInstrumentedTestRunJobInfoGenerator(
             const RepoPath& repoDir, const RepoPath& buildDir, const ArtifactDir& artifactDir);
 
-        //! Generates the information for a test run job.
-        //! @param testTarget The test target to generate the job information for.
-        //! @param jobId The id to assign for this job.
+        // TestJobInfoGeneratorBase overrides...
         PythonInstrumentedTestRunnerBase::JobInfo GenerateJobInfo(const PythonTestTarget* testTarget, PythonInstrumentedTestRunnerBase::JobInfo::Id jobId) const;
 
     private:
@@ -42,7 +40,7 @@ namespace TestImpact
 
     //! Generates job information for the regular test job runner.
     class PythonRegularTestRunJobInfoGenerator
-        : public TestJobInfoGenerator<PythonRegularTestRunnerBase, PythonTestTarget>
+        : public TestJobInfoGeneratorBase<PythonRegularTestRunnerBase, PythonTestTarget>
     {
     public:
         //! Configures the test job info generator with the necessary path information for launching test targets.
@@ -52,9 +50,7 @@ namespace TestImpact
         PythonRegularTestRunJobInfoGenerator(
             const RepoPath& repoDir, const RepoPath& buildDir, const ArtifactDir& artifactDir);
 
-        //! Generates the information for a test run job.
-        //! @param testTarget The test target to generate the job information for.
-        //! @param jobId The id to assign for this job.
+        // TestJobInfoGeneratorBase overrides...
         PythonRegularTestRunnerBase::JobInfo GenerateJobInfo(const PythonTestTarget* testTarget, PythonRegularTestRunnerBase::JobInfo::Id jobId) const;
 
     private:

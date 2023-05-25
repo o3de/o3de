@@ -16,8 +16,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionPicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionPicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceMotionHandler, EditorAllocator)
 
     BlendSpaceMotionPicker::BlendSpaceMotionPicker(QWidget* parent)
         : QComboBox(parent)
@@ -89,7 +89,8 @@ namespace EMotionFX
 
         connect(picker, &BlendSpaceMotionPicker::MotionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -100,7 +101,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            m_blendSpaceNode = static_cast<BlendSpaceNode*>(attrValue->GetInstancePointer());
+            m_blendSpaceNode = static_cast<BlendSpaceNode*>(attrValue->GetInstance());
             GUI->SetBlendSpaceNode(m_blendSpaceNode);
         }
 

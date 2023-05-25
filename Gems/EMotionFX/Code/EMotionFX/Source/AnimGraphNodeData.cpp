@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeData, AnimGraphObjectDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeData, AnimGraphObjectDataAllocator)
 
     // constructor
     AnimGraphNodeData::AnimGraphNodeData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)

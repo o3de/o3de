@@ -16,6 +16,21 @@
 
 namespace PhysX
 {
+    //! Properties of compliant contact mode.
+    struct CompliantContactModeConfiguration
+    {
+        AZ_TYPE_INFO(PhysX::CompliantContactModeConfiguration, "{1F38A087-E918-4ED1-AEC5-5FEC25A47AD1}");
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        bool m_enabled = false;
+        float m_damping = 1.0f;
+        float m_stiffness = 1e+5f;
+
+    private:
+        bool ReadOnlyProperties() const;
+    };
+
     //! Properties of a PhysX material.
     struct MaterialConfiguration
     {
@@ -31,6 +46,8 @@ namespace PhysX
         CombineMode m_restitutionCombine = CombineMode::Average;
         CombineMode m_frictionCombine = CombineMode::Average;
 
+        CompliantContactModeConfiguration m_compliantContactMode;
+
         AZ::Color m_debugColor = AZ::Colors::White;
 
         //! Creates a Physics Material Asset with random Id from the
@@ -42,5 +59,8 @@ namespace PhysX
     private:
         static float GetMinDensityLimit();
         static float GetMaxDensityLimit();
+
+        bool IsRestitutionReadOnly() const;
+        AZ::Crc32 GetCompliantConstantModeVisibility() const;
     };
 } // namespace PhysX

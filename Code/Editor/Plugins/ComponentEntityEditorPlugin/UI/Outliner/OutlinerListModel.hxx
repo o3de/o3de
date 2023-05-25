@@ -54,7 +54,7 @@ class OutlinerListModel
     Q_OBJECT;
 
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerListModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerListModel, AZ::SystemAllocator);
 
     //! Columns of data to display about each Entity.
     enum Column
@@ -188,9 +188,9 @@ Q_SIGNALS:
 
 protected:
 
-    //! Editor entity context notification bus
+    // EditorEntityContextNotificationBus overrides ...
     void OnEditorEntityDuplicated(const AZ::EntityId& oldEntity, const AZ::EntityId& newEntity) override;
-    void OnContextReset() override;
+    void OnPrepareForContextReset() override;
     void OnStartPlayInEditorBegin() override;
     void OnStartPlayInEditor() override;
 
@@ -324,7 +324,7 @@ class OutlinerItemDelegate
     : public QStyledItemDelegate
 {
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerItemDelegate, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerItemDelegate, AZ::SystemAllocator);
 
     OutlinerItemDelegate(QWidget* parent = nullptr);
 
@@ -376,7 +376,6 @@ private:
     mutable CheckboxGroup m_lockCheckBoxes;
 
     const int m_layerDividerLineHeight = 1;
-    const int m_lastEntityInLayerDividerLineHeight = 1;
     const int m_toggleColumnWidth = 16;
 
     // this is a cache, and is hence mutable

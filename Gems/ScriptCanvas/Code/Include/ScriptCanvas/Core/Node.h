@@ -138,7 +138,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(VisualExtensionSlotConfiguration, "{3EA2D6DB-1B8F-451B-A6CE-D5779E56F4A8}");
-        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VisualExtensionSlotConfiguration, AZ::SystemAllocator);
 
         enum class VisualExtensionType
         {
@@ -217,7 +217,7 @@ namespace ScriptCanvas
     {
     public:
 
-        AZ_RTTI((TypedNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
+        AZ_RTTI((TypedNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), NodePropertyInterface);
 
         TypedNodePropertyInterface() = default;
         virtual ~TypedNodePropertyInterface() = default;
@@ -283,7 +283,7 @@ namespace ScriptCanvas
 
         // The this-> method calls are here to deal with clang quirkiness with dependent template classes. Don't remove them.
 
-        AZ_RTTI((TypedComboBoxNodePropertyInterface<DataType>, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
+        AZ_RTTI((TypedComboBoxNodePropertyInterface, "{24248937-86FB-406C-8DD5-023B10BD0B60}", DataType), TypedNodePropertyInterface<DataType>, ComboBoxPropertyInterface);
 
         TypedComboBoxNodePropertyInterface() = default;
         virtual ~TypedComboBoxNodePropertyInterface() = default;
@@ -489,6 +489,7 @@ namespace ScriptCanvas
 
         AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
+        static int GetNodeVersion();
 
         Node();
         ~Node() override;

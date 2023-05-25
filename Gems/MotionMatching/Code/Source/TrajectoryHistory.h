@@ -18,6 +18,13 @@
 
 namespace EMotionFX::MotionMatching
 {
+    struct EMFX_API Sample
+    {
+        AZ_TYPE_INFO(Sample, "{6B67C064-08AF-431A-B236-82D3565D46A2}");
+        AZ::Vector3 m_position = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_facingDirection = AZ::Vector3::CreateZero();
+    };
+
     //! Used to store the trajectory history for the root motion (motion extraction node).
     //! The trajectory history is independent of the trajectory feature and captures a sample with every engine tick.
     //! The recorded history needs to record and track at least the time the trajectory feature/query requires.
@@ -30,11 +37,7 @@ namespace EMotionFX::MotionMatching
         void Update(float timeDelta);
         void AddSample(const Pose& pose);
 
-        struct EMFX_API Sample
-        {
-            AZ::Vector3 m_position = AZ::Vector3::CreateZero();
-            AZ::Vector3 m_facingDirection = AZ::Vector3::CreateZero();
-        };
+        using Sample = EMotionFX::MotionMatching::Sample;
 
         //! time in range [0, m_numSecondsToTrack]
         Sample Evaluate(float time) const;

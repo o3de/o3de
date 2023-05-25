@@ -20,28 +20,45 @@ namespace AzQtComponents
     {
     }
 
-    void InputDialog::AttemptAssignValidator()
+    void InputDialog::UpdateLineEdit()
     {
         // This will succeed only if show() has happened, which sets up the UI.
         QLineEdit* lineEdit = this->findChild<QLineEdit*>();
         if (lineEdit)
         {
             lineEdit->setValidator(m_validator);
+
+            if (m_maxLength > 0)
+            {
+                lineEdit->setMaxLength(m_maxLength);
+            }
         }
     }
 
-    void InputDialog::setValidator(QValidator* validator)
+    void InputDialog::SetValidator(QValidator* validator)
     {
         m_validator = validator;
 
-        AttemptAssignValidator();
+        UpdateLineEdit();
+    }
+
+    void InputDialog::SetRegularExpressionValidator(const QString& pattern)
+    {
+        SetValidator(new QRegularExpressionValidator(QRegularExpression(pattern), this));
+    }
+
+    void InputDialog::SetMaxLength(int length)
+    {
+        m_maxLength = length;
+
+        UpdateLineEdit();
     }
 
     void InputDialog::show()
     {
         QInputDialog::show();
 
-        AttemptAssignValidator();
+        UpdateLineEdit();
     }
 
     int InputDialog::exec()
@@ -68,7 +85,7 @@ namespace AzQtComponents
 
         if (!validationRegExp.isEmpty())
         {
-            dialog.setValidator(new QRegularExpressionValidator(QRegularExpression(validationRegExp), &dialog));
+            dialog.SetRegularExpressionValidator(validationRegExp);
         }
 
         const int ret = dialog.exec();

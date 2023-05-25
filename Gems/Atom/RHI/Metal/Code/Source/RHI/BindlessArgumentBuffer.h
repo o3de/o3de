@@ -16,7 +16,9 @@ namespace AZ
     {
         class Device;
         class ArgumentBuffer;
-        
+        class BufferView;
+        class ImageView;
+
         //! This class is responsible for managing the global bindless heap. It provides
         //! support for this heap via both unbounded array as well as bounded arrays.
         class BindlessArgumentBuffer
@@ -29,16 +31,16 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> GetBindlessArgbuffer() const;
 
             //! Add/Update a read only image pointer to the global bindless heap 
-            uint32_t AttachReadImage(id <MTLTexture> mtlTexture);
+            uint32_t AttachReadImage(ImageView& imageView);
 
             //! Add/Update a read write image pointer to the global bindless heap 
-            uint32_t AttachReadWriteImage(id <MTLTexture> mtlTexture);
+            uint32_t AttachReadWriteImage(ImageView& imageView);
 
             //! Add/Update a read only buffer pointer to the global bindless heap 
-            uint32_t AttachReadBuffer(id <MTLBuffer> mtlTexture, uint32_t offfset);
+            uint32_t AttachReadBuffer(BufferView& bufferView);
 
             //! Add/Update a read write buffer pointer to the global bindless heap 
-            uint32_t AttachReadWriteBuffer(id <MTLBuffer> mtlTexture, uint32_t offfset);
+            uint32_t AttachReadWriteBuffer(BufferView& bufferView);
 
             //! Remove the index associated with a read only image descriptor from the free list allocator
             void DetachReadImage(uint32_t index);
@@ -57,21 +59,23 @@ namespace AZ
 
             //! Add all the argument buffers related to the global bindless heap to the maps passed in
             //! so that it can be bound to the encoder efficiently
-            void BindBindlessArgumentBuffer(uint32_t slotIndex,
-                                            CommandEncoderType commandEncoderType,
-                                            CommandList::MetalArgumentBufferArray& mtlVertexArgBuffers,
-                                            CommandList::MetalArgumentBufferArrayOffsets& mtlVertexArgBufferOffsets,
-                                            CommandList::MetalArgumentBufferArray& mtlFragmentOrComputeArgBuffers,
-                                            CommandList::MetalArgumentBufferArrayOffsets& mtlFragmentOrComputeArgBufferOffsets,
-                                            uint32_t& bufferVertexRegisterIdMin,
-                                            uint32_t& bufferVertexRegisterIdMax,
-                                            uint32_t& bufferFragmentOrComputeRegisterIdMin,
-                                            uint32_t& bufferFragmentOrComputeRegisterIdMax);
+            void BindBindlessArgumentBuffer(
+                uint32_t slotIndex,
+                CommandEncoderType commandEncoderType,
+                CommandList::MetalArgumentBufferArray& mtlVertexArgBuffers,
+                CommandList::MetalArgumentBufferArrayOffsets& mtlVertexArgBufferOffsets,
+                CommandList::MetalArgumentBufferArray& mtlFragmentOrComputeArgBuffers,
+                CommandList::MetalArgumentBufferArrayOffsets& mtlFragmentOrComputeArgBufferOffsets,
+                uint32_t& bufferVertexRegisterIdMin,
+                uint32_t& bufferVertexRegisterIdMax,
+                uint32_t& bufferFragmentOrComputeRegisterIdMin,
+                uint32_t& bufferFragmentOrComputeRegisterIdMax);
 
-            //! Add all all the bindless resource views indirectly bound to the maps passed in so that they can be made resident
-            void MakeBindlessArgumentBuffersResident(CommandEncoderType commandEncoderType,
-                                                     ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
-                                                     ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead);
+            //! Add all the bindless resource views indirectly bound to the maps passed in so that they can be made resident
+            void MakeBindlessArgumentBuffersResident(
+                CommandEncoderType commandEncoderType,
+                ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead);
         private:
 
             //Bindless ABs + the rootAB which will act as a container. This is used for unbounded arrays.
@@ -80,10 +84,10 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> m_bindlessRWTextureArgBuffer;
             RHI::Ptr<ArgumentBuffer> m_bindlessBufferArgBuffer;
             RHI::Ptr<ArgumentBuffer> m_bindlessRWBufferArgBuffer;
-             
-            //Bounded AB in order to simulate bindless behaviour for plats that do not support unbounded arrays.
+
+            //Bounded AB in order to simulate bindless behavior for plats that do not support unbounded arrays.
             RHI::Ptr<ArgumentBuffer> m_boundedArgBuffer;
-            
+
             // Free list allocator per bindless resource type
             RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)];
             Device* m_device = nullptr;

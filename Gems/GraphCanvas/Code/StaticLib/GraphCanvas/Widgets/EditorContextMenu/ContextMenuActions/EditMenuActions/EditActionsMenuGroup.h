@@ -15,7 +15,7 @@ namespace GraphCanvas
     class EditActionsMenuGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditActionsMenuGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditActionsMenuGroup, AZ::SystemAllocator);
         
         EditActionsMenuGroup();
         ~EditActionsMenuGroup();

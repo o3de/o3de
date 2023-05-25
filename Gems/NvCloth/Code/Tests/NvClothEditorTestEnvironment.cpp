@@ -11,6 +11,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 #include <System/FabricCooker.h>
@@ -118,4 +119,4 @@ namespace UnitTest
     }
 } // namespace UnitTest
 
-AZ_UNIT_TEST_HOOK(new UnitTest::NvClothEditorTestEnvironment);
+AZ_TOOLS_UNIT_TEST_HOOK(new UnitTest::NvClothEditorTestEnvironment);

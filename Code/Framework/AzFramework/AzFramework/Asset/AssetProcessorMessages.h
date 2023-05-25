@@ -71,7 +71,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(NegotiationMessage, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NegotiationMessage, AZ::OSAllocator);
             AZ_RTTI(NegotiationMessage, "{BA6336E4-4DF5-49EF-A184-FE8F5BC73731}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::Negotiation", 0x141ebc28);
@@ -90,7 +90,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(RequestPing, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RequestPing, AZ::OSAllocator);
             AZ_RTTI(RequestPing, "{E06F6663-A168-439A-83E1-6F2215BAC0B6}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::RequestPing", 0xa6124cfb);
@@ -103,7 +103,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(ResponsePing, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResponsePing, AZ::OSAllocator);
             AZ_RTTI(ResponsePing, "{54E0B5ED-F0DB-4DA1-81C7-A4F96AA7F6BA}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -123,7 +123,7 @@ namespace AzFramework
                 Exact, //< SearchTerm searches will not perform the various herusitic fallbacks such as stripping extensions
             };
 
-            AZ_CLASS_ALLOCATOR(RequestAssetStatus, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RequestAssetStatus, AZ::OSAllocator);
             AZ_RTTI(RequestAssetStatus, "{0CBE6A7C-9D19-4D41-B29C-A52476BB337A}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::RequestAssetStatus", 0x63146187);
@@ -143,7 +143,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(ResponseAssetStatus, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResponseAssetStatus, AZ::OSAllocator);
             AZ_RTTI(ResponseAssetStatus, "{151CB7D2-8A11-4072-A173-5EDF2A11C9E2}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             unsigned int GetMessageType() const override;
@@ -161,7 +161,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(RequestEscalateAsset, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RequestEscalateAsset, AZ::OSAllocator);
             AZ_RTTI(RequestEscalateAsset, "{E95C5422-5F00-478B-A984-C041DE70484F}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::RequestEscalateAsset", 0x1894d94e);
@@ -184,7 +184,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(RequestAssetProcessorStatus, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RequestAssetProcessorStatus, AZ::OSAllocator);
             AZ_RTTI(RequestAssetProcessorStatus, "{DEC6CF93-0A16-4D83-AA6D-97FB86340525}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::RequestAssetProcessorStatus", 0x5172b959);
@@ -200,7 +200,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(ResponseAssetProcessorStatus, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResponseAssetProcessorStatus, AZ::OSAllocator);
             AZ_RTTI(ResponseAssetProcessorStatus, "{978350FB-3BD2-4F5C-ABEF-5AB78981C23A}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -214,7 +214,7 @@ namespace AzFramework
         struct GetUnresolvedDependencyCountsRequest
             : BaseAssetProcessorMessage
         {
-            AZ_CLASS_ALLOCATOR(GetUnresolvedDependencyCountsRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetUnresolvedDependencyCountsRequest, AZ::OSAllocator);
             AZ_RTTI(GetUnresolvedDependencyCountsRequest, "{DE432E6F-72D8-48A7-857C-51D1D41EB880}", BaseAssetProcessorMessage);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -234,7 +234,7 @@ namespace AzFramework
         struct GetUnresolvedDependencyCountsResponse
             : BaseAssetProcessorMessage
         {
-            AZ_CLASS_ALLOCATOR(GetUnresolvedDependencyCountsResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetUnresolvedDependencyCountsResponse, AZ::OSAllocator);
             AZ_RTTI(GetUnresolvedDependencyCountsResponse, "{6FC67F5D-4941-41B9-92C5-7778CB853F94}", BaseAssetProcessorMessage);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -256,7 +256,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(GetRelativeProductPathFromFullSourceOrProductPathRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetRelativeProductPathFromFullSourceOrProductPathRequest, AZ::OSAllocator);
             AZ_RTTI(GetRelativeProductPathFromFullSourceOrProductPathRequest, "{2ED7888B-959C-451C-90B6-8EF7B0B4E385}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::GetRelativeProductPathFromFullSourceOrProductPath", 0x53293a7a);
@@ -272,7 +272,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(GetRelativeProductPathFromFullSourceOrProductPathResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetRelativeProductPathFromFullSourceOrProductPathResponse, AZ::OSAllocator);
             AZ_RTTI(GetRelativeProductPathFromFullSourceOrProductPathResponse, "{4BAD0A94-EE97-42A7-ACEC-0698012114A8}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -288,7 +288,7 @@ namespace AzFramework
         class GenerateRelativeSourcePathRequest : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathRequest, AZ::OSAllocator);
             AZ_RTTI(GenerateRelativeSourcePathRequest, "{B3865033-F5A3-4749-8147-7B1AB04D5F6D}",
                 BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
@@ -308,7 +308,7 @@ namespace AzFramework
         class GenerateRelativeSourcePathResponse : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GenerateRelativeSourcePathResponse, AZ::OSAllocator);
             AZ_RTTI(GenerateRelativeSourcePathResponse, "{938D33DB-C8F6-4FA4-BC81-2F139A9BE1D7}",
                 BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
@@ -328,7 +328,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(GetFullSourcePathFromRelativeProductPathRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetFullSourcePathFromRelativeProductPathRequest, AZ::OSAllocator);
             AZ_RTTI(GetFullSourcePathFromRelativeProductPathRequest, "{F48E2159-4711-4D0E-838F-91B472AE10FF}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -346,7 +346,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(GetFullSourcePathFromRelativeProductPathResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(GetFullSourcePathFromRelativeProductPathResponse, AZ::OSAllocator);
             AZ_RTTI(GetFullSourcePathFromRelativeProductPathResponse, "{AA80F608-A8A7-49D2-A125-BCB9378526F0}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -364,7 +364,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(SourceAssetInfoRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SourceAssetInfoRequest, AZ::OSAllocator);
             AZ_RTTI(SourceAssetInfoRequest, "{e92cd74f-11e0-4ad8-a786-61d3b9715e35}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::SourceAssetInfoRequest", 0x350a86f3);
@@ -391,7 +391,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(SourceAssetInfoResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SourceAssetInfoResponse, AZ::OSAllocator);
             AZ_RTTI(SourceAssetInfoResponse, "{2e748a05-9acc-4459-9e98-76b71e8a7bb7}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -411,7 +411,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetInfoRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetInfoRequest, AZ::OSAllocator);
             AZ_RTTI(AssetInfoRequest, "{AB1468DB-99B5-4666-A619-4D3F746805A5}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::AssetInfoRequest", 0xfe3e020a);
@@ -440,7 +440,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetInfoResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetInfoResponse, AZ::OSAllocator);
             AZ_RTTI(AssetInfoResponse, "{B217A11F-430A-40EA-AF4A-4644F5879695}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -461,7 +461,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetDependencyInfoRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetDependencyInfoRequest, AZ::OSAllocator);
             AZ_RTTI(AssetDependencyInfoRequest, "{2365EEA3-D8A6-41E4-9C9F-2113D5617230}",
                     AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
@@ -494,7 +494,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetDependencyInfoResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetDependencyInfoResponse, AZ::OSAllocator);
             AZ_RTTI(AssetDependencyInfoResponse, "{B6F9FD89-3F62-43FF-A457-2767CE904C81}",
                     AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
@@ -525,7 +525,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(RegisterSourceAssetRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RegisterSourceAssetRequest, AZ::OSAllocator);
             AZ_RTTI(RegisterSourceAssetRequest, "{189c6045-e1d4-4d78-b0e7-2bb7bd05fde1}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::RegisterSourceAssetRequest", 0x5f414e59);
@@ -545,7 +545,7 @@ namespace AzFramework
             : public AzFramework::AssetSystem::BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(UnregisterSourceAssetRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(UnregisterSourceAssetRequest, AZ::OSAllocator);
             AZ_RTTI(UnregisterSourceAssetRequest, "{ce3cf055-cf91-4851-9e2c-cb24b2b172d3}", AzFramework::AssetSystem::BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetProcessor::UnregisterSourceAssetRequest", 0xfbe53ee1);
@@ -564,7 +564,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(ShowAssetProcessorRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShowAssetProcessorRequest, AZ::OSAllocator);
             AZ_RTTI(ShowAssetProcessorRequest, "{509CA545-1213-4064-9B58-6FFE3DDD27D3}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::ShowWindow", 0x33a6cd1f);
@@ -579,7 +579,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(ShowAssetInAssetProcessorRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShowAssetInAssetProcessorRequest, AZ::OSAllocator);
             AZ_RTTI(ShowAssetInAssetProcessorRequest, "{04A068A0-58D7-4404-ABAD-AED72287FFE8}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::ShowAssetInAssetProcessor", 0x3c9d1be0);
@@ -609,7 +609,7 @@ namespace AzFramework
                 JobCount, //< Returns the number of jobs that are pending. The count will be returned as a string.
             };
 
-            AZ_CLASS_ALLOCATOR(AssetNotificationMessage, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetNotificationMessage, AZ::OSAllocator);
             AZ_RTTI(AssetNotificationMessage, "{09EDFFA4-6851-4AB2-B018-51F0F671D9D5}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetProcessorManager::AssetNotification", 0xd6191df5);
@@ -634,7 +634,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(BulkAssetNotificationMessage, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BulkAssetNotificationMessage, AZ::OSAllocator);
             AZ_RTTI(BulkAssetNotificationMessage, "{D0BDFFA1-2E5A-4F37-A38D-26521ECAF812}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC_CE("AssetProcessorManager::BulkAssetNotification"); // 1942440592U 0x73C74A90
@@ -651,7 +651,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(SaveAssetCatalogRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SaveAssetCatalogRequest, AZ::OSAllocator);
             AZ_RTTI(SaveAssetCatalogRequest, "{12B0C076-97A8-4FAE-9F56-22A890766272}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetProcessorManager::SaveCatalogRequest", 0x79e0f02f);
@@ -665,7 +665,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(SaveAssetCatalogResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SaveAssetCatalogResponse, AZ::OSAllocator);
             AZ_RTTI(SaveAssetCatalogResponse, "{F1B4F440-1251-4516-9FAE-2BB067D58191}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -681,7 +681,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileOpenRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileOpenRequest, AZ::OSAllocator);
             AZ_RTTI(FileOpenRequest, "{C230ADF3-970D-4A4D-A128-112C9E2DC164}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileOpen", 0x344f46ca);
@@ -698,7 +698,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileOpenResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileOpenResponse, AZ::OSAllocator);
             AZ_RTTI(FileOpenResponse, "{50EC3F69-C6F6-4835-964B-155112B37EDC}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -714,7 +714,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileCloseRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileCloseRequest, AZ::OSAllocator);
             AZ_RTTI(FileCloseRequest, "{D294976E-7664-436F-ACA4-7BCABAA2F5EC}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileClose", 0xb99bf25e);
@@ -730,7 +730,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileReadRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileReadRequest, AZ::OSAllocator);
             AZ_RTTI(FileReadRequest, "{9FC866C7-A9C0-41CB-BC41-A333240D3C7E}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileRead", 0x08688409);
@@ -748,7 +748,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileReadResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileReadResponse, AZ::OSAllocator);
             AZ_RTTI(FileReadResponse, "{FFD02544-A10A-42B2-9899-54D7F6C426ED}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -764,7 +764,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileWriteRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileWriteRequest, AZ::OSAllocator);
             AZ_RTTI(FileWriteRequest, "{4CB9EBC7-ACB9-45DC-9D58-2E8BDF975E12}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileWrite", 0xd7f109c5);
@@ -781,7 +781,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileWriteResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileWriteResponse, AZ::OSAllocator);
             AZ_RTTI(FileWriteResponse, "{6EBE6BF5-3B7E-4C49-9B17-14025F5B80CA}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -797,7 +797,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileTellRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileTellRequest, AZ::OSAllocator);
             AZ_RTTI(FileTellRequest, "{EF11067E-5C35-4A3F-8BB2-FEC57C037E3F}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileTell", 0x96762daa);
@@ -813,7 +813,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileTellResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileTellResponse, AZ::OSAllocator);
             AZ_RTTI(FileTellResponse, "{18870776-D1FF-40DA-B78D-3A3BB40F20F8}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -829,7 +829,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileSeekRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileSeekRequest, AZ::OSAllocator);
             AZ_RTTI(FileSeekRequest, "{B6E9C144-8033-416D-8E90-0260BE32E164}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileSeek", 0x44073bf9);
@@ -847,7 +847,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileSeekResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileSeekResponse, AZ::OSAllocator);
             AZ_RTTI(FileSeekResponse, "{D6D1AD08-1051-4E0D-8F08-41C2460747F3}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -862,7 +862,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileIsReadOnlyRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileIsReadOnlyRequest, AZ::OSAllocator);
             AZ_RTTI(FileIsReadOnlyRequest, "{408CBD3D-582B-4C78-968D-00BDA9B7CBF3}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::IsReadOnly", 0x6ee110cf);
@@ -878,7 +878,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileIsReadOnlyResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileIsReadOnlyResponse, AZ::OSAllocator);
             AZ_RTTI(FileIsReadOnlyResponse, "{E0FC20EC-2563-47DE-9D6B-ADCEB14ED70E}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -893,7 +893,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(PathIsDirectoryRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PathIsDirectoryRequest, AZ::OSAllocator);
             AZ_RTTI(PathIsDirectoryRequest, "{0F35F08C-4F93-4EA5-8C98-7FB923160A39}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::IsDirectory", 0xfe975e0e);
@@ -909,7 +909,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(PathIsDirectoryResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PathIsDirectoryResponse, AZ::OSAllocator);
             AZ_RTTI(PathIsDirectoryResponse, "{24BCC53E-1364-4C1E-BB19-7346CB3A2E7D}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -924,7 +924,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileSizeRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileSizeRequest, AZ::OSAllocator);
             AZ_RTTI(FileSizeRequest, "{08F67CF7-A91A-498E-A010-7E3FCDE959FC}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileSize", 0x67ffe104);
@@ -940,7 +940,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileSizeResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileSizeResponse, AZ::OSAllocator);
             AZ_RTTI(FileSizeResponse, "{8FA2402C-5ED4-4B5B-BF64-71D3888A4F0D}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -956,7 +956,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileModTimeRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileModTimeRequest, AZ::OSAllocator);
             AZ_RTTI(FileModTimeRequest, "{AFE37457-7EBE-4432-A6CA-78EEDF82F760}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileModTime", 0xee6f318c);
@@ -972,7 +972,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileModTimeResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileModTimeResponse, AZ::OSAllocator);
             AZ_RTTI(FileModTimeResponse, "{4F347EBF-74C5-4963-807B-11CB7268AD08}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -987,7 +987,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileExistsRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileExistsRequest, AZ::OSAllocator);
             AZ_RTTI(FileExistsRequest, "{82751F22-4441-42E7-8187-4D84B97BD2AD}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileExists", 0xa2ef8699);
@@ -1003,7 +1003,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileExistsResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileExistsResponse, AZ::OSAllocator);
             AZ_RTTI(FileExistsResponse, "{D5B51BB4-4683-476E-BC2F-6906D17EE028}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1018,7 +1018,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileFlushRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileFlushRequest, AZ::OSAllocator);
             AZ_RTTI(FileFlushRequest, "{0313BA96-2844-4007-9EB8-B98831CA68C7}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileFlush", 0x1e7b2735);
@@ -1034,7 +1034,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileFlushResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileFlushResponse, AZ::OSAllocator);
             AZ_RTTI(FileFlushResponse, "{8085022A-58DB-4CB4-A81C-B32B4B6DBB0A}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1049,7 +1049,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(PathCreateRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PathCreateRequest, AZ::OSAllocator);
             AZ_RTTI(PathCreateRequest, "{C7DF8777-2497-4473-8F33-AFD5A4015497}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::PathCreate", 0xc047183b);
@@ -1065,7 +1065,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(PathCreateResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PathCreateResponse, AZ::OSAllocator);
             AZ_RTTI(PathCreateResponse, "{8FA23D48-93E4-453A-BBC3-58C831265B42}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1080,7 +1080,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(PathDestroyRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PathDestroyRequest, AZ::OSAllocator);
             AZ_RTTI(PathDestroyRequest, "{628A4C23-1F32-4A35-91F0-C7DFB76FAA9C}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::PathDestroy", 0xe761d533);
@@ -1096,7 +1096,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(PathDestroyResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PathDestroyResponse, AZ::OSAllocator);
             AZ_RTTI(PathDestroyResponse, "{850AEAB7-E3AD-4BD4-A08E-78A4E3A62D73}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1111,7 +1111,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileRemoveRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileRemoveRequest, AZ::OSAllocator);
             AZ_RTTI(FileRemoveRequest, "{3EB05CEF-D98A-47EC-A688-A485EFB11DC6}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileRemove", 0x78f0fd19);
@@ -1127,7 +1127,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileRemoveResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileRemoveResponse, AZ::OSAllocator);
             AZ_RTTI(FileRemoveResponse, "{1B81110E-7004-462A-98EB-12C3D73477BB}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1142,7 +1142,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileCopyRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileCopyRequest, AZ::OSAllocator);
             AZ_RTTI(FileCopyRequest, "{2107C8FD-8150-44A1-B984-AA70D9FD36E2}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileCopy", 0xdd857eec);
@@ -1159,7 +1159,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileCopyResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileCopyResponse, AZ::OSAllocator);
             AZ_RTTI(FileCopyResponse, "{968DBCE3-2916-47F4-8AB2-A2E12179FB49}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1174,7 +1174,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileRenameRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileRenameRequest, AZ::OSAllocator);
             AZ_RTTI(FileRenameRequest, "{188FD344-DDE2-4C25-BBE0-360F2022B276}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileRename", 0xc9edb467);
@@ -1191,7 +1191,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileRenameResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileRenameResponse, AZ::OSAllocator);
             AZ_RTTI(FileRenameResponse, "{F553AC26-7C05-4C1B-861D-6C8D934E151D}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1206,7 +1206,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FindFilesRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FindFilesRequest, AZ::OSAllocator);
             AZ_RTTI(FindFilesRequest, "{66355EF6-B91F-4E2E-B50A-F59F6E46712D}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FindFiles", 0xf06cf14f);
@@ -1225,7 +1225,7 @@ namespace AzFramework
         public:
             typedef AZStd::vector<AZ::OSString, AZ::OSStdAllocator> FileList;
 
-            AZ_CLASS_ALLOCATOR(FindFilesResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FindFilesResponse, AZ::OSAllocator);
             AZ_RTTI(FindFilesResponse, "{422C7AD1-CEA7-4E1C-B098-687B2A68116F}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1241,7 +1241,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileTreeRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileTreeRequest, AZ::OSAllocator);
             AZ_RTTI(FileTreeRequest, "{6838CC3C-2CF1-443C-BFBF-A530003B6A71}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC("AssetSystem::FileTree", 0x27019bb2);
@@ -1257,7 +1257,7 @@ namespace AzFramework
             typedef AZStd::vector<AZ::OSString, AZ::OSStdAllocator> FileList;
             typedef AZStd::vector<AZ::OSString, AZ::OSStdAllocator> FolderList;
 
-            AZ_CLASS_ALLOCATOR(FileTreeResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileTreeResponse, AZ::OSAllocator);
             AZ_RTTI(FileTreeResponse, "{0F7854DA-63FA-4D59-B298-53D84150DFF9}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -1276,7 +1276,7 @@ namespace AzFramework
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetChangeReportRequest, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetChangeReportRequest, AZ::OSAllocator);
             AZ_RTTI(AssetChangeReportRequest, "{EF108E73-08F7-4CBC-A808-61A2EC544A6E}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
             static constexpr unsigned int MessageType = AZ_CRC_CE("AssetSystem::AssetChangeReport");
@@ -1291,19 +1291,20 @@ namespace AzFramework
 
             // The default constructor is only required for the SerializeContext.
             AssetChangeReportRequest() = default;
-            AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move);
+            AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move, bool isFolder = false);
             unsigned int GetMessageType() const override;
 
             AZ::OSString m_fromPath;
             AZ::OSString m_toPath;
             ChangeType m_type;
+            bool m_isFolder;
         };
 
         class AssetChangeReportResponse
             : public BaseAssetProcessorMessage
         {
         public:
-            AZ_CLASS_ALLOCATOR(AssetChangeReportResponse, AZ::OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetChangeReportResponse, AZ::OSAllocator);
             AZ_RTTI(AssetChangeReportResponse, "{C18891A7-794D-4270-93AE-7D0C2ECABB5C}", BaseAssetProcessorMessage);
             static void Reflect(AZ::ReflectContext* context);
 

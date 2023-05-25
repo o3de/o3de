@@ -34,7 +34,7 @@ namespace AZ
                 uint32_t m_elementSize = 0;
             };
 
-            AZ_CLASS_ALLOCATOR(PoolAllocator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PoolAllocator, AZ::SystemAllocator);
 
             PoolAllocator() = default;
 

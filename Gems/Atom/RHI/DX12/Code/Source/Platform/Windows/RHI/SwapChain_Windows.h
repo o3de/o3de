@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SwapChain, "{974AC6A9-5009-47BE-BD7E-61348BF623F0}", RHI::SwapChain);
-            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
 
             static RHI::Ptr<SwapChain> Create();
 

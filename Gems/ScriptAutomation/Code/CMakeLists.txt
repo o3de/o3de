@@ -6,6 +6,8 @@
 #
 #
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}")
+
 ly_add_target(
     NAME ScriptAutomation.API HEADERONLY
     NAMESPACE Gem
@@ -21,15 +23,18 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         scriptautomation_files.cmake
+        ${pal_dir}/scriptautomation_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_dir}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
             Gem::ScriptAutomation.API
             Gem::Atom_Feature_Common.Public
+            Gem::Atom_RPI.Public
 )
 
 ly_add_target(
@@ -48,6 +53,7 @@ ly_add_target(
 )
 
 ly_create_alias(NAME ScriptAutomation.Servers NAMESPACE Gem TARGETS Gem::ScriptAutomation)
+ly_create_alias(NAME ScriptAutomation.Unified NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 ly_create_alias(NAME ScriptAutomation.Builders NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 ly_create_alias(NAME ScriptAutomation.Clients NAMESPACE Gem TARGETS Gem::ScriptAutomation)
 ly_create_alias(NAME ScriptAutomation.Tools NAMESPACE Gem TARGETS Gem::ScriptAutomation)
@@ -73,5 +79,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::ScriptAutomation.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

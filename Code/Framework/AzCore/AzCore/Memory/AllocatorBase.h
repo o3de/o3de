@@ -31,7 +31,8 @@ namespace AZ
         //---------------------------------------------------------------------
         // IAllocator implementation
         //---------------------------------------------------------------------
-        const Debug::AllocationRecords* GetRecords() const final;
+        using IAllocator::GetRecords;
+        const Debug::AllocationRecords* GetRecords() const override;
         void SetRecords(Debug::AllocationRecords* records) final;
         bool IsReady() const final;
         void PostCreate() override;

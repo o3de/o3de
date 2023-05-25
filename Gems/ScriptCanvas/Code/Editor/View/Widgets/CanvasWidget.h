@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(CanvasWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CanvasWidget, AZ::SystemAllocator);
             CanvasWidget(const SourceHandle& assetId, QWidget* parent = nullptr);
             ~CanvasWidget() override;
 

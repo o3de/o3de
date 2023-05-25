@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TwoStringEventData, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TwoStringEventData, MotionEventAllocator)
 
     bool StringEqual(const AZStd::string& lhs, const AZStd::string& rhs, bool ignoreEmpty)
     {

@@ -191,6 +191,9 @@ namespace EMotionFX
             /// Making a request to desync from the anim graph to its leader graph
             /// \param leaderEntityId - the entity id of another anim graph.
             virtual void DesyncAnimGraph(AZ::EntityId leaderEntityId) = 0;
+
+            /// Set the name of the active motion set.
+            virtual void SetActiveMotionSet(const char* activeMotionSetName) = 0;
         };
 
         using AnimGraphComponentRequestBus = AZ::EBus<AnimGraphComponentRequests>;

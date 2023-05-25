@@ -31,6 +31,7 @@ namespace NvCloth
             picker->GetEditButton()->setToolTip("Open Scene Settings to setup Cloth Modifiers");
             picker->GetEditButton()->setText("");
             picker->GetEditButton()->setEnabled(false);
+            picker->GetEditButton()->setVisible(true);
 
             connect(picker->GetComboBox(), 
                 &QComboBox::currentTextChanged, this,
@@ -41,9 +42,9 @@ namespace NvCloth
 
             connect(picker->GetEditButton(), 
                 &QToolButton::clicked, this,
-                [this, picker]()
+                [this]()
                 {
-                    OnEditButtonClicked(picker);
+                    OnEditButtonClicked();
                 });
 
             return picker;
@@ -61,7 +62,7 @@ namespace NvCloth
                 AZ::EntityId value;
                 if (attrValue->Read<AZ::EntityId>(value))
                 {
-                    GUI->SetEntityId(value);
+                    m_entityId = value;
                 }
                 else
                 {
@@ -73,15 +74,14 @@ namespace NvCloth
                 AZStd::vector<AZStd::string> value;
                 if (attrValue->Read<AZStd::vector<AZStd::string>>(value))
                 {
-                    QSignalBlocker signalBlocker(GUI->GetComboBox());
-                    GUI->GetComboBox()->clear();
+                    GUI->clearElements();
 
                     for (const auto& item : value)
                     {
-                        GUI->GetComboBox()->addItem(item.c_str());
+                        GUI->Add(item);
                     }
 
-                    bool hasAsset = GetMeshAsset(GUI->GetEntityId()).Get() != nullptr;
+                    bool hasAsset = GetMeshAsset(m_entityId).Get() != nullptr;
                     GUI->GetEditButton()->setEnabled(hasAsset);
                 }
                 else
@@ -98,14 +98,13 @@ namespace NvCloth
 
         bool MeshNodeHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, widget_t* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
         {
-            QSignalBlocker signalBlocker(GUI->GetComboBox());
-            GUI->GetComboBox()->setCurrentText(instance.c_str());
+            GUI->setValue(instance);
             return true;
         }
 
-        void MeshNodeHandler::OnEditButtonClicked(widget_t* GUI)
+        void MeshNodeHandler::OnEditButtonClicked()
         {
-            AZ::Data::Asset<AZ::Data::AssetData> meshAsset = GetMeshAsset(GUI->GetEntityId());
+            AZ::Data::Asset<AZ::Data::AssetData> meshAsset = GetMeshAsset(m_entityId);
             if (meshAsset)
             {
                 // Open the asset with the preferred asset editor, which for Mesh and Actor Assets it's Scene Settings.

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Builder/AudioControlBuilderWorker.h>
+#include <AudioControlBuilderWorker.h>
 
 namespace AudioControlBuilder
 {

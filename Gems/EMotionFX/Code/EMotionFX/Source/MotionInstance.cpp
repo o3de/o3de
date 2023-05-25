@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MotionInstance, MotionAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MotionInstance, MotionAllocator)
 
     MotionInstance::MotionInstance(Motion* motion, ActorInstance* actorInstance)
         : BaseObject()

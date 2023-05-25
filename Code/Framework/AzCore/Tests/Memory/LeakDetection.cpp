@@ -51,7 +51,7 @@ namespace UnitTest
     class TestClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestClass, AZ::SystemAllocator);
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ namespace UnitTest
     class TestClassLeakDetection_TestAllocator
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestClass, LeakDetection_TestAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestClass, LeakDetection_TestAllocator);
     };
 
 
@@ -122,6 +122,8 @@ namespace UnitTest
         void TestAllocatorLeak()
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             [[maybe_unused]] TestClassLeakDetection_TestAllocator* object = new TestClassLeakDetection_TestAllocator();
 
@@ -202,7 +204,9 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
         }
 
         void TearDown() override
@@ -216,6 +220,9 @@ namespace UnitTest
                 AZ::AllocatorManager::Instance().GarbageCollect();
             }
 
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
             AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
 
@@ -225,7 +232,7 @@ namespace UnitTest
         class ThisAllocatorTestClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(ThisAllocatorTestClass, AllocatorType, 0);
+            AZ_CLASS_ALLOCATOR(ThisAllocatorTestClass, AllocatorType);
         };
 
     protected:

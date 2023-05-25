@@ -17,7 +17,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RagdollInstance, EMotionFX::ActorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(RagdollInstance, EMotionFX::ActorAllocator)
 
     RagdollInstance::RagdollInstance()
         : m_lastPos(AZ::Vector3::CreateZero())
@@ -461,7 +461,7 @@ namespace EMotionFX
             const size_t jointIndex = ragdollInstance->GetJointIndex(i);
             const Physics::RagdollNodeState& targetJointPose = ragdollTargetPose[i];
 
-            if (targetJointPose.m_simulationType == Physics::SimulationType::Dynamic)
+            if (targetJointPose.m_simulationType == Physics::SimulationType::Simulated)
             {
                 targetPose.SetLocalSpaceTransform(jointIndex, EMotionFX::Transform(targetJointPose.m_position, targetJointPose.m_orientation));
             }
@@ -499,7 +499,7 @@ namespace EMotionFX
 
                     const Physics::RagdollNodeState& targetParentJointPose = ragdollTargetPose[ragdollParentJointIndex.GetValue()];
 
-                    if (targetParentJointPose.m_simulationType == Physics::SimulationType::Dynamic)
+                    if (targetParentJointPose.m_simulationType == Physics::SimulationType::Simulated)
                     {
                         AZ::Color simulatedColor = defaultSimulatedColor;
                         // TODO: We might want to bake the strength into the alpha channel once we know its range.

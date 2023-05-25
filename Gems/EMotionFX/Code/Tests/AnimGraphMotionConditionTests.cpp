@@ -27,7 +27,8 @@ namespace EMotionFX
     public:
         // It is important that this contain the same UUID as the production
         // class, so that the deserialization code will use the converter
-        AZ_RTTI(AnimGraphMotionCondition, "{0E2EDE4E-BDEE-4383-AB18-208CE7F7A784}", AnimGraphTransitionCondition)
+        AZ_RTTI(AnimGraphMotionConditionV1, "{0E2EDE4E-BDEE-4383-AB18-208CE7F7A784}", AnimGraphTransitionCondition)
+        AZ_CLASS_ALLOCATOR(AnimGraphMotionConditionV1, AnimGraphAllocator)
 
         enum TestFunction : AZ::u8
         {

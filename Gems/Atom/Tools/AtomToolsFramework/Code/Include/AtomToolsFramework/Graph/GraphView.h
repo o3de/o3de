@@ -59,7 +59,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphView, AZ::SystemAllocator);
 
         GraphView(
             const AZ::Crc32& toolId,

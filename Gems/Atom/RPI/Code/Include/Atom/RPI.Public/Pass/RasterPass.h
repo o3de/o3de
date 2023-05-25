@@ -27,7 +27,7 @@ namespace AZ
 
         public:
             AZ_RTTI(RasterPass, "{16AF74ED-743C-4842-99F9-347D77BA7F2A}", RenderPass);
-            AZ_CLASS_ALLOCATOR(RasterPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RasterPass, SystemAllocator);
             virtual ~RasterPass();
 
             //! Creates a RasterPass

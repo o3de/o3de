@@ -82,9 +82,7 @@ namespace AZ
 
         void Scope::Begin(CommandList& commandList) const
         {
-            commandList.SetName(GetId());
             commandList.GetValidator().BeginScope(*this);
-            commandList.BeginDebugLabel(AZStd::string::format("%s Scope", GetId().GetCStr()).c_str());
 
             for (RHI::ResourcePoolResolver* resolverBase : GetResourcePoolResolves())
             {
@@ -95,7 +93,6 @@ namespace AZ
 
         void Scope::End(CommandList& commandList) const
         {
-            commandList.EndDebugLabel();
             commandList.GetValidator().EndScope();
         }
 

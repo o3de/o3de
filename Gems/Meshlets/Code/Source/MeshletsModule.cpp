@@ -19,7 +19,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MeshletsModule, "{19bbf909-a4fc-48ec-915a-316046feb2f9}", MeshletsModuleInterface);
-            AZ_CLASS_ALLOCATOR(MeshletsModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsModule, AZ::SystemAllocator);
         };
     } // namespace Meshlets
 } // namespace AZ

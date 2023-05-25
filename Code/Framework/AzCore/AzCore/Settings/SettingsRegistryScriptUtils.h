@@ -29,7 +29,7 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
     // SettingsRegistryImplScriptProxy is used to encapsulate a SettingsRegistry instance
     struct SettingsRegistryScriptProxy
     {
-        AZ_CLASS_ALLOCATOR(SettingsRegistryScriptProxy, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SettingsRegistryScriptProxy, AZ::SystemAllocator);
         AZ_TYPE_INFO(SettingsRegistryScriptProxy, "{795C80A0-D243-473B-972A-C32CA487BAA5}");
 
         // NotifyEventProxy is used to forward an update to an entry in the SettingsRegistry

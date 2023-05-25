@@ -55,7 +55,7 @@ namespace AZ
 
         public:
             AZ_TYPE_INFO(RPISystem, "{D248ED01-1D68-4F76-9DD8-1332B11F452A}");
-            AZ_CLASS_ALLOCATOR(RPISystem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RPISystem, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

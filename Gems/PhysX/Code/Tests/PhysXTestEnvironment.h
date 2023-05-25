@@ -23,6 +23,7 @@ namespace PhysX
         : public AZ::ComponentApplication
     {
     public:
+        AZ_CLASS_ALLOCATOR(PhysXApplication, AZ::SystemAllocator)
         PhysXApplication();
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
@@ -70,8 +71,6 @@ namespace PhysX
         void TeardownEnvironment() override
         {
             TeardownInternal();
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
     };
 }

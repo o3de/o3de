@@ -453,7 +453,8 @@ namespace PhysX::Benchmarks
 
        BENCHMARK_REGISTER_F(PhysXJointBenchmarkFixture, BM_Joints_Snake)
          ->RangeMultiplier(JointConstants::BenchmarkSettings::RangeMultipler)
-         ->Range(JointConstants::BenchmarkSettings::StartRange, JointConstants::BenchmarkSettings::EndRange)
+         ->Ranges({ { JointConstants::BenchmarkSettings::StartRange, JointConstants::BenchmarkSettings::EndRange },
+                   { RigidBodyApiObject, RigidBodyEntity } })
          ->Unit(benchmark::kMillisecond)
          ->Iterations(JointConstants::BenchmarkSettings::NumIterations)
          ;

@@ -244,6 +244,82 @@ namespace AzToolsFramework
             return entityItr != m_childEntityOrderCache.end() ? entityItr->second : std::numeric_limits<AZ::u64>::max();
         }
 
+        bool EditorEntitySortComponent::CanMoveChildEntityUp(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return false;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't first.
+            auto entityIt = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.front() == entityId || entityIt == m_childEntityOrderArray.end())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        void EditorEntitySortComponent::MoveChildEntityUp(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't last.
+            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.front() == entityId || entityItr == m_childEntityOrderArray.end())
+            {
+                return;
+            }
+
+            AZStd::swap(*entityItr, *(entityItr - 1));
+            RebuildEntityOrderCache();
+            MarkDirtyAndSendChangedEvent();
+        }
+
+        bool EditorEntitySortComponent::CanMoveChildEntityDown(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return false;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't last.
+            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.back() == entityId || entityItr == m_childEntityOrderArray.end())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        void EditorEntitySortComponent::MoveChildEntityDown(const AZ::EntityId& entityId)
+        {
+            // Ensure the entityId is valid.
+            if (!entityId.IsValid())
+            {
+                return;
+            }
+
+            // Only return true if the entityId is in the sort order array and isn't last.
+            auto entityItr = AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), entityId);
+            if (m_childEntityOrderArray.empty() || m_childEntityOrderArray.back() == entityId || entityItr == m_childEntityOrderArray.end())
+            {
+                return;
+            }
+
+            AZStd::swap(*entityItr, *(entityItr + 1));
+            RebuildEntityOrderCache();
+            MarkDirtyAndSendChangedEvent();
+        }
+
         void EditorEntitySortComponent::OnEntityStreamLoadSuccess()
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);

@@ -19,18 +19,12 @@ namespace UnitTest
     {
         LeakDetectionFixture::SetUp();
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         AZ::NameDictionary::Create();
     }
 
     void ShaderBuilderTestFixture::TearDown()
     {
         AZ::NameDictionary::Destroy();
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         LeakDetectionFixture::TearDown();
     }

@@ -35,7 +35,7 @@ namespace UnitTest
     // name dictionary fails because we have remaining names in the PassTemplates
     struct PassTestData
     {
-        AZ_CLASS_ALLOCATOR(PassTestData, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PassTestData, SystemAllocator);
 
         PassTemplate m_parentPass;
 

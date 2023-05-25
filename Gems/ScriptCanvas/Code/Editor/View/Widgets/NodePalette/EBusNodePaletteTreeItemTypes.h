@@ -21,7 +21,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateEBusSenderMimeEvent, "{7EFA0742-BBF6-45FD-B378-C73577DEE464}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateEBusSenderMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateEBusSenderMimeEvent, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateEBusSenderMimeEvent() = default;
@@ -45,7 +45,7 @@ namespace ScriptCanvasEditor
         static const QString& GetDefaultIcon();
         
     public:
-        AZ_CLASS_ALLOCATOR(EBusSendEventPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusSendEventPaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(EBusSendEventPaletteTreeItem, "{26258B0A-8E2C-434D-ACAD-3DE85E64A4F8}", GraphCanvas::DraggableNodePaletteTreeItem);
 
         EBusSendEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventIdentifier, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus);
@@ -84,7 +84,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateEBusHandlerMimeEvent, "{7B205AA9-2A27-4508-9277-FB8D5C6BE5BC}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateEBusHandlerMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateEBusHandlerMimeEvent, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateEBusHandlerMimeEvent() = default;
@@ -105,7 +105,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateEBusHandlerEventMimeEvent, "{0F5FAB1D-7E84-44E6-8161-630576490249}", SpecializedCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateEBusHandlerEventMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateEBusHandlerEventMimeEvent, AZ::SystemAllocator);
         
         static void Reflect(AZ::ReflectContext* reflectContext);
         
@@ -144,7 +144,7 @@ namespace ScriptCanvasEditor
         static const QString& GetDefaultIcon();
         
     public:
-        AZ_CLASS_ALLOCATOR(EBusHandleEventPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EBusHandleEventPaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(EBusHandleEventPaletteTreeItem, "{99A95EC0-1DF8-45B8-8229-D6D12E32CBED}", GraphCanvas::DraggableNodePaletteTreeItem);
 
         EBusHandleEventPaletteTreeItem(AZStd::string_view busName, AZStd::string_view eventName, const ScriptCanvas::EBusBusId& busId, const ScriptCanvas::EBusEventId& eventId);

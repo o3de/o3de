@@ -32,10 +32,10 @@ namespace AZ
             : public AZStd::intrusive_base
         {
             friend class DynamicDrawSystem;
-            AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
-            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator, 0);
 
         public:
+            AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
+            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator);
             virtual ~DynamicDrawContext() = default;
 
             // Type of render state which can be changed for dynamic draw context
@@ -278,7 +278,7 @@ namespace AZ
             struct DrawItemInfo
             {
                 RHI::DrawItem m_drawItem;
-                RHI::DrawItemSortKey m_sortKey;
+                RHI::DrawItemSortKey m_sortKey = 0;
                 BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
                 BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
             };

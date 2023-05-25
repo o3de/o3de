@@ -25,6 +25,8 @@ namespace AZ
             AZ_RTTI(BufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", ResourceView);
             virtual ~BufferView() = default;
 
+            static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+
             //! Initializes the buffer view with the provided buffer and view descriptor.
             ResultCode Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor);
 
@@ -46,12 +48,12 @@ namespace AZ
 
             virtual uint32_t GetBindlessReadIndex() const
             {
-                return 0xffffffff;
+                return InvalidBindlessIndex;
             }
 
             virtual uint32_t GetBindlessReadWriteIndex() const
             {
-                return 0xffffffff;
+                return InvalidBindlessIndex;
             }
 
         protected:

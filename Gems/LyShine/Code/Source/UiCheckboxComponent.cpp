@@ -72,12 +72,12 @@ void UiCheckboxComponent::SetState(bool isOn)
 
     if (m_optionalCheckedEntity.IsValid())
     {
-        EBUS_EVENT_ID(m_optionalCheckedEntity, UiElementBus, SetIsEnabled, m_isOn);
+        UiElementBus::Event(m_optionalCheckedEntity, &UiElementBus::Events::SetIsEnabled, m_isOn);
     }
 
     if (m_optionalUncheckedEntity.IsValid())
     {
-        EBUS_EVENT_ID(m_optionalUncheckedEntity, UiElementBus, SetIsEnabled, !m_isOn);
+        UiElementBus::Event(m_optionalUncheckedEntity, &UiElementBus::Events::SetIsEnabled, !m_isOn);
     }
 }
 
@@ -171,7 +171,7 @@ void UiCheckboxComponent::InGamePostActivate()
 bool UiCheckboxComponent::HandleReleased(AZ::Vector2 point)
 {
     bool isInRect = false;
-    EBUS_EVENT_ID_RESULT(isInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+    UiTransformBus::EventResult(isInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
     if (isInRect)
     {
         return HandleReleasedCommon(point);
@@ -314,8 +314,13 @@ UiCheckboxComponent::EntityComboBoxVec UiCheckboxComponent::PopulateChildEntityL
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -345,25 +350,25 @@ bool UiCheckboxComponent::HandleReleasedCommon(const AZ::Vector2& point)
         if (m_isOn && !m_turnOnActionName.empty())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-            EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_turnOnActionName);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+            UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_turnOnActionName);
         }
 
         if (!m_isOn && !m_turnOffActionName.empty())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-            EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_turnOffActionName);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+            UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_turnOffActionName);
         }
 
         if (!m_changedActionName.empty())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-            EBUS_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_changedActionName);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+            UiCanvasNotificationBus::Event(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_changedActionName);
         }
 
-        EBUS_EVENT_ID(GetEntityId(), UiCheckboxNotificationBus, OnCheckboxStateChange, m_isOn);
+        UiCheckboxNotificationBus::Event(GetEntityId(), &UiCheckboxNotificationBus::Events::OnCheckboxStateChange, m_isOn);
     }
 
     m_isPressed = false;

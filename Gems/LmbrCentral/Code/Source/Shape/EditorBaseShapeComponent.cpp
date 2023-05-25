@@ -200,11 +200,12 @@ namespace LmbrCentral
 
     void EditorBaseShapeComponent::OnShapeColorChanged()
     {
-        m_shapeColor.SetA(AzFramework::ViewportColors::DeselectedColor.GetA());
+        AZ::Color drawColor(m_shapeColor);
+        drawColor.SetA(AzFramework::ViewportColors::DeselectedColor.GetA());
 
         if (m_shapeConfig)
         {
-            m_shapeConfig->SetDrawColor(m_shapeColor);
+            m_shapeConfig->SetDrawColor(drawColor);
         }
     }
 

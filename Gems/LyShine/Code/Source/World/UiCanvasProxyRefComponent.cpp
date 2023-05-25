@@ -26,7 +26,7 @@ AZ::EntityId UiCanvasProxyRefComponent::GetCanvas()
 
     if (m_canvasAssetRefEntityId.IsValid())
     {
-        EBUS_EVENT_ID_RESULT(uiCanvasEntityId, m_canvasAssetRefEntityId, UiCanvasRefBus, GetCanvas);
+        UiCanvasRefBus::EventResult(uiCanvasEntityId, m_canvasAssetRefEntityId, &UiCanvasRefBus::Events::GetCanvas);
     }
 
     return uiCanvasEntityId;
@@ -39,13 +39,15 @@ void UiCanvasProxyRefComponent::SetCanvasRefEntity(AZ::EntityId canvasAssetRefEn
 
     AZ::EntityId uiCanvasEntityId = GetCanvas();
 
-    EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), uiCanvasEntityId);
+    UiCanvasRefNotificationBus::Event(
+        GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntityId);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasProxyRefComponent::OnCanvasRefChanged([[maybe_unused]] AZ::EntityId uiCanvasRefEntity, AZ::EntityId uiCanvasEntity)
 {
-    EBUS_EVENT_ID(GetEntityId(), UiCanvasRefNotificationBus, OnCanvasRefChanged, GetEntityId(), uiCanvasEntity);
+    UiCanvasRefNotificationBus::Event(
+        GetEntityId(), &UiCanvasRefNotificationBus::Events::OnCanvasRefChanged, GetEntityId(), uiCanvasEntity);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

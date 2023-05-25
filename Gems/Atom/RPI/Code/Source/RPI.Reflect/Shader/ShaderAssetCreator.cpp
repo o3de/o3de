@@ -18,14 +18,6 @@ namespace AZ
             BeginCommon(assetId);
         }
 
-        void ShaderAssetCreator::SetShaderAssetBuildTimestamp(AZStd::sys_time_t shaderAssetBuildTimestamp)
-        {
-            if (ValidateIsReady())
-            {
-                m_asset->m_buildTimestamp = shaderAssetBuildTimestamp;
-            }
-        }
-
         void ShaderAssetCreator::SetName(const Name& name)
         {
             if (ValidateIsReady())
@@ -409,7 +401,6 @@ namespace AZ
             m_asset->m_pipelineStateType = sourceShaderAsset.m_pipelineStateType;
             m_asset->m_drawListName = sourceShaderAsset.m_drawListName;
             m_asset->m_shaderOptionGroupLayout = sourceShaderAsset.m_shaderOptionGroupLayout;
-            m_asset->m_buildTimestamp = sourceShaderAsset.m_buildTimestamp;
 
             // copy the perAPIShaderData
             for (auto& perAPIShaderData : sourceShaderAsset.m_perAPIShaderData)

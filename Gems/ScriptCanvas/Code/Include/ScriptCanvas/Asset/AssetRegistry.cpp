@@ -13,6 +13,8 @@
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+DECLARE_EBUS_INSTANTIATION(ScriptCanvas::AssetRegistryRequests);
+
 namespace ScriptCanvas
 {
     void AssetRegistry::Unregister()

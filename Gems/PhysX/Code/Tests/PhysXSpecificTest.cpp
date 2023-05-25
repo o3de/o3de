@@ -1295,7 +1295,7 @@ namespace PhysX
         const float expectedMass = boxMaterial->GetDensity() * GetShapeVolume(boxShapeConfig) +
             sphereMaterial->GetDensity() * GetShapeVolume(sphereShapeConfig);
 
-        EXPECT_TRUE(AZ::IsClose(expectedMass, mass, 0.001f));
+        EXPECT_TRUE(AZ::IsCloseMag(expectedMass, mass, AZ::Constants::Tolerance));
     }
 
     // Valid material density values: [0.01f, 1e5f]

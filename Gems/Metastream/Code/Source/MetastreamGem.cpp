@@ -357,12 +357,12 @@ namespace Metastream
 
     void Metastream::MetastreamGem::StartHTTPServerCmd(IConsoleCmdArgs* /*args*/)
     {
-        EBUS_EVENT(Metastream::MetastreamRequestBus, StartHTTPServer);
+        Metastream::MetastreamRequestBus::Broadcast(&Metastream::MetastreamRequestBus::Events::StartHTTPServer);
     }
 
     void Metastream::MetastreamGem::StopHTTPServerCmd(IConsoleCmdArgs* /*args*/)
     {
-        EBUS_EVENT(Metastream::MetastreamRequestBus, StopHTTPServer);
+        Metastream::MetastreamRequestBus::Broadcast(&Metastream::MetastreamRequestBus::Events::StopHTTPServer);
     }
 
     // Unit test methods to get at m_cache and status

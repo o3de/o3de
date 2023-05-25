@@ -60,7 +60,7 @@
                     ],
                     "PassData": {
                         "$type": "ImGuiPassData",
-                        "IsDefaultImGui": true
+                        "isDefaultImGui": true
                     }
                 }
             ]

@@ -20,7 +20,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationWindows, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationWindows, AZ::SystemAllocator);
         ApplicationWindows();
         ~ApplicationWindows() override;
 
@@ -69,7 +69,7 @@ namespace AzFramework
         // guard against duplicate events
         if (m_lastEvent != ApplicationLifecycleEvents::Event::Suspend)
         {
-            EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationSuspended, m_lastEvent);
+            ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationSuspended, m_lastEvent);
             m_lastEvent = ApplicationLifecycleEvents::Event::Suspend;
         }
     }
@@ -80,7 +80,7 @@ namespace AzFramework
         // guard against duplicate events
         if (m_lastEvent != ApplicationLifecycleEvents::Event::Resume)
         {
-            EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationResumed, m_lastEvent);
+            ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationResumed, m_lastEvent);
             m_lastEvent = ApplicationLifecycleEvents::Event::Resume;
         }
     }
@@ -91,7 +91,7 @@ namespace AzFramework
         // guard against duplicate events
         if (m_lastEvent != ApplicationLifecycleEvents::Event::Constrain)
         {
-            EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationConstrained, m_lastEvent);
+            ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationConstrained, m_lastEvent);
             m_lastEvent = ApplicationLifecycleEvents::Event::Constrain;
         }
     }
@@ -102,7 +102,7 @@ namespace AzFramework
         // guard against duplicate events
         if (m_lastEvent != ApplicationLifecycleEvents::Event::Unconstrain)
         {
-            EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationUnconstrained, m_lastEvent);
+            ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationUnconstrained, m_lastEvent);
             m_lastEvent = ApplicationLifecycleEvents::Event::Unconstrain;
         }
     }

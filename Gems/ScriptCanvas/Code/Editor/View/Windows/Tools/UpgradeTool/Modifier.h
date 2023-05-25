@@ -24,7 +24,7 @@ namespace ScriptCanvasEditor
             , public AzFramework::AssetSystemInfoBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Modifier, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Modifier, AZ::SystemAllocator);
 
             Modifier
                 ( const ModifyConfiguration& modification

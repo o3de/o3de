@@ -32,7 +32,7 @@ namespace AZ
             friend class ImageAttachmentPreviewPass;
         public:
             AZ_RTTI(ImageAttachmentCopy, "{27E35230-48D1-4950-8489-F301A45D4A0B}", RHI::ScopeProducer);
-            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator);
 
             ImageAttachmentCopy() = default;
             ~ImageAttachmentCopy() = default;
@@ -71,7 +71,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ImageAttachmentPreviewPass, "{E6076B8E-E840-4C22-89A8-32C73FEEEBF9}", Pass);
-            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator);
 
             //! Creates an ImageAttachmentPreviewPass
             static Ptr<ImageAttachmentPreviewPass> Create(const PassDescriptor& descriptor);

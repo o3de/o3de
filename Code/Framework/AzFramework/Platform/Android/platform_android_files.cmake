@@ -28,6 +28,7 @@ set(FILES
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Android.cpp
     AzFramework/Process/ProcessCommon.h
+    AzFramework/Process/ProcessUtils_Android.cpp
     AzFramework/Process/ProcessWatcher_Android.cpp
     AzFramework/Process/ProcessCommunicator_Android.cpp
     AzFramework/Thermal/ThermalInfo_Android.cpp

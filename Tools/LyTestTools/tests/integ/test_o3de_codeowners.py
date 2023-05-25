@@ -14,7 +14,7 @@ import ly_test_tools.cli.codeowners_hint as hint
 def test_FindCodeowners_ThisCWD_FindForO3DE():
     codeowners_path = hint.find_github_codeowners(os.path.abspath(__file__))
     assert codeowners_path
-    assert "o3de" in str(codeowners_path), "codeowners file has been tampered with, or test unexpectedly migrated"
+    assert ".github" in str(codeowners_path), "codeowners file has been tampered with, or test unexpectedly migrated"
 
 
 def test_FindCodeowners_ThisFilesystemRoot_NotFound():

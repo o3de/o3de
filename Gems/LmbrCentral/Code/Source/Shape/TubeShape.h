@@ -29,7 +29,7 @@ namespace LmbrCentral
     {
     public:
         AZ_RTTI(TubeShape, "{8DF865F3-D155-402D-AF64-9342CE9E9E60}")
-        AZ_CLASS_ALLOCATOR(TubeShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TubeShape, AZ::SystemAllocator)
 
         TubeShape() = default;
         TubeShape(const TubeShape& rhs);
@@ -90,7 +90,7 @@ namespace LmbrCentral
     /// Configuration for how TubeShape debug drawing should appear (tesselation parameters etc).
     struct TubeShapeMeshConfig
     {
-        AZ_CLASS_ALLOCATOR(TubeShapeMeshConfig, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(TubeShapeMeshConfig, AZ::SystemAllocator)
         AZ_RTTI(TubeShapeMeshConfig, "{90791900-060F-4F0B-9552-D6E67572B317}")
 
         TubeShapeMeshConfig() = default;

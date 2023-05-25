@@ -23,7 +23,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelDigitalWithSharedPosition2D, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelDigitalWithSharedPosition2D, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

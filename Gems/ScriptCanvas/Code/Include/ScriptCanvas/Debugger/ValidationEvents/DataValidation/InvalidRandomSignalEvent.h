@@ -26,7 +26,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(InvalidRandomSignalEvent, "{79B8E967-3852-4A8E-A0B9-22BFA68A04F1}", HighlightEntityEffect, ValidationEvent, FocusOnEntityEffect);
-        AZ_CLASS_ALLOCATOR(InvalidRandomSignalEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InvalidRandomSignalEvent, AZ::SystemAllocator);
         
         InvalidRandomSignalEvent(const AZ::EntityId& nodeId)
             : ValidationEvent(ValidationSeverity::Error)

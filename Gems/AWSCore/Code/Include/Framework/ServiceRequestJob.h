@@ -137,7 +137,7 @@ namespace AWSCore
 
     public:
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(ServiceRequestJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceRequestJob, AZ::SystemAllocator);
 
         /// Aliases for the configuration types used for this job class.
         using IConfig = IServiceRequestJobConfig;
@@ -614,7 +614,7 @@ namespace AWSCore
     {
     public:
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Function, AZ::SystemAllocator);
 
         Function(OnSuccessFunction onSuccess, OnFailureFunction onFailure = OnFailureFunction{}, IConfig* config = GetDefaultConfig())
             : ServiceRequestJob(false, config) // No auto delete - The Function class will handle it with the DoCleanup() function

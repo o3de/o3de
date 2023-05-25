@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{2D89EC04-B4BB-4B7E-81F6-9CF1B73EA13C}",
+        "category": "Vertex",
+        "title": "Bitangent",
+        "titlePaletteName": "VertexNodeTitlePalette",
+        "description": "The surface bitangent of the current vertex or fragment",
+        "slotDataTypeGroups": [
+            "outBitangent",
+            "outX|outY|outZ"
+        ],
+        "outputSlots": [
+            {
+                "name": "outBitangent",
+                "displayName": "Bitangent",
+                "description": "Bitangent",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_BITANGENT;"
+                    ]
+                }
+            },
+            {
+                "name": "outX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_BITANGENT.x;"
+                    ]
+                }
+            },
+            {
+                "name": "outY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_BITANGENT.y;"
+                    ]
+                }
+            },
+            {
+                "name": "outZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = O3DE_MC_BITANGENT.z;"
+                    ]
+                }
+            }
+        ]
+    }
+}

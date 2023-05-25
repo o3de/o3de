@@ -10,6 +10,8 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Math/Vector3.h>
 
+DECLARE_EBUS_INSTANTIATION(NonUniformScaleRequests);
+
 namespace AZ
 {
     void NonUniformScaleRequests::Reflect(ReflectContext* context)

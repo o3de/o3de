@@ -114,7 +114,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(GeneralNodeTitleGraphicsWidget, "{9DE7D3C0-D88C-47D8-85D4-5E0F619E60CB}");
-        AZ_CLASS_ALLOCATOR(GeneralNodeTitleGraphicsWidget, AZ::SystemAllocator, 0);        
+        AZ_CLASS_ALLOCATOR(GeneralNodeTitleGraphicsWidget, AZ::SystemAllocator);        
 
         GeneralNodeTitleGraphicsWidget(const AZ::EntityId& entityId);
         ~GeneralNodeTitleGraphicsWidget() override;

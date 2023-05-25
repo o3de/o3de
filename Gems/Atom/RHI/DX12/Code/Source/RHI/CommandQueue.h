@@ -54,7 +54,7 @@ namespace AZ
             using Base = RHI::CommandQueue;
         public:
             
-            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueue, AZ::SystemAllocator);
             AZ_RTTI(CommandQueue, "{9F93F430-E440-4033-9FBD-1A399B03355B}", Base);
 
             static RHI::Ptr<CommandQueue> Create();

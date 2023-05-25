@@ -44,7 +44,7 @@ namespace AZ
             {
                 Q_OBJECT
             public:
-                AZ_CLASS_ALLOCATOR(MaterialPropertyInspector, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(MaterialPropertyInspector, AZ::SystemAllocator);
 
                 MaterialPropertyInspector(QWidget* parent = nullptr);
                 ~MaterialPropertyInspector() override;

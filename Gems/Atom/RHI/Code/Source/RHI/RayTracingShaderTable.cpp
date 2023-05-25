@@ -26,7 +26,7 @@ namespace AZ
             }
         }
 
-        RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState)
+        RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState)
         {
             m_name = name;
             m_rayTracingPipelineState = rayTracingPipelineState;
@@ -46,6 +46,14 @@ namespace AZ
         {
             m_missRecords.emplace_back();
             m_buildContext = &m_missRecords.back();
+            m_buildContext->m_shaderExportName = name;
+            return this;
+        }
+
+        RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::CallableRecord(const AZ::Name& name)
+        {
+            m_callableRecords.emplace_back();
+            m_buildContext = &m_callableRecords.back();
             m_buildContext->m_shaderExportName = name;
             return this;
         }

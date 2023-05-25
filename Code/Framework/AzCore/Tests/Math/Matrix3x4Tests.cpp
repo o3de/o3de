@@ -416,7 +416,7 @@ namespace UnitTest
         const AZ::Vector3 result = matrix3x4.TransformPoint(AZ::Vector3(1.0f, 0.0f, 0.0f));
         const AZ::Vector3 expected = AZ::Vector3(5.0f, 0.0f, -1.0f);
 
-        EXPECT_THAT(result, expected);
+        EXPECT_THAT(result, IsClose(expected));
     }
 
     TEST(MATH_Matrix3x4, CreateScale)
@@ -729,11 +729,7 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(MATH_Matrix3x4, Matrix3x4InvertFullFixture, ::testing::ValuesIn(MathTestData::NonOrthogonalMatrix3x4s));
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_Matrix3x4, DISABLED_GetInverseFullSingularMatrix)
-#else
     TEST(MATH_Matrix3x4, GetInverseFullSingularMatrix)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromValue(1.4f);
         const AZ::Matrix3x4 inverse = matrix.GetInverseFull();
@@ -741,6 +737,21 @@ namespace UnitTest
         EXPECT_THAT(inverse.GetBasisY(), IsClose(AZ::Vector3::CreateAxisY()));
         EXPECT_THAT(inverse.GetBasisZ(), IsClose(AZ::Vector3::CreateAxisZ()));
         EXPECT_THAT(inverse.GetTranslation(), IsClose(AZ::Vector3(-1.4f)));
+    }
+
+    TEST(MATH_Matrix3x4, GetInverseFullSmallDeterminant)
+    {
+        // This is a regression test for a specific case that was broken by some changes to Matrix3x4::GetInverseFull()
+
+        const AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromRows(
+            AZ::Vector4(-0.0162572227f, 6.21248771e-17f, 1.42125156e-09f, 0.0f),
+            AZ::Vector4(1.42125156e-09f, 7.10625780e-10f, 0.0162572227f, 0.0f),
+            AZ::Vector4(0.0f, 0.0162572227f, -7.10625780e-10f, 0.0f)
+        );
+        const AZ::Matrix3x4 inverse = matrix.GetInverseFull();
+        EXPECT_THAT(inverse.GetRow(0), IsClose(AZ::Vector4(-61.5111237f, 5.37747292e-06f, 0.0f, 0.0f)));
+        EXPECT_THAT(inverse.GetRow(1), IsClose(AZ::Vector4(2.35056820e-13f, 2.68873646e-06f, 61.5111237f, 0.0f)));
+        EXPECT_THAT(inverse.GetRow(2), IsClose(AZ::Vector4(5.37747292e-06f, 61.5111237f, -2.68873646e-06f, 0.0f)));
     }
 
     using Matrix3x4InvertFastFixture = ::testing::TestWithParam<AZ::Matrix3x4>;
@@ -999,25 +1010,33 @@ namespace UnitTest
         EXPECT_NEAR(matrix2.GetTranspose3x3().GetDeterminant3x3(), expected2, 1e-3f);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
-    TEST(MATH_Matrix3x4, DISABLED_IsFinite)
-#else
     TEST(MATH_Matrix3x4, IsFinite)
-#endif // AZ_TRAIT_DISABLE_FAILED_MATH_TESTS
     {
         AZ::Matrix3x4 matrix = AZ::Matrix3x4::CreateFromQuaternionAndTranslation(
             AZ::Quaternion(-0.42f, -0.46f, 0.66f, 0.42f),
             AZ::Vector3(0.8f, -2.3f, 2.2f)
         );
         EXPECT_TRUE(matrix.IsFinite());
+
+        const float f32NaN = NAN;
+        EXPECT_TRUE(AZStd::isnan(f32NaN));
+        EXPECT_FALSE(AZ::IsFiniteFloat(f32NaN));
+
+        const float f32Inf = INFINITY;
+        EXPECT_TRUE(AZStd::isinf(f32Inf));
+        EXPECT_FALSE(AZ::IsFiniteFloat(f32Inf));
+
         for (int row = 0; row < 3; row++)
         {
             for (int col = 0; col < 3; col++)
             {
-                float value = matrix.GetElement(row, col);
-                matrix.SetElement(row, col, acosf(2.0f));
+                const float value = matrix.GetElement(row, col);
+                matrix.SetElement(row, col, f32NaN);
+                EXPECT_FALSE(matrix.IsFinite());
+                matrix.SetElement(row, col, f32Inf);
                 EXPECT_FALSE(matrix.IsFinite());
                 matrix.SetElement(row, col, value);
+                EXPECT_TRUE(matrix.IsFinite());
             }
         }
     }

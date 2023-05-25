@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    IAudioInterfacesCommonData.h
-    IAudioSystem.h
     ICmdLine.h
     IConsole.h
     IFont.h
@@ -19,21 +17,18 @@ set(FILES
     LocalizationManagerBus.h
     LocalizationManagerBus.inl
     ILog.h
-    IMaterial.h
     IMiniLog.h
+    IMovieSystem.cpp
     IMovieSystem.h
     IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
-    IShader.h
     ISplines.h
     ISystem.h
     ITexture.h
     IValidator.h
     IWindowMessageHandler.h
     IXml.h
-    MicrophoneBus.h
-    INavigationSystem.h
     IMNM.h
     SerializationTypes.h
     CryEndian.h
@@ -47,10 +42,10 @@ set(FILES
     CryListenerSet.h
     CryPath.h
     CrySystemBus.h
+    CrySystemBus.cpp
     CryVersion.h
     MiniQueue.h
     MultiThread_Containers.h
-    NullAudioSystem.h
     PNoise3.h
     ProjectDefines.h
     Range.h

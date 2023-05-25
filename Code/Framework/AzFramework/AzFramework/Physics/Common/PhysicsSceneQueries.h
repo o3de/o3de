@@ -71,12 +71,12 @@ namespace AzPhysics
             //! Performance hint flag for ShapeCasts when it is known upfront there's no initial overlap.
             //! NOTE: using this flag may cause undefined results if shapes are initially overlapping.
             AssumeNoInitialOverlap = (1 << 4),
-            MeshMultiple = (1 << 5), //!< Report all hits for meshes rather than just the first. Not applicable to ShapeCast queries.
+            AnyHit = (1 << 5), //!< Report any first hit. Used for geometries that contain more than one primitive. For meshes,
+                               //!< if neither MeshMultiple nor AnyHit is specified, a single closest hit will be reported.
+            MeshMultiple = (1 << 6), //!< Report all hits for meshes rather than just the first. Not applicable to ShapeCast queries.
             //! Report any first hit for meshes. If neither MeshMultiple nor MeshAny is specified,
             //! a single closest hit will be reported for meshes.
-            MeshAny = (1 << 6),
-            //! Report hits with back faces of mesh triangles. Also report hits for raycast
-            //! originating on mesh surface and facing away from the surface normal. Not applicable to ShapeCast queries.
+            MeshAny = AnyHit, //!< @deprecated Deprecated, please use AnyHit instead.
             MeshBothSides = (1 << 7),
             PreciseSweep = (1 << 8), //!< Use more accurate but slower narrow phase sweep tests.
             MTD = (1 << 9), //!< Report the minimum translation depth, normal and contact point.
@@ -132,23 +132,44 @@ namespace AzPhysics
     //! Not valid to be used with Scene::QueryScene functions
     struct SceneQueryRequest
     {
+        enum class RequestType : AZ::u8
+        {
+            Undefined = 0,
+            Raycast,
+            Shapecast,
+            Overlap
+        };
+
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(SceneQueryRequest, "{76ECAB7D-42BA-461F-82E6-DCED8E1BDCB9}");
+
+        explicit SceneQueryRequest(RequestType requestType)
+            : m_requestType(requestType)
+        {
+        }
+        SceneQueryRequest() = default;
         static void Reflect(AZ::ReflectContext* context);
         virtual ~SceneQueryRequest() = default;
 
-        AZ::u64 m_maxResults = 32; //!< The Maximum results for this request to return, this is limited by the value set in the SceneConfiguration
+        RequestType m_requestType = RequestType::Undefined;
+        AZ::u32 m_maxResults = 32; //!< The Maximum results for this request to return, this is limited by the value set in the SceneConfiguration
         CollisionGroup m_collisionGroup = CollisionGroup::All; //!< Collision filter for the query.
         SceneQuery::QueryType m_queryType = SceneQuery::QueryType::StaticAndDynamic; //!< Object types to include in the query
     };
     using SceneQueryRequests = AZStd::vector<AZStd::shared_ptr<SceneQueryRequest>>;
 
     //! Casts a ray from a starting pose along a direction returning objects that intersected with the ray.
-    struct RayCastRequest :
+    struct RayCastRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(RayCastRequest, "{53EAD088-A391-48F1-8370-2A1DBA31512F}", SceneQueryRequest);
+
+        RayCastRequest()
+            : SceneQueryRequest(RequestType::Raycast)
+        {
+        }
+
         static void Reflect(AZ::ReflectContext* context);
 
         float m_distance = 500.0f; //!< The distance to cast along the direction.
@@ -160,11 +181,16 @@ namespace AzPhysics
     };
 
     //! Sweeps a shape from a starting pose along a direction returning objects that intersected with the shape.
-    struct ShapeCastRequest :
+    struct ShapeCastRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(ShapeCastRequest, "{52F6C536-92F6-4C05-983D-0A74800AE56D}", SceneQueryRequest);
+
+        ShapeCastRequest()
+            : SceneQueryRequest(RequestType::Shapecast)
+        {
+        }
         static void Reflect(AZ::ReflectContext* context);
 
         float m_distance = 500.0f; //! The distance to cast along the direction.
@@ -202,11 +228,17 @@ namespace AzPhysics
     } // namespace ShapeCastRequestHelpers
 
     //! Searches a region enclosed by a specified shape for any overlapping objects in the scene.
-    struct OverlapRequest :
+    struct OverlapRequest final :
         public SceneQueryRequest
     {
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(OverlapRequest, "{3DC986C2-316B-4C54-A0A6-8ABBB8ABCC4A}", SceneQueryRequest);
+
+        OverlapRequest()
+            : SceneQueryRequest(RequestType::Overlap)
+        {
+        }
+
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Transform m_pose = AZ::Transform::CreateIdentity(); //!< Initial shape pose
@@ -237,8 +269,6 @@ namespace AzPhysics
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_TYPE_INFO(SceneQueryHit, "{7A7201B9-67B5-438B-B4EB-F3EEBB78C617}");
         static void Reflect(AZ::ReflectContext* context);
-
-        virtual ~SceneQueryHit() = default;
 
         explicit operator bool() const { return IsValid(); }
         bool IsValid() const { return m_resultFlags != SceneQuery::ResultFlags::Invalid; }

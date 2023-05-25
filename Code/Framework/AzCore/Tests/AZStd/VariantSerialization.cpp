@@ -25,9 +25,6 @@ namespace UnitTest
         {
             LeakDetectionFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             AZ::Entity::Reflect(m_serializeContext.get());
             
@@ -41,9 +38,6 @@ namespace UnitTest
 
             m_serializeContext.reset();
 
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
             LeakDetectionFixture::TearDown();
         }
 
@@ -55,7 +49,7 @@ namespace UnitTest
     struct VariantWrapper
     {
         AZ_TYPE_INFO(VariantWrapper, "{B086FD5B-1E6F-4CB1-9379-80C35DA3B430}");
-        AZ_CLASS_ALLOCATOR(VariantWrapper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariantWrapper, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context)
         {

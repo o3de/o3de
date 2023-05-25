@@ -24,20 +24,18 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew ComponentApplication);
-            m_app->Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app->Create(desc, startupParameters);
         }
 
         void TearDown() override
         {
             m_app->Destroy();
             m_app.reset();
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
             LeakDetectionFixture::TearDown();
         }
 

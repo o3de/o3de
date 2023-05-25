@@ -21,6 +21,8 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadNotificationBus.h>
 
+DECLARE_EBUS_INSTANTIATION(RPI::ShaderVariantFinderNotification);
+
 namespace AZ
 {
     namespace RPI
@@ -95,13 +97,12 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderAsset>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("name", &ShaderAsset::m_name)
                     ->Field("pipelineStateType", &ShaderAsset::m_pipelineStateType)
                     ->Field("shaderOptionGroupLayout", &ShaderAsset::m_shaderOptionGroupLayout)
                     ->Field("defaultShaderOptionValueOverrides", &ShaderAsset::m_defaultShaderOptionValueOverrides)
                     ->Field("drawListName", &ShaderAsset::m_drawListName)
-                    ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_buildTimestamp)
                     ->Field("perAPIShaderData", &ShaderAsset::m_perAPIShaderData)
                     ;
             }
@@ -143,11 +144,6 @@ namespace AZ
             return m_drawListName;
         }
 
-        AZStd::sys_time_t ShaderAsset::GetBuildTimestamp() const
-        {
-            return m_buildTimestamp;
-        }
-        
         void ShaderAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
@@ -176,6 +172,17 @@ namespace AZ
             }
 
             return supervariantIndex;
+        }
+
+        const AZ::Name& ShaderAsset::GetSupervariantName(SupervariantIndex supervariantIndex) const
+        {
+            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            if (supervariantIndex.GetIndex() >= supervariants.size())
+            {
+                // Index 0 always exists, because the default supervariant always exists.
+                return supervariants[0].m_name;
+            }
+            return supervariants[supervariantIndex.GetIndex()].m_name;
         }
 
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariantAsset(
@@ -260,20 +267,11 @@ namespace AZ
                 }
                 if (variantTreeAssetId.IsValid())
                 {
-                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId, supervariantIndex);
+                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId, GetSupervariantName(supervariantIndex));
                 }
                 return GetRootVariantAsset(supervariantIndex);
             }
-            else if (variant->GetBuildTimestamp() >= m_buildTimestamp)
-            {
-                return variant;
-            }
-            else
-            {
-                // When rebuilding shaders we may be in a state where the ShaderAsset and root ShaderVariantAsset have been rebuilt and reloaded, but some (or all)
-                // shader variants haven't been built yet. Since we want to use the latest version of the shader code, ignore the old variants and fall back to the newer root variant instead.
-                return GetRootVariantAsset(supervariantIndex);
-            }
+            return variant;
         }
 
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetRootVariantAsset(SupervariantIndex supervariantIndex) const
@@ -583,12 +581,6 @@ namespace AZ
             return true;
         }
 
-
-        void ShaderAsset::UpdateRootShaderVariantAsset(SupervariantIndex supervariantIndex, Data::Asset<ShaderVariantAsset> newRootVariant)
-        {
-            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = newRootVariant;
-        }
-        
         ///////////////////////////////////////////////////////////////////
         /// ShaderVariantFinderNotificationBus overrides
         void ShaderAsset::OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> shaderVariantTreeAsset, bool isError)

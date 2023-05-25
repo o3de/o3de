@@ -21,4 +21,6 @@ set(FILES
     Include/${Name}.h
     Source/${Name}.ScriptCanvasNodeable.xml
     Source/${Name}.cpp
+
+    Source/AutoGen/ScriptCanvasNodeable.xsd
 )

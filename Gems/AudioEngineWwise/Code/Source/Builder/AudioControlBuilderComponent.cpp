@@ -6,7 +6,7 @@
  *
  */
 
-#include <Builder/AudioControlBuilderComponent.h>
+#include <AudioControlBuilderComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>

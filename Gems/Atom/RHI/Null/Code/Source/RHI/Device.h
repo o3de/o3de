@@ -19,7 +19,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "{F2AAE1EA-6B35-4870-9C73-8CD7EDC149A8}", Base);
 
             static RHI::Ptr<Device> Create();
@@ -43,7 +43,7 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const RHI::ImageDescriptor& descriptor) override { return RHI::ResourceMemoryRequirements();}
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const RHI::BufferDescriptor& descriptor) override { return RHI::ResourceMemoryRequirements();}
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
-            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

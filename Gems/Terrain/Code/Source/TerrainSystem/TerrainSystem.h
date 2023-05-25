@@ -297,9 +297,8 @@ namespace Terrain
         TerrainSystemSettings m_currentSettings;
         TerrainSystemSettings m_requestedSettings;
 
-        bool m_terrainSettingsDirty = true;
-        bool m_terrainHeightDirty = false;
-        bool m_terrainSurfacesDirty = false;
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask m_terrainDirtyMask =
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings;
         AZ::Aabb m_dirtyRegion;
         AZ::Aabb m_cachedAreaBounds;
 

@@ -21,6 +21,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(LookModificationComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::LookModificationComponentConfig, "{604D14B8-6374-4FE0-8F31-03A37B238429}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

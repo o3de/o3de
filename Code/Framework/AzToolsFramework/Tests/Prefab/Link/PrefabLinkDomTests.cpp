@@ -61,7 +61,7 @@ namespace UnitTest
 
         PrefabDom patchesCopy;
         patchesCopy.Parse(patchesValue.data());
-        m_link->AddPatchesToLink(patchesCopy);
+        m_link->SetLinkPatches(patchesCopy);
         newLinkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), AZStd::move(patchesCopy), newLinkDom.GetAllocator());
 
         // Get the link DOM and verify that it matches the DOM used for AddPatchesToLink().

@@ -169,9 +169,12 @@ private Q_SLOTS:
     void toggleConsoleSearch();
     void findPrevious();
     void findNext();
+    void toggleClearOnPlay();
 
 private:
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
+    void SetupOptionsMenu();
+    void UpdateOptionsMenu();
 
     QScopedPointer<Ui::Console> ui;
 
@@ -183,6 +186,9 @@ private:
 
     class SearchHighlighter;
     SearchHighlighter* m_highlighter;
+
+    QMenu* m_optionsMenu;
+    QAction* m_clearOnPlayAction;
 };
 
 #endif // CRYINCLUDE_EDITOR_CONTROLS_CONSOLESCB_H

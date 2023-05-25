@@ -16,7 +16,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(BaseSettings, "{3202E013-46EC-4E97-989A-84934CA15C59}");
-        AZ_CLASS_ALLOCATOR(BaseSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseSettings, AZ::SystemAllocator);
 
         BaseSettings()
             : m_projectName("")

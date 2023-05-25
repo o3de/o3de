@@ -18,10 +18,9 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<PhysX::EditorMaterialAsset, AZ::Data::AssetData>()
-                ->Version(2)
+                ->Version(3)
                 ->Attribute(AZ::Edit::Attributes::EnableForAssetEditor, true)
                 ->Field("MaterialConfiguration", &EditorMaterialAsset::m_materialConfiguration)
-                ->Field("LegacyPhysicsMaterialId", &EditorMaterialAsset::m_legacyPhysicsMaterialId)
                 ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -40,10 +39,5 @@ namespace PhysX
     const MaterialConfiguration& EditorMaterialAsset::GetMaterialConfiguration() const
     {
         return m_materialConfiguration;
-    }
-
-    PhysicsLegacy::MaterialId EditorMaterialAsset::GetLegacyPhysicsMaterialId() const
-    {
-        return m_legacyPhysicsMaterialId;
     }
 } // namespace PhysX

@@ -26,7 +26,7 @@ namespace LUAEditor
     public:
         class StateMachine;
 
-        AZ_CLASS_ALLOCATOR(LUASyntaxHighlighter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUASyntaxHighlighter, AZ::SystemAllocator);
         LUASyntaxHighlighter(QWidget* parent);
         LUASyntaxHighlighter(QTextDocument* parent);
         ~LUASyntaxHighlighter();

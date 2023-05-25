@@ -25,9 +25,9 @@ namespace AZ
             return aznew PipelineState;
         }
 
-        const PipelineLayout& PipelineState::GetPipelineLayout() const
+        const PipelineLayout* PipelineState::GetPipelineLayout() const
         {
-            return *m_pipelineLayout;
+            return m_pipelineLayout.get();
         }
 
         id<MTLRenderPipelineState> PipelineState::GetGraphicsPipelineState() const

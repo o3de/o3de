@@ -8,6 +8,10 @@
 #include <AWSClientAuthModule.h>
 #include <AWSClientAuthSystemComponent.h>
 
+#if AWSCLIENTAUTH_EDITOR
+#include <AWSClientAuthEditorSystemComponent.h>
+#endif
+
 namespace AWSClientAuth
 {
 
@@ -16,7 +20,11 @@ namespace AWSClientAuth
     {
         // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
         m_descriptors.insert(m_descriptors.end(), {
-            AWSClientAuthSystemComponent::CreateDescriptor()
+#if defined(AWSCLIENTAUTH_EDITOR)
+                        AWSClientAuthEditorSystemComponent::CreateDescriptor()
+#else
+                        AWSClientAuthSystemComponent::CreateDescriptor()
+#endif
         });
     }
 
@@ -26,7 +34,11 @@ namespace AWSClientAuth
     AZ::ComponentTypeList AWSClientAuthModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList{
+#if defined(AWSCLIENTAUTH_EDITOR)
+            azrtti_typeid<AWSClientAuthEditorSystemComponent>(),
+#else
             azrtti_typeid<AWSClientAuthSystemComponent>(),
+#endif
         };
     }
 

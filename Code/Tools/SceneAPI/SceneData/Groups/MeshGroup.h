@@ -34,7 +34,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(MeshGroup, "{07B356B7-3635-40B5-878A-FAC4EFD5AD86}", DataTypes::IMeshGroup);
-                AZ_CLASS_ALLOCATOR(MeshGroup, SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(MeshGroup, SystemAllocator);
 
                 SCENE_DATA_API MeshGroup();
                 SCENE_DATA_API ~MeshGroup() override = default;

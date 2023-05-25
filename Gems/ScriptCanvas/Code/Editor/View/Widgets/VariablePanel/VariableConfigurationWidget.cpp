@@ -63,7 +63,6 @@ namespace ScriptCanvasEditor
         , const VariablePaletteRequests::VariableConfigurationInput& input
         , QWidget* parent)
         : AzQtComponents::StyledDialog(parent)
-        , m_manipulatingSelection(false)
         , ui(new Ui::VariableConfigurationWidget())
         , m_scriptCanvasId(scriptCanvasId)
         , m_input(input)

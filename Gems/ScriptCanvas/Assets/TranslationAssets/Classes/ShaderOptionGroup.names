@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetValueByOptionName",
-                    "context": "ShaderOptionGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetValueByOptionName"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "GetShaderOptionDescriptors",
-                    "context": "ShaderOptionGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaderOptionDescriptors"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "GetShaderVariantId",
-                    "context": "ShaderOptionGroup",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetShaderVariantId"

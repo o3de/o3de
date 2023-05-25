@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
 #include <LyViewPaneNames.h>
 
@@ -215,13 +216,30 @@ namespace LandscapeCanvas
 
         // Register factory methods for creating for all supported nodes
         LANDSCAPE_CANVAS_NODE_TABLE(RegisterFactoryMethod);
+
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     LandscapeCanvasSystemComponent::~LandscapeCanvasSystemComponent()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         LandscapeCanvas::GraphContext::SetInstance(nullptr);
         AzToolsFramework::CloseViewPane(LyViewPane::LandscapeCanvas);
         AzToolsFramework::UnregisterViewPane(LyViewPane::LandscapeCanvas);
+    }
+
+    void LandscapeCanvasSystemComponent::OnActionContextRegistrationHook()
+    {
+        static constexpr AZStd::string_view LandscapeCanvasActionContextIdentifier = "o3de.context.editor.landscapecanvas";
+
+        if (auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
+        {
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Landscape Canvas";
+
+            // Register a custom action context to allow duplicated shortcut hotkeys to work
+            actionManagerInterface->RegisterActionContext(LandscapeCanvasActionContextIdentifier, contextProperties);
+        }
     }
 
     void LandscapeCanvasSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -249,7 +267,6 @@ namespace LandscapeCanvas
             {
                 ec->Class<LandscapeCanvasSystemComponent>("LandscapeCanvas", "Graph canvas representation of Dynamic Vegetation")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

@@ -25,7 +25,7 @@ namespace AZ
         {
             using Base = RHI::AliasedHeap;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
             AZ_RTTI(AliasedHeap, "{8C5D201E-2124-4DF3-B645-AF7E699EFD8B}", Base);
 
             static RHI::Ptr<AliasedHeap> Create();
@@ -33,6 +33,7 @@ namespace AZ
             struct Descriptor
                 : public RHI::AliasedHeapDescriptor
             {
+                AZ_CLASS_ALLOCATOR(Descriptor, SystemAllocator)
                 uint32_t m_memoryTypeMask = 0;
                 VkMemoryPropertyFlags m_memoryFlags = 0;
             };            

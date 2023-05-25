@@ -823,7 +823,11 @@ ScriptContextDebug::StepOut()
         }
         else
         {
-            m_stepStackLevel = 0;
+            // -1 forces to exit the current function at the top of the callstack.
+            // This is important, because if set to 0, StepOut would behave like a
+            // StepOver event and that's not the right user experience when using
+            // debuggers.
+            m_stepStackLevel = -1; 
         }
     }
     else

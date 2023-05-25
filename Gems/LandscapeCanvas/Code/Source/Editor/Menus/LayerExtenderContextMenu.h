@@ -19,7 +19,7 @@ namespace LandscapeCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(LayerExtenderContextMenu, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LayerExtenderContextMenu, AZ::SystemAllocator);
 
         LayerExtenderContextMenu(const GraphCanvas::NodePaletteConfig& nodePaletteConfig, QWidget* parent = nullptr);
 

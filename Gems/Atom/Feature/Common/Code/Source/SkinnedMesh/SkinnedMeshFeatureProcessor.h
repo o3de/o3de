@@ -35,6 +35,7 @@ namespace AZ
         {
             friend class SkinnedMeshStatsCollector;
         public:
+            AZ_CLASS_ALLOCATOR(SkinnedMeshFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::SkinnedMeshFeatureProcessor, "{D1F44963-913F-4210-92E1-945FA306BED4}", AZ::Render::SkinnedMeshFeatureProcessorInterface);
             AZ_FEATURE_PROCESSOR(SkinnedMeshFeatureProcessor);

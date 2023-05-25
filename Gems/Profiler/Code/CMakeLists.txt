@@ -61,4 +61,5 @@ ly_add_target(
 )
 
 ly_create_alias(NAME Profiler.Clients NAMESPACE Gem TARGETS Gem::ProfilerImGui)
+ly_create_alias(NAME Profiler.Unified NAMESPACE Gem TARGETS Gem::ProfilerImGui)
 ly_create_alias(NAME Profiler.Tools NAMESPACE Gem TARGETS Gem::ProfilerImGui)

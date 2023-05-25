@@ -23,6 +23,7 @@ namespace ScriptCanvas::Nodeables::Spawning
     {
         SCRIPTCANVAS_NODE(CreateSpawnTicketNodeable);
     public:
+        AZ_CLASS_ALLOCATOR(CreateSpawnTicketNodeable, AZ::SystemAllocator)
         CreateSpawnTicketNodeable() = default;
         CreateSpawnTicketNodeable(const CreateSpawnTicketNodeable& rhs);
         CreateSpawnTicketNodeable& operator=(const CreateSpawnTicketNodeable& rhs);

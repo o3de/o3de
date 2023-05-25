@@ -42,7 +42,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(MorphTargetInputBuffers, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MorphTargetInputBuffers, AZ::SystemAllocator);
             MorphTargetInputBuffers(const RPI::BufferAssetView& bufferAssetView, const AZStd::string& bufferNamePrefix);
 
             //! Set the buffer views and vertex count on the given SRG

@@ -37,6 +37,7 @@ namespace UnitTest
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle));
         MOCK_METHOD2(QueryScene, AzPhysics::SceneQueryHits(AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequest*));
+        MOCK_METHOD3(QueryScene, bool(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits&));
         MOCK_METHOD4(QuerySceneAsync, bool(AzPhysics::SceneHandle, AzPhysics::SceneQuery::AsyncRequestId, const AzPhysics::
             SceneQueryRequest*, AzPhysics::SceneQuery::AsyncCallback));
         MOCK_METHOD4(QuerySceneAsyncBatch, bool(AzPhysics::SceneHandle, AzPhysics::SceneQuery::AsyncRequestId, const AzPhysics::

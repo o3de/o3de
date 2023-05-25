@@ -138,8 +138,8 @@ namespace AZ
             image.SetAttachmentState(D3D12_RESOURCE_STATE_COMMON);
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_reservedInBytes += allocationInfo.SizeInBytes;
-            memoryUsage.m_residentInBytes += allocationInfo.SizeInBytes;
+            memoryUsage.m_totalResidentInBytes += allocationInfo.SizeInBytes;
+            memoryUsage.m_usedResidentInBytes += allocationInfo.SizeInBytes;
 
             return RHI::ResultCode::Success;
         }
@@ -151,8 +151,8 @@ namespace AZ
             const size_t sizeInBytes = image.GetMemoryView().GetSize();
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_reservedInBytes -= sizeInBytes;
-            memoryUsage.m_residentInBytes -= sizeInBytes;
+            memoryUsage.m_totalResidentInBytes -= sizeInBytes;
+            memoryUsage.m_usedResidentInBytes -= sizeInBytes;
 
             GetDevice().QueueForRelease(image.m_memoryView);
 

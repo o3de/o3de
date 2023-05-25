@@ -20,7 +20,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SkeletonGroup, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SkeletonGroup, SystemAllocator);
 
             SkeletonGroup::SkeletonGroup()
                 : m_id(Uuid::CreateRandom())

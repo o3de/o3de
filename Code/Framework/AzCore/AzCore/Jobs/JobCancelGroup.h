@@ -30,7 +30,7 @@ namespace AZ
     class JobCancelGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobCancelGroup, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(JobCancelGroup, ThreadPoolAllocator);
 
         /**
          * Creates a group with no parent.

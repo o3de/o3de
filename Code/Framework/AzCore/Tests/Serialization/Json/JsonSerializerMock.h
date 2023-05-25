@@ -17,7 +17,7 @@ namespace JsonSerializationTests
         : public AZ::BaseJsonSerializer
     {
     public:
-        AZ_CLASS_ALLOCATOR(JsonSerializerMock, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(JsonSerializerMock, AZ::SystemAllocator);
         AZ_RTTI(JsonSerializerMock, "{9FC48652-A00B-4EFA-8FD9-345A8E625439}", BaseJsonSerializer);
 
         ~JsonSerializerMock() override = default;

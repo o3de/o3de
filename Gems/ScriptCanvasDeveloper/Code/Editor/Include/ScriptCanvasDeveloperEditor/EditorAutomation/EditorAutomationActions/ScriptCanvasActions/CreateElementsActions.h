@@ -24,7 +24,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNodeFromPaletteAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeFromPaletteAction, AZ::SystemAllocator);
         AZ_RTTI(CreateNodeFromPaletteAction, "{5711220C-48D6-4853-87B9-A9866B82DFCD}", CompoundAction);
 
         CreateNodeFromPaletteAction(GraphCanvas::NodePaletteWidget* paletteWidget, GraphCanvas::GraphId graphId, QString nodeName, QPointF scenePoint);
@@ -73,7 +73,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateCategoryFromNodePaletteAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateCategoryFromNodePaletteAction, AZ::SystemAllocator);
         AZ_RTTI(CreateCategoryFromNodePaletteAction, "{FA073F04-5DE2-4124-9BAB-7507FFD046CD}", CompoundAction);
 
         CreateCategoryFromNodePaletteAction(GraphCanvas::NodePaletteWidget* nodePalette, GraphCanvas::GraphId graphId, QString category, QPointF scenePoint);
@@ -118,7 +118,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNodeFromContextMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeFromContextMenuAction, AZ::SystemAllocator);
         AZ_RTTI(CreateNodeFromContextMenuAction, "{0318F9D3-6433-400F-9E29-41B57A8ADB32}", CompoundAction);
 
         CreateNodeFromContextMenuAction(GraphCanvas::GraphId graphId, QString nodeName, QPointF scenePoint);
@@ -165,7 +165,7 @@ namespace ScriptCanvas::Developer
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNodeFromProposalAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeFromProposalAction, AZ::SystemAllocator);
         AZ_RTTI(CreateNodeFromProposalAction, "{236A56E5-73A8-42B0-9239-77670DD4EA44}", CompoundAction);
 
         CreateNodeFromProposalAction(GraphCanvas::GraphId graphId, GraphCanvas::Endpoint endpoint, QString nodeName);
@@ -216,7 +216,7 @@ namespace ScriptCanvas::Developer
             Hotkey
         };
 
-        AZ_CLASS_ALLOCATOR(CreateGroupAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateGroupAction, AZ::SystemAllocator);
         AZ_RTTI(CreateGroupAction, "{853F34EB-F8AB-47E3-A601-35091DC23E11}", CompoundAction);
 
         CreateGroupAction(GraphCanvas::EditorId editorGraph, GraphCanvas::GraphId graphId, CreationType creationType = CreationType::Hotkey);

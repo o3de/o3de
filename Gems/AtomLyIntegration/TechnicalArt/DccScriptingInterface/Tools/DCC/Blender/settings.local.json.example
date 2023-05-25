@@ -3,11 +3,6 @@
 	"DCCSI_GDEBUG": "False",
 	"DCCSI_DEV_MODE": "False",
 	"DCCSI_LOGLEVEL": 20,
-	"DCCSI_BLENDER_VERSION": "3.3",
-	"PATH_DCCSI_BLENDER_LOCATION": "C:\\Program Files\\Blender Foundation\\Blender 3.3",
-	"PATH_DCCSI_BLENDER_BOOTSTRAP": "C:/depot/o3de-dev/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/DCC/Blender/Scripts/bootstrap.py",
-	"DEFAULT_SETTINGS_PATHS": [
-		"settings.json"
-	]
+	"DCCSI_BLENDER_VERSION": "3.5"
 }
 

@@ -38,7 +38,7 @@ namespace EMStudio
     {
     public:
         AZ_RTTI(BlendGraphMimeEvent, "{AA7C8960-C7BA-4F26-B52B-97CF4AC3CB39}", GraphCanvas::GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(BlendGraphMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlendGraphMimeEvent, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         BlendGraphMimeEvent() = default;
@@ -59,6 +59,7 @@ namespace EMStudio
     class BlendGraphNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
+        AZ_CLASS_ALLOCATOR(BlendGraphNodePaletteTreeItem, AZ::SystemAllocator)
         BlendGraphNodePaletteTreeItem(
             const AZStd::string_view name, const QString& typeString, GraphCanvas::EditorId editorId, const AZ::Color& color);
         BlendGraphMimeEvent* CreateMimeEvent() const override;

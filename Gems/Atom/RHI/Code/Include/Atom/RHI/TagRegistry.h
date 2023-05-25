@@ -34,7 +34,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(TagRegistry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TagRegistry, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(TagRegistry);
 
             template<typename>

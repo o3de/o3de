@@ -18,6 +18,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+
 namespace AZ
 {
     namespace DX12
@@ -246,15 +247,15 @@ namespace AZ
             auto dxcArguments = shaderBuildArguments.m_dxcArguments;
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
-                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-Zi", "-Zss" });
+                RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-Zi", "-Zss", "-Od" });
             }
 
-            unsigned char md5[RHI::Md5NumBytes];
+            unsigned char sha1[RHI::Sha1NumBytes];
             RHI::PrependArguments args;
             args.m_sourceFile = shaderSourceFile.c_str();
             args.m_prependFile = PlatformShaderHeader;
             args.m_destinationFolder = tempFolder.c_str();
-            args.m_digest = &md5;
+            args.m_digest = &sha1;
 
             const auto dxcInputFile = RHI::PrependFile(args);  // Prepend PAL header & obtain hash
             // -Fd "Write debug information to the given file, or automatically named file in directory when ending in '\\'"
@@ -264,9 +265,9 @@ namespace AZ
             if (graphicsDevMode || shaderBuildArguments.m_generateDebugInfo)
             {
                 // prepare .pdb filename:
-                AZStd::string md5hex = RHI::ByteToHexString(md5);
+                AZStd::string sha1hex = RHI::ByteToHexString(sha1);
                 AZStd::string symbolDatabaseFilePath = dxcInputFile.c_str();  // mutate from source
-                AZStd::string pdbFileName = md5hex + "-" + profileIt->second;   // concatenate the shader profile to disambiguate vs/ps...
+                AZStd::string pdbFileName = sha1hex + "-" + profileIt->second; // concatenate the shader profile to disambiguate vs/ps...
                 AzFramework::StringFunc::Path::ReplaceFullName(symbolDatabaseFilePath, pdbFileName.c_str(), "pdb");
                 // it is possible that another activated platform/profile, already exported that file. (since it's hashed on the source file)
                 // dxc returns an error in such case. we get less surprising effets by just not mentionning an -Fd argument

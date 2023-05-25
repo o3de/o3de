@@ -11,13 +11,12 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include <AWSGameLiftClientLocalTicketTracker.h>
+#include <AWSGameLiftClientManager.h>
 #include <Request/IAWSGameLiftInternalRequests.h>
 
 namespace AWSGameLift
 {
-    class AWSGameLiftClientManager;
-    class AWSGameLiftClientLocalTicketTracker;
-
     //! Gem client system component. Responsible for creating the gamelift client manager.
     class AWSGameLiftClientSystemComponent
         : public AZ::Component

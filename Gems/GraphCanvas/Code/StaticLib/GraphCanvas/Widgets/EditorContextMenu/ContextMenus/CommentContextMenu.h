@@ -20,6 +20,7 @@ namespace GraphCanvas
         : public EditorContextMenu
     {
     public:
+        AZ_CLASS_ALLOCATOR(CommentContextMenu, AZ::SystemAllocator)
         CommentContextMenu(EditorId editorId, QWidget* parent = nullptr);
         ~CommentContextMenu() override = default;
         

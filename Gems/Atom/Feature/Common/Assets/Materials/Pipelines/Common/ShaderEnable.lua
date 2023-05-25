@@ -91,9 +91,13 @@ function Process(context)
         Error("Material configuration conflict: isTransparent and isTintedTransparent are both true")
         TrySetShaderEnabled(context, "transparent", false)
         TrySetShaderEnabled(context, "tintedTransparent", false)
+        TrySetShaderEnabled(context, "depthPassTransparentMin", false)
+        TrySetShaderEnabled(context, "depthPassTransparentMax", false)
     else
         TrySetShaderEnabled(context, "transparent", isTransparent)
         TrySetShaderEnabled(context, "tintedTransparent", isTintedTransparent)
+        TrySetShaderEnabled(context, "depthPassTransparentMin", isTransparent or isTintedTransparent)
+        TrySetShaderEnabled(context, "depthPassTransparentMax", isTransparent or isTintedTransparent)
     end
 
 end

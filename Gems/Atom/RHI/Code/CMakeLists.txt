@@ -111,7 +111,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                     AZ::AzToolsFramework
                     AZ::AtomCore
                     Gem::Atom_RHI.Public
-                    3rdParty::md5
         )
     endif()
 endif()
@@ -141,6 +140,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::Atom_RHI.Tests
+            LABELS REQUIRES_tiaf
         )
 
         ly_add_target_files(

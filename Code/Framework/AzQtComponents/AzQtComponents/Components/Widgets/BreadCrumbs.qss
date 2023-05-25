@@ -26,8 +26,8 @@ AzQtComponents--BreadCrumbs #MenuButton
 AzQtComponents--BreadCrumbs QLineEdit
 {
     border: 0px;
-    background: transparent;
-    color: white;
+    background: white;
+    color: black;
 }
 
 AzQtComponents--BreadCrumbs[editable="true"]

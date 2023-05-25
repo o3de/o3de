@@ -10,7 +10,6 @@
 
 #include <Tests/SystemComponentFixture.h>
 
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -62,7 +61,6 @@ namespace EMotionFX
     };
 
     using UIFixtureBase = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

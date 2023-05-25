@@ -61,7 +61,6 @@ ly_add_target(
             Gem::AtomLyIntegration_CommonFeatures.Static
     RUNTIME_DEPENDENCIES
         Gem::Atom_RPI.Private
-        Gem::Atom_Feature_Common
 )
 
 # The AtomLyIntegration_CommonFeatures module is used for Clients and Servers
@@ -74,6 +73,26 @@ ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Servers NAMESPACE Gem
     TARGETS
         Gem::AtomLyIntegration_CommonFeatures
         Gem::GradientSignal.Servers
+)
+ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Unified NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::GradientSignal.Unified
+)
+
+# Add aliases that references the real name of the gem "CommonFeaturesAtom"
+# that reference the names Gem variants of "AtomLyIntegration_CommonFeatures"
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures.Clients
+)
+ly_create_alias(NAME ${gem_name}.Servers NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures.Servers
+)
+ly_create_alias(NAME ${gem_name}.Unified NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures.Unified
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -130,9 +149,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::AtomLyIntegration_CommonFeatures.Editor.Static
         RUNTIME_DEPENDENCIES
-            Gem::Atom_RPI.Editor
-            Gem::Atom_Feature_Common.Editor
-            Gem::AtomToolsFramework.Editor
             Legacy::EditorCommon
     )
 
@@ -148,6 +164,17 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         TARGETS
             Gem::AtomLyIntegration_CommonFeatures.Editor
             Gem::GradientSignal.Tools
+    )
+
+    # Add aliases that references the real name of the gem "CommonFeaturesAtom"
+    # Tools and Builders variants
+    ly_create_alias(NAME ${gem_name}.Builders NAMESPACE Gem
+        TARGETS
+            Gem::AtomLyIntegration_CommonFeatures.Builders
+    )
+    ly_create_alias(NAME ${gem_name}.Tools NAMESPACE Gem
+        TARGETS
+            Gem::AtomLyIntegration_CommonFeatures.Tools
     )
 
     ################################################################################
@@ -176,6 +203,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         )
         ly_add_googletest(
             NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()
@@ -184,4 +212,3 @@ endif()
 # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
 # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
 # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures)

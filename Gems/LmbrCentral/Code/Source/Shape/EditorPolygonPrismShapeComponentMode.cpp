@@ -18,7 +18,12 @@
 
 namespace LmbrCentral
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorPolygonPrismShapeComponentMode, AZ::SystemAllocator)
+
+    void EditorPolygonPrismShapeComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorPolygonPrismShapeComponentMode>(context);
+    }
 
     /// Util to calculate central position of prism (to draw the height manipulator)
     static AZ::Vector3 CalculateHeightManipulatorPosition(const AZ::PolygonPrism& polygonPrism)

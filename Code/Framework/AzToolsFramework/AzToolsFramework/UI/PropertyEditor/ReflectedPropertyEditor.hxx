@@ -37,6 +37,9 @@ namespace AzToolsFramework
     class PropertyRowWidget;
     class ComponentEditor;
 
+    class ReflectedPropertyEditor;
+    AZ_TYPE_INFO_SPECIALIZE(ReflectedPropertyEditor, "{F5B220A4-16DF-4E03-B0B2-CF776D59B9B7}");
+
     /**
      * the Reflected Property Editor is a Qt Control which you can place inside a GUI, which you then feed
      * a series of object(s) and instances.  Any object or instance with Editor reflection will then be editable
@@ -49,7 +52,8 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditor, AZ::SystemAllocator);
 
         typedef AZStd::unordered_map<InstanceDataNode*, PropertyRowWidget*> WidgetList;
 

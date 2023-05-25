@@ -105,7 +105,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
     from Atom.atom_utils.atom_component_helper import (
         initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
 
-    from Atom.atom_utils.screenshot_utils import (FOLDER_PATH, screenshot_compare_result_code_to_string)
+    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -250,30 +250,31 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
 
         # 18. Compare the screenshots to golden images.
         for screenshot_name, screenshot_threshold in screenshot_thresholds.items():
-            image_diff_result = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
+            image_diff_outcome = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
             screenshot_compare_execution = (
                     f"Screenshot {screenshot_name} comparison succeeded.",
-                    f"Screenshot {screenshot_name} comparison failed due to "
-                    + f"{screenshot_compare_result_code_to_string(image_diff_result.result_code)}.");
+                    f"Screenshot {screenshot_name} comparison failed.");
             Report.result(
                 screenshot_compare_execution,
-                image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success
+                image_diff_outcome.IsSuccess()
             )
 
-            if image_diff_result.result_code == azlmbr.utils.ImageDiffResultCode_Success:
+            if not image_diff_outcome.IsSuccess():
+                Report.info(f"Error: {image_diff_outcome.GetError().error_message}")
+            else:
                 screenshot_compare_result = (
                         "{0} diff score {1} under threshold {2}.".format(
                             screenshot_name,
-                            image_diff_result.diff_score,
+                            image_diff_outcome.GetValue().diff_score,
                             screenshot_threshold),
                         "{0} diff score {1} over threshold {2}.".format(
                             screenshot_name,
-                            image_diff_result.diff_score,
+                            image_diff_outcome.GetValue().diff_score,
                             screenshot_threshold)
                         )
                 Report.result(
                     screenshot_compare_result,
-                    image_diff_result.diff_score < screenshot_threshold)
+                    image_diff_outcome.GetValue().diff_score < screenshot_threshold)
 
         # 19. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)

@@ -29,7 +29,7 @@ namespace AZ
             , public ShaderReloadNotificationBus::MultiHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineStateForDraw, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineStateForDraw, SystemAllocator);
 
             PipelineStateForDraw();
             PipelineStateForDraw(const PipelineStateForDraw& right);

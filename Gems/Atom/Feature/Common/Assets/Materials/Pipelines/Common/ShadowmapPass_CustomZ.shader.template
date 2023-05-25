@@ -11,6 +11,8 @@
         "depthBias": "10",
         "depthBiasSlopeScale": "4"
     },
+    
+    "Definitions" : ["SHADOWMAP=1"],
 
     "ProgramSettings": {
         "EntryPoints": [

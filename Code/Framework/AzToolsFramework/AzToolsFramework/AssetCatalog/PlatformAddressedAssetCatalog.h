@@ -30,7 +30,7 @@ namespace AzToolsFramework
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalog, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalog, AZ::SystemAllocator)
 
         explicit PlatformAddressedAssetCatalog(AzFramework::PlatformId platformId, bool directConnections = false);
 

@@ -30,7 +30,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(QuadShape, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QuadShape, AZ::SystemAllocator);
         AZ_RTTI(LmbrCentral::QuadShape, "{4DCA67DA-5CBB-4E6C-8DA2-2B8CB177A301}");
 
         QuadShape();

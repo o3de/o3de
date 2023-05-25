@@ -11,7 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include <ILevelSystem.h>
 
 #include <LyShine/Bus/UiSystemBus.h>

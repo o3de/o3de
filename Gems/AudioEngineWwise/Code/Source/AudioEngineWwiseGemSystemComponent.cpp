@@ -6,9 +6,11 @@
  *
  */
 
-#include <AudioEngineWwiseGemSystemComponent.h>
+#include "AudioEngineWwiseGemSystemComponent.h"
 
-#include <AzCore/PlatformDef.h>
+#include <AzCore/PlatformIncl.h> // This include is needed to include WinSock2.h before including Windows.h
+ // As AK/SoundEngine/Common/AkTypes.h eventually includes Windows.h
+
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -50,7 +52,6 @@ namespace AudioEngineWwiseGem
             {
                 ec->Class<AudioEngineWwiseGemSystemComponent>("Audio Engine Wwise Gem", "Wwise implementation of the Audio Engine interfaces")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

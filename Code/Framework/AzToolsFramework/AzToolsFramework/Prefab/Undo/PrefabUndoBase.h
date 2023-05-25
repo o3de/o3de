@@ -23,7 +23,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoBase, "{C86BFA2B-E042-40FC-B5C6-1838030B34BF}", UndoSystem::URSequencePoint);
-            AZ_CLASS_ALLOCATOR(PrefabUndoBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoBase, AZ::SystemAllocator);
 
             explicit PrefabUndoBase(const AZStd::string& undoOperationName);
 
@@ -36,10 +36,10 @@ namespace AzToolsFramework
             void virtual Redo(InstanceOptionalConstReference instanceToExclude);
 
         protected:
-            TemplateId m_templateId;
-
             PrefabDom m_redoPatch;
             PrefabDom m_undoPatch;
+
+            TemplateId m_templateId;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;

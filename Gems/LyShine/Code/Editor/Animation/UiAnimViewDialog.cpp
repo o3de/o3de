@@ -20,7 +20,6 @@
 #include "UiAnimViewDialog.h"
 
 #include "ViewPane.h"
-#include "StringDlg.h"
 #include "UiAVSequenceProps.h"
 #include "ViewManager.h"
 #include "AnimationContext.h"
@@ -53,6 +52,7 @@
 
 #include <QAction>
 #include <QComboBox>
+#include <QInputDialog>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QMenu>
@@ -1200,7 +1200,7 @@ void CUiAnimViewDialog::OnPlay()
         {
             {
                 CUiAnimationContext* pAnimationContext2 = nullptr;
-                EBUS_EVENT_RESULT(pAnimationContext2, UiEditorAnimationBus, GetAnimationContext);
+                UiEditorAnimationBus::BroadcastResult(pAnimationContext2, &UiEditorAnimationBus::Events::GetAnimationContext);
                 if (pAnimationContext2->IsPlaying())
                 {
                     AZ_Error("UiAnimViewDialog", false, "A sequence is already playing");
@@ -1215,7 +1215,7 @@ void CUiAnimViewDialog::OnPlay()
     {
         {
             CUiAnimationContext* pAnimationContext2 = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext2, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext2, &UiEditorAnimationBus::Events::GetAnimationContext);
             if (!pAnimationContext2->IsPlaying())
             {
                 AZ_Error("UiAnimViewDialog", false, "A sequence is playing");

@@ -608,10 +608,12 @@ namespace AZ
         }
 
 
+AZ_PUSH_DISABLE_WARNING(4723, "-Wunknown-warning-option") // potential divide by 0 warning
         AZ_MATH_INLINE Vec3::FloatType Vec3::Reciprocal(FloatArgType value)
         {
             return {{ 1.0f / value.v[0], 1.0f / value.v[1], 1.0f / value.v[2] }};
         }
+AZ_POP_DISABLE_WARNING
 
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::ReciprocalEstimate(FloatArgType value)

@@ -71,11 +71,13 @@ endfunction()
 # \arg:TARGETS names of the targets to associate the dependencies to
 # \arg:DEPENDENCIES_FILES file(s) that contains the load-time dependencies the TARGETS will be associated to
 # \arg:DEPENDENT_TARGETS additional list of targets should be added as load-time dependencies for the TARGETS list
+# \arg:GEM_VARIANT variant associated with TARGETS dependencies are being added to
+#      Some variant values are "Clients", "Servers", "Tools", "Builders", "Unified"
 #
 function(ly_add_target_dependencies)
 
     set(options)
-    set(oneValueArgs PREFIX)
+    set(oneValueArgs PREFIX GEM_VARIANT)
     set(multiValueArgs TARGETS DEPENDENCIES_FILES DEPENDENT_TARGETS)
 
     cmake_parse_arguments(ly_add_gem_dependencies "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -89,6 +91,8 @@ function(ly_add_target_dependencies)
         message(FATAL_ERROR "DEPENDENCIES_FILES parameter missing. It must be supplied unless the DEPENDENT_TARGETS parameter is set")
     endif()
 
+
+    set(gem_variant ${ly_add_gem_dependencies_GEM_VARIANT})
     unset(ALL_GEM_DEPENDENCIES)
     foreach(dependency_file ${ly_add_gem_dependencies_DEPENDENCIES_FILES})
         #unset any GEM_DEPENDENCIES and include the dependencies file, that should populate GEM_DEPENDENCIES
@@ -100,20 +104,25 @@ function(ly_add_target_dependencies)
     # Append the DEPENDENT_TARGETS to the list of ALL_GEM_DEPENDENCIES
     list(APPEND ALL_GEM_DEPENDENCIES ${ly_add_gem_dependencies_DEPENDENT_TARGETS})
 
-    # for each target, add the dependencies and generate setreg json with the list of gems to load
+    # for each target, add the dependencies and set a global property that maps
+    # the prefix, target name and gem variant to that list of dependencies to load
+    # This list is iterated in [SettingsRegistry.cmake](./SettingsRegistry.cmake)
+    # to generate json with the list of active gem modules to load
     foreach(target ${ly_add_gem_dependencies_TARGETS})
         ly_add_dependencies(${target} ${ALL_GEM_DEPENDENCIES})
 
+        set(delayed_load_dependency_key "${ly_add_gem_dependencies_PREFIX},${target},${gem_variant}")
         # Add the target to the LY_DELAYED_LOAD_DEPENDENCIES if it isn't already on the list
         get_property(load_dependencies_set GLOBAL PROPERTY LY_DELAYED_LOAD_DEPENDENCIES)
-        if(NOT "${ly_add_gem_dependencies_PREFIX},${target}" IN_LIST load_dependencies_set)
-            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${ly_add_gem_dependencies_PREFIX},${target}")
+        if(NOT "${delayed_load_dependency_key}" IN_LIST load_dependencies_set)
+            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${delayed_load_dependency_key}")
         endif()
         foreach(gem_target ${ALL_GEM_DEPENDENCIES})
-            # Add the list of gem dependencies to the LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX};${target} property
-            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}")
+            # Add the list of gem dependencies to the
+            # LY_TARGET_DELAYED_DEPENDENCIES_${ly_add_gem_dependencies_PREFIX},${target},${variant} property
+            get_property(target_load_dependencies GLOBAL PROPERTY LY_DELAYED_LOAD_"${delayed_load_dependency_key}")
             if(NOT "${gem_target}" IN_LIST target_load_dependencies)
-                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${ly_add_gem_dependencies_PREFIX},${target}" ${gem_target})
+                set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${delayed_load_dependency_key}" ${gem_target})
             endif()
         endforeach()
     endforeach()
@@ -228,6 +237,9 @@ endfunction()
 foreach(project ${LY_PROJECTS})
     file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
     string(SHA256 full_directory_hash ${full_directory_path})
+
+    # Set the project normalized path into the global O3DE_PROJECTS_PATHS property
+    set_property(GLOBAL APPEND PROPERTY O3DE_PROJECTS_PATHS ${full_directory_path})
 
     # Truncate the full_directory_hash down to 8 characters to avoid hitting the Windows 260 character path limit
     # when the external subdirectory contains relative paths of significant length

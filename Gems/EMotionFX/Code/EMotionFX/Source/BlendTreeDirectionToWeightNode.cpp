@@ -17,7 +17,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeDirectionToWeightNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeDirectionToWeightNode, AnimGraphAllocator)
 
     BlendTreeDirectionToWeightNode::BlendTreeDirectionToWeightNode()
         : AnimGraphNode()

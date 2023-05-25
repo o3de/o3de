@@ -15,8 +15,6 @@ set(FILES
     Source/Components/EditorClothComponent.h
     Source/Editor/MeshNodeHandler.cpp
     Source/Editor/MeshNodeHandler.h
-    Source/Editor/ComboBoxEditButtonPair.cpp
-    Source/Editor/ComboBoxEditButtonPair.h
     Source/Editor/PropertyTypes.cpp
     Source/Editor/PropertyTypes.h
     Source/Editor/EditorSystemComponent.cpp

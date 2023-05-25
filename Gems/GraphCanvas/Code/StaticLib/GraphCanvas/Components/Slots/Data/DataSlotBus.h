@@ -45,7 +45,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(DataSlotConfiguration, "{76933814-A77A-4877-B72D-5DB0F541EDA5}", SlotConfiguration);
-        AZ_CLASS_ALLOCATOR(DataSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotConfiguration, AZ::SystemAllocator);
 
         DataSlotConfiguration() = default;
 

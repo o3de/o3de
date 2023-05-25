@@ -60,7 +60,7 @@ namespace AZ
             return true;
         }
 
-        ResultCode Device::Init(PhysicalDevice& physicalDevice)
+        ResultCode Device::Init(int deviceIndex, PhysicalDevice& physicalDevice)
         {
             if (Validation::IsEnabled())
             {
@@ -75,6 +75,9 @@ namespace AZ
             m_nearestSupportedFormats.fill(Format::Unknown);
             
             m_physicalDevice = &physicalDevice;
+            m_deviceIndex = deviceIndex;
+
+            AZ_Assert(deviceIndex == 0, "Multi-device support is not implemented yet.");
 
             RHI::ResultCode resultCode = InitInternal(physicalDevice);
 
@@ -185,6 +188,11 @@ namespace AZ
         const PhysicalDevice& Device::GetPhysicalDevice() const
         {
             return *m_physicalDevice;
+        }
+
+        int Device::GetDeviceIndex() const
+        {
+            return m_deviceIndex;
         }
 
         const DeviceDescriptor& Device::GetDescriptor() const

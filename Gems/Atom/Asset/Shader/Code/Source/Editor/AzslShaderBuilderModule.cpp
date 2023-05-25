@@ -19,7 +19,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AzslShaderBuilderModule, "{43370465-DBF1-44BB-968D-97C0B42F5EA0}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(AzslShaderBuilderModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AzslShaderBuilderModule, AZ::SystemAllocator);
 
             AzslShaderBuilderModule()
             {

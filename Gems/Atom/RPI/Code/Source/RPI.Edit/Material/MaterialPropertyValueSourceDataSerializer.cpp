@@ -22,7 +22,7 @@ namespace AZ
 {
     namespace RPI
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertyValueSourceDataSerializer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertyValueSourceDataSerializer, SystemAllocator);
 
         namespace JSR = JsonSerializationResult;
 

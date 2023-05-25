@@ -17,7 +17,7 @@ namespace ScriptEvents
         : protected ScriptEventBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptEventsSystemComponentImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptEventsSystemComponentImpl, AZ::SystemAllocator);
 
         ScriptEventsSystemComponentImpl()
         {

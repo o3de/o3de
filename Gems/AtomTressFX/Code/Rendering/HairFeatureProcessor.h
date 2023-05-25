@@ -97,6 +97,7 @@ namespace AZ
                 Name HairShortCutResolveColorPassName;
 
             public:
+                AZ_CLASS_ALLOCATOR(HairFeatureProcessor, AZ::SystemAllocator)
                 AZ_RTTI(AZ::Render::Hair::HairFeatureProcessor, "{5F9DDA81-B43F-4E30-9E56-C7C3DC517A4C}", AZ::RPI::FeatureProcessor);
 
                 static void Reflect(AZ::ReflectContext* context);

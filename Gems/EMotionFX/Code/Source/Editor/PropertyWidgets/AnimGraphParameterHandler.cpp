@@ -26,9 +26,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterPicker, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSingleParameterHandler, EditorAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultipleParameterHandler, EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterPicker, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSingleParameterHandler, EditorAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultipleParameterHandler, EditorAllocator);
 
     AnimGraphParameterPicker::AnimGraphParameterPicker(QWidget* parent, bool singleSelection, bool parameterMaskMode)
         : QWidget(parent)
@@ -251,7 +251,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -292,7 +293,7 @@ namespace EMotionFX
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSingleNumberParameterHandler, EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSingleNumberParameterHandler, EditorAllocator);
 
     AnimGraphSingleNumberParameterHandler::AnimGraphSingleNumberParameterHandler()
         : AnimGraphSingleParameterHandler()
@@ -317,7 +318,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
         return picker;
@@ -325,7 +327,7 @@ namespace EMotionFX
 
     //---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSingleVector2ParameterHandler, EditorAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphSingleVector2ParameterHandler, EditorAllocator);
 
     AnimGraphSingleVector2ParameterHandler::AnimGraphSingleVector2ParameterHandler()
         : AnimGraphSingleParameterHandler()
@@ -343,7 +345,8 @@ namespace EMotionFX
         picker->SetFilterTypes({azrtti_typeid<Vector2Parameter>()});
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters) {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;
@@ -370,7 +373,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphParameterPicker::ParametersChanged, this, [picker]([[maybe_unused]] const AZStd::vector<AZStd::string>& newParameters)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;

@@ -38,7 +38,7 @@ namespace Terrain
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainHeightGradientListConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainHeightGradientListConfig, AZ::SystemAllocator);
         AZ_RTTI(TerrainHeightGradientListConfig, "{C5FD71A9-0722-4D4C-B605-EBEBF90C628F}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

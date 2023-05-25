@@ -54,7 +54,6 @@ namespace VirtualGamepad
             {
                 ec->Class<VirtualGamepadSystemComponent>("VirtualGamepad", "Provides an example of a virtual gamepad that can be used by mobile devices with touch screens in place of a physical gamepad.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &VirtualGamepadSystemComponent::m_buttonNames, "Button Names", "The button names made available by the virtual gamepad.")
                     ->DataElement(0, &VirtualGamepadSystemComponent::m_thumbStickNames, "Thumb-Stick Names", "The thumb-stick names made available by the virtual gamepad.")

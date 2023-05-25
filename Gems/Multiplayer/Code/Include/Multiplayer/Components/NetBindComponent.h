@@ -50,7 +50,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         NetBindComponent();
-        ~NetBindComponent() override = default;
+        ~NetBindComponent() override;
 
         //! AZ::Component overrides.
         //! @{
@@ -183,6 +183,7 @@ namespace Multiplayer
         void NotifyServerMigration(const HostId& remoteHostId);
         void NotifyPreRender(float deltaTime);
         void NotifyCorrection();
+        void NetworkActivated();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
@@ -190,6 +191,7 @@ namespace Multiplayer
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
         void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
+        void AddNetworkActivatedEventHandler(AZ::Event<>::Handler& handler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -221,6 +223,9 @@ namespace Multiplayer
 
         void StopEntity();
 
+        void Register(AZ::Entity* entity);
+        void Unregister();
+
         ReplicationRecord m_currentRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_totalRecord = NetEntityRole::InvalidRole;
         ReplicationRecord m_predictableRecord = NetEntityRole::Autonomous;
@@ -244,6 +249,7 @@ namespace Multiplayer
         EntityPreRenderEvent  m_entityPreRenderEvent;
         EntityCorrectionEvent m_entityCorrectionEvent;
         AZ::Event<>           m_onRemove;
+        AZ::Event<>           m_onNetworkActivated;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         RpcSendEvent::Handler m_handleLocalAutonomousToAuthorityRpcMessageEventHandle;
         RpcSendEvent::Handler m_handleLocalAuthorityToAutonomousRpcMessageEventHandle;
@@ -264,6 +270,7 @@ namespace Multiplayer
         bool m_isMigrationDataValid = false;
         bool m_needsToBeStopped     = false;
         bool m_playerHostAutonomyEnabled = false; // Set to true for the host's controlled entity
+        bool m_isRegistered = false;
 
         friend class NetworkEntityManager;
         friend class EntityReplicationManager;

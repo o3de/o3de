@@ -34,12 +34,6 @@ namespace AZ
         class MaterialAsset;
         class MaterialAssetCreator;
 
-        enum class MaterialAssetProcessingMode
-        {
-            PreBake,      //!< all material asset processing is done in the Asset Processor, producing a finalized material asset
-            DeferredBake  //!< some material asset processing is deferred, and the material asset is finalized at runtime after loading
-        };
-
         //! This is a simple data structure for serializing in/out material source files.
         class MaterialSourceData final
         {
@@ -92,7 +86,6 @@ namespace AZ
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
                 const AZStd::string& materialSourceFilePath,
-                MaterialAssetProcessingMode processingMode,
                 bool elevateWarnings = true) const;
 
             //! Creates a MaterialAsset from the MaterialSourceData content.

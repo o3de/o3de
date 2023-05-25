@@ -132,6 +132,13 @@ namespace AzPhysics
         //! @return Returns a structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
         virtual SceneQueryHits QueryScene(SceneHandle sceneHandle, const SceneQueryRequest* request) = 0;
 
+        //! Make a blocking query into the scene.
+        //! @param sceneHandle A handle to the scene to make the scene query with.
+        //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
+        //! @param result A structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
+        //! @return Returns true if there is at least one hit.
+        virtual bool QueryScene(SceneHandle sceneHandle, const SceneQueryRequest* request, SceneQueryHits& result) = 0;
+
         //! Make many blocking queries into the scene.
         //! @param sceneHandle A handle to the scene to make the scene query with.
         //! @param requests A list of requests to make. Each entry should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
@@ -343,6 +350,12 @@ namespace AzPhysics
         //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
         //! @return Returns a structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
         virtual SceneQueryHits QueryScene(const SceneQueryRequest* request) = 0;
+
+        //! Make a blocking query into the scene.
+        //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest
+        //! @param result A structure that contains a list of Hits. Depending on flags set in the request, this may only contain 1 result.
+        //! @return Returns true if there is at least one hit.
+        virtual bool QueryScene(const SceneQueryRequest* request, SceneQueryHits& result) = 0;
 
         //! Make many blocking queries into the scene.
         //! @param requests A list of requests to make. Each entry should be one of RayCastRequest || ShapeCastRequest || OverlapRequest

@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class GradientMixerNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientMixerNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientMixerNode, AZ::SystemAllocator);
         AZ_RTTI(GradientMixerNode, "{D5AEAA23-12EB-4E55-B396-BEE13724FBDC}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);

@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetBody1EntityId",
-                    "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Body 1 Entity Id"
@@ -20,7 +19,8 @@
                         "tooltip": "Signaled after Get Body 1 Entity Id is invoked"
                     },
                     "details": {
-                        "name": "Get Body 1 Entity Id"
+                        "name": "Get Body 1 Entity Id",
+                        "tooltip": "Get the Entity Id for the first body involved in the collision"
                     },
                     "params": [
                         {
@@ -35,14 +35,13 @@
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Entity Id for the first body involved in the collision"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetBody2EntityId",
-                    "context": "CollisionEvent",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Body 2 Entity Id"
@@ -52,7 +51,8 @@
                         "tooltip": "Signaled after Get Body 2 Entity Id is invoked"
                     },
                     "details": {
-                        "name": "Get Body 2 Entity Id"
+                        "name": "Get Body 2 Entity Id",
+                        "tooltip": "Get the Entity Id for the second body involved in the collision"
                     },
                     "params": [
                         {
@@ -67,13 +67,14 @@
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
                                 "name": "Entity Id",
-                                "tooltip": "Entity Unique Id"
+                                "tooltip": "Entity Id for the second body involved in the collision"
                             }
                         }
                     ]
                 },
                 {
                     "base": "GetContacts",
+                    "context": "Getter",
                     "details": {
                         "name": "Get Contacts"
                     },
@@ -89,7 +90,8 @@
                         {
                             "typeid": "{009022A1-16A5-50B0-958F-F69C729985A3}",
                             "details": {
-                                "name": "Contacts"
+                                "name": "Contacts",
+                                "tooltip": "Array of contacts extracted from the collision event"
                             }
                         }
                     ]

@@ -76,6 +76,12 @@
 #include <AzCore/std/ranges/ranges_algorithm.h>
 #include <AzCore/Time/TimeSystem.h>
 
+#include <AzCore/Outcome/Outcome.h> // for unexpect_t
+
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(ComponentApplicationRequests, ComponentApplicationRequestsEBusTraits);
+DECLARE_EBUS_INSTANTIATION(TickEvents);
+DECLARE_EBUS_INSTANTIATION(SystemTickEvents);
+DECLARE_EBUS_INSTANTIATION(TickRequests);
 
 namespace AZ::Metrics
 {
@@ -102,10 +108,38 @@ namespace AZ::Internal
 
         return createCoreMetricsFile;
     }
-}
+
+    enum class DevelopmentSettingsOverrides
+    {
+        None, // 0 = no overrides are allowed
+        CommandLineOnly, // 1 = registry overrides are allowed from the command line
+        CommandLineAndProject, // 2 = registry overrides are allowed from the command line, engine, gem, and project files
+        CommandLineProjectAndUser // 3 = registry overrides are allowed from the command line, engine, gem, project, and user files
+    };
+
+    //! Determines which development settings (user registry files, project registry files, etc) should
+    //! be allowed to override the default settings.
+    //! @return the level of development settings overrides that are allowed
+    static constexpr DevelopmentSettingsOverrides GetDevelopmentSettingsOverrides()
+    {
+#if defined(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES)
+        // If this compile setting has been set, then allow whatever subset of settings overrides the user requested, whether this
+        // is a debug, profile, or release build.
+        return static_cast<DevelopmentSettingsOverrides>(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES);
+#elif AZ_RELEASE_BUILD
+        // By default, if no compile setting was provided, turn off all overrides in release builds.
+        return DevelopmentSettingsOverrides::None;
+#else
+        // By default, if no compile setting was provided, turn on all overrides in non-release builds.
+        return DevelopmentSettingsOverrides::CommandLineProjectAndUser;
+#endif
+    }
+
+} // namespace AZ::Internal
 
 namespace AZ
 {
+    // explicit instantiation of the template defined in ComponentApplicationBus.h
     static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
     {
         if (arguments.empty())
@@ -292,30 +326,41 @@ namespace AZ
         AZ::CommandLine& m_commandLine;
     };
 
-    void ComponentApplication::Descriptor::AllocatorRemapping::Reflect(ReflectContext* context, ComponentApplication* app)
-    {
-        (void)app;
-
-        if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
-        {
-            serializeContext->Class<AllocatorRemapping>()
-                ->Field("from", &AllocatorRemapping::m_from)
-                ->Field("to", &AllocatorRemapping::m_to)
-                ;
-        }
-    }
-
     //=========================================================================
     // Reflect
     //=========================================================================
-    void  ComponentApplication::Descriptor::Reflect(ReflectContext* context, ComponentApplication* app)
+    void ComponentApplication::Descriptor::Reflect(ReflectContext* context, ComponentApplication* app)
     {
+        // Create a local ObjectFactory that passes the component application descriptor
+        // to the SerializeContext
+        struct DescriptorFactory
+            : public SerializeContext::IObjectFactory
+        {
+            DescriptorFactory(Descriptor* descriptor)
+                : m_descriptor(descriptor)
+            {}
+
+            void* Create(const char*) override
+            {
+                // Return a pointer to the component application descriptor
+                return m_descriptor;
+            }
+            void  Destroy(void*) override
+            {
+                // do nothing as descriptor is part of the component application
+            }
+
+        private:
+            Descriptor* m_descriptor;
+        };
+
+        static DescriptorFactory descriptorFactory(&app->GetDescriptor());
+
         DynamicModuleDescriptor::Reflect(context);
-        AllocatorRemapping::Reflect(context, app);
 
         if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            serializeContext->Class<Descriptor>(&app->GetDescriptor())
+            serializeContext->Class<Descriptor>(&descriptorFactory)
                 ->Version(2, AppDescriptorConverter)
                 ->Field("useExistingAllocator", &Descriptor::m_useExistingAllocator)
                 ->Field("allocationRecordsSaveNames", &Descriptor::m_allocationRecordsSaveNames)
@@ -358,25 +403,12 @@ namespace AZ
 
                 ->Event("GetEntityName", &ComponentApplicationBus::Events::GetEntityName)
                 ->Event("SetEntityName", &ComponentApplicationBus::Events::SetEntityName);
+
+            behaviorContext->Class<AZStd::unexpect_t>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "std")
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
         }
-    }
-
-    //=========================================================================
-    // Create
-    //=========================================================================
-    void* ComponentApplication::Descriptor::Create(const char* name)
-    {
-        (void)name;
-        return this; /// we the the factory and the object as we are part of the component application
-    }
-
-    //=========================================================================
-    // Destroy
-    //=========================================================================
-    void ComponentApplication::Descriptor::Destroy(void* data)
-    {
-        // do nothing as descriptor is part of the component application
-        (void)data;
     }
 
     //=========================================================================
@@ -415,8 +447,8 @@ namespace AZ
         m_descriptor.m_recordingMode = AllocatorManager::Instance().GetDefaultTrackingMode();
 
         // Initializes the OSAllocator and SystemAllocator as soon as possible
-        CreateOSAllocator();
-        CreateSystemAllocator();
+        AZ::Debug::Trace::Instance().Init();
+        ConfigureSystemAllocatorTracking();
 
         // Now that the Allocators are initialized, the Command Line parameters can be parsed
         m_commandLine.Parse(m_argC, m_argV);
@@ -515,7 +547,7 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
-        DestroyAllocator();
+        AZ::Debug::Trace::Instance().Destroy();
     }
 
     void ComponentApplication::InitializeSettingsRegistry()
@@ -548,21 +580,20 @@ namespace AZ
         // 1. The 'project_path' key changes
         // 2. The project specialization when the 'project-name' key changes
         // 3. The ComponentApplication command line when the command line is stored to the registry
-        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{
-            *m_settingsRegistry });
-        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{
-            *m_settingsRegistry });
-        m_commandLineUpdatedHandler = m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{
-            *m_settingsRegistry, m_commandLine });
+        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{ *m_settingsRegistry });
+        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{ *m_settingsRegistry });
+        m_commandLineUpdatedHandler =
+            m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{ *m_settingsRegistry, m_commandLine });
 
-        // Merge Command Line arguments
-        constexpr bool executeRegDumpCommands = false;
-
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // Only merge the Global User Registry (~/.o3de/Registry) in debug and profile configurations
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
-#endif
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
+        if constexpr (
+            AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+        {
+            // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                *m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+        }
+        // Merge Command Line arguments using the default CommandToParse instance
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
     }
 
@@ -701,7 +732,7 @@ namespace AZ
         AZ::TickBus::QueueFunction(AZStd::move(RegisterOnFirstTick));
     }
 
-    void ReportBadEngineRoot()
+    void ComponentApplication::ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
                                       "Check parameters such as --project-path and --engine-path and make sure they are valid.\n"};
@@ -731,7 +762,8 @@ namespace AZ
         AZ_Assert(!m_isStarted, "Component application already started!");
 
         using Type = AZ::SettingsRegistryInterface::Type;
-        if (m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
+        if (m_startupParameters.m_loadSettingsRegistry &&
+            m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
         {
             ReportBadEngineRoot();
             return nullptr;
@@ -741,10 +773,7 @@ namespace AZ
 
         m_descriptor = descriptor;
 
-        // Re-invokes CreateOSAllocator and CreateSystemAllocator function to allow the component application
-        // to use supplied startupParameters and descriptor parameters this time
-        CreateOSAllocator();
-        CreateSystemAllocator();
+        ConfigureSystemAllocatorTracking();
 
 #if !defined(_RELEASE)
         m_budgetTracker.Init();
@@ -810,9 +839,12 @@ namespace AZ
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsLoaded", R"({})");
 
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides
-        AZ::IO::FixedMaxPath platformCachePath;
-        m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
-        m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
+            AZ::IO::FixedMaxPath platformCachePath;
+            m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+            m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        }
 
         // Parse the command line parameters for console commands after modules have loaded
         m_console->ExecuteCommandLine(m_commandLine);
@@ -911,94 +943,50 @@ namespace AZ
 #endif // defined(AZ_ENABLE_DEBUG_TOOLS)
     }
 
-    void ComponentApplication::DestroyAllocator()
-    {
-        AZ::Debug::Trace::Instance().Destroy();
-
-        // kill the system allocator if we created it
-        if (m_isSystemAllocatorOwner)
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-
-            m_isSystemAllocatorOwner = false;
-        }
-
-        if (m_isOSAllocatorOwner)
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-            m_isOSAllocatorOwner = false;
-        }
-
-        m_osAllocator = nullptr;
-    }
-
-    void ComponentApplication::CreateOSAllocator()
-    {
-        if (!m_startupParameters.m_allocator)
-        {
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-                m_isOSAllocatorOwner = true;
-            }
-            m_osAllocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-        }
-        else
-        {
-            m_osAllocator = m_startupParameters.m_allocator;
-        }
-    }
-
     //=========================================================================
-    // CreateSystemAllocator
+    // ConfigureSystemAllocatorTracking
     // [5/30/2012]
     //=========================================================================
-    void ComponentApplication::CreateSystemAllocator()
+    void ComponentApplication::ConfigureSystemAllocatorTracking()
     {
-        AZ::Debug::Trace::Instance().Init();
-
-        if (m_descriptor.m_useExistingAllocator || AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
+        AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
+        if (records)
         {
-            AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "You must setup AZ::SystemAllocator instance, before you can call Create application with m_useExistingAllocator flag set to true");
-            return;
-        }
-        else
-        {
-            // Create the system allocator
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
-            AZ::Debug::AllocationRecords* records = AllocatorInstance<SystemAllocator>::Get().GetRecords();
-            if (records)
-            {
-                records->SetMode(m_descriptor.m_recordingMode);
-                records->SetSaveNames(m_descriptor.m_allocationRecordsSaveNames);
-                records->SetDecodeImmediately(m_descriptor.m_allocationRecordsAttemptDecodeImmediately);
-                records->AutoIntegrityCheck(m_descriptor.m_autoIntegrityCheck);
-                records->MarkUallocatedMemory(m_descriptor.m_markUnallocatedMemory);
-            }
-
-            m_isSystemAllocatorOwner = true;
+            records->SetMode(m_descriptor.m_recordingMode);
+            records->SetSaveNames(m_descriptor.m_allocationRecordsSaveNames);
+            records->SetDecodeImmediately(m_descriptor.m_allocationRecordsAttemptDecodeImmediately);
+            records->AutoIntegrityCheck(m_descriptor.m_autoIntegrityCheck);
+            records->MarkUallocatedMemory(m_descriptor.m_markUnallocatedMemory);
         }
     }
 
-    void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
+    void ComponentApplication::MergeSharedSettings(
+        SettingsRegistryInterface& registry,
+        const AZ::SettingsRegistryInterface::Specializations& specializations,
+        AZStd::vector<char>& scratchBuffer)
     {
-        SettingsRegistryInterface::Specializations specializations;
-        SetSettingsRegistrySpecializations(specializations);
+        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        {
+            if constexpr (
+                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+            {
+                // In development builds apply the o3de registry and the command line to allow early overrides. This will
+                // allow developers to override things like default paths or Asset Processor connection settings. Any additional
+                // values will be replaced by later loads, so this step will happen again at the end of loading.
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
+                // Project User Registry is merged after the command line here to allow make sure the any command line override of the
+                // project path is used for merging the project's user registry
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            }
 
-        AZStd::vector<char> scratchBuffer;
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        // In development builds apply the o3de registry and the command line to allow early overrides. This will
-        // allow developers to override things like default paths or Asset Processor connection settings. Any additional
-        // values will be replaced by later loads, so this step will happen again at the end of loading.
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        // Project User Registry is merged after the command line here to allow make sure the any command line override of the project path
-        // is used for merging the project's user registry
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
-#endif
+            // Make sure the command line is merged at least once, before updating the runtime filepaths
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        }
+
         //! Retrieves the list gem targets that the project has load dependencies on
         //! This populates the /Amazon/Gems/<GemName> field entries which is required
         //! by the MergeSettingsToRegistry_GemRegistry() function below to locate the gem's root folder
@@ -1017,32 +1005,80 @@ namespace AZ
         //!    3. <project_build_path>/bin/$<CONFIG>/Registry
         //! 3. MergeSettingsToRegistry_GemRegistries - Merges the settings registry files from each gem's <GemRoot>/Registry directory
 
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(registry,
-            AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_TargetBuildDependencyRegistry(
+            registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
+        if constexpr (
+            AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineAndProject)
+        {
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(
+                registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+        }
 #endif
+    }
+
+    void ComponentApplication::MergeUserSettings(
+        SettingsRegistryInterface& registry,
+        const AZ::SettingsRegistryInterface::Specializations& specializations,
+        AZStd::vector<char>& scratchBuffer)
+    {
+        if constexpr (AZ::Internal::GetDevelopmentSettingsOverrides() >= AZ::Internal::DevelopmentSettingsOverrides::CommandLineOnly)
+        {
+            if constexpr (
+                AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
+            {
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
+                    registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
+            }
+
+            // The final merge of the command line should also execute any command-line commands.
+            AZ::SettingsRegistryMergeUtils::CommandsToParse commandsToParse;
+            // The regdump and regset-file arguments are parsed in the final merge
+            commandsToParse.m_parseRegdumpCommands = true;
+            commandsToParse.m_parseRegsetFileCommands = true;
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, commandsToParse);
+        }
+
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
+    }
+
+    void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
+    {
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
+            SettingsRegistryInterface::Specializations specializations;
+            SetSettingsRegistrySpecializations(specializations);
+
+            AZStd::vector<char> scratchBuffer;
+
+            MergeSharedSettings(registry, specializations, scratchBuffer);
+            MergeUserSettings(registry, specializations, scratchBuffer);
+        }
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
     {
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
 #if defined(AZ_DEBUG_BUILD)
-        specializations.Append("debug");
+            specializations.Append("debug");
 #elif defined(AZ_PROFILE_BUILD)
-        specializations.Append("profile");
+            specializations.Append("profile");
 #else
-        specializations.Append("release");
+            specializations.Append("release");
 #endif
 
-        SettingsRegistryMergeUtils::QuerySpecializationsFromRegistry(*m_settingsRegistry, specializations);
+            SettingsRegistryMergeUtils::QuerySpecializationsFromRegistry(*m_settingsRegistry, specializations);
+        }
     }
 
     //=========================================================================
@@ -1484,7 +1520,7 @@ namespace AZ
         AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
-        EBUS_EVENT(SystemTickBus, OnSystemTick);
+        SystemTickBus::Broadcast(&SystemTickBus::Events::OnSystemTick);
     }
 
     bool ComponentApplication::ShouldAddSystemComponent(AZ::ComponentDescriptor* descriptor)
@@ -1514,7 +1550,7 @@ namespace AZ
         for (const Uuid& componentId : GetRequiredSystemComponents())
         {
             ComponentDescriptor* componentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(componentDescriptor, componentId, ComponentDescriptorBus, GetDescriptor);
+            ComponentDescriptorBus::EventResult(componentDescriptor, componentId, &ComponentDescriptorBus::Events::GetDescriptor);
             if (!componentDescriptor)
             {
                 AZ_Error("Module", false, "Failed to add system component required by application. No component descriptor found for: %s",

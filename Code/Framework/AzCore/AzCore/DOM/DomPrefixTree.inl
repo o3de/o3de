@@ -91,22 +91,27 @@ namespace AZ::Dom
     }
 
     template<class T>
-    bool DomPrefixTree<T>::AttachNodeAtPath(const Path& path, Node&& nodeToAttach)
+    bool DomPrefixTree<T>::OverwritePath(const Path& path, Node&& newNode, bool shouldCreateNodes)
     {
         Node* node = &m_rootNode;
-        const size_t entriesToIterate = path.Size() - 1;
-        for (size_t i = 0; i < entriesToIterate; ++i)
+        const size_t parentEntriesToIterate = path.Size() - 1;
+        for (size_t i = 0; i < parentEntriesToIterate; ++i)
         {
             const PathEntry& entry = path[i];
-            auto nodeIt = node->m_values.find(entry);
-            if (nodeIt == node->m_values.end())
+            if (!shouldCreateNodes && node->m_values.find(entry) == node->m_values.end())
             {
                 return false;
             }
-            node = &nodeIt->second;
+            node = &node->m_values[entry]; // get or create an entry in this node
         }
 
-        node->m_values[path[path.Size() - 1]] = AZStd::move(nodeToAttach);
+        const PathEntry& lastEntry = path[path.Size() - 1];
+        if (!shouldCreateNodes && node->m_values.find(lastEntry) == node->m_values.end())
+        {
+            return false;
+        }
+
+        node->m_values[lastEntry] = AZStd::move(newNode);
         return true;
     }
 
@@ -392,10 +397,10 @@ namespace AZ::Dom
     }
 
     template<class T>
-    bool DomPrefixTree<T>::AttachSubTree(const Path& path, DomPrefixTree&& subTree)
+    bool DomPrefixTree<T>::OverwritePath(const Path& path, DomPrefixTree&& subtree, bool shouldCreateNodes)
     {
-        Node* node = subTree.GetNodeForPath(AZ::Dom::Path());
-        return AttachNodeAtPath(path, AZStd::move(*node));
+        Node* node = subtree.GetNodeForPath(AZ::Dom::Path());
+        return OverwritePath(path, AZStd::move(*node), shouldCreateNodes);
     }
 
     template<class T>

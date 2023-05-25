@@ -17,7 +17,7 @@ namespace AzToolsFramework
         : public BaseSliceCommand
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateSliceCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateSliceCommand, AZ::SystemAllocator);
         AZ_RTTI(CreateSliceCommand, "{295F0D67-18F4-4C4E-937B-66398258A472}");
 
         CreateSliceCommand(const AZStd::string& friendlyName);

@@ -24,7 +24,7 @@ namespace AZ::AttributeDomInteropTests
     template<typename R, typename... Args>
     struct InvokeTestHelper<R(Args...)>
     {
-        AZ_RTTI((InvokeTestHelper<R(Args...)>, "{BE273EAA-FB6A-464F-A9F8-8A5C59650D70}", R, Args...));
+        AZ_RTTI((InvokeTestHelper, "{BE273EAA-FB6A-464F-A9F8-8A5C59650D70}", R(Args...)));
         using ThisType = InvokeTestHelper<R(Args...)>;
         using FunctionType = AZStd::function<R(Args...)>;
 

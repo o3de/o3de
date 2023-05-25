@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -88,10 +84,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 17982257912988768282
                 },
-                "Component_[5540118842216992104]": {
-                    "$type": "SelectionComponent",
-                    "Id": 5540118842216992104
-                },
                 "Component_[6131282612213913817]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 6131282612213913817
@@ -100,9 +92,11 @@
                     "$type": "EditorColliderComponent",
                     "Id": 7666850511170058566,
                     "ColliderConfiguration": {
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -132,6 +126,10 @@
                 "Component_[9055996217752214834]": {
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 9055996217752214834
+                },
+                "Component_[9469942922917322012]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 9469942922917322012
                 }
             }
         },
@@ -175,10 +173,6 @@
                 "Component_[3047355939801335922]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
-                },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
                 },
                 "Component_[7505662882395796332]": {
                     "$type": "EditorOnlyEntityComponent",

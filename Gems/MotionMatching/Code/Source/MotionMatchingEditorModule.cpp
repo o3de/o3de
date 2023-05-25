@@ -16,7 +16,7 @@ namespace EMotionFX::MotionMatching
     {
     public:
         AZ_RTTI(MotionMatchingEditorModule, "{cf4381d1-0207-4ef8-85f0-6c88ec28a7b6}", MotionMatchingModuleInterface);
-        AZ_CLASS_ALLOCATOR(MotionMatchingEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MotionMatchingEditorModule, AZ::SystemAllocator);
 
         MotionMatchingEditorModule()
         {

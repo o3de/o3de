@@ -44,7 +44,7 @@ namespace AzToolsFramework
         class Connection
         {
         public:
-            AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(Connection, AZ::SystemAllocator)
             Connection(void);
             ~Connection(void);
 
@@ -113,7 +113,7 @@ namespace AzToolsFramework
         class Statement
         {
         public:
-            AZ_CLASS_ALLOCATOR(Statement, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Statement, AZ::SystemAllocator);
             Statement(StatementPrototype* parent);
             ~Statement();
 

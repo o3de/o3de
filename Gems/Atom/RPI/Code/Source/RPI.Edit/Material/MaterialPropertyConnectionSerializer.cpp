@@ -35,7 +35,7 @@ namespace AZ
             };
         }
 
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertyConnectionSerializer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialPropertyConnectionSerializer, SystemAllocator);
 
         JsonSerializationResult::Result JsonMaterialPropertyConnectionSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)

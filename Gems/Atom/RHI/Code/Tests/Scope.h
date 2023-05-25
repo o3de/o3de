@@ -19,7 +19,7 @@ namespace UnitTest
         : public AZ::RHI::Scope
     {
     public:
-        AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
     private:
         //////////////////////////////////////////////////////////////////////////

@@ -82,11 +82,13 @@
 #include <AzFramework/Asset/AssetCatalog.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogBus.h>
@@ -131,7 +133,6 @@
 #include <GraphCanvas/Types/ConstructPresets.h>
 
 #include <Editor/View/Windows/ScriptCanvasContextMenus.h>
-#include <Editor/View/Windows/ScriptEventMenu.h>
 #include <Editor/View/Windows/EBusHandlerActionMenu.h>
 #include <Editor/View/Widgets/NodePalette/CreateNodeMimeEvent.h>
 #include <Editor/View/Widgets/NodePalette/EBusNodePaletteTreeItemTypes.h>
@@ -145,11 +146,11 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 ////
 
+#include <ScriptCanvasContextIdentifiers.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -440,6 +441,14 @@ namespace ScriptCanvasEditor
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
 
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
+            }
+        }
+
         // Custom Actions
         {
             m_assignToSelectedEntity = new QToolButton();
@@ -675,6 +684,14 @@ namespace ScriptCanvasEditor
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
 
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+            {
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
+            }
+        }
+
         Clear();
 
         delete m_nodePalette;
@@ -694,22 +711,17 @@ namespace ScriptCanvasEditor
         // File menu
         connect(ui->action_New_Script, &QAction::triggered, this, &MainWindow::OnFileNew);
         ui->action_New_Script->setShortcut(QKeySequence(QKeySequence::New));
+        addAction(ui->action_New_Script);
 
         connect(ui->action_Open, &QAction::triggered, this, &MainWindow::OnFileOpen);
         ui->action_Open->setShortcut(QKeySequence(QKeySequence::Open));
+        addAction(ui->action_Open);
 
         connect(ui->action_UpgradeTool, &QAction::triggered, this, &MainWindow::RunUpgradeTool);
         ui->action_UpgradeTool->setVisible(true);
 
         connect(ui->action_Interpreter, &QAction::triggered, this, &MainWindow::ShowInterpreter);
         ui->action_Interpreter->setVisible(true);
-
-        connect(ui->actionAdd_Script_Event_Helpers, &QAction::triggered, this, &MainWindow::OnScriptEventAddHelpers);
-        connect(ui->actionClear_Script_Event_Status, &QAction::triggered, this, &MainWindow::OnScriptEventClearStatus);
-        connect(ui->actionOpen_Script_Event, &QAction::triggered, this, [this](){ OnScriptEventOpen(AZ::IO::Path()); });
-        connect(ui->actionSave_ScriptEvent, &QAction::triggered, this, [this](){ OnScriptEventSave(Save::InPlace); });
-        connect(ui->actionSave_As_ScriptEvent, &QAction::triggered, this, [this](){ OnScriptEventSave(Save::As); });
-        connect(ui->menuScript_Events_PREVIEW, &QMenu::aboutToShow, this, &MainWindow::OnScriptEventMenuPreShow);
 
         // List of recent files.
         {
@@ -1307,14 +1319,6 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        // Redirect script event file open process
-        AZ::IO::Path filePath = fullPath;
-        if (filePath.Extension() == ".scriptevents")
-        {
-            OnScriptEventOpen(fullPath);
-            return;
-        }
-
         AZStd::string watchFolder;
         AZ::Data::AssetInfo assetInfo;
         bool sourceInfoFound{};
@@ -1626,12 +1630,6 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        // Redirect script event file save process
-        if (sourceHandle.Get()->IsScriptEventExtension() || sourceHandle.AbsolutePath().Extension() == ".scriptevents")
-        {
-            return OnScriptEventSave(save);
-        }
-
         if (!m_activeGraph.AnyEquals(sourceHandle))
         {
             OnChangeActiveGraphTab(sourceHandle);
@@ -1701,6 +1699,15 @@ namespace ScriptCanvasEditor
                 if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
+                    if (isValidFileName)
+                    {
+                        if (AzFramework::StringFunc::FirstCharacter(fileName.c_str()) >= '0' &&
+                            AzFramework::StringFunc::FirstCharacter(fileName.c_str()) <= '9')
+                        {
+                            QMessageBox::warning(this, QObject::tr("Unable to Save"), QObject::tr("File name cannot start with a number"));
+                            return false;
+                        }
+                    }
                 }
                 else
                 {
@@ -1888,6 +1895,12 @@ namespace ScriptCanvasEditor
         ui->action_Copy->setShortcut(QKeySequence(QKeySequence::Copy));
         ui->action_Paste->setShortcut(QKeySequence(QKeySequence::Paste));
         ui->action_Delete->setShortcut(QKeySequence(QKeySequence::Delete));
+        addAction(ui->action_Undo);
+        addAction(ui->action_Cut);
+        addAction(ui->action_Copy);
+        addAction(ui->action_Paste);
+        addAction(ui->action_Delete);
+        addAction(ui->action_Duplicate);
 
         connect(ui->menuEdit, &QMenu::aboutToShow, this, &MainWindow::OnEditMenuShow);
 
@@ -4455,58 +4468,6 @@ namespace ScriptCanvasEditor
         m_saves[key] = AZStd::chrono::steady_clock::now();
     }
 
-    void MainWindow::OnScriptEventAddHelpers()
-    {
-        if (ScriptEvents::Editor::MakeHelpersAction(m_activeGraph))
-        {
-            GraphCanvas::GraphModelRequestBus::Event(m_activeGraph.Mod()->GetEntityId(),
-                &GraphCanvas::GraphModelRequests::RequestUndoPoint);
-        }
-    }
-
-    void MainWindow::OnScriptEventClearStatus()
-    {
-        ScriptEvents::Editor::ClearStatusAction(m_activeGraph);
-    }
-
-    void MainWindow::OnScriptEventMenuPreShow()
-    {
-        auto result = ScriptEvents::Editor::UpdateMenuItemsEnabled(m_activeGraph);
-        ui->actionAdd_Script_Event_Helpers->setEnabled(result.m_addHelpers);
-        ui->actionClear_Script_Event_Status->setEnabled(result.m_clear);
-        ui->actionSave_ScriptEvent->setEnabled(result.m_save);
-        ui->actionSave_As_ScriptEvent->setEnabled(result.m_saveAs);
-    }
-
-    void MainWindow::OnScriptEventOpen(const AZ::IO::Path& filePath)
-    {
-        ScriptCanvas::SourceHandle sourceAsset(ScriptEvents::Editor::OpenAction(filePath));
-
-        if (sourceAsset.IsGraphValid())
-        {
-            AddRecentFile(sourceAsset.AbsolutePath().c_str());
-            OpenScriptCanvasAssetImplementation(sourceAsset, Tracker::ScriptCanvasFileState::UNMODIFIED);
-        }
-    }
-
-    bool MainWindow::OnScriptEventSave(Save save)
-    {
-        bool saveInPlace = (save == Save::InPlace);
-        auto savedSource = ScriptEvents::Editor::SaveAction(m_activeGraph, saveInPlace);
-
-        if (savedSource.IsGraphValid())
-        {
-            VersionExplorer::FileSaveResult result;
-            result.absolutePath = savedSource.AbsolutePath();
-            auto memoryAsset = OnSaveComplete(savedSource, result);
-
-            m_newlySavedFile = savedSource.AbsolutePath().Native();
-            // Forcing the file add here, since we are creating a new file
-            AddRecentFile(m_newlySavedFile.c_str());
-            return true;
-        }
-        return false;
-    }
 
 #include <Editor/View/Windows/moc_MainWindow.cpp>
 }

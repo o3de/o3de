@@ -33,7 +33,7 @@ namespace AzToolsFramework
 
         //! Notifies listeners that the paintbrush mode has changed.
         //! @param newSettings The settings after the change
-        virtual void OnPaintBrushModeChanged([[maybe_unused]] AzFramework::PaintBrushMode newBrushMode)
+        virtual void OnPaintBrushModeChanged([[maybe_unused]] PaintBrushMode newBrushMode)
         {
         }
     };

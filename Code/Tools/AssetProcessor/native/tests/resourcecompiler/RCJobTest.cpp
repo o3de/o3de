@@ -76,6 +76,7 @@ namespace UnitTests
             QDir tempDirPath;
             AZStd::string m_absolutePathToTempInputFolder;
             AZStd::string m_absolutePathToTempOutputFolder;
+            AzToolsFramework::UuidUtilComponent m_uuidUtil;
             NiceMock<MockDiskSpaceResponder> m_diskSpaceResponder;
             IgnoreNotifyTracker m_notifyTracker;
         };

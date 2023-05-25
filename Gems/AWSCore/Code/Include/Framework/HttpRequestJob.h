@@ -89,7 +89,7 @@ namespace AWSCore
     public:
 
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(HttpRequestJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HttpRequestJob, AZ::SystemAllocator);
 
         using IConfig = IHttpRequestJobConfig;
         using Config = HttpRequestJobConfig;

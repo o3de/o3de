@@ -24,7 +24,7 @@ namespace AzToolsFramework
         , private AzFramework::SliceInstantiationResultBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceEditorEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceEditorEntityOwnershipService, AZ::SystemAllocator);
         explicit SliceEditorEntityOwnershipService(const AzFramework::EntityContextId& entityContextId,
             AZ::SerializeContext* serializeContext);
 

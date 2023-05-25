@@ -19,6 +19,7 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+
 namespace AZ
 {
     namespace Render
@@ -32,14 +33,20 @@ namespace AZ
                     if (elem.Is<Data::Asset<RPI::ImageAsset>>())
                     {
                         const auto& imageBinding = elem.GetValue<Data::Asset<RPI::ImageAsset>>();
-                        const auto& assetId = imageBinding.GetId();
-                        if (assetId.IsValid())
+                        if (imageBinding && imageBinding.IsReady())
                         {
                             return imageBinding->GetImageDescriptor().m_size;
                         }
                     }
                 }
-                AZ_Assert(false, "GetSizeFromMaterial() unable to find an image in the given material.");
+
+                AZ_Error(
+                    "DecalTextureFeatureProcessor",
+                    false,
+                    "GetSizeFromMaterial() unable to load image in material ID '%s'",
+                    materialAsset->GetId().ToString<AZStd::string>().c_str()
+                );
+
                 return {};
             }
 
@@ -549,15 +556,18 @@ namespace AZ
         {
             const auto materialAsset = QueueMaterialAssetLoad(materialId);
 
-            m_materialLoadTracker.TrackAssetLoad(handle, materialAsset);
-
             if (materialAsset.IsLoading())
             {
+                m_materialLoadTracker.TrackAssetLoad(handle, materialAsset);
                 AZ::Data::AssetBus::MultiHandler::BusConnect(materialId);
             }
             else if (materialAsset.IsReady())
             {
                 OnAssetReady(materialAsset);
+            }
+            else if (materialAsset.IsError())
+            {
+                AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Unable to load material for decal. Asset ID: %s", materialId.ToString<AZStd::string>().c_str());
             }
             else
             {

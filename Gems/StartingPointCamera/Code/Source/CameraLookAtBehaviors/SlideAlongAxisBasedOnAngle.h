@@ -29,7 +29,7 @@ namespace Camera
     public:
         ~SlideAlongAxisBasedOnAngle() override = default;
         AZ_RTTI(SlideAlongAxisBasedOnAngle, "{8DDA8D0B-5BC3-437E-894B-5144E6E81236}", ICameraLookAtBehavior);
-        AZ_CLASS_ALLOCATOR(SlideAlongAxisBasedOnAngle, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlideAlongAxisBasedOnAngle, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* reflection);
 
         //////////////////////////////////////////////////////////////////////////

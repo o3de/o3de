@@ -20,8 +20,6 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleWindows, OSAllocator, 0);
-
         DynamicModuleHandleWindows(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
             , m_handle(nullptr)
@@ -58,7 +56,7 @@ namespace AZ
             if (!AZ::IO::SystemFile::Exists(m_fileName.c_str()))
             {
                 // The Settings Registry may not exist in early startup if modules are loaded
-                // before the ComponentApplication is crated(such as in the Editor main.cpp)
+                // before the ComponentApplication is created(such as in the Editor main.cpp)
                 // Therefore an existence check is needed
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
@@ -158,6 +156,6 @@ namespace AZ
     // Implement the module creation function
     AZStd::unique_ptr<DynamicModuleHandle> DynamicModuleHandle::Create(const char* fullFileName)
     {
-        return AZStd::unique_ptr<DynamicModuleHandle>(aznew DynamicModuleHandleWindows(fullFileName));
+        return AZStd::unique_ptr<DynamicModuleHandle>(new DynamicModuleHandleWindows(fullFileName));
     }
 } // namespace AZ

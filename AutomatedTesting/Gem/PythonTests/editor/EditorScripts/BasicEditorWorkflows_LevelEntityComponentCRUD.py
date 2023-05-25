@@ -68,6 +68,7 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         import azlmbr.bus as bus
         import azlmbr.editor as editor
         import azlmbr.entity as entity
+        import azlmbr.legacy.general as general
         import azlmbr.math as math
         import azlmbr.paths as paths
 
@@ -85,6 +86,12 @@ def BasicEditorWorkflows_LevelEntityComponentCRUD():
         # 1) Create a new level
         lvl_name = "tmp_level"
         editor_window = pyside_utils.get_editor_main_window()
+
+        # The action manager doesn't register the menus until the next system tick, so need to wait
+        # until the menu bar has been populated
+        general.idle_enable(True)
+        await pyside_utils.wait_for_condition(lambda: len(editor_window.menuBar().actions()) > 1)
+
         new_level_action = pyside_utils.get_action_for_menu_path(editor_window, "File", "New Level")
         pyside_utils.trigger_action_async(new_level_action)
         active_modal_widget = await pyside_utils.wait_for_modal_widget()

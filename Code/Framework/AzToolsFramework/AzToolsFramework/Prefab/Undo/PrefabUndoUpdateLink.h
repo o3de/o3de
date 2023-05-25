@@ -23,7 +23,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(PrefabUndoUpdateLink, "{9D2488FA-E0C4-408A-9494-4E0624E95820}", PrefabUndoBase);
-            AZ_CLASS_ALLOCATOR(PrefabUndoUpdateLink, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabUndoUpdateLink, AZ::SystemAllocator);
 
             explicit PrefabUndoUpdateLink(const AZStd::string& undoOperationName);
 
@@ -34,11 +34,11 @@ namespace AzToolsFramework
             void Capture(const PrefabDom& linkedInstancePatch, LinkId linkId);
 
         protected:
-            void SetLink(LinkId linkId);
-            void UpdateLink(const PrefabDom& linkDom,
-                InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
+            // The function to update link during undo and redo.
+            void UpdateLink(const PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
-            LinkReference m_link = AZStd::nullopt;
+            // Link that connects the linked instance and the focused instance.
+            LinkId m_linkId = InvalidLinkId;
         };
     }
 }

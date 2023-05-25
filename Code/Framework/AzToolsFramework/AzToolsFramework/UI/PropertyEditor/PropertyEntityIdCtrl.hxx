@@ -41,7 +41,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator);
 
         PropertyEntityIdCtrl(QWidget *pParent = NULL);
         virtual ~PropertyEntityIdCtrl();
@@ -111,7 +111,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EntityIdPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdPropertyHandler, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::EntityId; }
         virtual bool IsDefaultHandler() const override { return true; }

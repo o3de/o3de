@@ -124,12 +124,15 @@ namespace AZ
             //! User could provide such a callback function which releases some resources from the pool
             //! If some resources are released, the function may return true.
             //! If nothing is released, the function should return false.
-            using LowMemoryCallback = AZStd::function<bool()>;
+            using LowMemoryCallback = AZStd::function<bool(size_t targetMemoryUsage)>;
             void SetLowMemoryCallback(LowMemoryCallback callback);
             
             //! Set memory budget
             //! Return true if the pool was set to new memory budget successfully
             bool SetMemoryBudget(size_t newBudget);
+            
+            //! Return if it supports tiled image feature
+            bool SupportTiledImage() const;
 
         protected:
             StreamingImagePool() = default;
@@ -160,6 +163,9 @@ namespace AZ
             
             // Called when set a new memory budget.
             virtual ResultCode SetMemoryBudgetInternal(size_t newBudget);
+                        
+            // Return if it supports tiled image feature
+            virtual bool SupportTiledImageInternal() const;
 
             //////////////////////////////////////////////////////////////////////////
 

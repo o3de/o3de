@@ -24,7 +24,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Semaphore, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Semaphore, AZ::ThreadPoolAllocator);
 
             using WaitSemaphore = AZStd::pair<VkPipelineStageFlags, RHI::Ptr<Semaphore>>;
 

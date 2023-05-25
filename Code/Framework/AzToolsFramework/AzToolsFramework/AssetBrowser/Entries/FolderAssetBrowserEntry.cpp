@@ -40,6 +40,11 @@ namespace AzToolsFramework
             return m_isScanFolder;
         }
 
+        bool FolderAssetBrowserEntry::IsGemFolder() const
+        {
+            return m_isGemFolder;
+        }
+
         const AZ::Uuid& FolderAssetBrowserEntry::GetFolderUuid() const
         {
             return m_folderUuid;

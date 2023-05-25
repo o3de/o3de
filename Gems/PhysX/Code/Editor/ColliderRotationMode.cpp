@@ -17,7 +17,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderRotationMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderRotationMode, AZ::SystemAllocator);
 
     ColliderRotationMode::ColliderRotationMode()
         : m_rotationManipulators(AZ::Transform::Identity())

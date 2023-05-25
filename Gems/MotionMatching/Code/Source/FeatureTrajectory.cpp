@@ -24,7 +24,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(FeatureTrajectory, MotionMatchAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(FeatureTrajectory, MotionMatchAllocator)
 
     bool FeatureTrajectory::Init(const InitSettings& settings)
     {

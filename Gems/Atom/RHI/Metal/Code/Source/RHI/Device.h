@@ -40,7 +40,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "{04DA2F69-1E6F-42A1-B4F0-7ADC127A5AAB}", Base);
 
             static RHI::Ptr<Device> Create();
@@ -172,7 +172,7 @@ namespace AZ
             RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
-            RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] RHI::ShadingRate rate) override { return RHI::ShadingRateImageValue{}; }
+            RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] RHI::ShadingRate rate) const override { return RHI::ShadingRateImageValue{}; }
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeatures();            

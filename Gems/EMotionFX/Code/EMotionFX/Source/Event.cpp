@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Event, MotionEventAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Event, MotionEventAllocator)
 
     Event::Event(EventDataPtr&& data)
         : m_eventDatas{ AZStd::move(data) }

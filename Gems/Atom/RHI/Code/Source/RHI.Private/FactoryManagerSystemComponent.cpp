@@ -39,7 +39,6 @@ namespace AZ
                 {
                     ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "Atom Renderer")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &FactoryManagerSystemComponent::m_factoriesPriority, "RHI Priority list", "Priorities for RHI Implementations")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FactoryManagerSystemComponent::m_validationMode, "Validation Layer Mode", "Set the validation mode for the RHI. It only applies for non release builds")
@@ -206,6 +205,17 @@ namespace AZ
         void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
         {
             m_validationMode = AZ::RHI::ReadValidationMode();
+        }
+
+        void FactoryManagerSystemComponent::EnumerateFactories(AZStd::function<bool(Factory* factory)> callback)
+        {
+            for (auto& factory : m_registeredFactories)
+            {
+                if (!callback(factory))
+                {
+                    break;
+                }
+            }
         }
 
     } // namespace RHI

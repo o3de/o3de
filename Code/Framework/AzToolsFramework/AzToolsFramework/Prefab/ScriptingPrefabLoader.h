@@ -11,6 +11,8 @@
 #include <Prefab/PrefabLoaderInterface.h>
 #include <Prefab/PrefabLoaderScriptingBus.h>
 
+#include <AzCore/Memory/SystemAllocator.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
@@ -22,12 +24,12 @@ namespace AzToolsFramework
             : private PrefabLoaderScriptingBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScriptingPrefabLoader, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptingPrefabLoader, AZ::SystemAllocator);
             AZ_RTTI(ScriptingPrefabLoader, "{ABC3C989-4D4F-41E7-B25B-B0FEF97177E6}");
 
             void Connect(PrefabLoaderInterface* prefabLoaderInterface);
             void Disconnect();
-            
+
         private:
 
             //////////////////////////////////////////////////////////////////////////

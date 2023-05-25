@@ -17,7 +17,7 @@ namespace ScriptEvents
     class BehaviorHandlerFactoryMethod  : public AZ::BehaviorMethod
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorHandlerFactoryMethod, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorHandlerFactoryMethod, AZ::SystemAllocator);
 
         // The result parameter takes the 0th index
         enum ParameterIndex
@@ -89,7 +89,7 @@ namespace ScriptEvents
             return nullptr;
         }
 
-        void SetArgumentName(size_t /*index*/, const AZStd::string& /*name*/) override
+        void SetArgumentName(size_t /*index*/, AZStd::string /*name*/) override
         {
         }
 
@@ -98,7 +98,7 @@ namespace ScriptEvents
             return nullptr;
         }
 
-        void SetArgumentToolTip(size_t /*index*/, const AZStd::string& /*name*/) override
+        void SetArgumentToolTip(size_t /*index*/, AZStd::string /*name*/) override
         {
         }
 
@@ -125,7 +125,7 @@ namespace ScriptEvents
     class DefaultBehaviorHandlerCreator : public  BehaviorHandlerFactoryMethod
     {
     public:
-        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerCreator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerCreator, AZ::SystemAllocator);
 
         DefaultBehaviorHandlerCreator(AZ::BehaviorEBus* ebus, AZ::BehaviorContext* behaviorContext, const AZStd::string& name)
             : BehaviorHandlerFactoryMethod(ebus, behaviorContext, name)
@@ -176,7 +176,7 @@ namespace ScriptEvents
     class DefaultBehaviorHandlerDestroyer : public BehaviorHandlerFactoryMethod
     {
     public:
-        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerDestroyer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandlerDestroyer, AZ::SystemAllocator);
 
         DefaultBehaviorHandlerDestroyer(AZ::BehaviorEBus* ebus, AZ::BehaviorContext* behaviorContext, const AZStd::string& name)
             : BehaviorHandlerFactoryMethod(ebus, behaviorContext, name)

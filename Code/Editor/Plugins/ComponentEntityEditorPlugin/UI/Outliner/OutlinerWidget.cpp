@@ -31,6 +31,7 @@
 #include <AzQtComponents/Utilities/QtViewPaneEffects.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
@@ -140,7 +141,6 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     , m_gui(nullptr)
     , m_listModel(nullptr)
     , m_proxyModel(nullptr)
-    , m_selectionContextId(0)
     , m_selectedEntityIds()
     , m_inObjectPickMode(false)
     , m_scrollToNewContentQueued(false)
@@ -247,7 +247,7 @@ OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
     connect(m_gui->m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &OutlinerWidget::OnFilterChanged);
 
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
     if (serializeContext)
     {
@@ -532,7 +532,8 @@ void OutlinerWidget::contextMenuEvent(QContextMenuEvent* event)
     AZ_PROFILE_FUNCTION(Editor);
 
     bool isDocumentOpen = false;
-    EBUS_EVENT_RESULT(isDocumentOpen, AzToolsFramework::EditorRequests::Bus, IsLevelDocumentOpen);
+    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+        isDocumentOpen, &AzToolsFramework::EditorRequests::Bus::Events::IsLevelDocumentOpen);
     if (!isDocumentOpen)
     {
         return;
@@ -671,7 +672,8 @@ QString OutlinerWidget::FindCommonSliceAssetName(const AZStd::vector<AZ::EntityI
 AzFramework::EntityContextId OutlinerWidget::GetPickModeEntityContextId()
 {
     AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-    EBUS_EVENT_RESULT(editorEntityContextId, AzToolsFramework::EditorRequests::Bus, GetEntityContextId);
+    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+        editorEntityContextId, &AzToolsFramework::EditorRequests::Bus::Events::GetEntityContextId);
 
     return editorEntityContextId;
 }
@@ -679,7 +681,8 @@ AzFramework::EntityContextId OutlinerWidget::GetPickModeEntityContextId()
 void OutlinerWidget::PrepareSelection()
 {
     m_selectedEntityIds.clear();
-    EBUS_EVENT_RESULT(m_selectedEntityIds, AzToolsFramework::ToolsApplicationRequests::Bus, GetSelectedEntities);
+    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+        m_selectedEntityIds, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 }
 
 void OutlinerWidget::DoCreateEntity()
@@ -704,7 +707,8 @@ void OutlinerWidget::DoCreateEntityWithParent(const AZ::EntityId& parentId)
     PrepareSelection();
 
     AZ::EntityId entityId;
-    EBUS_EVENT_RESULT(entityId, AzToolsFramework::EditorRequests::Bus, CreateNewEntity, parentId);
+    AzToolsFramework::EditorRequests::Bus::BroadcastResult(
+        entityId, &AzToolsFramework::EditorRequests::Bus::Events::CreateNewEntity, parentId);
 }
 
 void OutlinerWidget::DoShowSlice()
@@ -716,7 +720,8 @@ void OutlinerWidget::DoShowSlice()
         QString commonSliceName = FindCommonSliceAssetName(m_selectedEntityIds);
         if (!commonSliceName.isEmpty())
         {
-            EBUS_EVENT(AzToolsFramework::ToolsApplicationEvents::Bus, ShowAssetInBrowser, commonSliceName.toStdString().c_str());
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::Bus::Events::ShowAssetInBrowser, commonSliceName.toStdString().c_str());
         }
     }
 }
@@ -730,7 +735,7 @@ void OutlinerWidget::DoDuplicateSelection()
         AzToolsFramework::ScopedUndoBatch undo("Duplicate Entity(s)");
 
         bool handled = false;
-        EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CloneSelection, handled);
+        AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::CloneSelection, handled);
     }
 }
 
@@ -738,7 +743,7 @@ void OutlinerWidget::DoDeleteSelection()
 {
     PrepareSelection();
 
-    EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, DeleteSelectedEntities, false);
+    AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::DeleteSelectedEntities, false);
 
     PrepareSelection();
 }
@@ -747,7 +752,7 @@ void OutlinerWidget::DoDeleteSelectionAndDescendants()
 {
     PrepareSelection();
 
-    EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, DeleteSelectedEntities, true);
+    AzToolsFramework::EditorRequests::Bus::Broadcast(&AzToolsFramework::EditorRequests::Bus::Events::DeleteSelectedEntities, true);
 
     PrepareSelection();
 }
@@ -1087,6 +1092,18 @@ void OutlinerWidget::SelectSliceRoot()
 
 void OutlinerWidget::OnEntityPickModeStarted()
 {
+    // If we're in component mode, it's possible the outliner isn't currently enabled. If so,
+    // make sure to enable it while in pick mode.
+    if (!isEnabled())
+    {
+        AZ_Assert(
+            AzToolsFramework::ComponentModeFramework::InComponentMode(),
+            "Unexpectedly starting pick mode with a disabled UI while not in component mode. This likely means that "
+            "the outliner will not re-disable itself after pick mode correctly. Fix the code in OnEntityPickModeStarted/Stopped to "
+            "account for this new case.");
+        EnableUi(true);
+    }
+
     m_gui->m_objectTree->setDragEnabled(false);
     m_gui->m_objectTree->setSelectionMode(QAbstractItemView::NoSelection);
     m_gui->m_objectTree->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -1095,6 +1112,12 @@ void OutlinerWidget::OnEntityPickModeStarted()
 
 void OutlinerWidget::OnEntityPickModeStopped()
 {
+    // If we're in component mode, the outliner shouldn't be enabled once pick mode ends.
+    if (AzToolsFramework::ComponentModeFramework::InComponentMode())
+    {
+        EnableUi(false);
+    }
+
     m_gui->m_objectTree->setDragEnabled(true);
     m_gui->m_objectTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
     m_gui->m_objectTree->setEditTriggers(QAbstractItemView::SelectedClicked | QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);

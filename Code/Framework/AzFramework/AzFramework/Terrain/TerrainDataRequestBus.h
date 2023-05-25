@@ -79,6 +79,7 @@ namespace AzFramework
         class TerrainJobContext : public AZ::JobContext
         {
         public:
+            AZ_CLASS_ALLOCATOR(TerrainJobContext, AZ::ThreadPoolAllocator)
             TerrainJobContext(AZ::JobManager& jobManager, int numJobsToComplete)
                 : JobContext(jobManager)
                 , m_numJobsToComplete(numJobsToComplete)
@@ -347,13 +348,14 @@ namespace AzFramework
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             //////////////////////////////////////////////////////////////////////////
 
-            enum TerrainDataChangedMask : uint8_t
+            enum class TerrainDataChangedMask : uint8_t
             {
                 None        = 0b00000000,
                 Settings    = 0b00000001,
                 HeightData  = 0b00000010,
                 ColorData   = 0b00000100,
-                SurfaceData = 0b00001000
+                SurfaceData = 0b00001000,
+                All         = 0b00001111
             };
 
             virtual void OnTerrainDataCreateBegin() {}
@@ -389,6 +391,9 @@ namespace AzFramework
             };
         };
         using TerrainDataNotificationBus = AZ::EBus<TerrainDataNotifications>;
+
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(TerrainDataNotifications::TerrainDataChangedMask);
+
     } // namespace Terrain
 } // namespace AzFramework
 

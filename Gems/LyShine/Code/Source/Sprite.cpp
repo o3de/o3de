@@ -103,7 +103,7 @@ namespace
         // NOTE: it should not be a full path at this point. If called from the UI editor it will
         // have been transformed to a game path. If being called with a hard coded path it should be a
         // game path already - it is not good for code to be using full paths.
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, sourcePathname);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, sourcePathname);
 
         // check the extension and work out the pathname of the sprite file and the texture file
         // currently it works if the input path is either a sprite file or a texture file
@@ -922,5 +922,5 @@ bool CSprite::LoadFromXmlFile()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CSprite::NotifyChanged()
 {
-    EBUS_EVENT_ID(this, UiSpriteSettingsChangeNotificationBus, OnSpriteSettingsChanged);
+    UiSpriteSettingsChangeNotificationBus::Event(this, &UiSpriteSettingsChangeNotificationBus::Events::OnSpriteSettingsChanged);
 }

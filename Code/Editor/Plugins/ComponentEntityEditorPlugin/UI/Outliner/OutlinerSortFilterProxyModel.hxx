@@ -27,7 +27,7 @@ class OutlinerSortFilterProxyModel
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerSortFilterProxyModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerSortFilterProxyModel, AZ::SystemAllocator);
 
     OutlinerSortFilterProxyModel(QObject* pParent = nullptr);
 

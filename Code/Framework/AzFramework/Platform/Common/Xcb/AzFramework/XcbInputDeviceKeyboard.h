@@ -25,7 +25,7 @@ namespace AzFramework
         , public XcbEventHandlerBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(XcbInputDeviceKeyboard, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XcbInputDeviceKeyboard, AZ::SystemAllocator);
 
         using InputDeviceKeyboard::Implementation::Implementation;
         XcbInputDeviceKeyboard(InputDeviceKeyboard& inputDevice);

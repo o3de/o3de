@@ -17,9 +17,10 @@ import logging
 import zipfile
 from typing import Any, Dict, List
 
-from . import asset_processor_fixture as asset_processor
-from . import timeout_option_fixture as timeout
-from . import ap_config_backup_fixture as config_backup
+from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
+from assetpipeline.ap_fixtures.timeout_option_fixture import timeout_option_fixture as timeout
+from assetpipeline.ap_fixtures.ap_config_backup_fixture import ap_config_backup_fixture as config_backup
+from assetpipeline.ap_fixtures.ap_setup_fixture import ap_setup_fixture
 
 import ly_test_tools.environment.file_system as fs
 import ly_test_tools.o3de.pipeline_utils as utils
@@ -30,67 +31,102 @@ logger = logging.getLogger(__name__)
 
 @pytest.fixture
 @pytest.mark.usefixtures("config_backup")
-def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) -> Any:
+@pytest.mark.usefixtures("asset_processor")
+@pytest.mark.usefixtures("ap_setup_fixture")
+def bundler_batch_setup_fixture(request, workspace, ap_setup_fixture, asset_processor) -> Any:
 
-    ALL_PLATFORMS = []
-    for _, value in ASSET_PROCESSOR_PLATFORM_MAP.items():
-        ALL_PLATFORMS.append(value)
+    def get_all_platforms() -> list[str]:
+        """Helper: This function generates a list of all platforms to be built for testing Asset Bundler."""
+        ALL_PLATFORMS = []
+        for _, value in ASSET_PROCESSOR_PLATFORM_MAP.items():
+            ALL_PLATFORMS.append(value)
+        return ALL_PLATFORMS
 
-    # Set up temporary directory to use for tests
-    tempDir = os.path.join(TF.gettempdir(), "AssetBundlerTempDirectory")
-    if os.path.exists(tempDir):
-        fs.delete([tempDir], True, True)
-    if not os.path.exists(tempDir):
-        os.mkdir(tempDir)
+    def platforms_to_build() -> list | list[str]:
+        """Helper: Gets the platforms to build for bundle tests."""
+        platforms = request.config.getoption("--bundle_platforms")
+        if platforms is not None:
+            # Remove whitespace and split at commas if platforms provided
+            platforms = [platform.strip() for platform in platforms.split(",")]
+        else:
+            # No commandline argument provided, default to mac and pc
+            platforms = ["pc", "mac", "linux"]
+        return platforms
 
-    # Get platforms to build for bundle tests
-    platforms = request.config.getoption("--bundle_platforms")
-    if platforms is not None:
-        # Remove whitespace and split at commas if platforms provided
-        platforms = [platform.strip() for platform in platforms.split(",")]
-    else:
-        # No commandline argument provided, default to mac and pc
-        platforms = ["pc", "mac"]
+    def setup_temp_workspace() -> None:
+        """Helper: Sets up the temp workspace for asset bundling tests."""
+        asset_processor.create_temp_asset_root()
 
-    class BundlerBatchFixture:
+    def setup_temp_dir() -> Any:
+        """Helper: Sets up a temp directory for use in bundling tests that can't use the temp workspace."""
+        tempDir = os.path.join(TF.gettempdir(), "AssetBundlerTempDirectory")
+        if os.path.exists(tempDir):
+            fs.delete([tempDir], True, True)
+        if not os.path.exists(tempDir):
+            os.mkdir(tempDir)
+        return tempDir
+
+    class WorkSpaceBundlerBatchFixture:
         """
         Houses useful variables and functions for running Asset Bundler Batch Tests
         """
-
         def __init__(self):
             self.bin_dir = workspace.paths.build_directory()
             self.bundler_batch = os.path.join(self.bin_dir, "AssetBundlerBatch")
-            self.test_dir = tempDir
-            self.asset_alias = workspace.paths.platform_cache()
-            self.tools_dir = os.path.join(workspace.paths.engine_root(), "Tools")
             self.seed_list_file_name = "testSeedListFile.seed"
-            self.seed_list_file = os.path.join(self.test_dir, self.seed_list_file_name)
             self.asset_info_file_name = "assetFileInfo.assetlist"
-            self.asset_info_file_request = os.path.join(self.test_dir, self.asset_info_file_name)
-            self.bundle_settings_file_request = os.path.join(self.test_dir, "bundleSettingsFile.bundlesettings")
             self.bundle_file_name = "bundle.pak"
-            self.bundle_file = os.path.join(self.test_dir, self.bundle_file_name)
-            self.asset_info_file_result = os.path.join(
-                self.test_dir, self.platform_file_name(self.asset_info_file_name,
-                                                       workspace.asset_processor_platform)
-            )
-            self.bundle_settings_file_result = os.path.join(
-                self.test_dir, self.platform_file_name("bundleSettingsFile.bundlesettings",
-                                                       workspace.asset_processor_platform)
-            )
+            self.bundle_settings_file_name = "bundleSettingsFile.bundlesettings"
+            self.workspace = workspace
+            self.platforms = platforms_to_build()
+            self.platforms_as_string = ",".join(self.platforms)
+
             # Useful sizes
             self.max_bundle_size_in_mib = 35
             self.number_of_bytes_in_mib = 1024 * 1024
-            self.workspace = workspace
-            self.platforms = platforms
-            self.platforms_as_string = ",".join(platforms)
 
-        # *** Bundler-batch-calling helpers ***
+            # Checks whether or not the fixture was parametrized to use the temp workspace. Defaults to True.
+            self.use_temp_workspace = request.param if hasattr(request, "param") else True
 
-        def call_asset_bundler(self, arg_list):                 
-            # Print out the call to asset bundler, so if an error occurs, the commands that were run can be repeated.
-            # Split out the list to something that can be easily copy and pasted. Printing a list by default will put it in,
-            # [comma, separated, braces], this join will instead print each arg in the list with only a space between them.
+            if self.use_temp_workspace:
+                setup_temp_workspace()
+                self.project_path = os.path.join(asset_processor.temp_asset_root(), workspace.project)
+                self.cache = asset_processor.temp_project_cache_path()
+                self.seed_list_file = os.path.join(self.project_path, self.seed_list_file_name)
+                self.asset_info_file_request = os.path.join(self.project_path, self.asset_info_file_name)
+                self.bundle_settings_file_request = os.path.join(self.project_path, self.bundle_settings_file_name)
+                self.bundle_file = os.path.join(self.project_path, self.bundle_file_name)
+                self.asset_info_file_result = os.path.join(
+                    self.project_path, self.platform_file_name(self.asset_info_file_name,
+                                                               workspace.asset_processor_platform)
+                )
+                self.bundle_settings_file_result = os.path.join(
+                    self.project_path, self.platform_file_name(self.bundle_settings_file_name,
+                                                               workspace.asset_processor_platform)
+                )
+
+            else:
+                self.project_path = workspace.paths.project()
+                self.cache = workspace.paths.project_cache()
+                self.test_dir = setup_temp_dir()
+                self.seed_list_file = os.path.join(self.test_dir, self.seed_list_file_name)
+                self.asset_info_file_request = os.path.join(self.test_dir, self.asset_info_file_name)
+                self.bundle_settings_file_request = os.path.join(self.test_dir, self.bundle_settings_file_name)
+                self.bundle_file = os.path.join(self.test_dir, self.bundle_file_name)
+                self.asset_info_file_result = os.path.join(
+                    self.test_dir, self.platform_file_name(self.asset_info_file_name,
+                                                           workspace.asset_processor_platform)
+                )
+                self.bundle_settings_file_result = os.path.join(
+                    self.test_dir, self.platform_file_name(self.bundle_settings_file_name,
+                                                           workspace.asset_processor_platform)
+                )
+
+        @staticmethod
+        def call_asset_bundler(arg_list):
+            """
+            Prints out the call to asset bundler, so if an error occurs, the commands that were run can be repeated.
+            """
             logger.info(f"{' '.join(f'arg_list{x}' for x in arg_list)}")
             try:
                 output = subprocess.check_output(arg_list).decode()
@@ -103,48 +139,48 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                 logger.error(f"File Not Found - Failed to call AssetBundlerBatch with args {arg_list} with error {e}")
                 raise e
 
-        def call_bundlerbatch(self, **kwargs: Dict[str, str]):
+        def call_bundlerbatch(self, **kwargs: Dict[str, str]) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with no sub-command"""
             cmd = [self.bundler_batch]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_seeds(self, **kwargs: Dict[str, str]) -> None:
+        def call_seeds(self, **kwargs: Dict[str, str]) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'seeds' sub-command"""
 
             cmd = [self.bundler_batch, "seeds"]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_assetLists(self, **kwargs: Dict) -> None:
+        def call_assetLists(self, **kwargs: Dict) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'assetLists' sub-command"""
 
             cmd = [self.bundler_batch, "assetLists"]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_comparisonRules(self, **kwargs: Dict) -> None:
+        def call_comparisonRules(self, **kwargs: Dict) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'comparisonRules' sub-command"""
 
             cmd = [self.bundler_batch, "comparisonRules"]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_compare(self, **kwargs: Dict) -> None:
+        def call_compare(self, **kwargs: Dict) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'compare' sub-command"""
 
             cmd = [self.bundler_batch, "compare"]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_bundleSettings(self, **kwargs: Dict) -> None:
+        def call_bundleSettings(self, **kwargs: Dict) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'bundleSettings' sub-command"""
 
             cmd = [self.bundler_batch, "bundleSettings"]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_bundles(self, **kwargs: Dict) -> None:
+        def call_bundles(self, **kwargs: Dict) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'bundles' sub-command"""
 
             cmd = [self.bundler_batch, "bundles"]
             return self.call_asset_bundler(self._append_arguments(cmd, kwargs))
 
-        def call_bundleSeed(self, **kwargs: Dict) -> None:
+        def call_bundleSeed(self, **kwargs: Dict) -> tuple[bool, str] | tuple[bool, Any]:
             """Helper function for calling assetbundlerbatch with 'bundleSeed' sub-command"""
 
             cmd = [self.bundler_batch, "bundleSeed"]
@@ -153,17 +189,22 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
         def _append_arguments(self, cmd: List[str], kwargs: Dict, append_defaults: bool = True) -> List[str]:
             """Appends and returns all keyword arguments to the list of string [cmd]"""
             for key, value in kwargs.items():
-                if value:
-                    cmd.append(f"--{key}={value}")
-                else:
+                if not value:
                     cmd.append(f"--{key}")
+
+                else:
+                    if type(value) != list:
+                        cmd.append(f"--{key}={value}")
+                    else:
+                        for item in value:
+                            cmd.append(f"--{key}={item}")
+
             if append_defaults:
-                cmd.append(f"--project-path={workspace.paths.project()}")
+                cmd.append(f"--project-path={self.project_path}")
             return cmd
 
-        # ******
-
-        def get_seed_relative_paths(self, seed_file: str) -> str:
+        @staticmethod
+        def get_seed_relative_paths(seed_file: str) -> str:
             """Iterates all asset relative paths in the [seed_file]."""
             assert seed_file.endswith(".seed"), f"file {seed_file} is not a seed file"
             # Get value from all XML nodes who are grandchildren of all Class tags and have
@@ -171,7 +212,8 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
             for node in ET.parse(seed_file).getroot().findall(r"./Class/Class/*[@field='pathHint']"):
                 yield node.attrib["value"]
 
-        def get_seed_relative_paths_for_platform(self, seed_file: str, platform_flags : int) -> str:
+        @staticmethod
+        def get_seed_relative_paths_for_platform(seed_file: str, platform_flags: int) -> list[str]:
             """Iterates all asset relative paths in the [seed_file] which match the platform flags"""
             assert seed_file.endswith(".seed"), f"file {seed_file} is not a seed file"
             # Get value from all XML nodes who are grandchildren of all Class tags and have
@@ -182,46 +224,50 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
             root = data.getroot()
             seedFileRootNode = root.find("Class")
             for seedFileInfoNode in seedFileRootNode.findall("*"):
-                if (int(seedFileInfoNode.find('./Class[@field="platformFlags"]').attrib["value"]) & platform_flags ):
+                if (int(seedFileInfoNode.find('./Class[@field="platformFlags"]').attrib["value"]) & platform_flags):
                     pathHint = seedFileInfoNode.find('./Class[@field="pathHint"]').attrib["value"]
                     seedFileListContents.append(pathHint)
             return seedFileListContents
 
-        def get_asset_relative_paths(self, asset_list_file: str) -> str:
+        @staticmethod
+        def get_asset_relative_paths(asset_list_file: str) -> str:
             """Iterates all asset relative paths in the [asset_list_file]."""
             assert asset_list_file.endswith(".assetlist"), f"file {asset_list_file} is not an assetlist file"
             # Get value from all XML nodes who are great-grandchildren of all Class tags and have
             # a field attr. equal to "assetRelativePath"
-            # fmt:off
+
             for node in (ET.parse(asset_list_file).getroot().findall(
                     r"./Class/Class/Class/*[@field='assetRelativePath']")):
                 yield node.attrib["value"]
-            # fmt:on
 
-        def get_dependent_bundle_names(self, manifest_file: str) -> str:
+        @staticmethod
+        def get_dependent_bundle_names(manifest_file: str) -> str:
             """Iterates all dependent bundle names in the [manifest_file]"""
             assert manifest_file.endswith(".xml"), f"File {manifest_file} does not have an XML extension"
             # Get value from all XML nodes whose parent field attr. is "DependentBundleNames" and whose tag is Class
             for node in ET.parse(manifest_file).getroot().findall(r".//*[@field='DependentBundleNames']/Class"):
                 yield node.attrib["value"]
 
-        def platform_file_name(self, file_name: str, platform: str) -> str:
+        @staticmethod
+        def platform_file_name(file_name: str, platform: str) -> str:
             """Converts the standard [file_name] to a platform specific file name"""
             split = file_name.split(".", 1)
-            platform_name = ASSET_PROCESSOR_PLATFORM_MAP.get(platform)
+            platform_name = platform if platform in ASSET_PROCESSOR_PLATFORM_MAP.values() else ASSET_PROCESSOR_PLATFORM_MAP.get(platform)
             if not platform_name:
                 logger.warning(f"platform {platform} not recognized. File name could not be generated")
                 return file_name
             return f'{split[0]}_{platform_name}.{split[1]}'
 
-        def extract_file_content(self, bundle_file: str, file_name_to_extract: str) -> str:
-            """Extract the contents of a single file from a bundle"""
+        @staticmethod
+        def extract_file_content(bundle_file: str, file_name_to_extract: str) -> bytes:
+            """Extract the contents of a single file from a bundle as a ByteString."""
 
             with zipfile.ZipFile(bundle_file) as bundle_zip:
                 with bundle_zip.open(file_name_to_extract, "r") as extracted_file:
                     return extracted_file.read()
 
-        def get_crc_of_files_in_archive(self, archive_name: str) -> Dict[str, int]:
+        @staticmethod
+        def get_crc_of_files_in_archive(archive_name: str) -> Dict[str, int]:
             """
             Extracts the CRC-32 'checksum' for all files in the archive as dictionary.
             The returned dictionary will have:
@@ -234,17 +280,20 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                 file_crcs[info.filename] = info.CRC
             return file_crcs
 
-        def get_platform_flag(self, platform_name: str) -> int:
-            if (platform_name == "pc"):
-                return 1
-            elif (platform_name == "android"):
-                return 2
-            elif (platform_name == "ios"):
-                return 4
-            elif (platform_name == "mac"):
-                return 8
-            elif (platform_name == "server"):
-                return 128
+        @staticmethod
+        def get_platform_flag(platform_name: str) -> int:
+            """ Helper to fetch the platform flag from a provided platform name. """
+            platform_flags = {
+                "pc": 1,
+                "android": 2,
+                "ios": 4,
+                "mac": 8,
+                "server": 128
+            }
+            if platform_name in platform_flags:
+                return platform_flags.get(platform_name)
+            raise ValueError(f"{platform_name} not found within expected platform flags. "
+                             f"Expected: {platform_flags.keys()}")
 
         def extract_and_check(self, extract_dir: str, bundle_file: str) -> None:
             """
@@ -287,7 +336,8 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
             # Ensure that all assets were present in the bundles
             assert sorted(assets_from_file) == sorted(assets_in_disk)
 
-        def _get_platform_flags(self) -> Dict[str, int]:
+        @staticmethod
+        def _get_platform_flags() -> Dict[str, int]:
             """
             Extract platform numeric values from the file that declares them (PlatformDefaults.h):
             Platform Flags are defined in the C header file, where ORDER MATTERS.
@@ -324,7 +374,10 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
 
         def teardown(self) -> None:
             """Destroys the temporary directory used in this test"""
-            fs.delete([self.test_dir], True, True)
+            if self.use_temp_workspace:
+                fs.delete([asset_processor.temp_asset_root()], True, True)
+            else:
+                fs.delete([self.test_dir], True, True)
 
         def __getitem__(self, item: str) -> str:
             """Get Item overload to use the object like a dictionary.
@@ -333,19 +386,9 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
 
     # End class BundlerBatchFixture
 
-    bundler_batch_fixture = BundlerBatchFixture()
+    bundler_batch_fixture = WorkSpaceBundlerBatchFixture()
     request.addfinalizer(bundler_batch_fixture.teardown)
 
     bundler_batch_fixture.platform_values = bundler_batch_fixture._get_platform_flags()
-
-    # Enable platforms accepted from command line
-    platforms_list = [platform for platform in platforms if platform in ALL_PLATFORMS]
-
-    # Run a full scan to ENSURE that both caches (pc and osx) are COMPLETELY POPULATED
-    # Needed for asset bundling
-    # fmt:off
-    assert asset_processor.batch_process(fastscan=True, timeout=timeout * len(platforms), platforms=platforms_list), \
-        "AP Batch failed to process in bundler_batch_fixture"
-    # fmt:on
 
     return bundler_batch_fixture  # Return the fixture

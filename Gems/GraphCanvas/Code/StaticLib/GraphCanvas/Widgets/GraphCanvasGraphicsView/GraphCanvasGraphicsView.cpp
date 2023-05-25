@@ -668,7 +668,6 @@ namespace GraphCanvas
             layout->addWidget(graphicsView);
 
             dialog.setLayout(layout);
-
             dialog.show();
             dialog.hide();
 
@@ -683,6 +682,14 @@ namespace GraphCanvas
 
             graphicsView->render(&localPainter, QRectF(0, 0, windowSize.width(), windowSize.height()), viewportRect);
             localPainter.end();
+
+            AzQtComponents::ToastConfiguration toastConfiguration(
+                AzQtComponents::ToastType::Information,
+                "<b>Screenshot</b>",
+                "Screenshot copied to clipboard!");
+            toastConfiguration.m_duration = AZStd::chrono::milliseconds(2000);
+            toastConfiguration.m_allowDuplicateNotifications = true;
+            m_notificationsView->ShowToastNotification(toastConfiguration);
         }
 
         return image;

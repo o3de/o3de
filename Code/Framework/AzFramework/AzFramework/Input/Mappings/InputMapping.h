@@ -34,7 +34,7 @@ namespace AzFramework
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(InputChannelNameFilteredByDeviceType, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InputChannelNameFilteredByDeviceType, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Type Info
@@ -97,7 +97,7 @@ namespace AzFramework
         public:
             ////////////////////////////////////////////////////////////////////////////////////////
             // Allocator
-            AZ_CLASS_ALLOCATOR(ConfigBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ConfigBase, AZ::SystemAllocator);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             // Type Info
@@ -134,7 +134,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputMapping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputMapping, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

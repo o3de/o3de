@@ -40,12 +40,16 @@ namespace UnitTest
         void SetUp() override
         {
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
         }
         void TearDown() override
         {
             AZ::AllocatorManager::Instance().GarbageCollect();
             AZ::AllocatorManager::Instance().ExitProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
         }
     };
@@ -84,7 +88,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {nullptr};
+            void* addresses[numAllocations] = { nullptr };
 
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
@@ -105,7 +109,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // Deallocate
-            for (int i = numAllocations-1; i >=0; --i)
+            for (int i = numAllocations - 1; i >= 0; --i)
             {
                 sysAllocator.DeAllocate(addresses[i]);
             }
@@ -119,8 +123,6 @@ namespace UnitTest
             // On windows we don't require to preallocate memory to function.
             // On most consoles we do!
             {
-                AllocatorInstance<SystemAllocator>::Create();
-
                 IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
                 for (int i = 0; i < 100; ++i)
@@ -154,14 +156,10 @@ namespace UnitTest
                         m_threads[i].join();
                     }
                 }
-                //////////////////////////////////////////////////////////////////////////
-
-                AllocatorInstance<SystemAllocator>::Destroy();
             }
 #endif
             memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
-            AllocatorInstance<SystemAllocator>::Create();
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
 
             for (int i = 0; i < 100; ++i)
@@ -174,7 +172,7 @@ namespace UnitTest
 
             EXPECT_TRUE(sysAllocator.NumAllocatedBytes() >= 100000); // we requested 100 * 1000 so we should have at least this much allocated
 
-// If tracking and recording is enabled, we can verify that the alloc info is valid
+            // If tracking and recording is enabled, we can verify that the alloc info is valid
 #if defined(AZ_DEBUG_BUILD)
             sysAllocator.GetRecords()->lock();
             EXPECT_TRUE(sysAllocator.GetRecords());
@@ -195,7 +193,8 @@ namespace UnitTest
                 // This is possible on deprecated platforms too, but we would need to load the map file manually and so on... it's tricky.
                 // Note: depending on where the tests are run from the call stack may differ.
                 SymbolStorage::StackLine stackLine[20];
-                SymbolStorage::DecodeFrames(ai.m_stackFrames, AZ_ARRAY_SIZE(stackLine), stackLine);
+                auto recordFrameCount = AZ::GetMin(ai.m_stackFramesCount, static_cast<unsigned int>(AZ_ARRAY_SIZE(stackLine)));
+                SymbolStorage::DecodeFrames(ai.m_stackFrames, recordFrameCount, stackLine);
                 bool found = false;
                 int foundIndex = 0;  // After finding it for the first time, save the index so it can be reused
 
@@ -287,8 +286,6 @@ namespace UnitTest
             //AZStd::chrono::microseconds exTime = AZStd::chrono::steady_clock::now() - startTime;
             //AZ_Printf("UnitTest::SystemAllocatorTest::mspaces","Time: %d Ms\n",exTime.count());
             //////////////////////////////////////////////////////////////////////////
-
-            AllocatorInstance<SystemAllocator>::Destroy();
         }
     };
 
@@ -302,40 +299,26 @@ namespace UnitTest
     {
     protected:
     public:
-        void SetUp() override
+        void run(IAllocator& poolAllocator)
         {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-            MemoryTrackingFixture::TearDown();
-        }
-
-        void run()
-        {
-            IAllocator& poolAllocator = AllocatorInstance<PoolAllocator>::Get();
             // 64 should be the max number of different pool sizes we can allocate.
             void* address[64];
             //////////////////////////////////////////////////////////////////////////
             // Allocate different pool sizes
-            memset(address, 0, AZ_ARRAY_SIZE(address)*sizeof(void*));
+            memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
             // try any size from 8 to 256 (which are supported pool sizes)
             int i = 0;
+            int expectedMinimumAllocationSize = 0;
             for (int size = 8; size <= 256; ++i, size += 8)
             {
                 address[i] = poolAllocator.Allocate(size, 8);
                 EXPECT_GE(poolAllocator.AllocationSize(address[i]), (AZStd::size_t)size);
                 memset(address[i], 1, size);
+                expectedMinimumAllocationSize += size;
             }
 
-            EXPECT_GE(poolAllocator.NumAllocatedBytes(), 4126);
+            EXPECT_GE(poolAllocator.NumAllocatedBytes(), expectedMinimumAllocationSize);
 
             if (poolAllocator.GetRecords())
             {
@@ -368,7 +351,7 @@ namespace UnitTest
             //          mb.fileName = "This File";
             //          AllocatorManager::Instance().SetMemoryBreak(0,mb);
 
-            memset(address, 0, AZ_ARRAY_SIZE(address)*sizeof(void*));
+            memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
             for (unsigned int j = 0; j < AZ_ARRAY_SIZE(address); ++j)
             {
                 address[j] = poolAllocator.Allocate(256, 8);
@@ -377,7 +360,7 @@ namespace UnitTest
             }
             //          AllocatorManager::Instance().ResetMemoryBreak(0);
 
-            EXPECT_GE(poolAllocator.NumAllocatedBytes(), AZ_ARRAY_SIZE(address)*256);
+            EXPECT_GE(poolAllocator.NumAllocatedBytes(), AZ_ARRAY_SIZE(address) * 256);
 
             if (poolAllocator.GetRecords())
             {
@@ -406,9 +389,54 @@ namespace UnitTest
         }
     };
 
-    TEST_F(PoolAllocatorTest, Test)
+    TEST_F(PoolAllocatorTest, TestDefaultPoolAllocator)
     {
-        run();
+        run(AllocatorInstance<PoolAllocator>::Get());
+    }
+
+    constexpr size_t s_testCustomPoolPageSize = 1024;
+    constexpr size_t s_testCustomPoolMinAllocationSize = 64;
+    constexpr size_t s_testCustomPoolMaxAllocationSize = 256;
+
+    // Define a custom pool allocator
+    class TestCustomPoolAllocator final : public AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(TestCustomPoolAllocator, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(TestCustomPoolAllocator, "{3B299C74-7697-4188-A116-32FC69A72E15}");
+
+        TestCustomPoolAllocator()
+            // Invoke the base constructor explicitely to use the override that takes custom page, min, and max allocation sizes
+            : AZ::Internal::PoolAllocatorHelper<AZ::PoolSchema>(
+                  s_testCustomPoolPageSize, s_testCustomPoolMinAllocationSize, s_testCustomPoolMaxAllocationSize)
+        {
+        }
+    };
+
+    TEST_F(PoolAllocatorTest, TestWithCustomPoolAllocator)
+    {
+        run(AllocatorInstance<TestCustomPoolAllocator>::Get());
+    }
+    
+    TEST_F(PoolAllocatorTest, Allocate_LessThanMinAllocationSize_RoundsUpToMinAllocationSize)
+    {
+        // Validate that the minimum allocation size of a custom PoolAllocator is respected
+        AZ::IAllocator::pointer result =
+            AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().Allocate(s_testCustomPoolMinAllocationSize - 1, 1);
+        EXPECT_EQ(AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().NumAllocatedBytes(), s_testCustomPoolMinAllocationSize);
+
+        // DeAllocate so the test doesn't leak
+        AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().DeAllocate(result);
+    }
+
+    TEST_F(PoolAllocatorTest, Allocate_MoreThanMaxAllocationSize_FailsToAllocate)
+    {
+        // Validate that the maximum allocation size of a custom PoolAllocator is respected
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        AZ::IAllocator::pointer result =
+            AZ::AllocatorInstance<TestCustomPoolAllocator>::Get().Allocate(s_testCustomPoolMaxAllocationSize + 1, 1);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_EQ(result, nullptr);
     }
 
     /**
@@ -456,17 +484,6 @@ namespace UnitTest
             {
                 m_desc[i].m_stackSize = m_threadStackSize;
             }
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-
-            MemoryTrackingFixture::TearDown();
         }
 
         void AllocDeallocFunc()
@@ -476,7 +493,7 @@ namespace UnitTest
 #else
             static const int numAllocations = 10000;
 #endif
-            void* addresses[numAllocations] = {nullptr};
+            void* addresses[numAllocations] = { nullptr };
 
             IAllocator& poolAllocator = AllocatorInstance<ThreadPoolAllocator>::Get();
 
@@ -493,7 +510,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // Deallocate
-            for (int i = numAllocations-1; i >=0; --i)
+            for (int i = numAllocations - 1; i >= 0; --i)
             {
                 poolAllocator.DeAllocate(addresses[i]);
             }
@@ -524,7 +541,7 @@ namespace UnitTest
             IAllocator& poolAllocator = AllocatorInstance<ThreadPoolAllocator>::Get();
             AllocClass* ac;
             int isDone = 0;
-            while (isDone!=2)
+            while (isDone != 2)
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 while (!m_sharedAlloc.empty())
@@ -545,7 +562,7 @@ namespace UnitTest
             : public ThreadPoolBase<MyThreadPoolAllocator>
         {
         public:
-            AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MyThreadPoolAllocator, SystemAllocator);
             AZ_TYPE_INFO(MyThreadPoolAllocator, "{28D80F96-19B1-4465-8278-B53989C44CF1}");
 
             using Base = ThreadPoolBase<MyThreadPoolAllocator>;
@@ -558,7 +575,7 @@ namespace UnitTest
             void* address[64];
             //////////////////////////////////////////////////////////////////////////
             // Allocate different pool sizes
-            memset(address, 0, AZ_ARRAY_SIZE(address)*sizeof(void*));
+            memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
 
             // try any size from 8 to 256 (which are supported pool sizes)
             int j = 0;
@@ -599,7 +616,7 @@ namespace UnitTest
 
             //////////////////////////////////////////////////////////////////////////
             // Allocate many elements from the same size
-            memset(address, 0, AZ_ARRAY_SIZE(address)*sizeof(void*));
+            memset(address, 0, AZ_ARRAY_SIZE(address) * sizeof(void*));
             for (unsigned int i = 0; i < AZ_ARRAY_SIZE(address); ++i)
             {
                 address[i] = poolAllocator.Allocate(256, 8);
@@ -659,32 +676,29 @@ namespace UnitTest
             {
                 AZStd::thread m_threads[m_maxNumThreads];
 
-                for (unsigned int i = m_maxNumThreads/2; i <m_maxNumThreads; ++i)
+                for (unsigned int i = m_maxNumThreads / 2; i < m_maxNumThreads; ++i)
                 {
                     m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedDeAlloc, this));
                 }
 
-                for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
+                for (unsigned int i = 0; i < m_maxNumThreads / 2; ++i)
                 {
                     m_threads[i] = AZStd::thread(m_desc[i], AZStd::bind(&ThreadPoolAllocatorTest::SharedAlloc, this));
                 }
 
-                for (unsigned int i = 0; i < m_maxNumThreads/2; ++i)
+                for (unsigned int i = 0; i < m_maxNumThreads / 2; ++i)
                 {
                     m_threads[i].join();
                 }
 
                 m_doneSharedAlloc = true;
 
-                for (unsigned int i = m_maxNumThreads/2; i <m_maxNumThreads; ++i)
+                for (unsigned int i = m_maxNumThreads / 2; i < m_maxNumThreads; ++i)
                 {
                     m_threads[i].join();
                 }
             }
             //////////////////////////////////////////////////////////////////////////
-
-            // Our pools will support only 512 byte allocations
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Create();
 
             void* pooled512 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(512, 512);
             ASSERT_TRUE(pooled512);
@@ -694,11 +708,19 @@ namespace UnitTest
             void* pooled2048 = AZ::AllocatorInstance<MyThreadPoolAllocator>::Get().Allocate(2048, 2048);
             (void)pooled2048;
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-            AZ::AllocatorInstance<MyThreadPoolAllocator>::Destroy();
         }
     };
+}
 
+namespace AZ::Internal
+{
+    // Add implementation of PoolAllocatorHelper Class Template RTTI functions inside
+    // of this translation unit to as the MyThreadPoolAllocator derived class requires linkage to those functions.
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME_IMPL(PoolAllocatorHelper, "PoolAllocatorHelper", PoolAllocatorHelperTemplateId, AZ_TYPE_INFO_CLASS);
+    AZ_RTTI_NO_TYPE_INFO_IMPL((PoolAllocatorHelper, AZ_TYPE_INFO_CLASS), Base);
+}
+namespace UnitTest
+{
     TEST_F(ThreadPoolAllocatorTest, Test)
     {
         run();
@@ -711,21 +733,6 @@ namespace UnitTest
         : public MemoryTrackingFixture
     {
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
@@ -797,7 +804,7 @@ namespace UnitTest
         class MyClass
         {
         public:
-            AZ_CLASS_ALLOCATOR(MyClass, PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MyClass, PoolAllocator);
 
             MyClass(int data = 303)
                 : m_data(data) {}
@@ -813,22 +820,6 @@ namespace UnitTest
             MyDerivedClass() = default;
         };
     public:
-        void SetUp() override
-        {
-            MemoryTrackingFixture::SetUp();
-
-            AllocatorInstance<SystemAllocator>::Create();
-            AllocatorInstance<PoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorInstance<SystemAllocator>::Destroy();
-
-            MemoryTrackingFixture::TearDown();
-        }
-
         void run()
         {
             IAllocator& sysAllocator = AllocatorInstance<SystemAllocator>::Get();
@@ -940,15 +931,13 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorInstance<SystemAllocator>::Create();
             tr = (test_record*)AZ_OS_MALLOC(sizeof(test_record)*N, 8);
             MAX_SIZE = 4096;
         }
-        
+
         void TearDown() override
         {
             AZ_OS_FREE(tr);
-            AllocatorInstance<SystemAllocator>::Destroy();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -2076,7 +2065,7 @@ namespace UnitTest
                           pool.Create();
                           ThreadPoolSchemaHelper<nullptr_t> threadPool;
                           threadPool.Create();
-            
+
                           printf("---- Single Thread ----\n");
                           // any allocations
                           MAX_SIZE = 4096;
@@ -2085,7 +2074,7 @@ namespace UnitTest
                           // pool allocations
                           MAX_SIZE = 256;
                           allocdealloc(hpha,pool,true,true,true);
-            
+
                           // threads
                           printf("\n---- 4 Threads ----\n");
                           // any allocations

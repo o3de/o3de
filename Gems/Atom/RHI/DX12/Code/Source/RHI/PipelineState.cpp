@@ -19,9 +19,9 @@ namespace AZ
             return aznew PipelineState;
         }
 
-        const PipelineLayout& PipelineState::GetPipelineLayout() const
+        const PipelineLayout* PipelineState::GetPipelineLayout() const
         {
-            return *m_pipelineLayout;
+            return m_pipelineLayout.get();
         }
 
         ID3D12PipelineState* PipelineState::Get() const

@@ -145,6 +145,7 @@ namespace EMotionFX
                     // General API
                     ->Event("FindParameterIndex", &AnimGraphComponentRequestBus::Events::FindParameterIndex)
                     ->Event("FindParameterName", &AnimGraphComponentRequestBus::Events::FindParameterName)
+                    ->Event("SetActiveMotionSet", &AnimGraphComponentRequestBus::Events::SetActiveMotionSet)
                     
                     // Setters
                     ->Event("SetParameterFloat", &AnimGraphComponentRequestBus::Events::SetParameterFloat)
@@ -355,7 +356,7 @@ namespace EMotionFX
             }
             else
             {
-                AZ_Error("EMotionFX", false, "Cannot create snapshot as anim graph instance has not been created yet. "
+                AZ_ErrorOnce("EMotionFX", false, "Cannot create snapshot as anim graph instance has not been created yet. "
                     "Please make sure you selected an anim graph in the anim graph component.");
             }
         }
@@ -430,6 +431,24 @@ namespace EMotionFX
             {
                 return m_animGraphInstance->GetLcgRandom().GetSeed();
             }
+            return 0;
+        }
+
+        void AnimGraphComponent::SetActorThreadIndex(AZ::u32 threadIndex)
+        {
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetThreadIndex(threadIndex);
+            }
+        }
+
+        AZ::u32 AnimGraphComponent::GetActorThreadIndex() const
+        {
+            if (m_actorInstance)
+            {
+                return m_actorInstance->GetThreadIndex();
+            }
+
             return 0;
         }
 
@@ -1231,6 +1250,12 @@ namespace EMotionFX
                     &AnimGraphComponentNotificationBus::Events::OnAnimGraphDesynced,
                     m_animGraphInstance.get());
             }
+        }
+
+        void AnimGraphComponent::SetActiveMotionSet(const char* activeMotionSetName)
+        {
+            m_configuration.m_activeMotionSetName = activeMotionSetName;
+            CheckCreateAnimGraphInstance();
         }
     } // namespace Integration
 } // namespace EMotionFXAnimation

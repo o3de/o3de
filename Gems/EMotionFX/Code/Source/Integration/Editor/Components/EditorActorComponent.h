@@ -23,8 +23,6 @@
 #include <Integration/Components/ActorComponent.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-
 #include <EMotionFX/Source/ActorBus.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
@@ -65,6 +63,7 @@ namespace EMotionFX
             size_t GetNumJoints() const override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
+            void EnableInstanceUpdate(bool enable) override;
 
             // EditorActorComponentRequestBus overrides ...
             const AZ::Data::AssetId& GetActorAssetId() override;
@@ -117,7 +116,6 @@ namespace EMotionFX
             // Property callbacks.
             AZ::Crc32 OnAssetSelected();
             void OnMaterialChanged();
-            void OnMaterialPerActorChanged();
             void OnLODLevelChanged();
             void OnRenderFlagChanged();
             void OnSkinningMethodChanged();
@@ -128,8 +126,8 @@ namespace EMotionFX
             bool AttachmentTargetVisibility();
             bool AttachmentTargetJointVisibility();
             AZStd::string AttachmentJointButtonText();
-            void InitializeMaterial(ActorAsset& actorAsset);
             void UpdateRenderFlags();
+            void OnExcludeFromReflectionCubeMapsChanged();
 
             void LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&);
 
@@ -185,12 +183,7 @@ namespace EMotionFX
             bool                                m_forceUpdateJointsOOV = false;
             ActorRenderFlags                    m_renderFlags;              ///< Actor render flag
             // \todo attachmentTarget node nr
-
-            // Note: LOD work in progress. For now we use one material instead of a list of material, because we don't have the support for LOD with multiple scene files.
-            // We purposely kept a materialList in actorComponent and actorRenderNode for the flexibility in future.
-            // At the moment, the materialList stores duplicates of the same material.
-            AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>   m_materialPerActor;
-            ActorAsset::MaterialList            m_materialPerLOD;           ///< Material assignment for each LOD level.
+            bool                                m_excludeFromReflectionCubeMaps;
 
             ActorAsset::ActorInstancePtr        m_actorInstance;            ///< Live actor instance.
             AZStd::unique_ptr<RenderActorInstance> m_renderActorInstance;
@@ -198,6 +191,7 @@ namespace EMotionFX
             AZ::Render::ModelReloadedEvent::Handler m_modelReloadedEventHandler;
 
             bool m_reloading = false;
+            bool m_processLoadedAsset = false;
         };
     } // namespace Integration
 } // namespace EMotionFX

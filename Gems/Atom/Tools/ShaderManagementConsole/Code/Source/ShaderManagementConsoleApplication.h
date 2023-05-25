@@ -22,6 +22,7 @@ namespace ShaderManagementConsole
         , private AzToolsFramework::EditorWindowRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleApplication, AZ::SystemAllocator)
         AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{A31B1AEB-4DA3-49CD-884A-CC998FF7546F}");
 
         using Base = AtomToolsFramework::AtomToolsDocumentApplication;

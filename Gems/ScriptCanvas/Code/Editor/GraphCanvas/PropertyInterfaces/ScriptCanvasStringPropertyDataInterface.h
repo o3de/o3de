@@ -17,7 +17,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasPropertyDataInterface<GraphCanvas::StringDataInterface, ScriptCanvas::Data::StringType>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasStringPropertyDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasStringPropertyDataInterface, AZ::SystemAllocator);
         ScriptCanvasStringPropertyDataInterface(const AZ::EntityId& nodeId, ScriptCanvas::TypedNodePropertyInterface<ScriptCanvas::Data::StringType>* propertyNodeInterface)
             : ScriptCanvasPropertyDataInterface(nodeId, propertyNodeInterface)
         {

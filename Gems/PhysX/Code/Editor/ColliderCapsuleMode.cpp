@@ -6,102 +6,90 @@
  *
  */
 
-#include "ColliderCapsuleMode.h"
-#include <PhysX/EditorColliderComponentRequestBus.h>
-#include <Source/Utils.h>
+#include <Editor/ColliderCapsuleMode.h>
 
-#include <AzToolsFramework/Manipulators/LinearManipulator.h>
-#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/ComponentModes/BaseShapeComponentMode.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
+#include <PhysX/EditorColliderComponentRequestBus.h>
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderCapsuleMode, AZ::SystemAllocator, 0);
-
-    AZ::Transform ColliderCapsuleMode::GetCapsuleWorldTransform() const
-    {
-        AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-        return worldTransform;
-    }
-
-    AZ::Transform ColliderCapsuleMode::GetCapsuleLocalTransform() const
-    {
-        return Utils::GetColliderLocalTransform(m_entityComponentIdPair);
-    }
-
-    AZ::Vector3 ColliderCapsuleMode::GetCapsuleNonUniformScale() const
-    {
-        AZ::Vector3 nonUniformScale = AZ::Vector3::CreateOne();
-        AZ::NonUniformScaleRequestBus::EventResult(
-            nonUniformScale, m_entityComponentIdPair.GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
-        return nonUniformScale;
-    }
-
-    float ColliderCapsuleMode::GetCapsuleRadius() const
-    {
-        float capsuleRadius = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(
-            capsuleRadius, m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::GetCapsuleRadius);
-        return capsuleRadius;
-    }
-
-    float ColliderCapsuleMode::GetCapsuleHeight() const
-    {
-        float capsuleHeight = 0.0f;
-        PhysX::EditorColliderComponentRequestBus::EventResult(
-            capsuleHeight, m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::GetCapsuleHeight);
-        return capsuleHeight;
-    }
-
-    void ColliderCapsuleMode::SetCapsuleRadius(float radius)
-    {
-        PhysX::EditorColliderComponentRequestBus::Event(
-            m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleRadius, radius);
-    }
-
-    void ColliderCapsuleMode::SetCapsuleHeight(float height)
-    {
-        PhysX::EditorColliderComponentRequestBus::Event(
-            m_entityComponentIdPair, &PhysX::EditorColliderComponentRequests::SetCapsuleHeight, height);
-    }
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderCapsuleMode, AZ::SystemAllocator);
 
     void ColliderCapsuleMode::Setup(const AZ::EntityComponentIdPair& idPair)
     {
         m_entityComponentIdPair = idPair;
-        SetupCapsuleManipulators(AzToolsFramework::g_mainManipulatorManagerId);
-        m_radiusManipulator->AddEntityComponentIdPair(idPair);
-        m_heightManipulator->AddEntityComponentIdPair(idPair);
+        const bool allowAsymmetricalEditing = true;
+        m_capsuleViewportEdit = AZStd::make_unique<AzToolsFramework::CapsuleViewportEdit>(allowAsymmetricalEditing);
+        AzToolsFramework::InstallBaseShapeViewportEditFunctions(m_capsuleViewportEdit.get(), idPair);
+        m_capsuleViewportEdit->InstallGetCapsuleRadius(
+            [this]()
+            {
+                float capsuleRadius = 0.0f;
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleRadius, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetCapsuleRadius);
+                return capsuleRadius;
+            });
+        m_capsuleViewportEdit->InstallGetCapsuleHeight(
+            [this]()
+            {
+                float capsuleHeight = 0.0f;
+                EditorPrimitiveColliderComponentRequestBus::EventResult(
+                    capsuleHeight, m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::GetCapsuleHeight);
+                return capsuleHeight;
+            });
+        m_capsuleViewportEdit->InstallSetCapsuleRadius(
+            [this](float radius)
+            {
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetCapsuleRadius, radius);
+            });
+        m_capsuleViewportEdit->InstallSetCapsuleHeight(
+            [this](float height)
+            {
+                EditorPrimitiveColliderComponentRequestBus::Event(
+                    m_entityComponentIdPair, &EditorPrimitiveColliderComponentRequests::SetCapsuleHeight, height);
+            });
+        m_capsuleViewportEdit->Setup(AzToolsFramework::g_mainManipulatorManagerId);
+        m_capsuleViewportEdit->AddEntityComponentIdPair(idPair);
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(idPair.GetEntityId());
     }
 
     void ColliderCapsuleMode::Refresh([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        UpdateCapsuleManipulators();
+        if (m_capsuleViewportEdit)
+        {
+            m_capsuleViewportEdit->UpdateManipulators();
+        }
     }
 
-    void ColliderCapsuleMode::Teardown(const AZ::EntityComponentIdPair& idPair)
+    void ColliderCapsuleMode::Teardown([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
-        m_radiusManipulator->RemoveEntityComponentIdPair(idPair);
-        m_heightManipulator->RemoveEntityComponentIdPair(idPair);
-        TeardownCapsuleManipulators();
+        if (m_capsuleViewportEdit)
+        {
+            m_capsuleViewportEdit->Teardown();
+            m_capsuleViewportEdit.reset();
+        }
         m_entityComponentIdPair = AZ::EntityComponentIdPair();
     }
 
     void ColliderCapsuleMode::ResetValues([[maybe_unused]] const AZ::EntityComponentIdPair& idPair)
     {
-        ResetCapsuleManipulators();
+        if (m_capsuleViewportEdit)
+        {
+            m_capsuleViewportEdit->ResetValues();
+        }
     }
 
     void ColliderCapsuleMode::DisplayEntityViewport(
         const AzFramework::ViewportInfo& viewportInfo,
         [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
-        OnCameraStateChanged(cameraState);
+        if (m_capsuleViewportEdit)
+        {
+            const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+            m_capsuleViewportEdit->OnCameraStateChanged(cameraState);
+        }
     }
-}
+} // namespace PhysX

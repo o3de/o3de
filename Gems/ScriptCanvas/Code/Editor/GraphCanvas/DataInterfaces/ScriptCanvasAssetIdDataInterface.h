@@ -25,7 +25,7 @@ namespace ScriptCanvasEditor
 
     public:
 
-        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetIdDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetIdDataInterface, AZ::SystemAllocator);
         ScriptCanvasAssetIdDataInterface(const AZ::EntityId& nodeId, const ScriptCanvas::SlotId& slotId)
             : ScriptCanvasDataInterface(nodeId, slotId)
         {

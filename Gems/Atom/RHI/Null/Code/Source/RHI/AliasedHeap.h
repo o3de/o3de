@@ -20,7 +20,7 @@ namespace AZ
         {
             using Base = RHI::AliasedHeap;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
             AZ_RTTI(AliasedHeap, "{F83E0C8A-5421-4E90-9B7A-7FB127B2E7E4}", Base);
             
             static RHI::Ptr<AliasedHeap> Create();                       

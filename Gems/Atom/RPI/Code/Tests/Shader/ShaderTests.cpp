@@ -92,7 +92,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(TestShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", AZ::RHI::ShaderStageFunction);
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestShaderStageFunction, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -396,7 +396,6 @@ namespace UnitTest
         {
             RPI::ShaderVariantAssetCreator shaderVariantAssetCreator;
             shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, isFullyBaked);
-            shaderVariantAssetCreator.SetBuildTimestamp(AZStd::sys_time_t(1)); //Make non-zero
 
             for (RHI::ShaderStage rhiStage : stagesToActivate)
             {

@@ -45,8 +45,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode::Port, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNode::Port, AnimGraphAllocator)
 
     AnimGraphNode::AnimGraphNode()
         : AnimGraphObject(nullptr)
@@ -55,17 +55,12 @@ namespace EMotionFX
         , m_disabled(false)
         , m_parentNode(nullptr)
         , m_customData(nullptr)
+        , m_visualizeColor(EMotionFX::AnimGraph::RandomGraphColor())
         , m_visEnabled(false)
         , m_isCollapsed(false)
         , m_posX(0)
         , m_posY(0)
     {
-        const AZ::u32 col = MCore::GenerateColor();
-        m_visualizeColor = AZ::Color(
-            MCore::ExtractRed(col)/255.0f,
-            MCore::ExtractGreen(col)/255.0f,
-            MCore::ExtractBlue(col)/255.0f,
-            1.0f);
     }
 
 

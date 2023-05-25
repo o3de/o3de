@@ -64,39 +64,26 @@ namespace UnitTests
 
         // This is what we're testing, it will set up connections between the fileWatcher and the 2 QObject handlers we'll check
         m_applicationManager->InitFileMonitor(AZStd::move(fileWatcher)); // The manager is going to take ownership of the file watcher
+
+        m_applicationManager->InitUuidManager();
     }
 
     void ApplicationManagerTest::TearDown()
     {
-        m_apmThread->exit();
-        m_fileProcessorThread->exit();
+        m_applicationManager->DestroyFileMonitor();
+
+        m_apmThread->quit();
+        m_fileProcessorThread->quit();
+        m_apmThread->wait();
+        m_fileProcessorThread->wait();
         m_mockAPM = nullptr;
 
         LeakDetectionFixture::TearDown();
     }
 
-    using BatchApplicationManagerTest = UnitTest::LeakDetectionFixture;
+    using BatchApplicationManagerTest = ::UnitTest::LeakDetectionFixture;
 
-    TEST_F(BatchApplicationManagerTest, FileCreatedOnDisk_ShowsUpInFileCache)
-    {
-        AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
-        AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
-
-        int argc = 0;
-
-        auto m_applicationManager = AZStd::make_unique<MockBatchApplicationManager>(&argc, nullptr);
-        m_applicationManager->InitFileStateCache();
-
-        auto* fileStateCache = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
-
-        ASSERT_TRUE(fileStateCache);
-
-        EXPECT_FALSE(fileStateCache->Exists((assetRootDir / "test").c_str()));
-        UnitTestUtils::CreateDummyFile((assetRootDir / "test").c_str());
-        EXPECT_TRUE(fileStateCache->Exists((assetRootDir / "test").c_str()));
-    }
-
-    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread_SUITE_sandbox)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 

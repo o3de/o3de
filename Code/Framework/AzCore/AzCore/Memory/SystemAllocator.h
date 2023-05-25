@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
 {
@@ -26,14 +27,13 @@ namespace AZ
         : public AllocatorBase
     {
     public:
-        AZ_RTTI(SystemAllocator, "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}", AllocatorBase)
+        AZ_TYPE_INFO_WITH_NAME_DECL(SystemAllocator);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
 
         SystemAllocator();
         ~SystemAllocator() override;
 
         bool Create();
-
-        void Destroy() override;
 
         //////////////////////////////////////////////////////////////////////////
         // IAllocator
@@ -56,7 +56,7 @@ namespace AZ
         SystemAllocator(const SystemAllocator&);
         SystemAllocator& operator=(const SystemAllocator&);
 
-        IAllocator* m_subAllocator;
+        AZStd::unique_ptr<IAllocator> m_subAllocator;
     };
 }
 

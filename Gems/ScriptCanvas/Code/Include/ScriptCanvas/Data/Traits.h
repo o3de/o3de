@@ -17,7 +17,7 @@ namespace ScriptCanvas
     {
         struct TypeErasedTraits
         {
-            AZ_CLASS_ALLOCATOR(TypeErasedTraits, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TypeErasedTraits, AZ::SystemAllocator);
 
             TypeErasedTraits() = default;
 

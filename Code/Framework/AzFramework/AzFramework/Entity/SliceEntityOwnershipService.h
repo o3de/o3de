@@ -32,7 +32,7 @@ namespace AzFramework
         , private SliceEntityRequestBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceEntityOwnershipService, AZ::SystemAllocator);
 
         explicit SliceEntityOwnershipService(const EntityContextId& entityContextId, AZ::SerializeContext* serializeContext);
 

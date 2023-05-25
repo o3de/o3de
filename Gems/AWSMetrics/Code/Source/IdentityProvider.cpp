@@ -15,6 +15,9 @@
 
 namespace AWSMetrics
 {
+    constexpr const char* EngineVersionJsonKeyFileFormat1 = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat2 = "display_version";
+
     AZStd::unique_ptr<IdentityProvider> IdentityProvider::CreateIdentityProvider()
     {
         return AZStd::make_unique<DefaultClientIdProvider>(GetEngineVersion());
@@ -22,11 +25,22 @@ namespace AWSMetrics
 
     AZStd::string IdentityProvider::GetEngineVersion()
     {
-        constexpr auto engineVersionKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey;
+        constexpr auto rootKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey);
+        constexpr auto engineVersionKeyFileFormat1 = rootKey + "/" + EngineVersionJsonKeyFileFormat1;
+        constexpr auto engineVersionKeyFileFormat2 = rootKey + "/" + EngineVersionJsonKeyFileFormat2;
         AZStd::string engineVersion;
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr && settingsRegistry->Get(engineVersion, engineVersionKey))
+
+        if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            return engineVersion;
+            // prefer latest file format
+            if(settingsRegistry->Get(engineVersion, engineVersionKeyFileFormat2))
+            {
+                return engineVersion;
+            }
+            else if(settingsRegistry->Get(engineVersion, engineVersionKeyFileFormat1))
+            {
+                return engineVersion;
+            }
         }
 
         auto engineSettingsPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetEnginePath() } / "engine.json";
@@ -36,7 +50,10 @@ namespace AWSMetrics
             if (settingsRegistry.MergeSettingsFile(
                     engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
             {
-                settingsRegistry.Get(engineVersion, engineVersionKey);
+                if(!settingsRegistry.Get(engineVersion, engineVersionKeyFileFormat2))
+                {
+                    settingsRegistry.Get(engineVersion, engineVersionKeyFileFormat1);
+                }
             }
         }
         return engineVersion;

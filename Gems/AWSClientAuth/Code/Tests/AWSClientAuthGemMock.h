@@ -531,8 +531,6 @@ namespace AWSClientAuthUnitTest
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             AZ::IO::FileIOBase::SetInstance(aznew AZ::IO::LocalFileIO());
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -586,8 +584,6 @@ namespace AWSClientAuthUnitTest
             m_cognitoIdentityClientMock.reset();
 
             AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
 
             if (m_testFolderCreated)
             {

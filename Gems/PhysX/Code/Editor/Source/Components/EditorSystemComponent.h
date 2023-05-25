@@ -14,6 +14,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/SystemBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h>
@@ -35,6 +36,7 @@ namespace PhysX
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private AzToolsFramework::EditorContextMenuBus::Handler
+        , public AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(EditorSystemComponent, "{560F08DC-94F5-4D29-9AD4-CDFB3B57C654}");
@@ -55,6 +57,11 @@ namespace PhysX
 
         // Physics::EditorWorldBus overrides...
         AzPhysics::SceneHandle GetEditorSceneHandle() const override;
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnActionContextModeBindingHook() override;
+        void OnMenuBindingHook() override;
 
     private:
         // AzToolsFramework::EditorEntityContextNotificationBus overrides...

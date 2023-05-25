@@ -6,10 +6,12 @@
  *
  */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ::Dom::Utils
 {
@@ -67,8 +69,36 @@ namespace AZ::Dom::Utils
 
     Value TypeIdToDomValue(const AZ::TypeId& typeId)
     {
+        // Assign a custom reporting callback to ignore unregistered types
+        AZ::JsonSerializerSettings settings;
+        AZStd::string scratchBuffer;
+        settings.m_reporting = [&scratchBuffer](
+            AZStd::string_view message,
+               AZ::JsonSerializationResult::ResultCode result,
+               AZStd::string_view path) -> auto
+        {
+            // Unregistered types are acceptable and do not require a warning
+            if (result.GetTask() != AZ::JsonSerializationResult::Tasks::RetrieveInfo ||
+                result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Unknown)
+            {
+                // Default Json serialization issue reporting
+                if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    scratchBuffer.append(message.begin(), message.end());
+                    scratchBuffer.append("\n    Reason: ");
+                    result.AppendToString(scratchBuffer, path);
+                    scratchBuffer.append(".");
+                    AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                    scratchBuffer.clear();
+                }
+            }
+
+            return result;
+        };
+
         rapidjson::Document buffer;
-        JsonSerialization::StoreTypeId(buffer, buffer.GetAllocator(), typeId);
+        JsonSerialization::StoreTypeId(buffer, buffer.GetAllocator(), typeId, AZStd::string_view{}, settings);
         if (!buffer.IsString())
         {
             return Value("", false);

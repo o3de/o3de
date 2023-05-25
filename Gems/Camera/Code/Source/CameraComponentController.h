@@ -8,16 +8,19 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/CameraState.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/ViewGroup.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 namespace Camera
 {
@@ -32,6 +35,7 @@ namespace Camera
     struct CameraComponentConfig final
         : public AZ::ComponentConfig
     {
+        AZ_CLASS_ALLOCATOR(CameraComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(CameraComponentConfig, "{064A5D64-8688-4188-B3DE-C80CE4BB7558}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -50,10 +54,17 @@ namespace Camera
         float m_frustumWidth = DefaultFrustumDimension;
         float m_frustumHeight = DefaultFrustumDimension;
         bool m_specifyFrustumDimensions = false;
-        AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
         bool m_makeActiveViewOnActivation = true;
         bool m_orthographic = false;
         float m_orthographicHalfWidth = 5.f;
+
+        AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
+
+        // Members for render to texture
+        // The texture assets which is used for render to texture feature. It defines the resolution, format etc.
+        AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_renderTextureAsset;
+        // The pass template name used for render pipeline's root template
+        AZStd::string m_pipelineTemplate = "CameraPipeline";
     };
 
     class CameraComponentController
@@ -133,6 +144,8 @@ namespace Camera
     private:
         AZ_DISABLE_COPY(CameraComponentController);
 
+        void CreateRenderPipelineForTexture();
+
         void ActivateAtomView();
         void DeactivateAtomView();
         void UpdateCamera();
@@ -154,5 +167,8 @@ namespace Camera
 
         AZStd::function<bool()> m_shouldActivateFn;
         AZStd::function<bool()> m_isLockedFn = []{ return false; };
+
+        // for render to texture
+        AZ::RPI::RenderPipelinePtr m_renderToTexturePipeline;
     };
 } // namespace Camera

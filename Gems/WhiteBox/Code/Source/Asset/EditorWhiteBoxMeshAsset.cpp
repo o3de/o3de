@@ -20,7 +20,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxMeshAsset, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxMeshAsset, AZ::SystemAllocator)
 
     static constexpr const char* const AssetModifiedUndoRedoDesc = "White Box Mesh asset was updated";
 

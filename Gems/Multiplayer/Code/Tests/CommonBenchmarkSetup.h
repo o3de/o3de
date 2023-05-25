@@ -216,6 +216,11 @@ namespace Multiplayer
             return NetworkEntityHandle(entity, &m_tracker);
         }
 
+        void RemoveEntityFromEntityMap(NetEntityId netEntityId) override
+        {
+            m_networkEntityMap.erase(netEntityId);
+        }
+
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override
         {
             AZ::Entity* entity = m_networkEntityMap[netEntityId];

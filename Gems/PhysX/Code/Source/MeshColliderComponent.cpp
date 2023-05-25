@@ -47,7 +47,7 @@ namespace PhysX
             m_shapeConfiguration = static_cast<Physics::PhysicsAssetShapeConfiguration*>(m_shapeConfigList[0].second.get());
             UpdateMeshAsset();
             MeshColliderComponentRequestsBus::Handler::BusConnect(GetEntityId());
-            BaseColliderComponent::Activate();
+            BaseColliderComponent::Activate(); // Calling Activate() of parent class will create the shapes.
         }
     }
 
@@ -79,6 +79,11 @@ namespace PhysX
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(m_shapeConfiguration->m_asset.GetId());
             m_shapeConfiguration->m_asset.QueueLoad();
+
+            // The asset loading must be completed because the shapes are required to be ready
+            // at activation time, so the rigid body can query them when OnEntityActivated
+            // event is called.
+            m_shapeConfiguration->m_asset.BlockUntilLoadComplete();
         }
     }
 

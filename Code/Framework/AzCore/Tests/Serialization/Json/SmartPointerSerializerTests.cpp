@@ -468,7 +468,7 @@ namespace JsonSerializationTests
 
     struct SimpleInheritenceAlt : BaseClass
     {
-        AZ_CLASS_ALLOCATOR(SimpleInheritenceAlt, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleInheritenceAlt, AZ::SystemAllocator);
         AZ_RTTI(SimpleInheritenceAlt, "{5513DF52-E3C2-4849-BBFF-13E00F3E3EDA}", BaseClass);
 
         ~SimpleInheritenceAlt() override = default;
@@ -486,7 +486,7 @@ namespace JsonSerializationTests
 
     struct AbstractClass : BaseClass
     {
-        AZ_CLASS_ALLOCATOR(AbstractClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AbstractClass, AZ::SystemAllocator);
         AZ_RTTI(AbstractClass, "{D065A72E-E49B-4E23-9E4E-A4E08D344FC2}", BaseClass);
 
         ~AbstractClass() override = default;
@@ -501,7 +501,7 @@ namespace JsonSerializationTests
 
     struct UnregisteredClass : BaseClass
     {
-        AZ_CLASS_ALLOCATOR(UnregisteredClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnregisteredClass, AZ::SystemAllocator);
         AZ_RTTI(UnregisteredClass, "{9163CBB9-0B7F-450E-B93E-A3EC32E5229A}", BaseClass);
 
         ~UnregisteredClass() override = default;

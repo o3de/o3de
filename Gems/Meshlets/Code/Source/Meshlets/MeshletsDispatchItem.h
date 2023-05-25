@@ -31,7 +31,7 @@ namespace AZ
             : public Data::InstanceData
         {
         public:
-            AZ_CLASS_ALLOCATOR(MeshletsDispatchItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshletsDispatchItem, AZ::SystemAllocator);
 
             MeshletsDispatchItem() = default;
 

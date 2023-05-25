@@ -20,7 +20,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PolygonScaleModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PolygonScaleModifier, AZ::SystemAllocator)
 
     PolygonScaleModifier::PolygonScaleModifier(
         const Api::PolygonHandle& polygonHandle, const AZ::EntityComponentIdPair& entityComponentIdPair)

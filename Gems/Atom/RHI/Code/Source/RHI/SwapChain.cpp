@@ -48,7 +48,7 @@ namespace AZ
                 m_xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
                 AZ_Assert(m_xrSystem, "XR System is null");
             }
-
+            SetName(AZ::Name("SwapChain"));
             SwapChainDimensions nativeDimensions = descriptor.m_dimensions;
             ResultCode resultCode = ResourcePool::Init(
                 device, descriptor,

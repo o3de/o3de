@@ -62,12 +62,15 @@ namespace LandscapeCanvas
     {
         // Property field to show the name of the corresponding Vegetation Entity
         GraphModel::DataTypePtr stringDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::String);
-        RegisterSlot(GraphModel::SlotDefinition::CreateProperty(
+
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Property,
             ENTITY_NAME_SLOT_ID,
             ENTITY_NAME_SLOT_LABEL.toUtf8().constData(),
-            stringDataType,
-            stringDataType->GetDefaultValue(),
-            ENTITY_NAME_SLOT_DESCRIPTION.toUtf8().constData()));
+            ENTITY_NAME_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ stringDataType },
+            stringDataType->GetDefaultValue()));
     }
 
     void BaseNode::SetVegetationEntityId(const AZ::EntityId& entityId)

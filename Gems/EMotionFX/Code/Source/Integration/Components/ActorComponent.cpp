@@ -146,9 +146,8 @@ namespace EMotionFX
                 ActorRenderFlagsReflect(*serializeContext);
 
                 serializeContext->Class<Configuration>()
-                    ->Version(5)
+                    ->Version(7)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
-                    ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
@@ -156,6 +155,7 @@ namespace EMotionFX
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                     ->Field("RenderFlags", &Configuration::m_renderFlags)
+                    ->Field("ExcludeFromReflectionCubeMaps", &Configuration::m_excludeFromReflectionCubeMaps)
                 ;
             }
         }
@@ -166,28 +166,6 @@ namespace EMotionFX
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                // Register the AZStd::vector<AzFramework::SimpleAssetReference<MaterialAsset>> class using
-                // the old AZ_TYPE_INFO_SPECIALIZE TypeID specialization for the SimpleAssetReference<MaterialAsset>
-                // Performs a sha1 calculation of the following typeids AzFramework::SimpleAssetReference<MaterialAsset> + AZStd::allocator + AZStd::vector
-                AZ::TypeId deprecatedTypeId = AZ::TypeId("{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}") + AZ::AzTypeInfo<AZStd::allocator>::Uuid()
-                    + AZ::TypeId("{A60E3E61-1FF6-4982-B6B8-9E4350C4C679}");
-                serializeContext->ClassDeprecate("AZStd::vector<SimpleAssetReference_MaterialAsset>", deprecatedTypeId,
-                    [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-                {
-                    AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-                    for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-                    {
-                        childNodeElements.push_back(rootElement.GetSubElement(index));
-                    }
-
-                    rootElement.Convert<AZStd::vector<AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>>>(context);
-                    for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-                    {
-                        rootElement.AddElement(AZStd::move(childNodeElement));
-                    }
-                    return true;
-                });
-
                 Configuration::Reflect(context);
 
                 serializeContext->Class<ActorComponent, AZ::Component>()
@@ -216,6 +194,7 @@ namespace EMotionFX
                     ->Event("GetRenderCharacter", &ActorComponentRequestBus::Events::GetRenderCharacter)
                     ->Event("SetRenderCharacter", &ActorComponentRequestBus::Events::SetRenderCharacter)
                     ->Event("GetRenderActorVisible", &ActorComponentRequestBus::Events::GetRenderActorVisible)
+                    ->Event("EnableInstanceUpdate", &ActorComponentRequestBus::Events::EnableInstanceUpdate)
                     ->VirtualProperty("RenderCharacter", "GetRenderCharacter", "SetRenderCharacter")
                 ;
 
@@ -232,6 +211,18 @@ namespace EMotionFX
         {
             m_configuration.m_actorAsset = actorAsset;
             CheckActorCreation();
+        }
+
+        void ActorComponent::EnableInstanceUpdate(bool enable)
+        {
+            if (m_actorInstance)
+            {
+                m_actorInstance->SetIsEnabled(enable);
+            }
+            else
+            {
+                AZ_ErrorOnce("EMotionFX", false, "Cannot enable the actor instance update because actor instance haven't been created.");
+            }
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -392,7 +383,12 @@ namespace EMotionFX
             m_configuration.m_actorAsset = asset;
             AZ_Assert(m_configuration.m_actorAsset.IsReady() && m_configuration.m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
-            CheckActorCreation();
+            // We'll defer actor creation until the next tick on the tick bus. This is because OnAssetReady() can sometimes get
+            // triggered while in the middle of the render tick, since the rendering system sometimes contains blocking loads
+            // which will still process any pending OnAssetReady() commands while waiting. If that occurs, the actor creation
+            // would generate errors from trying to create a rendering actor while in the middle of processing the rendering data.
+            // We can avoid the problem by just always waiting until the next tick to create the actor.
+            m_processLoadedAsset = true;
         }
 
         void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
@@ -459,13 +455,13 @@ namespace EMotionFX
                 m_renderActorInstance.reset(renderBackend->CreateActorInstance(GetEntityId(),
                     m_actorInstance,
                     m_configuration.m_actorAsset,
-                    m_configuration.m_materialPerLOD,
                     m_configuration.m_skinningMethod,
                     transform));
 
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                    m_renderActorInstance->SetExcludeFromReflectionCubeMaps(m_configuration.m_excludeFromReflectionCubeMaps);
                 }
             }
 
@@ -579,6 +575,13 @@ namespace EMotionFX
         void ActorComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
             AZ_PROFILE_FUNCTION(Animation);
+
+            // If we've got an asset that finished loading (denoted by an OnAssetReady() call), create the actor instance here.
+            if (m_processLoadedAsset)
+            {
+                CheckActorCreation();
+                m_processLoadedAsset = false;
+            }
 
             if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
             {

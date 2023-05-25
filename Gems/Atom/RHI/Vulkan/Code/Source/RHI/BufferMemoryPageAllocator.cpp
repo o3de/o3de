@@ -39,7 +39,7 @@ namespace AZ
 
             VkMemoryRequirements memoryRequirements = GetDevice().GetBufferMemoryRequirements(bufferDescriptor);
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(memoryRequirements.size))
+            if (!heapMemoryUsage.CanAllocate(memoryRequirements.size))
             {
                 return nullptr;
             }
@@ -61,12 +61,8 @@ namespace AZ
 
             if (bufferMemory)
             {
-                heapMemoryUsage.m_residentInBytes += memoryRequirements.size;
+                heapMemoryUsage.m_totalResidentInBytes += memoryRequirements.size;
                 bufferMemory->SetName(m_debugName);
-            }
-            else
-            {
-                heapMemoryUsage.m_reservedInBytes -= memoryRequirements.size;
             }
 
             return bufferMemory;
@@ -75,8 +71,7 @@ namespace AZ
         void BufferMemoryPageFactory::ShutdownObject(BufferMemory& memory, bool isPoolShutdown)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapMemoryUsage.m_residentInBytes -= memory.GetDescriptor().m_byteCount;
-            heapMemoryUsage.m_reservedInBytes -= memory.GetDescriptor().m_byteCount;
+            heapMemoryUsage.m_totalResidentInBytes -= memory.GetDescriptor().m_byteCount;
 
             if (isPoolShutdown)
             {

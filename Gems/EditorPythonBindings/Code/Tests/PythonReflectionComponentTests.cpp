@@ -987,7 +987,7 @@ namespace UnitTest
     // all accepted types tested with this test class
     struct PythonReflectionTypesTester
     {
-        AZ_TYPE_INFO(PythonReflectionTestDoPrint, "{CA1146E2-A2DF-4AE3-A712-5333CE60D65C}");
+        AZ_TYPE_INFO(PythonReflectionTypesTester, "{CA1146E2-A2DF-4AE3-A712-5333CE60D65C}");
 
         static AZ::u32 s_returned;
         static AZ::u32 s_accepted;

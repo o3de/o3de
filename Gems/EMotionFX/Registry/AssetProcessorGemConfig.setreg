@@ -1,0 +1,9 @@
+{
+  "O3DE": {
+    "Preferences": {
+      "Prefabs": {
+        "IgnoreActors" : true
+      }
+    }
+  }
+}

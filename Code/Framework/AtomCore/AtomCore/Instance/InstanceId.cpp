@@ -63,14 +63,24 @@ namespace AZ
             return m_guid != AZ::Uuid::CreateNull();
         }
 
+        auto InstanceId::MakeTie() const
+        {
+            return AZStd::tie(m_guid, m_subId, m_versionId);
+        }
+
+        bool InstanceId::operator<(const InstanceId& rhs) const
+        {
+            return MakeTie() < rhs.MakeTie();
+        }
+
         bool InstanceId::operator==(const InstanceId& rhs) const
         {
-            return m_guid == rhs.m_guid && m_subId == rhs.m_subId && m_versionId == rhs.m_versionId;
+            return MakeTie() == rhs.MakeTie();
         }
 
         bool InstanceId::operator!=(const InstanceId& rhs) const
         {
-            return m_guid != rhs.m_guid || m_subId != rhs.m_subId || m_versionId != rhs.m_versionId;
+            return !operator==(rhs);
         }
     } // namespace Data
 } // namespace AZ

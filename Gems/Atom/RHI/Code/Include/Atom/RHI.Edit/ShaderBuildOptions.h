@@ -7,13 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 
 #include <Atom/RHI.Edit/ShaderBuildArguments.h>
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RHI
     {
         //! Represents the content of the files located at:

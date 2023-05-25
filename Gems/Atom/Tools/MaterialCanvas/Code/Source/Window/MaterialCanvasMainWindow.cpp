@@ -161,6 +161,21 @@ namespace MaterialCanvas
                   "placed in the user/Registry folder for the current project.",
                   false),
               AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnOpen",
+                  "Enable Compile On Open",
+                  "If enabled, shaders and materials will automatically be generated whenever a material graph is opened.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnSave",
+                  "Enable Compile On Save",
+                  "If enabled, shaders and materials will automatically be generated whenever a material graph is saved.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/CompileOnEdit",
+                  "Enable Compile On Edit",
+                  "If enabled, shaders and materials will automatically be generated whenever a material graph is edited.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted",
                   "Clear Viewport Material When Compiling Starts",
                   "Clear the viewport model's material whenever compiling shaders and materials starts.",
@@ -169,6 +184,16 @@ namespace MaterialCanvas
                   "/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphFailed",
                   "Clear Viewport Material When Compiling Fails",
                   "Clear the viewport model's material whenever compiling shaders and materials fails.",
+                  true),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/GraphCompiler/EnableLogging",
+                  "Enable Compiler Logging",
+                  "Toggle verbose logging for material graph generation.",
+                  false),
+              AtomToolsFramework::CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/DynamicNode/EnablePropertyEditingOnNodeUI",
+                  "Enable Property Editing On Nodes",
+                  "Toggle settings to display properties and allow them to be added directly on graph nodes.",
                   true),
               AtomToolsFramework::CreateSettingsPropertyValue(
                   "/O3DE/Atom/MaterialCanvas/CreateDefaultDocumentOnStart",
@@ -193,6 +218,12 @@ namespace MaterialCanvas
                 m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr.get(), m_graphViewSettingsPtr->RTTI_Type()));
 
         Base::PopulateSettingsInspector(inspector);
+    }
+
+    void MaterialCanvasMainWindow::OnSettingsDialogClosed()
+    {
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
+        Base::OnSettingsDialogClosed();
     }
 
     AZStd::string MaterialCanvasMainWindow::GetHelpDialogText() const

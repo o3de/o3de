@@ -48,7 +48,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(EntityStateCommand, "{4461579F-9D39-4954-B5D4-0F9388C8D15D}", UndoSystem::URSequencePoint);
-        AZ_CLASS_ALLOCATOR(EntityStateCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityStateCommand, AZ::SystemAllocator);
 
         EntityStateCommand(UndoSystem::URCommandID ID, const char* friendlyName = nullptr);
         virtual ~EntityStateCommand();
@@ -88,7 +88,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(EntityDeleteCommand, "{2877DC4C-3F09-4E1A-BE3D-921A021DAB80}", EntityStateCommand);
-        AZ_CLASS_ALLOCATOR(EntityDeleteCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityDeleteCommand, AZ::SystemAllocator);
 
         explicit EntityDeleteCommand(UndoSystem::URCommandID ID);
         void Capture(AZ::Entity* pSourceEntity);
@@ -102,7 +102,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(EntityCreateCommand, "{C1AA9763-9EC8-4F7B-803E-C04EE3DB3DA9}", EntityStateCommand);
-        AZ_CLASS_ALLOCATOR(EntityCreateCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityCreateCommand, AZ::SystemAllocator);
 
         explicit EntityCreateCommand(UndoSystem::URCommandID ID);
         void Capture(AZ::Entity* pSourceEntity);

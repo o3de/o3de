@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "GetObject",
-                    "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetObject"
@@ -46,7 +45,6 @@
                 },
                 {
                     "base": "GetObjectRaw",
-                    "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetObjectRaw"
@@ -87,7 +85,6 @@
                 },
                 {
                     "base": "HeadObject",
-                    "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke HeadObject"
@@ -116,7 +113,6 @@
                 },
                 {
                     "base": "HeadObjectRaw",
-                    "context": "AWSScriptBehaviorS3",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke HeadObjectRaw"

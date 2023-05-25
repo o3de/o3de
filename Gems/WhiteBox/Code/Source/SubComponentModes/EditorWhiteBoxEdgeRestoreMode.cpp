@@ -14,6 +14,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -26,11 +27,31 @@ namespace WhiteBox
     static const char* const RestoreEdgeUndoRedoDesc = "Restore an edge to split two connected polygons";
     static const char* const RestoreVertexUndoRedoDesc = "Restore a vertex to split two connected edges";
 
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeRestoreMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeRestoreMode, AZ::SystemAllocator)
 
     void EdgeRestoreMode::Refresh()
     {
         // noop
+    }
+
+    void EdgeRestoreMode::RegisterActionUpdaters()
+    {
+    }
+
+    void EdgeRestoreMode::RegisterActions()
+    {
+    }
+
+    void EdgeRestoreMode::BindActionsToModes(const AZStd::string& modeIdentifier)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxDefaultMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
+    }
+
+    void EdgeRestoreMode::BindActionsToMenus()
+    {
     }
 
     AZStd::vector<AzToolsFramework::ActionOverride> EdgeRestoreMode::PopulateActions(

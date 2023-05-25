@@ -46,7 +46,7 @@ namespace AZ
 
         public:
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialAsset, SystemAllocator);
 
             static const char* DisplayName;
             static const char* Group;
@@ -58,6 +58,8 @@ namespace AZ
 
             MaterialAsset();
             virtual ~MaterialAsset();
+
+            bool InitializeNonSerializedData();
 
             //! Returns the MaterialTypeAsset.
             const Data::Asset<MaterialTypeAsset>& GetMaterialTypeAsset() const;
@@ -114,19 +116,7 @@ namespace AZ
             //!
             //! Calling GetPropertyValues() will automatically finalize the material asset if it isn't finalized already. The
             //! MaterialTypeAsset must be loaded and ready.
-            const AZStd::vector<MaterialPropertyValue>& GetPropertyValues();
-            
-            //! Returns true if material was created in a finalize state, as opposed to being finalized after loading from disk.
-            bool WasPreFinalized() const;
-            
-            //! Returns the list of raw values for all properties in this material, as listed in the source .material file(s), before the material asset was Finalized.
-            //! 
-            //! The MaterialAsset can be created in a "half-baked" state (see MaterialUtils::BuildersShouldFinalizeMaterialAssets) where
-            //! minimal processing has been done because it did not yet have access to the MaterialTypeAsset. In that case, the list will
-            //! be populated with values copied from the source .material file with little or no validation or other processing. It includes
-            //! all parent .material files, with properties listed in low-to-high priority order. 
-            //! This list will be empty however if the asset was finalized at build-time (i.e. WasPreFinalized() returns true).
-            const AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>>& GetRawPropertyValues() const;
+            const AZStd::vector<MaterialPropertyValue>& GetPropertyValues() const;
 
         private:
             bool PostLoadInit() override;
@@ -163,16 +153,11 @@ namespace AZ
             //! were originally encountered.
             AZStd::vector<AZStd::pair<Name, MaterialPropertyValue>> m_rawPropertyValues;
             
-            //! Tracks whether Finalize() has been called, meaning m_propertyValues is populated with data matching the material type's property layout.
-            //! (This value is intentionally not serialized, it is set by the Finalize() function)
-            mutable bool m_isFinalized = false;
-
-            //! Tracks whether the MaterialAsset was already in a finalized state when it was loaded.
-            bool m_wasPreFinalized = false;
-            
             //! The materialTypeVersion this materialAsset was based off. If the versions do not match at runtime when a
             //! materialTypeAsset is loaded, automatic updates will be attempted.
             uint32_t m_materialTypeVersion = UnspecifiedMaterialTypeVersion;
+
+            bool m_isNonSerializedDataInitialized = false;
         };
        
 

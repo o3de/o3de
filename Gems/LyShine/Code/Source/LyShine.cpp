@@ -136,7 +136,7 @@ CLyShine::CLyShine()
     // This support will be removed at some point
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         if (behaviorContext)
         {
             behaviorContext->Class<LyShineLua>("LyShineLua")
@@ -197,7 +197,8 @@ CLyShine::CLyShine()
         azrtti_typeid<UiLayoutFitterComponent>(),
         azrtti_typeid<UiParticleEmitterComponent>(),
     };
-    EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, componentUuidsForMetricsCollection);
+    AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+        &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, componentUuidsForMetricsCollection);
 
 
 

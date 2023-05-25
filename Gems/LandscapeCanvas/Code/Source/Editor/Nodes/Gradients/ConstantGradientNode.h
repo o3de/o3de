@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class ConstantGradientNode : public BaseGradientNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConstantGradientNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstantGradientNode, AZ::SystemAllocator);
         AZ_RTTI(ConstantGradientNode, "{3D45B989-815F-461E-943D-F5139C1C6F06}", BaseGradientNode);
 
         static void Reflect(AZ::ReflectContext* context);

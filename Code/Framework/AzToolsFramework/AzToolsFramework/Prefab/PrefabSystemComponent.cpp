@@ -18,7 +18,6 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceSerializer.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <AzToolsFramework/Prefab/PrefabEditorPreferences.h>
 #include <AzToolsFramework/Prefab/Spawnable/EditorInfoRemover.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
@@ -46,18 +45,12 @@ namespace AzToolsFramework
             m_prefabPublicRequestHandler.Connect();
             m_prefabSystemScriptingHandler.Connect(this);
             AZ::SystemTickBus::Handler::BusConnect();
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
-            {
-                AzToolsFramework::AssetSystemBus::Handler::BusConnect();
-            }
+            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler::BusConnect();
         }
 
         void PrefabSystemComponent::Deactivate()
         {
-            if (AzToolsFramework::Prefab::IsHotReloadingEnabled())
-            {
-                AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
-            }
+            AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler::BusDisconnect();
             AZ::SystemTickBus::Handler::BusDisconnect();
             m_prefabSystemScriptingHandler.Disconnect();
             m_prefabPublicRequestHandler.Disconnect();
@@ -81,6 +74,7 @@ namespace AzToolsFramework
             PrefabFocusHandler::Reflect(context);
             PrefabLoader::Reflect(context);
             PrefabSystemScriptingHandler::Reflect(context);
+            PrefabOverridePublicHandler::Reflect(context);
 
             if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -143,18 +137,85 @@ namespace AzToolsFramework
             GarbageCollectTemplates(false);
         }
 
+        void PrefabSystemComponent::OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName)
+        {
+            // Convert to prefab relative path
+            AZ::IO::Path fromRelativePath = m_prefabLoader.GenerateRelativePath(fromPathName);
+
+            // Update loaded template with new pathname
+            if (Prefab::TemplateId templateId = GetTemplateIdFromFilePath(fromRelativePath); templateId != InvalidTemplateId)
+            {
+                AZ::IO::Path toRelativePath = m_prefabLoader.GenerateRelativePath(toPathName);
+                UpdateTemplateFilePath(templateId, toRelativePath);
+                PropagateTemplateChanges(templateId);
+            }
+        }
+
+        void PrefabSystemComponent::OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName)
+        {
+            // Convert to prefab relative path
+            AZ::IO::Path fromRelativePath = m_prefabLoader.GenerateRelativePath(fromPathName);
+            AZ::IO::Path toRelativePath = m_prefabLoader.GenerateRelativePath(toPathName);
+
+            // Update any loadeded template paths that are descendants of the new path
+            AZStd::vector<TemplateId> descendantTemplates;
+            for (const auto& templateIter : m_templateFilePathToIdMap)
+            {
+                if (templateIter.first.IsRelativeTo(fromRelativePath))
+                {
+                    descendantTemplates.emplace_back(templateIter.second);
+                }
+            }
+
+            for (auto templateId : descendantTemplates)
+            {
+                TemplateReference loadedTemplate = FindTemplate(templateId);
+                if (!loadedTemplate.has_value())
+                {
+                    AZ_Assert(false, "Template with id %llu is not found", templateId);
+                    continue;
+                }
+                
+                const AZ::IO::Path& loadedTemplateFilePathName = loadedTemplate->get().GetFilePath();
+                AZ::IO::Path unchangedPathSegment(loadedTemplateFilePathName.Native().substr(fromRelativePath.Native().size()));
+                AZ::IO::Path updatedTemplateFilePathName(toRelativePath.Native(), AZ::IO::PosixPathSeparator);
+                updatedTemplateFilePathName /= unchangedPathSegment.RelativePath();
+                UpdateTemplateFilePath(templateId, updatedTemplateFilePathName);
+                PropagateTemplateChanges(templateId);
+            }
+        }
+
         AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
-            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
             AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity, InstanceOptionalReference parent,
             bool shouldCreateLinks)
         {
             AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity), parent);
-            CreatePrefab(entities, AZStd::move(instancesToConsume), filePath, newInstance, shouldCreateLinks);
+            AZStd::map<EntityAlias, AZ::Entity*> entityAliasMap;
+            for (AZ::Entity* entity : entities)
+            {
+                entityAliasMap.emplace(newInstance->GenerateEntityAlias(), entity);
+            }
+            CreatePrefab(entityAliasMap, AZStd::move(nestedInstances), filePath, newInstance, shouldCreateLinks);
+            return newInstance;
+        }
+
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefabWithCustomEntityAliases(
+            const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+            AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
+            AZ::IO::PathView filePath,
+            AZStd::unique_ptr<AZ::Entity> containerEntity,
+            InstanceOptionalReference parent,
+            bool shouldCreateLinks)
+        {
+            AZStd::unique_ptr<Instance> newInstance = AZStd::make_unique<Instance>(AZStd::move(containerEntity), parent);
+            CreatePrefab(entities, AZStd::move(nestedInstances), filePath, newInstance, shouldCreateLinks);
             return newInstance;
         }
 
         void PrefabSystemComponent::CreatePrefab(
-            const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+            const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+            AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
             AZ::IO::PathView filePath, AZStd::unique_ptr<Instance>& newInstance, bool shouldCreateLinks)
         {
             AZ::IO::Path relativeFilePath = m_prefabLoader.GenerateRelativePath(filePath);
@@ -167,14 +228,14 @@ namespace AzToolsFramework
                 return;
             }
 
-            for (AZ::Entity* entity : entities)
+            for (const auto& [entityAlias, entity] : entities)
             {
                 AZ_Assert(entity, "Prefab - Null entity passed in during Create Prefab");
 
-                newInstance->AddEntity(*entity);
+                newInstance->AddEntity(*entity, entityAlias);
             }
 
-            for (AZStd::unique_ptr<Instance>& instance : instancesToConsume)
+            for (AZStd::unique_ptr<Instance>& instance : nestedInstances)
             {
                 AZ_Assert(instance, "Prefab - Null instance passed in during Create Prefab");
 
@@ -196,36 +257,6 @@ namespace AzToolsFramework
             else
             {
                 newInstance->SetTemplateId(newTemplateId);
-            }
-        }
-
-        void PrefabSystemComponent::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
-        {
-            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
-            if (found != m_templateFilePathToIdMap.end())
-            {
-                m_prefabLoader.ReloadTemplateFromFile(relativePath.c_str());
-                PropagateTemplateChanges(found->second);
-            }
-        }
-
-        void PrefabSystemComponent::SourceFileRemoved(
-            AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
-        {
-            auto found = m_templateFilePathToIdMap.find(relativePath.c_str());
-            if (found != m_templateFilePathToIdMap.end())
-            {
-                RemoveTemplate(found->second);
-
-                PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
-                    AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
-
-                if (prefabEditorEntityOwnershipInterface != nullptr)
-                {
-                     TemplateId rootTemplateId = prefabEditorEntityOwnershipInterface->GetRootPrefabTemplateId();
-                     PropagateTemplateChanges(rootTemplateId);
-                }
-                
             }
         }
 
@@ -845,7 +876,7 @@ namespace AzToolsFramework
 
             if (linkPatches && linkPatches->get().IsArray() && !(linkPatches->get().Empty()))
             {
-                newLink.AddPatchesToLink(linkPatches.value());
+                newLink.SetLinkPatches(linkPatches.value());
             }
 
             //update the target template dom to have the proper values for the source template dom
@@ -1242,6 +1273,12 @@ namespace AzToolsFramework
 
                 removed = templateInstancesRef->get().RemoveMember(link.GetInstanceName().c_str())
                     ? removed : false;
+
+                if (removed)
+                {
+                    templateIterator->second.MarkAsDirty(true);
+                    PropagateTemplateChanges(targetTemplateId);
+                }
             }
 
             return removed;

@@ -51,6 +51,7 @@ namespace EMotionFX
             : public CryHooksModule
         {
         public:
+            AZ_CLASS_ALLOCATOR(EMotionFXIntegrationModule, AZ::SystemAllocator)
             AZ_RTTI(EMotionFXIntegrationModule, "{02533EDC-F2AA-4076-86E9-5E3702202E15}", CryHooksModule);
 
             EMotionFXIntegrationModule()

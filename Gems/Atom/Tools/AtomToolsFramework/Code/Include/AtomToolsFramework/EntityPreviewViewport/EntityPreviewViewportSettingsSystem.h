@@ -27,7 +27,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(EntityPreviewViewportSettingsSystem, "{3CA1A2F4-AD6E-478A-B1E8-565E66BD5B69}");
-        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsSystem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsSystem, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(EntityPreviewViewportSettingsSystem);
 
         static void Reflect(AZ::ReflectContext* context);

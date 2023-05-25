@@ -13,6 +13,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
@@ -49,10 +50,11 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<JointComponent, AZ::Component>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("Joint Configuration", &JointComponent::m_configuration)
                 ->Field("Joint Generic Properties", &JointComponent::m_genericProperties)
                 ->Field("Joint Limits", &JointComponent::m_limits)
+                ->Field("Joint Motor", &JointComponent::m_motor )
                 ;
         }
     }
@@ -75,33 +77,150 @@ namespace PhysX
     {
     }
 
+    JointComponent::JointComponent(
+        const JointComponentConfiguration& configuration,
+        const JointGenericProperties& genericProperties,
+        const JointLimitProperties& limitProperties,
+        const JointMotorProperties& motorProperties)
+        : m_configuration(configuration)
+        , m_genericProperties(genericProperties)
+        , m_limits(limitProperties)
+        , m_motor(motorProperties)
+    {
+    }
+
     void JointComponent::Activate()
     {
-        if (m_configuration.m_followerEntity.IsValid())
+        if (!m_configuration.m_followerEntity.IsValid())
         {
-            if (m_configuration.m_followerEntity == m_configuration.m_leadEntity)
-            {
-                AZ_Error("JointComponent::Activate()",
-                    false,
-                    "Joint's lead entity cannot be the same as the entity in which the joint resides. Joint failed to initialize.");
-                return;
-            }
+            return;
+        }
 
-            AZ::EntityBus::Handler::BusConnect(m_configuration.m_followerEntity);
+        if (m_configuration.m_followerEntity == m_configuration.m_leadEntity)
+        {
+            AZ_Error(
+                "JointComponent::Activate()",
+                false,
+                "Joint's lead entity cannot be the same as the entity in which the joint resides. Joint failed to initialize.");
+            return;
+        }
+
+        // If joint has no lead entity, it is a constraint on a global frame (position & orientation).
+        const bool hasLeadEntity = m_configuration.m_leadEntity.IsValid();
+
+        // Collect the involved entities.
+        m_rigidBodyEntityMap.insert({ m_configuration.m_followerEntity, false });
+        if (hasLeadEntity)
+        {
+            m_rigidBodyEntityMap.insert({ m_configuration.m_leadEntity, false });
+        }
+
+        // Connect to RigidBodyNotificationBus of follower and leader rigid bodies
+        // and wait until all of them are enabled to create the native joint.
+        Physics::RigidBodyNotificationBus::MultiHandler::BusConnect(m_configuration.m_followerEntity);
+        if (hasLeadEntity)
+        {
+            Physics::RigidBodyNotificationBus::MultiHandler::BusConnect(m_configuration.m_leadEntity);
+
+            // Connect to the tick bus to verify in the next tick if the leader entity has a rigid body.
+            AZ::TickBus::Handler::BusConnect();
         }
     }
 
     void JointComponent::Deactivate()
     {
-        AZ::EntityBus::Handler::BusDisconnect();
+        if (m_rigidBodyEntityMap.empty())
+        {
+            return;
+        }
+
+        DestroyNativeJoint();
+
+        AZ::TickBus::Handler::BusDisconnect();
+        Physics::RigidBodyNotificationBus::MultiHandler::BusDisconnect();
+        m_rigidBodyEntityMap.clear();
+    }
+
+    void JointComponent::OnPhysicsEnabled(const AZ::EntityId& entityId)
+    {
+        auto it = m_rigidBodyEntityMap.find(entityId);
+        if (it != m_rigidBodyEntityMap.end())
+        {
+            it->second = true;
+
+            const bool allRigidBodiesEnabled = AZStd::all_of(
+                m_rigidBodyEntityMap.begin(),
+                m_rigidBodyEntityMap.end(),
+                [](const auto& elem)
+                {
+                    return elem.second;
+                });
+
+            if (allRigidBodiesEnabled)
+            {
+                CreateNativeJoint();
+            }
+        }
+    }
+
+    void JointComponent::OnPhysicsDisabled(const AZ::EntityId& entityId)
+    {
+        auto it = m_rigidBodyEntityMap.find(entityId);
+        if (it != m_rigidBodyEntityMap.end())
+        {
+            it->second = false;
+
+            DestroyNativeJoint();
+        }
+    }
+
+    void JointComponent::CreateNativeJoint()
+    {
+        if (m_jointHandle != AzPhysics::InvalidJointHandle)
+        {
+            return;
+        }
+
+        // Invoke overriden specific joint type instantiation
+        InitNativeJoint();
+    }
+
+    void JointComponent::DestroyNativeJoint()
+    {
+        if (m_jointHandle == AzPhysics::InvalidJointHandle)
+        {
+            return;
+        }
+
+        DeinitNativeJoint();
+
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             if (auto* scene = physicsSystem->GetScene(m_jointSceneOwner))
             {
                 scene->RemoveJoint(m_jointHandle);
+
+                m_jointHandle = AzPhysics::InvalidJointHandle;
                 m_jointSceneOwner = AzPhysics::InvalidSceneHandle;
             }
         }
+    }
+
+    void JointComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        // Check if the lead entity has a rigid body in the next tick because
+        // the lead entity might not be created yet during activation of the follower's entity.
+        // If the lead exists but it doesn't have a rigid body then this joint will never get
+        // created and therefore we need to warn about the invalid joint setup.
+
+        if (!Physics::RigidBodyRequestBus::FindFirstHandler(m_configuration.m_leadEntity))
+        {
+            const AZStd::string entityWithoutBodyWarningMsg("Rigid body not found in lead entity associated with joint. "
+                                                            "Joint will not be created.");
+            WarnInvalidJointSetup(m_configuration.m_leadEntity, entityWithoutBodyWarningMsg);
+        }
+
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     AZ::Transform JointComponent::GetJointLocalPose(const physx::PxRigidActor* actor, const AZ::Transform& jointPose)
@@ -143,7 +262,7 @@ namespace PhysX
                 info.m_leadBody, m_configuration.m_leadEntity, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
 
             // Report a warning if there's no lead body or the body type is not one of the supported.
-            // In the future only body type validation will be needed 
+            // In the future only body type validation will be needed
             if (!info.m_leadBody ||
                 !(info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBody ||
                  info.m_leadBody->GetNativeType() == NativeTypeIdentifiers::RigidBodyStatic))
@@ -200,22 +319,5 @@ namespace PhysX
         const char* category = "PhysX Joint";
 
         PhysX::Utils::WarnEntityNames(entityIds, category, message.c_str());
-    }
-
-    void JointComponent::OnEntityActivated(const AZ::EntityId& entityId)
-    {
-        AZ::EntityBus::Handler::BusDisconnect();
-
-        // If joint has no lead entity, it is a constraint on a global frame (position & orientation).
-        // or, follower has been activated, this is the lead being activated.
-        if (!m_configuration.m_leadEntity.IsValid() || entityId == m_configuration.m_leadEntity)
-        {
-            InitNativeJoint(); // Invoke overriden specific joint type instantiation
-        }
-        // Else, follower entity is activated, subscribe to be notified that lead entity is activated.
-        else
-        {
-            AZ::EntityBus::Handler::BusConnect(m_configuration.m_leadEntity);
-        }
     }
 } // namespace PhysX

@@ -13,7 +13,6 @@
 #include "UiAnimViewNodes.h"
 #include "UiAnimViewDopeSheetBase.h"
 #include "UiAnimViewUndo.h"
-#include "StringDlg.h"
 #include "UiAnimViewDialog.h"
 #include "UiAVEventsDialog.h"
 
@@ -23,7 +22,6 @@
 
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "Export/ExportManager.h"
 #include <Editor/Util/fastlib.h>
 
 #include "QtUtilWin.h"
@@ -288,7 +286,7 @@ CUiAnimViewNodesCtrl::CUiAnimViewNodesCtrl(QWidget* hParentWnd, CUiAnimViewDialo
         [this]([[maybe_unused]] bool checked)
         {
             CUiAnimViewSequence* pSequence = nullptr;
-            EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+            UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
             if (pSequence)
             {
                 UiAnimUndo undo("Delete selected UiAnimView Nodes/Tracks");
@@ -627,7 +625,7 @@ void CUiAnimViewNodesCtrl::Reload()
 void CUiAnimViewNodesCtrl::OnFillItems()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         CUiAnimViewSequenceNotificationContext context(pSequence);
@@ -678,7 +676,7 @@ void CUiAnimViewNodesCtrl::OnSelectionChanged()
     m_bSelectionChanging = true;
 
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         CUiAnimViewSequenceNotificationContext context(pSequence);
@@ -711,7 +709,7 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
     CRecord* pRecord = 0;
 
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -839,40 +837,6 @@ void CUiAnimViewNodesCtrl::OnNMRclick(QPoint point)
             UiAnimUndo undo("Add UiAnimView Event Node");
             pGroupNode->CreateSubNode("Events", eUiAnimNodeType_Event);
         }
-#if UI_ANIMATION_REMOVED // CStringDlg unresolved
-        else if (cmd == eMI_AddConsoleVariable)
-        {
-            CStringDlg dlg(_T("Console Variable Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                UiAnimUndo undo("Add UiAnimView Console (CVar) Node");
-                CString name = pGroupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
-                pGroupNode->CreateSubNode(name, eUiAnimNodeType_CVar);
-            }
-        }
-        else if (cmd == eMI_AddScriptVariable)
-        {
-            CStringDlg dlg(_T("Script Variable Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                UiAnimUndo undo("Add UiAnimView Script Variable Node");
-                CString name = pGroupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
-                pGroupNode->CreateSubNode(name, eUiAnimNodeType_ScriptVar);
-            }
-        }
-        else if (cmd == eMI_AddMaterial)
-        {
-            CStringDlg dlg(_T("Material Name"));
-            if (dlg.DoModal() == IDOK && !dlg.GetString().IsEmpty())
-            {
-                if (pGroupNode->GetAnimNodesByName(dlg.GetString()).GetCount() == 0)
-                {
-                    UiAnimUndo undo("Add UiAnimView Material Node");
-                    pGroupNode->CreateSubNode(dlg.GetString(), eUiAnimNodeType_Material);
-                }
-            }
-        }
-#endif
     }
 
     if (cmd == eMI_EditEvents)
@@ -1292,7 +1256,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuMultiSelection(UiAnimContextMenu& context
 int CUiAnimViewNodesCtrl::ShowPopupMenu([[maybe_unused]] QPoint point, const CRecord* pRecord)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return 0;
@@ -1371,7 +1335,7 @@ void CUiAnimViewNodesCtrl::FillAutoCompletionListForFilter()
 {
     QStringList strings;
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         ui->noitems->hide();
@@ -1404,7 +1368,7 @@ void CUiAnimViewNodesCtrl::FillAutoCompletionListForFilter()
 void CUiAnimViewNodesCtrl::OnFilterChange(const QString& text)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     if (pSequence)
     {
@@ -1460,7 +1424,7 @@ void CUiAnimViewNodesCtrl::ShowNextResult()
     if (m_matchCount > 1)
     {
         CUiAnimViewSequence* pSequence = nullptr;
-        EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+        UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
         if (pSequence && !ui->searchField->text().isEmpty())
         {
@@ -1497,7 +1461,7 @@ void CUiAnimViewNodesCtrl::CreateSetAnimationLayerPopupMenu([[maybe_unused]] QMe
 void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1526,7 +1490,7 @@ void CUiAnimViewNodesCtrl::CustomizeTrackColor(CUiAnimViewTrack* pTrack)
 void CUiAnimViewNodesCtrl::ClearCustomTrackColor(CUiAnimViewTrack* pTrack)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1587,7 +1551,7 @@ void CUiAnimViewNodesCtrl::UpdateRecordVisibility()
 void CUiAnimViewNodesCtrl::UpdateAllNodesForElementChanges()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (pSequence)
     {
         CUiAnimViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
@@ -1604,7 +1568,7 @@ void CUiAnimViewNodesCtrl::UpdateAllNodesForElementChanges()
 void CUiAnimViewNodesCtrl::OnNodeChanged(CUiAnimViewNode* pNode, IUiAnimViewSequenceListener::ENodeChangeType type)
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return;
@@ -1731,7 +1695,7 @@ QIcon CUiAnimViewNodesCtrl::GetIconForTrack(const CUiAnimViewTrack* pTrack)
 void CUiAnimViewNodesCtrl::OnKeysChanged(CUiAnimViewSequence* pSequence)
 {
     CUiAnimViewSequence* pCurrentSequence = nullptr;
-    EBUS_EVENT_RESULT(pCurrentSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pCurrentSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!m_bIgnoreNotifications && pSequence && pSequence == pCurrentSequence)
     {
         UpdateDopeSheet();
@@ -1753,7 +1717,7 @@ void CUiAnimViewNodesCtrl::OnNodeSelectionChanged(CUiAnimViewSequence* pSequence
     }
 
     CUiAnimViewSequence* pCurrentSequence = nullptr;
-    EBUS_EVENT_RESULT(pCurrentSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pCurrentSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!m_bIgnoreNotifications && pSequence && pSequence == pCurrentSequence)
     {
         UpdateDopeSheet();

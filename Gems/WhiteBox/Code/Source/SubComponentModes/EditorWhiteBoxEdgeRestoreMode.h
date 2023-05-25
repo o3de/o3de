@@ -46,6 +46,11 @@ namespace WhiteBox
         EdgeRestoreMode& operator=(EdgeRestoreMode&&) = default;
         ~EdgeRestoreMode() = default;
 
+        static void RegisterActionUpdaters();
+        static void RegisterActions();
+        static void BindActionsToModes(const AZStd::string& modeIdentifier);
+        static void BindActionsToMenus();
+
         // Submode interface
         void Refresh();
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActions(

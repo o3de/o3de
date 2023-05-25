@@ -25,7 +25,7 @@ namespace AtomToolsFramework
     {
     public:
         AZ_RTTI(AtomToolsDocument, "{7E6CA0C4-077C-4849-B24C-6796AF3B640B}");
-        AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(AtomToolsDocument);
 
         static void Reflect(AZ::ReflectContext* context);

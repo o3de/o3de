@@ -31,6 +31,11 @@
             "tag": "forward_customZ"
         },
         {
+            "shader": "./ForwardPass_SkinLighting.shader.template",
+            "azsli": "./ForwardPass_SkinLighting.azsli",
+            "tag": "forward"
+        },
+        {
             "shader": "./Transparent_StandardLighting.shader.template",
             "azsli": "./Transparent_StandardLighting.azsli",
             "tag": "transparent"
@@ -73,6 +78,27 @@
             "shader": "../Common/ShadowmapPass_CustomZ.shader.template",
             "azsli": "../Common/DepthPass_CustomZ.azsli",
             "tag": "shadow_customZ"
+        },
+        // TODO(MaterialPipeline): Need to hook up the MeshMotionVector shader for each pipeline
+        //{
+        //    "file": "Shaders/MotionVector/MeshMotionVector.shader",
+        //    "tag": "MeshMotionVector"
+        //},
+        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
+        {
+            "shader": "../Common/DepthPassTransparentMin.shader.template",
+            "azsli": "../Common/DepthPass.azsli",
+            "tag": "depthPassTransparentMin"
+        },
+        {
+            "shader": "../Common/DepthPassTransparentMax.shader.template",
+            "azsli": "../Common/DepthPass.azsli",
+            "tag": "depthPassTransparentMax"
+        },
+        {
+            "shader": "../Common/MeshMotionVector.shader.template",
+            "azsli": "../Common/MeshMotionVector.azsli",
+            "tag": "meshMotionVector"
         }
     ],
     "runtime": {
@@ -113,14 +139,14 @@
             {
                 "type": "Lua",
                 "args": {
-                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
                     "file": "Materials/Pipelines/Common/ShaderEnable.lua"
                 }
             },
             {
                 "type": "Lua",
                 "args": {
-                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialtype file
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
                     "file": "Materials/Pipelines/Common/DoubleSided.lua"
                 }
             }

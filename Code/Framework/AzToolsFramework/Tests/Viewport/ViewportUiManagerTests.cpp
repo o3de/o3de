@@ -12,69 +12,10 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
-#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace UnitTest
 {
-    using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
-    using ViewportUiElementId = AzToolsFramework::ViewportUi::ViewportUiElementId;
-    using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
-    using ButtonId = AzToolsFramework::ViewportUi::ButtonId;
-
-    // child class of ViewportUiManager which exposes the protected button group and viewport display
-    class ViewportUiManagerTestable : public AzToolsFramework::ViewportUi::ViewportUiManager
-    {
-    public:
-        ViewportUiManagerTestable() = default;
-        ~ViewportUiManagerTestable() override = default;
-
-        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap()
-        {
-            return m_clusterButtonGroups;
-        }
-
-        ViewportUiDisplay* GetViewportUiDisplay()
-        {
-            return m_viewportUi.get();
-        }
-    };
-
-    class ViewportManagerWrapper
-    {
-    public:
-        void Create()
-        {
-            m_viewportManager = AZStd::make_unique<ViewportUiManagerTestable>();
-            m_viewportManager->ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
-            m_mockRenderOverlay = AZStd::make_unique<QWidget>();
-            m_parentWidget = AZStd::make_unique<QWidget>();
-            m_viewportManager->InitializeViewportUi(m_parentWidget.get(), m_mockRenderOverlay.get());
-        }
-
-        void Destroy()
-        {
-            m_viewportManager->DisconnectViewportUiBus();
-            m_viewportManager.reset();
-            m_mockRenderOverlay.reset();
-            m_parentWidget.reset();
-        }
-
-        ViewportUiManagerTestable* GetViewportManager()
-        {
-            return m_viewportManager.get();
-        }
-
-        QWidget* GetMockRenderOverlay()
-        {
-            return m_mockRenderOverlay.get();
-        }
-
-    private:
-        AZStd::unique_ptr<ViewportUiManagerTestable> m_viewportManager;
-        AZStd::unique_ptr<QWidget> m_parentWidget;
-        AZStd::unique_ptr<QWidget> m_mockRenderOverlay;
-    };
-
     // sets up a parent widget and render overlay to attach the Viewport UI to
     // as well as a cluster with one button
     class ViewportUiManagerTestFixture : public ::testing::Test
@@ -198,9 +139,9 @@ namespace UnitTest
 
         // create a handler which will be triggered by the cluster
         bool handlerTriggered = false;
-        auto testButtonId = ButtonId(buttonId);
-        AZ::Event<ButtonId>::Handler handler(
-            [&handlerTriggered, testButtonId](ButtonId buttonId)
+        auto testButtonId = AzToolsFramework::ViewportUi::ButtonId(buttonId);
+        AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler handler(
+            [&handlerTriggered, testButtonId](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
                 if (buttonId == testButtonId)
                 {

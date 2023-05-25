@@ -126,11 +126,11 @@ namespace EMotionFX
                         EXPECT_TRUE(RandomFloatIsInRange(actualOutput, 0, static_cast<float>(i))) << "Random float is not in range.";
                         continue;
                     }
-                    if (isnan(actualOutput) && isnan(expectedOutput))
+                    if (AZStd::isnan(actualOutput) && AZStd::isnan(expectedOutput))
                     {
                         continue;
                     }
-                    if (isinf(actualOutput) && isinf(expectedOutput))
+                    if (AZStd::isinf(actualOutput) && AZStd::isinf(expectedOutput))
                     {
                         continue;
                     }

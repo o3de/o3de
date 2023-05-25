@@ -50,6 +50,9 @@ namespace PhysX
         Physics::RagdollNode* GetRagdollNode() const;
         void SetRagdollNode(Physics::RagdollNode* ragdollNode);
 
+        AzPhysics::SimulatedBody* GetArticulationLink();
+        void SetArticulationLink(AzPhysics::SimulatedBody* articulationLink);
+
         AzPhysics::SimulatedBody* GetSimulatedBody() const;
 
         bool IsValid() const;
@@ -73,6 +76,7 @@ namespace PhysX
             AzPhysics::StaticRigidBody* m_staticRigidBody = nullptr;
             Physics::Character* m_character = nullptr;
             Physics::RagdollNode* m_ragdollNode = nullptr;
+            AzPhysics::SimulatedBody* m_articulationLink = nullptr;
             void* m_externalUserData = nullptr;
         };
 

@@ -74,7 +74,6 @@ namespace AZ
             // Add image to controller only if the image is streamable 
             if (image->IsStreamable())
             {
-                m_streamableImageCount++;
                 m_controller->AttachImage(image);
             }
         }
@@ -83,7 +82,6 @@ namespace AZ
         {
             if (image->IsStreamable())
             {
-                m_streamableImageCount--;
                 m_controller->DetachImage(image);
             }
         }
@@ -110,7 +108,7 @@ namespace AZ
 
         uint32_t StreamingImagePool::GetStreamableImageCount() const
         {
-            return m_streamableImageCount;
+            return m_controller->GetStreamableImageCount();
         }
 
         bool StreamingImagePool::SetMemoryBudget(size_t newBudgetInBytes)

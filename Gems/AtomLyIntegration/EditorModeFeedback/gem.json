@@ -1,5 +1,6 @@
 {
     "gem_name": "EditorModeFeedback",
+    "version": "0.0.0",
     "display_name": "Editor Mode Feedback",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -14,10 +15,9 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [
-        "Atom",
         "Atom_Feature_Common",
         "Atom_RPI",
         "Atom_RHI",
-        "Atom_Bootstrap"
+        "CommonFeaturesAtom"
     ]
 }

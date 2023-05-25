@@ -48,15 +48,30 @@ namespace AtomToolsFramework
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     DynamicProperty CreateSettingsPropertyValue(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const double& defaultValue);
+        const AZStd::string& id,
+        const AZStd::string& displayName,
+        const AZStd::string& description,
+        const double& defaultValue,
+        const double& minValue = AZStd::numeric_limits<double>::lowest(),
+        const double& maxValue = AZStd::numeric_limits<double>::max());
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     DynamicProperty CreateSettingsPropertyValue(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::u64& defaultValue);
+        const AZStd::string& id,
+        const AZStd::string& displayName,
+        const AZStd::string& description,
+        const AZ::u64& defaultValue,
+        const AZ::u64& minValue = AZStd::numeric_limits<AZ::u64>::lowest(),
+        const AZ::u64& maxValue = AZStd::numeric_limits<AZ::u64>::max());
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     DynamicProperty CreateSettingsPropertyValue(
-        const AZStd::string& id, const AZStd::string& displayName, const AZStd::string& description, const AZ::s64& defaultValue);
+        const AZStd::string& id,
+        const AZStd::string& displayName,
+        const AZStd::string& description,
+        const AZ::s64& defaultValue,
+        const AZ::s64& minValue = AZStd::numeric_limits<AZ::s64>::lowest(),
+        const AZ::s64& maxValue = AZStd::numeric_limits<AZ::s64>::max());
 
     // Helper function to create and bind a numeric registry setting to a dynamic property
     template<typename T>

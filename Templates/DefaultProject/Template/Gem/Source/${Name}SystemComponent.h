@@ -21,7 +21,7 @@ namespace ${SanitizedCppName}
         , protected ${SanitizedCppName}RequestBus::Handler
     {
     public:
-        AZ_COMPONENT(${SanitizedCppName}SystemComponent, "${SysCompClassId}");
+        AZ_COMPONENT_DECL(${SanitizedCppName}SystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

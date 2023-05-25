@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AtomFontModule, "{E5EDF3B2-F85D-441B-8D0B-21D44D177799}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(AtomFontModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AtomFontModule, AZ::SystemAllocator);
 
             AtomFontModule()
                 : AZ::Module()

@@ -18,8 +18,8 @@
 
 namespace AzPhysics::Automation
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyCollisionAutomationHandler, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyTriggerAutomationHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyCollisionAutomationHandler, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyTriggerAutomationHandler, AZ::SystemAllocator);
 
     /*static*/ void SimulatedBodyCollisionAutomationHandler::Reflect(AZ::ReflectContext* context)
     {

@@ -37,6 +37,8 @@
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
+#include <Source/Articulation.h>
+
 namespace PhysX
 {
     AZ_CVAR_EXTERNED(bool, physx_batchTransformSync);
@@ -46,7 +48,7 @@ namespace PhysX
     AZ_CVAR(size_t, physx_parallelTransformSyncBatchSize, 250, nullptr, AZ::ConsoleFunctorFlags::Null,
         "How many rigid bodies should be processed per task");
 
-    AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXScene, AZ::SystemAllocator);
 
     AZ_CVAR(bool, physx_profileSimulationDatapoints, true, nullptr, AZ::ConsoleFunctorFlags::Null,
         "Expose PhysX simulation statistics to profiler. "
@@ -77,7 +79,11 @@ namespace PhysX
                 }
                 else
                 {
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+                    sceneDesc.flags.raise(physx::PxSceneFlag::eDISABLE_CCD_RESWEEP);
+#else
                     sceneDesc.flags.set(physx::PxSceneFlag::eDISABLE_CCD_RESWEEP);
+#endif
                 }
             }
             else
@@ -263,11 +269,12 @@ namespace PhysX
         }
 
         //helper to perform a ray cast
-        AzPhysics::SceneQueryHits RayCast(const AzPhysics::RayCastRequest* raycastRequest,
+        bool RayCast(const AzPhysics::RayCastRequest* raycastRequest,
             AZStd::vector<physx::PxRaycastHit>& raycastBuffer,
             physx::PxScene* physxScene,
             const physx::PxQueryFilterData queryData,
-            const AZ::u64 sceneMaxResults)
+            const AZ::u32 sceneMaxResults,
+            AzPhysics::SceneQueryHits& hits)
         {
             // if this query need to report multiple hits, we need to prepare a buffer to hold up to the max allowed.
             // The filter should also use the eTOUCH flag to find all contacts with the ray.
@@ -276,12 +283,12 @@ namespace PhysX
             SceneQueryHelpers::PhysXQueryFilterCallback queryFilterCallback;
             if (raycastRequest->m_reportMultipleHits)
             {
-                const AZ::u64 maxSize = AZStd::min(raycastRequest->m_maxResults, sceneMaxResults);
+                const AZ::u32 maxSize = AZStd::min(raycastRequest->m_maxResults, sceneMaxResults);
                 if (raycastBuffer.size() < maxSize) //todo this needs to be limited by the config setting
                 {
                     raycastBuffer.resize(maxSize);
                 }
-                castResult = physx::PxRaycastBuffer(raycastBuffer.begin(), aznumeric_cast<physx::PxU32>(maxSize));
+                castResult = physx::PxRaycastBuffer(raycastBuffer.begin(), maxSize);
                 queryFilterCallback = SceneQueryHelpers::PhysXQueryFilterCallback(
                     raycastRequest->m_collisionGroup,
                     raycastRequest->m_filterCallback,
@@ -305,12 +312,11 @@ namespace PhysX
                 status = physxScene->raycast(orig, dir, raycastRequest->m_distance, castResult, hitFlags, queryData, &queryFilterCallback);
             }
 
-            AzPhysics::SceneQueryHits hits;
             if (status)
             {
                 if (castResult.hasBlock)
                 {
-                    hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block));
+                    hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block, castResult.block));
                 }
 
                 if (raycastRequest->m_reportMultipleHits)
@@ -318,19 +324,20 @@ namespace PhysX
                     for (auto i = 0u; i < castResult.getNbTouches(); ++i)
                     {
                         const auto& pxHit = castResult.getTouch(i);
-                        hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit));
+                        hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit, pxHit));
                     }
                 }
             }
-            return hits;
+            return status;
         }
 
-        //helper to preform a shape cast
-        AzPhysics::SceneQueryHits ShapeCast(const AzPhysics::ShapeCastRequest* shapecastRequest,
+        // helper to preform a shape cast
+        bool ShapeCast(const AzPhysics::ShapeCastRequest* shapecastRequest,
             AZStd::vector<physx::PxSweepHit>& shapecastBuffer,
             physx::PxScene* physxScene,
             const physx::PxQueryFilterData queryData,
-            const AZ::u64 sceneMaxResults)
+            const AZ::u32 sceneMaxResults,
+            AzPhysics::SceneQueryHits& hits)
         {
             // if this query need to report multiple hits, we need to prepare a buffer to hold up to the max allowed.
             // The filter should also use the eTOUCH flag to find all contacts with the shape.
@@ -339,12 +346,12 @@ namespace PhysX
             SceneQueryHelpers::PhysXQueryFilterCallback queryFilterCallback;
             if (shapecastRequest->m_reportMultipleHits)
             {
-                const AZ::u64 maxSize = AZStd::min(shapecastRequest->m_maxResults, sceneMaxResults);
+                const AZ::u32 maxSize = AZStd::min(shapecastRequest->m_maxResults, sceneMaxResults);
                 if (shapecastBuffer.size() < maxSize) //todo this needs to be limited by the config setting
                 {
                     shapecastBuffer.resize(maxSize);
                 }
-                castResult = physx::PxSweepBuffer(shapecastBuffer.begin(), aznumeric_cast<physx::PxU32>(maxSize));
+                castResult = physx::PxSweepBuffer(shapecastBuffer.begin(), maxSize);
                 queryFilterCallback = SceneQueryHelpers::PhysXQueryFilterCallback(
                     shapecastRequest->m_collisionGroup,
                     shapecastRequest->m_filterCallback,
@@ -361,7 +368,6 @@ namespace PhysX
             physx::PxGeometryHolder pxGeometry;
             Utils::CreatePxGeometryFromConfig(*(shapecastRequest->m_shapeConfiguration), pxGeometry);
 
-            AzPhysics::SceneQueryHits results;
             if (pxGeometry.any().getType() == physx::PxGeometryType::eSPHERE ||
                 pxGeometry.any().getType() == physx::PxGeometryType::eBOX ||
                 pxGeometry.any().getType() == physx::PxGeometryType::eCAPSULE ||
@@ -384,7 +390,7 @@ namespace PhysX
                 {
                     if (castResult.hasBlock)
                     {
-                        results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block));
+                        hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(castResult.block, castResult.block));
                     }
 
                     if (shapecastRequest->m_reportMultipleHits)
@@ -392,17 +398,19 @@ namespace PhysX
                         for (auto i = 0u; i < castResult.getNbTouches(); ++i)
                         {
                             const auto& pxHit = castResult.getTouch(i);
-                            results.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit));
+                            hits.m_hits.emplace_back(SceneQueryHelpers::GetHitFromPxHit(pxHit, pxHit));
                         }
                     }
                 }
+
+                return status;
             }
             else
             {
                 AZ_Warning("World", false, "Invalid geometry type passed to shape cast. Only sphere, box, capsule or convex mesh is supported");
             }
 
-            return results;
+            return false;
         }
 
         bool OverlapGeneric(physx::PxScene* physxScene, const AzPhysics::OverlapRequest* overlapRequest,
@@ -426,13 +434,14 @@ namespace PhysX
             return status;
         }
 
-        AzPhysics::SceneQueryHits OverlapQuery(const AzPhysics::OverlapRequest* overlapRequest,
+        bool OverlapQuery(const AzPhysics::OverlapRequest* overlapRequest,
             AZStd::vector<physx::PxOverlapHit>& overlapBuffer,
             physx::PxScene* physxScene,
             const physx::PxQueryFilterData queryData,
-            const AZ::u64 sceneMaxResults)
+            const AZ::u32 sceneMaxResults,
+            AzPhysics::SceneQueryHits& hits)
         {
-            const AZ::u64 maxSize = AZStd::min(overlapRequest->m_maxResults, sceneMaxResults);
+            const AZ::u32 maxSize = AZStd::min(overlapRequest->m_maxResults, sceneMaxResults);
             if (overlapBuffer.size() < maxSize)
             {
                 overlapBuffer.resize(maxSize);
@@ -440,35 +449,30 @@ namespace PhysX
 
             if (overlapRequest->m_unboundedOverlapHitCallback)
             {
-                SceneQueryHelpers::UnboundedOverlapCallback callback(overlapRequest->m_unboundedOverlapHitCallback, overlapBuffer);
+                SceneQueryHelpers::UnboundedOverlapCallback callback(overlapRequest->m_unboundedOverlapHitCallback, overlapBuffer, hits);
                 const bool status = OverlapGeneric(physxScene, overlapRequest, callback, queryData);
-                if (status)
-                {
-                    return callback.m_results;
-                }
-                return {};
+                return status;
             }
 
-            physx::PxOverlapBuffer queryHits(overlapBuffer.begin(), aznumeric_cast<physx::PxU32>(maxSize));
+            physx::PxOverlapBuffer queryHits(overlapBuffer.begin(), maxSize);
             bool status = OverlapGeneric(physxScene, overlapRequest, queryHits, queryData);
 
-            AzPhysics::SceneQueryHits results;
             if (status)
             {
                 // Process results
                 AZ::u32 hitNum = queryHits.getNbAnyHits();
-                results.m_hits.reserve(hitNum);
+                hits.m_hits.reserve(hits.m_hits.size() + hitNum);
                 for (AZ::u32 i = 0; i < hitNum; ++i)
                 {
                     const AzPhysics::SceneQueryHit hit = SceneQueryHelpers::GetHitFromPxOverlapHit(queryHits.getAnyHit(i));
                     if (hit.IsValid())
                     {
-                        results.m_hits.emplace_back(hit);
+                        hits.m_hits.emplace_back(hit);
                     }
                 }
-                results.m_hits.shrink_to_fit();
             }
-            return results;
+
+            return status;
         }
     }
 
@@ -706,6 +710,10 @@ namespace PhysX
         else if (azrtti_istypeof<Physics::RagdollConfiguration>(simulatedBodyConfig))
         {
             newBody = Internal::CreateRagdollBody(this, azdynamic_cast<const Physics::RagdollConfiguration*>(simulatedBodyConfig));
+        }
+        else if (azrtti_istypeof<ArticulationLinkConfiguration>(simulatedBodyConfig))
+        {
+            newBody = PhysX::CreateArticulationLink(azdynamic_cast<const ArticulationLinkConfiguration*>(simulatedBodyConfig));
         }
         else
         {
@@ -962,35 +970,46 @@ namespace PhysX
 
     AzPhysics::SceneQueryHits PhysXScene::QueryScene(const AzPhysics::SceneQueryRequest* request)
     {
+        AzPhysics::SceneQueryHits hits;
+        QueryScene(request, hits);
+        return hits;      
+    }
+
+    bool PhysXScene::QueryScene(const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits& result)
+    {
         if (request == nullptr)
         {
-            return {}; //return 0 hits
+            return false; // return 0 hits
         }
 
         // Query flags.
         const physx::PxQueryFlags queryFlags = SceneQueryHelpers::GetPxQueryFlags(request->m_queryType);
         const physx::PxQueryFilterData queryData(queryFlags);
 
-        if (azrtti_istypeof<AzPhysics::RayCastRequest>(request))
+        switch (request->m_requestType)
         {
-            return Internal::RayCast(azdynamic_cast<const AzPhysics::RayCastRequest*>(request),
-                s_rayCastBuffer, m_pxScene, queryData, m_raycastBufferSize);
-        }
-        else if (azrtti_istypeof<AzPhysics::ShapeCastRequest>(request))
-        {
-            return Internal::ShapeCast(azdynamic_cast<const AzPhysics::ShapeCastRequest*>(request),
-                s_sweepBuffer, m_pxScene, queryData, m_shapecastBufferSize);
-        }
-        else if (azrtti_istypeof<AzPhysics::OverlapRequest>(request))
-        {
-            return Internal::OverlapQuery(azdynamic_cast<const AzPhysics::OverlapRequest*>(request),
-                s_overlapBuffer, m_pxScene, queryData, m_overlapBufferSize);
-        }
-        else
-        {
-            AZ_Warning("Physx", false, "Unknown Scene Query request type.");
-        }
-        return AzPhysics::SceneQueryHits();
+        case AzPhysics::SceneQueryRequest::RequestType::Raycast:
+            {
+                return Internal::RayCast(static_cast<const AzPhysics::RayCastRequest*>(request),
+                    s_rayCastBuffer, m_pxScene, queryData, m_raycastBufferSize, result);
+            }
+        case AzPhysics::SceneQueryRequest::RequestType::Shapecast:
+            {
+                return Internal::ShapeCast(static_cast<const AzPhysics::ShapeCastRequest*>(request),
+                    s_sweepBuffer, m_pxScene, queryData, m_shapecastBufferSize, result);
+            }
+        case AzPhysics::SceneQueryRequest::RequestType::Overlap:
+            {
+                return Internal::OverlapQuery(static_cast<const AzPhysics::OverlapRequest*>(request),
+                    s_overlapBuffer, m_pxScene, queryData, m_overlapBufferSize, result);
+            }
+        default:
+            {
+                AZ_Warning("Physx", false, "Unknown Scene Query request type.");
+            }
+        };
+
+        return false;
     }
 
     AzPhysics::SceneQueryHitsList PhysXScene::QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests)
@@ -1064,7 +1083,8 @@ namespace PhysX
     {
         //character controller is a special actor and only needs the m_simulating flag set,
         if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
-            !azrtti_istypeof<PhysX::Ragdoll>(body))
+            !azrtti_istypeof<PhysX::Ragdoll>(body) &&
+            !azrtti_istypeof<PhysX::ArticulationLink>(body))
         {
             auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
             AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
@@ -1091,7 +1111,8 @@ namespace PhysX
     {
         //character controller is a special actor and only needs the m_simulating flag set,
         if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
-            !azrtti_istypeof<PhysX::Ragdoll>(body))
+            !azrtti_istypeof<PhysX::Ragdoll>(body) &&
+            !azrtti_istypeof<PhysX::ArticulationLink>(body))
         {
             auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
             AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");

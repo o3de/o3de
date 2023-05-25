@@ -23,20 +23,24 @@ then
     exit 1
 fi
 
-UBUNTU_DISTRO="$(lsb_release -c | awk '{print $2}')"
-if [ "$UBUNTU_DISTRO" == "bionic" ]
+#
+# Get Ubuntu version data
+#
+UBUNTU_DISTRO="$(lsb_release -sc)"
+UBUNTU_VER="$(lsb_release -sr)"
+if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ] || [ "$UBUNTU_DISTRO" == "jammy" ]
 then
-    echo "Setup for Ubuntu 18.04 LTS ($UBUNTU_DISTRO)"
-elif [ "$UBUNTU_DISTRO" == "focal" ]
-then
-    echo "Setup for Ubuntu 20.04 LTS ($UBUNTU_DISTRO)"
-elif [ "$UBUNTU_DISTRO" == "jammy" ]
-then
-    echo "Setup for Ubuntu 22.04 LTS ($UBUNTU_DISTRO)"
+    echo "Setup for Ubuntu $UBUNTU_VER LTS ($UBUNTU_DISTRO)"
 else
-    echo "Unsupported version of Ubuntu $UBUNTU_DISTRO"
+    echo "Unsupported OS version - $UBUNTU_DISTRO"
     exit 1
 fi
+
+#
+# Add Ubuntu universe repo
+#
+apt install software-properties-common
+add-apt-repository universe
 
 #
 # Install curl if its not installed
@@ -48,39 +52,32 @@ then
     apt-get install curl -y
 fi
 
-
 #
 # Add the kitware repository for cmake if necessary
 #
-
 KITWARE_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^deb | grep https://apt.kitware.com/ubuntu/ | wc -l)
+CMAKE_VER=3.22.1
 
 if [ $KITWARE_REPO_COUNT -eq 0 ]
 then
-    echo Adding Kitware Repository for the cmake
+    echo Adding Kitware Repository for CMake $CMAKE_VER
 
     wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
     CMAKE_DEB_REPO="'deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main'"
 
     # Add the appropriate kitware repository to apt
-    if [ "$UBUNTU_DISTRO" == "bionic" ]
+    if [ "$UBUNTU_DISTRO" == "bionic" ] || [ "$UBUNTU_DISTRO" == "focal" ]
     then
-        CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu18.04.1
-        apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
-    elif [ "$UBUNTU_DISTRO" == "focal" ]
-    then
-        CMAKE_DISTRO_VERSION=3.20.1-0kitware1ubuntu20.04.1
-        apt-add-repository 'deb https://apt.kitware.com/ubuntu/ focal main'
+        CMAKE_DISTRO_VERSION=$CMAKE_VER-0kitware1ubuntu$UBUNTU_VER.1
+        apt-add-repository "deb https://apt.kitware.com/ubuntu/ $UBUNTU_DISTRO main"
     elif [ "$UBUNTU_DISTRO" == "jammy" ]
     then
         # Ubuntu 22.04 already has an acceptable version of cmake
-        echo "Ubuntu 22.04's cmake package already at version 3.22.1"
+        echo "Ubuntu 22.04's cmake package already at version $CMAKE_VER"
     fi
-    apt-get update
 else
     echo  Kitware Repository repo already set
 fi
-
 
 #
 # Add Amazon Corretto repository to install the necessary JDK for Jenkins and Android
@@ -88,60 +85,31 @@ fi
 
 CORRETTO_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^dev | grep https://apt.corretto.aws | wc -l)
 
-if [ $CORRETTO -eq 0 ]
+if [ $CORRETTO_REPO_COUNT -eq 0 ]
 then
     echo Adding Corretto Repository for JDK
     
     wget -O- https://apt.corretto.aws/corretto.key | apt-key add - 
     add-apt-repository 'deb https://apt.corretto.aws stable main'
-    apt-get update
 else
     echo Corretto repo already set
 fi
 
-# Read from the package list and process each package
-PACKAGE_FILE_LIST=package-list.ubuntu-$UBUNTU_DISTRO.txt
+#
+# Add the repository for ROS2
+#
+ROS2_REPO_COUNT=$(cat /etc/apt/sources.list | grep ^deb | grep http://packages.ros.org/ros2/ubuntu | wc -l)
 
-echo Reading package list $PACKAGE_FILE_LIST
+if [ $ROS2_REPO_COUNT -eq 0 ]
+then
+    echo Adding ROS2 Repository
+    curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $UBUNTU_DISTRO main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+else
+    echo ROS2 repo already set
+fi
 
-# Read each line (strip out comment tags)
-for PREPROC_LINE in $(cat $PACKAGE_FILE_LIST | sed 's/#.*$//g')
-do
-    LINE=$(echo $PREPROC_LINE | tr -d '\r\n')
-    PACKAGE=$(echo $LINE | awk -F / '{$1=$1;print $1}')
-    if [ "$PACKAGE" != "" ]  # Skip blank lines
-    then
-        PACKAGE_VER=$(echo $LINE | awk -F / '{$2=$2;print $2}')
-        if [ "$PACKAGE_VER" == "" ]
-        then
-            # Process non-versioned packages
-            INSTALLED_COUNT=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l)
-            if [ $INSTALLED_COUNT -eq 0 ]
-            then
-                echo Installing $PACKAGE
-                apt-get install $PACKAGE -y
-            else
-                INSTALLED_VERSION=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}')
-                echo $PACKAGE already installed \(version $INSTALLED_VERSION\)
-            fi
-        else
-            # Process versioned packages
-            INSTALLED_COUNT=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | wc -l)
-            if [ $INSTALLED_COUNT -eq 0 ]
-            then
-                echo Installing $PACKAGE \( $PACKAGE_VER \)
-                apt-get install $PACKAGE=$PACKAGE_VER -y
-            else
-                INSTALLED_VERSION=$(apt list --installed 2>/dev/null | grep ^$PACKAGE/ | awk '{print $2}')
-                if [ "$INSTALLED_VERSION" != "$PACKAGE_VER" ]
-                then
-                    echo $PACKAGE already installed but with the wrong version. Purging the package
-                    apt purge --auto-remove $PACKAGE -y
-                fi
-                echo $PACKAGE already installed \(version $INSTALLED_VERSION\)
-            fi
-        fi
-    fi
-
-done
-
+#
+# Finally, update the sources repos
+#
+apt-get update

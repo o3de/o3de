@@ -19,7 +19,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(CreateSplicingNodeMimeEvent, "{5191EFF0-BD91-48BF-8A95-9471B8E671A4}", GraphCanvasMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateSplicingNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateSplicingNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
         

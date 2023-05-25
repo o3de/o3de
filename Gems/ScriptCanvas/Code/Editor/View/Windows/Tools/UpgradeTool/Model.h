@@ -39,7 +39,7 @@ namespace ScriptCanvasEditor
             : public ModelRequestsBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Model, AZ::SystemAllocator);
 
             Model();
             ~Model();

@@ -355,7 +355,7 @@ namespace JsonSerializationTests
     {
     public:
         AZ_RTTI(TestStringSerializer, "{05012877-0A5C-4514-8AC2-695E753C77A2}", BaseJsonSerializer);
-        AZ_CLASS_ALLOCATOR(TestStringSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStringSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result Load(void* outputValue, const AZ::Uuid&, const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context) override

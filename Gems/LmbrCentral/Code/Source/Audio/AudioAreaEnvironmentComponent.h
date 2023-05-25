@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 
 #include <IAudioSystem.h>
@@ -28,6 +29,7 @@ namespace LmbrCentral
      */
     class AudioAreaEnvironmentComponent
         : public AZ::Component
+        , protected Physics::RigidBodyNotificationBus::Handler
         , private AZ::TransformNotificationBus::MultiHandler
     {
         friend class EditorAudioAreaEnvironmentComponent;
@@ -69,6 +71,10 @@ namespace LmbrCentral
         }
 
         static void Reflect(AZ::ReflectContext* context);
+
+        // Physics::RigidBodyNotifications overrides ...
+        void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
+        void OnPhysicsDisabled(const AZ::EntityId& entityId) override;
 
     private:
         void OnTriggerEnter(const AzPhysics::TriggerEvent& triggerEvent);

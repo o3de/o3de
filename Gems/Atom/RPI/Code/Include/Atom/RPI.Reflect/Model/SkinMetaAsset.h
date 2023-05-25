@@ -27,7 +27,7 @@ namespace AZ
             static constexpr inline const char* Group = "Model";
 
             AZ_RTTI(SkinMetaAsset, "{DEDBC099-A628-463F-81BB-47C45D1E1CB1}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(SkinMetaAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinMetaAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

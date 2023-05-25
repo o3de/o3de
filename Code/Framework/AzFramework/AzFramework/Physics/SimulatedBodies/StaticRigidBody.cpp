@@ -13,7 +13,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(StaticRigidBody, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(StaticRigidBody, AZ::SystemAllocator);
 
     /*static*/ void StaticRigidBody::Reflect(AZ::ReflectContext* context)
     {

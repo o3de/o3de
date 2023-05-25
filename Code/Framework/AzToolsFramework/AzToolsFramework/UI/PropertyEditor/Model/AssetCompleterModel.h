@@ -24,7 +24,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AssetCompleterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetCompleterModel, AZ::SystemAllocator);
         explicit AssetCompleterModel(QObject* parent = nullptr);
         ~AssetCompleterModel();
 

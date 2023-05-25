@@ -344,6 +344,7 @@ namespace GraphCanvas
         QAction* action = new QAction(QObject::tr("&New Asset"), this);
         action->setShortcut(QKeySequence::New);
         action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(action);
         QObject::connect(action, &QAction::triggered, [this] {
             CreateEditorDockWidget();
         });
@@ -417,6 +418,7 @@ namespace GraphCanvas
         m_cutSelectedAction = new QAction(QObject::tr("Cut"), this);
         m_cutSelectedAction->setShortcut(QKeySequence::Cut);
         m_cutSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(m_cutSelectedAction);
         QObject::connect(m_cutSelectedAction, &QAction::triggered, [this] {
             SceneRequestBus::Event(GetActiveGraphCanvasGraphId(), &SceneRequests::CutSelection);
         });
@@ -430,6 +432,7 @@ namespace GraphCanvas
         m_copySelectedAction = new QAction(QObject::tr("Copy"), this);
         m_copySelectedAction->setShortcut(QKeySequence::Copy);
         m_copySelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(m_copySelectedAction);
         QObject::connect(m_copySelectedAction, &QAction::triggered, [this] {
             SceneRequestBus::Event(GetActiveGraphCanvasGraphId(), &SceneRequests::CopySelection);
         });
@@ -443,6 +446,7 @@ namespace GraphCanvas
         m_pasteSelectedAction = new QAction(QObject::tr("Paste"), this);
         m_pasteSelectedAction->setShortcut(QKeySequence::Paste);
         m_pasteSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(m_pasteSelectedAction);
         QObject::connect(m_pasteSelectedAction, &QAction::triggered, [this] {
             SceneRequestBus::Event(GetActiveGraphCanvasGraphId(), &SceneRequests::Paste);
         });
@@ -456,6 +460,7 @@ namespace GraphCanvas
         m_duplicateSelectedAction = new QAction(QObject::tr("Duplicate"), this);
         m_duplicateSelectedAction->setShortcut(QKeySequence("Ctrl+D"));
         m_duplicateSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(m_duplicateSelectedAction);
         QObject::connect(m_duplicateSelectedAction, &QAction::triggered, [this] {
             SceneRequestBus::Event(GetActiveGraphCanvasGraphId(), &SceneRequests::DuplicateSelection);
         });
@@ -469,6 +474,7 @@ namespace GraphCanvas
         m_deleteSelectedAction = new QAction(QObject::tr("Delete"), this);
         m_deleteSelectedAction->setShortcut(QKeySequence::Delete);
         m_deleteSelectedAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+        addAction(m_deleteSelectedAction);
         QObject::connect(m_deleteSelectedAction, &QAction::triggered, [this] {
             SceneRequestBus::Event(GetActiveGraphCanvasGraphId(), &SceneRequests::DeleteSelection);
         });

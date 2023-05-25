@@ -81,7 +81,7 @@ namespace Camera
     void RotateCameraLookAt::OnEventUpdating(const AZStd::any& value)
     {
         float frameTime = 0.0f;
-        EBUS_EVENT_RESULT(frameTime, AZ::TickRequestBus, GetTickDeltaTime);
+        AZ::TickRequestBus::BroadcastResult(frameTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
 
         float floatValue = 0.0f;
         AZ_Warning("RotateCameraLookAt", AZStd::any_numeric_cast<float>(&value, floatValue), "Received bad value, expected type numerically convertable to float, got type %s", GetNameFromUuid(value.type()));

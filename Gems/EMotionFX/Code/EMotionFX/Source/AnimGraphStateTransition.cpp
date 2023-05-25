@@ -28,9 +28,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::StateFilterLocal, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::UniqueData, AnimGraphObjectUniqueDataAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::StateFilterLocal, AnimGraphAllocator)
 
     bool AnimGraphStateTransition::StateFilterLocal::IsEmpty() const
     {

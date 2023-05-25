@@ -165,6 +165,9 @@ namespace AssetUtilities
     // UUID generation defaults to lowercase SHA1 of the source name, this does normalization and such
     AZ::Uuid CreateSafeSourceUUIDFromName(const char* sourceName, bool caseInsensitive = true);
 
+    AZ::Outcome<AZ::Uuid, AZStd::string> GetSourceUuid(const AssetProcessor::SourceAssetReference& sourceAsset);
+    AZ::Outcome<AZStd::unordered_set<AZ::Uuid>, AZStd::string> GetLegacySourceUuids(const AssetProcessor::SourceAssetReference& sourceAsset);
+
     //! Compute a CRC given a null-terminated string
     //! @param[in] priorCRC     If supplied, continues an existing CRC by feeding it more data
     unsigned int ComputeCRC32(const char* inString, unsigned int priorCRC = 0xFFFFFFFF);
@@ -267,6 +270,11 @@ namespace AssetUtilities
     //! Finds the top level source that produced an intermediate product.  If the source is not yet recorded in the database or has no top level source, this will return nothing
     AZStd::optional<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> GetTopLevelSourceForIntermediateAsset(const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
 
+    //! Gets the absolute path to the top level source that produced an intermediate product. Returns nothing if the source is not yet recorded, there is no top level source, or other issues are encountered.
+    //! Does not check if the file exists.
+    AZStd::optional<AZ::IO::Path> GetTopLevelSourcePathForIntermediateAsset(
+        const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
+
     //! Finds all the sources (up and down) in an intermediate output chain
     AZStd::vector<AssetProcessor::SourceAssetReference> GetAllIntermediateSources(
         const AssetProcessor::SourceAssetReference& sourceAsset, AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> db);
@@ -302,6 +310,7 @@ namespace AssetUtilities
         : public AssetBuilderSDK::FilePatternMatcher
     {
     public:
+        AZ_CLASS_ALLOCATOR(BuilderFilePatternMatcher, AZ::SystemAllocator)
         BuilderFilePatternMatcher() = default;
         BuilderFilePatternMatcher(const BuilderFilePatternMatcher& copy);
         BuilderFilePatternMatcher(const AssetBuilderSDK::AssetBuilderPattern& pattern, const AZ::Uuid& builderDescID);

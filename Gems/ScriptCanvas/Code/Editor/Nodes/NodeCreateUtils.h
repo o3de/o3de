@@ -32,7 +32,7 @@ namespace ScriptCanvasEditor::Nodes
     struct DataDrivenNodeCreationData
     {
         AZ_TYPE_INFO(DataDrivenNodeCreationData, "{A7DE9ECF-81F9-4A03-B3E4-3510591A50BB}");
-        AZ_CLASS_ALLOCATOR(DataDrivenNodeCreationData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataDrivenNodeCreationData, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 

@@ -28,7 +28,6 @@ namespace ScriptCanvasPhysics
             {
                 ec->Class<ScriptCanvasPhysicsSystemComponent>("ScriptCanvasPhysics", "Exposes legacy physics features to scripting through the Behavior Context to Lua and Script Canvas.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)

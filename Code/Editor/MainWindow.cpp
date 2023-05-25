@@ -312,6 +312,9 @@ MainWindow::MainWindow(QWidget* parent)
         m_actionManager = new ActionManager(this, QtViewPaneManager::instance(), m_shortcutDispatcher);
         m_toolbarManager = new ToolbarManager(m_actionManager, this);
         m_levelEditorMenuHandler = new LevelEditorMenuHandler(this, m_viewPaneManager);
+        connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
+            m_assetImporterManager->Exec();
+        });
     }
 
     setObjectName("MainWindow"); // For IEditor::GetEditorMainWindow to work in plugins, where we can't link against MainWindow::instance()
@@ -335,10 +338,6 @@ MainWindow::MainWindow(QWidget* parent)
     AssetImporterDragAndDropHandler* assetImporterDragAndDropHandler = new AssetImporterDragAndDropHandler(this, m_assetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManager, this, &MainWindow::OnOpenAssetImporterManager);
 
-    connect(m_levelEditorMenuHandler, &LevelEditorMenuHandler::ActivateAssetImporter, this, [this]() {
-        m_assetImporterManager->Exec();
-    });
-
     setFocusPolicy(Qt::StrongFocus);
 
     setAcceptDrops(true);
@@ -359,7 +358,7 @@ MainWindow::MainWindow(QWidget* parent)
 void MainWindow::SystemTick()
 {
     AZ::ComponentApplication* componentApplication = nullptr;
-    EBUS_EVENT_RESULT(componentApplication, AZ::ComponentApplicationBus, GetApplication);
+    AZ::ComponentApplicationBus::BroadcastResult(componentApplication, &AZ::ComponentApplicationBus::Events::GetApplication);
     if (componentApplication)
     {
         componentApplication->TickSystem();
@@ -452,7 +451,7 @@ void MainWindow::InitCentralWidget()
     // make sure the layout wnd knows to reset it's layout and settings
     connect(m_viewPaneManager, &QtViewPaneManager::layoutReset, m_pLayoutWnd, &CLayoutWnd::ResetLayout);
 
-    EBUS_EVENT(AzToolsFramework::EditorEvents::Bus, NotifyCentralWidgetInitialized);
+    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::Bus::Events::NotifyCentralWidgetInitialized);
 }
 
 void MainWindow::Initialize()
@@ -686,9 +685,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
     }
 
-    am->AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS, tr("Export Selected &Objects"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-    am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
 #ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
@@ -1017,31 +1013,6 @@ void MainWindow::InitActions()
     {
         am->AddAction(ID_VIEW_CONFIGURELAYOUT, tr("Configure Layout..."));
     }
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    am->AddAction(ID_VIEW_CYCLE2DVIEWPORT, tr("Cycle Viewports"))
-        .SetShortcut(tr("Ctrl+Tab"))
-        .SetStatusTip(tr("Cycle 2D Viewport"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
-#endif
-    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers"))
-        .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
-        .SetCheckable(true)
-        .RegisterUpdateCallback(
-            [](QAction* action)
-            {
-                Q_ASSERT(action->isCheckable());
-                action->setChecked(AzToolsFramework::HelpersVisible());
-            })
-        .Connect(
-            &QAction::triggered,
-            []()
-            {
-                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    AzToolsFramework::HelpersVisible());
-            });
     am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
         .SetShortcut(tr("Ctrl+Space"))
         .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
@@ -1060,9 +1031,30 @@ void MainWindow::InitActions()
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
-    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
-        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
+    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers for all entities"))
+        .SetShortcut(tr("Shift+Space"))
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::HelpersVisible());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for selected entities"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
             [](QAction* action)
@@ -1075,9 +1067,28 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
+    am->AddAction(AzToolsFramework::HideHelpers, tr("Hide Helpers"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(!AzToolsFramework::OnlyShowHelpersForSelectedEntities() && !AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
+                AzToolsFramework::SetHelpersVisible(false);
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
 
     // Audio actions

@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class ShapeIntersectionFilterNode : public BaseAreaFilterNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeIntersectionFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeIntersectionFilterNode, AZ::SystemAllocator);
         AZ_RTTI(ShapeIntersectionFilterNode, "{5E4CED27-A263-446F-A325-4D25891855F1}", BaseAreaFilterNode);
 
         static void Reflect(AZ::ReflectContext* context);

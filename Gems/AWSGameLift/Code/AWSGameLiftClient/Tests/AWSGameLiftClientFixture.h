@@ -25,9 +25,6 @@ public:
 
     void SetUp() override
     {
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
         AZ::JobManagerDesc jobManagerDesc;
         AZ::JobManagerThreadDesc threadDesc;
 
@@ -50,8 +47,6 @@ public:
         m_jobContext.reset();
         m_jobCancelGroup.reset();
         m_jobManager.reset();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
     AZStd::unique_ptr<AZ::JobContext> m_jobContext;

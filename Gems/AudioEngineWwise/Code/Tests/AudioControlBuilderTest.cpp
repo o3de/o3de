@@ -8,7 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
-#include <Builder/AudioControlBuilderComponent.h>
+#include <AudioControlBuilderComponent.h>
 
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/IO/LocalFileIO.h>

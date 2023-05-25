@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI.Reflect/Format.h>
 #include <PostProcessing/TaaPass.h>
 
 #include <AzCore/Math/Random.h>
@@ -69,10 +70,9 @@ namespace AZ::Render
 
         m_shaderResourceGroup->SetConstant(m_constantDataIndex, cb);
 
-
         Base::CompileResources(context);
     }
-    
+
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
@@ -83,11 +83,13 @@ namespace AZ::Render
         Offset offset = m_subPixelOffsets.at(m_offsetIndex);
         view->SetClipSpaceOffset(offset.m_xOffset * rcpInputSize.GetX(), offset.m_yOffset * rcpInputSize.GetY());
 
-        m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
-
-        UpdateAttachmentImage(m_accumulationAttachments[m_accumulationOuptutIndex]);
-        m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        if (!ShouldCopyHistoryBuffer)
+        {
+            m_lastFrameAccumulationBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+            m_accumulationOuptutIndex ^= 1; // swap which attachment is the output and last frame
+            UpdateAttachmentImage(m_accumulationOuptutIndex);
+            m_outputColorBinding->SetAttachment(m_accumulationAttachments[m_accumulationOuptutIndex]);
+        }
         
         Base::FrameBeginInternal(params);
     }
@@ -109,21 +111,32 @@ namespace AZ::Render
         m_accumulationAttachments[0] = FindAttachment(Name("Accumulation1"));
         m_accumulationAttachments[1] = FindAttachment(Name("Accumulation2"));
 
-        bool hasAttachments = m_accumulationAttachments[0] || m_accumulationAttachments[1];
-        AZ_Error("TaaPass", hasAttachments, "TaaPass must have Accumulation1 and Accumulation2 ImageAttachments defined.");
-
-        if (hasAttachments)
+        bool attachmentsValid = true;
+        // Make sure the attachments have images when the pass first loads.
+        for (auto i : { 0, 1 })
         {
-            // Make sure the attachments have images when the pass first loads.
-            for (auto i : { 0, 1 })
+            if (m_accumulationAttachments[i])
             {
-                if (!m_accumulationAttachments[i]->m_importedResource)
+                attachmentsValid = UpdateAttachmentImage(i);
+                if (!attachmentsValid)
                 {
-                    UpdateAttachmentImage(m_accumulationAttachments[i]);
+                    break;
                 }
             }
+            else
+            {
+                attachmentsValid = false;
+                break;
+            }
         }
-        
+        if (!attachmentsValid)
+        {
+            this->SetEnabled(false);
+            AZ_Error(
+                "TaaPass", attachmentsValid, "TaaPass disabled because the ImageAttachments Accumulation1 and Accumulation2 are invalid.");
+            return;
+        }
+
         m_inputColorBinding = FindAttachmentBinding(Name("InputColor"));
         AZ_Error("TaaPass", m_inputColorBinding, "TaaPass requires a slot for InputColor.");
         m_lastFrameAccumulationBinding = FindAttachmentBinding(Name("LastFrameAccumulation"));
@@ -142,22 +155,30 @@ namespace AZ::Render
         Base::BuildInternal();
     }
 
-    void TaaPass::UpdateAttachmentImage(RPI::Ptr<RPI::PassAttachment>& attachment)
+    bool TaaPass::UpdateAttachmentImage(uint32_t attachmentIndex)
     {
+        RPI::Ptr<RPI::PassAttachment>& attachment = m_accumulationAttachments[attachmentIndex];
         if (!attachment)
         {
-            return;
+            return false;
         }
 
         // update the image attachment descriptor to sync up size and format
         attachment->Update(true);
         RHI::ImageDescriptor& imageDesc = attachment->m_descriptor.m_image;
+
+        // The Format Source had no valid attachment
+        if (imageDesc.m_format == RHI::Format::Unknown)
+        {
+            return false;
+        }
+
         RPI::AttachmentImage* currentImage = azrtti_cast<RPI::AttachmentImage*>(attachment->m_importedResource.get());
 
         if (attachment->m_importedResource && imageDesc.m_size == currentImage->GetDescriptor().m_size)
         {
             // If there's a resource already and the size didn't change, just keep using the old AttachmentImage.
-            return;
+            return true;
         }
         
         Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
@@ -177,12 +198,10 @@ namespace AZ::Render
         {
             attachment->m_path = attachmentImage->GetAttachmentId();
             attachment->m_importedResource = attachmentImage;
+            m_attachmentImages[attachmentIndex] = attachmentImage;
+            return true;
         }
-        else
-        {
-            AZ_Error("TaaPass", false, "TaaPass disabled because it is unable to create an attachment image.")
-            this->SetEnabled(false);
-        }
+        return false;
     }
 
     void TaaPass::SetupSubPixelOffsets(uint32_t haltonX, uint32_t haltonY, uint32_t length)

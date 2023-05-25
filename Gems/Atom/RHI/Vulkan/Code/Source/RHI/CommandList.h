@@ -47,7 +47,7 @@ namespace AZ
             friend class CommandPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
             AZ_RTTI(CommandList, "138BB654-124A-47F7-8426-9ED2204BCDBD", Base);
 
             struct InheritanceInfo

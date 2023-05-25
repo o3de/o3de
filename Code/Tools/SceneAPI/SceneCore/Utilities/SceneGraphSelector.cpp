@@ -312,15 +312,27 @@ namespace AZ
             void SceneGraphSelector::CorrectRootNode(const Containers::SceneGraph& graph,
                 AZStd::set<AZStd::string>& selected, AZStd::set<AZStd::string>& unselected)
             {
+                // If both of the unselected and selected node lists are empty or don't exist, deselect all the nodes
+                // in the graph by deselecting the root node.
+                // 
+                // If only the unselected node list is empty or doesn't exist, deselect the root node (which will deselect
+                // all the nodes in the graph) by default and then reselect nodes based on the selected node list.
+                // 
+                // Otherwise select the root node (which will select all the nodes in the graph) by default and then
+                // remove selected nodes based on the deselected list.
+                bool selectRootNode = !unselected.empty();
                 AZStd::string rootNodeName = graph.GetNodeName(graph.GetRoot()).GetPath();
-                if (selected.find(rootNodeName) == selected.end())
+                AZStd::set<AZStd::string>& nodeSetToAdd = selectRootNode ? selected : unselected;
+                AZStd::set<AZStd::string>& nodeSetToRemove = selectRootNode ? unselected : selected;
+
+                if (nodeSetToAdd.find(rootNodeName) == nodeSetToAdd.end())
                 {
-                    selected.insert(rootNodeName);
+                    nodeSetToAdd.insert(rootNodeName);
                 }
-                auto root = unselected.find(rootNodeName);
-                if (root != unselected.end())
+                auto root = nodeSetToRemove.find(rootNodeName);
+                if (root != nodeSetToRemove.end())
                 {
-                    unselected.erase(root);
+                    nodeSetToRemove.erase(root);
                 }
             }
         }

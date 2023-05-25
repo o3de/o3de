@@ -22,7 +22,7 @@ namespace QtForPython
     {
     public:
         AZ_RTTI(QtForPythonModule, "{81545CD5-79FA-47CE-96F2-1A9C5D59B4B9}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(QtForPythonModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(QtForPythonModule, AZ::SystemAllocator);
 
         QtForPythonModule()
             : AZ::Module()

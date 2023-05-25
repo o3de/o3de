@@ -29,7 +29,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(ProgressShield, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ProgressShield, AZ::SystemAllocator);
         ProgressShield(QWidget* pParent);
         ~ProgressShield() override;
 

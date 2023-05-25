@@ -16,22 +16,6 @@ namespace UnitTest
     class AudioEngineWwiseEditorTests
         : public ::testing::Test
     {
-    protected:
-        void SetUp() override
-        {
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-        }
-
-        void TearDown() override
-        {
-            if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
-        }
     };
 
     TEST_F(AudioEngineWwiseEditorTests, CreateControl_LocalizedBankPath_NameDoesNotContainPath)

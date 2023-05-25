@@ -60,6 +60,9 @@ namespace AZ
             /// Returns the scope id associated with this scope.
             const ScopeId& GetId() const;
 
+            /// Returns the string view to the gpu marker
+            AZStd::string_view GetMarkerLabel() const;
+
             /**
              * Returns the index in the array of scopes in FrameSchedulerBase::GetScopes. The indices
              * are dependency ordered, so a scope with a greater index *may* depend on a scope from a lesser
@@ -184,8 +187,15 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
 
+            /// Scope name
             ScopeId m_id;
 
+            /// Stripped Gpu marker name with no pipeline name 
+            AZStd::string_view m_marker;
+
+            /// Stripped Gpu marker name with pipeline name
+            AZStd::string_view m_markerWithPipelineName;
+            
             /// The sorted index is exposed via GetIndex, and maps to the topologically sorted scope list.
             Handle<uint32_t> m_index;
 

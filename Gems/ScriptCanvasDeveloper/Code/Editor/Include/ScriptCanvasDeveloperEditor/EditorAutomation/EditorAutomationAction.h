@@ -28,7 +28,7 @@ namespace ScriptCanvas::Developer
     class EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorAutomationAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAutomationAction, AZ::SystemAllocator);
         AZ_RTTI(EditorAutomationAction, "{133E2ECE-5829-432F-BA37-60C75C5CCC34}")
     
         EditorAutomationAction() = default;

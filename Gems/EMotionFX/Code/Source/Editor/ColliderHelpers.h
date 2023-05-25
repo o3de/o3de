@@ -24,7 +24,7 @@ namespace EMotionFX
     public:
         static QString GetMimeTypeForColliderShape()
         {
-            return QString("com.amazon.lumberyard/%1").arg(azrtti_typeid<AzPhysics::ShapeColliderPair>().ToString<QString>());
+            return QString("com.amazon.lumberyard/%1").arg(azrtti_typeid<AzPhysics::ShapeColliderPair>().ToFixedString().c_str());
         }
 
         static void AddCopyColliderCommandToGroup(const Actor* actor, const Node* joint, PhysicsSetup::ColliderConfigType copyFrom, PhysicsSetup::ColliderConfigType copyTo, MCore::CommandGroup& commandGroup);

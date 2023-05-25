@@ -14,10 +14,22 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace Vulkan
     {
         using ShaderByteCode = AZStd::vector<uint8_t>;
@@ -35,18 +47,18 @@ namespace AZ
             const uint32_t TesselationControl = 0;
             const uint32_t TesselationEvaluattion = 1;
         }
-        
+
         const uint32_t ShaderSubStageCountMax = 2;
 
         class ShaderStageFunction
             : public RHI::ShaderStageFunction
         {
             using Base = RHI::ShaderStageFunction;
-            
+
         public:
             AZ_RTTI(ShaderStageFunction, "{A606478A-97E9-402D-A776-88EE72DAC6F9}", RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
-            
+            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator);
+
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ShaderStageFunction> Create(RHI::ShaderStage shaderStage);
@@ -63,7 +75,10 @@ namespace AZ
         private:
             ShaderStageFunction() = default;
             ShaderStageFunction(RHI::ShaderStage shaderStage);
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             ///////////////////////////////////////////////////////////////////
             // RHI::ShaderStageFunction

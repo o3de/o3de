@@ -66,7 +66,7 @@ namespace AZ
 
         public:
             AZ_TYPE_INFO(Query, "{DC956F7F-5C9C-40FC-9200-D8C75E238135}");
-            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
 
             Query(RPI::QueryPool* queryPool, RHI::Interval rhiQueryIndices, RHI::QueryType queryType, RHI::QueryPoolScopeAttachmentType attachmentType, RHI::ScopeAttachmentAccess attachmentAccess);
             ~Query();

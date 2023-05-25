@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/OverrideResources">
+		<file>component_modified_as_override.svg</file>
+		<file>component_added_as_override.svg</file>
+    </qresource>
+</RCC>

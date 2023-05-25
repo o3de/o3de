@@ -19,9 +19,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::Simulation, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::Simulation, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeSimulatedObjectNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeSimulatedObjectNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)

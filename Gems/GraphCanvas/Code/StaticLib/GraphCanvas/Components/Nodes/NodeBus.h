@@ -146,7 +146,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(NodeSaveData, "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}", ComponentSaveData);
-        AZ_CLASS_ALLOCATOR(NodeSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeSaveData, AZ::SystemAllocator);
 
         NodeSaveData() = default;
         ~NodeSaveData() = default;

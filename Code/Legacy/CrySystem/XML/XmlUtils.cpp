@@ -18,8 +18,6 @@
 
 #include "XMLBinaryReader.h"
 
-#include <md5.h>
-
 //////////////////////////////////////////////////////////////////////////
 #ifdef CRY_COLLECT_XML_NODE_STATS
 SXmlNodeStats* g_pCXmlNode_Stats = 0;
@@ -66,15 +64,6 @@ XmlNodeRef CXmlUtils::LoadXmlFromBuffer(const char* buffer, size_t size, bool bR
     XmlParser parser(bReuseStrings);
     XmlNodeRef node = parser.ParseBuffer(buffer, static_cast<int>(size), true, bSuppressWarnings);
     return node;
-}
-
-
-void GetMD5(const char* pSrcBuffer, int nSrcSize, char signatureMD5[16])
-{
-    MD5Context md5c;
-    MD5Init(&md5c);
-    MD5Update(&md5c, (unsigned char*)pSrcBuffer, nSrcSize);
-    MD5Final((unsigned char*)signatureMD5, &md5c);
 }
 
 //////////////////////////////////////////////////////////////////////////

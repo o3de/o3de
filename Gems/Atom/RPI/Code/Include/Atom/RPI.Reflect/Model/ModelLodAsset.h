@@ -42,7 +42,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(ModelLodAsset, "{65B5A801-B9B9-4160-9CB4-D40DAA50B15C}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelLodAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -56,7 +56,7 @@ namespace AZ
                 friend class ModelLodAssetCreator;
             public:
                 AZ_TYPE_INFO(Mesh, "{55A91F9A-2F71-4B75-B2F7-565087DD2DBD}");
-                AZ_CLASS_ALLOCATOR(Mesh, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(Mesh, AZ::SystemAllocator);
 
                 static void Reflect(AZ::ReflectContext* context);
 

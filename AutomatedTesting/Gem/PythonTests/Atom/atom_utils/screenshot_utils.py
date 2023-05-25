@@ -58,16 +58,16 @@ class ScreenshotHelper(object):
         """
         self.done = False
         self.capturedScreenshot = False
-        frameCaptureId = azlmbr.atom.FrameCaptureRequestBus(
+        outcome = azlmbr.atom.FrameCaptureRequestBus(
             azlmbr.bus.Broadcast, "CaptureScreenshot", f"{folder_path}/{filename}")
-        if frameCaptureId != -1:
+        if outcome.IsSuccess():
             self.handler = azlmbr.atom.FrameCaptureNotificationBusHandler()
-            self.handler.connect(frameCaptureId)
+            self.handler.connect(outcome.GetValue())
             self.handler.add_callback('OnFrameCaptureFinished', self.on_screenshot_captured)
             self.wait_until_screenshot()
             general.log("Screenshot taken.")
         else:
-            general.log("Screenshot failed")
+            general.log(f"Screenshot failed. {outcome.GetError().error_message}")
         return self.capturedScreenshot
 
     def on_screenshot_captured(self, parameters):
@@ -117,24 +117,11 @@ def compare_screenshots(imageA, imageB, min_diff_filter=0.01):
     :param imageA: one of the image.
     :param imageB: the other image.
     :param min_diff_filter: diff values less than this will be filtered out when calculating filtered_diff_score.
-    :return: a class ImageDiffResult, containing result_code (Success, FormatMismatch, SizeMismatch, UnsupportedFormat),
-        diff_score, filtered_diff_score.
+    :return: Outcome, if success, outcome contains a class ImageDiffResult, containing
+        result_code (Success, FormatMismatch, SizeMismatch, UnsupportedFormat),
+        diff_score, filtered_diff_score. If failure, out come contains result_code only.
     """
-    imageDiffResult = azlmbr.atom.FrameCaptureTestRequestBus(
+    outcome = azlmbr.atom.FrameCaptureTestRequestBus(
         azlmbr.bus.Broadcast, "CompareScreenshots", imageA, imageB, min_diff_filter)
 
-    return imageDiffResult
-
-def screenshot_compare_result_code_to_string(result_code):
-    """
-    Convert the ImageDiffResult.result_code from value to string for debugging purpose.
-    :param result_code: the value form of the result code.
-    :return: the string form of the result code.
-    """
-    value_to_string = {
-        azlmbr.utils.ImageDiffResultCode_FormatMismatch : "FormatMismatch",
-        azlmbr.utils.ImageDiffResultCode_UnsupportedFormat : "UnsupportedFormat",
-        azlmbr.utils.ImageDiffResultCode_Success : "Success",
-        azlmbr.utils.ImageDiffResultCode_SizeMismatch : "SizeMismatch"}
-
-    return value_to_string[result_code];
+    return outcome

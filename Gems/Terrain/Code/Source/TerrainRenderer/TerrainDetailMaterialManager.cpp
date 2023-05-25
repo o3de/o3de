@@ -291,11 +291,11 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) == TerrainDataChangedMask::SurfaceData)
         {
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
         }
-        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) == TerrainDataChangedMask::Settings)
         {
             InitializeTextureParams();
         }

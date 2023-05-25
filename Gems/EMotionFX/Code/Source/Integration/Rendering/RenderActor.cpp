@@ -13,6 +13,6 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(RenderActor, EMotionFXAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(RenderActor, EMotionFXAllocator);
     } // namespace Integration
 } // namespace EMotionFX

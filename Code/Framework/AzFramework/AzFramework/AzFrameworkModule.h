@@ -16,7 +16,7 @@ namespace AzFramework
     {
     public:
         AZ_RTTI(AzFrameworkModule, "{FC9FEAC4-ADF5-426B-B26D-96A3413F3AF2}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AzFrameworkModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzFrameworkModule, AZ::OSAllocator);
 
         AzFrameworkModule();
         ~AzFrameworkModule() override = default;

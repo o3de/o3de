@@ -255,7 +255,7 @@ void CUiAVCustomizeTrackColorsDlg::Export(const QString& fullPath) const
     XmlNodeRef customTrackColorsNode = XmlHelpers::CreateXmlNode("customtrackcolors");
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     int i = 0;
     std::for_each(g_trackEntries, g_trackEntries + arraysize(g_trackEntries), [&](const UiAnimTrackEntry& entry)
@@ -285,7 +285,7 @@ void CUiAVCustomizeTrackColorsDlg::Export(const QString& fullPath) const
 bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
 {
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     XmlNodeRef customTrackColorsNode = XmlHelpers::LoadXmlFromFile(fullPath.toStdString().c_str());
     if (customTrackColorsNode == NULL)

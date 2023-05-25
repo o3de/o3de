@@ -10,6 +10,7 @@
 
 #include <Source/AutoGen/NetworkCharacterComponent.AutoComponent.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <AzFramework/Physics/CharacterBus.h>
 
 namespace Physics
 {
@@ -37,6 +38,7 @@ namespace Multiplayer
     //! Provides multiplayer support for game-play player characters.
     class NetworkCharacterComponent
         : public NetworkCharacterComponentBase
+        , protected Physics::CharacterNotificationBus::Handler
     {
         friend class NetworkCharacterComponentController;
 
@@ -52,6 +54,10 @@ namespace Multiplayer
         void OnInit() override {}
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+    protected:
+        void OnCharacterActivated(const AZ::EntityId& entityId) override;
+        void OnCharacterDeactivated(const AZ::EntityId& entityId) override;
 
     private:
         void OnTranslationChangedEvent(const AZ::Vector3& translation);

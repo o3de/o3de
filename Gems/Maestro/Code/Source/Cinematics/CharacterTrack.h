@@ -22,7 +22,7 @@ class CCharacterTrack
     : public TAnimTrack<ICharacterKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CCharacterTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CCharacterTrack, AZ::SystemAllocator);
     AZ_RTTI(CCharacterTrack, "{3F701860-78BC-451A-B1DD-90F75DB9A7A2}", IAnimTrack);
 
     CCharacterTrack()

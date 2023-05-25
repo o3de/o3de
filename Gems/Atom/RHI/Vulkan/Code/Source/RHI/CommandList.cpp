@@ -441,10 +441,59 @@ namespace AZ
             AZStd::vector<VkDescriptorSet> descriptorSets;
             descriptorSets.reserve(dispatchRaysItem.m_shaderResourceGroupCount);
 
+            AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> srgByAzslBindingSlot = { {} };
             for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
             {
                 const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
-                descriptorSets.emplace_back(srg->GetCompiledData().GetNativeDescriptorSet());
+                srgByAzslBindingSlot[srg->GetBindingSlot()] = srg;
+            }
+
+            const PipelineState& globalPipelineState = static_cast<const PipelineState&>(*dispatchRaysItem.m_globalPipelineState);
+            const PipelineLayout& globalPipelineLayout = static_cast<const PipelineLayout&>(*globalPipelineState.GetPipelineLayout());
+            for (uint32_t descriptorSetIndex = 0; descriptorSetIndex < globalPipelineLayout.GetDescriptorSetLayoutCount(); ++descriptorSetIndex)
+            {
+                RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
+                AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> shaderResourceGroupList;
+                const auto& srgBitset = globalPipelineLayout.GetAZSLBindingSlotsOfIndex(descriptorSetIndex);
+                for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
+                {
+                    if (srgBitset[bindingSlot])
+                    {
+                        shaderResourceGroupList.push_back(srgByAzslBindingSlot[bindingSlot]);
+                    }
+                }
+
+                // handle merged descriptor set
+                if (globalPipelineLayout.IsMergedDescriptorSetLayout(descriptorSetIndex))
+                {
+                    MergedShaderResourceGroupPool* mergedSRGPool = globalPipelineLayout.GetMergedShaderResourceGroupPool(descriptorSetIndex);
+                    AZ_Assert(mergedSRGPool, "Null MergedShaderResourceGroupPool");
+
+                    RHI::Ptr<MergedShaderResourceGroup> mergedSRG = mergedSRGPool->FindOrCreate(shaderResourceGroupList);
+                    AZ_Assert(mergedSRG, "Null MergedShaderResourceGroup");
+                    if (mergedSRG->NeedsCompile())
+                    {
+                        mergedSRG->Compile();
+                    }
+
+                    shaderResourceGroup = mergedSRG;
+                }
+                else
+                {
+                    shaderResourceGroup = shaderResourceGroupList.front();
+                }
+
+                if (shaderResourceGroup == nullptr)
+                {
+                    AZ_Assert(
+                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        "Bindless SRG slot needs to match the one described in the shader.");
+                    descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
+                }
+                else
+                {
+                    descriptorSets.push_back(shaderResourceGroup->GetCompiledData().GetNativeDescriptorSet());
+                }
             }
 
             context.CmdBindDescriptorSets(
@@ -468,13 +517,30 @@ namespace AZ
             rayGenerationTable.size = shaderTableBuffers.m_rayGenerationTableSize;
 
             // miss table
-            addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
-            VkDeviceAddress missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            VkDeviceAddress missTableAddress = 0;
+            if (shaderTableBuffers.m_missTable)
+            {
+                addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+                missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            }
 
             VkStridedDeviceAddressRegionKHR missTable = {};
             missTable.deviceAddress = missTableAddress;
             missTable.stride = shaderTableBuffers.m_missTableStride;
             missTable.size = shaderTableBuffers.m_missTableSize;
+
+            // callable table
+            VkDeviceAddress callableTableAddress = 0;
+            if (shaderTableBuffers.m_callableTable)
+            {
+                addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_callableTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+                callableTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            }
+
+            VkStridedDeviceAddressRegionKHR callableTable = {};
+            callableTable.deviceAddress = callableTableAddress;
+            callableTable.stride = shaderTableBuffers.m_callableTableStride;
+            callableTable.size = shaderTableBuffers.m_callableTableSize;
 
             // hit group table
             addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_hitGroupTable.get())->GetBufferMemoryView()->GetNativeBuffer();
@@ -484,8 +550,6 @@ namespace AZ
             hitGroupTable.deviceAddress = hitGroupTableAddress;
             hitGroupTable.stride = shaderTableBuffers.m_hitGroupTableStride;
             hitGroupTable.size = shaderTableBuffers.m_hitGroupTableSize;
-
-            VkStridedDeviceAddressRegionKHR callableTable = {};
 
             context.CmdTraceRaysKHR(
                 m_nativeCommandBuffer,
@@ -567,20 +631,11 @@ namespace AZ
 
             VkResult vkResult = static_cast<Device&>(GetDevice()).GetContext().BeginCommandBuffer(m_nativeCommandBuffer, &beginInfo);
             AssertSuccess(vkResult);
-            if (vkResult == VK_SUCCESS && !GetName().IsEmpty())
-            {
-                BeginDebugLabel(GetName().GetCStr());
-            }
         }
 
         void CommandList::EndCommandBuffer()
         {
             AZ_Assert(m_isUpdating, "Not in updating state");
-
-            if (!GetName().IsEmpty())
-            {
-                EndDebugLabel();
-            }
 
             m_state.m_framebuffer = nullptr;
             m_state.m_subpassIndex = 0;
@@ -1034,7 +1089,7 @@ namespace AZ
                 const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
-                    if (srgBitset[bindingSlot])
+                    if (srgBitset[bindingSlot] && bindingSlot != RHI::ShaderResourceGroupData::BindlessSRGFrequencyId)
                     {
                         const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
                         AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");

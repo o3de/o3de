@@ -24,7 +24,7 @@ namespace AZ
             , m_device(device)
         {
             m_resolveFence = FenceImpl::Create();
-            m_resolveFence->Init(device, RHI::FenceState::Reset);
+            m_resolveFence->Init(m_device, RHI::FenceState::Reset);
 
         }
 

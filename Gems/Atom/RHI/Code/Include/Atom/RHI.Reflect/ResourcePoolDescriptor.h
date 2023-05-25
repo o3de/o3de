@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ResourcePoolDescriptor, "{C4B9BF83-B171-4DB9-93D6-0879C7CEF5C2}");
-            AZ_CLASS_ALLOCATOR(ResourcePoolDescriptor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ResourcePoolDescriptor, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

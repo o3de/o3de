@@ -37,7 +37,7 @@ namespace AWSCore
 
     public:
 
-        AZ_CLASS_ALLOCATOR(ServiceRequestJobConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceRequestJobConfig, AZ::SystemAllocator);
 
         using InitializerFunction = AZStd::function<void(ServiceClientJobConfig<typename RequestType::ServiceTraits>& config)>;
         using ServiceClientJobConfigType = ServiceClientJobConfig<typename RequestType::ServiceTraits>;

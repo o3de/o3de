@@ -21,6 +21,7 @@ namespace TestImpact
     public:
         using TestJobRunner = TestJobRunner<AdditionalInfo, Payload>;
         using TestJobRunner::TestJobRunner;
+        using ResultType = AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>>;
 
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
@@ -30,17 +31,13 @@ namespace TestImpact
         //! TestJobExceptionPolicy::OnFailedToExecute to throw on test failures).
         //! @param runTimeout The maximum duration a run may be in-flight for before being forcefully terminated.
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight runs.
-        //! @param clientCallback The optional client callback to be called whenever a run job changes state.
-        //! @param stdContentCallback 
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        virtual AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> RunTests(
-            const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        [[nodiscard]] virtual ResultType RunTests(
+            const typename TestJobRunner::JobInfos& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-            AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-            AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback);
+            AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout);
 
     protected:
         //! Default implementation of payload producer for test runners.
@@ -52,15 +49,13 @@ namespace TestImpact
     };
 
     template<typename AdditionalInfo, typename Payload>
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestRunnerBase<AdditionalInfo, Payload>::TestJobRunner::Job>>
+    typename TestRunnerBase<AdditionalInfo, Payload>::ResultType
     TestRunnerBase<AdditionalInfo, Payload>::RunTests(
-        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        const typename TestJobRunner::JobInfos& jobInfos,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout,
-        AZStd::optional<typename TestJobRunner::JobCallback> clientCallback,
-        AZStd::optional<typename TestJobRunner::StdContentCallback> stdContentCallback)
+        AZStd::optional<AZStd::chrono::milliseconds> runnerTimeout)
     {
         const auto payloadGenerator = [this](const typename TestJobRunner::JobDataMap& jobDataMap)
         {
@@ -68,7 +63,7 @@ namespace TestImpact
         };
 
         return this->m_jobRunner.Execute(
-            jobInfos, payloadGenerator, stdOutRouting, stdErrRouting, runTimeout, runnerTimeout, clientCallback, stdContentCallback);
+            jobInfos, payloadGenerator, stdOutRouting, stdErrRouting, runTimeout, runnerTimeout);
     }
 
     template<typename AdditionalInfo, typename Payload>

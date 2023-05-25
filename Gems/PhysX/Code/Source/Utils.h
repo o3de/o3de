@@ -172,7 +172,7 @@ namespace PhysX
 
         bool TriggerColliderExists(AZ::EntityId entityId);
 
-        void GetShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
+        void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
             const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
             AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes);
 
@@ -294,10 +294,4 @@ namespace PhysX
         AZStd::shared_ptr<physx::PxRigidDynamic> CreatePxRigidBody(const AzPhysics::RigidBodyConfiguration& configuration);
         AZStd::shared_ptr<physx::PxRigidStatic> CreatePxStaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration);
     } // namespace PxActorFactories
-
-    namespace StaticRigidBodyUtils
-    {
-        bool CanCreateRuntimeComponent(const AZ::Entity& editorEntity);
-        bool TryCreateRuntimeComponent(const AZ::Entity& editorEntity, AZ::Entity& gameEntity);
-    } // namespace StaticRigidBodyComponent
 } // namespace PhysX

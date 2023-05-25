@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h>
+#include <Atom/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -68,6 +69,7 @@ namespace AZ
             AddPassCreator(Name("MSAAResolvePass"), &MSAAResolvePass::Create);
             AddPassCreator(Name("MSAAResolveFullScreenPass"), &MSAAResolveFullScreenPass::Create);
             AddPassCreator(Name("DownsampleMipChainPass"), &DownsampleMipChainPass::Create);
+            AddPassCreator(Name("DownsampleSinglePassLuminancePass"), &DownsampleSinglePassLuminancePass::Create);
             AddPassCreator(Name("EnvironmentCubeMapPass"), &EnvironmentCubeMapPass::Create);
             AddPassCreator(Name("RenderToTexturePass"), &RenderToTexturePass::Create);
             AddPassCreator(Name("SelectorPass"), &SelectorPass::Create);

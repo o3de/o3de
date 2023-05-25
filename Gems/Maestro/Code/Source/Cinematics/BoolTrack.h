@@ -23,7 +23,7 @@ class CBoolTrack
     : public TAnimTrack<IBoolKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CBoolTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CBoolTrack, AZ::SystemAllocator);
     AZ_RTTI(CBoolTrack, "{A98E28CB-DE42-47A3-8E4B-6B43A5F3D8B2}", IAnimTrack);
 
     CBoolTrack();

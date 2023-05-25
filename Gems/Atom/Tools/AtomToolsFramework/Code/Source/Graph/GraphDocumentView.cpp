@@ -8,6 +8,7 @@
 
 #include <AtomToolsFramework/Graph/GraphDocumentRequestBus.h>
 #include <AtomToolsFramework/Graph/GraphDocumentView.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace AtomToolsFramework
 {
@@ -19,6 +20,20 @@ namespace AtomToolsFramework
         AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
         OnDocumentOpened(m_documentId);
         m_openedBefore = false;
+
+        // Monitor graph settings changes and refresh the graph view if the view settings change
+        if (auto registry = AZ::SettingsRegistry::Get())
+        {
+            m_graphViewSettingsNotifyEventHandler = registry->RegisterNotifier(
+                [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                {
+                    if (AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(
+                            "/O3DE/Atom/GraphView/ViewSettings", notifyEventArgs.m_jsonKeyPath))
+                    {
+                        OnSettingsChanged();
+                    }
+                });
+        }
     }
 
     GraphDocumentView::~GraphDocumentView()
@@ -61,6 +76,16 @@ namespace AtomToolsFramework
         if (m_documentId == documentId)
         {
             SetActiveGraphId(GraphCanvas::GraphId(), true);
+        }
+    }
+
+    void GraphDocumentView::OnSettingsChanged()
+    {
+        if (m_activeGraphId.IsValid())
+        {
+            GraphCanvas::AssetEditorSettingsNotificationBus::Event(
+                m_toolId, &GraphCanvas::AssetEditorSettingsNotifications::OnSettingsChanged);
+            GraphCanvas::ViewRequestBus::Event(m_activeGraphId, &GraphCanvas::ViewRequests::RefreshView);
         }
     }
 } // namespace AtomToolsFramework

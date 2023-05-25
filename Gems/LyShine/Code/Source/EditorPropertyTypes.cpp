@@ -16,7 +16,7 @@ LyShine::AZu32ComboBoxVec LyShine::GetEnumSpriteIndexList(AZ::EntityId entityId,
     AZu32ComboBoxVec indexStringComboVec;
 
     int indexCount = 0;
-    EBUS_EVENT_ID_RESULT(indexCount, entityId, UiIndexableImageBus, GetImageIndexCount);
+    UiIndexableImageBus::EventResult(indexCount, entityId, &UiIndexableImageBus::Events::GetImageIndexCount);
     const AZ::u32 indexCountu32 = static_cast<AZ::u32>(indexCount);
 
     if (indexCount > 0 && (indexMax <= indexCountu32 - 1) && indexMin <= indexMax)
@@ -24,7 +24,7 @@ LyShine::AZu32ComboBoxVec LyShine::GetEnumSpriteIndexList(AZ::EntityId entityId,
         for (AZ::u32 i = indexMin; i <= indexMax; ++i)
         {
             AZStd::string cellAlias;
-            EBUS_EVENT_ID_RESULT(cellAlias, entityId, UiIndexableImageBus, GetImageIndexAlias, i);
+            UiIndexableImageBus::EventResult(cellAlias, entityId, &UiIndexableImageBus::Events::GetImageIndexAlias, i);
 
             AZStd::string indexStrBuffer;
 

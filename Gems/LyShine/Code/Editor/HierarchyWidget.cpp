@@ -167,7 +167,7 @@ void HierarchyWidget::CreateItems(const LyShine::EntityArray& elements)
     for (auto& e : elementList)
     {
         LyShine::EntityArray childElements;
-        EBUS_EVENT_ID_RESULT(childElements, e->GetId(), UiElementBus, GetChildElements);
+        UiElementBus::EventResult(childElements, e->GetId(), &UiElementBus::Events::GetChildElements);
         elementList.insert(elementList.end(), childElements.begin(), childElements.end());
     }
 
@@ -179,7 +179,7 @@ void HierarchyWidget::CreateItems(const LyShine::EntityArray& elements)
         AZ_Assert(parent, "No parent widget item found for parent entity");
 
         int childIndex = -1;
-        EBUS_EVENT_ID_RESULT(childIndex, parentElement->GetId(), UiElementBus, GetIndexOfChild, e);
+        UiElementBus::EventResult(childIndex, parentElement->GetId(), &UiElementBus::Events::GetIndexOfChild, e);
 
         new HierarchyItem(m_editorWindow,
             *parent,
@@ -652,7 +652,8 @@ bool HierarchyWidget::AcceptsMimeData(const QMimeData* mimeData)
 
         // Get the entity context that the first dragged entity is attached to
         AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-        EBUS_EVENT_ID_RESULT(contextId, entityIdListContainer.m_entityIds[0], AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+        AzFramework::EntityIdContextQueryBus::EventResult(
+            contextId, entityIdListContainer.m_entityIds[0], &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
         if (contextId.IsNull())
         {
             return false;
@@ -847,7 +848,8 @@ void HierarchyWidget::DropMimeDataAssets(const QMimeData* mimeData,
                 const ComponentAssetHelpers::ComponentAssetPair& pair = componentAssetPairs.front();
                 const AZ::Data::AssetId& assetId = pair.second;
                 AZStd::string assetPath;
-                EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
                 if (!assetPath.empty())
                 {
                     AZStd::string entityName;
@@ -855,13 +857,13 @@ void HierarchyWidget::DropMimeDataAssets(const QMimeData* mimeData,
 
                     // Find a unique name for the new element
                     AZ::EntityId parentEntityId;
-                    EBUS_EVENT_ID_RESULT(parentEntityId, element->GetId(), UiElementBus, GetParentEntityId);
+                    UiElementBus::EventResult(parentEntityId, element->GetId(), &UiElementBus::Events::GetParentEntityId);
 
                     AZStd::string uniqueName;
-                    EBUS_EVENT_ID_RESULT(uniqueName,
+                    UiCanvasBus::EventResult(
+                        uniqueName,
                         GetEditorWindow()->GetCanvas(),
-                        UiCanvasBus,
-                        GetUniqueChildName,
+                        &UiCanvasBus::Events::GetUniqueChildName,
                         parentEntityId,
                         entityName,
                         nullptr);
@@ -1100,7 +1102,8 @@ void HierarchyWidget::PickItem(HierarchyItem* item)
 bool HierarchyWidget::IsEntityInEntityContext(AZ::EntityId entityId)
 {
     AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-    EBUS_EVENT_ID_RESULT(contextId, entityId, AzFramework::EntityIdContextQueryBus, GetOwningContextId);
+    AzFramework::EntityIdContextQueryBus::EventResult(
+        contextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
 
     if (!contextId.IsNull())
     {
@@ -1127,7 +1130,7 @@ void HierarchyWidget::ToggleVisibility(HierarchyItem* hierarchyItem)
 {
     bool isItemVisible = true;
     AZ::EntityId itemEntityId = hierarchyItem->GetEntityId();
-    EBUS_EVENT_ID_RESULT(isItemVisible, itemEntityId, UiEditorBus, GetIsVisible);
+    UiEditorBus::EventResult(isItemVisible, itemEntityId, &UiEditorBus::Events::GetIsVisible);
 
     // There is one exception to toggling the visibility. If the clicked item has invisible ancestors,
     // then we make that item and all its ancestors visible regardless of the item's visibility
@@ -1137,11 +1140,11 @@ void HierarchyWidget::ToggleVisibility(HierarchyItem* hierarchyItem)
 
     // Look for invisible ancestors
     AZ::EntityId parent;
-    EBUS_EVENT_ID_RESULT(parent, itemEntityId, UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(parent, itemEntityId, &UiElementBus::Events::GetParentEntityId);
     while (parent.IsValid())
     {
         bool isParentVisible = true;
-        EBUS_EVENT_ID_RESULT(isParentVisible, parent, UiEditorBus, GetIsVisible);
+        UiEditorBus::EventResult(isParentVisible, parent, &UiEditorBus::Events::GetIsVisible);
 
         if (!isParentVisible)
         {
@@ -1150,7 +1153,7 @@ void HierarchyWidget::ToggleVisibility(HierarchyItem* hierarchyItem)
 
         AZ::EntityId newParent = parent;
         parent.SetInvalid();
-        EBUS_EVENT_ID_RESULT(parent, newParent, UiElementBus, GetParentEntityId);
+        UiElementBus::EventResult(parent, newParent, &UiElementBus::Events::GetParentEntityId);
     }
 
     bool makeVisible = items.size() > 0 ? true : !isItemVisible;

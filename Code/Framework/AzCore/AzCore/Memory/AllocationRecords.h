@@ -36,6 +36,7 @@ namespace AZ
             size_t          m_namesBlockSize{};
 
             AZ::Debug::StackFrame*  m_stackFrames{};
+            unsigned int m_stackFramesCount{};
 
             AZ::u64         m_timeStamp{}; ///< Timestamp for sorting/tracking allocations
         };
@@ -64,7 +65,7 @@ namespace AZ
             bool m_isDetailed;      ///< True to print allocation line and allocation callstack, otherwise false.
             bool m_includeNameAndFilename;  /// < True to print the source name and source filename, otherwise skip
         };
-        
+
         /**
          * Guard value is used to guard different memory allocations for stomping.
          */

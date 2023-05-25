@@ -27,12 +27,11 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingData.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli"
 #include "../../../Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli"
 
-#include <Atom/Features/Pipeline/Forward/LowEndForwardPassVertexAndPixel.azsli>
+#include "LowEndForwardPassVertexAndPixel.azsli"
 

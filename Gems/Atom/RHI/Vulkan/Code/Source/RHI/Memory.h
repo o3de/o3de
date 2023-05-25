@@ -30,7 +30,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Memory, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Memory, AZ::ThreadPoolAllocator);
             AZ_RTTI(Memory, "A5D92BC7-2BD8-46BB-85AB-ED549982130E", Base);
 
             struct Descriptor

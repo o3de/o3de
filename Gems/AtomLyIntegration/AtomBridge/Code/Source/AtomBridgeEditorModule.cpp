@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(EditorModule, "{7B330394-BE9C-4BDA-9345-1A0859815982}", Module);
-            AZ_CLASS_ALLOCATOR(EditorModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorModule, AZ::SystemAllocator);
 
             EditorModule()
                 : Module()

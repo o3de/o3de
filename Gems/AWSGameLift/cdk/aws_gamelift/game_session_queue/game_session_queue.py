@@ -7,7 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import typing
 
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Stack,
     aws_gamelift as gamelift
 )
 
@@ -18,7 +19,7 @@ class GameSessionQueueResources:
     For more information about Gamelift game session queues, please check
     https://docs.aws.amazon.com/gamelift/latest/developerguide/queues-intro.html
     """
-    def __init__(self, stack: core.Stack, destinations: typing.List):
+    def __init__(self, stack: Stack, destinations: typing.List):
         self._game_session_queue = gamelift.CfnGameSessionQueue(
             scope=stack,
             id=f'{stack.stack_name}-GameLiftQueue',
@@ -31,7 +32,7 @@ class GameSessionQueueResources:
         )
 
         # Export the game session queue name as a stack output
-        core.CfnOutput(
+        CfnOutput(
             scope=stack,
             id='GameSessionQueue',
             description='Name of the game session queue',

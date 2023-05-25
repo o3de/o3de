@@ -52,7 +52,6 @@ namespace AzToolsFramework
                     "Slice Metadata Entity Context", "System component responsible for owning the slice metadata entity context")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -100,7 +99,7 @@ namespace AzToolsFramework
         m_metadataEntityByIdMap.clear();
         m_sliceAddressToRootMetadataMap.clear();
 
-        EBUS_EVENT(SliceMetadataEntityContextNotificationBus, OnContextReset);
+        SliceMetadataEntityContextNotificationBus::Broadcast(&SliceMetadataEntityContextNotificationBus::Events::OnContextReset);
     }
 
     /*!  Called to reset the current context.

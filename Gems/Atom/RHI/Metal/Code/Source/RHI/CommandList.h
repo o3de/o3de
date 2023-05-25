@@ -36,7 +36,7 @@ namespace AZ
             , public CommandListBase
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
             using MetalArgumentBufferArray = AZStd::array<id<MTLBuffer>, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             using MetalArgumentBufferArrayOffsets = AZStd::array<NSUInteger, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             

@@ -39,7 +39,7 @@ namespace LUAEditor
 
         AZ::SerializeContext* context = nullptr;
         {
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "We should have a valid context!");
         }
 
@@ -78,9 +78,9 @@ namespace LUAEditor
 
     void LUAEditorSettingsDialog::OnSave()
     {
-        EBUS_EVENT(AZ::UserSettingsComponentRequestBus, Save);
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, Repaint);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
     }
 
     void LUAEditorSettingsDialog::OnSaveClose()
@@ -96,7 +96,7 @@ namespace LUAEditor
         // Revert the stored copy, no changes will be stored.
         *syntaxStyleSettings = m_originalSettings;
 
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, Repaint);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
 
         close();
     }

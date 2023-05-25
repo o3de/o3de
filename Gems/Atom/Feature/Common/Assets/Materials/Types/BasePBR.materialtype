@@ -38,39 +38,9 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "Shaders/Materials/BasePBR/BasePBR_ForwardPass.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Materials/BasePBR/BasePBR_LowEndForward.shader",
-            "tag": "LowEndForward_EDS"
-        },
-        {
-            "file": "Shaders/Materials/BasePBR/BasePBR_MultiViewForward.shader",
-            "tag": "MultiViewForward_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }
-    ],
+    "lightingModel": "Base",
+    "materialShaderCode": "BasePBR.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "CastShadows.lua"
-            }
-        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",

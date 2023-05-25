@@ -80,7 +80,7 @@ namespace AZ
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            uint32_t m_anisotropyMax = 0;
+            uint32_t m_anisotropyMax = 1;
             uint32_t m_anisotropyEnable = 0;
             FilterMode m_filterMin = FilterMode::Point;
             FilterMode m_filterMag = FilterMode::Point;

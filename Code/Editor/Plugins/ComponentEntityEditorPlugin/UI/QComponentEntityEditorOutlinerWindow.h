@@ -10,7 +10,6 @@
 #if !defined(Q_MOC_RUN)
 #include <QMainWindow>
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #endif
 

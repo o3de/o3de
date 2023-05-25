@@ -55,6 +55,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
+                AZ::AzToolsFrameworkTestCommon
                 AZ::AzTest
                 $<TARGET_OBJECTS:SerializeContextTools.Object>
     )

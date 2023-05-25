@@ -44,7 +44,7 @@ namespace EMotionFX
         void OnUnderlyingPropertiesChanged() override;
 
         void BeginEditing();
-        void FinishEditing();
+        void EndEditing();
 
         AZStd::shared_ptr<AzToolsFramework::AngularManipulator> m_twistLimitLowerManipulator;
         AZStd::shared_ptr<AzToolsFramework::AngularManipulator> m_twistLimitUpperManipulator;

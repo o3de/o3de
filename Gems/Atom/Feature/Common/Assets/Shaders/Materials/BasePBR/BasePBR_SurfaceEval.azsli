@@ -12,16 +12,16 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_BasePBR(geoData)
+#define EvaluateSurface EvaluateSurface_BasePBR
 #endif
 
 #include <Atom/Features/MatrixUtility.azsli>
 
 Surface EvaluateSurface_BasePBR(
     float3 positionWS,
-    float3 vertexNormal,
-    float3 tangents[UvSetCount],
-    float3 bitangents[UvSetCount],
+    real3 vertexNormal,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
@@ -32,39 +32,39 @@ Surface EvaluateSurface_BasePBR(
 
     surface.vertexNormal = vertexNormal;
     float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
-    float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
+    real3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3()); // By design, only UV0 is allowed to apply transforms.
     surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, vertexNormal,
-                                       tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
+                                       tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, real(MaterialSrg::m_normalFactor));
 
     // ------- Base Color -------
 
     float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
-    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
-    float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    real3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, baseColorUv, real3(MaterialSrg::m_baseColor.rgb), o_baseColor_useTexture);
+    real3 baseColor = BlendBaseColor(sampledColor, real3(MaterialSrg::m_baseColor.rgb), real(MaterialSrg::m_baseColorFactor), o_baseColorTextureBlendMode, o_baseColor_useTexture);
     
     // ------- Metallic -------
 
     float2 metallicUv = uvs[MaterialSrg::m_metallicMapUvIndex];
-    float metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
+    real metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, real(MaterialSrg::m_metallicFactor), o_metallic_useTexture);
 
     // ------- Specular -------
 
     float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
-    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+    real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // ------- Roughness -------
 
     float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
-    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
-                                        MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
+    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, real(MaterialSrg::m_roughnessFactor),
+                                        real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture);
     surface.CalculateRoughnessA();
 
     return surface;
 }
 
-Surface EvaluateSurface_BasePBR(PixelGeometryData geoData)
+Surface EvaluateSurface_BasePBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_BasePBR(
         geoData.positionWS,

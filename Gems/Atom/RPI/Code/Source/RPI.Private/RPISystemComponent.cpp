@@ -49,7 +49,6 @@ namespace AZ
                 {
                     ec->Class<RPISystemComponent>("Atom RPI", "Atom Renderer")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &RPISystemComponent::m_rpiDescriptor, "RPI System Settings", "Settings for create RPI system")
                         ;
@@ -123,6 +122,16 @@ namespace AZ
             settingsRegistry->GetObject(m_rpiDescriptor, settingPath);
 
             m_rpiSystem.Initialize(m_rpiDescriptor);
+
+            // Part of RPI system initialization requires asset system to be ready
+            // which happens after the game system started
+            // Use the tick bus to delay this initialization
+            AZ::TickBus::QueueFunction(
+                [this]()
+                {
+                    m_rpiSystem.InitializeSystemAssets();
+                });
+
             AZ::SystemTickBus::Handler::BusConnect();
             AZ::RHI::RHISystemNotificationBus::Handler::BusConnect();
         }

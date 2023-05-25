@@ -101,7 +101,7 @@ namespace AzToolsFramework
     AZStd::unique_ptr<QMimeData> ComponentMimeData::Create(const ComponentDataContainer& components)
     {
         AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!context)
         {
             AZ_Assert(context, "No serialize context");
