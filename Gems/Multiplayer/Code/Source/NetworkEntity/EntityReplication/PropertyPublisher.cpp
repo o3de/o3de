@@ -145,7 +145,9 @@ namespace Multiplayer
     {
         if (m_sentRecords.size() >= net_EntityReplicatorRecordsMax)
         {
-            // If we reach the maximum outstanding records, reset the replication state by creating an "Add" record.
+            // If we reach the maximum outstanding records, reset the replication state by creating a change record
+            // that serializes the state of *all* the networked properties. This is necessary because we'll no longer
+            // have accurate bookkeeping on which sent changes have been acknowledged.
             PrepareAddEntityRecord(netBindComponent);
         }
         else

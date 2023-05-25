@@ -38,8 +38,12 @@ namespace Multiplayer
         PropertyPublisher(NetEntityRole remoteNetworkRole, OwnsLifetime ownsLifetime, AzNetworking::IConnection& connection);
 
         //! Set the publishing state to "rebasing". The next record sent will be a rebase record.
+        //! Rebase records send the full replication state for Autonomous entities minus the predictable properties.
+        //! These can be useful for client migrations.
         void SetRebasing();
+
         //! Set the publishing state to "deleting". The next record sent will be a delete record.
+        //! Delete records will also send the final changed property states at the point of deletion.
         void SetDeleting();
 
         //! Returns true if the entity should be deleted, false if not. It will return true whether or not the delete has been acknowledged.
@@ -99,7 +103,8 @@ namespace Multiplayer
 
         EntityReplicatorState GetReplicatorState() const;
 
-        //! Check if we have data to send
+        //! Check if we have data to send.
+        //! This will return true if there are any unacknowledged changes, even if they aren't new for this frame.
         bool HasEntityChangesToSend();
 
         //! Phase 1, setup of the record
