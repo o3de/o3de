@@ -27,7 +27,7 @@ namespace AZ
             
             // Need an intermediate output and a copy pass if the render resolution is different than swapchain's size
             // Ideally, this should be set based on the size of window's render resolution and swapchain's size
-            // The pass system has problem to update the pass tree properly when the m_needCopyOutput state changes
+            // The pass system has problem updating the pass tree properly when the m_needCopyOutput state changes
             // Now we set it to true if the window context doesn't have swapchain scaling
             m_needCopyOutput = windowContext->GetSwapChainScalingMode() == RHI::Scaling::None;
         }

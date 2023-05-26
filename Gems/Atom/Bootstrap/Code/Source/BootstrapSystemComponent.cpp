@@ -249,7 +249,7 @@ namespace AZ
                         if (m_nativeWindow)
                         {
                             // wait until swapchain has been created before setting fullscreen state
-                            if ((uint32_t)r_resolutionMode > 0)
+                            if (r_resolutionMode > 0u)
                             {
                                 m_nativeWindow->SetEnableCustomizedResolution(true);
                                 m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
