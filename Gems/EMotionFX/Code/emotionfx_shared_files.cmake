@@ -11,6 +11,7 @@ set(FILES
     Include/Integration/ActorComponentBus.h
     Include/Integration/AnimGraphComponentBus.h
     Include/Integration/AnimAudioComponentBus.h
+    Include/Integration/ApplyMotionSetComponentBus.h
     Include/Integration/EditorSimpleMotionComponentBus.h
     Include/Integration/SimpleMotionComponentBus.h
     Include/Integration/AnimGraphNetworkingBus.h
@@ -30,6 +31,8 @@ set(FILES
     Source/Integration/Components/AnimAudioComponent.cpp
     Source/Integration/Components/AnimGraphComponent.h
     Source/Integration/Components/AnimGraphComponent.cpp
+    Source/Integration/Components/ApplyMotionSetComponent.h
+    Source/Integration/Components/ApplyMotionSetComponent.cpp
     Source/Integration/Components/SimpleMotionComponent.h
     Source/Integration/Components/SimpleMotionComponent.cpp
     Source/Integration/Components/SimpleLODComponent.h
