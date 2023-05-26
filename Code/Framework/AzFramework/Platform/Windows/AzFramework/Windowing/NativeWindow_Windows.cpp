@@ -322,8 +322,8 @@ namespace AzFramework
             // Alt-tabbing out of the app while it is in a full screen state does not
             // work unless we explicitly exit the full screen state upon deactivation,
             // in which case we want to enter full screen state again upon activation.
-            //const bool windowIsNowInactive = (LOWORD(wParam) == WA_INACTIVE);
-            //const bool windowFullScreenState = nativeWindowImpl->GetFullScreenState();
+            const bool windowIsNowInactive = (LOWORD(wParam) == WA_INACTIVE);
+            const bool windowFullScreenState = nativeWindowImpl->GetFullScreenState();
 
             if (windowIsNowInactive)
             {
