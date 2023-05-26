@@ -151,9 +151,10 @@ namespace AzToolsFramework
             }
 
             int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
-            for (assetDetailIndex; assetDetailIndex >= 0; --assetDetailIndex)
+            while (assetDetailIndex >= 0)
             {
                 m_assetDetailLayout->removeRow(assetDetailIndex);
+                assetDetailIndex--;
             }
             m_dependentProducts->clear();
 
@@ -284,9 +285,10 @@ namespace AzToolsFramework
                 m_previewImage->clear();
                 m_dependentProducts->clear();
                 int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
-                for (assetDetailIndex; assetDetailIndex >= 0; --assetDetailIndex)
+                while (assetDetailIndex >= 0)
                 {
                     m_assetDetailLayout->removeRow(assetDetailIndex);
+                    assetDetailIndex--;
                 }
                 m_populatedLayoutWidget->setMinimumWidth(m_previewImage->minimumSizeHint().width());
                 m_layoutSwitcher->setCurrentWidget(m_emptyLayoutWidget);
@@ -395,7 +397,7 @@ namespace AzToolsFramework
             {
                 const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
                 headerItem->setFont(0, m_headerFont);
-                headerItem->setExpanded(false);
+                headerItem->setExpanded(true);
                 if (isOutgoing)
                 {
                     headerItem->setText(0, QObject::tr("Outgoing Source Dependencies"));
