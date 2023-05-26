@@ -22,7 +22,7 @@ namespace AzToolsFramework
             : QWidget(parent)
             , m_databaseConnection(aznew AssetDatabase::AssetDatabaseConnection)
         {
-            // Create the empty label layout
+            // Create the empty previewer
             m_emptyLayoutWidget = new QWidget(this);
             auto emptyLayout = new QVBoxLayout(m_emptyLayoutWidget);
             auto emptyLabel = new QLabel(m_emptyLayoutWidget);
@@ -33,11 +33,11 @@ namespace AzToolsFramework
             emptyLayout->addStretch(1);
             m_emptyLayoutWidget->setLayout(emptyLayout);
 
-            // Instantiate the populated layout and its parent widget
+            // Instantiate the populated previewer
             m_populatedLayoutWidget = new QWidget(this);
             auto populatedLayout = new QVBoxLayout(m_populatedLayoutWidget);
 
-             // Create the layout for the image preview by centering the image's QLabel
+             // Create the layout for the asset icon preview
             auto iconLayout = new QVBoxLayout(m_populatedLayoutWidget);
             iconLayout->setSizeConstraint(QLayout::SetFixedSize);
             m_previewImage = new QLabel(m_populatedLayoutWidget);
@@ -55,7 +55,7 @@ namespace AzToolsFramework
             assetDetails->hideFrame();
             cardLayout->addWidget(assetDetails);
 
-            // Create a two column layout for the labels and data inside of the asset details card
+            // Create a two column layout for the data inside of the asset details card
             m_assetDetailWidget = new QWidget(assetDetails);
             m_assetDetailLayout = new QFormLayout(m_assetDetailWidget);
             m_assetDetailLayout->setLabelAlignment(Qt::AlignRight);
@@ -74,7 +74,7 @@ namespace AzToolsFramework
             QSpacerItem* bottomSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Maximum);
             cardLayout->addItem(bottomSpacer);
 
-            // Create a tree view for the dependent assets inside of the dependent assets card
+            // Create a tree view for the data inside the depends assets card
             m_dependentProducts = new QTreeWidget(m_dependentAssetsCard);
             m_dependentProducts->setColumnCount(1);
             m_dependentProducts->setHeaderHidden(true);
@@ -93,6 +93,7 @@ namespace AzToolsFramework
             setLayout(m_layoutSwitcher);
 
             m_headerFont.setBold(true);
+
             connect(
                 m_dependentAssetsCard,
                 &AzQtComponents::Card::expandStateChanged,
@@ -142,7 +143,7 @@ namespace AzToolsFramework
                 ClearPreview();
                 return;
             }
-            
+
             if (m_layoutSwitcher->currentWidget() != m_populatedLayoutWidget)
             {
                 m_layoutSwitcher->setCurrentWidget(m_populatedLayoutWidget);
@@ -200,7 +201,6 @@ namespace AzToolsFramework
 
                 AZStd::vector<const ProductAssetBrowserEntry*> productChildren;
                 sourceEntry->GetChildren(productChildren);
-
                 if (!productChildren.empty())
                 {
                     m_dependentAssetsCard->show();
