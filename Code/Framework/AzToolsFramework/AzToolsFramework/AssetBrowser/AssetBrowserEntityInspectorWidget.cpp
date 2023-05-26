@@ -5,18 +5,14 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzToolsFramework/API/AssetDatabaseBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
-#include <AzCore/Asset/AssetTypeInfoBus.h>
-#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzToolsFramework/ToolsComponents/ToolsAssetCatalogComponent.h>
 
-#include <QPixmap>
+static constexpr int MinimumPopulatedWidth = 328;
 
 namespace AzToolsFramework
 {
@@ -92,8 +88,8 @@ namespace AzToolsFramework
 
             // Add the widgets containing both empty and populated layouts to a stacked widget
             m_layoutSwitcher = new QStackedLayout(this);
-            m_layoutSwitcher->addWidget(m_emptyLayoutWidget);
             m_layoutSwitcher->addWidget(m_populatedLayoutWidget);
+            m_layoutSwitcher->addWidget(m_emptyLayoutWidget);
             setLayout(m_layoutSwitcher);
 
             m_headerFont.setBold(true);
@@ -114,25 +110,34 @@ namespace AzToolsFramework
                         bottomSpacer->changeSize(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
                     }
                 });
-            AssetDatabaseLocationNotificationBus::Handler::BusConnect();
+
             AssetBrowserPreviewRequestBus::Handler::BusConnect();
-            m_databaseConnection->OpenDatabase();
+            InitializeDatabase();
+            ClearPreview();
         }
 
         AssetBrowserEntityInspectorWidget::~AssetBrowserEntityInspectorWidget()
         {
             AssetBrowserPreviewRequestBus::Handler::BusDisconnect();
-            AssetDatabaseLocationNotificationBus::Handler::BusDisconnect();
         }
 
-        void AssetBrowserEntityInspectorWidget::OnDatabaseInitialized()
+        void AssetBrowserEntityInspectorWidget::InitializeDatabase()
         {
+            AZStd::string databaseLocation;
+            AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Broadcast(
+                &AzToolsFramework::AssetDatabase::AssetDatabaseRequests::GetAssetDatabaseLocation, databaseLocation);
+
+            if (!databaseLocation.empty())
+            {
+                m_databaseConnection->OpenDatabase();
+                m_dbReady = true;
+            }
 
         }
 
         void AssetBrowserEntityInspectorWidget::PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
         {
-            if (selectedEntry == nullptr)
+            if (selectedEntry == nullptr || !m_dbReady)
             {
                 ClearPreview();
                 return;
@@ -141,6 +146,7 @@ namespace AzToolsFramework
             if (m_layoutSwitcher->currentWidget() != m_populatedLayoutWidget)
             {
                 m_layoutSwitcher->setCurrentWidget(m_populatedLayoutWidget);
+                setMinimumWidth(MinimumPopulatedWidth);
             }
 
             int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
@@ -272,13 +278,19 @@ namespace AzToolsFramework
 
         void AssetBrowserEntityInspectorWidget::ClearPreview()
         {
-            m_dependentProducts->clear();
-            int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
-            for (assetDetailIndex; assetDetailIndex >= 0; --assetDetailIndex)
+            if (m_layoutSwitcher->currentWidget() != m_emptyLayoutWidget)
             {
-                m_assetDetailLayout->removeRow(assetDetailIndex);
+                setMinimumWidth(0);
+                m_previewImage->clear();
+                m_dependentProducts->clear();
+                int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
+                for (assetDetailIndex; assetDetailIndex >= 0; --assetDetailIndex)
+                {
+                    m_assetDetailLayout->removeRow(assetDetailIndex);
+                }
+                m_populatedLayoutWidget->setMinimumWidth(m_previewImage->minimumSizeHint().width());
+                m_layoutSwitcher->setCurrentWidget(m_emptyLayoutWidget);
             }
-            m_layoutSwitcher->setCurrentWidget(m_emptyLayoutWidget);
         }
 
         void AssetBrowserEntityInspectorWidget::PopulateSourceDependencies(

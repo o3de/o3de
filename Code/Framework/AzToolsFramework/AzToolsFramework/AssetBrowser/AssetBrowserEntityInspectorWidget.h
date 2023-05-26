@@ -8,24 +8,16 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/set.h>
-#include <AzCore/std/utils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
-#include <QDockWidget>
-#include <QFont>
 #include <QFormLayout>
 #include <QLabel>
-#include <QLayout>
 #include <QStackedLayout>
 #include <QTreeWidget>
-#include <QWidget>
 #endif
 
 namespace AzToolsFramework
@@ -37,16 +29,12 @@ namespace AzToolsFramework
         class AssetBrowserEntityInspectorWidget
             : public QWidget
             , public AssetBrowserPreviewRequestBus::Handler
-            , public AssetDatabaseLocationNotificationBus::Handler
         {
         public:
             explicit AssetBrowserEntityInspectorWidget(QWidget *parent = nullptr);
             ~AssetBrowserEntityInspectorWidget();
 
-            //////////////////////////////////////////////////////////////////////////
-            // AssetDatabaseLocationNotificationBus
-            //////////////////////////////////////////////////////////////////////////
-            void OnDatabaseInitialized() override;
+            void InitializeDatabase();
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserPreviewRequestBus
@@ -61,6 +49,7 @@ namespace AzToolsFramework
             void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
         private:
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
+            bool m_dbReady = false;
             QLabel* m_previewImage = nullptr;
             QStackedLayout* m_layoutSwitcher = nullptr;
             QWidget* m_emptyLayoutWidget = nullptr;
