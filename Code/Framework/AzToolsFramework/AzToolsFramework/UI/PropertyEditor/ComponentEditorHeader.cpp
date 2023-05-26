@@ -121,6 +121,11 @@ namespace AzToolsFramework
     {
         m_currentFilterString = str.c_str();
     }
+
+    bool ComponentEditorHeader::TitleMatchesFilter() const
+    {
+        return AzQtComponents::CardHeader::m_titleLabel->TextMatchesFilter();
+    }
 }
 
 #include "UI/PropertyEditor/moc_ComponentEditorHeader.cpp"

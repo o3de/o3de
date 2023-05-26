@@ -694,6 +694,9 @@ namespace AzToolsFramework
                     // Set the entity on the component (but do not add yet) so that existing systems such as UI will work properly and understand who this component belongs to.
                     GetEditorComponent(component)->SetEntity(entity);
 
+                    // Needed to set up the serialized identifier for the pending component.
+                    GetEditorComponent(component)->OnAfterEntitySet();
+
                     // Add component to pending for entity
                     AzToolsFramework::EditorPendingCompositionRequestBus::Event(entityId, &AzToolsFramework::EditorPendingCompositionRequests::AddPendingComponent, component);
 

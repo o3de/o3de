@@ -76,6 +76,7 @@ namespace AzToolsFramework
         void ClearHelpURL();
 
         void SetFilterString(const AZStd::string& str);
+        bool TitleMatchesFilter() const;
     Q_SIGNALS:
         void OnContextMenuClicked(const QPoint& position);
         void OnExpanderChanged(bool expanded);
