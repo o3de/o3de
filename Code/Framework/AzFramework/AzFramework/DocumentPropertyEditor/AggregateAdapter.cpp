@@ -112,8 +112,11 @@ namespace AZ::DocumentPropertyEditor
             {
                 m_parent->m_pathIndexToChildMaps.resize(adapterIndex + 1);
             }
-            // shift any subsequent entries by 1 to make room for this new entry, then add it
-            m_parent->ShiftChildIndices(adapterIndex, pathEntryIndex, 1);
+            else
+            {
+                // shift any subsequent entries by 1 to make room for this new entry, then add it
+                m_parent->ShiftChildIndices(adapterIndex, pathEntryIndex, 1);
+            }
             m_parent->m_pathIndexToChildMaps[adapterIndex][pathEntryIndex] = this;
         }
     }
@@ -132,7 +135,7 @@ namespace AZ::DocumentPropertyEditor
         AZ_Assert(mapEntryIter != parentsMap.end(), "child must be present in parent's map!");
         // remove entry from map and shift any later siblings' indices down by one
         parentsMap.erase(mapEntryIter);
-        ShiftChildIndices(adapterIndex, mapEntryIter->first, -1);
+        m_parent->ShiftChildIndices(adapterIndex, mapEntryIter->first, -1);
 
         bool nodeWasDestroyed = false;
         m_pathEntries[adapterIndex] = InvalidEntry;
@@ -690,7 +693,8 @@ namespace AZ::DocumentPropertyEditor
                 auto comparisonRow = GetComparisonRow(rowNode);
                 auto& siblingVector = parentNode->m_childRows;
 
-                for (auto siblingIter = siblingVector.begin(), endIter = siblingVector.end(); !matchingSiblingFound && siblingIter != endIter;
+                for (auto siblingIter = siblingVector.begin(), endIter = siblingVector.end();
+                     !matchingSiblingFound && siblingIter != endIter;
                      ++siblingIter)
                 {
                     if (siblingIter->get() != rowNode)
@@ -754,81 +758,90 @@ namespace AZ::DocumentPropertyEditor
     {
         AZ::Dom::Value messageResult;
 
-        // check if this message is one of the ones that the AggregateAdapter is meant to manipulate and forward to sub-adapters
-        const auto messagesToForward = GetMessagesToForward();
-        if (AZStd::find(messagesToForward.begin(), messagesToForward.end(), message.m_messageName) != messagesToForward.end())
+        auto nodePath = message.m_messageOrigin;
+        auto originalColumn = nodePath.Back().GetIndex();
+        nodePath.Pop();
+        auto messageNode = GetNodeAtPath(nodePath);
+        AZ_Assert(messageNode, "can't find node for given AdapterMessage!");
+
+        // check if this is from a "values differ" row
+        if (!m_generateDiffRows || messageNode->m_allEntriesMatch)
         {
-            auto nodePath = message.m_messageOrigin;
-            auto originalColumn = nodePath.Back().GetIndex();
-            nodePath.Pop();
-            auto messageNode = GetNodeAtPath(nodePath);
-            AZ_Assert(messageNode, "can't find node for given AdapterMessage!");
-
-            // it's a forwarded message, we need to look up the original handler for each adapter and call them individually
-            for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
+            /* not a "values differ" row, so it directly represents the member adapter nodes.
+               Check if this message is one of the ones that the AggregateAdapter is meant to manipulate and forward to sub-adapters */
+            const auto messagesToForward = GetMessagesToForward();
+            if (AZStd::find(messagesToForward.begin(), messagesToForward.end(), message.m_messageName) != messagesToForward.end())
             {
-                auto attributePath = messageNode->GetPathForAdapter(adapterIndex) / originalColumn / message.m_messageName;
-                auto attributeValue = m_adapters[adapterIndex]->adapter->GetContents()[attributePath];
-                AZ_Assert(!attributeValue.IsNull(), "function attribute should exist for each adapter!");
-
-                auto invokeDomValueFunction = [&message](const Dom::Value& functionValue, auto&& invokeDomValueFunction) -> Dom::Value
+                // it's a forwarded message, we need to look up the original handler for each adapter and call them individually
+                for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
                 {
-                    Dom::Value result;
-                    auto adapterFunction = BoundAdapterMessage::TryMarshalFromDom(functionValue);
+                    auto attributePath = messageNode->GetPathForAdapter(adapterIndex) / originalColumn / message.m_messageName;
+                    auto attributeValue = m_adapters[adapterIndex]->adapter->GetContents()[attributePath];
+                    AZ_Assert(!attributeValue.IsNull(), "function attribute should exist for each adapter!");
 
-                    if (adapterFunction.has_value())
+                    auto invokeDomValueFunction = [&message](const Dom::Value& functionValue, auto&& invokeDomValueFunction) -> Dom::Value
                     {
-                        // it's a bound adapter message, just call it, hooray!
-                        result = adapterFunction.value()(message.m_messageParameters);
-                    }
-                    else if (functionValue.IsObject())
-                    {
-                        // it's an object, it should be a callable attribute
-                        auto typeField = functionValue.FindMember(AZ::Attribute::GetTypeField());
-                        if (typeField != functionValue.MemberEnd() && typeField->second.IsString() &&
-                            typeField->second.GetString() == Attribute::GetTypeName())
+                        Dom::Value result;
+                        auto adapterFunction = BoundAdapterMessage::TryMarshalFromDom(functionValue);
+
+                        if (adapterFunction.has_value())
                         {
-                            // last chance! Check if it's an invokable Attribute
-                            void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(functionValue[AZ::Attribute::GetInstanceField()]);
-                            AZ::Attribute* attribute =
-                                AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(functionValue[AZ::Attribute::GetAttributeField()]);
-
-                            const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
-                            AZ_Assert(canInvoke, "message attribute is not invokable!");
-                            if (canInvoke)
+                            // it's a bound adapter message, just call it, hooray!
+                            result = adapterFunction.value()(message.m_messageParameters);
+                        }
+                        else if (functionValue.IsObject())
+                        {
+                            // it's an object, it should be a callable attribute
+                            auto typeField = functionValue.FindMember(AZ::Attribute::GetTypeField());
+                            if (typeField != functionValue.MemberEnd() && typeField->second.IsString() &&
+                                typeField->second.GetString() == Attribute::GetTypeName())
                             {
-                                result = attribute->DomInvoke(instance, message.m_messageParameters);
+                                // last chance! Check if it's an invokable Attribute
+                                void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(functionValue[AZ::Attribute::GetInstanceField()]);
+                                AZ::Attribute* attribute =
+                                    AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(functionValue[AZ::Attribute::GetAttributeField()]);
+
+                                const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
+                                AZ_Assert(canInvoke, "message attribute is not invokable!");
+                                if (canInvoke)
+                                {
+                                    result = attribute->DomInvoke(instance, message.m_messageParameters);
+                                }
                             }
                         }
-                    }
-                    else if (functionValue.IsArray())
-                    {
-                        for (auto arrayIter = functionValue.ArrayBegin(), endIter = functionValue.ArrayEnd(); arrayIter != endIter;
-                             ++arrayIter)
+                        else if (functionValue.IsArray())
                         {
-                            // Note: currently last call in the array wins. This could be parameterized in the future if
-                            // a different result is desired
-                            result = invokeDomValueFunction(*arrayIter, invokeDomValueFunction);
+                            for (auto arrayIter = functionValue.ArrayBegin(), endIter = functionValue.ArrayEnd(); arrayIter != endIter;
+                                 ++arrayIter)
+                            {
+                                // Note: currently last call in the array wins. This could be parameterized in the future if
+                                // a different result is desired
+                                result = invokeDomValueFunction(*arrayIter, invokeDomValueFunction);
+                            }
                         }
-                    }
-                    else
-                    {
-                        // it's not a function object, it's most likely a pass-through Value, so pass it through
-                        result = functionValue;
-                    }
-                    return result;
-                };
-                messageResult = invokeDomValueFunction(attributeValue, invokeDomValueFunction);
+                        else
+                        {
+                            // it's not a function object, it's most likely a pass-through Value, so pass it through
+                            result = functionValue;
+                        }
+                        return result;
+                    };
+                    messageResult = invokeDomValueFunction(attributeValue, invokeDomValueFunction);
+                }
             }
         }
         else
         {
+            // not a member-adapter generated message
             auto handleEditAnyway = [&]()
             {
                 // get the affected row by pulling off the trailing column index on the address
                 auto rowPath = message.m_messageOrigin;
                 rowPath.Pop();
 
+                /* edit anyway forces us to act as if one representative node can talk to all sub-adapters, so from this point forward
+                   we are effectively pretending that this row now matches all sub-adapters */
+                messageNode->m_allEntriesMatch = true;
                 NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(rowPath, GenerateAggregateRow(GetNodeAtPath(rowPath))) });
             };
             messageResult = message.Match(Nodes::GenericButton::OnActivate, handleEditAnyway);
