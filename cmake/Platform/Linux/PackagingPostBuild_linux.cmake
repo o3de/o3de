@@ -58,7 +58,7 @@ if(CPACK_UPLOAD_URL)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
         ${CPACK_UPLOAD_DIRECTORY}
-        ".*(.deb|.gpg|.sha256|.sha384|.snap|.assert|.txt|.json)$"
+        ".*(.deb|.gpg|.sha256|.sha384|.snap|.txt|.json)$"
     )
 
     # for auto tagged builds, we will also upload a second copy of the package
