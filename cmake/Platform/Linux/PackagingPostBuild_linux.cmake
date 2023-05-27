@@ -13,7 +13,7 @@ include(${CPACK_CODESIGN_SCRIPT})
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
     set(snap_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
     set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.sha384")
-    file(SHA384 ${snap_file} file_checksum) # Snap asserts use SHA284
+    file(SHA384 ${snap_file} file_checksum) # Snap asserts use SHA384
     file(WRITE ${hash_file} "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     set(deb_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb")
