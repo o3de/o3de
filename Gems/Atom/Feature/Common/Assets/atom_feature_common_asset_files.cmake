@@ -391,7 +391,7 @@ set(FILES
     Shaders/PostProcessing/BloomCompositeCS.azsl
     Shaders/PostProcessing/BloomCompositeCS.shader
     Shaders/PostProcessing/BloomDownsampleCS.azsl
-    Shaders/PostProcessing/BloomDownsampleCS.shader    
+    Shaders/PostProcessing/BloomDownsampleCS.shader
     Shaders/PostProcessing/ChromaticAberration.azsl
     Shaders/PostProcessing/ChromaticAberration.shader
     Shaders/PostProcessing/PaniniProjection.azsl
