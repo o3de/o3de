@@ -63,6 +63,9 @@ set(FILES
     AzCore/Socket/AzSocket_fwd_Platform.h
     AzCore/Socket/AzSocket_Platform.h
     ../Common/Apple/AzCore/std/time_Apple.cpp
+    AzCore/Utils/SystemUtilsApple_Platform.h
+    ../Common/Apple/AzCore/Utils/SystemUtilsApple.h
+    ../Common/Apple/AzCore/Utils/SystemUtilsApple.mm
     AzCore/Utils/Utils_iOS.mm
     ../Common/Apple/AzCore/Utils/Utils_Apple.cpp
     ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp
