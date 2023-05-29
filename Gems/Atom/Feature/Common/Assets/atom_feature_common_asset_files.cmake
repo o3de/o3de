@@ -395,7 +395,7 @@ set(FILES
     Shaders/PostProcessing/ChromaticAberration.azsl
     Shaders/PostProcessing/ChromaticAberration.shader
     Shaders/PostProcessing/PaniniProjection.azsl
-    Shaders/PostProcessing/PaniniProjection.shader    
+    Shaders/PostProcessing/PaniniProjection.shader
     Shaders/PostProcessing/FilmGrain.azsl
     Shaders/PostProcessing/FilmGrain.shader
     Shaders/PostProcessing/Vignette.azsl
