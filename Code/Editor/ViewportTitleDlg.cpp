@@ -56,8 +56,6 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #endif //! defined(Q_MOC_RUN)
 
-static constexpr int MiniumOverflowMenuWidth = 200;
-
 // CViewportTitleDlg dialog
 
 namespace
