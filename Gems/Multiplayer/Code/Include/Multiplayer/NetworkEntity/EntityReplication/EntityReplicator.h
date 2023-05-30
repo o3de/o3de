@@ -31,6 +31,8 @@ namespace Multiplayer
     class PropertyPublisher;
     class PropertySubscriber;
 
+    //! @class EntityReplicator
+    //! @brief Handles replication of a single entity for one connection.
     class EntityReplicator final
         : public AZ::EntityBus::Handler
     {
@@ -51,28 +53,47 @@ namespace Multiplayer
         bool OwnsReplicatorLifetime() const;
         bool RemoteManagerOwnsEntityLifetime() const;
 
+        bool IsPendingRemoval() const;
+        bool IsMarkedForRemoval() const;
+        bool IsDeletionAcknowledged() const;
+
         // Interface for ReplicationManager to modify state of replication
         void Initialize(const ConstNetworkEntityHandle& entityHandle);
         void Reset(NetEntityRole remoteNetworkRole);
         void MarkForRemoval();
-        bool IsMarkedForRemoval() const;
         void SetPendingRemoval(AZ::TimeMs pendingRemovalTimeMs);
-        bool IsPendingRemoval() const;
         void ClearPendingRemoval();
-        bool IsDeletionAcknowledged() const;
         bool WasMigrated() const;
         void SetWasMigrated(bool wasMigrated);
         // If an entity is part of a network hierarchy then it is only ready to activate when its direct parent entity is active.
         bool IsReadyToActivate() const;
 
+        // Interface for ReplicationManager to manage publishing entity changes
+
+        //! Set the next update packet to be a "rebase" message.
+        void SetRebasing();
+        //! True if the replicator is ready to start publishing changes, false if not.
+        bool IsReadyToPublish() const;
+        //! True if the remote replicator has acknowledged at least one update packet.
+        bool IsRemoteReplicatorEstablished() const;
+        //! True if there are any unacknowledged changes to publish
+        bool HasChangesToPublish();
+        //! Start preparing the update packet.
+        //! @return true if there are any unacknowledged changes to publish, false if not.
+        bool PrepareToGenerateUpdatePacket();
+        //! Generate an update packet.
         NetworkEntityUpdateMessage GenerateUpdatePacket();
-        void FinalizeSerialization(AzNetworking::PacketId sentId);
+        //! Generate a migration packet.
+        EntityMigrationMessage GenerateMigrationPacket();
+        //! After sending a generated packet, record the sent packet id for tracking acknowledgements.
+        void RecordSentPacketId(AzNetworking::PacketId sentId);
+
+        // Interface for ReplicationManager to manage receiving entity changes
+        bool HandlePropertyChangeMessage(AzNetworking::PacketId packetId, AzNetworking::ISerializer* serializer, bool notifyChanges);
+        bool IsPacketIdValid(AzNetworking::PacketId packetId) const;
+        AzNetworking::PacketId GetLastReceivedPacketId() const;
 
         AZ::TimeMs GetResendTimeoutTimeMs() const;
-
-        PropertyPublisher* GetPropertyPublisher();
-        const PropertyPublisher* GetPropertyPublisher() const;
-        PropertySubscriber* GetPropertySubscriber();
 
         // Handlers for Rpc messages
         bool HandleRpcMessage(AzNetworking::IConnection* invokingConnection, NetworkEntityRpcMessage& entityRpcMessage);

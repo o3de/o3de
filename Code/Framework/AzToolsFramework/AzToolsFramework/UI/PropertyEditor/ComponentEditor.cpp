@@ -569,7 +569,7 @@ namespace AzToolsFramework
     {
         if (m_dpe)
         {
-            return !m_filterAdapter->IsEmpty();
+            return !m_filterAdapter->FilterIsActive() || !m_filterAdapter->IsEmpty() || GetHeader()->TitleMatchesFilter();
         }
         else
         {

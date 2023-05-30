@@ -116,39 +116,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
     Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Entity/RotateMethod.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Sequencer.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/Operator.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorAt.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorBack.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorClear.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorEmpty.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorErase.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorFront.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorInsert.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorPushBack.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorSize.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorDivideByNumber.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLength.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLerp.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/Contains.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/Replace.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/StringMethods.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/Utilities.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Countdown.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Duration.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/HeartBeat.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Repeater.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Timer.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectFalse.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThan.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThanEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThan.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThanEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectNotEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectTrue.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/UnitTesting.cpp
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.cpp

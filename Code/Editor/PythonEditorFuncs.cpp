@@ -21,6 +21,7 @@
 // AzToolsFramework
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 
 // Editor

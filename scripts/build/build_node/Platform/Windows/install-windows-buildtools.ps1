@@ -21,8 +21,8 @@ Write-Host "Set JDK_PATH for Android"
 Write-Host "Set Java path for Jenkins node agent"
 [Environment]::SetEnvironmentVariable("JENKINS_JAVA_CMD", "c:\jdk11", [EnvironmentVariableTarget]::Machine)
 
-Write-Host "Install CMake"
-choco install cmake --version=3.24.0 -y --installargs 'ADD_CMAKE_TO_PATH=System'
+# Install CMake
+choco install cmake --version=3.22.1 -y --installargs 'ADD_CMAKE_TO_PATH=System'
 
 Write-Host "Install Windows Installer XML toolkit (WiX)"
 choco install wixtoolset -y
