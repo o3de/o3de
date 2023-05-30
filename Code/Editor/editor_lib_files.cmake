@@ -261,8 +261,6 @@ set(FILES
     Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
-    Core/LevelEditorMenuHandler.cpp
-    Core/LevelEditorMenuHandler.h
     Core/Widgets/PrefabEditVisualModeWidget.h
     Core/Widgets/PrefabEditVisualModeWidget.cpp
     Core/Widgets/ViewportSettingsWidgets.h
@@ -385,9 +383,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    QuickAccessBar.cpp
-    QuickAccessBar.h
-    QuickAccessBar.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -686,6 +681,5 @@ set(FILES
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     TrackView/TrackViewPythonFuncs.cpp
-    Core/LevelEditorMenuHandler.cpp
     Util/AffineParts.cpp
 )
