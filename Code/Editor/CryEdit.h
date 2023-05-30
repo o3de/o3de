@@ -22,7 +22,6 @@
 #endif
 
 class CCryDocManager;
-class CQuickAccessBar;
 class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
@@ -328,7 +327,6 @@ private:
     int m_numBeforeDisplayErrorFrames = 0;
 
     QString m_lastOpenLevelPath;
-    CQuickAccessBar* m_pQuickAccessBar = nullptr;
     QString m_rootEnginePath;
 
     int m_disableIdleProcessingCounter = 0; //!< Counts requests to disable idle processing. When non-zero, idle processing will be disabled.
@@ -386,7 +384,6 @@ private:
     void OnOpenTrackView();
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
-    void OnOpenQuickAccessBar();
 
     // @param files: A list of file paths, separated by '|';
     void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);

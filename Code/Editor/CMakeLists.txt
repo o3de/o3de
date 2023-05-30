@@ -132,7 +132,6 @@ ly_add_source_properties(
 )
 ly_add_source_properties(
     SOURCES
-        Core/LevelEditorMenuHandler.cpp
         MainWindow.cpp
     PROPERTY COMPILE_DEFINITIONS 
     VALUES ${LY_PAL_TOOLS_DEFINES}
