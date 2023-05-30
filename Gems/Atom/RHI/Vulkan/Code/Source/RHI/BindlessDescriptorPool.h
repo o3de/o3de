@@ -73,7 +73,7 @@ namespace AZ::Vulkan
         VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
         VkDescriptorSet m_set;
 
-        RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(BindlessResourceType::Count)];
+        RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count)];
 
         // Descriptor to hold information related to binding indices of bindless srg
         AZ::RHI::BindlessSrgDescriptor m_bindlessSrgDesc;

@@ -411,7 +411,7 @@ namespace AZ
                     m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
-             RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Bindless);
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Bindless);
             if (!bindlessSrgLayout)
             {
                 AZ_Error(

@@ -383,7 +383,7 @@ namespace AZ
                 RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                 //Check if we are iterating over the bindless srg slot
-                auto& device = static_cast<Device&>(GetDevice());
+                const auto& device = static_cast<Device&>(GetDevice());
                 if (srgSlot == device.GetBindlessSrgSlot() && shaderResourceGroup == nullptr)
                 {
                     // Skip in case the global static heap is already bound

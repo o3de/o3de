@@ -8,7 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
-#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {

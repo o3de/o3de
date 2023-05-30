@@ -22,7 +22,7 @@ namespace AZ::Vulkan
     {
         m_device = &device;
 
-        const uint32_t MaxBindlessIndices = static_cast<uint32_t>(BindlessResourceType::Count);
+        const uint32_t MaxBindlessIndices = static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count);
         m_bindlessSrgDesc = bindlessSrgDesc;
 
         {
@@ -290,7 +290,7 @@ namespace AZ::Vulkan
 
     void BindlessDescriptorPool::GarbageCollect()
     {
-        for (size_t i = 0; i != static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+        for (size_t i = 0; i != static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();
         }

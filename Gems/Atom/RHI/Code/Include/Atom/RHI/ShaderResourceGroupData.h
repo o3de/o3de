@@ -14,14 +14,7 @@
 #include <Atom/RHI/BufferView.h>
 #include <AzCore/Preprocessor/Enum.h>
 
-AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(BindlessResourceType, uint32_t,
-            m_Texture2D,                     //ReadTexture
-            m_RWTexture2D,                   //ReadWriteTexture
-            m_TextureCube,                   //ReadTextureCube
-            m_ByteAddressBuffer,             //ReadBuffer
-            m_RWByteAddressBuffer,           //ReadWriteBuffer
-            Count
-        );
+
 
 namespace AZ
 {
@@ -29,6 +22,16 @@ namespace AZ
     {
         class ShaderResourceGroup;
         class ShaderResourceGroupPool;
+
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(
+            BindlessResourceType,
+            uint32_t,
+            m_Texture2D, // ReadTexture
+            m_RWTexture2D, // ReadWriteTexture
+            m_TextureCube, // ReadTextureCube
+            m_ByteAddressBuffer, // ReadBuffer
+            m_RWByteAddressBuffer, // ReadWriteBuffer
+            Count);
 
         //! Shader resource group data is a light abstraction over a flat table of shader resources
         //! and shader constants. It utilizes basic reflection information from the shader resource group layout
@@ -218,7 +221,7 @@ namespace AZ
             // Structure to hold all the bindless views and the BindlessResourceType related to it
             struct BindlessResourceViews
             {
-                BindlessResourceType m_bindlessResourceType = BindlessResourceType::Count;
+                BindlessResourceType m_bindlessResourceType = AZ::RHI::BindlessResourceType::Count;
                 AZStd::vector<ConstPtr<ResourceView>> m_bindlessResources;
             };
             
