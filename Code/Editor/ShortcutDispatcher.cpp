@@ -25,7 +25,6 @@
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
 
 // Editor
-#include "ActionManager.h"
 #include "QtViewPaneManager.h"
 
 const char* FOCUSED_VIEW_PANE_EVENT_NAME = "FocusedViewPaneEvent";    //Sent when view panes are focused
@@ -280,25 +279,8 @@ bool ShortcutDispatcher::FindCandidateActionAndFire(QObject* focusWidget, QShort
     candidates = FindCandidateActions(focusWidget, shortcutEvent->key(), previouslyVisited);
     QSet<QAction*> candidateSet = QSet<QAction*>(candidates.begin(), candidates.end());
     QAction* chosenAction = nullptr;
-    int numCandidates = candidateSet.size();
-    if (numCandidates == 1)
-    {
-        chosenAction = candidates.first();
-    }
-    else if (numCandidates > 1)
-    {
-        // If there are multiple candidates, choose the one that is parented to the ActionManager
-        // since there are cases where panes with their own menu shortcuts that are docked
-        // in the main window can be found in the same parent scope
-        for (QAction* action : candidateSet)
-        {
-            if (qobject_cast<ActionManager*>(action->parent()))
-            {
-                chosenAction = action;
-                break;
-            }
-        }
-    }
+    chosenAction = candidates.first();
+
     if (chosenAction)
     {
         if (chosenAction->isEnabled())

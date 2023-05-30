@@ -351,8 +351,6 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    ActionManager.cpp
-    ActionManager.h
     ShortcutDispatcher.cpp
     ShortcutDispatcher.h
     CheckOutDialog.cpp

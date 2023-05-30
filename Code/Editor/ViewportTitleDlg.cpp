@@ -21,7 +21,6 @@
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
 // Editor
-#include "ActionManager.h"
 #include "CustomAspectRatioDlg.h"
 #include "CustomResolutionDlg.h"
 #include "DisplaySettings.h"
@@ -80,27 +79,6 @@ namespace
         void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
             emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
-        }
-    };
-
-    // simple override of QMenu that does not respond to keyboard events
-    // note: this prevents the menu from being prematurely closed
-    class IgnoreKeyboardMenu : public QMenu
-    {
-    public:
-        IgnoreKeyboardMenu(QWidget* parent = nullptr)
-            : QMenu(parent)
-        {
-        }
-
-    private:
-        void keyPressEvent(QKeyEvent* event) override
-        {
-            // regular escape key handling
-            if (event->key() == Qt::Key_Escape)
-            {
-                QMenu::keyPressEvent(event);
-            }
         }
     };
 } // end anonymous namespace

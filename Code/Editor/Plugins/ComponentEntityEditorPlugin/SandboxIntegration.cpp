@@ -80,7 +80,6 @@
 #include <LmbrCentral/Scripting/EditorTagComponentBus.h>
 
 // Sandbox imports.
-#include <Editor/ActionManager.h>
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>

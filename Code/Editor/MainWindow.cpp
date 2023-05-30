@@ -20,6 +20,7 @@
 #include <QInputDialog>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QToolBar>
 
 // AzCore
 #include <AzCore/Component/ComponentApplication.h>
@@ -93,7 +94,6 @@
 
 #include "AzAssetBrowser/AzAssetBrowserWindow.h"
 #include "AssetEditor/AssetEditorWindow.h"
-#include "ActionManager.h"
 
 #include <ImGuiBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
@@ -397,10 +397,6 @@ MainWindow::~MainWindow()
     m_connectionListener.reset();
     GetIEditor()->UnregisterNotifyListener(this);
 
-    // tear down the ActionOverride (clear the overrideWidget's parent)
-    ActionOverrideRequestBus::Event(
-        GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
-
     m_instance = nullptr;
 }
 
@@ -463,10 +459,6 @@ void MainWindow::Initialize()
             MainWindow::instance()->ResetBackgroundUpdateTimer();
         });
     }
-
-    // setup the ActionOverride (set overrideWidgets parent to be the MainWindow)
-    ActionOverrideRequestBus::Event(
-        GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, this);
 
     AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, this);
 }
@@ -598,38 +590,6 @@ void MainWindow::OnEscapeAction()
     }
 }
 
-QToolButton* MainWindow::CreateUndoRedoButton(int command)
-{
-    // We do either undo or redo below, sort that out here
-    UndoRedoDirection direction = UndoRedoDirection::Undo;
-    auto stateSignal = &UndoStackStateAdapter::UndoAvailable;
-    if (ID_REDO == command)
-    {
-        direction = UndoRedoDirection::Redo;
-        stateSignal = &UndoStackStateAdapter::RedoAvailable;
-    }
-
-    auto button = new UndoRedoToolButton(this);
-    button->setAutoRaise(true);
-    button->setPopupMode(QToolButton::MenuButtonPopup);
-    button->setDefaultAction(m_actionManager->GetAction(command));
-
-    QMenu* menu = new QMenu(button);
-    auto action = new QWidgetAction(button);
-    auto undoRedo = new CUndoDropDown(direction, button);
-    action->setDefaultWidget(undoRedo);
-    menu->addAction(action);
-    button->setMenu(menu);
-
-    connect(menu, &QMenu::aboutToShow, undoRedo, &CUndoDropDown::Prepare);
-    connect(undoRedo, &CUndoDropDown::accepted, menu, &QMenu::hide);
-    connect(m_undoStateAdapter, stateSignal, button, &UndoRedoToolButton::Update);
-
-    button->setEnabled(false);
-
-    return button;
-}
-
 QWidget* MainWindow::CreateSpacerRightWidget()
 {
     QWidget* spacer = new QWidget(this);
@@ -732,27 +692,6 @@ void MainWindow::OnEditorNotifyEvent(EEditorNotifyEvent ev)
         break;
     case eNotify_OnInvalidateControls:
         InvalidateControls();
-        break;
-    // Remove track view option to avoid starting in bad state
-    case eNotify_OnBeginSimulationMode:
-        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
-        {
-            QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
-            if (tvAction)
-            {
-                tvAction->setVisible(false);
-            }
-        }
-        break;
-    case eNotify_OnEndSimulationMode:
-        if (m_actionManager && m_actionManager->HasAction(ID_OPEN_TRACKVIEW))
-        {
-            QAction* tvAction = m_actionManager->GetAction(ID_OPEN_TRACKVIEW);
-            if (tvAction)
-            {
-                tvAction->setVisible(true);
-            }
-        }
         break;
     }
 
@@ -1260,36 +1199,6 @@ void MainWindow::OnGotoSliceRoot()
         }
     }
 }
-
-QWidget* MainWindow::CreateToolbarWidget(int actionId)
-{
-    QWidgetAction* action = qobject_cast<QWidgetAction*>(m_actionManager->GetAction(actionId));
-    if (!action)
-    {
-        qWarning() << Q_FUNC_INFO << "No QWidgetAction for actionId = " << actionId;
-        return nullptr;
-    }
-
-    QWidget* w = nullptr;
-    switch (actionId)
-    {
-    case ID_TOOLBAR_WIDGET_UNDO:
-        w = CreateUndoRedoButton(ID_UNDO);
-        break;
-    case ID_TOOLBAR_WIDGET_REDO:
-        w = CreateUndoRedoButton(ID_REDO);
-        break;
-    case ID_TOOLBAR_WIDGET_SPACER_RIGHT:
-        w = CreateSpacerRightWidget();
-        break;
-    default:
-        qWarning() << Q_FUNC_INFO << "Unknown id " << actionId;
-        return nullptr;
-    }
-
-    return w;
-}
-
 
 // don't want to eat escape as if it were a shortcut, as it would eat it for other windows that also care about escape
 // and are reading it as an event rather.

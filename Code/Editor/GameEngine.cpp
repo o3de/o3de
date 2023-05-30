@@ -43,7 +43,6 @@
 #include "AnimationContext.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
-#include "ActionManager.h"
 
 // Implementation of System Callback structure.
 struct SSystemUserCallback
