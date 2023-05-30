@@ -47,8 +47,6 @@
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 
-#include "ShortcutDispatcher.h"
-
 // Helper for EditorComponentModeNotifications to be used
 // as a member instead of inheriting from EBus directly.
 class ViewportEditorModeNotificationsBusImpl
