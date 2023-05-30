@@ -44,8 +44,7 @@ namespace AzToolsFramework
             m_previewImage->setStyleSheet("QLabel{background-color: #222222; }");
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
-            m_previewImage->setScaledContents(true);
-            iconLayout->addWidget(m_previewImage);
+            iconLayout->addWidget(m_previewImage, Qt::AlignCenter);
 
             // Create the layout for the asset details card
             auto cardLayout = new QVBoxLayout(m_populatedLayoutWidget);
