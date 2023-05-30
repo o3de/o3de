@@ -1012,8 +1012,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 
     if (m_bPreviewMode)
     {
-        GetIEditor()->EnableAcceleratos(false);
-
         // Load geometry object.
         if (!cmdInfo.m_strFileName.isEmpty())
         {

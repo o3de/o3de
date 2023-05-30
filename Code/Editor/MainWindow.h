@@ -38,10 +38,8 @@ class CLayoutViewPane;
 class CLayoutWnd;
 class CMainFrame;
 class EngineConnectionListener;
-class KeyboardCustomizationSettings;
 class LevelEditorMenuHandler;
 class MainStatusBar;
-class ShortcutDispatcher;
 class UndoStackStateAdapter;
 
 class QComboBox;
@@ -123,14 +121,10 @@ public:
     MainStatusBar* StatusBar() const;
     CLayoutWnd* GetLayout() const;
 
-    KeyboardCustomizationSettings* GetShortcutManager() const;
-
     void OpenViewPane(int paneId);
     void OpenViewPane(QtViewPane* pane);
 
     void SetActiveView(CLayoutViewPane* vp);
-
-    bool IsCustomizingToolbars() const;
 
     /**
      * Returns the active view layout (Perspective, Top, Bottom, or Left, etc).
@@ -177,14 +171,11 @@ protected:
     bool focusNextPrevChild(bool next) override;
 
 private:
-    QWidget* CreateToolbarWidget(int id);
-    void ShowCustomizeToolbarDialog();
     void OnGotoSelected();
 
     void ToggleConsole();
     void RegisterOpenWndCommands();
     void InitCentralWidget();
-    void InitToolBars();
     void InitStatusBar();
 
     template <class TValue>
@@ -198,12 +189,7 @@ private:
 
     QWidget* CreateSpacerRightWidget();
 
-    QToolButton* CreateUndoRedoButton(int command);
-
 private Q_SLOTS:
-    void ShowKeyboardCustomization();
-    void ExportKeyboardShortcuts();
-    void ImportKeyboardShortcuts();
     void OnStopAllSounds();
     void OnRefreshAudioSystem();
     void SaveLayout();
@@ -230,11 +216,8 @@ private:
     void RegisterStdViewClasses();
     CMainFrame* m_oldMainFrame;
     QtViewPaneManager* m_viewPaneManager;
-    ShortcutDispatcher* m_shortcutDispatcher = nullptr;
-    ActionManager* m_actionManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
-    KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
 

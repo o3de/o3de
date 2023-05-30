@@ -77,8 +77,6 @@
 #include "UndoDropDown.h"
 #include "EditorViewportSettings.h"
 
-#include "KeyboardCustomizationSettings.h"
-#include "CustomizeKeyboardDialog.h"
 #include "QtViewPaneManager.h"
 #include "ViewPane.h"
 #include "Include/IObjectManager.h"
@@ -290,7 +288,6 @@ MainWindow::MainWindow(QWidget* parent)
     , m_oldMainFrame(nullptr)
     , m_viewPaneManager(QtViewPaneManager::instance())
     , m_undoStateAdapter(new UndoStackStateAdapter(this))
-    , m_keyboardCustomization(nullptr)
     , m_activeView(nullptr)
     , m_settings("O3DE", "O3DE")
     , m_assetImporterManager(new AssetImporterManager(this))
@@ -442,8 +439,6 @@ void MainWindow::Initialize()
     AzToolsFramework::SourceControlNotificationBus::Handler::BusConnect();
     m_sourceControlNotifHandler->Init();
 
-    m_keyboardCustomization = new KeyboardCustomizationSettings(QStringLiteral("Main Window"), this);
-
     if (!IsPreview())
     {
         RegisterOpenWndCommands();
@@ -510,7 +505,6 @@ void MainWindow::closeEvent(QCloseEvent* event)
         return;
     }
 
-    KeyboardCustomizationSettings::EnableShortcutsGlobally(true);
     SaveConfig();
 
     // Some of the panes may ask for confirmation to save changes before closing.
@@ -556,23 +550,6 @@ void MainWindow::SaveConfig()
     }
 }
 
-void MainWindow::ShowKeyboardCustomization()
-{
-    CustomizeKeyboardDialog dialog(*m_keyboardCustomization, this);
-    dialog.exec();
-}
-
-void MainWindow::ExportKeyboardShortcuts()
-{
-    KeyboardCustomizationSettings::ExportToFile(this);
-}
-
-void MainWindow::ImportKeyboardShortcuts()
-{
-    KeyboardCustomizationSettings::ImportFromFile(this);
-    KeyboardCustomizationSettings::SaveGlobally();
-}
-
 void MainWindow::OnEscapeAction()
 {
     if (!CCryEditApp::instance()->IsInAutotestMode())
@@ -616,11 +593,6 @@ MainStatusBar* MainWindow::StatusBar() const
 {
     assert(statusBar()->inherits("MainStatusBar"));
     return static_cast<MainStatusBar*>(statusBar());
-}
-
-KeyboardCustomizationSettings* MainWindow::GetShortcutManager() const
-{
-    return m_keyboardCustomization;
 }
 
 void MainWindow::OpenViewPane(int paneId)

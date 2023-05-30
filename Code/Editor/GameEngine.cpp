@@ -531,8 +531,6 @@ void CGameEngine::SwitchToInGame()
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
 
-    // Disable accelerators.
-    GetIEditor()->EnableAcceleratos(false);
     //! Send event to switch into game.
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
 
@@ -567,9 +565,6 @@ void CGameEngine::SwitchToInEditor()
     CViewport* pGameViewport = GetIEditor()->GetViewManager()->GetGameViewport();
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
-
-    // Enable accelerators.
-    GetIEditor()->EnableAcceleratos(true);
 
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.

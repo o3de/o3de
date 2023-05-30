@@ -454,8 +454,6 @@ struct IEditor
     virtual bool IsInMatEditMode() = 0;
     //! Enable/Disable updates of editor.
     virtual void EnableUpdate(bool enable) = 0;
-    //! Enable/Disable accelerator table, (Enabled by default).
-    virtual void EnableAcceleratos(bool bEnable) = 0;
     virtual SFileVersion GetFileVersion() = 0;
     virtual SFileVersion GetProductVersion() = 0;
     //! Retrieve pointer to game engine instance

@@ -70,7 +70,6 @@ public:
     void OnEarlyExitShutdownSequence();
     void Uninitialize();
 
-
     void SetGameEngine(CGameEngine* ge);
     void DeleteThis() override { delete this; };
     IEditorClassFactory* GetClassFactory() override;
@@ -89,7 +88,7 @@ public:
     bool IsModified() override;
     bool IsInitialized() const override{ return m_bInitialized; }
     bool SaveDocument() override;
-    ISystem*    GetSystem() override;
+    ISystem* GetSystem() override;
     void WriteToConsole(const char* string) override { CLogFile::WriteLine(string); };
     void WriteToConsole(const QString& string) override { CLogFile::WriteLine(string); };
     // Change the message in the status bar
@@ -127,10 +126,8 @@ public:
 
     //! Enables/Disable updates of editor.
     void EnableUpdate(bool enable) override { m_bUpdates = enable; };
-    //! Enable/Disable accelerator table, (Enabled by default).
-    void EnableAcceleratos(bool bEnable) override;
     CGameEngine* GetGameEngine() override { return m_pGameEngine; };
-    CDisplaySettings*   GetDisplaySettings() override { return m_pDisplaySettings; };
+    CDisplaySettings* GetDisplaySettings() override { return m_pDisplaySettings; };
     CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) override;
     void DeleteObject(CBaseObject* obj) override;
     IObjectManager* GetObjectManager() override;

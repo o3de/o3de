@@ -438,11 +438,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    CustomizeKeyboardDialog.h
-    CustomizeKeyboardDialog.cpp
-    CustomizeKeyboardDialog.ui
-    KeyboardCustomizationSettings.h
-    KeyboardCustomizationSettings.cpp
     Settings.cpp
     SettingsManager.cpp
     SettingsManagerDialog.cpp
