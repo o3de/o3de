@@ -42,8 +42,6 @@ class KeyboardCustomizationSettings;
 class LevelEditorMenuHandler;
 class MainStatusBar;
 class ShortcutDispatcher;
-class ToolbarManager;
-class ToolbarCustomizationDialog;
 class UndoStackStateAdapter;
 
 class QComboBox;
@@ -126,7 +124,6 @@ public:
     CLayoutWnd* GetLayout() const;
 
     KeyboardCustomizationSettings* GetShortcutManager() const;
-    ToolbarManager* GetToolbarManager() const;
 
     void OpenViewPane(int paneId);
     void OpenViewPane(QtViewPane* pane);
@@ -235,7 +232,6 @@ private:
     QtViewPaneManager* m_viewPaneManager;
     ShortcutDispatcher* m_shortcutDispatcher = nullptr;
     ActionManager* m_actionManager = nullptr;
-    ToolbarManager* m_toolbarManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
     KeyboardCustomizationSettings* m_keyboardCustomization;
@@ -251,7 +247,6 @@ private:
     AZStd::shared_ptr<EngineConnectionListener> m_connectionListener;
     QTimer* m_connectionLostTimer;
 
-    QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
 
     EditorActionsHandler m_editorActionsHandler;
@@ -269,7 +264,6 @@ private:
     bool m_showAPDisconnectDialog = false;
     bool m_selectedEntityHasRoot = false;
 
-    friend class ToolbarManager;
     friend class WidgetAction;
     friend class LevelEditorMenuHandler;
 };

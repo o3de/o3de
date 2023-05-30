@@ -73,8 +73,6 @@
 #include "LevelIndependentFileMan.h"
 #include "GameEngine.h"
 #include "MainStatusBar.h"
-#include "ToolbarCustomizationDialog.h"
-#include "ToolbarManager.h"
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
 #include "EditorViewportSettings.h"
@@ -440,7 +438,7 @@ void MainWindow::Initialize()
     InitCentralWidget();
 
     // load toolbars ("shelves") and macros
-    GetIEditor()->GetToolBoxManager()->Load(m_actionManager);
+    GetIEditor()->GetToolBoxManager()->Load();
 
     m_editorActionsHandler.Initialize(this);
 
@@ -565,7 +563,6 @@ void MainWindow::SaveConfig()
     {
         m_pLayoutWnd->SaveConfig();
     }
-    GetIEditor()->GetToolBoxManager()->Save();
 }
 
 void MainWindow::ShowKeyboardCustomization()
@@ -599,12 +596,6 @@ void MainWindow::OnEscapeAction()
                 &AzToolsFramework::EditorEvents::OnEscape);
         }
     }
-}
-
-void MainWindow::InitToolBars()
-{
-    m_toolbarManager->LoadToolbars();
-    AdjustToolBarIconSize(static_cast<AzQtComponents::ToolBar::ToolBarIconSize>(gSettings.gui.nToolbarIconSize));
 }
 
 QToolButton* MainWindow::CreateUndoRedoButton(int command)
@@ -1268,27 +1259,6 @@ void MainWindow::OnGotoSliceRoot()
             viewport->CenterOnSliceInstance();
         }
     }
-}
-
-void MainWindow::ShowCustomizeToolbarDialog()
-{
-    if (m_toolbarCustomizationDialog)
-    {
-        return;
-    }
-
-    m_toolbarCustomizationDialog = new ToolbarCustomizationDialog(this);
-    m_toolbarCustomizationDialog->show();
-}
-
-ToolbarManager* MainWindow::GetToolbarManager() const
-{
-    return m_toolbarManager;
-}
-
-bool MainWindow::IsCustomizingToolbars() const
-{
-    return m_toolbarCustomizationDialog != nullptr;
 }
 
 QWidget* MainWindow::CreateToolbarWidget(int actionId)

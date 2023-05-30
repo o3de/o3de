@@ -391,11 +391,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    ToolbarCustomizationDialog.ui
-    ToolbarCustomizationDialog.cpp
-    ToolbarCustomizationDialog.h
-    ToolbarManager.h
-    ToolbarManager.cpp
     ToolsConfigPage.cpp
     ToolsConfigPage.h
     ToolsConfigPage.ui

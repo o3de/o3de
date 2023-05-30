@@ -20,7 +20,6 @@
 #include "MainWindow.h"
 #include "QtViewPaneManager.h"
 #include "ShortcutDispatcher.h"
-#include "ToolbarManager.h"
 
 
 static const char* const s_reserved = "Reserved"; ///< "Reserved" property used for actions that cannot be overridden.
@@ -328,15 +327,6 @@ ActionManager::MenuWrapper ActionManager::FindMenu(const QString& menuId)
 void ActionManager::AddToolBar(QToolBar* toolBar)
 {
     m_toolBars.push_back(toolBar);
-}
-
-ActionManager::ToolBarWrapper ActionManager::AddToolBar(int id)
-{
-    AmazonToolbar t = m_mainWindow->GetToolbarManager()->GetToolbar(id);
-    Q_ASSERT(t.IsInstantiated());
-
-    AddToolBar(t.Toolbar());
-    return ToolBarWrapper(t.Toolbar(), this);
 }
 
 bool ActionManager::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
