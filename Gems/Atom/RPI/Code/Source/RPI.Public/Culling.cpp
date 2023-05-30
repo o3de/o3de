@@ -53,7 +53,7 @@ namespace AZ
         AZ_CVAR(uint32_t, r_numNodesPerCullingJob, 25, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of nodes to collect for jobs when not using the entry count");
 
         //This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls. Default is set to 20 units as a reasonable value.
-        AZ_CVAR(int, r_shadowCascadeExtrutionAmount, 20, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
+        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, 20, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
 
 
 #ifdef AZ_CULL_DEBUG_ENABLED
@@ -616,17 +616,17 @@ namespace AZ
                     AZ::Quaternion directionalLightRot = worklistData->m_view->GetCameraTransform().GetRotation();
                     extrudedBounds.SetRotation(directionalLightRot);
                     
-                    AZ::Vector3 halfLegth = 0.5f * nodeData.m_bounds.GetExtents();
+                    AZ::Vector3 halfLength = 0.5f * nodeData.m_bounds.GetExtents();
                     // After converting AABB to OBB we apply a rotation and this can incorrectly fail intersection test. If you have an OBB cube built from an octree node,
-                    // rotating it can cause it not encapsulate meshes it encapsulated beforehand. The type of shape we want here is essentially a capsule that starts from the
+                    // rotating it can cause it to not encapsulate meshes it encapsulated beforehand. The type of shape we want here is essentially a capsule that starts from the
                     // light and wraps the aabb of the octree node cube and extends towards light direction. This capsule's diameter needs to the size of the body diagonal
-                    // of the cube. Since using capsule shape will make intersection test expensive we simply expand the Obb to have each side be atleast the size of the body diagonal
-                    // which is sqrt(3) * side size. Hence we expand the Obb by 73%. 
-                    halfLegth += halfLegth * Vector3(0.36f, 0.36f, 0.36f);
+                    // of the cube. Since using capsule shape will make intersection test expensive we simply expand the Obb to have each side be at least the size of the body diagonal
+                    // which is sqrt(3) * side size. Hence we expand the Obb by 73%. Since this is half length, we expand it by 73% / 2, or 36.5%.
+                    halfLength *= Vector3(1.365f);
                     
                     // Next we extrude the Obb in the direction of the light in order to ensure we capture meshes that are behind the camera but cast a shadow within it's frustum
-                    halfLegth.SetY(halfLegth.GetY() + r_shadowCascadeExtrutionAmount);
-                    extrudedBounds.SetHalfLengths(halfLegth);
+                    halfLength.SetY(halfLength.GetY() + r_shadowCascadeExtrusionAmount);
+                    extrudedBounds.SetHalfLengths(halfLength);
                     if (!AZ::ShapeIntersection::Overlaps(worklistData->m_cameraFrustum, extrudedBounds))
                     {
                         return;
