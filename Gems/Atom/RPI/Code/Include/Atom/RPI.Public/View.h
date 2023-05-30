@@ -198,7 +198,7 @@ namespace AZ
             //! Attempt to create a shader resource group.
             void TryCreateShaderResourceGroup();
 
-            //! Update ViewToWorld matrix as well us the view transform
+            //! Update ViewToWorld matrix as well as the view transform
             void UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld);
 
             AZ::Name m_name;
