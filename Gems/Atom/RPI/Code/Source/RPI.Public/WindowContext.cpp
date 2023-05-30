@@ -220,8 +220,8 @@ namespace AZ
 
             descriptor.m_window = windowHandle;
             descriptor.m_verticalSyncInterval = syncInterval;
-            descriptor.m_dimensions.m_imageWidth = renderSize.m_height;
-            descriptor.m_dimensions.m_imageHeight = renderSize.m_width;
+            descriptor.m_dimensions.m_imageWidth = renderSize.m_width;
+            descriptor.m_dimensions.m_imageHeight = renderSize.m_height;
             descriptor.m_dimensions.m_imageCount = AZStd::max(RHI::Limits::Device::MinSwapChainImages, RHI::Limits::Device::FrameCountMax);
             descriptor.m_dimensions.m_imageFormat = GetSwapChainFormat(device);
             descriptor.m_scalingMode = m_swapChainScalingMode;

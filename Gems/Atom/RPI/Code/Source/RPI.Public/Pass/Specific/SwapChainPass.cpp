@@ -159,6 +159,11 @@ namespace AZ
             SetupSwapChainAttachment();
 
             ParentPass::BuildInternal();
+
+            if (m_pipeline)
+            {
+                m_pipeline->UpdateViewportScissor();
+            }
         }
 
         void SwapChainPass::CreateChildPassesInternal()
