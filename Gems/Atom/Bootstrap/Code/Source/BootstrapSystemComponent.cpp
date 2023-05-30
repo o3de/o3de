@@ -53,7 +53,7 @@ AZ_CVAR(AZ::CVarFixedString, r_default_openxr_right_pipeline_name, "passes/XRRig
 AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
-AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render solution same as window client area size, 1: render solution use a specified resolution");
+AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 
 namespace AZ
 {
