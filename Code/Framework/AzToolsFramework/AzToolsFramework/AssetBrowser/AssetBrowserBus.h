@@ -341,7 +341,7 @@ namespace AzToolsFramework
             //! Clears the panel if nullptr is passed
             virtual void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) = 0;
 
-            //! Clears the asset browser inspector panel if it has data in it
+            //! Clears the asset browser inspector panel
             virtual void ClearPreview(){};
         };
         using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;

@@ -10,9 +10,9 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/containers/set.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <QFormLayout>
 #include <QLabel>
@@ -41,23 +41,34 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
             void ClearPreview() override;
-
-            void PopulateSourceDependencies(const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);
-            bool PopulateProductDependencies(const ProductAssetBrowserEntry* productEntry);
-            void CreateSourceDependencyTree(AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing);
-            void CreateProductDependencyTree(AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing);
-            void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
         private:
+            // Query the direct and reverse source dependencies of a source asset browser entry
+            void PopulateSourceDependencies(
+                const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);
+            // Query the direct and reverse product depdencies of a product asset browser entry
+            bool PopulateProductDependencies(const ProductAssetBrowserEntry* productEntry);
+            // Create an incoming or outgoing dependecy QTreeWidgetItem for each valid Uuid
+            void CreateSourceDependencyTree(const AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing);
+            // Create an incoming or outgoing dependency QTreeWidgetItem for each valid AssetId
+            void CreateProductDependencyTree(const AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing);
+            // Adds the name and icon of an asset browser entry under a QTreeWidgetItem
+            void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
+
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
-            bool m_dbReady = false;
-            QLabel* m_previewImage = nullptr;
+            bool m_databaseReady = false;
+
             QStackedLayout* m_layoutSwitcher = nullptr;
             QWidget* m_emptyLayoutWidget = nullptr;
             QWidget* m_populatedLayoutWidget = nullptr;
-            QFormLayout* m_assetDetailLayout = nullptr;
+
+            QLabel* m_previewImage = nullptr;
+
             QWidget* m_assetDetailWidget = nullptr;
-            QTreeWidget* m_dependentProducts = nullptr;
+            QFormLayout* m_assetDetailLayout = nullptr;
+
             AzQtComponents::Card* m_dependentAssetsCard = nullptr;
+            QTreeWidget* m_dependentProducts = nullptr;
+
             QFont m_headerFont;
         };
 

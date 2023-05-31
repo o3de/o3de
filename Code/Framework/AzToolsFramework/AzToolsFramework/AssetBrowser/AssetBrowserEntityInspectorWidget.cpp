@@ -37,7 +37,7 @@ namespace AzToolsFramework
             m_populatedLayoutWidget = new QWidget(this);
             auto populatedLayout = new QVBoxLayout(m_populatedLayoutWidget);
 
-             // Create the layout for the asset icon preview
+            // Create the layout for the asset icon preview
             auto iconLayout = new QVBoxLayout(m_populatedLayoutWidget);
             iconLayout->setSizeConstraint(QLayout::SetFixedSize);
             m_previewImage = new QLabel(m_populatedLayoutWidget);
@@ -130,14 +130,14 @@ namespace AzToolsFramework
             if (!databaseLocation.empty())
             {
                 m_databaseConnection->OpenDatabase();
-                m_dbReady = true;
+                m_databaseReady = true;
             }
 
         }
 
         void AssetBrowserEntityInspectorWidget::PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry)
         {
-            if (selectedEntry == nullptr || !m_dbReady)
+            if (selectedEntry == nullptr || !m_databaseReady)
             {
                 ClearPreview();
                 return;
@@ -390,7 +390,7 @@ namespace AzToolsFramework
             return (!outgoingDependencyIds.empty() || !incomingDependencyIds.empty());
         }
 
-        void AssetBrowserEntityInspectorWidget::CreateSourceDependencyTree(AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing)
+        void AssetBrowserEntityInspectorWidget::CreateSourceDependencyTree(const AZStd::set<AZ::Uuid> sourceUuids, bool isOutgoing)
         {
             if (!sourceUuids.empty())
             {
@@ -417,7 +417,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserEntityInspectorWidget::CreateProductDependencyTree(AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing)
+        void AssetBrowserEntityInspectorWidget::CreateProductDependencyTree(const AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing)
         {
             if (!dependencyUuids.empty())
             {
