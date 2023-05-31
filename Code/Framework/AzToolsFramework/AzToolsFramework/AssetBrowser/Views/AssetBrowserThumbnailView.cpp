@@ -159,18 +159,12 @@ namespace AzToolsFramework
             layout->addWidget(m_thumbnailViewWidget);
             setLayout(layout);
 
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-            }
+            AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
 
         AssetBrowserThumbnailView::~AssetBrowserThumbnailView()
         {
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-            }
+            RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
 
         AzQtComponents::AssetFolderThumbnailView* AssetBrowserThumbnailView::GetThumbnailViewWidget() const

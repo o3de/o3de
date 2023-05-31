@@ -96,12 +96,9 @@ namespace AzToolsFramework
 
     void OnVertexSelectionCountChanged()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
-            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
-        }
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
+        actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
     }
 
     void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()

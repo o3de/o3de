@@ -145,7 +145,6 @@ namespace AzToolsFramework
         : public ViewportInteraction::ViewportSelectionRequests
         , public ActionManagerRegistrationNotificationBus::Handler
         , public EditorContextMenuBus::Handler
-        , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
@@ -218,10 +217,6 @@ namespace AzToolsFramework
         void InitializeManipulators(Manipulators& manipulators);
 
         void SetupBoxSelect();
-
-        // Legacy ActionManager
-        void RegisterActions();
-        void UnregisterActions();
 
         // ActionManagerRegistrationNotificationBus overrides ...
         void OnActionUpdaterRegistrationHook() override;

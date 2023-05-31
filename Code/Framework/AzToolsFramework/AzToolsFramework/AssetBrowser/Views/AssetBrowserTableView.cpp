@@ -112,10 +112,7 @@ namespace AzToolsFramework
                      AfterRename(name);
                  });
 
-              if (AzToolsFramework::IsNewActionManagerEnabled())
-              {
-                AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-              }
+              AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
 
               QAction* deleteAction = new QAction("Delete Action", this);
               deleteAction->setShortcut(QKeySequence::Delete);
@@ -180,10 +177,7 @@ namespace AzToolsFramework
 
         AssetBrowserTableView::~AssetBrowserTableView()
         {
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-            }
+            RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
 
         AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetExpandedTableViewWidget() const
