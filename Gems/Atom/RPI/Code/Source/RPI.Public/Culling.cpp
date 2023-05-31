@@ -52,8 +52,8 @@ namespace AZ
         // Node work lists using node count
         AZ_CVAR(uint32_t, r_numNodesPerCullingJob, 25, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of nodes to collect for jobs when not using the entry count");
 
-        //This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls. Default is set to 20 units as a reasonable value.
-        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, 20, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
+        //This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls. Default is set to 20 mters as a reasonable value.
+        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, 20, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount of meters to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
 
 
 #ifdef AZ_CULL_DEBUG_ENABLED
