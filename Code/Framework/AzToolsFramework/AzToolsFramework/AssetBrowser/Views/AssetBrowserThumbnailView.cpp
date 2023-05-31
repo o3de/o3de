@@ -60,6 +60,13 @@ namespace AzToolsFramework
 
             connect(
                 m_thumbnailViewWidget,
+                &AzQtComponents::AssetFolderThumbnailView::deselected, this, []
+                {
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
+                });
+
+            connect(
+                m_thumbnailViewWidget,
                 &AzQtComponents::AssetFolderThumbnailView::doubleClicked,
                 this,
                 [this](const QModelIndex& index)
