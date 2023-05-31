@@ -351,10 +351,6 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    ActionManager.cpp
-    ActionManager.h
-    ShortcutDispatcher.cpp
-    ShortcutDispatcher.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
@@ -391,11 +387,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    ToolbarCustomizationDialog.ui
-    ToolbarCustomizationDialog.cpp
-    ToolbarCustomizationDialog.h
-    ToolbarManager.h
-    ToolbarManager.cpp
     ToolsConfigPage.cpp
     ToolsConfigPage.h
     ToolsConfigPage.ui
@@ -447,11 +438,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    CustomizeKeyboardDialog.h
-    CustomizeKeyboardDialog.cpp
-    CustomizeKeyboardDialog.ui
-    KeyboardCustomizationSettings.h
-    KeyboardCustomizationSettings.cpp
     Settings.cpp
     SettingsManager.cpp
     SettingsManagerDialog.cpp
