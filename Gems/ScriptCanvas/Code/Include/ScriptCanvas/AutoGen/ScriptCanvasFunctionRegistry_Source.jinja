@@ -124,6 +124,10 @@ namespace ScriptCanvas
 {% if hasbranch|booleanTrue == true %}
                     ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, branchResultInfo)
 {% endif %}
+{% set useCompactStyle = macros.CleanName(function.attrib['UseCompactStyle']) %}
+{% if useCompactStyle is defined and useCompactStyle.lower() == "true" %}
+                    ->Attribute(AZ::ScriptCanvasAttributes::UseCompactStyle, true)
+{% endif %}
                 ;
             }
 {% endfor -%}

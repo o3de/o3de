@@ -85,6 +85,12 @@
                                             <xs:documentation>Options: True/False. Default is False.</xs:documentation>
                                         </xs:annotation>
                                     </xs:attribute>
+                                    <xs:attribute name="UseCompactStyle" type="NonEmptyString" use="optional">
+                                        <xs:annotation>
+                                            <xs:documentation>The tag to indicate whether the generated node should use a compact style.</xs:documentation>
+                                            <xs:documentation>Options: True/False. Default is False.</xs:documentation>
+                                        </xs:annotation>
+                                    </xs:attribute>
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>

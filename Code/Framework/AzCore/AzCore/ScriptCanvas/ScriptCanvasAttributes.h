@@ -68,6 +68,8 @@ namespace AZ
 
         static const AZ::Crc32 BranchOnResult = AZ_CRC("BranchOnResult", 0x7a741f05);
 
+        static const AZ::Crc32 UseCompactStyle = AZ_CRC_CE("UseCompactStyle");
+
         ///< \see enum class Script::Attributes::OperatorType
         static const AZ::Crc32 OperatorOverride = AZ_CRC("OperatorOverride", 0x6b0e3ffb);
 
