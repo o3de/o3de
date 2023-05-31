@@ -10,6 +10,7 @@
 #include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/IMultiplayerSpawner.h>
+#include <Multiplayer/NetworkSpawnableScriptAssetRef.h>
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
@@ -126,6 +127,8 @@ namespace Multiplayer
     void MultiplayerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         NetworkSpawnable::Reflect(context);
+        NetworkSpawnableScriptAssetRef::Reflect(context);
+
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerSystemComponent, AZ::Component>()

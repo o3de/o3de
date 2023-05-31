@@ -17,7 +17,7 @@
 namespace AzFramework::Scripts
 {
     //! A wrapper around Spawnable asset that can be used by Script Canvas and Lua
-    class SpawnableScriptAssetRef final
+    class SpawnableScriptAssetRef
         : private AZ::Data::AssetBus::Handler
     {
     public:
@@ -34,6 +34,16 @@ namespace AzFramework::Scripts
 
         void SetAsset(const AZ::Data::Asset<Spawnable>& asset);
         AZ::Data::Asset<Spawnable> GetAsset() const;
+
+    protected:
+        // Prefabs can generate multiple .spawnable products. This class will by default use the first .spawnable generated
+        // from each prefab. If other subsystems (such as networking) generate more types of .spawnables and want to make them
+        // individually selectable, the asset filter controls are exposed here so that subclasses can change how the assets are
+        // displayed and filtered.
+        virtual bool ShowProductAssetFileName() const;
+        virtual bool HideProductAssetFiles() const;
+        virtual const char* GetAssetPickerTitle() const;
+        virtual AZ::Outcome<void, AZStd::string> ValidatePotentialSpawnableAsset(void* newValue, const AZ::Uuid& valueType) const;
 
     private:
         class SerializationEvents : public AZ::SerializeContext::IEventHandler

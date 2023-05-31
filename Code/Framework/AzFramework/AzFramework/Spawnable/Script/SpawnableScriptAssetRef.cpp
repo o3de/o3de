@@ -38,10 +38,12 @@ namespace AzFramework::Scripts
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     // m_asset
                     ->DataElement(AZ::Edit::UIHandlers::Default, &SpawnableScriptAssetRef::m_asset, "asset", "")
-                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, false)
-                    ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, true)
-                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Spawnable Asset")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SpawnableScriptAssetRef::OnSpawnAssetChanged);
+                    ->Attribute(AZ::Edit::Attributes::ShowProductAssetFileName, &SpawnableScriptAssetRef::ShowProductAssetFileName)
+                    ->Attribute(AZ::Edit::Attributes::HideProductFilesInAssetPicker, &SpawnableScriptAssetRef::HideProductAssetFiles)
+                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, &SpawnableScriptAssetRef::GetAssetPickerTitle)
+                    ->Attribute(AZ::Edit::Attributes::ChangeValidate, &SpawnableScriptAssetRef::ValidatePotentialSpawnableAsset)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &SpawnableScriptAssetRef::OnSpawnAssetChanged)
+                    ;
             }
         }
 
@@ -57,6 +59,33 @@ namespace AzFramework::Scripts
                 ->Method("SetAsset", &SpawnableScriptAssetRef::SetAsset);
         }
     }
+
+    bool SpawnableScriptAssetRef::ShowProductAssetFileName() const
+    {
+        // Show the source file name in the component, not the product file name.
+        return false;
+    }
+
+    bool SpawnableScriptAssetRef::HideProductAssetFiles() const
+    {
+        // Hide all the .spawnable outputs, and only show the source .prefab files.
+        return true;
+    }
+
+    const char* SpawnableScriptAssetRef::GetAssetPickerTitle() const
+    {
+        // Call the dialog box "Pick Spawnable Asset"
+        return "Spawnable Asset";
+    }
+
+    AZ::Outcome<void, AZStd::string> SpawnableScriptAssetRef::ValidatePotentialSpawnableAsset(
+        [[maybe_unused]] void* newValue, [[maybe_unused]] const AZ::Uuid& valueType) const
+    {
+        // By default, any prefab we select should be a valid choice.
+        // Subclasses can choose to get more selective.
+        return AZ::Success();
+    }
+
 
     SpawnableScriptAssetRef::~SpawnableScriptAssetRef()
     {
