@@ -41,7 +41,7 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
 
         class PrefabIntegrationManager final
-            , public PrefabInstanceContainerNotificationBus::Handler
+            : public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
             , private PrefabFocusNotificationBus::Handler
             , private PrefabPublicNotificationBus::Handler

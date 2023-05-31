@@ -940,11 +940,6 @@ namespace AzToolsFramework
                 PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.entitySorting.moveDown");
         }
 
-        void PrefabIntegrationManager::OnEscape()
-        {
-            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
-        }
-
         void PrefabIntegrationManager::OnStartPlayInEditorBegin()
         {
             // Focus on the root prefab (AZ::EntityId() will default to it)

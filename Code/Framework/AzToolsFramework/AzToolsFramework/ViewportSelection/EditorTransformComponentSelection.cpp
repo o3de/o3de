@@ -2180,11 +2180,6 @@ namespace AzToolsFramework
         EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBusCrc, actionId, actions.back().get());
     }
 
-    void EditorTransformComponentSelection::OnEscape()
-    {
-        DeselectEntities();
-    }
-
     // helper to enumerate all scene/level entities (will filter out system entities)
     template<typename Func>
     static void EnumerateEditorEntities(const Func& func)
@@ -3114,16 +3109,6 @@ namespace AzToolsFramework
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.delete", 40200);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.togglePivot", 60200);
-    }
-
-    void EditorTransformComponentSelection::UnregisterActions()
-    {
-        for (auto& action : m_actions)
-        {
-            EditorActionRequestBus::Broadcast(&EditorActionRequests::RemoveActionViaBus, action.get());
-        }
-
-        m_actions.clear();
     }
 
     void EditorTransformComponentSelection::UnregisterManipulator()

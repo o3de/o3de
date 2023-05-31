@@ -267,9 +267,6 @@ namespace AzToolsFramework
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
 
-        // EditorEventsBus overrides ...
-        void OnEscape() override;
-
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
         void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override;
