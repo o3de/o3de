@@ -905,6 +905,14 @@ namespace AZ
                     encoded_rate_w = 2;
                     encoded_rate_h = 1;
                     break;
+                case RHI::ShadingRate::Rate4x1:
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 0;
+                    break;
+                case RHI::ShadingRate::Rate1x4:
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 2;
+                    break;
                 case RHI::ShadingRate::Rate4x4:
                     encoded_rate_w = encoded_rate_h = 2;
                     break;
@@ -944,6 +952,14 @@ namespace AZ
                 case RHI::ShadingRate::Rate4x2:
                     encoded_rate_w = 2;
                     encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate1x4:
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 2;
+                    break;
+                case RHI::ShadingRate::Rate4x1:
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 0;
                     break;
                 case RHI::ShadingRate::Rate4x4:
                     encoded_rate_w = encoded_rate_h = 2;
