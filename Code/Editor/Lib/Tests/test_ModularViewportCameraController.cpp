@@ -153,6 +153,8 @@ namespace UnitTest
             // note: WindowRequests is used internally by ModularViewportCameraController, this ensures it returns the viewport size we want
             ON_CALL(m_mockWindowRequests, GetClientAreaSize())
                 .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+            ON_CALL(m_mockWindowRequests, GetRenderResolution())
+                .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
 
             m_mockViewportInteractionRequests.Connect(TestViewportId);
 

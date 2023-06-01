@@ -123,7 +123,7 @@ namespace AzFramework
         m_pimpl->SetEnableCustomizedResolution(enable);
     }
 
-    bool NativeWindow::IsCustomizedResolutionEnabled()
+    bool NativeWindow::IsCustomizedResolutionEnabled() const
     {
         return m_pimpl->IsCustomizedResolutionEnabled();
     }
@@ -331,7 +331,7 @@ namespace AzFramework
         }
     }
 
-    bool NativeWindow::Implementation::IsCustomizedResolutionEnabled()
+    bool NativeWindow::Implementation::IsCustomizedResolutionEnabled() const
     {
         return m_enableCustomizedResolution;
     }

@@ -455,7 +455,7 @@ namespace AtomToolsFramework
         // The RenderViewportWidget does not currently support customized render resolution.
     }
 
-    bool RenderViewportWidget::IsCustomizedResolutionEnabled()
+    bool RenderViewportWidget::IsCustomizedResolutionEnabled() const
     {
         return false;
     }

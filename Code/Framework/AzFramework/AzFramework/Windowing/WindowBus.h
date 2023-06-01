@@ -95,7 +95,7 @@ namespace AzFramework
         virtual void SetEnableCustomizedResolution(bool enable) = 0;
         
         //! If the custom render resolution is enabled.
-        virtual bool IsCustomizedResolutionEnabled() = 0;
+        virtual bool IsCustomizedResolutionEnabled() const = 0;
 
         //! Get the render resolution.
         //! If customized resolution is not enabled, it would return client area size

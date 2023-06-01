@@ -129,7 +129,7 @@ namespace AzFramework
         void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override;
         void SetEnableCustomizedResolution(bool enable) override;
-        bool IsCustomizedResolutionEnabled() override;
+        bool IsCustomizedResolutionEnabled() const override;
         WindowSize GetRenderResolution() const override;
         void SetRenderResolution(WindowSize resolution) override;
         bool GetFullScreenState() const override;
@@ -184,7 +184,7 @@ namespace AzFramework
             virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options);
             virtual bool SupportsClientAreaResize() const;
             virtual void SetEnableCustomizedResolution(bool enable);
-            virtual bool IsCustomizedResolutionEnabled();
+            virtual bool IsCustomizedResolutionEnabled() const;
             virtual WindowSize GetRenderResolution() const;
             virtual void SetRenderResolution(WindowSize resolution);
             virtual bool GetFullScreenState() const;

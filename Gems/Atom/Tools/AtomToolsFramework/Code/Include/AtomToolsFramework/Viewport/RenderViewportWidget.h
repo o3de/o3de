@@ -118,7 +118,7 @@ namespace AtomToolsFramework
         bool CanToggleFullScreenState() const override;
         void ToggleFullScreenState() override;
         void SetEnableCustomizedResolution(bool enable) override;
-        bool IsCustomizedResolutionEnabled() override;
+        bool IsCustomizedResolutionEnabled() const override;
         AzFramework::WindowSize GetRenderResolution() const override;
         void SetRenderResolution(AzFramework::WindowSize resolution) override;
         float GetDpiScaleFactor() const override;
