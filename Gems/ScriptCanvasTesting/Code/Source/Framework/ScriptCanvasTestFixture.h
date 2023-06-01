@@ -104,16 +104,16 @@ namespace ScriptCanvasTests
             auto m_serializeContext = s_application->GetSerializeContext();
             auto m_behaviorContext = s_application->GetBehaviorContext();
 
-            ScriptCanvasTesting::Reflect(m_serializeContext);
-            ScriptCanvasTesting::Reflect(m_behaviorContext);
-
-            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
-            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
-
-            TestNodeableObject::Reflect(m_serializeContext);
-            TestNodeableObject::Reflect(m_behaviorContext);
-            ScriptUnitTestEventHandler::Reflect(m_serializeContext);
-            ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+            for (AZ::ReflectContext* context :
+                {static_cast<AZ::ReflectContext*>(m_serializeContext), static_cast<AZ::ReflectContext*>(m_behaviorContext)})
+            {
+                ScriptCanvasTesting::Reflect(context);
+                ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+                TestNodeableObject::Reflect(context);
+                TestBaseClass::Reflect(context);
+                TestSubClass::Reflect(context);
+                ScriptUnitTestEventHandler::Reflect(context);
+            }
         }
 
         static void TearDownTestCase()
@@ -161,6 +161,9 @@ namespace ScriptCanvasTests
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());
 
             m_dataSlotConfigurationType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<ScriptCanvas::DataSlotConfiguration>());
+
+            m_baseClassType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<TestBaseClass>());
+            m_subClassType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<TestSubClass>());
         }
 
         void TearDown() override
@@ -392,6 +395,9 @@ namespace ScriptCanvasTests
         ScriptCanvas::Data::Type m_stringToNumberMapType;
 
         ScriptCanvas::Data::Type m_dataSlotConfigurationType;
+
+        ScriptCanvas::Data::Type m_baseClassType;
+        ScriptCanvas::Data::Type m_subClassType;
 
         ScriptCanvas::Graph* m_graph = nullptr;
 
