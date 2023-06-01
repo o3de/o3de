@@ -14,6 +14,7 @@
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/limits.h>
+#include <AzCore/std/utility/expected.h>
 
 #include <Compression/CompressionInterfaceStructs.h>
 
@@ -26,16 +27,24 @@ namespace Archive
         constexpr AZ::u64 operator"" _gib(AZ::u64 value);
     }
 
+    // tag index that indicates the archived content being examined is uncompressed
+    // It is set to the maximum value that can be stored in 3-bits = 7
+    constexpr AZ::u8 UncompressedAlgorithmIndex = 0b111;
+
+    // index which is returned when the compression algorithm Id is not registered
+    // with the Archive header
+    constexpr size_t InvalidAlgorithmIndex = AZStd::numeric_limits<size_t>::max();
+
     //! Represents the default block size for the Archive format
-    //! It will be 2 MiB until their is data that proves
-    //! that a different block size is ideal
-    constexpr AZ::u64 ArchiveDefaultBlockSize = 2  * (1 << 20);
+    //! It will be 2 MiB until more data is available that proves
+    //! that a different block size is more ideal
+    constexpr AZ::u64 ArchiveBlockSize = 2 * (1 << 20);
     //! The alignment of blocks within an archive file
     //! It defaults to 512 bytes
     constexpr AZ::u64 ArchiveDefaultBlockAlignment = 512;
 
-    //! Sentinel which indicates the last entry in the deleted File Path Index list
-    constexpr AZ::u32 DeletedPathIndexSentinel = AZStd::numeric_limits<AZ::u32>::max();
+    static_assert((ArchiveBlockSize % ArchiveDefaultBlockAlignment) == 0, "ArchiveBlockSize"
+        " should be aligned to ArchiveDefaultBlockAlignment");
 
     //! Sentinel which indicates the value written to the last block to indicate
     //! there are no further deleted blocks afterwards
@@ -43,9 +52,16 @@ namespace Archive
 
     //! Fixed size Header struct for the Archive format
     //! This suitable for directly reading the archive header into
-    struct ArchiveHeaderSection
+    struct ArchiveHeader
     {
-        ArchiveHeaderSection();
+        ArchiveHeader();
+
+        //! Retrieves the Uncompressed Table of Contents(TOC) size
+        //! by adding up the size of the TOC File Metadata table
+        //! + TOC File Path Index table
+        //! + TOC File Path Blob table
+        //! + TOC Block Offset table
+        AZ::u64 GetUncompressedTocSize() const;
 
         //! O3DE only runs on little endian machines
         //! Therefore the bytes are added in little endian order
@@ -69,13 +85,40 @@ namespace Archive
         //! offset = 12
         AZ::u32 m_fileCount{};
 
+        //! Wraps table of contents member
+        //! to constrain the values of the table of contents offset
+        //! The table of contents offset cannot be < 512
+        //! as the archive header is reserved to the first 512 bytes of the archive file
+        struct TocOffsetU64
+        {
+            //! default constructs the TocOffset with an offset
+            //! equal to ArchiveDefaultBlockAlignment(or 512)
+            TocOffsetU64();
+
+            //! Implicit conversion constructor to store AZ::u64
+            TocOffsetU64(AZ::u64 offset);
+
+            //! assignment to store AZ::u64
+            TocOffsetU64& operator=(AZ::u64 offset);
+
+            //! implicit u64 operator that allows
+            //! assignment of the TOC offset to a 64-bite int
+            operator AZ::u64() const;
+        private:
+            AZ::u64 m_value{ ArchiveDefaultBlockAlignment };
+        };
+
         //! The 64-bit offset from the start of the Archive File to the Table of Contents
+        //! The table of contents offset also doubles as the offset to write new blocks of content
+        //! that does not exist in any deleted blocks
         //! offset = 16
-        AZ::u64 m_tocOffset{};
+        TocOffsetU64 m_tocOffset{};
 
         //! Compressed Size of the Table of Contents
         //! Max size is 512MiB or 2^29 bytes
-        //! The TOC offset + TOC offset is equal to total size of the Archive file
+        //! The TOC offset + TOC compressed size is equal to total size of the Archive file
+        //! If the Compression Algorithm is set to Uncompressed
+        //! Then this represents the uncompressed TOC size
         //! offset = 24
         AZ::u32 m_tocCompressedSize : 29;
         //! Compression algorithm used for the Table of Contents
@@ -83,7 +126,7 @@ namespace Archive
         //! Other values count as a offset in the Compression Algorithm ID table
         AZ::u32 m_tocCompressionAlgoIndex : 3;
 
-        //! Uncompressed size of the Table of Contents File Metadata section.
+        //! Uncompressed size of the Table of Contents File Metadata table.
         //! offset = 28
         AZ::u32 m_tocFileMetadataTableUncompressedSize{};
         //! Uncompressed size of the Table of Contents File Path index
@@ -91,17 +134,17 @@ namespace Archive
         //! within the archive
         //! offset = 32
         AZ::u32 m_tocPathIndexTableUncompressedSize{};
-        //! Uncompressed size of the Table of Contents File Path section
+        //! Uncompressed size of the Table of Contents File Path table
         //! It contains a blob of FilePaths without any null-termination
         //! The File Path Index entries are used to look up a file path
         //! through using the path offset + size entry
         //! offset = 36
-        AZ::u32 m_tocPathTableUncompressedSize{};
-        //! Uncompressed size of the Table of Contents File Block section
+        AZ::u32 m_tocPathBlobUncompressedSize{};
+        //! Uncompressed size of the Table of Contents File Block offset table
         //! Contains compressed sizes of individual blocks of a file
         //! In Archive V1 layout the block size is 2MiB
         //! offset = 40
-        AZ::u32 m_tocBlockTableSize{};
+        AZ::u32 m_tocBlockOffsetTableUncompressedSize{};
 
         //! Threshold value represents the cap on the size a block after it has been
         //! sent through the compression step to determine if it should be stored compressed
@@ -110,22 +153,30 @@ namespace Archive
         //! after compression will be stored uncompressed.
         //! So the maximum limit of this value is the Block Size
         //! offset = 44
-        AZ::u32 m_compressionThreshold{ static_cast<AZ::u32>(ArchiveDefaultBlockSize) };
+        AZ::u32 m_compressionThreshold{ static_cast<AZ::u32>(ArchiveBlockSize) };
 
         //! Stores 32-bit IDS of up to 7 compression algorithms that this archive can use
+        //! Each entry is initialized to the Invalid CompressionAlgorithmId
         //! offset = 48
-        AZStd::array<Compression::CompressionAlgorithmId, 7> m_compressionAlgorithmsIds;
+        AZStd::array<Compression::CompressionAlgorithmId, 7> m_compressionAlgorithmsIds =
+            []() constexpr
+        {
+            AZStd::array<Compression::CompressionAlgorithmId, 7> compressionIdInitArray{};
+            compressionIdInitArray.fill(Compression::Invalid);
+            return compressionIdInitArray;
+        }();
 
-        //! Offset from the beginning of the File Path index table
-        //! Where the first deleted block is located
+        //! Padding bytes added to ArchiveHeader
+        //! to ensure byte offsets 76-79 contains bytes with a value '\0'
+        //! This allows equivalent ArchiveHeader to be memcmp
         //! offset = 76
-        AZ::u32 m_firstDeletedFileIndex{ DeletedPathIndexSentinel };
+        const AZ::u32 m_padding{};
 
         //! Offset from the beginning of the file block section to the first
         //! deleted block.
         //! The first 8 bytes of each deleted block will contain the offset to the next deleted block
         //! or 0xffff'ffff'ffff'ffff if this is the last deleted block
-        //! offset = 80
+        //! offset = 80 (aligned on 8 byte boundary)
         AZ::u64 m_firstDeletedBlockOffset{ DeletedBlockOffsetSentinel };
 
         //! total offset = 88
@@ -135,36 +186,56 @@ namespace Archive
         //! but is limited to 2^25 because around 640MiB of uncompressed data will need to be loaded into memory for an archive of containing ~33million files,
         //! and memory requirements would increase if the not limited.
         //! offset = 12
-        static constexpr AZ::u32 MaxFileCount{(1 << 25) - 1 };
+        static constexpr AZ::u32 MaxFileCount{ (1 << 25) - 1 };
     };
 
-    static_assert(sizeof(ArchiveHeaderSection) <= ArchiveDefaultBlockAlignment, "Archive Header section should be less than 512 bytes");
+    static_assert(sizeof(ArchiveHeader) == 88, "Archive Header section should be less than 88 bytes per spec version 1");
+    static_assert(sizeof(ArchiveHeader) <= ArchiveDefaultBlockAlignment, "Archive Header section should be less than 512 bytes");
+
+    //! File offset representing the beginning of the file
+    //! It starts is at offset 512 within the archive file stream
+    //! This is because the Archive header is aligned to 512 bytes
+    constexpr AZ::u64 ContentDataOffsetStart = AZ_SIZE_ALIGN_UP(sizeof(ArchiveHeader), ArchiveDefaultBlockAlignment);
+    static_assert(ContentDataOffsetStart == ArchiveDefaultBlockAlignment, "Offset where file content data in the archive should match"
+        " the ArchiveDefaultBlockAlignment");
 
     //! Represents an entry of a single file within the Archive
-    struct ArchiveFileMetadataSection
+    struct ArchiveTocFileMetadata
     {
-        ArchiveFileMetadataSection();
+        ArchiveTocFileMetadata();
 
         //! represents the file after it has been uncompressed on disk
         //! Can represent a file up to 2^35 = 32GiB
         AZ::u64 m_uncompressedSize : 35; // 35-bits
-        //! compressed files are stored aligned on 512-byte sectors
+        //! Stores compressed blocks that stored aligned on 512-byte sectors
         //! Therefore this can represent bytes sizes up to 35-bits as well
         //! while the value actually being stored is a 512-byte sector size
         //! 2^26 sectors * 512 bytes = 2^26 * 2^9 = 2^35 bytes
+        //! Each 2 MiB chunk of a file compressed sectors are aggregated in this member
+        //! For example if a 4 MiB file was compressed and the 2 "2 MiB" block compressed down
+        //! to 513 and 511 bytes each,
+        //! then compressed size in 512-byte sectors would be 3 due to rounding up each block to the nearest 512 byte boundary
+        //!   AlignUpToMultiple512(513) / 512 = 2
+        //! + AlignUptoMultiple512(511) / 512 = 1
+        //! --------------------------------------
+        //!                                     3
         AZ::u64 m_compressedSizeInSectors : 26; // 61-bits
         //! Stores an index into Compression ID table to indicate
         //! the compression algorithm the file uses or UncompressedAlgorithmIndex
         //! if the value is set to UncompressedAlgorithmIndex,
-        //! the block Table Index is not used
+        //! the block table index is not used
         AZ::u64 m_compressionAlgoIndex : 3; // 64-bits
 
-        //! Index for the first block which contains compressed data for this file
-        //! As it is 25 bits, up to 2^25 ~ 33.55 Million blocks can be referenced
+        //! Index of the first block which line contains compressed data for this file
+        //! Up to 2^25 ~ 33.55 million block lines can be referenced
+        //! Each block line can represent up to 3 "2 MiB" blocks of content data that has been compressed
+        //! Therefore a total of (2^25 * 3) ~ 100.66 million blocks can be stored
+        //!
+        //! NOTE: This is only used if the file is stored compressed
         //! If the compressionAlgorithm index is UncompressedAlgorithmIndex
-        //! then the file is uncompressed in m_offset in a contiguous block
-        //! that is 512 byte aligned
-        AZ::u64 m_blockTableIndex : 25; // 25-bits
+        //! then the file is stored uncompressed and the `m_offset` member represents
+        //! a contiguous block that is 512 byte aligned
+        AZ::u64 m_blockLineTableFirstIndex : 25; // 25-bits
         //! Offset within the archive where the file actually starts
         //! Due to files within the archive being aligned on 512-byte boundaries
         //! This can represent a offset of up to (39 + 9) bits or 2^48 = 256TiB
@@ -173,23 +244,54 @@ namespace Archive
         AZ::u64 m_offset : 39; // 64-bits
     };
 
-    //! Views an entry of a single File Path Index when the File Path Table of the Archive TOC
-    struct ArchiveFilePathIndexSection
-    {
-        ArchiveFilePathIndexSection();
+    static_assert(sizeof(ArchiveTocFileMetadata) == 16, "File Metadata size should be 16 bytes");
 
-        //! Deleted flag to indicates if the file has been deleted from the archive
-        bool m_deleted{};
-        //! Because the previous entry was a bool there is 1 byte of padding here before the size
+    //! Views an entry of a single File Path Index when the File Path Table of the Archive TOC
+    struct ArchiveTocFilePathIndex
+    {
+        ArchiveTocFilePathIndex();
 
         //! Size of the number of bytes until the end of the File Path entry
-        //! Cap is 16-bits to allow relative paths with sizes up to 2^16
-        AZ::u16 m_size{};
+        //! Cap is 15-bits to allow relative paths with sizes up to 2^15
+        AZ::u64 m_size : 15;
+
+        //! Unused bit to pad to 16-bytes
+        AZ::u64 m_unused : 1;
 
         //! Offset from the beginning of the File Path Table to the start of Archive File Path
-        AZ::u32 m_offset{};
+        AZ::u64 m_offset : 40;
     };
 
+    static_assert(sizeof(ArchiveTocFilePathIndex) == 8, "File Path Index entry should be 8 bytes");
+
+    //! There are 3 blocks per block line as 3 "2 MiB" chunks can be encoded in a 64-bit integer
+    //! This is done by storing the compressed block size using 21-bits
+    constexpr AZ::u64 BlocksPerBlockLine = 3;
+    //! Maximum block line size is 3 blocks * 2 MiB = 6 MiB
+    constexpr AZ::u64 MaxBlockLineSize = ArchiveBlockSize * BlocksPerBlockLine;
+    //! When the remaining size of a file is above 18 MiB, a jump offset is used to the block line
+    //! to indicate where the next block starts
+    constexpr AZ::u64 MaxRemainingFileSizeNoJumpEntry = MaxBlockLineSize * 3;
+    //! The compressed size of 8 "2 MiB" blocks are stored by the next 3 blocks including the current block
+    //! if the remaining uncompressed size of a file is >= 18 MiB
+    //! Since 16-bits are used to store the jump entry, the first block in the current block
+    //! line is unavailable and 16 MiB of uncompressed sizes can be skipped
+    constexpr AZ::u64 FileSizeToSkipWithJumpEntry = MaxRemainingFileSizeNoJumpEntry - ArchiveBlockSize;
+    //! Represents the maximum uncompressed size in bytes of the minimum amount of block lines(4)
+    //! that is required for a file with a jump entry
+    //! A file that is > 18 MiB requires a jump entry in the first block offset entry of the first block line
+    //! The 3 block lines in total from that beginning of the block offset table entry for the file
+    //! contains
+    //! 1 jump entry(16-bits)
+    //! + compressed size values for first 2 2 MiB blocks of the file(21-bits) = 58 bits which can be encoded in AZ::u64
+    //! + compressed size values for next 3 2 MiB blocks of the file(21-bits) = 63 bits which can be encoded in another AZ::u64
+    //! + compressed size values for following 3 2 MiB blocks of the file(21-bits) = 63 bits which can be encoded in 3rd AZ::u64
+    //! Therefore in 24-bytes, the compressed sizes for 16 MiB of uncompressed data can be stored
+    //! Now the jump entry would point at a block line which can encode another 3 2 MiB blocks
+    //! at minimum(63-bits)
+    //! Therefore in 32-bytes, the first 4 block lines of a file can encode the compressed sizes of the first 11 2 MiB block
+    //!  = the first 22 MiB of the file
+    constexpr AZ::u64 MaxFileSizeForMinBlockLinesWithJumpEntry = FileSizeToSkipWithJumpEntry + MaxBlockLineSize;
 
     //! Block lines are made up of 3 blocks at a time
     //! This is used when a file uncompressed size is < 18 MiB
@@ -231,12 +333,14 @@ namespace Archive
     static_assert(sizeof(ArchiveBlockLine) == sizeof(ArchiveBlockLineJump),
         "The Non-Jump Block Line and Jump Block line must be the same size");
 
+    static_assert(sizeof(ArchiveBlockLine) == 8, "Block Line size should be 8 bytes");
+
 
     //! Union which can store either a block line without a jump entry
     //! or block line with a jump entry
-    union ArchiveBlockLineSection
+    union ArchiveBlockLineUnion
     {
-        ArchiveBlockLineSection();
+        ArchiveBlockLineUnion();
 
         //! A block line containing entries for up to 3 2MiB block
         //! It will be the only type used for files with a total uncompressed size < 18 MiB
@@ -249,29 +353,45 @@ namespace Archive
         ArchiveBlockLineJump m_blockLineWithJump;
     };
 
-    //! Structure storing data from the Table of Contents at the end
-    //! of the archive file
-    struct ArchiveTableOfContents
-    {
-        //! The Archive Header is either uncompressed
-        //! or compressed based on the compression algorithm index
-        //! set within the Archive Header
+    //! Returns the blocks needed for storing a file that would be compressed
+    //! using the file uncompressed size in bytes
+    //! NOTE: If the file is stored uncompressed, then there is no need to call this function
+    //! as the file is written as one contiguous byte sequence of its uncompressed data
+    //! There are 0 blocks in that scenario
+    //!
+    //! The maximum size of a single uncompressed file in an archive is 2^35 (32GiB)
+    //! As the current block size is 2^21 (2MiB) the maximum number of blocks a file can have
+    //! is 2^35 / 2^21 = 2^14 (16KiB) which fits in a 16-bit int
+    //! Now as the block size might be altered in the future
+    //! a 32-bit int is returned
+    constexpr AZ::u32 GetBlockCountIfCompressed(AZ::u64 uncompressedSize);
 
-        //! Pointer to the beginning of the Archive File Metadata Table
-        //! It's length is based on the file count value in the Archive Header Section
-        ArchiveFileMetadataSection* m_fileMetadataTable{};
-        //! Pointer to the beginning of the Archive File Path Index Table
-        //! It's length is based on the file count value in the Archive Header Section
-        ArchiveFilePathIndexSection* m_filePathIndexTable{};
-
-        //! ArchiveFilePathTable is a view into a blob of file paths
-        using ArchiveFilePathTable = AZStd::span<AZ::IO::PathView>;
-        ArchiveFilePathTable m_filePathBlob;
-
-        //! pointer to block offset table which stores the compressed size of all blocks within the archive
-        ArchiveBlockLineSection* m_archiveBlockTable{};
-    };
-
+    //! Returns the block lines needed for storing a file that would be compressed
+    //! using the file uncompressed size in bytes
+    //! NOTE: If the file is stored uncompressed, then there is no need to call this function
+    //! as the file is written as one contiguous byte sequence of its uncompressed data
+    //! There are 0 block lines in that scenario
+    //!
+    //! This does not have linear mapping with block values uncompressed files
+    //! that have more than 18 MiB remaining in memory will have a 16-bit jump entry
+    //! used in place of the first the compressed size entry for a block
+    //! The function to calculate the block line count is actually a piecewise function
+    //! Uncompressed File Size = 0; No block lines are stored
+    //! Block Size = (0, 6] MiB; Uses 1 block line
+    //! Block Size = (6, 12] MiB; Uses 2 block lines
+    //! Block Size = (12, 18] MiB; Uses 3 block lines
+    //! Block Size = (18, 22] MiB; Uses 4 block lines!
+    //!     The first entry of the first block line used for a jump table entry
+    //!     as the file still contains more than 18MiB remaining when the first block line set of 3 is processed
+    //! Block Size = (22, 28] MiB; Uses 5 block lines
+    //! Block Size = (28, 34] MiB; Uses 6 block lines
+    //! Block Size = (34, 38] MiB; Uses 7 block lines!
+    //!     The first entry of the first and fourth block line are used for a jump table entry
+    //!     as the file still contains more than 18MiB remaining when the first 2 block line sets of 3 are processed
+    //! Block Size = (38, 44] MiB; Uses 8 block lines
+    //! Block Size = (44, 50] MiB; Uses 9 block lines
+    //! ...
+    constexpr AZ::u32 GetBlockLineCountIfCompressed(AZ::u64 uncompressedSize);
 } // namespace Archive
 
 // Implementation for any struct functions
