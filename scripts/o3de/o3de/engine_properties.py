@@ -54,7 +54,11 @@ def _edit_gem_names(engine_json: dict,
     # Remove duplicates from list
     engine_json['gem_names'] = utils.remove_gem_duplicates(engine_json.get('gem_names', []))
     # sort the gem name list so that is written to the project.json in order
-    engine_json['gem_names'] = sorted(engine_json['gem_names'])
+    # if the gem_name entry is a dictionary it represents a structure
+    # with a "name" and "optional" key. Use the "name" key for sorting
+    engine_json['gem_names'] = sorted(engine_json['gem_names'],
+                                      key=lambda gem_name: gem_name.get('name') if isinstance(gem_name, dict)
+                                      else gem_name)
 
 
 def edit_engine_props(engine_path: pathlib.Path = None,

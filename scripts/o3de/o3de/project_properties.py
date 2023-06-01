@@ -75,7 +75,9 @@ def _edit_gem_names(proj_json: dict,
     # Remove duplicates from list
     proj_json['gem_names'] = utils.remove_gem_duplicates(proj_json.get('gem_names', []))
     # sort the gem name list so that is written to the project.json in order
-    proj_json['gem_names'] = sorted(proj_json['gem_names'])
+    proj_json['gem_names'] = sorted(proj_json['gem_names'],
+                                    key=lambda gem_name: gem_name.get('name') if isinstance(gem_name, dict)
+                                    else gem_name)
 
 
 def edit_project_props(proj_path: pathlib.Path = None,
