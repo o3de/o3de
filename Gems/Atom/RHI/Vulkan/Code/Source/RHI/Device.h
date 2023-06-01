@@ -155,7 +155,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-
+            RHI::ResultCode InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc) override;
             void ShutdownInternal() override;
             RHI::ResultCode BeginFrameInternal() override;
             void EndFrameInternal() override;

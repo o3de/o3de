@@ -214,5 +214,11 @@ namespace AZ
             ComponentDescriptor::DependencyArrayType& providedServiceArray,
             const Entity* entity);
 
+        //! Converts a vector of components to a map of pairs of component alias and component.
+        //! \param components Component vector to be converted.
+        //! \param[out] componentMapOut Component map that stores a component alias as key and a component as value.
+        void ConvertComponentVectorToMap(
+            const AZ::Entity::ComponentArrayType& components, AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut);
+
     } // namespace EntityUtils
 }   // namespace AZ

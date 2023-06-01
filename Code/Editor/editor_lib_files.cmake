@@ -261,8 +261,6 @@ set(FILES
     Core/EditorActionsHandler.h
     Core/QtEditorApplication.cpp
     Core/QtEditorApplication.h
-    Core/LevelEditorMenuHandler.cpp
-    Core/LevelEditorMenuHandler.h
     Core/Widgets/PrefabEditVisualModeWidget.h
     Core/Widgets/PrefabEditVisualModeWidget.cpp
     Core/Widgets/ViewportSettingsWidgets.h
@@ -353,10 +351,6 @@ set(FILES
     LogFile.cpp
     LogFile.h
     Resource.h
-    ActionManager.cpp
-    ActionManager.h
-    ShortcutDispatcher.cpp
-    ShortcutDispatcher.h
     CheckOutDialog.cpp
     CheckOutDialog.h
     CheckOutDialog.ui
@@ -385,9 +379,6 @@ set(FILES
     LevelFileDialog.qrc
     LevelFileDialog.h
     LevelFileDialog.ui
-    QuickAccessBar.cpp
-    QuickAccessBar.h
-    QuickAccessBar.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
@@ -396,11 +387,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    ToolbarCustomizationDialog.ui
-    ToolbarCustomizationDialog.cpp
-    ToolbarCustomizationDialog.h
-    ToolbarManager.h
-    ToolbarManager.cpp
     ToolsConfigPage.cpp
     ToolsConfigPage.h
     ToolsConfigPage.ui
@@ -452,11 +438,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    CustomizeKeyboardDialog.h
-    CustomizeKeyboardDialog.cpp
-    CustomizeKeyboardDialog.ui
-    KeyboardCustomizationSettings.h
-    KeyboardCustomizationSettings.cpp
     Settings.cpp
     SettingsManager.cpp
     SettingsManagerDialog.cpp
@@ -686,6 +667,5 @@ set(FILES
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
     TrackView/TrackViewPythonFuncs.cpp
-    Core/LevelEditorMenuHandler.cpp
     Util/AffineParts.cpp
 )

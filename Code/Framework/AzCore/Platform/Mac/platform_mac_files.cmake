@@ -36,6 +36,7 @@ set(FILES
     ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.cpp
@@ -64,6 +65,9 @@ set(FILES
     AzCore/Socket/AzSocket_fwd_Platform.h
     AzCore/Socket/AzSocket_Platform.h
     ../Common/Apple/AzCore/std/time_Apple.cpp
+    AzCore/Utils/SystemUtilsApple_Platform.h
+    ../Common/Apple/AzCore/Utils/SystemUtilsApple.h
+    ../Common/Apple/AzCore/Utils/SystemUtilsApple.mm
     AzCore/Utils/Utils_Mac.cpp
     ../Common/Apple/AzCore/Utils/Utils_Apple.cpp
     ../Common/UnixLike/AzCore/Utils/Utils_UnixLike.cpp

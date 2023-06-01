@@ -233,6 +233,31 @@ endif()
     ly_install_run_code("${install_engine_pak_code}")
 endfunction()
 
+#! Updates a generated <project-path>/user/cmake/engine/CMakePresets.json
+# file to include the path to the engine root CMakePresets.json
+# \arg: PROJECT_PATH path to project root.
+#       will used to form the root of the file path to the presets file that includes the engine presets
+# \arg: ENGINE_PATH path to the engine root
+function(update_cmake_presets_for_project)
+    set(options)
+    set(oneValueArgs PROJECT_PATH ENGINE_PATH)
+    set(multiValueArgs)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(project_path "${${CMAKE_CURRENT_FUNCTION}_PROJECT_PATH}")
+    set(engine_path "${${CMAKE_CURRENT_FUNCTION}_ENGINE_PATH}")
+
+    execute_process(COMMAND
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" "update-cmake-presets-for-project" -pp "${project_path}" -ep "${engine_path}"
+        WORKING_DIRECTORY ${LY_ROOT_FOLDER}
+        RESULT_VARIABLE O3DE_CLI_RESULT
+        ERROR_VARIABLE O3DE_CLI_ERROR
+        )
+
+    if(NOT O3DE_CLI_RESULT EQUAL 0)
+        message(STATUS "Unable to update the project \"${project_path}\" CMakePresets to include the engine presets:\n${O3DE_CLI_ERROR}")
+    endif()
+endfunction()
+
 # Add the projects here so the above function is found
 foreach(project ${LY_PROJECTS})
     file(REAL_PATH ${project} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
@@ -260,7 +285,13 @@ foreach(project ${LY_PROJECTS})
     # Append the project external directory to LY_EXTERNAL_SUBDIR_${project_name} property
     add_project_json_external_subdirectories(${full_directory_path} "${project_name}")
 
+    # Use the install(CODE) command to archive the project cache
+    # directory assets for use in a proejct relase layout
     install_project_asset_artifacts(${full_directory_path})
+
+    # Update the <project-path>/user/cmake/engine/CMakePresets.json
+    # to include the current engine CMakePresets.json file
+    update_cmake_presets_for_project(PROJECT_PATH "${full_directory_path}" ENGINE_PATH "${LY_ROOT_FOLDER}")
 
 endforeach()
 

@@ -487,7 +487,7 @@ namespace AZ
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
-                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
                 }
@@ -1017,7 +1017,7 @@ namespace AZ
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
-                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
                 }
@@ -1091,7 +1091,7 @@ namespace AZ
                 const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
-                    if (srgBitset[bindingSlot] && bindingSlot != RHI::ShaderResourceGroupData::BindlessSRGFrequencyId)
+                    if (srgBitset[bindingSlot] && bindingSlot != m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot())
                     {
                         const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
                         AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");

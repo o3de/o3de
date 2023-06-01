@@ -273,8 +273,10 @@ namespace AZ
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
                 uint32_t slotIndex = static_cast<uint32_t>(pipelineLayout->GetIndexBySlot(slot));
  
-                //Check explicitly for Bindless SRG. This needs to be data driven (todo)
-                if (slotIndex == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
+                //Check explicitly for Bindless SRG.
+                if (slot == m_device->GetBindlessArgumentBuffer().GetBindlessSrgBindingSlot() &&
+                    slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax &&
+                    shaderResourceGroup == nullptr)
                 {
                     //Skip if the global static bindless heap is already bound
                     if (m_state.m_bindBindlessHeap)
@@ -424,28 +426,29 @@ namespace AZ
             return true;
         }
 
-        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::ShaderResourceGroupData::BindlessResourceType resourceType,
-                                                                        const RHI::ResourceView* resourceView)
+        CommandList::ResourceProperties CommandList::GetResourceInfo(BindlessResourceType resourceType,
+                                                                    const RHI::ResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;
             switch(resourceType)
             {
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture:
+                case BindlessResourceType::m_Texture2D:
+                case BindlessResourceType::m_TextureCube:
                 {
                     isReadOnlyResource = true;
                 }
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture:
+                case BindlessResourceType::m_RWTexture2D:
                 {
                     const ImageView* imageView = static_cast<const ImageView*>(resourceView);
                     mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
                     break;
                 }
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer:
+                case BindlessResourceType::m_ByteAddressBuffer:
                 {
                     isReadOnlyResource = true;
                 }
-                case RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer:
+                case BindlessResourceType::m_RWByteAddressBuffer:
                 {
                     const BufferView* bufferView = static_cast<const BufferView*>(resourceView);
                     mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
@@ -507,7 +510,7 @@ namespace AZ
                     }
                     else
                     {
-                        untrackedResourcesGfxReadWrite[RHI::ShaderStageVertex].insert(resourceInfo.second);
+                        //For RW resources we do not call UseResouce for vertex shader as that causes a gpu crash
                         untrackedResourcesGfxReadWrite[RHI::ShaderStageFragment].insert(resourceInfo.second);
                     }
                 }

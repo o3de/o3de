@@ -267,7 +267,6 @@ private:
     void StartFullscreenPreview();
     void StopFullscreenPreview();
 
-    void OnMenuResolutionCustom();
     void OnMenuCreateCameraEntityFromCurrentView();
     void OnMenuSelectCurrentCamera();
 

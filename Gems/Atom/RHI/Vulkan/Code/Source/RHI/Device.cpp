@@ -346,9 +346,11 @@ namespace AZ
             {
                 return resultCode;
             }
+        }
 
-            m_bindlessDescriptorPool.Init(*this);
-
+        RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
             return RHI::ResultCode::Success;
         }
 
@@ -365,7 +367,7 @@ namespace AZ
             ReleaseQueue::Descriptor releaseQueueDescriptor;
             releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
             m_releaseQueue.Init(releaseQueueDescriptor);
-            
+       
 
             // Set the cache sizes.
             m_renderPassCache.first.SetCapacity(RenderPassCacheCapacity);

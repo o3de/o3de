@@ -5,10 +5,29 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+cmake_minimum_required(VERSION 3.22)
 
 cmake_policy(SET CMP0012 NEW) # new policy for the if that evaluates a boolean out of "if(NOT ${same_location})"
 
-function(ly_copy source_files target_directory)
+cmake_path(SET target_file_dir "@target_file_dir@")
+
+set(target_copy_files $<FILTER:$<REMOVE_DUPLICATES:"@target_copy_files@">,EXCLUDE,"^$">)
+set(target_target_files $<FILTER:$<REMOVE_DUPLICATES:"@target_target_files@">,EXCLUDE,"^$">)
+set(target_link_files $<FILTER:$<REMOVE_DUPLICATES:"@target_link_files@">,EXCLUDE,"^$">)
+set(target_imported_files $<FILTER:$<REMOVE_DUPLICATES:"@target_imported_files@">,EXCLUDE,"^$">)
+
+function(ly_copy source_files relative_target_directory)
+    set(options)
+    set(oneValueArgs TARGET_FILE_DIR SOURCE_TYPE SOURCE_GEM_MODULE)
+    set(multiValueArgs)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(target_file_dir "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE_DIR}")
+    set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
+    set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
+
+    # Create the full path to the target directory
+    cmake_path(APPEND target_directory "${target_file_dir}" "${relative_target_directory}")
+
     foreach(source_file IN LISTS source_files)
         cmake_path(GET source_file FILENAME target_filename)
         cmake_path(APPEND target_file "${target_directory}" "${target_filename}")
@@ -27,8 +46,8 @@ function(ly_copy source_files target_directory)
                 file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
                 file(TOUCH_NOCREATE "${target_file}")
             endif()
-        endif()  
-    endforeach() 
+        endif()
+    endforeach()
 endfunction()
 
 @LY_COPY_COMMANDS@
