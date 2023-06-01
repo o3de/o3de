@@ -25,6 +25,7 @@
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
 #include <ScriptCanvas/SystemComponent.h>
+#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
 #include "EntityRefTests.h"
 #include "ScriptCanvasTestApplication.h"
@@ -202,7 +203,12 @@ namespace ScriptCanvasTests
                 CreateGraph();
             }
 
+            ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
+            configurableNodeEntity->CreateComponent<ScriptCanvas::GraphVariableManagerComponent>(scriptCanvasId);
+
             configurableNodeEntity->Init();
+
+            m_graph->Activate();
 
             m_graph->AddNode(configurableNodeEntity->GetId());
 

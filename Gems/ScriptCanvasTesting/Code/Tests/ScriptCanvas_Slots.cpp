@@ -18,7 +18,6 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 
@@ -566,6 +565,49 @@ TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_BaseClassShouldNotMatchSubCl
             EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
         }
     }
+}
+
+TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassSlotWithSubClassVariableShouldMatchBaseClass)
+{
+    // When a slot is configured to use a base class, and it has a variable of a subclass type assigned to it,
+    // the slot should still match base classes. This is important for being able to change what is hooked to the slot.
+
+    using namespace ScriptCanvas;
+
+    // Create a slot of type TestBaseClass
+
+    ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
+    DataSlotConfiguration dataSlotConfiguration;
+
+    dataSlotConfiguration.m_name = GenerateSlotName();
+    dataSlotConfiguration.SetConnectionType(ConnectionType::Input);
+    dataSlotConfiguration.SetType(m_baseClassType);
+    Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
+
+    // Create a variable of type TestSubClass.
+
+    ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
+
+    TestSubClass testObject;
+    auto testSubClassDatum = Datum(testObject);
+
+    constexpr bool FunctionScope = false;
+    AZ::Outcome<VariableId, AZStd::string> variableOutcome(AZ::Failure(""));
+    GraphVariableManagerRequestBus::EventResult(
+        variableOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "TestSubClass", testSubClassDatum, FunctionScope);
+    EXPECT_TRUE(variableOutcome);
+    EXPECT_TRUE(variableOutcome.GetValue().IsValid());
+
+    // Set the slot to a variable of type TestSubClass
+
+    slot->SetVariableReference(variableOutcome.GetValue());
+
+    // The slot's data type should appear to be TestSubClass, matching the currently-assigned variable
+    EXPECT_EQ(slot->GetDataType(), m_subClassType);
+
+    // However, the slot should still allow type matches for both TestBaseClass and TestSubClass
+    EXPECT_TRUE(slot->IsTypeMatchFor(m_baseClassType));
+    EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
 }
 
 // Exhaustive Data Connection Test(attempts to connect every data type to every other data type, in both input and output)
