@@ -114,14 +114,14 @@ namespace Archive
         {
             return (value + divisor - 1) / divisor;
         };
-        return static_cast<AZ::u32>(DivideCeiling(uncompressedSize,  ArchiveBlockSize));
+        return static_cast<AZ::u32>(DivideCeiling(uncompressedSize,  ArchiveBlockSizeForCompression));
     }
 
     static_assert(GetBlockCountIfCompressed(0) == 0, "Empty file should have 0 blocks");
     static_assert(GetBlockCountIfCompressed(1) == 1, "File with at least 1 byte, requires 1 block of storage");
-    static_assert(GetBlockCountIfCompressed(ArchiveBlockSize) == 1, "File that exactly matches the ArchiveBlockSize"
+    static_assert(GetBlockCountIfCompressed(ArchiveBlockSizeForCompression) == 1, "File that exactly matches the ArchiveBlockSizeForCompression"
         " of 2 MiB should fit within 1 block");
-    static_assert(GetBlockCountIfCompressed(ArchiveBlockSize + 1) == 2, "File that is one byte above the ArchiveBlockSize"
+    static_assert(GetBlockCountIfCompressed(ArchiveBlockSizeForCompression + 1) == 2, "File that is one byte above the ArchiveBlockSizeForCompression"
         " of 2 MiB requires 2 blocks");
 
     //! Calculate the Block Lines using a piecewise function
@@ -209,7 +209,7 @@ namespace Archive
             ? DivideCeiling(uncompressedSize - MaxFileSizeForMinBlockLinesWithJumpEntry, FileSizeToSkipWithJumpEntry)
             : 0;
         const AZ::u64 blockLineCount = DivideCeiling(
-            uncompressedSize + uncompressed16MiBChunksAfterFirst4BlockLines * ArchiveBlockSize, MaxBlockLineSize);
+            uncompressedSize + uncompressed16MiBChunksAfterFirst4BlockLines * ArchiveBlockSizeForCompression, MaxBlockLineSize);
         return static_cast<AZ::u32>(blockLineCount);
     }
 

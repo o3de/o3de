@@ -22,7 +22,7 @@ namespace Archive
     inline ArchiveWriterSettings::ArchiveWriterSettings() = default;
 
     // bool operator which converts an ArchiveAddToFileResult to true
-    // of the file path token isn't invalid
+    // if the file path token isn't invalid
     inline ArchiveAddToFileResult::operator bool() const
     {
         return m_filePathToken != InvalidArchiveFileToken;

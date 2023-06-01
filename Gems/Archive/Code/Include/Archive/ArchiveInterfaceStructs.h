@@ -38,12 +38,12 @@ namespace Archive
     //! Represents the default block size for the Archive format
     //! It will be 2 MiB until more data is available that proves
     //! that a different block size is more ideal
-    constexpr AZ::u64 ArchiveBlockSize = 2 * (1 << 20);
+    constexpr AZ::u64 ArchiveBlockSizeForCompression = 2 * (1 << 20);
     //! The alignment of blocks within an archive file
     //! It defaults to 512 bytes
     constexpr AZ::u64 ArchiveDefaultBlockAlignment = 512;
 
-    static_assert((ArchiveBlockSize % ArchiveDefaultBlockAlignment) == 0, "ArchiveBlockSize"
+    static_assert((ArchiveBlockSizeForCompression % ArchiveDefaultBlockAlignment) == 0, "ArchiveBlockSizeForCompression"
         " should be aligned to ArchiveDefaultBlockAlignment");
 
     //! Sentinel which indicates the value written to the last block to indicate
@@ -153,7 +153,7 @@ namespace Archive
         //! after compression will be stored uncompressed.
         //! So the maximum limit of this value is the Block Size
         //! offset = 44
-        AZ::u32 m_compressionThreshold{ static_cast<AZ::u32>(ArchiveBlockSize) };
+        AZ::u32 m_compressionThreshold{ static_cast<AZ::u32>(ArchiveBlockSizeForCompression) };
 
         //! Stores 32-bit IDS of up to 7 compression algorithms that this archive can use
         //! Each entry is initialized to the Invalid CompressionAlgorithmId
@@ -269,7 +269,7 @@ namespace Archive
     //! This is done by storing the compressed block size using 21-bits
     constexpr AZ::u64 BlocksPerBlockLine = 3;
     //! Maximum block line size is 3 blocks * 2 MiB = 6 MiB
-    constexpr AZ::u64 MaxBlockLineSize = ArchiveBlockSize * BlocksPerBlockLine;
+    constexpr AZ::u64 MaxBlockLineSize = ArchiveBlockSizeForCompression * BlocksPerBlockLine;
     //! When the remaining size of a file is above 18 MiB, a jump offset is used to the block line
     //! to indicate where the next block starts
     constexpr AZ::u64 MaxRemainingFileSizeNoJumpEntry = MaxBlockLineSize * 3;
@@ -277,7 +277,7 @@ namespace Archive
     //! if the remaining uncompressed size of a file is >= 18 MiB
     //! Since 16-bits are used to store the jump entry, the first block in the current block
     //! line is unavailable and 16 MiB of uncompressed sizes can be skipped
-    constexpr AZ::u64 FileSizeToSkipWithJumpEntry = MaxRemainingFileSizeNoJumpEntry - ArchiveBlockSize;
+    constexpr AZ::u64 FileSizeToSkipWithJumpEntry = MaxRemainingFileSizeNoJumpEntry - ArchiveBlockSizeForCompression;
     //! Represents the maximum uncompressed size in bytes of the minimum amount of block lines(4)
     //! that is required for a file with a jump entry
     //! A file that is > 18 MiB requires a jump entry in the first block offset entry of the first block line

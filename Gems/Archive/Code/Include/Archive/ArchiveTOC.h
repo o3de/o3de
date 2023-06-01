@@ -9,8 +9,6 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <AzCore/std/containers/map.h>
-#include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/function/function_fwd.h>
 

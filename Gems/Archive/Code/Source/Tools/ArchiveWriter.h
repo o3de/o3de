@@ -76,7 +76,7 @@ namespace Archive
         //! If this call is successful, the archive TOC has been successfully written
         //! This function has been marked [[nodiscard]], to ensure the caller
         //! checks the return value
-        //! @return A successful expection if the TOC has been written
+        //! @return A successful expectation if the TOC has been written
         using CommitResult = AZStd::expected<void, ResultString>;
         [[nodiscard]] CommitResult Commit() override;
 
@@ -103,7 +103,7 @@ namespace Archive
         //! Removes the file from the archive using the ArchiveFileToken
         //! @param filePathToken Relative path within archive to search for
         //! NOTE: The entry in the table of contents is not actually removed
-        //! The index were the file is locatd using the filePathToken
+        //! The index where the file is located using the filePathToken
         //! is just added to the removed file indices set
         bool RemoveFileFromArchive(ArchiveFileToken filePathToken) override;
         //! Removes the file from the archive using a relative path name

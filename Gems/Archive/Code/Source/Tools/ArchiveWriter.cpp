@@ -823,14 +823,20 @@ namespace Archive
             return result;
         }
 
+        // Populate the compression algorithm used in the result structure
+        if (compressOutcome->m_compressionAlgorithmIndex < m_archiveHeader.m_compressionAlgorithmsIds.size())
+        {
+            result.m_compressionAlgorithm = m_archiveHeader.m_compressionAlgorithmsIds[compressOutcome->m_compressionAlgorithmIndex];
+        }
         // Update the archive stream
         ContentFileData contentFileData;
         contentFileData.m_relativeFilePath = filePath;
         contentFileData.m_uncompressedSize = inputSpan.size();
         contentFileData.m_contentFileBlocks = AZStd::move(*compressOutcome);
-        ArchiveFileToken archiveFileToken(WriteContentFileToArchive(fileSettings, contentFileData));
 
-        result.m_filePathToken = archiveFileToken;
+        // Write the file content to the archive stream and store the archive file path token
+        // which is used to lookup the file for removal
+        result.m_filePathToken = WriteContentFileToArchive(fileSettings, contentFileData);
         return result;
     }
 
@@ -894,9 +900,10 @@ namespace Archive
         // the compressedBlockCount will be at least 1 due to rounding up to the nearest block
         AZ::u32 compressedBlockCount = GetBlockCountIfCompressed(inputDataSpan.size());
 
-        // Resize the compress block buffer to be the same size as the input buffer
-        AZStd::vector<AZStd::byte> compressBlockBuffer;
-        compressBlockBuffer.resize_no_construct(inputDataSpan.size());
+        // Resize the compress block buffer to be be a multiple of ArchiveBlockSizeForCompression
+        // times the block count
+        AZStd::vector<AZStd::byte> compressBlocksBuffer;
+        compressBlocksBuffer.resize_no_construct(compressedBlockCount * ArchiveBlockSizeForCompression);
 
         // Make sure there is at least one task that runs to make sure that progress
         // with compression is always being made
@@ -910,6 +917,8 @@ namespace Archive
         {
             const AZ::u32 compressionThresholdInBytes = m_archiveHeader.m_compressionThreshold;
             const AZ::u32 iterationTaskCount = AZStd::min(compressedBlockCount, maxCompressTasks);
+            // decrease the compressedBlockCount by the number of compressed tasks to be executed
+            compressedBlockCount -= iterationTaskCount;
 
             {
                 // Task graph event used to block when writing compressed blocks in parallel
@@ -919,11 +928,23 @@ namespace Archive
 
                 for (size_t compressedTaskSlot = 0; compressedTaskSlot < iterationTaskCount; ++compressedTaskSlot)
                 {
-                    // Cap the input block span size to the minimum of the ArchiveBlockSize(2 MiB) and the remaining size
+                    AZStd::span compressBlocksSpan(compressBlocksBuffer);
+                    const size_t blockStartOffset = compressedTaskSlot * ArchiveBlockSizeForCompression;
+
+                    // Cap the input block span size to the minimum of the ArchiveBlockSizeForCompression(2 MiB) and the remaining size
                     // left in the input buffer via subspan
-                    auto inputBlockSpan = inputDataSpan.subspan(compressedTaskSlot * ArchiveBlockSize, ArchiveBlockSize);
+                    const size_t inputBlockSize = AZStd::min(
+                        inputDataSpan.size() - blockStartOffset,
+                        static_cast<size_t>(ArchiveBlockSizeForCompression));
+                    auto inputBlockSpan = inputDataSpan.subspan(blockStartOffset,
+                        inputBlockSize);
+
                     // Span that is segmented in up to ArchiveBlockSize(2MiB) blocks to store compressed data
-                    auto compressBlockSpan = AZStd::span(compressBlockBuffer).subspan(compressedTaskSlot * ArchiveBlockSize, ArchiveBlockSize);
+                    const size_t compressBlockSize = AZStd::min(
+                        compressBlocksSpan.size() - blockStartOffset,
+                        static_cast<size_t>(ArchiveBlockSizeForCompression));
+                    auto compressBlockSpan = compressBlocksSpan.subspan(blockStartOffset,
+                        compressBlockSize);
 
                     //! Compress Task to execute in task executor
                     auto compressTask = [
@@ -938,8 +959,6 @@ namespace Archive
                 }
 
 
-                // decrease the compressedBlockCount by the number of compressed tasks executed
-                compressedBlockCount -= iterationTaskCount;
                 taskGraph.SubmitOnExecutor(m_taskWriteExecutor, taskWriteGraphEvent.get());
                 // Sync on the task completion
                 taskWriteGraphEvent->Wait();
@@ -984,12 +1003,13 @@ namespace Archive
                 // Copy the bytes from block into the data buffer
                 auto insertIt = compressionDataBuffer.insert(compressionDataBuffer.end(), compressedBlockResult.m_compressedBuffer.begin(),
                     compressedBlockResult.m_compressedBuffer.end());
+                auto compressedBlockStartOffset = size_t(AZStd::distance(compressionDataBuffer.begin(), insertIt));
                 // fill the buffer with padding bytes
-                compressionDataBuffer.insert(insertIt, alignmentBytes, AZStd::byte{});
+                compressionDataBuffer.insert(compressionDataBuffer.end(), alignmentBytes, AZStd::byte{});
 
                 // Populate the block offset pairs with the offset within compressionDataBuffer where the compressed block is written
                 // plus the size of the compressed data
-                contentFileBlocks.m_blockOffsetSizePairs.push_back({ size_t(AZStd::distance(compressionDataBuffer.begin(), insertIt)),
+                contentFileBlocks.m_blockOffsetSizePairs.push_back({ compressedBlockStartOffset,
                     compressedBlockResult.GetCompressedByteCount() });
             }
         }
