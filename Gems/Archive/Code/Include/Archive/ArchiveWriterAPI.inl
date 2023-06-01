@@ -25,7 +25,7 @@ namespace Archive
     // of the file path token isn't invalid
     inline ArchiveAddToFileResult::operator bool() const
     {
-        return m_filePathToken == InvalidArchiveFileToken;
+        return m_filePathToken != InvalidArchiveFileToken;
     }
 
     // Archive Writer interface TypeInfo, rtti and allocator macros
