@@ -41,7 +41,7 @@ namespace AZ
             ByteContainerStream(ContainerType* buffer, size_t maxGrowSize = 5 * 1024 * 1024);
             ~ByteContainerStream() override {}
 
-            bool        IsOpen() const override                              { return true; }
+            bool        IsOpen() const override                              { return m_opened; }
             bool        CanSeek() const override                             { return true; }
             bool        CanRead() const override                    { return true; }
             bool        CanWrite() const override                   { return true; }
@@ -62,6 +62,16 @@ namespace AZ
 
             ContainerType*      GetData() const                             { return m_buffer; }
 
+            bool ReOpen() override
+            {
+                m_opened = true;
+                return m_opened;
+            }
+            void Close() override
+            {
+                m_opened = false;
+            }
+
         protected:
             SizeType PrepareToWrite(SizeType bytes);
             template<typename T>
@@ -76,6 +86,9 @@ namespace AZ
             ContainerType*  m_buffer;
             size_t          m_pos;
             size_t          m_maxGrowSize; //< Maximum grow size to avoid the buffer growing too fast when it's working on big files
+            //! Used to track if the ByteContainerStream has received a Close() call
+            //! By default the ByteContainerStream is open
+            bool            m_opened{ true };
         };
 
         namespace Internal
