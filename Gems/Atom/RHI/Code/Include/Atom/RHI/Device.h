@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <Atom/RHI/BindlessSrgDescriptor.h>
 #include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
+#include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/PhysicalDevice.h>
@@ -139,6 +141,10 @@ namespace AZ
             //! Notifies after all objects currently in the platform release queue are released
             virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
+            //! Called to initialize bindless SRG related native binding objects (i.e descriptor set/argument table).
+            //! This is called after AssetCatalog is loaded and hence we can use bindless.azsli to data drive the binding indices.
+            ResultCode InitBindlessSrg(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout);
+
             //! Allows the back-ends to compact SRG related memory if applicable
             virtual RHI::ResultCode CompactSRGMemory()
             {
@@ -204,6 +210,9 @@ namespace AZ
 
             //! Initialize limits and resources associated with them.
             virtual ResultCode InitializeLimits() = 0;
+
+            //! Initialize back-end specific objects related to bindless SRG
+            virtual ResultCode InitInternalBindlessSrg(const BindlessSrgDescriptor& bindlessSrgDesc) = 0;
             ///////////////////////////////////////////////////////////////////
 
             void CalculateDepthStencilNearestSupportedFormats();
