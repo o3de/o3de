@@ -110,7 +110,7 @@ namespace Archive
             m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
                     ArchiveWriterErrorString::format("TOC offset is invalid. It is passed the end of the stream."
                         " Offset value %llu, archive stream size %llu",
-                        archiveHeader.m_tocOffset, archiveStream.GetLength()) });
+                        static_cast<AZ::u64>(archiveHeader.m_tocOffset), archiveStream.GetLength()) });
             return false;
         }
 
@@ -129,8 +129,8 @@ namespace Archive
             if (bytesRead != tocBuffer.size())
             {
                 m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
-                    ArchiveWriterErrorString::format("Unable to read all TOC bytes %u from the archive."
-                        " The TOC size is %llu, but only %llu bytes were read",
+                    ArchiveWriterErrorString::format("Unable to read all TOC bytes from the archive."
+                        " The TOC size is %u, but only %llu bytes were read",
                         archiveHeader.m_tocCompressedSize, bytesRead) });
                 return false;
             }
@@ -357,7 +357,7 @@ namespace Archive
         // Now create a local block size -> block offset set by iterating over the
         // deleted block offset range map
         decltype(m_deletedBlockSizeToOffsetMap) mergeDeletedBlockSizeToOffsetMap;
-        for (const auto [deletedBlockFirst, deletedBlockLast] : deletedBlockOffsetRangeMap)
+        for (const auto& [deletedBlockFirst, deletedBlockLast] : deletedBlockOffsetRangeMap)
         {
             // Create/update the block offset set by using the difference in offset values as the deleted block size
             auto& mergeDeletedBlockOffsetSet = mergeDeletedBlockSizeToOffsetMap[deletedBlockLast - deletedBlockFirst];
@@ -809,11 +809,8 @@ namespace Archive
         result.m_relativeFilePath = fileSettings.m_relativeFilePath;
 
         // Storage buffer used to store the file data if it s compressed
-        // It's lifetime must outlive the writeDataSpan
+        // It's lifetime must outlive the ComperssContentOutcome
         AZStd::vector<AZStd::byte> compressionBuffer;
-
-        // Span which points to the data that will be written to the archive stream
-        auto writeDataSpan = inputSpan;
 
         CompressContentOutcome compressOutcome = CompressContentFileAsync(compressionBuffer, fileSettings, inputSpan);
         if (!compressOutcome)
@@ -1434,6 +1431,7 @@ namespace Archive
                     " the file path vector (size=%zu) and the file metadata vector (size=%zu).\n"
                     "This indicates a code error in the ArchiveWriter in keeping both vectors in sync and should never occur",
                     m_archiveToc.m_filePaths.size(), m_archiveToc.m_fileMetadataTable.size());
+                metadataStream.Write(errorString.size(), errorString.data());
                 return false;
             }
 
@@ -1453,7 +1451,7 @@ namespace Archive
                     auto fileMetadataString = MetadataString::format(R"(File %zu: path="%s")", activeFileOffset, contentFilePath.c_str());
                     if (metadataSettings.m_writeFileOffsets)
                     {
-                        fileMetadataString += MetadataString::format(R"(, offset=%llu)", activeFileOffset, contentFileMetadata.m_offset);
+                        fileMetadataString += MetadataString::format(R"(, offset=%llu)", contentFileMetadata.m_offset);
                     }
                     if (metadataSettings.m_writeFileSizesAndCompression)
                     {

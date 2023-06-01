@@ -19,11 +19,11 @@ namespace Archive
         AZStd::span<AZStd::byte> tocBuffer) -> CreateTOCViewOutcome
     {
         ArchiveTableOfContentsView tocView;
-        const size_t FileMetadataTableOffset = 0;
+        constexpr size_t FileMetadataTableOffset = 0;
         // The file path metadata entries is 16 bytes aligned
         // so round up to the neareast 16th byte before reading the file path index entries
         const size_t FilePathIndexTableOffset = AZ_SIZE_ALIGN_UP(
-            FilePathIndexTableOffset + archiveHeader.m_tocFileMetadataTableUncompressedSize,
+            FileMetadataTableOffset + archiveHeader.m_tocFileMetadataTableUncompressedSize,
             16);
         // The file path index entries are 8 bytes aligned
         // so round up to the neareast 8th byte before reading the file path blob
