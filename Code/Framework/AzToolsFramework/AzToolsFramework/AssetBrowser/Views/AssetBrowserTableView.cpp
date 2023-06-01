@@ -72,6 +72,13 @@ namespace AzToolsFramework
 
              connect(
                 m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderTableView::rowDeselected, this, []
+                {
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
+                });
+
+             connect(
+                m_expandedTableViewWidget,
                 &AzQtComponents::AssetFolderTableView::doubleClicked,
                 this,
                 [this](const QModelIndex& index)

@@ -341,8 +341,12 @@ namespace AZ
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures(m_context);
 
-            m_bindlessDescriptorPool.Init(*this);
+            return RHI::ResultCode::Success;
+        }
 
+        RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
             return RHI::ResultCode::Success;
         }
 
@@ -359,7 +363,7 @@ namespace AZ
             ReleaseQueue::Descriptor releaseQueueDescriptor;
             releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
             m_releaseQueue.Init(releaseQueueDescriptor);
-            
+       
 
             // Set the cache sizes.
             m_renderPassCache.first.SetCapacity(RenderPassCacheCapacity);
