@@ -132,7 +132,7 @@ def _remove_license_text_markers(source_data: str):
         next_line = source_data.find('\n', license_block_start_index + len(begin_marker))
         if next_line != -1:
             # Skip past {BEGIN_LICENSE} line +1 for the newline character
-            license_block_start_index = next_line + 1;
+            license_block_start_index = next_line + 1
         else:
             # Otherwise Skip pass the {BEGIN_LICENSE} text as the file contains no more newlines
             license_block_start_index = license_block_start_index + len(begin_marker)
@@ -257,8 +257,8 @@ def _execute_template_json(json_data: dict,
     for copy_file in json_data['copyFiles']:
         # construct the input file name
         in_file = template_path / 'Template' / copy_file['file']
-
-        # construct the output file name
+        
+        # construct the output file name        
         out_file = destination_path / copy_file['file']
 
         # transform the output file name
@@ -2300,6 +2300,75 @@ def create_gem(gem_path: pathlib.Path,
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
     return register.register(gem_path=gem_path) if not no_register else 0
 
+def create_repo(repo_path: pathlib.Path,
+                repo_uri: str,
+                repo_name: str = None,
+                origin: str = None,
+                origin_url: str = None,
+                summary: str = None,
+                additional_info: str = None,
+                force: bool = False,
+                replace: list = None
+                ) -> int:
+
+    template_name = 'RemoteRepo'
+
+    template_path = manifest.get_registered(template_name=template_name)
+
+    template_json = template_path / 'template.json'
+  
+    # read in the template.json
+    with open(template_json) as s:
+        try:
+            template_json_data = json.load(s)
+        except KeyError as e:
+            logger.error(f'Could not read template json {template_json}: {str(e)}.')
+            return 1
+
+    if not repo_path:
+        logger.error('Destination path on local machine cannot be empty.')
+        return 1
+    if not repo_uri:
+        logger.error('Destination path on online version control uri cannot be empty.')
+        return 1
+    if not repo_path and repo_uri:
+        logger.error('Please provide repository destination path on local machine and online uri.')
+        return 1
+    
+    if not force and os.path.isdir(repo_path):
+        logger.error(f'Destination path {repo_path} already exists.')
+        return 1
+    else:
+        os.makedirs(repo_path, exist_ok=force)
+
+    if not repo_name:
+        # destination name is now the last component of the destination_path
+        repo_name = repo_path.name
+
+    # any user supplied replacements
+    replacements = list()
+    while replace:
+        replace_this = replace.pop(0)
+        with_this = replace.pop(0)
+        replacements.append((replace_this, with_this))
+
+    replacements.append(("${Name}", repo_name))
+    replacements.append(("${RepoURI}", repo_uri))
+    replacements.append(("${Origin}",  origin if origin else "${Origin}"))
+    replacements.append(("${OriginURL}",  origin_url if origin_url else "${OriginURL}"))
+    replacements.append(("${Summary}", summary if summary else "${Summary}"))
+    replacements.append(("${AdditionalInfo}", additional_info if additional_info else "${AdditionalInfo}"))
+
+    # create repo.json file
+    if _execute_template_json(template_json_data,
+                              repo_path,
+                              template_path,
+                              replacements):    
+        logger.error(f'Instantiation of the remote repository has failed.')
+        return 1
+    logger.warning('Remote Repo is successfully initiated!')
+    json_data=manifest.load_o3de_manifest()
+    return register.register_remote_repo(json_data=json_data,repo_uri=repo_uri) 
 
 def _run_create_template(args: argparse) -> int:
     return create_template(args.source_path,
@@ -2392,6 +2461,17 @@ def _run_create_gem(args: argparse) -> int:
                       args.module_id,
                       args.version)
 
+def _run_create_repo(args: argparse) -> int:
+    return create_repo(args.repo_path,
+                       args.repo_uri,
+                       args.repo_name,
+                       args.origin,
+                       args.origin_url,
+                       args.summary,
+                       args.additional_info,
+                       args.force,
+                       args.replace
+                       )
 
 def add_args(subparsers) -> None:
     """
@@ -2815,6 +2895,45 @@ def add_args(subparsers) -> None:
                        help='An optional version. Defaults to 1.0.0')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
+
+    create_repo_subparser = subparsers.add_parser('create-repo')
+    create_repo_subparser.add_argument('-rp','--repo-path', type=pathlib.Path, required=True,
+                                       help = 'The location of the remote repo you wish to create from the RemoteRepo template,'
+                                       'can be an absolute path or relative to the current working directory'
+                                       'Ex. C:/o3de/TestRemoteRepo'
+                                       'TestRemoteRepo = <RemoteRepo_name> if --project_name not provided')
+    create_repo_subparser.add_argument('-ru', '--repo-uri', type=str, required=True,
+                                       help = 'The online remote repository uri')
+    create_repo_subparser.add_argument('-rn', '--repo-name', type=str, required=False,
+                                       help = 'The name to use when substituting the ${Name} placeholder for the remote repo,'
+                                           ' must be alphanumeric, '
+                                           ' and can contain _ and - characters.'
+                                           ' If no name is provided, will use last component of the repo-path provided by user.'
+                                           ' Ex. Remote_repo1')
+    create_repo_subparser.add_argument('-o', '--origin', type=str, required=False,
+                                       default='o3de',
+                                       help = 'The name of the originator or creator i.e. o3de.')
+    create_repo_subparser.add_argument('-ou', '--origin-url', type=str, required=False,
+                                       default='https://github.com/o3de/o3de',
+                                       help='The origin website for your remote repository. i.e. http://www.mydomain.com')
+    create_repo_subparser.add_argument('-s', '--summary', type=str, required=False,
+                                       default='This is a remote repository for my o3de project',
+                                       help='A short description of this Repo')
+    create_repo_subparser.add_argument('-ai', '--additional-info', type=str, required=False,
+                                       help='Any additional info you want to add to this Remote repo')
+    create_repo_subparser.add_argument('-f','--force', action='store_true', default=False,
+                                      help='Copies over instantiated RemoteRepo directory even if it exist.')
+    create_repo_subparser.add_argument('-r', '--replace', type=str, required=False,
+                                      nargs='*',
+                                      help='String that specifies ADDITIONAL A->B replacement pairs. ${Name} and'
+                                           ' all other standard gem replacements will be automatically inferred'
+                                           ' from the repo name. These replacements will superseded all inferred'
+                                           ' replacement pairs.'
+                                           ' Ex. --replace ${DATE} 1/1/2020 ${id} 1723905'
+                                           ' Note: <RepoName> is the last component of repo_path'
+                                           ' Note: ${Name} is automatically <Name>')
+    
+    create_repo_subparser.set_defaults(func=_run_create_repo)
 
 if __name__ == "__main__":
     # parse the command line args
