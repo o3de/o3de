@@ -917,7 +917,7 @@ namespace Archive
                 AZ::TaskGraph taskGraph{ "Archive Compress Tasks" };
                 AZ::TaskDescriptor compressTaskDescriptor{"Compress Block", "Archive Content File Compression"};
 
-                for (size_t compressedTaskSlot = 0; iterationTaskCount < iterationTaskCount; ++compressedTaskSlot)
+                for (size_t compressedTaskSlot = 0; compressedTaskSlot < iterationTaskCount; ++compressedTaskSlot)
                 {
                     // Cap the input block span size to the minimum of the ArchiveBlockSize(2 MiB) and the remaining size
                     // left in the input buffer via subspan
@@ -947,7 +947,7 @@ namespace Archive
 
             size_t alignedCompressedBlockSizeForAllBlocks{};
 
-            for (size_t compressedTaskSlot = 0; iterationTaskCount < iterationTaskCount; ++compressedTaskSlot)
+            for (size_t compressedTaskSlot = 0; compressedTaskSlot < iterationTaskCount; ++compressedTaskSlot)
             {
                 Compression::CompressionResultData& compressedBlockResult = compressedBlockResults[compressedTaskSlot];
                 if (!compressedBlockResult || compressedBlockResult.GetCompressedByteCount() > compressionThresholdInBytes)
@@ -973,7 +973,7 @@ namespace Archive
             // Determine the amount of additional bytes to resize the compression data output buffer
             // This takes into account the alignment of blocks as how it would be written on disk
             compressionDataBuffer.reserve(compressionDataBuffer.size() + alignedCompressedBlockSizeForAllBlocks);
-            for (size_t compressedTaskSlot = 0; iterationTaskCount < iterationTaskCount; ++compressedTaskSlot)
+            for (size_t compressedTaskSlot = 0; compressedTaskSlot < iterationTaskCount; ++compressedTaskSlot)
             {
                 const Compression::CompressionResultData& compressedBlockResult = compressedBlockResults[compressedTaskSlot];
 

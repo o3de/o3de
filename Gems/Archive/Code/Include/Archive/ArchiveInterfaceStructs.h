@@ -246,7 +246,8 @@ namespace Archive
 
     static_assert(sizeof(ArchiveTocFileMetadata) == 16, "File Metadata size should be 16 bytes");
 
-    //! Views an entry of a single File Path Index when the File Path Table of the Archive TOC
+    //! Stores the size of a file path and an offset into the file path blob table for a single file
+    //! in the archive
     struct ArchiveTocFilePathIndex
     {
         ArchiveTocFilePathIndex();
