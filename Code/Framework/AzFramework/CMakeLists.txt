@@ -10,6 +10,10 @@ include(AzFramework/feature_options.cmake)
 
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+if(CARBONATED)
+set(azframeworkaddon_dependency AZ::AzFrameworkAddon)
+set(gridmate_dependency AZ::GridMate)
+endif()
 
 ly_add_target(
     NAME AzFramework STATIC
@@ -32,6 +36,8 @@ ly_add_target(
             AZ::AzNetworking
             3rdParty::zstd
             3rdParty::lz4
+            ${azframeworkaddon_dependency}
+            ${gridmate_dependency}
 )
 
 set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)

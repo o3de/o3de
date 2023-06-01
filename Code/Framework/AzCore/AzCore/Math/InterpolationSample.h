@@ -55,7 +55,10 @@ namespace AZ
             return m_targetTimestamp;
         }
 
+#if defined(CARBONATED) // TODO - id like to just setup a constructor that takes this in, but thats a bigger refactor in transform component
+#else
     protected:
+#endif
         void SetPreviousValue(Value previousValue, TimeType previousTimestamp)
         {
             m_previousValue = previousValue;
