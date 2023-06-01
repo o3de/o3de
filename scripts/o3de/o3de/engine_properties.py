@@ -53,6 +53,8 @@ def _edit_gem_names(engine_json: dict,
 
     # Remove duplicates from list
     engine_json['gem_names'] = utils.remove_gem_duplicates(engine_json.get('gem_names', []))
+    # sort the gem name list so that is written to the project.json in order
+    engine_json['gem_names'] = sorted(engine_json['gem_names'])
 
 
 def edit_engine_props(engine_path: pathlib.Path = None,
@@ -95,10 +97,10 @@ def edit_engine_props(engine_path: pathlib.Path = None,
     if isinstance(new_display_version, str):
         engine_json_data['display_version'] = new_display_version
 
-    if new_api_versions or delete_api_versions or replace_api_versions != None: 
+    if new_api_versions or delete_api_versions or replace_api_versions != None:
         engine_json_data['api_versions'] = utils.update_keys_and_values_in_dict(engine_json_data.get('api_versions',{}),
             new_api_versions, delete_api_versions, replace_api_versions)
-        
+
     # Update the gem_names field in the engine.json
     _edit_gem_names(engine_json_data, new_gem_names, delete_gem_names, replace_gem_names)
 
