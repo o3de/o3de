@@ -295,8 +295,6 @@ namespace AzToolsFramework
             }
         }
 
-        SetupActions();
-
         m_emptyIcon = QIcon();
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
@@ -778,48 +776,6 @@ namespace AzToolsFramework
 
         ToolsApplicationRequestBus::Broadcast(
             &ToolsApplicationRequests::SetSelectedEntities, EntityIdList{ entityId });
-    }
-
-    void EntityOutlinerWidget::SetupActions()
-    {
-        m_actionToCreateEntity = new QAction(tr("Create Entity"), this);
-        m_actionToCreateEntity->setShortcut(tr("Ctrl+Alt+N"));
-        m_actionToCreateEntity->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToCreateEntity, &QAction::triggered, this, &EntityOutlinerWidget::DoCreateEntity);
-        addAction(m_actionToCreateEntity);
-
-        m_actionToDeleteSelection = new QAction(tr("Delete"), this);
-        m_actionToDeleteSelection->setShortcut(QKeySequence("Shift+Delete"));
-        m_actionToDeleteSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToDeleteSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelection);
-        addAction(m_actionToDeleteSelection);
-
-        m_actionToRenameSelection = new QAction(tr("Rename"), this);
-    #if defined(Q_OS_MAC)
-        // "Alt+Return" translates to Option+Return on macOS
-        m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
-    #elif defined(Q_OS_WIN)
-        m_actionToRenameSelection->setShortcut(tr("F2"));
-    #endif
-        m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToRenameSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoRenameSelection);
-        addAction(m_actionToRenameSelection);
-
-        m_actionToMoveEntityUp = new QAction(tr("Move up"), this);
-        m_actionToMoveEntityUp->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToMoveEntityUp, &QAction::triggered, this, &EntityOutlinerWidget::DoMoveEntityUp);
-        addAction(m_actionToMoveEntityUp);
-
-        m_actionToMoveEntityDown = new QAction(tr("Move down"), this);
-        m_actionToMoveEntityDown->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToMoveEntityDown, &QAction::triggered, this, &EntityOutlinerWidget::DoMoveEntityDown);
-        addAction(m_actionToMoveEntityDown);
-
-        m_actionGoToEntitiesInViewport = new QAction(tr("Find in viewport"), this);
-        m_actionGoToEntitiesInViewport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        m_actionGoToEntitiesInViewport->setShortcut(tr("Z"));
-        connect(m_actionGoToEntitiesInViewport, &QAction::triggered, this, &EntityOutlinerWidget::GoToEntitiesInViewport);
-        addAction(m_actionGoToEntitiesInViewport);
     }
 
     void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()
