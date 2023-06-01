@@ -342,10 +342,7 @@ namespace AZ
             physicalDevice.LoadSupportedFeatures(m_context);
 
             RHI::ResultCode resultCode = InitVmaAllocator(physicalDeviceBase);
-            if (resultCode != RHI::ResultCode::Success)
-            {
-                return resultCode;
-            }
+            return resultCode;
         }
 
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
