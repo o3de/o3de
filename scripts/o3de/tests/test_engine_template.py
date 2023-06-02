@@ -90,7 +90,8 @@ TEST_TEMPLATE_REPO_JSON = """\
     "last_updated": "",
     "gems_data": [],
     "projects_data": [],
-    "templates_data":[]
+    "templates_data":[],
+    "repos":[]
 }
 """
 
