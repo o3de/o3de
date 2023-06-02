@@ -707,6 +707,14 @@ namespace AZ
                 fragmentSize.width = 4;
                 fragmentSize.height = 2;
                 break;
+            case RHI::ShadingRate::Rate4x1:
+                fragmentSize.width = 4;
+                fragmentSize.height = 1;
+                break;
+            case RHI::ShadingRate::Rate1x4:
+                fragmentSize.width = 1;
+                fragmentSize.height = 4;
+                break;
             case RHI::ShadingRate::Rate4x4:
                 fragmentSize.width = fragmentSize.height = 4;
                 break;
@@ -728,6 +736,7 @@ namespace AZ
                 {
                 case 1: return RHI::ShadingRate::Rate1x1;
                 case 2: return RHI::ShadingRate::Rate1x2;
+                case 4: return RHI::ShadingRate::Rate1x4;
                 default:
                     break;
                 }
@@ -743,6 +752,7 @@ namespace AZ
             case 4:
                 switch (rate.height)
                 {
+                case 1: return RHI::ShadingRate::Rate4x1;
                 case 2: return RHI::ShadingRate::Rate4x2;
                 case 4: return RHI::ShadingRate::Rate4x4;
                 default:
