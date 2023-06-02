@@ -257,8 +257,7 @@ def _execute_template_json(json_data: dict,
     for copy_file in json_data['copyFiles']:
         # construct the input file name
         in_file = template_path / 'Template' / copy_file['file']
-        
-        # construct the output file name        
+        # construct the output file name
         out_file = destination_path / copy_file['file']
 
         # transform the output file name
