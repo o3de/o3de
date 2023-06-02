@@ -72,6 +72,9 @@ namespace Archive
         //! to the stream before closing the stream
         void UnmountArchive() override;
 
+        //! Returns if an open archive that is mounted
+        bool IsMounted() const override;
+
         //! Written Archive Table of Contents to end of the stream
         //! If this call is successful, the archive TOC has been successfully written
         //! This function has been marked [[nodiscard]], to ensure the caller
@@ -82,11 +85,11 @@ namespace Archive
 
         //! Adds the content from the stream to the relative path
         //! based on the ArchiveWriterFileSettings
-        ArchiveAddToFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
+        ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
             const ArchiveWriterFileSettings& fileSettings = {}) override;
 
         //! Used the span contents to add the file to the archive
-        ArchiveAddToFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
+        ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
             const ArchiveWriterFileSettings& fileSettings = {}) override;
 
         //! Searches for a relative path within the archive
@@ -105,10 +108,14 @@ namespace Archive
         //! NOTE: The entry in the table of contents is not actually removed
         //! The index where the file is located using the filePathToken
         //! is just added to the removed file indices set
-        bool RemoveFileFromArchive(ArchiveFileToken filePathToken) override;
+        //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! stored in the Archive
+        ArchiveRemoveFileResult RemoveFileFromArchive(ArchiveFileToken filePathToken) override;
         //! Removes the file from the archive using a relative path name
-        //! @param relativePath Relative path within archive to search for
-        bool RemoveFileFromArchive(AZ::IO::PathView relativePath) override;
+        //! @param relativePath relative path within archive to search for
+        //! //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! stored in the Archive
+        ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) override;
 
         //! Writes the file data about the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
@@ -155,7 +162,7 @@ namespace Archive
         //! @return an outcome that contains a span if the content fileData was successfully compressed
         //!         otherwise a failure string containing the error that occurs when attempting to compressed
         //!         the asynchronous content
-        CompressContentOutcome CompressContentFileAsync(AZStd::vector<AZStd::byte> compressionBuffer,
+        CompressContentOutcome CompressContentFileAsync(AZStd::vector<AZStd::byte>& compressionBuffer,
             const ArchiveWriterFileSettings& fileSettings, AZStd::span<const AZStd::byte> inputDataSpan);
 
         //! In-memory structure which stores metadata about the file contents after being
@@ -254,7 +261,7 @@ namespace Archive
         //! @param tocUncompressedInputSpan input buffer of the raw table of contents data to write
         //! @return a result structure containing a span in the output buffer containing
         //! the raw TOC data and its actual size
-        WriteTocRawResult WriteTocRaw(AZStd::vector<AZStd::byte> tocOutputBuffer);
+        WriteTocRawResult WriteTocRaw(AZStd::vector<AZStd::byte>& tocOutputBuffer);
 
         //! Encapsulates the result of compression a raw buffer of table of contents data
         //! data
@@ -275,7 +282,7 @@ namespace Archive
         //! @param tocUncompressedInputSpan input buffer of the raw table of contents data to write
         //! @return a result structure containing a span within the compression buffer of the compressed TOC data
         //! if successful, otherwise a span to the original input span is returned
-        CompressTocRawResult CompressTocRaw(AZStd::vector<AZStd::byte> tocCompressionBuffer,
+        CompressTocRawResult CompressTocRaw(AZStd::vector<AZStd::byte>& tocCompressionBuffer,
             AZStd::span<const AZStd::byte> uncompressedTocInputSpan);
 
         //! Archive Writer specific settings

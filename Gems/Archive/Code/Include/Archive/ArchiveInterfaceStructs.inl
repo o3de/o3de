@@ -58,10 +58,35 @@ namespace Archive
     // Get the total uncompressed size of the Table of Contents
     inline AZ::u64 ArchiveHeader::GetUncompressedTocSize() const
     {
-        return m_tocFileMetadataTableUncompressedSize
-            + m_tocPathIndexTableUncompressedSize
-            + m_tocPathBlobUncompressedSize
-            + m_tocBlockOffsetTableUncompressedSize;
+        // The uncompressed FileMetadataTable is always a multiple
+        // of sizeof(ArchiveTocFileMetadata) which is 16
+        AZ::u64 uncompressedSize = m_tocFileMetadataTableUncompressedSize;
+        // The uncompressed FilePathIndex is always a multiple
+        // of sizeof(ArchiveTocFilePathIndex) which is 8
+        uncompressedSize += m_tocPathIndexTableUncompressedSize;
+        // The uncompressed file path blob section
+        // is the exact size of the blob section
+        uncompressedSize += m_tocPathBlobUncompressedSize;
+
+        // The BlockOffset table starts on 8-byte alignment
+        // so aligned up the the current uncompressed size upwards
+        // to the next multiple of 8
+        uncompressedSize = AZ_SIZE_ALIGN_UP(uncompressedSize, 8);
+
+        // As the block offset table is the last section of the
+        // table of contents, no alignment constraints need to be accounted for
+        // To close out the information loop however, each block offset table
+        // entry stores a 8-byte integer which encodes either 3 2-MiB compressed block sizes
+        // or a 16-bit block jump offset entry and 2 2-MiB compressed block sizes(21-bits each)
+        uncompressedSize += m_tocBlockOffsetTableUncompressedSize;
+
+        return uncompressedSize;
+    }
+
+    inline AZ::u64 ArchiveHeader::GetTocStoredSize() const
+    {
+        return m_tocCompressionAlgoIndex < UncompressedAlgorithmIndex
+            ? m_tocCompressedSize : GetUncompressedTocSize();
     }
 
     // ArchiveFileMetadata constructor implementation

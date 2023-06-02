@@ -69,7 +69,7 @@ namespace Archive
 
     ArchiveTocValidationResult::operator bool() const
     {
-        return m_errorCode != ArchiveTocErrorCode{};
+        return m_errorCode == ArchiveTocErrorCode{};
     }
 
     ArchiveTocValidationResult ValidateTableOfContents(const ArchiveTableOfContentsView& tocView,

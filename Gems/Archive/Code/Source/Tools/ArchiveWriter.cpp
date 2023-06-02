@@ -104,11 +104,11 @@ namespace Archive
             AZ::IO::GenericStream& m_stream;
         };
 
-        if (archiveHeader.m_tocOffset <= archiveStream.GetLength())
+        if (archiveHeader.m_tocOffset > archiveStream.GetLength())
         {
             // The TOC offset is invalid since it is after the end of the stream
             m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
-                    ArchiveWriterErrorString::format("TOC offset is invalid. It is passed the end of the stream."
+                    ArchiveWriterErrorString::format("TOC offset is invalid. It is pass the end of the stream."
                         " Offset value %llu, archive stream size %llu",
                         static_cast<AZ::u64>(archiveHeader.m_tocOffset), archiveStream.GetLength()) });
             return false;
@@ -124,14 +124,14 @@ namespace Archive
             SeekStreamToBeginRAII seekToBeginScope{ archiveStream };
             archiveStream.Seek(archiveHeader.m_tocOffset, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
 
-            tocBuffer.resize_no_construct(archiveHeader.m_tocCompressedSize);
+            tocBuffer.resize_no_construct(archiveHeader.GetTocStoredSize());
             AZ::IO::SizeType bytesRead = archiveStream.Read(tocBuffer.size(), tocBuffer.data());
             if (bytesRead != tocBuffer.size())
             {
                 m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
                     ArchiveWriterErrorString::format("Unable to read all TOC bytes from the archive."
                         " The TOC size is %u, but only %llu bytes were read",
-                        archiveHeader.m_tocCompressedSize, bytesRead) });
+                        tocBuffer.size(), bytesRead)});
                 return false;
             }
         }
@@ -241,15 +241,17 @@ namespace Archive
                 // If the block size has been successfully read, update the deleted block offset map
                 // with a key of the block size which maps to a sorted set which contains
                 // the current iterated block
-                // Make sure any block size is aligned DOWN to a 512-byte boundary
+                // Make sure any block size is aligned UP to a 512-byte boundary
                 // and any block offset is aligned UP to a 512-byte boundary
                 // This prevents issues with writing block data to a non-aligned block
-                // as well as avoiding overwriting data for the next block
-                AZ::u64 alignedBlockSize = AZ_SIZE_ALIGN_DOWN(blockSize, ArchiveDefaultBlockAlignment);
+                AZ::u64 alignedBlockSize = AZ_SIZE_ALIGN_UP(blockSize, ArchiveDefaultBlockAlignment);
                 AZ::u64 alignedBlockOffset = AZ_SIZE_ALIGN_UP(deletedBlockOffset, ArchiveDefaultBlockAlignment);
 
-                auto& deletedBlockOffsetSet = m_deletedBlockSizeToOffsetMap[alignedBlockSize];
-                deletedBlockOffsetSet.emplace(alignedBlockOffset);
+                if (alignedBlockSize > 0)
+                {
+                    auto& deletedBlockOffsetSet = m_deletedBlockSizeToOffsetMap[alignedBlockSize];
+                    deletedBlockOffsetSet.emplace(alignedBlockOffset);
+                }
             }
         }
 
@@ -257,7 +259,6 @@ namespace Archive
 
         return true;
     }
-
 
     void ArchiveWriter::MergeContiguousDeletedBlocks()
     {
@@ -449,8 +450,14 @@ namespace Archive
                 m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorWritingTableOfContents,
                     AZStd::move(commitResult.error()) });
             }
-            m_archiveStream->Close();
         }
+
+        m_archiveStream.reset();
+    }
+
+    bool ArchiveWriter::IsMounted() const
+    {
+        return m_archiveStream != nullptr && m_archiveStream->IsOpen();
     }
 
     auto ArchiveWriter::Commit() -> CommitResult
@@ -466,10 +473,10 @@ namespace Archive
         }
 
         if (AZStd::scoped_lock archiveLock(m_archiveStreamMutex);
-            !m_archiveStream || !m_archiveStream->IsOpen())
+            !IsMounted())
         {
             CommitResult result;
-            result = AZStd::unexpected(ResultString::format("The stream to commit the archive data is not open.\n"
+            result = AZStd::unexpected(ResultString::format("The stream to commit the archive data is not mounted.\n"
                 "Cannot commit archive."));
             return result;
         }
@@ -525,7 +532,6 @@ namespace Archive
                 }
             }
 
-
             // Update the first deleted block offset entry to point to the beginning of the block offset set
             m_archiveHeader.m_firstDeletedBlockOffset = m_deletedBlockOffsetSet.begin()->m_offset;
 
@@ -574,7 +580,7 @@ namespace Archive
         AZStd::span<const AZStd::byte> tocWriteSpan = rawTocResult.m_tocSpan;
 
         // Check if the table of contents should be compressed
-        if (m_archiveHeader.m_tocCompressionAlgoIndex != UncompressedAlgorithmIndex)
+        if (m_archiveHeader.m_tocCompressionAlgoIndex < UncompressedAlgorithmIndex)
         {
             // Resize the compress block buffer to be the same size as the input buffer
             AZStd::vector<AZStd::byte> tocCompressBuffer;
@@ -588,13 +594,17 @@ namespace Archive
             }
 
             tocWriteSpan = compressResult.m_compressedTocSpan;
+
             // Update the archive header compressed toc size
             m_archiveHeader.m_tocCompressedSize = tocWriteSpan.size();
         }
         else
         {
+            // The table of contents is not compressed
+            // so store a size of 0
             m_archiveHeader.m_tocCompressedSize = 0;
         }
+
 
         // Performs writing of the raw table of contents table
         if (!tocWriteSpan.empty())
@@ -632,11 +642,8 @@ namespace Archive
         return m_errorString.empty();
     }
 
-    auto ArchiveWriter::WriteTocRaw(AZStd::vector<AZStd::byte> tocOutputBuffer) -> WriteTocRawResult
+    auto ArchiveWriter::WriteTocRaw(AZStd::vector<AZStd::byte>& tocOutputBuffer) -> WriteTocRawResult
     {
-        WriteTocRawResult result;
-        result.m_tocSpan = tocOutputBuffer;
-
         tocOutputBuffer.reserve(m_archiveHeader.GetUncompressedTocSize());
 
         AZ::IO::ByteContainerStream tocOutputStream(&tocOutputBuffer);
@@ -698,6 +705,8 @@ namespace Archive
         AZStd::span<ArchiveBlockLineUnion> blockOffsetTableView = m_archiveToc.m_blockOffsetTable;
         tocOutputStream.Write(blockOffsetTableView.size_bytes(), blockOffsetTableView.data());
 
+        WriteTocRawResult result;
+        result.m_tocSpan = tocOutputBuffer;
         return result;
     }
 
@@ -706,7 +715,7 @@ namespace Archive
         return m_errorString.empty();
     }
 
-    auto ArchiveWriter::CompressTocRaw(AZStd::vector<AZStd::byte> tocCompressionBuffer,
+    auto ArchiveWriter::CompressTocRaw(AZStd::vector<AZStd::byte>& tocCompressionBuffer,
         AZStd::span<const AZStd::byte> uncompressedTocInputSpan) -> CompressTocRawResult
     {
         CompressTocRawResult result;
@@ -743,7 +752,7 @@ namespace Archive
         return result;
     }
 
-    ArchiveAddToFileResult ArchiveWriter::AddFileToArchive(AZ::IO::GenericStream& inputStream,
+    ArchiveAddFileResult ArchiveWriter::AddFileToArchive(AZ::IO::GenericStream& inputStream,
         const ArchiveWriterFileSettings& fileSettings)
     {
         AZStd::vector<AZStd::byte> fileData;
@@ -752,7 +761,7 @@ namespace Archive
         // Unable to read entire stream data into memory
         if (bytesRead != fileData.size())
         {
-            ArchiveAddToFileResult errorResult;
+            ArchiveAddFileResult errorResult;
             errorResult.m_relativeFilePath = fileSettings.m_relativeFilePath;
             errorResult.m_compressionAlgorithm = fileSettings.m_compressionAlgorithm;
             errorResult.m_resultOutcome = AZStd::unexpected(
@@ -765,12 +774,12 @@ namespace Archive
         return AddFileToArchive(fileData, fileSettings);
     }
 
-    ArchiveAddToFileResult ArchiveWriter::AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
+    ArchiveAddFileResult ArchiveWriter::AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
         const ArchiveWriterFileSettings& fileSettings)
     {
         if (fileSettings.m_relativeFilePath.empty())
         {
-            ArchiveAddToFileResult errorResult;
+            ArchiveAddFileResult errorResult;
             errorResult.m_compressionAlgorithm = fileSettings.m_compressionAlgorithm;
             errorResult.m_resultOutcome = AZStd::unexpected(
                 ResultString(R"(The file path is empty. File will not be added to the archive.)"));
@@ -791,25 +800,26 @@ namespace Archive
 
         // Check if a file being added is already in the archive
         // If the ArchiveWriterFileMode is set to only add new files
-        // return an ArchiveAddToFileResult with an invalid file token
+        // return an ArchiveAddFileResult with an invalid file token
         if (fileSettings.m_fileMode == ArchiveWriterFileMode::AddNew
             && ContainsFile(filePath))
         {
-            ArchiveAddToFileResult errorResult;
-            errorResult.m_relativeFilePath = fileSettings.m_relativeFilePath;
+            ArchiveAddFileResult errorResult;
+            errorResult.m_relativeFilePath = AZStd::move(filePath);
             errorResult.m_compressionAlgorithm = fileSettings.m_compressionAlgorithm;
             errorResult.m_resultOutcome = AZStd::unexpected(
                 ResultString::format(R"(The file with relative path "%s" already exist in the archive.)"
                     " The FileMode::AddNew option was specified.",
-                    filePath.c_str()));
+                    errorResult.m_relativeFilePath.c_str()));
             return errorResult;
         }
 
-        ArchiveAddToFileResult result;
-        result.m_relativeFilePath = fileSettings.m_relativeFilePath;
+        ArchiveAddFileResult result;
+        // Supply the file path with the case changed
+        result.m_relativeFilePath = AZStd::move(filePath);
 
         // Storage buffer used to store the file data if it s compressed
-        // It's lifetime must outlive the ComperssContentOutcome
+        // It's lifetime must outlive the CompressContentOutcome
         AZStd::vector<AZStd::byte> compressionBuffer;
 
         CompressContentOutcome compressOutcome = CompressContentFileAsync(compressionBuffer, fileSettings, inputSpan);
@@ -827,7 +837,7 @@ namespace Archive
         }
         // Update the archive stream
         ContentFileData contentFileData;
-        contentFileData.m_relativeFilePath = filePath;
+        contentFileData.m_relativeFilePath = result.m_relativeFilePath;
         contentFileData.m_uncompressedSize = inputSpan.size();
         contentFileData.m_contentFileBlocks = AZStd::move(*compressOutcome);
 
@@ -838,7 +848,7 @@ namespace Archive
     }
 
 
-    auto ArchiveWriter::CompressContentFileAsync(AZStd::vector<AZStd::byte> compressionDataBuffer,
+    auto ArchiveWriter::CompressContentFileAsync(AZStd::vector<AZStd::byte>& compressionDataBuffer,
         const ArchiveWriterFileSettings& fileSettings,
         AZStd::span<const AZStd::byte> inputDataSpan) -> CompressContentOutcome
     {
@@ -1044,7 +1054,7 @@ namespace Archive
         size_t archiveFileIndex{};
         if (findArchiveTokenIt != m_pathMap.end())
         {
-            // If the file exist in the archive, store that its index
+            // If the file exist in the archive, store its index
             archiveFileIndex = findArchiveTokenIt->second;
         }
         else if (!m_removedFileIndices.empty())
@@ -1209,7 +1219,7 @@ namespace Archive
                     }
                 }
 
-                // Now update the jump offset value with the amount of bytes that can be skipped in the raw data section of the archive
+                // Now update the jump offset value with the amount of bytes that can be skipped in the C data section of the archive
                 // from the beginning of the file
                 m_archiveToc.m_blockOffsetTable[blockLineWithJumpIndex].m_blockLineWithJump.m_blockJump = jumpOffset;
 
@@ -1324,11 +1334,10 @@ namespace Archive
                 // if the entire deleted block is not used
                 // Since blocks are 512-byte aligned, the newDeletedBlockSize is rounded down to the nearest
                 // the 512-byte boundary and checked if it is >0
-                if(AZ::u64 newAlignedDeletedBlockSize = AZ_SIZE_ALIGN_DOWN(deletedBlockSize - alignedFileSizeToWrite,
-                    ArchiveDefaultBlockAlignment);
+                if(AZ::u64 newAlignedDeletedBlockSize = deletedBlockSize - alignedFileSizeToWrite;
                     newAlignedDeletedBlockSize > 0)
                 {
-                    // Calculate the new deleted block offset by alignin up to the nearest 512-byte boundary
+                    // Calculate the new deleted block offset by aligning up to the nearest 512-byte boundary
                     const AZ::u64 newDeletedBlockOffset = AZ_SIZE_ALIGN_UP(deletedBlockWriteOffset + alignedFileSizeToWrite,
                         ArchiveDefaultBlockAlignment);
 
@@ -1358,8 +1367,9 @@ namespace Archive
         return m_pathMap.contains(relativePath);
     }
 
-    bool ArchiveWriter::RemoveFileFromArchive(ArchiveFileToken filePathToken)
+    ArchiveRemoveFileResult ArchiveWriter::RemoveFileFromArchive(ArchiveFileToken filePathToken)
     {
+        ArchiveRemoveFileResult result;
         const size_t archiveFileIndex = static_cast<size_t>(filePathToken);
         if (archiveFileIndex < m_archiveToc.m_fileMetadataTable.size()
             && !m_removedFileIndices.contains(archiveFileIndex))
@@ -1375,41 +1385,55 @@ namespace Archive
             // FYI: The compressed size in sectors is the aggregate represents the total size of the compressed
             // 2-MiB blocks as stored in the raw data
             // See `ArchiveTocFileMetadata` structure for more info
-            AZ::u64 alignedBlockSize = AZ_SIZE_ALIGN_DOWN(blockSize, ArchiveDefaultBlockAlignment);
+            AZ::u64 alignedBlockSize = AZ_SIZE_ALIGN_UP(blockSize, ArchiveDefaultBlockAlignment);
             AZ::u64 alignedBlockOffset = AZ_SIZE_ALIGN_UP(fileMetadata.m_offset, ArchiveDefaultBlockAlignment);
 
-            auto& deletedBlockOffsetSet = m_deletedBlockSizeToOffsetMap[alignedBlockSize];
-            deletedBlockOffsetSet.emplace(alignedBlockOffset);
+            // If the new block size aligned down to nearest 512-byte boundary is 0
+            // then there deleted blocks
+            if (alignedBlockSize > 0)
+            {
+                auto& deletedBlockOffsetSet = m_deletedBlockSizeToOffsetMap[alignedBlockSize];
+                deletedBlockOffsetSet.emplace(alignedBlockOffset);
+            }
 
-            m_deletedBlockSizeToOffsetMap[fileMetadata.m_uncompressedSize];
+            // Update the result structure with the metadata about the removed file
+            result.m_uncompressedSize = fileMetadata.m_uncompressedSize;
+            result.m_compressedSize = fileMetadata.m_compressedSizeInSectors * ArchiveDefaultBlockAlignment;
+            result.m_offset = fileMetadata.m_offset;
+
+            // If the was compressed, retrieve the compression algorithm Id associated with the index
+            if (fileMetadata.m_compressionAlgoIndex < UncompressedAlgorithmIndex)
+            {
+                result.m_compressionAlgorithm = m_archiveHeader.m_compressionAlgorithmsIds[fileMetadata.m_compressionAlgoIndex];
+            }
 
             // Clear out the FileMetadata entry from Accelerating Table of Contents structure
             fileMetadata = {};
 
-            // Get a reference to the file path stored in the table of contents
-            ArchiveTableOfContents::Path& filePath = m_archiveToc.m_filePaths[archiveFileIndex];
+            // Move the file path stored in the table of contents into the result structure
+            result.m_relativeFilePath = static_cast<AZ::IO::Path&&>(AZStd::move(m_archiveToc.m_filePaths[archiveFileIndex]));
 
             // Remove the file path -> file token store for this ArchiveWriter
-            const size_t erasedPathCount = m_pathMap.erase(filePath);
-
-            // Clear the path data stored in the current PathTable index in the TOC
-            // This does not release the allocated memory in-case a file is then later added to the current
-            // deleted index
-            filePath.clear();
+            if (const size_t erasedPathCount = m_pathMap.erase(result.m_relativeFilePath);
+                erasedPathCount == 0)
+            {
+                result.m_resultOutcome = AZStd::unexpected(ResultString::format("Removing mapping of file path from the Archive Writer"
+                    R"(file path -> archive file token map failed to locate path "%s")", result.m_relativeFilePath.c_str()));
+            }
 
             // Decrement the file count in the header
             --m_archiveHeader.m_fileCount;
 
-            return erasedPathCount != 0;
         }
 
-        return false;
+        return result;
     }
 
-    bool ArchiveWriter::RemoveFileFromArchive(AZ::IO::PathView relativePath)
+    ArchiveRemoveFileResult ArchiveWriter::RemoveFileFromArchive(AZ::IO::PathView relativePath)
     {
         const auto pathIt = m_pathMap.find(relativePath);
-        return pathIt != m_pathMap.end() && RemoveFileFromArchive(static_cast<ArchiveFileToken>(pathIt->second));
+        return pathIt != m_pathMap.end() ? RemoveFileFromArchive(static_cast<ArchiveFileToken>(pathIt->second))
+            : ArchiveRemoveFileResult{};
     }
 
     bool ArchiveWriter::WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,

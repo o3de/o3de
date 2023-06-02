@@ -63,6 +63,12 @@ namespace Archive
         //! + TOC Block Offset table
         AZ::u64 GetUncompressedTocSize() const;
 
+        //! If on the Compression algorithm the TOC is using a compression algorithm
+        //! index that is < UncompressedAlgorithmIndex
+        //! then the compressed size of the toc is returned
+        //! otherwise the uncompressed size of the toc is returned
+        AZ::u64 GetTocStoredSize() const;
+
         //! O3DE only runs on little endian machines
         //! Therefore the bytes are added in little endian order
         //! The Magic Identifier for the archive format is "O3AR" for O3DE Archive
@@ -118,7 +124,7 @@ namespace Archive
         //! Max size is 512MiB or 2^29 bytes
         //! The TOC offset + TOC compressed size is equal to total size of the Archive file
         //! If the Compression Algorithm is set to Uncompressed
-        //! Then this represents the uncompressed TOC size
+        //! Then this value is 0
         //! offset = 24
         AZ::u32 m_tocCompressedSize : 29;
         //! Compression algorithm used for the Table of Contents
@@ -260,7 +266,7 @@ namespace Archive
         AZ::u64 m_unused : 1;
 
         //! Offset from the beginning of the File Path Table to the start of Archive File Path
-        AZ::u64 m_offset : 40;
+        AZ::u64 m_offset : 48;
     };
 
     static_assert(sizeof(ArchiveTocFilePathIndex) == 8, "File Path Index entry should be 8 bytes");

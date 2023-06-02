@@ -21,11 +21,18 @@ namespace Archive
 
     inline ArchiveWriterSettings::ArchiveWriterSettings() = default;
 
-    // bool operator which converts an ArchiveAddToFileResult to true
+    // bool operator which converts an ArchiveAddFileResult to true
     // if the file path token isn't invalid
-    inline ArchiveAddToFileResult::operator bool() const
+    inline ArchiveAddFileResult::operator bool() const
     {
         return m_filePathToken != InvalidArchiveFileToken;
+    }
+
+    // If the archive file was successfully removed
+    // the relative file path will not be empty
+    inline ArchiveRemoveFileResult::operator bool() const
+    {
+        return !m_relativeFilePath.empty();
     }
 
     // Archive Writer interface TypeInfo, rtti and allocator macros

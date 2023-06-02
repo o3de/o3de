@@ -131,24 +131,37 @@ namespace Archive
 
     //! Returns result data around operation of adding a stream of content data
     //! to an archive file
-    struct ArchiveAddToFileResult
+    struct ArchiveAddFileResult
     {
         //! returns if adding a stream of data to a file within the archive has succeeded
         //! it does by checking that the ArchiveFileToken != InvalidArchiveFileToken
         explicit operator bool() const;
 
-        AZ::IO::PathView m_relativeFilePath;
+        AZ::IO::Path m_relativeFilePath;
         ArchiveFileToken m_filePathToken{ InvalidArchiveFileToken };
         Compression::CompressionAlgorithmId m_compressionAlgorithm{ Compression::Uncompressed };
         ResultOutcome m_resultOutcome;
     };
 
-    //! Stores offset information about the Files added to the Archive for write
-    struct ArchiveWriterFileMetadata
+    //! Returns a result structure that indicates if removal of a content file from the
+    //! archive was successful
+    //! Metadata about the file is returned, such as its file path, compressed algorithm ID
+    //! offset from the beginning of the raw file data blocks, uncompressed size and compressed size
+    struct ArchiveRemoveFileResult
     {
+        //! returns if adding a stream of data to a file within the archive has succeeded
+        //! it does by checking that the ArchiveFileToken != InvalidArchiveFileToken
+        explicit operator bool() const;
+
         AZ::IO::Path m_relativeFilePath;
         Compression::CompressionAlgorithmId m_compressionAlgorithm{ Compression::Uncompressed };
+        AZ::u64 m_uncompressedSize{};
+        AZ::u64 m_compressedSize{};
+        AZ::u64 m_offset{};
+
+        ResultOutcome m_resultOutcome;
     };
+
 
     //! Interface for the ArchiveWriter of O3DE Archive format
     //! The caller is required to supply a ArchiveWriterSettings structure instance
@@ -194,6 +207,9 @@ namespace Archive
         //! to the stream before closing the stream
         virtual void UnmountArchive() = 0;
 
+        //! Returns if an open archive that is mounted
+        virtual bool IsMounted() const = 0;
+
         //! Written Archive Table of Contents to end of the stream
         //! If this call is successful, the archive TOC has been successfully written
         //! This function has been marked [[nodiscard]], to ensure the caller
@@ -204,11 +220,11 @@ namespace Archive
 
         //! Adds the content from the stream to the relative path
         //! based on the ArchiveWriterFileSettings
-        virtual ArchiveAddToFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
+        virtual ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
             const ArchiveWriterFileSettings& fileSettings = {}) = 0;
 
         //! Used the span contents to add the file to the archive
-        virtual ArchiveAddToFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
+        virtual ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
             const ArchiveWriterFileSettings& fileSettings = {}) = 0;
 
         //! Searches for a relative path within the archive
@@ -227,10 +243,14 @@ namespace Archive
         //! NOTE: The entry in the table of contents is not actually removed
         //! The index where the file is located using the filePathToken
         //! is just added to the removed file indices set
-        virtual bool RemoveFileFromArchive(ArchiveFileToken filePathToken) = 0;
+        //! //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! stored in the Archive
+        virtual ArchiveRemoveFileResult RemoveFileFromArchive(ArchiveFileToken filePathToken) = 0;
         //! Removes the file from the archive using a relative path name
         //! @param relativePath Relative path within archive to search for
-        virtual bool RemoveFileFromArchive(AZ::IO::PathView relativePath) = 0;
+        //! //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! stored in the Archive
+        virtual ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) = 0;
 
         //! Writes the file data about the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream

@@ -39,9 +39,47 @@ namespace Archive
         //! It's length matches the value of m_fileCount
         AZStd::vector<ArchiveTocFileMetadata> m_fileMetadataTable;
 
+
+        //! Wrapper path structure to ensure the Table of Contents only contain paths that
+        //! uses the Posix Path Separator '/'
+        struct Path
+        {
+            Path() = default;
+
+            Path(const Path&) = default;
+            Path(Path&&) = default;
+            //! Implicit conversion constructor to store move an AZ::IO::Path
+            Path(AZ::IO::Path filePath);
+            Path(AZ::IO::PathView filePath);
+
+            Path& operator=(const Path&) = default;
+            Path& operator=(Path&&) = default;
+            //! Add support for storing an AZ::IO::Path into the table of contents
+            //! as a path with a
+            Path& operator=(AZ::IO::Path filePath);
+            Path& operator=(AZ::IO::PathView filePath);
+
+            //! implicit AZ::IO::Path operator that returns a reference
+            //! to the underlying filesystem path
+            operator AZ::IO::Path& () &;
+            operator const AZ::IO::Path& () const&;
+            operator AZ::IO::Path&& ()&&;
+            operator const AZ::IO::Path&& () const&&;
+
+            [[nodiscard]] bool empty() const;
+            void clear();
+            const typename AZ::IO::Path::string_type& Native() const& noexcept;
+            const typename AZ::IO::Path::string_type&& Native() const&& noexcept;
+            typename AZ::IO::Path::string_type& Native() & noexcept;
+            typename AZ::IO::Path::string_type&& Native() && noexcept;
+            const typename AZ::IO::Path::value_type* c_str() const noexcept;
+
+        private:
+            AZ::IO::Path m_posixPath{ AZ::IO::PosixPathSeparator };
+        };
+
         //! vector storing a copy of each file path in memory
-        //! It's length matches the value of m_fileCount
-        using Path = AZ::IO::Path;
+//! It's length matches the value of m_fileCount
         using ArchiveFilePathTable = AZStd::vector<Path>;
         ArchiveFilePathTable m_filePaths;
 
