@@ -2911,7 +2911,7 @@ def add_args(subparsers) -> None:
     create_repo_subparser.add_argument('-s', '--summary', type=str, required=False,
                                        help='A short description of this Repo')
     create_repo_subparser.add_argument('-ai', '--additional-info', type=str, required=False,
-                                       help='Any additional info you want to add to this Remote repo')
+                                       help='Any additional info you want to add to this Remote repo that is not necessary to know')
     create_repo_subparser.add_argument('-f','--force', action='store_true', default=False,
                                       help='Copies over instantiated RemoteRepo directory even if it exist.')
     create_repo_subparser.add_argument('-r', '--replace', type=str, required=False,
