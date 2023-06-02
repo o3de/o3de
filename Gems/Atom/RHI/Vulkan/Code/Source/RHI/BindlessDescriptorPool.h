@@ -23,7 +23,7 @@ namespace AZ::Vulkan
     class BindlessDescriptorPool
     {
     public:
-        void Init(Device& device);
+        void Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc);
         void Shutdown();
 
         //! Add/Update a read only buffer descriptor to the global bindless heap 
@@ -62,6 +62,9 @@ namespace AZ::Vulkan
         //! Return the descriptor set related to the global bindless descriptor set
         VkDescriptorSet GetNativeDescriptorSet();
 
+        //! Return the binding slot for the bindless srg
+        uint32_t GetBindlessSrgBindingSlot();
+
     private:
         VkWriteDescriptorSet PrepareWrite(uint32_t index, uint32_t binding, VkDescriptorType type);
 
@@ -70,7 +73,10 @@ namespace AZ::Vulkan
         VkDescriptorSetLayout m_descriptorSetLayout = VK_NULL_HANDLE;
         VkDescriptorSet m_set;
 
-        RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)];
+        RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count)];
+
+        // Descriptor to hold information related to binding indices of bindless srg
+        AZ::RHI::BindlessSrgDescriptor m_bindlessSrgDesc;
 
         // Mutex to protect bindless heap related updates
         AZStd::mutex m_mutex;

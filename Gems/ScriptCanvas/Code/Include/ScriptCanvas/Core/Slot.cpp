@@ -867,9 +867,10 @@ namespace ScriptCanvas
         }
 
         // At this point we need to confirm the types are a match.
-        const auto& thisType = GetDataType();
+        const auto& slotType = GetDataType();
 
-        if (thisType.IS_A(dataType))
+        // As long as the data type is a type of slotType (actual type or subclass), it's a match.
+        if (dataType.IS_A(slotType))
         {
             return AZ::Success();
         }

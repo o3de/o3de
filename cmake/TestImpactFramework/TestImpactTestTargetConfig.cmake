@@ -5,6 +5,9 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
 
 # Path to test instrumentation binary
 set(O3DE_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")

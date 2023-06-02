@@ -31,9 +31,11 @@ namespace AzToolsFramework
             static bool IsFolderEmpty(AZStd::string_view path);
             static bool IsEngineOrProjectFolder(AZStd::string_view path);
 
-            static QVariant GetThumbnail(const AssetBrowserEntry* entry);
-
             static Qt::DropAction SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries);
+
+            // Returns the custom image or default icon for a given asset browser entry
+            // @param returnIcon - when set to true, always returns the default icon for a given entry
+            static QVariant GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon = false);
         };
     } // namespace AssetBrowser
 

@@ -660,14 +660,11 @@ namespace AzToolsFramework
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
 
-        if (IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
-            // Assign this widget to the Editor Entity Property Editor Action Context.
-            AssignWidgetToActionContextHelper(
-                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-        }
+        // Assign this widget to the Editor Entity Property Editor Action Context.
+        AssignWidgetToActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()

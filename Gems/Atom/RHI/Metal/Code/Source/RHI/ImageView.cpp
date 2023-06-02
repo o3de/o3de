@@ -98,17 +98,27 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
                         
             // Cache the read and readwrite index of the view withn the global Bindless Argument buffer
-            if (!viewDescriptor.m_isArray && !viewDescriptor.m_isCubemap && !isDSRendertarget)
+            if (!viewDescriptor.m_isArray && !isDSRendertarget)
             {
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                if (viewDescriptor.m_isCubemap)
                 {
-                    m_readIndex = device.GetBindlessArgumentBuffer().AttachReadImage(*this);
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessArgumentBuffer().AttachReadCubeMapImage(*this);
+                    }
                 }
-
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                else
                 {
-                    m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteImage(*this);
-               }
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessArgumentBuffer().AttachReadImage(*this);
+                    }
+                    
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessArgumentBuffer().AttachReadWriteImage(*this);
+                    }
+                }
             }
             
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
@@ -143,14 +153,25 @@ namespace AZ
         void ImageView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
-
-            if (m_readIndex != ~0u)
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+            
+            if(viewDescriptor.m_isCubemap)
             {
-                device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadCubeMapImage(m_readIndex);
+                }
             }
-            if (m_readWriteIndex != ~0u)
+            else
             {
-                device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                if (m_readIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                }
+                if (m_readWriteIndex != ~0u)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                }
             }
         }
 

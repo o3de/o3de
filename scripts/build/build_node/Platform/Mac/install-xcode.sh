@@ -43,4 +43,4 @@ echo "Enabling developer mode"
 sudo /usr/sbin/DevToolsSecurity --enable
 
 echo "Installing cmake"
-brew install cmake@3.24.0
+brew install cmake@3.22.1

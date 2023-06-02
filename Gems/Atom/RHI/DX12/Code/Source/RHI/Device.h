@@ -159,13 +159,16 @@ namespace AZ
             // callback function which is called when device was removed
             void OnDeviceRemoved();
 
+            // return the binding slot of the bindless srg
+            uint32_t GetBindlessSrgSlot() const;
+
         private:
             Device();
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-
+            RHI::ResultCode InitInternalBindlessSrg(const RHI::BindlessSrgDescriptor& bindlessSrgDesc) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
             void UpdateCpuTimingStatisticsInternal() const override;
@@ -239,6 +242,9 @@ namespace AZ
             bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;
             HANDLE m_waitHandle;
+
+            // Cache bindless srg bind slot
+            uint32_t m_bindlesSrgBindingSlot = AZ::RHI::InvalidIndex;
         };
     }
 }

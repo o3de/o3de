@@ -793,23 +793,6 @@ void EditorViewportWidget::RenderSnapMarker()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnMenuResolutionCustom()
-{
-    CCustomResolutionDlg resDlg(width(), height(), parentWidget());
-    if (resDlg.exec() == QDialog::Accepted)
-    {
-        ResizeView(resDlg.GetWidth(), resDlg.GetHeight());
-
-        const QString text = QString::fromLatin1("%1 x %2").arg(resDlg.GetWidth()).arg(resDlg.GetHeight());
-
-        QStringList customResPresets;
-        CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-        CViewportTitleDlg::UpdateCustomPresets(text, customResPresets);
-        CViewportTitleDlg::SaveCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
 {
     Camera::EditorCameraSystemRequestBus::Broadcast(&Camera::EditorCameraSystemRequests::CreateCameraEntityFromViewport);
@@ -1135,25 +1118,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
                 {
                     floatViewMenu->addSeparator();
                 }
-
-                QMenu* resolutionMenu = floatViewMenu->addMenu(tr("Resolution"));
-
-                QStringList customResPresets;
-                CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-                CViewportTitleDlg::AddResolutionMenus(
-                    resolutionMenu,
-                    [this](int width, int height)
-                    {
-                        ResizeView(width, height);
-                    },
-                    customResPresets);
-                if (!resolutionMenu->actions().isEmpty())
-                {
-                    resolutionMenu->addSeparator();
-                }
-                QAction* customResolutionAction = resolutionMenu->addAction(tr("Custom..."));
-                connect(customResolutionAction, &QAction::triggered, this, &EditorViewportWidget::OnMenuResolutionCustom);
-                break;
             }
         }
     }

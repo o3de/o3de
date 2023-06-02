@@ -25,7 +25,6 @@
 #include "Settings.h"
 #include "MainWindow.h"
 #include "ToolBox.h"
-#include "KeyboardCustomizationSettings.h"
 
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -488,25 +487,6 @@ CToolsConfigPage::CToolsConfigPage(QWidget* parent)
 
     m_ui->m_macroCmd->setCompleter(new QCompleter(m_completionModel));
 
-    connect(m_ui->m_macroShortcutKey, &QKeySequenceEdit::keySequenceChanged, this, [&]([[maybe_unused]] const QKeySequence &keySequence) {
-        int numOfShortcuts = m_ui->m_macroShortcutKey->keySequence().count() - 1;
-        if (numOfShortcuts >= 1)
-        {
-            int value = m_ui->m_macroShortcutKey->keySequence()[numOfShortcuts];
-            QKeySequence shortcut(value);
-            m_ui->m_macroShortcutKey->setKeySequence(shortcut);
-        }
-
-        if (m_ui->m_macroShortcutKey->keySequence().count() >= 1)
-        {
-            m_ui->m_assignShortcut->setEnabled(true);
-        }
-        else
-        {
-            m_ui->m_assignShortcut->setEnabled(false);
-        }
-    });
-
     OnInitDialog();
 }
 
@@ -521,7 +501,6 @@ void CToolsConfigPage::OnInitDialog()
     m_ui->m_commandList->setModel(m_commandModel);
 
     connect(m_ui->m_assignCommand, &QPushButton::clicked, this, &CToolsConfigPage::OnAssignCommand);
-    connect(m_ui->m_assignShortcut, &QPushButton::clicked, this, &CToolsConfigPage::OnAssignMacroShortcut);
     connect(m_ui->m_selectIcon, &QPushButton::clicked, this, &CToolsConfigPage::OnSelectMacroIcon);
     connect(m_ui->m_clearIcon, &QPushButton::clicked, this, &CToolsConfigPage::OnClearMacroIcon);
     connect(m_ui->m_console, &QRadioButton::clicked, this, &CToolsConfigPage::OnConsoleCmd);
@@ -550,24 +529,11 @@ void CToolsConfigPage::OnInitDialog()
 void CToolsConfigPage::OnOK()
 {
     GetIEditor()->GetToolBoxManager()->Save();
-    MainWindow* pMainFrame = MainWindow::instance();
-
-    auto pShortcutMgr = pMainFrame->GetShortcutManager();
-    if (pShortcutMgr)
-    {
-        pShortcutMgr->Save();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CToolsConfigPage::OnCancel()
 {
-    auto pShortcutMgr = MainWindow::instance()->GetShortcutManager();
-    if (pShortcutMgr)
-    {
-        pShortcutMgr->Load();
-    }
-
     // Revert to the original.
     GetIEditor()->GetToolBoxManager()->Load();
 }
@@ -581,26 +547,15 @@ void CToolsConfigPage::OnSelchangeMacroList()
 
     if (m_ui->m_macroList->currentIndex().isValid())
     {
-        // Update the shortcut.
-        auto pShortcutMgr = MainWindow::instance()->GetShortcutManager();
-        m_ui->m_macroShortcutKey->clear();
-        if (pShortcutMgr && macro)
-        {
-            m_ui->m_macroShortcutKey->setKeySequence(macro->GetShortcutName());
-        }
-
         /// Update the icon.
         const QPixmap icon(macro != nullptr ? macro->GetIconPath() : QString());
         m_ui->m_macroIcon->setPixmap(icon);
 
-        m_ui->m_macroShortcutKey->setEnabled(true);
         m_ui->m_selectIcon->setEnabled(true);
         m_ui->m_clearIcon->setEnabled(true);
     }
     else
     {
-        m_ui->m_macroShortcutKey->setEnabled(false);
-        m_ui->m_assignShortcut->setEnabled(false);
         m_ui->m_selectIcon->setEnabled(false);
         m_ui->m_clearIcon->setEnabled(false);
     }
@@ -694,43 +649,6 @@ void CToolsConfigPage::OnAssignCommand()
 
         m_commandModel->setData(commandIndex, QVariant::fromValue(pCommand), Qt::UserRole);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CToolsConfigPage::OnAssignMacroShortcut()
-{
-    auto pShortcutMgr = MainWindow::instance()->GetShortcutManager();
-
-    if (pShortcutMgr  == nullptr)
-    {
-        return;
-    }
-
-    auto macroIndex = m_ui->m_macroList->currentIndex();
-
-    if (!macroIndex.isValid())
-    {
-        return;
-    }
-
-    QKeySequence editorAccel = m_ui->m_macroShortcutKey->keySequence();
-    CToolBoxMacro* pMacro = macroIndex.data(Qt::UserRole).value<CToolBoxMacro*>();
-
-    QAction* action = pShortcutMgr->FindActionForShortcut(editorAccel);
-    bool bReassign = false;
-
-    if (action != nullptr)
-    {
-        if (!bReassign && QMessageBox::question(this, QString(), tr("This shortcut is currently assigned.\nDo you want to re - assign this shortcut ?")) != QMessageBox::Yes)
-        {
-            m_ui->m_macroShortcutKey->setKeySequence(pMacro->GetShortcutName());
-            return;
-        }
-        bReassign = true;
-        action->setShortcut(QKeySequence());
-    }
-
-    pMacro->SetShortcutName(m_ui->m_macroShortcutKey->keySequence());
 }
 
 //////////////////////////////////////////////////////////////////////////
