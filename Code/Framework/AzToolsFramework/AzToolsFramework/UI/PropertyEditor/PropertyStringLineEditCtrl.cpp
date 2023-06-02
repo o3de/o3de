@@ -130,6 +130,19 @@ namespace AzToolsFramework
                 AZ_WarningOnce("AzToolsFramework", false, "Failed to read 'MaxLength' attribute from property '%s' into text field", debugName);
             }
         }
+        else if (attrib == AZ::Edit::Attributes::PlaceholderText)
+        {
+            AZStd::string placeholderText;
+            if (attrValue->Read<AZStd::string>(placeholderText))
+            {
+                GUI->GetLineEdit()->setPlaceholderText(placeholderText.c_str());
+            }
+            else
+            {
+                AZ_WarningOnce("AzToolsFramework", false,
+                    "Failed to read 'PlaceholderText' attribute from property '%s' into string text field.", debugName);
+            }
+        }
         GUI->blockSignals(false);
     }
 
