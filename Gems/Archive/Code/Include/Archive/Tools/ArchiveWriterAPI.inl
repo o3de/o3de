@@ -12,6 +12,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 
+#include <Archive/ArchiveTypeIds.h>
+
 namespace Archive
 {
     inline ArchiveWriterError::operator bool() const
@@ -36,7 +38,7 @@ namespace Archive
     }
 
     // Archive Writer interface TypeInfo, rtti and allocator macros
-    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(IArchiveWriter, "IArchiveWriter", "{6C966C29-8D98-4FCD-AEE5-CFFF80EEB561}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(IArchiveWriter, "IArchiveWriter", IArchiveWriterTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(IArchiveWriter);
     AZ_CLASS_ALLOCATOR_IMPL_INLINE(IArchiveWriter, AZ::SystemAllocator);
 

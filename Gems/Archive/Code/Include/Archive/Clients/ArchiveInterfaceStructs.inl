@@ -58,9 +58,11 @@ namespace Archive
     // Get the total uncompressed size of the Table of Contents
     inline AZ::u64 ArchiveHeader::GetUncompressedTocSize() const
     {
+        // The first 8 bytes of the Archive TOC section is the magic byte sequence
+        AZ::u64 uncompressedSize = AZ_SIZE_ALIGN_UP(sizeof(ArchiveTocMagicBytes), sizeof(ArchiveTocFileMetadata));
         // The uncompressed FileMetadataTable is always a multiple
         // of sizeof(ArchiveTocFileMetadata) which is 16
-        AZ::u64 uncompressedSize = m_tocFileMetadataTableUncompressedSize;
+        uncompressedSize += m_tocFileMetadataTableUncompressedSize;
         // The uncompressed FilePathIndex is always a multiple
         // of sizeof(ArchiveTocFilePathIndex) which is 8
         uncompressedSize += m_tocPathIndexTableUncompressedSize;
@@ -87,6 +89,25 @@ namespace Archive
     {
         return m_tocCompressionAlgoIndex < UncompressedAlgorithmIndex
             ? m_tocCompressedSize : GetUncompressedTocSize();
+    }
+
+    constexpr ArchiveHeaderValidationResult::operator bool() const
+    {
+        return m_errorCode == ArchiveHeaderErrorCode{};
+    }
+
+    // Validates Archive Header by checking the magic bytes
+    inline ArchiveHeaderValidationResult ValidateHeader(const ArchiveHeader& archiveHeader)
+    {
+        ArchiveHeaderValidationResult result{};
+        if (archiveHeader.m_magicBytes != ArchiveHeaderMagicBytes)
+        {
+            result.m_errorCode = ArchiveHeaderErrorCode::InvalidMagicBytes;
+            result.m_errorMessage = ArchiveHeaderValidationResult::ErrorString::format(
+                "Archive header has invalid magic byte sequence %u",
+                archiveHeader.m_magicBytes);
+        }
+        return result;
     }
 
     // ArchiveFileMetadata constructor implementation

@@ -17,13 +17,15 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Task/TaskGraph.h>
 
+#include <Archive/ArchiveTypeIds.h>
+
 #include <Compression/CompressionInterfaceAPI.h>
 #include <Compression/DecompressionInterfaceAPI.h>
 
 namespace Archive
 {
     // Implement TypeInfo, Rtti and Allocator support
-    AZ_TYPE_INFO_WITH_NAME_IMPL(ArchiveWriter, "ArchiveWriter", "{DACA9F90-C8D5-41CB-8400-F0B39BFC4A28}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL(ArchiveWriter, "ArchiveWriter", ArchiveWriterTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL(ArchiveWriter, IArchiveWriter);
     AZ_CLASS_ALLOCATOR_IMPL(ArchiveWriter, AZ::SystemAllocator);
 
@@ -86,6 +88,12 @@ namespace Archive
                 "Archive header should have size %zu, but only %llu bytes were read from the beginning of the archive",
                 sizeof(archiveHeader), bytesRead) });
         }
+        else if (auto archiveValidationResult = ValidateHeader(archiveHeader);
+            archiveValidationResult)
+        {
+            m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingHeader,
+                archiveValidationResult.m_errorMessage });
+        }
 
         return true;
     }
@@ -130,7 +138,7 @@ namespace Archive
             {
                 m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorReadingTableOfContents,
                     ArchiveWriterErrorString::format("Unable to read all TOC bytes from the archive."
-                        " The TOC size is %u, but only %llu bytes were read",
+                        " The TOC size is %zu, but only %llu bytes were read",
                         tocBuffer.size(), bytesRead)});
                 return false;
             }
@@ -401,18 +409,7 @@ namespace Archive
             return false;
         }
 
-        // An empty file is valid to use for writing a new archive
-        // therefore return  true;
-        if (m_archiveStream->GetLength() == 0)
-        {
-            return true;
-        }
-
-        const bool mountResult = ReadArchiveHeader(m_archiveHeader, *m_archiveStream)
-            && ReadArchiveTOC(m_archiveToc, *m_archiveStream, m_archiveHeader)
-            && BuildDeletedFileBlocksMap(m_archiveHeader, *m_archiveStream);
-
-        return mountResult;
+        return ReadArchiveHeaderAndToc();
     }
 
     bool ArchiveWriter::MountArchive(ArchiveStreamPtr archiveStream)
@@ -427,14 +424,25 @@ namespace Archive
             return false;
         }
 
+        return ReadArchiveHeaderAndToc();
+    }
+
+    bool ArchiveWriter::ReadArchiveHeaderAndToc()
+    {
+        if (m_archiveStream == nullptr)
+        {
+            return false;
+        }
+
+        // An empty file is valid to use for writing a new archive therefore return true
         if (m_archiveStream->GetLength() == 0)
         {
             return true;
         }
-
         const bool mountResult = ReadArchiveHeader(m_archiveHeader, *m_archiveStream)
             && ReadArchiveTOC(m_archiveToc, *m_archiveStream, m_archiveHeader)
-            && BuildDeletedFileBlocksMap(m_archiveHeader, *m_archiveStream);
+            && BuildDeletedFileBlocksMap(m_archiveHeader, *m_archiveStream)
+            && BuildFilePathMap(m_archiveToc);
 
         return mountResult;
     }
@@ -567,7 +575,11 @@ namespace Archive
             AZStd::span(m_archiveToc.m_blockOffsetTable).size_bytes());
 
         // 2. Write the Archive Table of Contents
+        // Both buffers lifetime must be encompess the tocWriteSpan below
+        // to make sure the span points to a valid buffer
         AZStd::vector<AZStd::byte> tocRawBuffer;
+        AZStd::vector<AZStd::byte> tocCompressBuffer;
+
         WriteTocRawResult rawTocResult = WriteTocRaw(tocRawBuffer);
         if (!rawTocResult)
         {
@@ -576,16 +588,23 @@ namespace Archive
             return result;
         }
 
-        // Initialize the tocWriteSpan to the raw Toc Data
+        // Initialize the tocWriteSpan to the tocRawBuffer above
         AZStd::span<const AZStd::byte> tocWriteSpan = rawTocResult.m_tocSpan;
 
         // Check if the table of contents should be compressed
-        if (m_archiveHeader.m_tocCompressionAlgoIndex < UncompressedAlgorithmIndex)
+        Compression::CompressionAlgorithmId tocCompressionAlgorithmId =
+            m_archiveHeader.m_tocCompressionAlgoIndex < UncompressedAlgorithmIndex
+            ? m_archiveHeader.m_compressionAlgorithmsIds[m_archiveHeader.m_tocCompressionAlgoIndex]
+            : Compression::Uncompressed;
+        if (m_settings.m_tocCompressionAlgorithm.has_value())
         {
-            // Resize the compress block buffer to be the same size as the input buffer
-            AZStd::vector<AZStd::byte> tocCompressBuffer;
+            tocCompressionAlgorithmId = m_settings.m_tocCompressionAlgorithm.value();
+        }
 
-            CompressTocRawResult compressResult = CompressTocRaw(tocCompressBuffer, tocRawBuffer);
+        if (tocCompressionAlgorithmId != Compression::Invalid && tocCompressionAlgorithmId != Compression::Uncompressed)
+        {
+            CompressTocRawResult compressResult = CompressTocRaw(tocCompressBuffer, tocRawBuffer,
+                tocCompressionAlgorithmId);
             if (!compressResult)
             {
                 CommitResult result;
@@ -593,10 +612,13 @@ namespace Archive
                 return result;
             }
 
+            // The tocWriteSpan now points to the tocCompressBufer
+            // via the CompressTocRawResult span
             tocWriteSpan = compressResult.m_compressedTocSpan;
 
-            // Update the archive header compressed toc size
+            // Update the archive header compressed toc metadata
             m_archiveHeader.m_tocCompressedSize = tocWriteSpan.size();
+            m_archiveHeader.m_tocCompressionAlgoIndex = FindCompressionAlgorithmId(tocCompressionAlgorithmId, m_archiveHeader);
         }
         else
         {
@@ -647,6 +669,12 @@ namespace Archive
         tocOutputBuffer.reserve(m_archiveHeader.GetUncompressedTocSize());
 
         AZ::IO::ByteContainerStream tocOutputStream(&tocOutputBuffer);
+
+        tocOutputStream.Write(sizeof(ArchiveTocMagicBytes), &ArchiveTocMagicBytes);
+        // Write padding bytes to ensure that the file metadata entries
+        // start on a 16-byte boundary
+        AZStd::byte fileMetadataAlignmentBytes[sizeof(ArchiveTocFileMetadata) - sizeof(ArchiveTocMagicBytes)]{};
+        tocOutputStream.Write(AZStd::size(fileMetadataAlignmentBytes), fileMetadataAlignmentBytes);
 
         // Write out the file metadata table first to the table of contents
         // The m_fileMetadataTable and m_filePaths should have the same size
@@ -716,7 +744,8 @@ namespace Archive
     }
 
     auto ArchiveWriter::CompressTocRaw(AZStd::vector<AZStd::byte>& tocCompressionBuffer,
-        AZStd::span<const AZStd::byte> uncompressedTocInputSpan) -> CompressTocRawResult
+        AZStd::span<const AZStd::byte> uncompressedTocInputSpan,
+        Compression::CompressionAlgorithmId compressionAlgorithmId) -> CompressTocRawResult
     {
         CompressTocRawResult result;
         // Initialize the compressedTocSpan to the uncompressed data
@@ -729,14 +758,20 @@ namespace Archive
             return result;
         }
         Compression::ICompressionInterface* compressionInterface =
-            compressionRegistrar->FindCompressionInterface(m_settings.m_tocCompressionAlgorithm);
+            compressionRegistrar->FindCompressionInterface(compressionAlgorithmId);
         if (compressionInterface == nullptr)
         {
             result.m_errorString = ResultString::format(
                 "Compression algorithm with ID %u is not registered with the Compression Registrar",
-                AZStd::to_underlying(m_settings.m_tocCompressionAlgorithm));
+                AZStd::to_underlying(compressionAlgorithmId));
             return result;
         }
+
+        // Add the Compression Algorithm ID to the archive header compression algorithm array
+        AddCompressionAlgorithmId(compressionAlgorithmId, m_archiveHeader);
+
+        // Resize the TOC compression Buffer to be able to fit the compressed content
+        tocCompressionBuffer.resize_no_construct(compressionInterface->CompressBound(uncompressedTocInputSpan.size()));
 
         if (auto compressionResultData = compressionInterface->CompressBlock(
             tocCompressionBuffer, uncompressedTocInputSpan);
@@ -860,11 +895,11 @@ namespace Archive
 
         // Try to register the compression algorithm id with the Archive Header compression algorithm id array
         // if has not already been registered
-        AddCompressionAlgorithmId(fileSettings.m_compressionAlgorithm);
+        AddCompressionAlgorithmId(fileSettings.m_compressionAlgorithm, m_archiveHeader);
 
         // Now lookup the compression algorithm id to make sure it corresponds to a valid entry
         // in the compression algorithm id array
-        size_t compressionAlgorithmIndex = FindCompressionAlgorithmId(fileSettings.m_compressionAlgorithm);
+        size_t compressionAlgorithmIndex = FindCompressionAlgorithmId(fileSettings.m_compressionAlgorithm, m_archiveHeader);
 
         // If a valid compression algorithm Id is not found in the compression algorithm id array
         // then an invalid file token is returned
@@ -964,7 +999,6 @@ namespace Archive
                     };
                     taskGraph.AddTask(compressTaskDescriptor, AZStd::move(compressTask));
                 }
-
 
                 taskGraph.SubmitOnExecutor(m_taskWriteExecutor, taskWriteGraphEvent.get());
                 // Sync on the task completion
@@ -1356,13 +1390,13 @@ namespace Archive
         return writeBlockOffset;
     }
 
-    ArchiveFileToken ArchiveWriter::FindFile(AZ::IO::PathView relativePath)
+    ArchiveFileToken ArchiveWriter::FindFile(AZ::IO::PathView relativePath) const
     {
         auto foundIt = m_pathMap.find(relativePath);
         return foundIt != m_pathMap.end() ? static_cast<ArchiveFileToken>(foundIt->second) : InvalidArchiveFileToken;
     }
 
-    bool ArchiveWriter::ContainsFile(AZ::IO::PathView relativePath)
+    bool ArchiveWriter::ContainsFile(AZ::IO::PathView relativePath) const
     {
         return m_pathMap.contains(relativePath);
     }
@@ -1437,7 +1471,7 @@ namespace Archive
     }
 
     bool ArchiveWriter::WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
-        const ArchiveWriterMetadataSettings& metadataSettings)
+        const ArchiveMetadataSettings& metadataSettings) const
     {
         using MetadataString = AZStd::fixed_string<256>;
         if (metadataSettings.m_writeFileCount)
@@ -1501,74 +1535,4 @@ namespace Archive
         }
         return true;
     }
-
-    bool ArchiveWriter::AddCompressionAlgorithmId(Compression::CompressionAlgorithmId compressionAlgorithmId)
-    {
-        // The Invalid compression Algorithm Id is never added to the archive header compression algorithm id array
-        // The uncompressed algorithm Id is not directly in the compression algorithm id array, but is
-        // represented by the special index value of `0b111=7`
-        if (compressionAlgorithmId == Compression::Invalid || compressionAlgorithmId == Compression::Uncompressed)
-        {
-            return false;
-        }
-
-        // Check the compression algorithm id is already registered with the compression algorithm id array
-        // If not, then register the compression algorithm at the first unused slot index
-        size_t firstUnusedIndex = InvalidAlgorithmIndex;
-        for (size_t compressionAlgorithmIndex{}; compressionAlgorithmIndex < m_archiveHeader.m_compressionAlgorithmsIds.size();
-            ++compressionAlgorithmIndex)
-        {
-            Compression::CompressionAlgorithmId registeredCompressionAlgorithmId = m_archiveHeader.m_compressionAlgorithmsIds[compressionAlgorithmIndex];
-            // If the compression algorithm is already registered return false
-            if (registeredCompressionAlgorithmId == compressionAlgorithmId)
-            {
-                return false;
-            }
-
-            // track the firstUnused slot index when iterating over compression algorithm id array
-            if (firstUnusedIndex == InvalidAlgorithmIndex
-                && registeredCompressionAlgorithmId == Compression::Invalid)
-            {
-                firstUnusedIndex = compressionAlgorithmIndex;
-            }
-        }
-
-        // If all the compression algorithm id indices are in use
-        // no additional compression algorithms can be registered with the compression algorithm id array
-        if (firstUnusedIndex == InvalidAlgorithmIndex)
-        {
-            return false;
-        }
-
-        // Insert the new compressionAlgorithmId into the first unused index of the compression algorithm id array
-        m_archiveHeader.m_compressionAlgorithmsIds[firstUnusedIndex] = compressionAlgorithmId;
-        return true;
-    }
-
-    size_t ArchiveWriter::FindCompressionAlgorithmId(Compression::CompressionAlgorithmId compressionAlgorithmId)
-    {
-        // If the compression algorithm id is invalid return the invalid algorithm index
-        if (compressionAlgorithmId == Compression::Invalid)
-        {
-            return InvalidAlgorithmIndex;
-        }
-
-        // If the compression algorithm id is uncompressed
-        // return a value of 7 which is the highest 3-bit value(0b111)
-        // The compression algorithm Id array contains 7 elements for registering compression algorithms.
-        // The index of 7 is used to represent the file is uncompressed the purposes of storing
-        // that information the archive table of contents for an uncompressed file
-        if (compressionAlgorithmId == Compression::Uncompressed)
-        {
-            return UncompressedAlgorithmIndex;
-        }
-
-        // Locate the compression algorithm Id in the compression algorithm id array
-        auto foundIt = AZStd::find(m_archiveHeader.m_compressionAlgorithmsIds.begin(), m_archiveHeader.m_compressionAlgorithmsIds.end(),
-            compressionAlgorithmId);
-        return foundIt != m_archiveHeader.m_compressionAlgorithmsIds.end()
-            ? AZStd::distance(m_archiveHeader.m_compressionAlgorithmsIds.begin(), foundIt)
-            : InvalidAlgorithmIndex;
-    }
-
 } // namespace Archive

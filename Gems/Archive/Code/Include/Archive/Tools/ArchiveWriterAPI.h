@@ -11,9 +11,10 @@
 #include <AzCore/base.h>
 
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/functional.h>
 
-#include <Archive/ArchiveBaseAPI.h>
-#include <Archive/ArchiveInterfaceStructs.h>
+#include <Archive/Clients/ArchiveBaseAPI.h>
+#include <Archive/Clients/ArchiveInterfaceStructs.h>
 
 #include <Compression/CompressionInterfaceStructs.h>
 #include <Compression/CompressionInterfaceAPI.h>
@@ -52,11 +53,14 @@ namespace Archive
     {
         ArchiveWriterSettings();
 
-        //! Compression Algorithm to use when writing the Archive TOC to the archive
+        //! Optional Compression Algorithm to use when writing the Archive TOC to the archive
+        //! If the optional is not engaged, then the compression algorithm stored in the
+        //! `ArchiveHeader::m_tocCompressionAlgoIndex` field is used instead
+        //!
         //! If the compression algorithm isn't registered with the CompressionRegistrar
         //! or if the compression algorithm cannot be added to the Archive Header compression algorithm array
         //! due to it being full, then the TOC will be written as uncompressed
-        Compression::CompressionAlgorithmId m_tocCompressionAlgorithm{ Compression::Uncompressed };
+        AZStd::optional<Compression::CompressionAlgorithmId> m_tocCompressionAlgorithm;
 
         //! Callback which is invoked by the ArchiveWriter to inform users of errors that occurs
         //! This is used in by functions that can't return an error outcome such as constructors
@@ -67,26 +71,6 @@ namespace Archive
         //! If the value is 0, then a single compression task that will be run
         //! at a given moment
         AZ::u32 m_maxCompressTasks{ AZStd::thread::hardware_concurrency() };
-    };
-
-    //! Specifies settings to use when retrieving the metadata
-    //! about files within the archive
-    struct ArchiveWriterMetadataSettings
-    {
-        //! Output total file count
-        bool m_writeFileCount{ true };
-        //! Outputs the relative file paths
-        bool m_writeFilePaths{ true };
-        //! Outputs the offsets of files within the archive
-        //! m_writeFilePaths must be true for offsets to be written
-        //! otherwise there would be no file path associated with the offset values
-        bool m_writeFileOffsets{ true };
-        //! Outputs the sizes of file as they are stored inside of an archive
-        //! as well as the compression algorithm used for files
-        //! This will include both uncompressed and compressed sizes
-        //! m_writeFilePaths must be true for offsets to be written
-        //! otherwise there would be no file path associated with the offset values
-        bool m_writeFileSizesAndCompression{ true };
     };
 
     enum class ArchiveWriterFileMode : bool
@@ -115,7 +99,7 @@ namespace Archive
     //! and case-sensitive systems such as Linux
     struct ArchiveWriterFileSettings
     {
-        AZ::IO::Path m_relativeFilePath;
+        AZ::IO::PathView m_relativeFilePath;
         Compression::CompressionAlgorithmId m_compressionAlgorithm{ Compression::Uncompressed };
         ArchiveWriterFileMode m_fileMode{ ArchiveWriterFileMode::AddNew };
         ArchiveFilePathCase m_fileCase{ ArchiveFilePathCase::Lowercase };
@@ -125,9 +109,6 @@ namespace Archive
         const Compression::CompressionOptions* m_compressionOptions{};
     };
 
-    //! Stores outcome detailing result of operation
-    using ResultString = AZStd::fixed_string<512>;
-    using ResultOutcome = AZStd::expected<void, ResultString>;
 
     //! Returns result data around operation of adding a stream of content data
     //! to an archive file
@@ -137,9 +118,22 @@ namespace Archive
         //! it does by checking that the ArchiveFileToken != InvalidArchiveFileToken
         explicit operator bool() const;
 
+        //! File path of the added file
+        //! NOTE: This is the file path as added to the Archive FilePath Blob Table
+        //! It will be different than the file path specified in
+        //! `ArchiveWriterFileSettings::m_relativeFilePath` if the
+        //! `ArchiveWriterFileSettings::m_fileCase` options causes the file path case to change
         AZ::IO::Path m_relativeFilePath;
+        //! Token that can be used to query or remove the file added file from the mounted Archive
+        //! This is only valid for the specific ArchiveWriter instance
         ArchiveFileToken m_filePathToken{ InvalidArchiveFileToken };
+        //! Compression Algorithm ID that was used to compress the added file
+        //! NOTE: This will be different that the `ArchiveWriterFileSettings::m_compressionAlgorithm`
+        //! if the the compression algorithm is not registered or the CompressionRegistrar
+        //! is not available.
+        //! In that case, the file will be stored uncompressed
         Compression::CompressionAlgorithmId m_compressionAlgorithm{ Compression::Uncompressed };
+        //! Stores any error messages that occur when adding the file from the archive
         ResultOutcome m_resultOutcome;
     };
 
@@ -153,12 +147,21 @@ namespace Archive
         //! it does by checking that the ArchiveFileToken != InvalidArchiveFileToken
         explicit operator bool() const;
 
+        //! File path of the removed file
         AZ::IO::Path m_relativeFilePath;
+        //! Compression algorithm ID that that file was compressed or Compression::Uncompressed if not
         Compression::CompressionAlgorithmId m_compressionAlgorithm{ Compression::Uncompressed };
+        //! The uncompressed size of the removed file
         AZ::u64 m_uncompressedSize{};
+        //! the compressed size of the removed file
+        //! INFO: This value will be a multiple of 512
         AZ::u64 m_compressedSize{};
-        AZ::u64 m_offset{};
-
+        //! The raw offset of the file in the ArchiveFile from the beginning of the raw file data block
+        //! As the ArchiveHeader is 512-byte aligned to the beginning of the file
+        //! this value is at least 512,
+        //! NOTE: The TocOffsetU64 structure is used to enforce that the value is >= 512
+        ArchiveHeader::TocOffsetU64 m_offset{};
+        //! Stores any error messages that occur when removing the file from the archive
         ResultOutcome m_resultOutcome;
     };
 
@@ -210,7 +213,9 @@ namespace Archive
         //! Returns if an open archive that is mounted
         virtual bool IsMounted() const = 0;
 
-        //! Written Archive Table of Contents to end of the stream
+        //! Write the updated ArchiveHeader to the beginning of the stream and
+        //! Table of Contents to end of the stream
+        //!
         //! If this call is successful, the archive TOC has been successfully written
         //! This function has been marked [[nodiscard]], to ensure the caller
         //! checks the return value
@@ -223,7 +228,7 @@ namespace Archive
         virtual ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
             const ArchiveWriterFileSettings& fileSettings = {}) = 0;
 
-        //! Used the span contents to add the file to the archive
+        //! The span contents is used to supply file data for the file to the archive
         virtual ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
             const ArchiveWriterFileSettings& fileSettings = {}) = 0;
 
@@ -231,12 +236,12 @@ namespace Archive
         //! @param relativePath Relative path within archive to search for
         //! @return A token that identifies the Archive file if it exist
         //! if the with the specified path doesn't exist InvalidArchiveFileToken is returned
-        virtual ArchiveFileToken FindFile(AZ::IO::PathView relativePath) = 0;
+        virtual ArchiveFileToken FindFile(AZ::IO::PathView relativePath) const = 0;
         //! Returns if the archive contains a relative path
         //! @param relativePath Relative path within archive to search for
         //! @returns true if the relative path is contained with the Archive
         //! equivalent to `return FindFile(relativePath) != InvalidArchiveFileToken;`
-        virtual bool ContainsFile(AZ::IO::PathView relativePath) = 0;
+        virtual bool ContainsFile(AZ::IO::PathView relativePath) const = 0;
 
         //! Removes the file from the archive using the ArchiveFileToken
         //! @param filePathToken Relative path within archive to search for
@@ -252,11 +257,11 @@ namespace Archive
         //! stored in the Archive
         virtual ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) = 0;
 
-        //! Writes the file data about the archive to the supplied generic stream
+        //! Writes metadata for the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
         //! @return true if metadata was successfully written
         virtual bool WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
-            const ArchiveWriterMetadataSettings& metadataSettings = {}) = 0;
+            const ArchiveMetadataSettings& metadataSettings = {}) const = 0;
     };
 
     //! Creates an instance of the Concrete ArchiveWriter class

@@ -11,7 +11,7 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 
-#include <Archive/ArchiveWriterAPI.h>
+#include <Archive/Tools/ArchiveWriterAPI.h>
 
 #include <Compression/CompressionLZ4API.h>
 
@@ -61,7 +61,7 @@ namespace Archive::Test
         AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
 
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // The empty archive should be have a header equal to the default constructed ArchiveHeader
         ArchiveHeader defaultArchiveHeader;
@@ -82,7 +82,7 @@ namespace Archive::Test
             AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
 
             IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-            EXPECT_TRUE(commitResult);
+            ASSERT_TRUE(commitResult);
 
             // The empty archive should be have a header equal to the default constructed ArchiveHeader
             ArchiveHeader defaultArchiveHeader;
@@ -102,7 +102,7 @@ namespace Archive::Test
 
             // Recommit the existing archive with no changes
             IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-            EXPECT_TRUE(commitResult);
+            ASSERT_TRUE(commitResult);
 
             ArchiveHeader defaultArchiveHeader;
             auto defaultArchiveHeaderSpan = AZStd::span(reinterpret_cast<AZStd::byte*>(&defaultArchiveHeader), sizeof(defaultArchiveHeader));
@@ -142,7 +142,7 @@ namespace Archive::Test
 
         // Commit the archive Header and Table of Contents to the stream
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         ArchiveHeader expectedArchiveHeader;
         // As there is one file in the archive which is less than 512 bytes
@@ -198,7 +198,7 @@ namespace Archive::Test
         EXPECT_EQ(CompressionLZ4::GetLZ4CompressionAlgorithmId(), addFileResult.m_compressionAlgorithm);
 
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         ArchiveHeader expectedArchiveHeader;
         // As there is one file in the archive which is less than 512 bytes
@@ -298,7 +298,7 @@ namespace Archive::Test
 
         // Commit the archive Header and Table of Contents to the stream
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // Second check - Make sure commiting the table of contents to the Archive Stream
         // does affect the ability to search files within the archive
@@ -481,7 +481,7 @@ namespace Archive::Test
 
         // Commit the archive header and table of contents to the stream
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // Since the header is aligned on 512-byte boundary + the first 2 files
         // are aligned on a 512-byte boundary the TOC start offset is
@@ -526,7 +526,7 @@ namespace Archive::Test
 
         // Commit the update archive header and table of contents to stream
         commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // The Archive should now only contain 1 file
         {
@@ -572,7 +572,7 @@ namespace Archive::Test
 
         // Commit the update archive header and table of contents to stream
         commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // The Archive should now be empty
         {
@@ -630,7 +630,7 @@ namespace Archive::Test
 
         // Commit the update archive header and table of contents to stream
         commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // The should be back at 1 file again
         {
@@ -678,8 +678,6 @@ namespace Archive::Test
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
         AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
 
-        AZStd::array<ArchiveAddFileResult, 2> addedFileResults;
-
         // Add an compressed file to archive
         AZStd::string_view fileContent = "Hello World";
         ArchiveWriterFileSettings fileSettings;
@@ -698,7 +696,7 @@ namespace Archive::Test
 
         // Write the archive header and table of contents to stream
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // There should be a single file in the archive
         {
@@ -736,7 +734,7 @@ namespace Archive::Test
 
         // Write toe updated archive header and table of contents out
         commitResult = archiveWriter->Commit();
-        EXPECT_TRUE(commitResult);
+        ASSERT_TRUE(commitResult);
 
         // Compare against the known expected values
         EXPECT_EQ(1, archiveHeader->m_fileCount);
@@ -788,7 +786,7 @@ namespace Archive::Test
         EXPECT_EQ(CompressionLZ4::GetLZ4CompressionAlgorithmId(), addFileResult.m_compressionAlgorithm);
 
         // Commit the archive writer to update the header and table of contents in the stream
-        EXPECT_TRUE(archiveWriter->Commit());
+        ASSERT_TRUE(archiveWriter->Commit());
 
         // Cast the first sizeof(ArchiveHeader) bytes to an ArchiveHeader
         auto archiveBufferSpan = AZStd::span(archiveBuffer).first(sizeof(ArchiveHeader));
@@ -806,5 +804,99 @@ namespace Archive::Test
             archiveHeader->m_tocBlockOffsetTableUncompressedSize);
 
         EXPECT_EQ(CompressionLZ4::GetLZ4CompressionAlgorithmId(), archiveHeader->m_compressionAlgorithmsIds[0]);
+    }
+
+    TEST_F(ArchiveWriterFixture, CanWriteCompressedTOC_AndReadCompressedBackIn_Succeeds)
+    {
+        AZStd::vector<AZStd::byte> archiveBuffer;
+        AZ::IO::ByteContainerStream archiveStream(&archiveBuffer);
+
+        // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
+        IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
+
+        ArchiveWriterSettings writerSettings;
+        writerSettings.m_tocCompressionAlgorithm = CompressionLZ4::GetLZ4CompressionAlgorithmId();
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr),
+            writerSettings);
+
+        // Add an compressed file to archive
+        AZStd::string_view fileContent = "Hello World";
+        ArchiveWriterFileSettings fileSettings;
+        fileSettings.m_relativeFilePath = "Sanity/test.txt";
+        auto addFileResult = archiveWriter->AddFileToArchive(StringToByteSpan(fileContent), fileSettings);
+
+        EXPECT_TRUE(addFileResult);
+        EXPECT_NE(InvalidArchiveFileToken, addFileResult.m_filePathToken);
+
+        // the ArchiveWriterFileSettings defaults to lowercasing paths added to the archive
+        AZ::IO::Path loweredCaseFilePath = fileSettings.m_relativeFilePath;
+        AZStd::to_lower(loweredCaseFilePath.Native());
+        EXPECT_EQ(loweredCaseFilePath, addFileResult.m_relativeFilePath);
+        EXPECT_EQ(Compression::Uncompressed, addFileResult.m_compressionAlgorithm);
+
+        // Write the archive header and the compressed table of contents to stream
+        IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
+        ASSERT_TRUE(commitResult);
+
+
+        // Write the updated archive header and table of contents out
+        commitResult = archiveWriter->Commit();
+        ASSERT_TRUE(commitResult);
+
+        // Compare against the known expected values
+        // Verify the Table of Contents is compressed
+        {
+            // Cast the first sizeof(ArchiveHeader) bytes to an ArchiveHeader
+            auto archiveBufferSpan = AZStd::span(archiveBuffer).first(sizeof(ArchiveHeader));
+            auto archiveHeader = reinterpret_cast<ArchiveHeader*>(archiveBufferSpan.data());
+            EXPECT_EQ(CompressionLZ4::GetLZ4CompressionAlgorithmId(), archiveHeader->m_compressionAlgorithmsIds[0]);
+            EXPECT_EQ(0, archiveHeader->m_tocCompressionAlgoIndex);
+            EXPECT_GT(archiveHeader->m_tocCompressedSize, 0);
+
+            EXPECT_EQ(1, archiveHeader->m_fileCount);
+            EXPECT_EQ(sizeof(ArchiveTocFileMetadata) * 1, archiveHeader->m_tocFileMetadataTableUncompressedSize);
+            EXPECT_EQ(sizeof(ArchiveTocFilePathIndex) * 1, archiveHeader->m_tocPathIndexTableUncompressedSize);
+            EXPECT_EQ(fileSettings.m_relativeFilePath.Native().size(), archiveHeader->m_tocPathBlobUncompressedSize);
+            EXPECT_EQ(0, archiveHeader->m_tocBlockOffsetTableUncompressedSize);
+        }
+
+        // Reset the ArchiveWriter instance and make a new instance
+        // that loads the Archive stream now containing a compressed TOC
+        archiveWriter.reset();
+
+        archiveStreamPtr.reset(&archiveStream);
+        archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+
+        // Validate the Table of Contents by updating an existing file
+        fileSettings.m_fileMode = ArchiveWriterFileMode::AddNewOrUpdateExisting;
+        fileSettings.m_compressionAlgorithm = CompressionLZ4::GetLZ4CompressionAlgorithmId();
+        fileContent = "Land data to compress";
+        addFileResult = archiveWriter->AddFileToArchive(StringToByteSpan(fileContent), fileSettings);
+
+        EXPECT_TRUE(addFileResult);
+        EXPECT_EQ(CompressionLZ4::GetLZ4CompressionAlgorithmId(), addFileResult.m_compressionAlgorithm);
+
+        // Re-write the archive header and Table of contents
+        commitResult = archiveWriter->Commit();
+        ASSERT_TRUE(commitResult);
+
+        // Compare against the known expected values
+        // Verify the Table of Contents is compressed
+        // Cast the first sizeof(ArchiveHeader) bytes to an ArchiveHeader
+        {
+            auto archiveBufferSpan = AZStd::span(archiveBuffer).first(sizeof(ArchiveHeader));
+            auto archiveHeader = reinterpret_cast<ArchiveHeader*>(archiveBufferSpan.data());
+            EXPECT_EQ(CompressionLZ4::GetLZ4CompressionAlgorithmId(), archiveHeader->m_compressionAlgorithmsIds[0]);
+            EXPECT_EQ(0, archiveHeader->m_tocCompressionAlgoIndex);
+            EXPECT_GT(archiveHeader->m_tocCompressedSize, 0);
+
+            // There should still only be a single file in the archive
+            // However as the file is compressed now, there should be block line entries
+            EXPECT_EQ(1, archiveHeader->m_fileCount);
+            EXPECT_EQ(sizeof(ArchiveTocFileMetadata) * 1, archiveHeader->m_tocFileMetadataTableUncompressedSize);
+            EXPECT_EQ(sizeof(ArchiveTocFilePathIndex) * 1, archiveHeader->m_tocPathIndexTableUncompressedSize);
+            EXPECT_EQ(fileSettings.m_relativeFilePath.Native().size(), archiveHeader->m_tocPathBlobUncompressedSize);
+            EXPECT_EQ(sizeof(ArchiveBlockLineUnion), archiveHeader->m_tocBlockOffsetTableUncompressedSize);
+        }
     }
 }

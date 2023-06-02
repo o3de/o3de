@@ -50,6 +50,12 @@ namespace Archive
     //! there are no further deleted blocks afterwards
     constexpr AZ::u64 DeletedBlockOffsetSentinel = AZStd::numeric_limits<AZ::u64>::max();
 
+    //! O3DE only runs on little endian machines
+    //! Therefore the bytes are added in little endian order
+    //! The Magic Identifier for the archive format is "O3AR" for O3DE Archive
+    constexpr AZ::u32 ArchiveHeaderMagicBytes = { 'O' | ('3' << 8) | ('A' << 16) | ('R' << 24) };
+    constexpr AZ::u64 ArchiveTocMagicBytes = ArchiveHeaderMagicBytes;
+
     //! Fixed size Header struct for the Archive format
     //! This suitable for directly reading the archive header into
     struct ArchiveHeader
@@ -69,11 +75,9 @@ namespace Archive
         //! otherwise the uncompressed size of the toc is returned
         AZ::u64 GetTocStoredSize() const;
 
-        //! O3DE only runs on little endian machines
-        //! Therefore the bytes are added in little endian order
-        //! The Magic Identifier for the archive format is "O3AR" for O3DE Archive
+        //! The Magic Bytes used to identify the archive as being in the O3DE Archive format
         //! offset = 0
-        const AZ::u32 m_magicBytes{ 'O' | ('3' << 8) | ('A' << 16) | ('R' << 24) };
+        const AZ::u32 m_magicBytes{ ArchiveHeaderMagicBytes };
 
         //! Version number of archive format. Supports up to 2^16 revisions per entry
         //! offset = 4
@@ -198,6 +202,27 @@ namespace Archive
     static_assert(sizeof(ArchiveHeader) == 88, "Archive Header section should be less than 88 bytes per spec version 1");
     static_assert(sizeof(ArchiveHeader) <= ArchiveDefaultBlockAlignment, "Archive Header section should be less than 512 bytes");
 
+    //! Error codes for when archive validation fails
+    enum class ArchiveHeaderErrorCode
+    {
+        InvalidMagicBytes = 1
+    };
+
+    //! Stores the error code and any error messages related to failing
+    //! to validate the archive header
+    struct ArchiveHeaderValidationResult
+    {
+        explicit constexpr operator bool() const;
+        ArchiveHeaderErrorCode m_errorCode{};
+        using ErrorString = AZStd::basic_fixed_string<char, 512, AZStd::char_traits<char>>;
+        ErrorString m_errorMessage;
+    };
+
+    //! Validates the ArchiveHeader data
+    //! It currently validates that the first 4 bytes of the ArchiveHeader
+    //! matches the magic byte sequence "O3AR"
+    ArchiveHeaderValidationResult ValidateHeader(const ArchiveHeader& archiveHeader);
+
     //! File offset representing the beginning of the file
     //! It starts is at offset 512 within the archive file stream
     //! This is because the Archive header is aligned to 512 bytes
@@ -206,7 +231,7 @@ namespace Archive
         " the ArchiveDefaultBlockAlignment");
 
     //! Represents an entry of a single file within the Archive
-    struct ArchiveTocFileMetadata
+    struct alignas(16) ArchiveTocFileMetadata
     {
         ArchiveTocFileMetadata();
 

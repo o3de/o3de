@@ -5,14 +5,9 @@
 #
 
 set(FILES
-    Include/Archive/ArchiveBaseAPI.h
-    Include/Archive/ArchiveInterfaceStructs.h
-    Include/Archive/ArchiveInterfaceStructs.inl
-    Include/Archive/ArchiveTOC.h
-    Include/Archive/ArchiveTOC.inl
-    Include/Archive/ArchiveTOCView.h
-    Include/Archive/ArchiveTOCView.inl
     Include/Archive/ArchiveTypeIds.h
-    Include/Archive/ArchiveWriterAPI.h
-    Include/Archive/ArchiveWriterAPI.inl
+    Include/Archive/Clients/ArchiveBaseAPI.inl
+    Include/Archive/Clients/ArchiveBaseAPI.h
+    Include/Archive/Clients/ArchiveInterfaceStructs.h
+    Include/Archive/Clients/ArchiveInterfaceStructs.inl
 )

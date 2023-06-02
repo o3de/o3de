@@ -9,10 +9,11 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/function/function_fwd.h>
 
-#include <Archive/ArchiveInterfaceStructs.h>
+#include <Archive/Clients/ArchiveInterfaceStructs.h>
 
 namespace Archive
 {

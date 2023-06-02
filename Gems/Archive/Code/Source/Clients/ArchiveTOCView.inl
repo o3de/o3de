@@ -18,15 +18,34 @@ namespace Archive
     auto ArchiveTableOfContentsView::CreateFromArchiveHeaderAndBuffer(const ArchiveHeader& archiveHeader,
         AZStd::span<AZStd::byte> tocBuffer) -> CreateTOCViewOutcome
     {
+        // A valid table of contents must have at least 8 bytes to store the Magic Bytes
+        if (tocBuffer.size() < sizeof(ArchiveTocMagicBytes))
+        {
+            ArchiveTocValidationResult tocValidationResult;
+            tocValidationResult.m_errorCode = ArchiveTocErrorCode::InvalidMagicBytes;
+            tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                "The Archive TOC is empty. It must be at least %zu bytes to store the Magic Bytes",
+                sizeof(ArchiveTocMagicBytes));
+            return CreateTOCViewOutcome(AZStd::unexpected(AZStd::move(tocValidationResult)));
+        }
+
         ArchiveTableOfContentsView tocView;
-        constexpr size_t FileMetadataTableOffset = 0;
+
+        // magic bytes offset
+        constexpr size_t MagicBytesOffset = 0;
+
+        // Round up the File metadata offset as it is 16-byte aligned
+        constexpr size_t FileMetadataTableOffset = AZ_SIZE_ALIGN_UP(
+            MagicBytesOffset + sizeof(ArchiveTocMagicBytes),
+            16);
+
         // The file path metadata entries is 16 bytes aligned
-        // so round up to the neareast 16th byte before reading the file path index entries
+        // so round up to the nearest 16th byte before reading the file path index entries
         const size_t FilePathIndexTableOffset = AZ_SIZE_ALIGN_UP(
             FileMetadataTableOffset + archiveHeader.m_tocFileMetadataTableUncompressedSize,
             16);
         // The file path index entries are 8 bytes aligned
-        // so round up to the neareast 8th byte before reading the file path blob
+        // so round up to the nearest 8th byte before reading the file path blob
         const size_t FilePathBlobOffset = AZ_SIZE_ALIGN_UP(
             FilePathIndexTableOffset + archiveHeader.m_tocPathIndexTableUncompressedSize,
             8);
@@ -36,6 +55,8 @@ namespace Archive
             FilePathBlobOffset + archiveHeader.m_tocPathBlobUncompressedSize,
             8);
 
+        // Cast the first 8 of the TOC buffer
+        tocView.m_magicBytes = *reinterpret_cast<decltype(tocView.m_magicBytes)*>(tocBuffer.data() + MagicBytesOffset);
         // create a span to the file metadata entries
         tocView.m_fileMetadataTable = AZStd::span(
             reinterpret_cast<const ArchiveTocFileMetadata*>(tocBuffer.data() + FileMetadataTableOffset),
@@ -76,6 +97,15 @@ namespace Archive
         const ArchiveHeader& archiveHeader,
         const ArchiveTocValidationOptions& validationOptions)
     {
+        if (tocView.m_magicBytes != ArchiveTocMagicBytes)
+        {
+            ArchiveTocValidationResult tocValidationResult;
+            tocValidationResult.m_errorCode = ArchiveTocErrorCode::InvalidMagicBytes;
+            tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
+                "The Archive TOC has an invalid magic byte sequence of %llu", tocView.m_magicBytes);
+            return tocValidationResult;
+        }
+
         if (validationOptions.m_validateFileMetadataTable
             && tocView.m_fileMetadataTable.size_bytes() != archiveHeader.m_tocFileMetadataTableUncompressedSize)
         {

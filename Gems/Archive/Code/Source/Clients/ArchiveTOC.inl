@@ -8,9 +8,7 @@
 
 #pragma once
 
-#include <AzCore/std/functional.h>
-
-#include <Archive/ArchiveTOCView.h>
+#include "ArchiveTOCView.h"
 
 namespace Archive
 {

@@ -14,7 +14,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/function/function_fwd.h>
 
-#include <Archive/ArchiveInterfaceStructs.h>
+#include <Archive/Clients/ArchiveInterfaceStructs.h>
 
 namespace Archive
 {
@@ -22,7 +22,8 @@ namespace Archive
     //! against the ArchiveHeader
     enum class ArchiveTocErrorCode
     {
-        FileMetadataTableSizeMismatch = 1,
+        InvalidMagicBytes = 1,
+        FileMetadataTableSizeMismatch,
         FileIndexTableSizeMismatch,
         BlockOffsetTableCountMismatch
     };
@@ -49,6 +50,8 @@ namespace Archive
         static CreateTOCViewOutcome CreateFromArchiveHeaderAndBuffer(const ArchiveHeader& archiveHeader,
             AZStd::span<AZStd::byte> tocBuffer);
 
+        //! 8-byte magic bytes entry used to indicate that the read table of contents is valid
+        AZ::u64 m_magicBytes = ArchiveTocMagicBytes;
         //! pointer to the beginning of the Archive File Metadata Table
         //! It's length is based on the file count value in the Archive Header Section
         AZStd::span<ArchiveTocFileMetadata const> m_fileMetadataTable{};
@@ -66,7 +69,7 @@ namespace Archive
 
     //! Options which allows configuring which sections of the table of contents
     //! should be validated.
-    //! NOTE:The Block Offset table takes the longest time to validate
+    //! NOTE: The Block Offset table takes the longest time to validate
     //! as it verifies the number of block lines in the table of contents
     //! is equivalent to the number of block lines each file should have
     //! It does this by calculating the number of block lines a file should

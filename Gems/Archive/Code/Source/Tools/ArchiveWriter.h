@@ -8,9 +8,10 @@
 
 #pragma once
 
-#include <Archive/ArchiveBaseAPI.h>
-#include <Archive/ArchiveTOC.h>
-#include <Archive/ArchiveWriterAPI.h>
+#include <Archive/Clients/ArchiveBaseAPI.h>
+#include <Archive/Tools/ArchiveWriterAPI.h>
+
+#include <Clients/ArchiveTOC.h>
 
 #include <AzCore/Memory/Memory_fwd.h>
 #include <AzCore/RTTI/RTTIMacros.h>
@@ -75,7 +76,9 @@ namespace Archive
         //! Returns if an open archive that is mounted
         bool IsMounted() const override;
 
-        //! Written Archive Table of Contents to end of the stream
+        //! Write the updated ArchiveHeader to the beginning of the stream and
+        //! Table of Contents to end of the stream
+        //!
         //! If this call is successful, the archive TOC has been successfully written
         //! This function has been marked [[nodiscard]], to ensure the caller
         //! checks the return value
@@ -96,15 +99,15 @@ namespace Archive
         //! @param relativePath Relative path within archive to search for
         //! @return A token that identifies the Archive file if it exist
         //! if the with the specified path doesn't exist InvalidArchiveFileToken is returned
-        ArchiveFileToken FindFile(AZ::IO::PathView relativePath) override;
+        ArchiveFileToken FindFile(AZ::IO::PathView relativePath) const override;
         //! Returns if the archive contains a relative path
         //! @param relativePath Relative path within archive to search for
         //! @returns true if the relative path is contained with the Archive
         //! equivalent to `return FindFile(relativePath) != InvalidArchiveFileToken;`
-        bool ContainsFile(AZ::IO::PathView relativePath) override;
+        bool ContainsFile(AZ::IO::PathView relativePath) const override;
 
         //! Removes the file from the archive using the ArchiveFileToken
-        //! @param filePathToken Relative path within archive to search for
+        //! @param filePathToken Identifier queried using FindFile or AddFileToArchive
         //! NOTE: The entry in the table of contents is not actually removed
         //! The index where the file is located using the filePathToken
         //! is just added to the removed file indices set
@@ -113,17 +116,19 @@ namespace Archive
         ArchiveRemoveFileResult RemoveFileFromArchive(ArchiveFileToken filePathToken) override;
         //! Removes the file from the archive using a relative path name
         //! @param relativePath relative path within archive to search for
-        //! //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! @return ArchiveRemoveResult with metadata about how the deleted file was
         //! stored in the Archive
         ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) override;
 
-        //! Writes the file data about the archive to the supplied generic stream
+        //! Writes metadata for the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
         //! @return true if metadata was successfully written
         bool WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
-            const ArchiveWriterMetadataSettings& metadataSettings = {}) override;
+            const ArchiveMetadataSettings& metadataSettings = {}) const override;
 
     private:
+
+        bool ReadArchiveHeaderAndToc();
         //! Wraps an offset of the block to write plus the block size within the final buffer
         //! that will be written to the archive block section
         //! When the file is stored uncompressed, the offset is 0 and the size is the entire
@@ -189,26 +194,6 @@ namespace Archive
         //! @return Index into the block offset table where the compressed size
         //! of the 2 MiB blocks are stored
         AZ::u64 UpdateBlockOffsetEntryForFile(const ContentFileData& contentFileData);
-
-        //! Updates the archive header with the compression algorithm id
-        //! if one of the 7 compression algorithm Id slots are available
-        //! @param compressionAlgorithmId Id to add to the archive header
-        //! compression algorithm array
-        //! If the input is Compression::Invalid or Compression::Uncompressed
-        //! then the Archive Header is not added
-        //! @return true if the compression algorithm id was able to be added
-        //! to the Id array
-        bool AddCompressionAlgorithmId(Compression::CompressionAlgorithmId);
-        //! Queries the archive header for the index matching the specified compression
-        //! algorithm id
-        //! @param compressionAlgorithmId Id to query for the index in the archive header
-        //! for the compression algorithm Id array
-        //! @return the index of the registered compression algorithm Id
-        //! Special Case: If the input ID is `Compression::Uncompressed`, then
-        //! the value of `Compression::UncompressedAlgorithmIndex` is return instead
-        //! If the algorithm Id is not registered then the value of `InvalidAlgorithmIndex`
-        //! is returned
-        size_t FindCompressionAlgorithmId(Compression::CompressionAlgorithmId);
 
         //! Reads the archive header from the generic stream
         bool ReadArchiveHeader(ArchiveHeader& archiveHeader, AZ::IO::GenericStream& archiveStream);
@@ -280,10 +265,12 @@ namespace Archive
         //! algorithm specified in the Archive header
         //! @param tocCompressionBuffer output buffer to write compressed table of contents
         //! @param tocUncompressedInputSpan input buffer of the raw table of contents data to write
+        //! @param compressionAlgorithmId the compression algorithm to use for compressing the Table of Contents
         //! @return a result structure containing a span within the compression buffer of the compressed TOC data
         //! if successful, otherwise a span to the original input span is returned
         CompressTocRawResult CompressTocRaw(AZStd::vector<AZStd::byte>& tocCompressionBuffer,
-            AZStd::span<const AZStd::byte> uncompressedTocInputSpan);
+            AZStd::span<const AZStd::byte> uncompressedTocInputSpan,
+            Compression::CompressionAlgorithmId compressionAlgorithmId);
 
         //! Archive Writer specific settings
         //! Controls the compression algorithm used to write the table of contents
