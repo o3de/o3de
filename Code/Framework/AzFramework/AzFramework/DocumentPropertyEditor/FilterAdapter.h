@@ -20,6 +20,7 @@ namespace AZ::DocumentPropertyEditor
         ~RowFilterAdapter();
 
         void SetIncludeAllMatchDescendants(bool includeAll);
+        bool FilterIsActive() const;
 
         // MetaAdapter overrides
         Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const override;

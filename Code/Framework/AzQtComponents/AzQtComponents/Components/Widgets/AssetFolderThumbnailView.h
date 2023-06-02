@@ -119,6 +119,7 @@ namespace AzQtComponents
         void rootIndexChanged(const QModelIndex& idx);
         void contextMenu(const QModelIndex& idx);
         void afterRename(const QString& value) const;
+        void deselected();
 
     protected:
         friend class Style;

@@ -157,7 +157,7 @@ namespace AZ
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::ImageView* const> imageViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
             
             /// Returns a single image view associated with the image shader input index and array offset.
@@ -188,7 +188,7 @@ namespace AZ
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const RHI::BufferView* const> bufferViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
             
             /// Returns a single buffer view associated with the buffer shader input index and array offset.

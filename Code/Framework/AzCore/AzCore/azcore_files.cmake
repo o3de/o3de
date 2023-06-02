@@ -148,6 +148,8 @@ set(FILES
     EBus/Internal/StoragePolicies.h
     Instance/InstancePool.h
     Interface/Interface.h
+    IO/AnsiTerminalUtils.cpp
+    IO/AnsiTerminalUtils.h
     IO/ByteContainerStream.h
     IO/CompressionBus.h
     IO/CompressionBus.cpp

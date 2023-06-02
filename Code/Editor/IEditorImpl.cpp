@@ -40,7 +40,6 @@
 #include "PluginManager.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
-#include "KeyboardCustomizationSettings.h"
 #include "LevelIndependentFileMan.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
@@ -843,11 +842,6 @@ bool CEditorImpl::IsInLevelLoadTestMode()
 bool CEditorImpl::IsInPreviewMode()
 {
     return CCryEditApp::instance()->IsInPreviewMode();
-}
-
-void CEditorImpl::EnableAcceleratos(bool bEnable)
-{
-    KeyboardCustomizationSettings::EnableShortcutsGlobally(bEnable);
 }
 
 static AZStd::string SafeGetStringFromDocument(rapidjson::Document& projectCfg, const char* memberName)

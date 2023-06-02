@@ -10,6 +10,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/Component/EntitySerializer.h>
+#include <AzCore/Component/EntityUtils.h>
 
 namespace AZ
 {
@@ -165,11 +166,11 @@ namespace AZ
             AZStd::unordered_map<AZStd::string, AZ::Component*> componentMap;
             AZStd::unordered_map<AZStd::string, AZ::Component*> defaultComponentMap;
 
-            ConvertComponentVectorToMap(*components, componentMap);
+            EntityUtils::ConvertComponentVectorToMap(*components, componentMap);
 
             if (defaultComponents)
             {
-                ConvertComponentVectorToMap(*defaultComponents, defaultComponentMap);
+                EntityUtils::ConvertComponentVectorToMap(*defaultComponents, defaultComponentMap);
             }
 
             JSR::ResultCode resultComponents =
@@ -197,24 +198,6 @@ namespace AZ
         return context.Report(result,
             result.GetProcessing() != JSR::Processing::Halted ? "Successfully stored Entity information." :
             "Failed to store Entity information.");
-    }
-
-    void JsonEntitySerializer::ConvertComponentVectorToMap(const AZ::Entity::ComponentArrayType& components,
-        AZStd::unordered_map<AZStd::string, AZ::Component*>& componentMapOut)
-    {
-        for (AZ::Component* component : components)
-        {
-            if (component)
-            {
-                AZStd::string componentAlias = component->GetSerializedIdentifier();
-                if (componentAlias.empty())
-                {
-                    // Component alias can be empty for non-editor components
-                    componentAlias = AZStd::string::format("Component_[%llu]", component->GetId());
-                }
-                componentMapOut.emplace(componentAlias, component);
-            }
-        }
     }
 
     void DeprecatedComponentMetadata::SetEnableDeprecationTrackingCallback(EnableDeprecationTrackingCallback callback)

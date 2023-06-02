@@ -528,7 +528,8 @@ namespace AzToolsFramework
                 }
             }
         }
-        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool isFavorite)
+
+        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon, bool isFavorite)
         {
             // Check if this entry is a folder
             QString iconPathToUse;
@@ -565,20 +566,22 @@ namespace AzToolsFramework
             }
 
             // Check if this entry has a custom previewer, if so use that thumbnail
-            AZ::EBusAggregateResults<const PreviewerFactory*> factories;
-            PreviewerRequestBus::BroadcastResult(factories, &PreviewerRequests::GetPreviewerFactory, entry);
-            for (const auto factory : factories.values)
+            if (!returnIcon)
             {
-                if (factory)
+                AZ::EBusAggregateResults<const PreviewerFactory*> factories;
+                PreviewerRequestBus::BroadcastResult(factories, &PreviewerRequests::GetPreviewerFactory, entry);
+                for (const auto factory : factories.values)
                 {
-                    SharedThumbnail thumbnail;
-
-                    ThumbnailerRequestBus::BroadcastResult(
-                        thumbnail, &ThumbnailerRequests::GetThumbnail, entry->GetThumbnailKey());
-                    AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
-                    if (thumbnail && thumbnail->GetState() != Thumbnail::State::Failed)
+                    if (factory)
                     {
-                        return thumbnail->GetPixmap();
+                        SharedThumbnail thumbnail;
+
+                        ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, entry->GetThumbnailKey());
+                        AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
+                        if (thumbnail && thumbnail->GetState() != Thumbnail::State::Failed)
+                        {
+                            return thumbnail->GetPixmap();
+                        }
                     }
                 }
             }

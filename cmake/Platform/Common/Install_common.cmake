@@ -657,21 +657,38 @@ function(ly_setup_runtime_dependencies)
     else()
         # despite this copy function being the same, we need to install it per component that uses it
         # (which is per-configuration per-permutation component)
+
+        # The template is needed to replace the @LY_COPY_PERMISSIONS@ variable with the permissions
+        # that should be used for the copied file
+        set(install_runtime_ly_copy_template [[
+        function(ly_copy source_files relative_target_directory)
+            set(options)
+            set(oneValueArgs TARGET_FILE_DIR SOURCE_TYPE SOURCE_GEM_MODULE)
+            set(multiValueArgs)
+            cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+            set(target_file_dir "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE_DIR}")
+            set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
+            set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
+
+            # Create the full path to the target directory
+            cmake_path(APPEND target_directory "${target_file_dir}" "${relative_target_directory}")
+            foreach(source_file IN LISTS source_files)
+                cmake_path(GET source_file FILENAME target_filename)
+                cmake_path(APPEND full_target_directory "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}" "${target_directory}")
+                cmake_path(APPEND target_file "${full_target_directory}" "${target_filename}")
+                if("${source_file}" IS_NEWER_THAN "${target_file}")
+                    message(STATUS "Copying ${source_file} to ${full_target_directory}...")
+                    file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+                    file(TOUCH_NOCREATE "${target_file}")
+                endif()
+            endforeach()
+        endfunction()
+]])
+        # replace the @...@ placeholders
+        string(CONFIGURE "${install_runtime_ly_copy_template}" install_runtime_ly_copy @ONLY)
         foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
             string(TOUPPER ${conf} UCONF)
-            ly_install(CODE
-"function(ly_copy source_files target_directory)
-    foreach(source_file IN LISTS source_files)
-        cmake_path(GET source_file FILENAME target_filename)
-        cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
-        cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
-        if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
-            message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
-            file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
-            file(TOUCH_NOCREATE \"${target_file}\")
-        endif()
-    endforeach()
-endfunction()"
+            ly_install(CODE "${install_runtime_ly_copy}"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )
         endforeach()
@@ -695,11 +712,22 @@ endfunction()"
 
         # runtime dependencies that need to be copied to the output
         set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
-        ly_get_runtime_dependencies(runtime_dependencies ${target})
-        foreach(runtime_dependency ${runtime_dependencies})
+        unset(target_copy_dependencies)
+        unset(target_target_dependencies)
+        unset(target_link_dependencies)
+        unset(target_imported_dependencies)
+        o3de_get_dependencies_for_target(
+            TARGET "${target}"
+            COPY_DEPENDENCIES_VAR target_copy_dependencies
+            TARGET_DEPENDENCIES_VAR target_target_dependencies
+            LINK_DEPENDENCIES_VAR target_link_dependencies
+            IMPORTED_DEPENDENCIES_VAR target_imported_dependencies
+        )
+        foreach(dependency_for_target IN LISTS target_copy_dependencies target_target_dependencies
+            target_link_dependencies target_imported_dependencies)
             unset(runtime_command)
-            unset(runtime_depend) # unused, but required to be passed to ly_get_runtime_dependency_command
-            ly_get_runtime_dependency_command(runtime_command runtime_depend ${runtime_dependency})
+            o3de_get_command_for_dependency(COMMAND_VAR runtime_command
+                DEPENDENCY ${dependency_for_target})
             string(CONFIGURE "${runtime_command}" runtime_command @ONLY)
             list(APPEND runtime_commands ${runtime_command})
         endforeach()

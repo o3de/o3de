@@ -947,6 +947,23 @@ namespace UnitTest
         EXPECT_EQ(-73, static_cast<int32_t>(extractedNode.value()));
     }
 
+    TYPED_TEST(TreeSetContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using SetType = typename TypeParam::SetType;
+        using node_type = typename SetType::node_type;
+
+        SetType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(-73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.value() = static_cast<int32_t>(extractedNode.value()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        // Lookup reinserted node
+        foundIter = testContainer.find(-72);
+        ASSERT_NE(testContainer.end(), foundIter);
+    }
+
     TYPED_TEST(TreeSetContainers, InsertNodeHandleSucceeds)
     {
         using SetType = AZStd::set<int32_t>;
@@ -1268,6 +1285,22 @@ namespace UnitTest
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(73, static_cast<int32_t>(extractedNode.key()));
         EXPECT_EQ(0xfee1badd, extractedNode.mapped());
+    }
+
+    TYPED_TEST(TreeMapContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using MapType = typename TypeParam::MapType;
+        using node_type = typename MapType::node_type;
+
+        MapType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.key() = static_cast<int32_t>(extractedNode.key()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        foundIter = testContainer.find(74);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeMapContainers, InsertNodeHandleSucceeds)

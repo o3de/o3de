@@ -87,8 +87,16 @@ namespace AZ
                 }
                 
                 //Call UseResource on all resources cached for Graphics work
-                for(size_t i = 0; i < RHI::ShaderStageGraphicsCount; i++)
+                for(int i = 0; i < RHI::ShaderStageGraphicsCount; i++)
                 {
+                    if(i != static_cast<int>(RHI::ShaderStage::Vertex) && i != static_cast<int>(RHI::ShaderStage::Fragment))
+                    {
+                        continue;
+                    }
+                    
+                    MTLRenderStages mtlRenderStage = i==static_cast<int>(RHI::ShaderStage::Vertex)?
+                                                            MTLRenderStageVertex:MTLRenderStageFragment;
+                    
                     if(m_untrackedResourcesGfxRead[i].size() > 0)
                     {
                         AZStd::vector<id <MTLResource>> resourcesToProcessVec(m_untrackedResourcesGfxRead[i].begin(), m_untrackedResourcesGfxRead[i].end());
@@ -96,7 +104,7 @@ namespace AZ
                         [renderEncoder useResources:&resourcesToProcessVec[0]
                                               count:m_untrackedResourcesGfxRead[i].size()
                                               usage:MTLResourceUsageRead
-                                             stages:MTLRenderStages(1u << i)];
+                                             stages:mtlRenderStage];
                     }
                     
                     if(m_untrackedResourcesGfxReadWrite[i].size() > 0)
@@ -106,7 +114,7 @@ namespace AZ
                         [renderEncoder useResources:&resourcesToProcessVec[0]
                                               count:m_untrackedResourcesGfxReadWrite[i].size()
                                               usage:MTLResourceUsageRead|MTLResourceUsageWrite
-                                             stages:MTLRenderStages(1u << i)];
+                                             stages:mtlRenderStage];
                     }
 
                     m_untrackedResourcesGfxRead[i].clear();
