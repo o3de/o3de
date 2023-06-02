@@ -2328,20 +2328,22 @@ def create_repo(repo_path: pathlib.Path,
         logger.error('Destination path on local machine cannot be empty.')
         return 1
     if not repo_uri:
-        logger.error('Destination path on online version control uri cannot be empty.')
-        return 1
-    if not repo_path and repo_uri:
-        logger.error('Please provide repository destination path on local machine and online uri.')
+        logger.error('Remote repository URI cannot be empty.')
         return 1
     
-    if not force and os.path.isdir(repo_path):
-        logger.error(f'Destination path {repo_path} already exists.')
+    # check if a repo.json file already exist in directory - can only have one repo.json file per project
+    repo_json_path = repo_path / 'repo.json'
+    if not force and repo_json_path.is_file():
+        logger.error(f'{repo_json_path} already exists.  Use the --force to overwrite the existing file.')
+        return 1
+    elif repo_path.is_file():
+        logger.error(f'{repo_path} already exists and is a file instead of a directory.')
         return 1
     else:
         os.makedirs(repo_path, exist_ok=force)
 
     if not repo_name:
-        # destination name is now the last component of the destination_path
+        #  repo name default is the last component of repo_path
         repo_name = repo_path.name
 
     # any user supplied replacements
@@ -2359,13 +2361,7 @@ def create_repo(repo_path: pathlib.Path,
     replacements.append(("${AdditionalInfo}", additional_info if additional_info else "${AdditionalInfo}"))
 
     # create repo.json file
-    if _execute_template_json(template_json_data,
-                              repo_path,
-                              template_path,
-                              replacements):    
-        logger.error(f'Instantiation of the remote repository has failed.')
-        return 1
-    logger.warning('Remote Repo is successfully initiated!')
+    _execute_template_json(template_json_data, repo_path, template_path, replacements)
     json_data=manifest.load_o3de_manifest()
     return register.register_remote_repo(json_data=json_data,repo_uri=repo_uri) 
 
@@ -2905,10 +2901,8 @@ def add_args(subparsers) -> None:
                                        help = 'The online remote repository uri')
     create_repo_subparser.add_argument('-rn', '--repo-name', type=str, required=False,
                                        help = 'The name to use when substituting the ${Name} placeholder for the remote repo,'
-                                           ' must be alphanumeric, '
-                                           ' and can contain _ and - characters.'
                                            ' If no name is provided, will use last component of the repo-path provided by user.'
-                                           ' Ex. Remote_repo1')
+                                           ' Ex. RemoteRepo1')
     create_repo_subparser.add_argument('-o', '--origin', type=str, required=False,
                                        default='o3de',
                                        help = 'The name of the originator or creator i.e. o3de.')
@@ -2916,7 +2910,6 @@ def add_args(subparsers) -> None:
                                        default='https://github.com/o3de/o3de',
                                        help='The origin website for your remote repository. i.e. http://www.mydomain.com')
     create_repo_subparser.add_argument('-s', '--summary', type=str, required=False,
-                                       default='This is a remote repository for my o3de project',
                                        help='A short description of this Repo')
     create_repo_subparser.add_argument('-ai', '--additional-info', type=str, required=False,
                                        help='Any additional info you want to add to this Remote repo')

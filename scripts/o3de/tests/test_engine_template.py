@@ -94,8 +94,11 @@ TEST_TEMPLATE_REPO_JSON = """\
 }
 """
 
-TEST_REPO_JSON = string.Template(TEST_TEMPLATE_REPO_JSON).safe_substitute({'Name': 'TestRepo', 'RepoURI' : "http://test", 'Summary': 'summary',
-                                                                           'Origin': 'o3de', 'OriginURL': "https://github.com/o3de/o3de"})
+TEST_REPO_JSON = string.Template(TEST_TEMPLATE_REPO_JSON).safe_substitute({'Name': 'TestRepo', 
+                                                                           'RepoURI' : "http://test", 
+                                                                           'Summary': 'summary',
+                                                                           'Origin': 'o3de', 
+                                                                           'OriginURL': "https://github.com/o3de/o3de"})
 
 TEST_TEMPLATE_JSON_CONTENTS = """\
 {
@@ -355,23 +358,7 @@ class TestCreateTemplate:
         templated_contents = TEST_TEMPLATE_REPO_JSON 
         template_json_contents = TEST_TEMPLATE_REMOTEREPO_JSON_CONTENTS
 
-        # Append the project.json to the list of files to copy from the template
-        template_json_dict = json.loads(template_json_contents)
-        template_json_dict.setdefault('copyFiles', []).append(
-        {
-            "file": "repo.json",
-            "isTemplated": True
-        })
-
-        # Convert the python dictionary back into a json string
-        template_json_contents = json.dumps(template_json_dict, indent=4)
-
         instantiated_name = 'TestRepo'
-        #  Use a SHA-1 Hash of the destination_name for every Random_Uuid for determinism in the test
-        concrete_contents = string.Template(concrete_contents).safe_substitute(
-            {
-                'Random_Uuid': str(uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)).upper()
-            })
 
         engine_root = (pathlib.Path(tmpdir) / 'engine-root').resolve()
         engine_root.mkdir(parents=True, exist_ok=True)
@@ -391,10 +378,9 @@ class TestCreateTemplate:
         template_dest_path = engine_root / instantiated_name
        
         # Skip registration in test
-        with patch('uuid.uuid4', return_value=uuid.uuid5(uuid.NAMESPACE_DNS, instantiated_name)) as uuid4_mock, \
-                patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
+        with patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
-            result = engine_template.create_repo(template_dest_path, repo_name="TestRepo", repo_uri = "http://test", summary="summary", origin='o3de',
+            result = engine_template.create_repo(template_dest_path, repo_name="TestRepo", repo_uri = "http://test.com", summary="summary", origin='o3de',
                                               origin_url='https://github.com/o3de/o3de', force=force)
 
         assert expect_results == result 
