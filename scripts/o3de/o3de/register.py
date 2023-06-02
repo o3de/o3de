@@ -593,6 +593,7 @@ def register_repo(json_data: dict,
         while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
     else:
+        # this will fail if repo_uri is a file://uri
         repo_uri = pathlib.Path(repo_uri).resolve().as_posix()
         while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
@@ -611,16 +612,9 @@ def register_repo(json_data: dict,
             json_data.setdefault('repos', []).insert(0, repo_uri)
 
         return result
-
+    else:
+        logger.error(f'Failed to download repo_manifest {manifest_uri}.')
     return 1
-
-def register_remote_repo(json_data: dict,
-                  repo_uri: str) -> int:
-    # get the o3de_manifest.json file and insert new remote repo in the repos field
-    json_data.setdefault('repos', []).insert(0, repo_uri)
-    # save updated o3de_manifest.json file
-    manifest.save_o3de_manifest(json_data)
-    return 0
 
 def register_default_o3de_object_folder(json_data: dict,
                                         default_o3de_object_folder: pathlib.Path,

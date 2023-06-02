@@ -80,11 +80,11 @@ TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE = string.Template(
 
 TEST_TEMPLATE_REPO_JSON = """\
 {
-    "repo_name":"${Name}",
+    "repo_name": "${Name}",
     "repo_uri": "${RepoURI}",
     "$schemaVersion": "1.0.0",
-    "origin":"${Origin}",
-    "origin_url":"${OriginURL}",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
     "summary": "${Summary}",
     "additional_info": "${AdditionalInfo}",
     "last_updated": "",
@@ -379,11 +379,15 @@ class TestCreateTemplate:
         template_dest_path = engine_root / instantiated_name
        
         # Skip registration in test
-        with patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
-                patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
-            result = engine_template.create_repo(template_dest_path, repo_name="TestRepo", repo_uri = "http://test.com", summary="summary", origin='o3de',
-                                              origin_url='https://github.com/o3de/o3de', force=force)
-
+        def download_repo_manifest(manifest_uri: str, force_overwrite: bool = True) -> pathlib.Path or None:
+            # return the path to the .json file
+            return manifest_uri
+        with patch('o3de.repo.download_repo_manifest', side_effect=download_repo_manifest) as download_repo_manifest_patch, \
+                    patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
+                    patch('o3de.repo.process_add_o3de_repo', return_value=0) as process_o3de_manifest_patch, \
+                    patch('o3de.manifest.get_registered', return_value=template_default_folder) as get_registered_patch, \
+                    patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
+                result = engine_template.create_repo(template_dest_path, repo_name="TestRepo", repo_uri = "http://test.com", summary="summary", origin='o3de', origin_url='https://github.com/o3de/o3de')
         assert expect_results == result 
         if expect_results == 0:
             test_folder = template_dest_path

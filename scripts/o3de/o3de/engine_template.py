@@ -2307,7 +2307,8 @@ def create_repo(repo_path: pathlib.Path,
                 summary: str = None,
                 additional_info: str = None,
                 force: bool = False,
-                replace: list = None
+                replace: list = None,
+                no_register: bool = False
                 ) -> int:
 
     template_name = 'RemoteRepo'
@@ -2343,7 +2344,7 @@ def create_repo(repo_path: pathlib.Path,
         os.makedirs(repo_path, exist_ok=force)
 
     if not repo_name:
-        #  repo name default is the last component of repo_path
+        # repo name default is the last component of repo_path
         repo_name = repo_path.name
 
     # any user supplied replacements
@@ -2355,15 +2356,14 @@ def create_repo(repo_path: pathlib.Path,
 
     replacements.append(("${Name}", repo_name))
     replacements.append(("${RepoURI}", repo_uri))
-    replacements.append(("${Origin}",  origin if origin else "${Origin}"))
-    replacements.append(("${OriginURL}",  origin_url if origin_url else "${OriginURL}"))
+    replacements.append(("${Origin}", origin if origin else "${Origin}"))
+    replacements.append(("${OriginURL}", origin_url if origin_url else "${OriginURL}"))
     replacements.append(("${Summary}", summary if summary else "${Summary}"))
     replacements.append(("${AdditionalInfo}", additional_info if additional_info else "${AdditionalInfo}"))
 
     # create repo.json file
     _execute_template_json(template_json_data, repo_path, template_path, replacements)
-    json_data=manifest.load_o3de_manifest()
-    return register.register_remote_repo(json_data=json_data,repo_uri=repo_uri) 
+    return register.register(repo_uri=repo_path.as_posix(), force_register_with_o3de_manifest=True) if not no_register else 0
 
 def _run_create_template(args: argparse) -> int:
     return create_template(args.source_path,
@@ -2907,7 +2907,6 @@ def add_args(subparsers) -> None:
                                        default='o3de',
                                        help = 'The name of the originator or creator i.e. o3de.')
     create_repo_subparser.add_argument('-ou', '--origin-url', type=str, required=False,
-                                       default='https://github.com/o3de/o3de',
                                        help='The origin website for your remote repository. i.e. http://www.mydomain.com')
     create_repo_subparser.add_argument('-s', '--summary', type=str, required=False,
                                        help='A short description of this Repo')
