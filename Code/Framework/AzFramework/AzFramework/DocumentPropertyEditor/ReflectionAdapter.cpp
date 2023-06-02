@@ -660,8 +660,15 @@ namespace AZ::DocumentPropertyEditor
                         {
                             m_adapter->CreateLabel(
                                 &m_builder,
-                                AZStd::string::format("%s (%zu elements)", labelAttribute->GetString().data(), containerSize),
+                                AZStd::string::format("%s", labelAttribute->GetString().data()),
                                 serializedPath);
+
+                            m_builder.BeginLabel();
+                            m_builder.Attribute(Nodes::Label::Value, AZStd::string::format("(%zu elements)", containerSize));
+                            m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
+                            m_builder.Attribute(Nodes::PropertyEditor::Alignment, Nodes::PropertyEditor::Align::AlignLeft);
+                            m_builder.Attribute(Nodes::PropertyEditor::UseMinimumWidth, true);
+                            m_builder.EndLabel();
                         }
                     }
 

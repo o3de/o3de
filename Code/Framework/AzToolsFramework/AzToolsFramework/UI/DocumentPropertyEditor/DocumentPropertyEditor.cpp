@@ -286,7 +286,9 @@ namespace AzToolsFramework
                                 break;
                             }
                         }
-                        sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
+                        auto* itemToAdd = itemAt(layoutIndex + sharedWidgetIndex);
+                        AZ_Assert(itemToAdd, "layout item not found!");
+                        sharedColumnLayout->addItem(itemToAdd);
 
                         // If a widget should only take up its minimum width, do not stretch it
                         if (attributes && attributes->m_minimumWidth)

@@ -72,23 +72,26 @@ namespace AZ::DocumentPropertyEditor
     Dom::Path RowAggregateAdapter::AggregateNode::GetPathForAdapter(size_t adapterIndex)
     {
         Dom::Path pathForAdapter;
-        auto addParentThenSelf = [&pathForAdapter, adapterIndex](AggregateNode* currentNode, auto&& addParentThenSelf) -> void
+        auto addParentThenSelf = [&pathForAdapter, adapterIndex](AggregateNode* currentNode, auto&& addParentThenSelf) -> bool
         {
+            bool succeeded = true;
             if (currentNode->m_parent)
             {
-                addParentThenSelf(currentNode->m_parent, addParentThenSelf);
+                succeeded = addParentThenSelf(currentNode->m_parent, addParentThenSelf);
             }
-            if (adapterIndex < currentNode->m_pathEntries.size())
+            if (succeeded && adapterIndex < currentNode->m_pathEntries.size())
             {
                 const size_t pathEntry = currentNode->m_pathEntries[adapterIndex];
-                if (pathEntry != InvalidEntry)
+                succeeded = (pathEntry != InvalidEntry);
+                if (succeeded)
                 {
                     pathForAdapter.Push(pathEntry);
                 }
             }
+            return succeeded;
         };
-        addParentThenSelf(this, addParentThenSelf);
-        return pathForAdapter;
+        auto validPath = addParentThenSelf(this, addParentThenSelf);
+        return (validPath ? pathForAdapter : Dom::Path());
     }
 
     void RowAggregateAdapter::AggregateNode::AddEntry(size_t adapterIndex, size_t pathEntryIndex, bool matchesOtherEntries)
@@ -236,8 +239,6 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::HandleDomChange(DocumentAdapterPtr adapter, const Dom::Patch& patch)
     {
-        // Note that many types of patch operations are still unsupported at this time
-        // Please see: https://github.com/o3de/o3de/issues/15612
         const auto adapterIndex = GetIndexForAdapter(adapter);
 
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
@@ -300,8 +301,6 @@ namespace AZ::DocumentPropertyEditor
                         UpdateAndPatchNode(nodeAtPath->m_parent, adapterIndex);
                         ProcessRemoval(nodeAtPath, adapterIndex);
                     }
-
-                    AZ_Assert(false, "AggregateAdapter: row replace operation is not supported yet!");
                 }
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
@@ -331,6 +330,12 @@ namespace AZ::DocumentPropertyEditor
                     AZ_Assert(rowNode, "all paths should have a nearest row!");
                     UpdateAndPatchNode(rowNode, adapterIndex);
                 }
+            }
+            else
+            {
+                // Note that many some patch operations are still unsupported at this time
+                // Please see: https://github.com/o3de/o3de/issues/15612
+                AZ_Assert(0, "RowAggregateAdapter: patch operation type not supported yet!");
             }
         }
     }
@@ -667,7 +672,7 @@ namespace AZ::DocumentPropertyEditor
                     auto nodePath = GetPathForNode(rowNode);
                     if (!nodePath.IsEmpty())
                     {
-                        NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(nodePath, GetValueForNode(rowNode)) });
+                        NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(nodePath, GetValueHierarchyForNode(rowNode)) });
                     }
                 }
             }
@@ -715,7 +720,7 @@ namespace AZ::DocumentPropertyEditor
                 // there's only one entry for this node and it needs to update, replace its value with its new value
                 auto nodePath = GetPathForNode(rowNode);
                 AZ_Assert(!nodePath.IsEmpty(), "should never generate an empty path for a complete node!");
-                NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(nodePath, GetValueForNode(rowNode)) });
+                NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(nodePath, GetValueHierarchyForNode(rowNode)) });
             }
         }
     }
