@@ -6,11 +6,7 @@
  *
  */
 
-#include <stdarg.h>
-#include <algorithm>
-#include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <RHI/Vulkan.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/BufferView.h>
@@ -20,6 +16,13 @@
 #include <RHI/Instance.h>
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
+
+#define VMA_IMPLEMENTATION
+
+#include <vma/vk_mem_alloc.h>
 
 namespace AZ
 {

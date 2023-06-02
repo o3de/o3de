@@ -64,7 +64,7 @@ namespace AZ
                         else
                         {
                             auto& device = static_cast<Device&>(GetDevice());
-                            vkBufferView = device.GetNullDescriptorManager().GetTexelBufferView();
+                            vkBufferView = device.GetNullDescriptorManager().GetTexelBufferView().GetNativeTexelBufferView();
                         }
                     }
                     else
@@ -85,16 +85,17 @@ namespace AZ
                     const RHI::ConstPtr<RHI::BufferView>& bufferView = bufViews[i];
                     if (!bufferView || bufferView->IsStale())
                     {
+                        bufferInfo.offset = 0;
+                        bufferInfo.range = VK_WHOLE_SIZE;
                         if (m_nullDescriptorSupported)
                         {
                             bufferInfo.buffer = VK_NULL_HANDLE;
-                            bufferInfo.offset = 0;
-                            bufferInfo.range = VK_WHOLE_SIZE;
                         }
                         else
                         {
                             auto& device = static_cast<Device&>(GetDevice());
-                            bufferInfo = device.GetNullDescriptorManager().GetBuffer();
+                            const BufferMemoryView* bufferMemoryView = static_cast<const Buffer&>(device.GetNullDescriptorManager().GetBuffer()).GetBufferMemoryView();
+                            bufferInfo.buffer = bufferMemoryView->GetNativeBuffer();
                         }
                     }
                     else
@@ -102,7 +103,8 @@ namespace AZ
                         auto& bufferViewDescriptor = bufferView->GetDescriptor();
                         const BufferMemoryView* bufferMemoryView = static_cast<const Buffer&>(bufferView->GetBuffer()).GetBufferMemoryView();
                         bufferInfo.buffer = bufferMemoryView->GetNativeBuffer();
-                        bufferInfo.offset = bufferMemoryView->GetOffset() + bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize;
+                        bufferInfo.offset =
+                            bufferMemoryView->GetOffset() + bufferViewDescriptor.m_elementOffset * bufferViewDescriptor.m_elementSize;
                         bufferInfo.range = bufferViewDescriptor.m_elementCount * bufferViewDescriptor.m_elementSize;
                     }
 
