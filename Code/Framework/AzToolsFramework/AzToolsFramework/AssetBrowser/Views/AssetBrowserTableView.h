@@ -73,6 +73,11 @@ namespace AzToolsFramework
             AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets() const;
             void OpenItemForEditing(const QModelIndex& index);
 
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
+
             AzQtComponents::AssetFolderTableView* GetExpandedTableViewWidget() const;
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;

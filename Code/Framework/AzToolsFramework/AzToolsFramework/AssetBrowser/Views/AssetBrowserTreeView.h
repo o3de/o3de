@@ -52,6 +52,10 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // QTreeView
             void setModel(QAbstractItemModel* model) override;
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
             //////////////////////////////////////////////////////////////////////////
 
             //! Set unique asset browser name, used to persist tree expansion states
@@ -123,7 +127,6 @@ namespace AzToolsFramework
 
         protected:
             QModelIndexList selectedIndexes() const override;
-            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;

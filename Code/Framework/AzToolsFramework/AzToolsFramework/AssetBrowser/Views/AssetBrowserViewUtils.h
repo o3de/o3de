@@ -26,11 +26,14 @@ namespace AzToolsFramework
             static void MoveEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget);
             static void DuplicateEntries(const AZStd::vector<const AssetBrowserEntry*>& entries);
             static void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
+            static void CopyEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder);
 
             static bool IsFolderEmpty(AZStd::string_view path);
             static bool IsEngineOrProjectFolder(AZStd::string_view path);
 
             static QVariant GetThumbnail(const AssetBrowserEntry* entry);
+
+            static Qt::DropAction SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries);
         };
     } // namespace AssetBrowser
 

@@ -13,16 +13,22 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
 #include <AzCore/Interface/Interface.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
 #if !defined(Q_MOC_RUN)
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
 #include <QVBoxLayout>
 #endif
 
@@ -163,6 +169,8 @@ namespace AzToolsFramework
             {
                 AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
             }
+
+            setAcceptDrops(true);
         }
 
         AssetBrowserThumbnailView::~AssetBrowserThumbnailView()
@@ -329,6 +337,60 @@ namespace AzToolsFramework
         QAbstractItemView::SelectionMode AssetBrowserThumbnailView::selectionMode() const
         {
             return m_thumbnailViewWidget->selectionMode();
+        }
+
+        void AssetBrowserThumbnailView::dragEnterEvent(QDragEnterEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragEnter, event, context);
+        }
+
+        void AssetBrowserThumbnailView::dragMoveEvent(QDragMoveEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragMove, event, context);
+        }
+
+        void AssetBrowserThumbnailView::dropEvent(QDropEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            const AssetBrowserEntry* item = m_thumbnailViewProxyModel->mapToSource(m_thumbnailViewProxyModel->GetRootIndex())
+                                                .data(AssetBrowserModel::Roles::EntryRole)
+                                                .value<const AssetBrowserEntry*>();
+            AZStd::string pathName = item->GetFullPath();
+            
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DropAtLocation, event, context, QString(pathName.data()));
+        }
+
+        void AssetBrowserThumbnailView::dragLeaveEvent(QDragLeaveEvent* event)
+        {
+            using namespace AzQtComponents;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragLeave, event);
         }
 
         void AssetBrowserThumbnailView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
