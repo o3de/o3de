@@ -615,7 +615,7 @@ def register_repo(json_data: dict,
     return 1
 
 def register_remote_repo(json_data: dict,
-                  repo_uri: str,) -> int:
+                  repo_uri: str) -> int:
     # get the o3de_manifest.json file and insert new remote repo in the repos field
     json_data.setdefault('repos', []).insert(0, repo_uri)
     # save updated o3de_manifest.json file
