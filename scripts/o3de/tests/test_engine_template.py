@@ -95,7 +95,7 @@ TEST_TEMPLATE_REPO_JSON = """\
 """
 
 TEST_REPO_JSON = string.Template(TEST_TEMPLATE_REPO_JSON).safe_substitute({'Name': 'TestRepo', 
-                                                                           'RepoURI' : "http://test", 
+                                                                           'RepoURI' : "http://test.com", 
                                                                            'Summary': 'summary',
                                                                            'Origin': 'o3de', 
                                                                            'OriginURL': "https://github.com/o3de/o3de"})
