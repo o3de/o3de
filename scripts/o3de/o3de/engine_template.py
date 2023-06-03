@@ -2308,8 +2308,7 @@ def create_repo(repo_path: pathlib.Path,
                 additional_info: str = None,
                 force: bool = False,
                 replace: list = None,
-                no_register: bool = False
-                ) -> int:
+                no_register: bool = False) -> int:
 
     template_name = 'RemoteRepo'
 
@@ -2466,8 +2465,7 @@ def _run_create_repo(args: argparse) -> int:
                        args.additional_info,
                        args.force,
                        args.replace,
-                       args.no_register
-                       )
+                       args.no_register)
 
 def add_args(subparsers) -> None:
     """
