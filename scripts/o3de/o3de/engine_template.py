@@ -2925,8 +2925,8 @@ def add_args(subparsers) -> None:
                                            ' Note: <RepoName> is the last component of repo_path'
                                            ' Note: ${Name} is automatically <Name>')
     create_repo_subparser.add_argument('--no-register', action='store_true', default=False,
-                                      help='If the remote repo template is instantiated successfully, it will not register the'
-                                           ' remote repo with the global, project or engine manifest file.')                                       
+                                      help='If the repo template is instantiated successfully, it will not register the'
+                                               ' repo with the global manifest file.')                                       
     create_repo_subparser.set_defaults(func=_run_create_repo)
 
 if __name__ == "__main__":
