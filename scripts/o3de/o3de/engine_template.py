@@ -2465,7 +2465,8 @@ def _run_create_repo(args: argparse) -> int:
                        args.summary,
                        args.additional_info,
                        args.force,
-                       args.replace
+                       args.replace,
+                       args.no_register
                        )
 
 def add_args(subparsers) -> None:
@@ -2923,7 +2924,9 @@ def add_args(subparsers) -> None:
                                            ' Ex. --replace ${DATE} 1/1/2020 ${id} 1723905'
                                            ' Note: <RepoName> is the last component of repo_path'
                                            ' Note: ${Name} is automatically <Name>')
-    
+    create_repo_subparser.add_argument('--no-register', action='store_true', default=False,
+                                      help='If the remote repo template is instantiated successfully, it will not register the'
+                                           ' remote repo with the global, project or engine manifest file.')                                       
     create_repo_subparser.set_defaults(func=_run_create_repo)
 
 if __name__ == "__main__":
