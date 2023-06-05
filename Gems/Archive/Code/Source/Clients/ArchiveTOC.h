@@ -82,7 +82,7 @@ namespace Archive
         };
 
         //! vector storing a copy of each file path in memory
-        //! It's length matches the value of m_fileCount
+        //! Its length matches the value of m_fileCount
         using ArchiveFilePathTable = AZStd::vector<Path>;
         ArchiveFilePathTable m_filePaths;
 
