@@ -10,8 +10,10 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
     include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
 
-    if (NOT ${LLD_LINKER_INSTALLED} STREQUAL "LLD_LINKER_INSTALLED-NOTFOUND")
-        set(ALTERNATIVE_LINKER_FLAG "-fuse-ld=lld")
+    if(DEFINED LY_LINKER)
+        set(SPECIFY_LINKER_FLAG "-fuse-ld=${LY_LINKER}")
+    elseif(NOT ${LLD_LINKER_INSTALLED} STREQUAL "LLD_LINKER_INSTALLED-NOTFOUND")
+        set(SPECIFY_LINKER_FLAG "-fuse-ld=lld")
     endif()
     
     if ($ENV{O3DE_SNAP})
@@ -23,7 +25,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             COMPILATION
                 -msse4.1
             LINK_NON_STATIC
-                ${ALTERNATIVE_LINKER_FLAG}
+                ${SPECIFY_LINKER_FLAG}
                 -Wl,--no-undefined
                 -fpie
                 -Wl,-z,relro,-z,now
@@ -31,7 +33,7 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
                 -L$ENV{SNAP}/lib/x86_64-linux-gnu
                 -L$ENV{SNAP}/usr/lib/x86_64-linux-gnu
             LINK_EXE
-                ${ALTERNATIVE_LINKER_FLAG}
+                ${SPECIFY_LINKER_FLAG}
                 -fpie
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
@@ -47,13 +49,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
             COMPILATION
                 -msse4.1
             LINK_NON_STATIC
-                ${ALTERNATIVE_LINKER_FLAG}
+                ${SPECIFY_LINKER_FLAG}
                 -Wl,--no-undefined
                 -fpie
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
             LINK_EXE
-                ${ALTERNATIVE_LINKER_FLAG}
+                ${SPECIFY_LINKER_FLAG}
                 -fpie
                 -Wl,-z,relro,-z,now
                 -Wl,-z,noexecstack
