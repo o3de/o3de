@@ -2751,4 +2751,4 @@ TEST_F(ScriptCanvasTestFixture, DynamicSlot_DisplayTypeDatum)
         EXPECT_EQ(dataType == randomType, sourceDatum->IS_A(dataType));
     }
 }
-/**/
+*/
