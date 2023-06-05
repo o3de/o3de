@@ -43,7 +43,7 @@ namespace Archive
 
         //! Wrapper path structure to ensure the Table of Contents only contain paths that
         //! uses the Posix Path Separator '/'
-        //! This is used to normalize how the paths within the Table of Cotnents
+        //! This is used to normalize how the paths within the Table of Contents
         //! are stored across platforms(Linux/MacOS vs Windows)
         struct Path
         {
