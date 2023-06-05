@@ -48,7 +48,11 @@ namespace Archive
         ArchiveWriterErrorString m_errorMessage;
     };
 
-    //! Stores settings to configure how Archive Writer Settings
+    //! Stores settings to configure how Archive Writer perform specific operations
+    //! This can be used to change if the Archive TOC should be compressed on Commit
+    //! It also supports configuring an optional error callback to invoke if an
+    //! error occurs in a function that can't return a outcome value such as a constructor/destructor
+    //! The number of compression task that can run in parallel is also configurable
     struct ArchiveWriterSettings
     {
         ArchiveWriterSettings();
@@ -248,12 +252,12 @@ namespace Archive
         //! NOTE: The entry in the table of contents is not actually removed
         //! The index where the file is located using the filePathToken
         //! is just added to the removed file indices set
-        //! //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! @return ArchiveRemoveResult with metadata about how the deleted file was
         //! stored in the Archive
         virtual ArchiveRemoveFileResult RemoveFileFromArchive(ArchiveFileToken filePathToken) = 0;
         //! Removes the file from the archive using a relative path name
         //! @param relativePath Relative path within archive to search for
-        //! //! @return ArchiveRemoveResult with metadata about how the deleted file was
+        //! @return ArchiveRemoveResult with metadata about how the deleted file was
         //! stored in the Archive
         virtual ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) = 0;
 

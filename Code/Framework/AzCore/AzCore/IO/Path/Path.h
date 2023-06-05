@@ -765,7 +765,7 @@ namespace AZ
 }
 
 //! Use this macro to simplify safe printing of a PathView or BasicPath* which may not be null-terminated.
-//! Example: AZStd::fixed_string<1024>::format("Safely formatted: %.*s", AZ_PATH_ARG(myString));
+//! Example: AZStd::fixed_string<1024>::format("Safely formatted: %.*s", AZ_PATH_ARG(myPathView));
 #define AZ_PATH_ARG(path) static_cast<int>(path.Native().size()), path.Native().data()
 
 #include <AzCore/IO/Path/Path.inl>
