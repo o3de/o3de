@@ -10,6 +10,7 @@
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Memory/AllocatorManager.h>
 
@@ -43,16 +44,7 @@ namespace AZ
             }
         };
 
-        GemTestEnvironment::Parameters::~Parameters()
-        {
-            m_componentDescriptors.clear();
-            m_dynamicModulePaths.clear();
-            m_requiredComponents.clear();
-        }
-
-        GemTestEnvironment::GemTestEnvironment()
-        {
-        }
+        GemTestEnvironment::GemTestEnvironment() = default;
 
         void GemTestEnvironment::AddDynamicModulePaths(AZStd::span<AZStd::string_view const> dynamicModulePaths)
         {
@@ -87,6 +79,12 @@ namespace AZ
                 requiredComponents.begin(), requiredComponents.end());
         }
 
+        void GemTestEnvironment::AddActiveGems(AZStd::span<AZStd::string_view const> gemNames)
+        {
+            m_parameters->m_activeGems.insert(m_parameters->m_activeGems.end(),
+                gemNames.begin(), gemNames.end());
+        }
+
         AZ::ComponentApplication* GemTestEnvironment::CreateApplicationInstance()
         {
             return aznew GemTestApplication;
@@ -117,6 +115,19 @@ namespace AZ
                 AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
                 dynamicModuleDescriptor.m_dynamicLibraryPath = dynamicModulePath;
                 appDesc.m_modules.push_back(dynamicModuleDescriptor);
+            }
+
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get();
+                settingsRegistry != nullptr)
+            {
+                // Add the names of the active gems to the global Settings Registry
+                // This also will add the @gemroot:<gem-name>@ alias to the FileIO instance
+                // if a AzFramework::Application derived class was created in the `CreateApplicationInstance`
+                // overload
+                for (const auto& gemName : m_parameters->m_activeGems)
+                {
+                    AZ::Test::AddActiveGem(gemName, *settingsRegistry, AZ::IO::FileIOBase::GetInstance());
+                }
             }
 
             // Create a system entity.
