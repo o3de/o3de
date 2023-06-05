@@ -357,30 +357,6 @@ namespace AZ::Reflection
                 {
                     nodeData->m_isAncestorDisabled = true;
                 }
-                else if (classElement && classElement->m_editData)
-                {
-                    if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
-                    {
-                        Dom::Value readOnlyValue;
-                        if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
-                        {
-                            readOnlyValue = readOnlyAttribute->DomInvoke(parentData.m_instance, Dom::Value(Dom::Type::Array));
-                        }
-                        else
-                        {
-                            readOnlyValue = readOnlyAttribute->GetAsDomValue(parentData.m_instance);
-                        }
-
-                        if (readOnlyValue.IsBool())
-                        {
-                            nodeData->m_disableEditor |= readOnlyValue.GetBool();
-                        }
-                        else
-                        {
-                            AZ_Warning("LegacyReflectionBridge", false, "ReadOnly attribute yielded non-bool Value");
-                        }
-                    }
-                }
 
                 if (parentAssociativeInterface)
                 {
@@ -710,6 +686,15 @@ namespace AZ::Reflection
                             visibility = PropertyEditor::Visibility
                                              .DomToValue(PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second))
                                              .value_or(visibility);
+                        }
+                        // The legacy ReadOnly property needs to be converted into the Disabled node property.
+                        // If our ancestor is disabled we don't need to read the attribute because this node
+                        // will already be disabled as well.
+                        else if ((name == PropertyEditor::ReadOnly.GetName()) && !nodeData.m_isAncestorDisabled)
+                        {
+                            nodeData.m_disableEditor |= PropertyEditor::ReadOnly
+                                .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance, it->second))
+                                .value_or(nodeData.m_disableEditor);
                         }
 
                         // See if any registered attribute definitions can read this attribute
