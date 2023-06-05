@@ -38,3 +38,7 @@ set(FILES
     Source/TestImpactPythonRuntime.cpp
     Source/TestImpactPythonRuntimeConfigurationFactory.cpp
 )
+
+# Remove this file from unity builds because with VS2019, the include of AzCore/std/string/regex.h can sometimes
+# trigger an invalid warning about a mismatched #pragma warning(push) in xlocinfo.h.
+list(APPEND SKIP_UNITY_BUILD_INCLUSION_FILES Source/TestImpactPythonRuntime.cpp)

@@ -145,7 +145,6 @@ namespace AzToolsFramework
         : public ViewportInteraction::ViewportSelectionRequests
         , public ActionManagerRegistrationNotificationBus::Handler
         , public EditorContextMenuBus::Handler
-        , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
         , private ToolsApplicationNotificationBus::Handler
         , private Camera::EditorCameraNotificationBus::Handler
@@ -219,10 +218,6 @@ namespace AzToolsFramework
 
         void SetupBoxSelect();
 
-        // Legacy ActionManager
-        void RegisterActions();
-        void UnregisterActions();
-
         // ActionManagerRegistrationNotificationBus overrides ...
         void OnActionUpdaterRegistrationHook() override;
         void OnActionRegistrationHook() override;
@@ -271,9 +266,6 @@ namespace AzToolsFramework
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
         int GetMenuPosition() const override;
         AZStd::string GetMenuIdentifier() const override;
-
-        // EditorEventsBus overrides ...
-        void OnEscape() override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;

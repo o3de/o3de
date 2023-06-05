@@ -16,23 +16,19 @@
 
 namespace AZ::Metal
 {
-    // TODO(BINDLESS): Data drive this number
-    // It's hardcoded here to match the unbounded array size (UNBOUNDED_SIZE) specified in AzslcHeader.azsli
-    constexpr static uint32_t UnboundedArraySize = 100000;
-
-    RHI::ResultCode BindlessArgumentBuffer::Init(Device* device)
+    RHI::ResultCode BindlessArgumentBuffer::Init(Device* device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
     {
         m_device = device;
+        m_bindlessSrgDesc = bindlessSrgDesc;
         m_unboundedArraySupported = device->GetFeatures().m_unboundedArrays;
-        m_unboundedArraySupported = false; //Remove this when unbounded array support is added to spirv-cross
-
+        
         AZStd::vector<id<MTLBuffer>> mtlArgBuffers;
         AZStd::vector<NSUInteger> mtlArgBufferOffsets;
         AZStd::vector<MTLArgumentDescriptor*> argBufferDescriptors;
 
         if (m_unboundedArraySupported)
         {
-            //Create a root Argument buffer that will work as a container for ABs related unbouned arrays
+            //Create a root Argument buffer that will work as a container for ABs related unbounded arrays
             m_rootArgBuffer = ArgumentBuffer::Create();
 
             //Create an Argument buffer per resource type that has an unbounded array
@@ -48,7 +44,7 @@ namespace AZ::Metal
             argDescriptor.index = 0;
             argDescriptor.access = MTLArgumentAccessReadOnly;
             argDescriptor.textureType = MTLTextureType2D;
-            argDescriptor.arrayLength = UnboundedArraySize;
+            argDescriptor.arrayLength = RHI::Limits::Pipeline::UnboundedArraySize;
             argBufferDescriptors.push_back(argDescriptor);
             m_bindlessTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessROTextures");
             mtlArgBuffers.push_back(m_bindlessTextureArgBuffer->GetArgEncoderBuffer());
@@ -60,6 +56,14 @@ namespace AZ::Metal
             m_bindlessRWTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWTextures");
             mtlArgBuffers.push_back(m_bindlessRWTextureArgBuffer->GetArgEncoderBuffer());
             mtlArgBufferOffsets.push_back(m_bindlessRWTextureArgBuffer->GetOffset());
+            
+            //Unbounded read cube textures
+            argDescriptor.access = MTLArgumentAccessReadOnly;
+            argDescriptor.textureType = MTLTextureTypeCube;
+            argBufferDescriptors[0] = argDescriptor;
+            m_bindlessCubeTextureArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessCubeROTextures");
+            mtlArgBuffers.push_back(m_bindlessCubeTextureArgBuffer->GetArgEncoderBuffer());
+            mtlArgBufferOffsets.push_back(m_bindlessCubeTextureArgBuffer->GetOffset());
 
             //Unbounded read only buffers
             argDescriptor.dataType = MTLDataTypePointer;
@@ -72,15 +76,15 @@ namespace AZ::Metal
             //Unbounded read write buffers
             argDescriptor.access = MTLArgumentAccessReadWrite;
             argBufferDescriptors[0] = argDescriptor;
-            m_bindlessRWBufferArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWTextures");
+            m_bindlessRWBufferArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRWBuffers");
             mtlArgBuffers.push_back(m_bindlessRWBufferArgBuffer->GetArgEncoderBuffer());
             mtlArgBufferOffsets.push_back(m_bindlessRWBufferArgBuffer->GetOffset());
-
+            
             //Container Argument buffer for all the unbounded arrays
             argDescriptor.dataType = MTLDataTypePointer;
             argDescriptor.index = 0;
             argDescriptor.access = MTLArgumentAccessReadOnly;
-            argDescriptor.arrayLength = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count) - 1;
+            argDescriptor.arrayLength = static_cast<uint32_t>(BindlessResourceType::Count) - 1;
             argBufferDescriptors[0] = argDescriptor;
             m_rootArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRoot");
             [argDescriptor release] ;
@@ -94,26 +98,43 @@ namespace AZ::Metal
         else
         {
             m_boundedArgBuffer = ArgumentBuffer::Create();
-            //For the bounded approach we have one AB hold all the bindless resource types
-            for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count); ++i)
+            //For the bounded approach we have one AB that holds all the bindless resource types
+            for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
             {
-                MTLArgumentDescriptor* textureArgDescriptor = [[MTLArgumentDescriptor alloc] init];
-                textureArgDescriptor.index = UnboundedArraySize * i;
-                textureArgDescriptor.arrayLength = UnboundedArraySize;
-                textureArgDescriptor.dataType = MTLDataTypePointer;
-                if (i == static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture) ||
-                    i == static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture))
+                MTLArgumentDescriptor* resourceArgDescriptor = [[MTLArgumentDescriptor alloc] init];
+                
+                resourceArgDescriptor.arrayLength = RHI::Limits::Pipeline::UnboundedArraySize;
+                resourceArgDescriptor.dataType = MTLDataTypeTexture;
+                resourceArgDescriptor.access = MTLArgumentAccessReadOnly;
+
+                if(i == m_bindlessSrgDesc.m_roTextureIndex)
                 {
-                    textureArgDescriptor.dataType = MTLDataTypeTexture;
-                    textureArgDescriptor.textureType = MTLTextureType2D;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureIndex;
+                    resourceArgDescriptor.textureType = MTLTextureType2D;
                 }
-                textureArgDescriptor.access = MTLArgumentAccessReadOnly;
-                if (i == static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture) ||
-                    i == static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer))
+                else if(i == m_bindlessSrgDesc.m_rwTextureIndex)
                 {
-                    textureArgDescriptor.access = MTLArgumentAccessReadWrite;
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwTextureIndex;
+                    resourceArgDescriptor.textureType = MTLTextureType2D;
+                    resourceArgDescriptor.access = MTLArgumentAccessReadWrite;
                 }
-                argBufferDescriptors.push_back(textureArgDescriptor);
+                else if(i == m_bindlessSrgDesc.m_roTextureCubeIndex)
+                {
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureCubeIndex;
+                    resourceArgDescriptor.textureType = MTLTextureTypeCube;
+                }
+                else if(i == m_bindlessSrgDesc.m_roBufferIndex)
+                {
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roBufferIndex;
+                    resourceArgDescriptor.dataType = MTLDataTypePointer;
+                }
+                else if(i == m_bindlessSrgDesc.m_rwBufferIndex)
+                {
+                    resourceArgDescriptor.index = RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwBufferIndex;
+                    resourceArgDescriptor.dataType = MTLDataTypePointer;
+                    resourceArgDescriptor.access = MTLArgumentAccessReadWrite;
+                }
+                argBufferDescriptors.push_back(resourceArgDescriptor);
             }
 
             m_boundedArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessSrg");
@@ -126,10 +147,10 @@ namespace AZ::Metal
         }
 
         //Init the free list allocator related to the unbounded arrays for each resource type
-        for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count); ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
         {
             RHI::FreeListAllocator::Descriptor desc;
-            desc.m_capacityInBytes = UnboundedArraySize;
+            desc.m_capacityInBytes = RHI::Limits::Pipeline::UnboundedArraySize;
             desc.m_alignmentInBytes = 1;
             desc.m_garbageCollectLatency = RHI::Limits::Device::FrameCountMax;
             desc.m_policy = RHI::FreeListAllocatorPolicy::FirstFit;
@@ -144,16 +165,15 @@ namespace AZ::Metal
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = imageView.GetBindlessReadIndex();
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
-
         // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
-            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_roTextureIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
+        uint32_t resourceTypeHeapIndex = heapIndex + (RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureIndex);
         MemoryView& memoryView = imageView.GetMemoryView();
         id <MTLTexture> mtlTexture = memoryView.GetGpuAddress<id<MTLTexture>>();
 
@@ -163,7 +183,35 @@ namespace AZ::Metal
         }
         else
         {
-            m_boundedArgBuffer->UpdateTextureView(mtlTexture, (heapIndex + (UnboundedArraySize * allocatorIndex)));
+            m_boundedArgBuffer->UpdateTextureView(mtlTexture, resourceTypeHeapIndex);
+        }
+        return heapIndex;
+    }
+
+    uint32_t BindlessArgumentBuffer::AttachReadCubeMapImage(ImageView& imageView)
+    {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+
+        uint32_t heapIndex = imageView.GetBindlessReadIndex();
+        // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_roTextureCubeIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
+
+        uint32_t resourceTypeHeapIndex = heapIndex + (RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roTextureCubeIndex);
+        MemoryView& memoryView = imageView.GetMemoryView();
+        id <MTLTexture> mtlTexture = memoryView.GetGpuAddress<id<MTLTexture>>();
+
+        if (m_unboundedArraySupported)
+        {
+            m_bindlessCubeTextureArgBuffer->UpdateTextureView(mtlTexture, heapIndex);
+        }
+        else
+        {
+            m_boundedArgBuffer->UpdateTextureView(mtlTexture, resourceTypeHeapIndex);
         }
         return heapIndex;
     }
@@ -173,16 +221,15 @@ namespace AZ::Metal
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = imageView.GetBindlessReadWriteIndex();
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
-
         // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
-            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_rwTextureIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
-
+        
+        uint32_t resourceTypeHeapIndex = heapIndex + (RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwTextureIndex);
         MemoryView& memoryView = imageView.GetMemoryView();
         id <MTLTexture> mtlTexture = memoryView.GetGpuAddress<id<MTLTexture>>();
 
@@ -192,7 +239,7 @@ namespace AZ::Metal
         }
         else
         {
-            m_boundedArgBuffer->UpdateTextureView(mtlTexture, (heapIndex + (UnboundedArraySize * allocatorIndex)));
+            m_boundedArgBuffer->UpdateTextureView(mtlTexture, resourceTypeHeapIndex);
         }
         return heapIndex;
     }
@@ -202,16 +249,15 @@ namespace AZ::Metal
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = bufferView.GetBindlessReadIndex();
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
-
         // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
         if (heapIndex == BufferView::InvalidBindlessIndex)
         {
-            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_roBufferIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
-
+        
+        uint32_t resourceTypeHeapIndex = heapIndex + (RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_roBufferIndex);
         MemoryView& memoryView = bufferView.GetMemoryView();
         id <MTLBuffer> mtlBuffer = memoryView.GetGpuAddress<id<MTLBuffer>>();
         uint32_t offset = static_cast<uint32_t>(memoryView.GetOffset());
@@ -222,7 +268,7 @@ namespace AZ::Metal
         }
         else
         {
-            m_boundedArgBuffer->UpdateBufferView(mtlBuffer, offset, (heapIndex + (UnboundedArraySize * allocatorIndex)));
+            m_boundedArgBuffer->UpdateBufferView(mtlBuffer, offset, resourceTypeHeapIndex);
         }
         return heapIndex;
     }
@@ -232,16 +278,15 @@ namespace AZ::Metal
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = bufferView.GetBindlessReadWriteIndex();
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-
         // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
         if (heapIndex == BufferView::InvalidBindlessIndex)
         {
-            RHI::VirtualAddress address = m_allocators[allocatorIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_rwBufferIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
+        uint32_t resourceTypeHeapIndex = heapIndex + (RHI::Limits::Pipeline::UnboundedArraySize * m_bindlessSrgDesc.m_rwBufferIndex);
         MemoryView& memoryView = bufferView.GetMemoryView();
         id <MTLBuffer> mtlBuffer = memoryView.GetGpuAddress<id<MTLBuffer>>();
         uint32_t offset = static_cast<uint32_t>(memoryView.GetOffset());
@@ -252,37 +297,39 @@ namespace AZ::Metal
         }
         else
         {
-            m_boundedArgBuffer->UpdateBufferView(mtlBuffer, offset, (heapIndex + (UnboundedArraySize * allocatorIndex)));
+            m_boundedArgBuffer->UpdateBufferView(mtlBuffer, offset, resourceTypeHeapIndex);
         }
         return heapIndex;
     }
 
-    void BindlessArgumentBuffer::DetachReadImage(uint32_t index)
+    void BindlessArgumentBuffer::DetachReadImage(uint32_t heapIndex)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
-        m_allocators[allocatorIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_roTextureIndex].DeAllocate({ heapIndex });
     }
 
-    void BindlessArgumentBuffer::DetachReadWriteImage(uint32_t index)
+    void BindlessArgumentBuffer::DetachReadCubeMapImage(uint32_t heapIndex)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
-        m_allocators[allocatorIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_roTextureCubeIndex].DeAllocate({ heapIndex });
     }
 
-    void BindlessArgumentBuffer::DetachReadBuffer(uint32_t index)
+    void BindlessArgumentBuffer::DetachReadWriteImage(uint32_t heapIndex)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
-        m_allocators[allocatorIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_rwTextureIndex].DeAllocate({ heapIndex });
     }
 
-    void BindlessArgumentBuffer::DetachReadWriteBuffer(uint32_t index)
+    void BindlessArgumentBuffer::DetachReadBuffer(uint32_t heapIndex)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        uint32_t allocatorIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-        m_allocators[allocatorIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_roBufferIndex].DeAllocate({ heapIndex });
+    }
+
+    void BindlessArgumentBuffer::DetachReadWriteBuffer(uint32_t heapIndex)
+    {
+        AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+        m_allocators[m_bindlessSrgDesc.m_rwBufferIndex].DeAllocate({ heapIndex });
     }
 
     RHI::Ptr<ArgumentBuffer> BindlessArgumentBuffer::GetBindlessArgbuffer() const
@@ -359,10 +406,15 @@ namespace AZ::Metal
 
     void BindlessArgumentBuffer::GarbageCollect()
     {
-        for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count); ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();
         }
+    }
+
+    uint32_t BindlessArgumentBuffer::GetBindlessSrgBindingSlot()
+    {
+        return m_bindlessSrgDesc.m_bindlesSrgBindingSlot;
     }
 }
 

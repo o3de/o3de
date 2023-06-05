@@ -592,6 +592,8 @@ namespace ScriptCanvas
         AZ::Outcome<void, AZStd::string> SlotAcceptsType(const SlotId&, const Data::Type&) const override;
         Data::Type GetSlotDataType(const SlotId& slotId) const override;
 
+        Data::Type GetUnderlyingSlotDataType(const SlotId& slotId) const;
+
         VariableId GetSlotVariableId(const SlotId& slotId) const override;
         void SetSlotVariableId(const SlotId& slotId, const VariableId& variableId) override;
         void ClearSlotVariableId(const SlotId& slotId) override;

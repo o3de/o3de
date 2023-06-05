@@ -127,6 +127,7 @@
         "Templates/MinimalProject",
         "Templates/PrebuiltGem",
         "Templates/PythonToolGem",
+        "Templates/RemoteRepo",
         "Templates/ScriptCanvasNode",
         "Templates/UnifiedMultiplayerGem"
     ],

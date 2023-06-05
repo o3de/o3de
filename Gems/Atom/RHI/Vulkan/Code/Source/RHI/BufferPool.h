@@ -8,8 +8,6 @@
 #pragma once
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
-#include <RHI/BufferMemoryAllocator.h>
 
 namespace AZ
 {
@@ -32,17 +30,10 @@ namespace AZ
 
             Device& GetDevice() const;
 
-            void GarbageCollect();
-
         private:
             BufferPool() = default;
 
             BufferPoolResolver* GetResolver();
-
-            //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
              // RHI::BufferPool
@@ -56,13 +47,6 @@ namespace AZ
             RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal(const AZStd::string_view& name) override;
-            //////////////////////////////////////////////////////////////////////////
-
-            BufferMemoryAllocator m_memoryAllocator;
         };
     }
 }

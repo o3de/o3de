@@ -65,6 +65,9 @@ namespace AzQtComponents
         //! If the filter string is a substring of the current text, it will appear highlighted
         //! in the label. Used in conjunction with search filters to highlight results.
         void setFilter(const QString& filter);
+        //! Returns if the label text matches the current filter string.
+        //! If no filter string has been set, returns true.
+        bool TextMatchesFilter() const;
 
         //! Sets the description for this label.
         void SetDescription(const QString& description)

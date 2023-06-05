@@ -337,9 +337,12 @@ namespace AzToolsFramework
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-            //! Updates the asset preview panel with data about the passed entry.
+            //! Updates the asset browser inspector panel with data about the passed entry.
             //! Clears the panel if nullptr is passed
             virtual void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) = 0;
+
+            //! Clears the asset browser inspector panel
+            virtual void ClearPreview(){};
         };
         using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;
 

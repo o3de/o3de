@@ -118,11 +118,11 @@ namespace AZ
 
             if (m_readIndex != InvalidBindlessIndex)
             {
-                device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                device.GetBindlessArgumentBuffer().DetachReadBuffer(m_readIndex);
             }
             if (m_readWriteIndex != InvalidBindlessIndex)
             {
-                device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                device.GetBindlessArgumentBuffer().DetachReadWriteBuffer(m_readWriteIndex);
             }
         }
 

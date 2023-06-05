@@ -8,10 +8,10 @@
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
-#include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/parallel/lock.h>
 #include <RHI/AsyncUploadQueue.h>
+#include <RHI/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImagePool.h>
@@ -29,28 +29,26 @@ namespace AZ
         {
             return aznew StreamingImagePool();
         }
-        
-        MemoryView StreamingImagePool::AllocateMemory(size_t size, size_t alignment)
-        {
-            return m_memoryAllocator.Allocate(size, alignment);
-        }
 
-        RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(AZStd::vector<HeapTiles>& outHeapTiles, uint32_t blockCount)
+        RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(
+            uint32_t blockCount,
+            const VkMemoryRequirements& memReq,
+            AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>& outAllocatedBlocks)
         {
-            AZ_Assert(outHeapTiles.empty(), "outHeapTiles should be empty");
+            AZ_Assert(outAllocatedBlocks.empty(), "outAllocatedBlocks should be empty");
             AZ_Assert(blockCount, "Try to allocate 0 block");
 
-             // Check if heap memory is enough for the tiles.
+            // Check if heap memory is enough for the tiles.
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
-            size_t pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(blockCount);
+            size_t neededMemoryInBytes = memReq.alignment * blockCount;
 
             // Try to release some memory if there isn't enough memory available in the pool
-            bool canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
+            bool canAllocate = heapMemoryUsage.CanAllocate(neededMemoryInBytes);
             if (!canAllocate && m_memoryReleaseCallback)
             {
-                uint32_t maxUsedTiles = m_tileAllocator.GetTotalTileCount() - blockCount;
-                bool releaseSuccess = m_memoryReleaseCallback(maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes);
+                size_t targetUsage = heapMemoryUsage.m_budgetInBytes - neededMemoryInBytes;
+                bool releaseSuccess = m_memoryReleaseCallback(targetUsage);
 
                 if (!releaseSuccess)
                 {
@@ -59,27 +57,59 @@ namespace AZ
                 }
             }
 
-            outHeapTiles = m_tileAllocator.Allocate(blockCount);
-            if (outHeapTiles.size() == 0)
+            AZStd::vector<VmaAllocation> allocations(blockCount);
+            VmaAllocationCreateInfo allocCreateInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
+
+            auto& device = static_cast<Device&>(GetDevice());
+            VkResult vkResult = vmaAllocateMemoryPages(
+                device.GetVmaAllocator(),
+                &memReq,
+                &allocCreateInfo,
+                blockCount,
+                allocations.data(),
+                nullptr);
+
+            AssertSuccess(vkResult);
+            if (vkResult == VK_SUCCESS)
             {
-                return RHI::ResultCode::OutOfMemory;
+                // Initialize all vma allocations as Vulkan::Allocations
+                // Each element is a separated allocation.
+                AZStd::transform(
+                    allocations.begin(),
+                    allocations.end(),
+                    AZStd::back_inserter(outAllocatedBlocks),
+                    [&](const auto& alloc)
+                    {
+                        RHI::Ptr<VulkanMemoryAllocation> memAlloc = VulkanMemoryAllocation::Create();
+                        memAlloc->Init(device, alloc);
+                        return memAlloc;
+                    });
+
+                heapMemoryUsage.m_usedResidentInBytes += neededMemoryInBytes;
+                heapMemoryUsage.m_totalResidentInBytes += neededMemoryInBytes;
             }
-            else
-            {
-                return RHI::ResultCode::Success;
-            }
+            return ConvertResult(vkResult);
         }
 
-        void StreamingImagePool::DeAllocateMemory(MemoryView& memoryView)
+        void StreamingImagePool::DeAllocateMemoryBlocks(AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>& blocks)
         {
-            m_memoryAllocator.DeAllocate(memoryView);
-        }
+            auto& device = static_cast<Device&>(GetDevice());
+            size_t usedMem = 0;
+            AZStd::for_each(
+                blocks.begin(),
+                blocks.end(),
+                [&](auto& alloc)
+                {
+                    usedMem += alloc->GetSize();
+                    device.QueueForRelease(alloc);
+                });
 
-        void StreamingImagePool::DeAllocateMemoryBlocks(AZStd::vector<HeapTiles>& heapTiles)
-        {
-            m_tileAllocator.DeAllocate(heapTiles);
-            heapTiles.clear();
-        }
+            RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            heapMemoryUsage.m_usedResidentInBytes -= usedMem;
+            heapMemoryUsage.m_totalResidentInBytes -= usedMem;
+            blocks.clear();
+        }        
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
         {
@@ -90,38 +120,7 @@ namespace AZ
 #ifndef AZ_RHI_VULKAN_USE_TILED_RESOURCES
             // Disable tile resource for all 
             m_enableTileResource = false;
-#endif
-
-            uint32_t memoryTypeBits = 0;
-            {
-                // Use an image descriptor of size 1x1 to get the memory requirements.
-                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::ShaderRead | RHI::ImageBindFlags::CopyWrite;
-                RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(bindFlags, 1, 1, RHI::Format::R8G8B8A8_UNORM);
-                VkMemoryRequirements memRequirements = device.GetImageMemoryRequirements(imageDescriptor);
-                memoryTypeBits = memRequirements.memoryTypeBits;
-            }
-           
-            RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
-            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
-            MemoryAllocator::Descriptor memoryAllocDescriptor;
-            memoryAllocDescriptor.m_device = &device;
-            memoryAllocDescriptor.m_pageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_imagePoolPageSizeInBytes;
-            memoryAllocDescriptor.m_heapMemoryLevel = heapMemoryLevel;
-            memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
-            memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = false;
-            memoryAllocDescriptor.m_collectLatency = 0;
-            m_memoryAllocator.Init(memoryAllocDescriptor);
-
-            // Initialize tile allocator
-            m_heapPageAllocator.Init(memoryAllocDescriptor);
-            const uint32_t TileSizeInBytes = SparseImageInfo::StandardBlockSize;
-            TileAllocator::Descriptor tileAllocatorDesc;
-            tileAllocatorDesc.m_tileSizeInBytes = TileSizeInBytes;
-            // Tile allocator updates used resident memory
-            tileAllocatorDesc.m_heapMemoryUsage = &m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
-            m_tileAllocator.Init(tileAllocatorDesc, m_heapPageAllocator);
-
+#endif 
             return RHI::ResultCode::Success;
         }
 
@@ -134,9 +133,9 @@ namespace AZ
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
             imageDescriptor.m_sharedQueueMask |= RHI::HardwareQueueClassMask::Copy;
             const uint16_t expectedResidentMipLevel = static_cast<uint16_t>(request.m_descriptor.m_mipLevels - request.m_tailMipSlices.size());
+            Image::InitFlags flags = m_enableTileResource ? Image::InitFlags::TrySparse : Image::InitFlags::None;
 
-            // Initialize the image first so we can get accurate memory requirements
-            RHI::ResultCode result = image.Init(device, imageDescriptor, m_enableTileResource);
+            RHI::ResultCode result = image.Init(device, imageDescriptor, flags);
             if (result != RHI::ResultCode::Success)
             {
                 AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to create image");
@@ -144,11 +143,18 @@ namespace AZ
             }
 
             result = image.AllocateAndBindMemory(*this, expectedResidentMipLevel);
-
             if (result != RHI::ResultCode::Success)
             {
                 AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
                 return result;
+            }
+
+            if (image.m_memoryView.IsValid())
+            {
+                RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+                RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+                heapMemoryUsage.m_usedResidentInBytes += image.m_memoryView.GetSize();
+                heapMemoryUsage.m_totalResidentInBytes += image.m_memoryView.GetSize();
             }
 
             // Queue upload tail mip slices and wait for it finished.
@@ -208,7 +214,6 @@ namespace AZ
 
         void StreamingImagePool::ShutdownInternal()
         {
-            m_memoryAllocator.Shutdown();
         }
 
         void StreamingImagePool::ShutdownResourceInternal(RHI::Resource& resourceBase)
@@ -223,26 +228,12 @@ namespace AZ
 
         void StreamingImagePool::ComputeFragmentation() const
         {
-            const RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-            memoryUsage.m_fragmentation = m_memoryAllocator.ComputeFragmentation();
-        }
-
-        void StreamingImagePool::OnFrameEnd()
-        {
-            m_memoryAllocator.GarbageCollect();
-            m_tileAllocator.GarbageCollect();
-            Base::OnFrameEnd();
         }
 
         void StreamingImagePool::WaitFinishUploading(const Image& image)
         {
             auto& device = static_cast<Device&>(GetDevice());
             device.GetAsyncUploadQueue().WaitForUpload(image.GetUploadHandle());
-        }
-
-        void StreamingImagePool::SetNameInternal(const AZStd::string_view& name)
-        {
-            m_memoryAllocator.SetName(AZ::Name{ name });
         }
 
         RHI::ResultCode StreamingImagePool::SetMemoryBudgetInternal(size_t newBudget)

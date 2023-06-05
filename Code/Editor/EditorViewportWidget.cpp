@@ -793,23 +793,6 @@ void EditorViewportWidget::RenderSnapMarker()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnMenuResolutionCustom()
-{
-    CCustomResolutionDlg resDlg(width(), height(), parentWidget());
-    if (resDlg.exec() == QDialog::Accepted)
-    {
-        ResizeView(resDlg.GetWidth(), resDlg.GetHeight());
-
-        const QString text = QString::fromLatin1("%1 x %2").arg(resDlg.GetWidth()).arg(resDlg.GetHeight());
-
-        QStringList customResPresets;
-        CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-        CViewportTitleDlg::UpdateCustomPresets(text, customResPresets);
-        CViewportTitleDlg::SaveCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
 {
     Camera::EditorCameraSystemRequestBus::Broadcast(&Camera::EditorCameraSystemRequests::CreateCameraEntityFromViewport);
@@ -1135,25 +1118,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
                 {
                     floatViewMenu->addSeparator();
                 }
-
-                QMenu* resolutionMenu = floatViewMenu->addMenu(tr("Resolution"));
-
-                QStringList customResPresets;
-                CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-                CViewportTitleDlg::AddResolutionMenus(
-                    resolutionMenu,
-                    [this](int width, int height)
-                    {
-                        ResizeView(width, height);
-                    },
-                    customResPresets);
-                if (!resolutionMenu->actions().isEmpty())
-                {
-                    resolutionMenu->addSeparator();
-                }
-                QAction* customResolutionAction = resolutionMenu->addAction(tr("Custom..."));
-                connect(customResolutionAction, &QAction::triggered, this, &EditorViewportWidget::OnMenuResolutionCustom);
-                break;
             }
         }
     }
@@ -1266,16 +1230,6 @@ void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 
 void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (!AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
-        // or clear the current selection
-        if (event->key() == Qt::Key_Escape)
-        {
-            QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
-        }
-    }
-
     // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
     // key events when the key is held down. This is standard, but makes responding to key events for game style input silly
     // because we want the movement to be butter smooth.
