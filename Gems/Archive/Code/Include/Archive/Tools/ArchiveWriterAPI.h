@@ -48,11 +48,11 @@ namespace Archive
         ArchiveWriterErrorString m_errorMessage;
     };
 
-    //! Stores settings to configure how Archive Writer perform specific operations
+    //! Stores settings to configure how Archive Writer performs specific operations
     //! This can be used to change if the Archive TOC should be compressed on Commit
     //! It also supports configuring an optional error callback to invoke if an
     //! error occurs in a function that can't return a outcome value such as a constructor/destructor
-    //! The number of compression task that can run in parallel is also configurable
+    //! The number of compression tasks that can run in parallel is also configurable
     struct ArchiveWriterSettings
     {
         ArchiveWriterSettings();
