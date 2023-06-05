@@ -52,8 +52,9 @@ namespace AZ
         // Node work lists using node count
         AZ_CVAR(uint32_t, r_numNodesPerCullingJob, 25, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of nodes to collect for jobs when not using the entry count");
 
-        //This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls. Default is set to 20 mters as a reasonable value.
-        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, 20, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount of meters to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
+        // This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls for shadow cascade passes.
+        // Default is set to -1 as this is optimization needs to be triggered by the content developer by setting a reasonable non-negative value applicable for their content. 
+        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, -1, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount of meters to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
 
 
 #ifdef AZ_CULL_DEBUG_ENABLED
@@ -606,8 +607,9 @@ namespace AZ
             {
                 // For shadow cascades that are greater than index 0 we can do another check to see if we can reject any Octree node that do not
                 // intersect with the camera frustum. We do this by checking for an overlap between the camera frustum and the Obb created
-                // from the node's AABB but rotated and extended towards light direction. 
-                if (worklistData->m_applyCameraFrustumIntersectionTest && worklistData->m_hasExcludeFrustum)
+                // from the node's AABB but rotated and extended towards light direction. This optimization is only activated when someone sets
+                // a non-negative extrusion value (i.e r_shadowCascadeExtrusionAmount) for their given content.
+                if (r_shadowCascadeExtrusionAmount >= 0 && worklistData->m_applyCameraFrustumIntersectionTest && worklistData->m_hasExcludeFrustum)
                 {
                     // Build an Obb from the Octree node's aabb
                     AZ::Obb extrudedBounds = AZ::Obb::CreateFromAabb(nodeData.m_bounds);
@@ -887,6 +889,17 @@ namespace AZ
             m_visScene = parentScene->GetVisibilityScene();
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                // Start with default value
+                int shadowCascadeExtrusionAmount = r_shadowCascadeExtrusionAmount;
+                // Get the cvar value from settings registry
+                console->GetCvarValue("r_shadowCascadeExtrusionAmount", shadowCascadeExtrusionAmount);
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(
+                    AZStd::string::format("r_shadowCascadeExtrusionAmount %i", shadowCascadeExtrusionAmount).c_str());
+            }
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "The culling system should start with 0 entries in this scene.");
