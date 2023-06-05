@@ -867,13 +867,29 @@ namespace ScriptCanvas
         }
 
         // At this point we need to confirm the types are a match.
-        const auto& slotType = GetDataType();
+        // Get the slot definition's data type so that we can verify that the new data type is a compatible type.
+        // We specifcally don't use GetSlotDataType() here, because that will return the data type for any currently-attached
+        // variable, which might have a subtype that's more restrictive that the slot's base type.
+        const auto& slotType = m_node->GetUnderlyingSlotDataType(GetId());
 
-        // As long as the data type is a type of slotType (actual type or subclass), it's a match.
-        if (dataType.IS_A(slotType))
+        if (slotType.IsValid())
         {
-            return AZ::Success();
+            // As long as the data type is a type of slotType (actual type or subclass), it's a match.
+            if (dataType.IS_A(slotType))
+            {
+                return AZ::Success();
+            }
         }
+        else
+        {
+            // If the underlying slot type is invalid, but there's a display type set, then matching the display type is
+            // still a valid match.
+            if (HasDisplayType() && dataType.IS_A(GetDisplayType()))
+            {
+                return AZ::Success();
+            }
+        }
+
 
         return AZ::Failure(AZStd::string::format("%s is not a type match for %s", ScriptCanvas::Data::GetName(GetDataType()).c_str(), ScriptCanvas::Data::GetName(dataType).c_str()));
     }
