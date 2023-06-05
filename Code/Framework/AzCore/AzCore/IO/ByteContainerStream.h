@@ -83,7 +83,7 @@ namespace AZ::IO
         bool ReOpen() override
         {
             AZ_Warning("ByteContainerStream", IsOpen(), "The stream is already open."
-                " This operaion will reset the seek offset");
+                " This operation will reset the seek offset");
             m_pos = 0;
             m_opened = m_buffer != nullptr;
             return m_opened;
