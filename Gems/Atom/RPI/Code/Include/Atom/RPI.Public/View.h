@@ -180,6 +180,10 @@ namespace AZ
             //! This is called by RenderPipeline when this view is added to the pipeline.
             void OnAddToRenderPipeline();
 
+            //! Accessors for shadow pass render pipeline id.
+            void SetShadowPassRenderPipelineId(const RenderPipelineId renderPipelineId);
+            RenderPipelineId GetShadowPassRenderPipelineId() const;
+            
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
@@ -193,6 +197,9 @@ namespace AZ
 
             //! Attempt to create a shader resource group.
             void TryCreateShaderResourceGroup();
+
+            //! Update ViewToWorld matrix as well as the view transform
+            void UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld);
 
             AZ::Name m_name;
             UsageFlags m_usageFlags;
@@ -229,6 +236,9 @@ namespace AZ
             Matrix4x4 m_clipToWorldMatrix;
             AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
 
+            // Cached View transform from ViewToWorld matrix 
+            AZ::Transform m_viewTransform;
+
             // View's position in world space
             Vector3 m_position;
 
@@ -255,6 +265,9 @@ namespace AZ
 
             AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
             AZStd::atomic_uint32_t m_orFlags { 0x00000000 };
+
+            // Get the render pipeline id associated with this view if used as a shadow light view.
+            RenderPipelineId m_shadowPassRenderpipelineId;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);
