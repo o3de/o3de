@@ -220,6 +220,32 @@ public: // static member data
 
 typedef AZ::EBus<UiTextInterface> UiTextBus;
 
+// carbonated begin (alukyanov/lyshine-UiTextNotifications)
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+class UiTextNotifications : public AZ::ComponentBus
+{
+public:
+    //////////////////////////////////////////////////////////////////////////
+    // EBusTraits overrides
+    static const bool EnableEventQueue = true;
+    //////////////////////////////////////////////////////////////////////////
+
+public: // member functions
+    virtual ~UiTextNotifications()
+    {
+    }
+
+    //! Notify listeners that the text has been changed
+    virtual void OnLayoutInvalidated()
+    {
+    }
+};
+using UiTextNotificationsBus = AZ::EBus<UiTextNotifications>;
+#endif // #if defined(CARBONATED)
+
+// carbonated end
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Interface that describes "clickable" areas of text for a text component.
 //!
