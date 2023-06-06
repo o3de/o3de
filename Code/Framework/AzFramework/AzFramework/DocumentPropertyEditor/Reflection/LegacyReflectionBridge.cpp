@@ -573,11 +573,18 @@ namespace AZ::Reflection
                 return m_stack.back().m_instance;
             }
 
-            AZStd::string_view GetNodeDisplayLabel(const StackEntry& nodeData, AZStd::fixed_string<128>& labelAttributeBuffer)
+            AZStd::string_view GetNodeDisplayLabel(StackEntry& nodeData, AZStd::fixed_string<128>& labelAttributeBuffer)
             {
+                using DocumentPropertyEditor::Nodes::PropertyEditor;
+
                 // First check for overrides or for presence of parent container
                 if (!nodeData.m_labelOverride.empty())
                 {
+                    return nodeData.m_labelOverride;
+                }
+                else if (auto nameLabelOverrideAttribute = Find(PropertyEditor::NameLabelOverride.GetName()); nameLabelOverrideAttribute)
+                {
+                    nodeData.m_labelOverride = PropertyEditor::NameLabelOverride.DomToValue(*nameLabelOverrideAttribute).value_or("");
                     return nodeData.m_labelOverride;
                 }
                 else if (!nodeData.m_group.empty())
