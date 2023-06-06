@@ -457,7 +457,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
 
             if (inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::Escape)
             {
-                CSystem *cSys = (CSystem*)GetISystem();
+                CSystem* cSys = static_cast<CSystem*>(GetISystem());
                 if (cSys)
                 {
                     ISystemUserCallback* pCallback = cSys->GetUserCallback();
