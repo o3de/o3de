@@ -25,8 +25,12 @@ namespace AZ
 {
     namespace RPI
     {
-        //! Pass that outputs to a SwapChain
-        //! Holds all the passes needed to render a frame like depth, forward, post effects etc.
+        //! SwapChainPass is the root pass for a render pipeline which outputs to a swapchain.
+        //! It creates a swapchain attachment and uses it for the PipelineOutput binding of the RenderPipeline
+        //! Restrictions:
+        //! - The pass template should have a slot name "PipelineOutput"
+        //! - To support explicit render resolution ( swapchain has different size than the render pipeline's resolution),
+        //!     the pass template should have a pass request which creates the "CopyToSwapChain" pass
         class SwapChainPass final
             : public ParentPass
             , public AzFramework::WindowNotificationBus::Handler
@@ -52,7 +56,6 @@ namespace AZ
         protected:
             // Pass behavior overrides
             void BuildInternal() override final;
-            void CreateChildPassesInternal() override final;
             void FrameBeginInternal(FramePrepareParams params) override final;
             
             // WindowNotificationBus::Handler overrides ...
@@ -65,10 +68,6 @@ namespace AZ
             // Sets up a swap chain PassAttachment using the swap chain id from the window context 
             void SetupSwapChainAttachment();
 
-            // Create a copy pass to copy pipeline output to swapchain
-            // It's needed if device doesn't support swapchain scaling
-            void CreateCopyPass();
-
             // The WindowContext that owns the SwapChain this pass renders to
             const WindowContext* m_windowContext = nullptr;
 
@@ -78,12 +77,8 @@ namespace AZ
             // The intermediate attachment used for render pipeline's output
             Ptr<PassAttachment> m_pipelinOutputAttachment;
 
-            // The pass which copies pipeline output to swapchain 
-            Ptr<Pass> m_copyOutputPass;
-
-            // If the SwapchainPass need a child pass to copy pipeline output to swapchain
-            // It's true only if the pipeline output has a different resolution than the swapchain
-            bool m_needCopyOutput = false;
+            // The swapchain pass need to do resize from pipeline output to device swapchain
+            bool m_needResize = false;
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;

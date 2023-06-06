@@ -130,6 +130,8 @@ namespace AZ
             // Data structure to hold SwapChain for Default and XR SwapChains.
             AZStd::vector<SwapChainData> m_swapChainsData;
 
+            // The scaling mode used by the device swapchain.
+            // If it supports stretch, the SwapChainPass in the render pipeline shouldn't need to do extra scaling
             RHI::Scaling m_swapChainScalingMode; 
 
             // Non-owning reference to associated ViewportContexts (if any)

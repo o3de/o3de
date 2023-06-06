@@ -9,6 +9,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -24,12 +25,6 @@ namespace AZ
             , m_viewType(viewType)
         {
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
-            
-            // Need an intermediate output and a copy pass if the render resolution is different than swapchain's size
-            // Ideally, this should be set based on the size of window's render resolution and swapchain's size
-            // The pass system has problem updating the pass tree properly when the m_needCopyOutput state changes
-            // Now we set it to true if the window context doesn't have swapchain scaling
-            m_needCopyOutput = windowContext->GetSwapChainScalingMode() == RHI::Scaling::None;
         }
 
         Ptr<ParentPass> SwapChainPass::Recreate() const
@@ -77,6 +72,10 @@ namespace AZ
 
             RHI::SwapChainDimensions swapChainDimensions = m_windowContext->GetSwapChain(m_viewType)->GetDescriptor().m_dimensions;
 
+            // If the swapchain doesn't support scaling and render resolution is different than swapchain size
+            m_needResize = m_windowContext->GetSwapChainScalingMode() == RHI::Scaling::None &&
+                (swapChainDimensions.m_imageWidth != renderSize.m_width || swapChainDimensions.m_imageHeight != renderSize.m_height);
+
             // Note: we can't add m_swapChainAttachment to m_ownedAttachments then it would be imported to frame graph's attachment database as a regular image. 
             m_swapChainAttachment = aznew PassAttachment();
             m_swapChainAttachment->m_name = "SwapChainOutput";
@@ -89,7 +88,7 @@ namespace AZ
             swapChainImageDesc.m_format = swapChainDimensions.m_imageFormat;
             m_swapChainAttachment->m_descriptor = swapChainImageDesc;
 
-            if (m_needCopyOutput)
+            if (m_needResize)
             {
                 // Create a new binding for swapchain output
                 // It's used to connect to child pass's Output slot
@@ -110,41 +109,17 @@ namespace AZ
                 m_pipelinOutputAttachment->m_descriptor = outputImageDesc;
                 m_pipelinOutputAttachment->m_name = "PipelineOutput";
                 m_pipelinOutputAttachment->ComputePathName(GetPathName());
-                m_ownedAttachments.push_back(m_pipelinOutputAttachment);
+                // Note: do not add m_pipelinOutputAttachment to m_ownedAttachments so it won't be imported to frame graph's attachment database
 
                 // use the intermediate attachment as pipeline's output
                 pipelineOutput->SetAttachment(m_pipelinOutputAttachment);
             }
             else
             {
-                // use swapchain attachment as pipeline's output
+                // use the intermediate attachment as pipeline's output
                 pipelineOutput->SetAttachment(m_swapChainAttachment);
             }
         }
-
-        void SwapChainPass::CreateCopyPass()
-        {
-            // create the a child pass to copy data from m_pipelinOutputAttachment to m_swapChainAttachment
-            PassRequest childRequest;
-            childRequest.m_templateName = "FullscreenCopyTemplate";
-            childRequest.m_passName = "CopyOutputToSwapChain";
-            
-            PassConnection childInputConnection;
-            childInputConnection.m_localSlot = "Input";
-            childInputConnection.m_attachmentRef.m_pass = "PipelineGlobal";
-            childInputConnection.m_attachmentRef.m_attachment = "PipelineOutput";
-            childRequest.m_connections.emplace_back(childInputConnection);
-            PassConnection childOutputConnection;;
-            childOutputConnection.m_localSlot = "Output";
-            childOutputConnection.m_attachmentRef.m_pass = "Parent";
-            childOutputConnection.m_attachmentRef.m_attachment = "SwapChainOutput";
-            childRequest.m_connections.emplace_back(childOutputConnection);
-
-            PassSystemInterface* passSystem = PassSystemInterface::Get();
-            m_copyOutputPass = passSystem->CreatePassFromRequest(&childRequest);
-        }
-
-        // --- Pass behavior overrides ---
 
         void SwapChainPass::BuildInternal()
         {
@@ -160,21 +135,27 @@ namespace AZ
 
             ParentPass::BuildInternal();
 
+            // use the SwapchainOutput as the output of CopyToSwapChain pass to support swapchain scaling
+            if (m_needResize)
+            {
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(Name("CopyToSwapChain"), GetRenderPipeline());
+                RPI::Ptr<RPI::Pass> copyPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+                if (copyPass)
+                {
+                    auto outputBinding = copyPass->FindAttachmentBinding(Name("Output"));
+                    outputBinding->SetAttachment(m_swapChainAttachment);
+                    // set connected binding to nullptr so it won't use the output attachment specified in the pipeline's pass template
+                    outputBinding->m_connectedBinding = nullptr;
+                }
+                else
+                {
+                    AZ_Error("SwapChainPass", false, "Render pipeline requires 'CopyToSwapChain' pass with 'Output' slot to support swapchain resize");
+                }
+            }
+
             if (m_pipeline)
             {
                 m_pipeline->UpdateViewportScissor();
-            }
-        }
-
-        void SwapChainPass::CreateChildPassesInternal()
-        {
-            if (m_needCopyOutput)
-            {
-                if (!m_copyOutputPass)
-                {
-                    CreateCopyPass();
-                }
-                AddChild(m_copyOutputPass);
             }
         }
 
