@@ -64,7 +64,32 @@ namespace AzQtComponents
     const QString BackgroundColor{ "#565A5B" };
     const QString SeparatorColor{ "#606060" };
 
-    
+    SelectionCountButton::SelectionCountButton(QWidget* parent)
+        : QFrame(parent)
+    {
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_frameLayout = new QHBoxLayout(this);
+        m_frameLayout->setMargin(0);
+        m_frameLayout->setContentsMargins(4, 1, 0, 1);
+        m_frameLayout->setSpacing(0);
+
+        m_tagLabel = new QLabel(this);
+        m_tagLabel->setObjectName(s_tagText);
+        m_tagLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_tagLabel->setMinimumSize(24, 16);
+        m_tagLabel->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+        m_tagLabel->setText("");
+
+        m_frameLayout->addWidget(m_tagLabel);
+
+        SetSelectionCount(0);
+    }
+
+    void SelectionCountButton::SetSelectionCount(const int count)
+    {
+        m_tagLabel->setText(tr("%1 Selected.").arg(count));
+    }
+
     FilterTextButton::FilterTextButton(const QString& labelText, QWidget* parent, const QString& extraIconFileName)
         : QFrame(parent)
     {
@@ -708,7 +733,6 @@ namespace AzQtComponents
         // clear the label text by default
         clearLabelText();
 
-        m_ui->m_addFavoriteEntryButton->hide();
         m_ui->filteredLayout->setLayout(m_flowLayout);
         m_ui->filteredParent->hide();
         m_ui->filteredLayout->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -740,18 +764,6 @@ namespace AzQtComponents
         });
         connect(m_ui->textSearch, &QWidget::customContextMenuRequested, this, &FilteredSearchWidget::OnSearchContextMenu);
 
-        m_ui->m_addFavoriteEntryButton->setToolTip(tr("Add Selected Assets to Favorites"));
-        m_ui->m_addFavoriteEntryButton->setAutoRaise(true);
-
-        connect(
-            m_ui->m_addFavoriteEntryButton,
-            &QAbstractButton::clicked,
-            this,
-            [this]()
-            {
-                emit addFavoriteEntriesPressed();
-            }
-        );
         if (!willUseOwnSelector)
         {
             // have to initialize this after we've called setupUi so that we can make the
@@ -791,14 +803,12 @@ namespace AzQtComponents
     {
         m_usingFavoritesSystem = useFavorites;
 
-        if (!m_usingFavoritesSystem)
+        if (m_usingFavoritesSystem)
         {
-            m_ui->m_addFavoriteEntryButton->hide();
-        }
-        else
-        {
-            m_ui->m_addFavoriteEntryButton->show();
             createAddFavoriteSearchButton();
+            m_selectionCountButton = new SelectionCountButton(parentWidget());
+            m_flowLayout->addWidget(m_selectionCountButton);
+            m_selectionCountButton->setVisible(false);
         }
     }
 
@@ -953,6 +963,11 @@ namespace AzQtComponents
 
         setVisible |= m_filterTextButton != nullptr;
 
+        if (m_usingFavoritesSystem)
+        {
+            setVisible = true;
+        }
+
         m_ui->filteredParent->setVisible(setVisible);
     }
 
@@ -977,20 +992,42 @@ namespace AzQtComponents
 
     void FilteredSearchWidget::createAddFavoriteSearchButton()
     {
-        QToolButton* button = new QToolButton(this);
-        button->setObjectName("addSearchFavoriteButton");
-        button->setIcon(QIcon(":/Gallery/Favorites.svg"));
-        button->setToolTip(tr("Save Search to Favorites"));
-        button->setAutoRaise(true);
-        m_flowLayout->addWidget(button);
+        m_addFavoritesButton = new QToolButton(this);
+        m_addFavoritesButton->setObjectName("addSearchFavoriteButton");
+        m_addFavoritesButton->setIcon(QIcon(":/Gallery/Favorites.svg"));
+        m_addFavoritesButton->setToolTip(tr("Save Search to Favorites"));
+        m_addFavoritesButton->setAutoRaise(true);
+        m_flowLayout->addWidget(m_addFavoritesButton);
         connect(
-            button,
+            m_addFavoritesButton,
             &QAbstractButton::clicked,
             this,
             [this]
             {
                 emit addFavoriteSearchPressed();
             });
+    }
+
+    void FilteredSearchWidget::RepositionFixedButtons()
+    {
+        // Ensure the text search and favorite buttons are always at the end.
+        if (m_filterTextButton)
+        {
+            m_flowLayout->removeWidget(m_filterTextButton);
+            m_flowLayout->addWidget(m_filterTextButton);
+        }
+
+        if (m_selectionCountButton)
+        {
+            m_flowLayout->removeWidget(m_selectionCountButton);
+            m_flowLayout->addWidget(m_selectionCountButton);
+        }
+
+        if (m_addFavoritesButton)
+        {
+            m_flowLayout->removeWidget(m_addFavoritesButton);
+            m_flowLayout->addWidget(m_addFavoritesButton);
+        }
     }
 
     FilterCriteriaButton* FilteredSearchWidget::createCriteriaButton(const SearchTypeFilter& filter, int filterIndex)
@@ -1044,6 +1081,7 @@ namespace AzQtComponents
                 }
             });
             m_flowLayout->addWidget(button);
+            RepositionFixedButtons();
             m_typeButtons[index] = button;
         }
         else if (!enabled)
@@ -1165,6 +1203,24 @@ namespace AzQtComponents
         return m_ui->assetTypeSelector;
     }
 
+    void FilteredSearchWidget::SetSelectionCount(int selectionCount)
+    {
+        if (m_selectionCountButton)
+        {
+            m_selectionCountButton->SetSelectionCount(selectionCount);
+            if (selectionCount == 0)
+            {
+                m_selectionCountButton->setVisible(false);
+            }
+            else
+            {
+                m_selectionCountButton->setVisible(true);
+            }
+        }
+
+        RepositionFixedButtons();
+    }
+
     void FilteredSearchWidget::emitTypeFilterChanged()
     {
         SearchTypeFilterList checkedTypes;
@@ -1284,6 +1340,7 @@ namespace AzQtComponents
         }
 
         SetFilteredParentViewState();
+        RepositionFixedButtons();
     }
 
     bool FilteredSearchWidget::polish(Style* style, QWidget* widget, const Config& config)

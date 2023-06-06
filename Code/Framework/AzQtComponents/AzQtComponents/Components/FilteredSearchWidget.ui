@@ -49,18 +49,6 @@
                             </widget>
                         </item>
                         <item>
-                            <widget class="QToolButton" name="m_addFavoriteEntryButton">
-                                <property name="text">
-                                    <string>...</string>
-                                </property>
-                                <property name="icon">
-                                    <iconset resource="../../Framework/AzQtComponents/AzQtComponents/Components/resources.qrc">
-                                        <normaloff>:/Gallery/Favorites.svg</normaloff>:/Gallery/Favorites.svg
-                                    </iconset>
-                                </property>
-                            </widget>
-                        </item>
-                        <item>
                             <widget class="QToolButton" name="assetTypeSelector">
                                 <property name="popupMode">
                                     <enum>QToolButton::InstantPopup</enum>

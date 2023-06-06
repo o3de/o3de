@@ -79,6 +79,8 @@ protected:
 private:
     void UpdateDisplayInfo();
     void SetNarrowMode(bool narrow);
+    void SelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+    int GetSelectionCount();
 
 protected slots:
     void CreateToolsMenu();
@@ -101,7 +103,6 @@ private:
     QMenu* m_createMenu = nullptr;
     QAction* m_treeViewMode = nullptr;
     QAction* m_listViewMode = nullptr;
-    QToolButton* m_addToFavoritesButton;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
         AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
     AzToolsFramework::AssetBrowser::AssetBrowserMode m_currentMode = AzToolsFramework::AssetBrowser::AssetBrowserMode::ThumbnailView;
@@ -116,6 +117,7 @@ private Q_SLOTS:
     void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
     void BreadcrumbsPathChangedSlot(const QString& path) const;
+    void OnFilterCriteriaChanged();
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

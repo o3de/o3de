@@ -235,7 +235,6 @@ namespace AzToolsFramework
         {
             return m_favoritesModel.data();
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

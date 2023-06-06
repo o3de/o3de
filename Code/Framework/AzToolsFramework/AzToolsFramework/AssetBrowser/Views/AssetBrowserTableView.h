@@ -83,6 +83,7 @@ namespace AzToolsFramework
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);
             void showInFolderTriggered(const AssetBrowserEntry* entry);
+            void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;

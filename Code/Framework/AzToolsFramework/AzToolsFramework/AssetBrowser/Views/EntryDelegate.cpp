@@ -164,7 +164,7 @@ namespace AzToolsFramework
         {
             if (!m_showSourceControl)
             {
-                const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(entry, m_showFavoriteIcons);
+                const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(entry, false, m_showFavoriteIcons);
                 if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
                 {
                     QIcon icon;

@@ -46,6 +46,20 @@ namespace AzQtComponents
     class FilteredSearchItemDelegate;
     class SearchTypeSelectorFilterModel;
 
+    class AZ_QT_COMPONENTS_API SelectionCountButton : public QFrame
+    {
+        Q_OBJECT
+
+    public:
+        explicit SelectionCountButton(QWidget* parent = nullptr);
+
+        void SetSelectionCount(const int count);
+
+    protected:
+        QHBoxLayout* m_frameLayout;
+        QLabel* m_tagLabel;
+    };
+
     class AZ_QT_COMPONENTS_API FilterTextButton : public QFrame
     {
         Q_OBJECT
@@ -301,6 +315,9 @@ namespace AzQtComponents
         void SetFilteredParentViewState();
 
         QToolButton* assetTypeSelectorButton() const;
+
+        void SetSelectionCount(int selectionCount);
+
     signals:
         void TextFilterChanged(const QString& activeTextFilter);
         void TypeFilterChanged(const SearchTypeFilterList& activeTypeFilters);
@@ -332,6 +349,7 @@ namespace AzQtComponents
 
         FilterTextButton* createTextFilterButton(const QString& text);
         void createAddFavoriteSearchButton();
+        void RepositionFixedButtons();
 
         virtual void SetupPaintDelegates();
     private slots:
@@ -355,7 +373,8 @@ namespace AzQtComponents
             bool m_textFilterFillsWidth;
         bool m_displayEnabledFilters;
         FilterTextButton* m_filterTextButton = nullptr;
-
+        SelectionCountButton* m_selectionCountButton = nullptr;
+        QToolButton* m_addFavoritesButton = nullptr;
     private:
         int FindFilterIndex(const QString& category, const QString& displayName) const;
         bool m_usingFavoritesSystem = false;

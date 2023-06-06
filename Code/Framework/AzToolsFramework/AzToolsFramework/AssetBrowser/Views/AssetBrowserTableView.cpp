@@ -58,6 +58,15 @@ namespace AzToolsFramework
 
             connect(
                 m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderTableView::selectionChangedSignal,
+                this,
+                [this](const QItemSelection& selected, const QItemSelection& deselected)
+                {
+                    Q_EMIT selectionChangedSignal(selected, deselected);
+                });
+
+            connect(
+                m_expandedTableViewWidget,
                 &AzQtComponents::AssetFolderTableView::clicked,
                 this,
                 [this](const QModelIndex& index)

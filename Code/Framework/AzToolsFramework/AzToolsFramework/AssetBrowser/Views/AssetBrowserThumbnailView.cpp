@@ -46,6 +46,17 @@ namespace AzToolsFramework
 
             connect(
                 m_thumbnailViewWidget,
+                &AzQtComponents::AssetFolderThumbnailView::selectionChangedSignal,
+                this,
+                [this](
+                    const QItemSelection& selected,
+                    const QItemSelection& deselected)
+                {
+                    Q_EMIT selectionChangedSignal(selected, deselected);
+                });
+
+            connect(
+                m_thumbnailViewWidget,
                 &AzQtComponents::AssetFolderThumbnailView::clicked,
                 this,
                 [this](const QModelIndex& index)

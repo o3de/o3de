@@ -103,7 +103,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
     , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserListModel(parent))
-    , m_addToFavoritesButton(new QToolButton(this))
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true, true);
@@ -129,6 +128,22 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserFavoritesWidget->SetSearchWidget(m_ui->m_searchWidget);
 
+    connect(m_ui->m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &AzAssetBrowserWindow::OnFilterCriteriaChanged);
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget,
+        &AssetBrowserTreeView::selectionChangedSignal,
+        this,
+        &AzAssetBrowserWindow::SelectionChanged);
+    connect(m_ui->m_thumbnailView,
+        &AssetBrowserThumbnailView::selectionChangedSignal,
+        this,
+        &AzAssetBrowserWindow::SelectionChanged);
+    connect(
+        m_ui->m_tableView,
+        &AssetBrowserTableView::selectionChangedSignal,
+        this,
+        &AzAssetBrowserWindow::SelectionChanged);
+
     connect(m_ui->m_searchWidget, &SearchWidget::addFavoriteEntriesPressed, this, &AzAssetBrowserWindow::AddFavoriteEntriesButtonPressed);
     connect(
         m_ui->m_searchWidget,
@@ -136,8 +151,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         this,
         [this]()
         {
-            AssetBrowserFavoriteRequestBus::Broadcast(
-                &AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
+            AddFavoriteSearchButtonPressed();
         }
     );
 
@@ -250,7 +264,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_thumbnailViewButton->hide();
         m_ui->m_tableViewButton->hide();
         m_ui->m_createButton->hide();
-        m_addToFavoritesButton->hide();
         m_ui->m_searchWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         m_ui->m_assetBrowserFavoritesWidget->hide();
     }
@@ -261,7 +274,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->horizontalLayout->setAlignment(m_ui->m_thumbnailViewButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_breadcrumbsWrapper, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->m_createButton, Qt::AlignTop);
-    m_ui->horizontalLayout->setAlignment(m_addToFavoritesButton, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->framePreCreate, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->framePostCreate, Qt::AlignTop);
     m_ui->horizontalLayout->setAlignment(m_ui->frame, Qt::AlignTop);
@@ -705,12 +717,12 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->AddFolderFilter();
     m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
-    m_addToFavoritesButton->setEnabled(true);
     if (thumbnailView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_tableView->SetTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
+        m_ui->m_searchWidget->SetSelectionCount(m_ui->m_thumbnailView->GetSelectedAssets().size());
     }
     else if (tableView)
     {
@@ -718,7 +730,7 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
         m_ui->m_tableView->SetTableViewActive(true);
         m_ui->m_searchWidget->setDisabled(true);
         m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(true);
-        m_addToFavoritesButton->setDisabled(true);
+        m_ui->m_searchWidget->SetSelectionCount(m_ui->m_tableView->GetSelectedAssets().size());
     }
 }
 
@@ -737,13 +749,18 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         m_ui->m_tableView->SetTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
         m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
-        m_addToFavoritesButton->setEnabled(true);
+        m_ui->m_searchWidget->SetSelectionCount(m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size());
     }
 }
 
 void AzAssetBrowserWindow::AddFavoriteSearchButtonPressed()
 {
-    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
+    if (!GetSelectionCount())
+    {
+        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
+    }
+
+    AddFavoriteEntriesButtonPressed();
 }
 
 void AzAssetBrowserWindow::AddFavoriteEntriesButtonPressed()
@@ -980,6 +997,27 @@ void AzAssetBrowserWindow::BreadcrumbsPathChangedSlot(const QString& path) const
     }
 }
 
+int AzAssetBrowserWindow::GetSelectionCount()
+{
+    if (m_ui->m_thumbnailView->GetThumbnailActiveView())
+    {
+        return m_ui->m_thumbnailView->GetSelectedAssets().size();
+    }
+
+    if (m_ui->m_tableView->GetTableViewActive())
+    {
+        return m_ui->m_tableView->GetSelectedAssets().size();
+        return;
+    }
+
+    return m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size();
+}
+
+void AzAssetBrowserWindow::OnFilterCriteriaChanged()
+{
+    m_ui->m_searchWidget->SetSelectionCount(GetSelectionCount());
+}
+
 AssetBrowserMode AzAssetBrowserWindow::GetCurrentMode() const
 {
     return m_currentMode;
@@ -1006,7 +1044,6 @@ void AzAssetBrowserWindow::SetCurrentMode(const AssetBrowserMode mode)
     m_currentMode = mode;
 }
 
-
 void AzAssetBrowserWindow::SetFavoritesWindowHeight(int height)
 {
     QList<int> sizes;
@@ -1014,5 +1051,11 @@ void AzAssetBrowserWindow::SetFavoritesWindowHeight(int height)
     sizes.append(m_ui->scrollAreaWidgetContents->height() - height);
     m_ui->m_leftsplitter->setSizes(sizes);
 }
+
+void AzAssetBrowserWindow::SelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
+{
+    OnFilterCriteriaChanged();
+}
+
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>
