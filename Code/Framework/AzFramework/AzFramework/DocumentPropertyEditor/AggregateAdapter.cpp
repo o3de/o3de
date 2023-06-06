@@ -126,6 +126,16 @@ namespace AZ::DocumentPropertyEditor
 
     bool RowAggregateAdapter::AggregateNode::RemoveEntry(size_t adapterIndex)
     {
+        // first recurse to remove entries from the bottom up
+        if (m_pathIndexToChildMaps.size() > adapterIndex)
+        {
+            auto& childMap = m_pathIndexToChildMaps[adapterIndex];
+            while (!childMap.empty())
+            {
+                childMap.begin()->second->RemoveEntry(adapterIndex);
+            }
+        }
+
         // find entry in parent's index map and remove it
         auto& parentsMap = m_parent->m_pathIndexToChildMaps[adapterIndex];
         auto mapEntryIter = AZStd::find_if(
@@ -702,20 +712,21 @@ namespace AZ::DocumentPropertyEditor
                      !matchingSiblingFound && siblingIter != endIter;
                      ++siblingIter)
                 {
-                    if (siblingIter->get() != rowNode)
+                    auto* currSibling = siblingIter->get();
+                    if (currSibling != rowNode)
                     {
-                        // now matches sibling, join it as an entry and destroy the former node
-                        auto siblingRow = GetComparisonRow(siblingIter->get());
+                        auto siblingRow = GetComparisonRow(currSibling);
                         if (SameRow(siblingRow, comparisonRow))
                         {
-                            const bool allEntriesMatch = (*siblingIter)->m_allEntriesMatch && ValuesMatch(siblingRow, comparisonRow);
-                            siblingIter->get()->AddEntry(adapterIndex, rowPath.Back().GetIndex(), allEntriesMatch);
-                            matchingSiblingFound = true;
+                            // now matches sibling, join it as an entry and destroy the former node
+                            ProcessRemoval(rowNode, adapterIndex);
+                            auto adapterRow = adapter->GetContents()[rowPath];
+                            AddChildRow(adapterIndex, parentNode, adapterRow, rowPath.Back().GetIndex(), true);
                         }
                     }
                 }
             }
-            if (!hasSiblings || !matchingSiblingFound && nodeWasComplete)
+            if ((!hasSiblings || !matchingSiblingFound) && nodeWasComplete)
             {
                 // there's only one entry for this node and it needs to update, replace its value with its new value
                 auto nodePath = GetPathForNode(rowNode);
