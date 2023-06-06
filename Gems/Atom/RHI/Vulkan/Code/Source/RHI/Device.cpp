@@ -341,7 +341,8 @@ namespace AZ
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures(m_context);
 
-            return RHI::ResultCode::Success;
+            RHI::ResultCode resultCode = InitVmaAllocator(physicalDeviceBase);
+            return resultCode;
         }
 
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
@@ -402,11 +403,9 @@ namespace AZ
                 static int index = 0;
                 m_constantBufferPool->SetName(Name(AZStd::string::format("ConstantPool_%d", ++index)));
 
-                BufferPoolDescriptor bufferPoolDescriptor;
+                RHI::BufferPoolDescriptor bufferPoolDescriptor;
                 bufferPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
-                bufferPoolDescriptor.m_bufferPoolPageSizeInBytes =
-                    m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
@@ -479,11 +478,15 @@ namespace AZ
             {
                 // Need to create an image to get the requirements.
                 // This will not allocate or bind memory.
-                Image image;
-                const bool tryUseSparse = false;
-                [[maybe_unused]] RHI::ResultCode result = image.Init(*this, descriptor, tryUseSparse);
-                AZ_Assert(result == RHI::ResultCode::Success, "Failed to get memory requirements");
-                auto it2 = cache.insert(hash, image.m_memoryRequirements);
+                ImageCreateInfo createInfo = BuildImageCreateInfo(descriptor);
+                VkImage vkImage = VK_NULL_HANDLE;
+                VkResult vkResult = m_context.CreateImage(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkImage);
+                AssertSuccess(vkResult);
+
+                VkMemoryRequirements memoryRequirements = {};
+                m_context.GetImageMemoryRequirements(GetNativeDevice(), vkImage, &memoryRequirements);
+                auto it2 = cache.insert(hash, memoryRequirements);
+                m_context.DestroyImage(GetNativeDevice(), vkImage, VkSystemAllocator::Get());
                 return it2.first->second;
             }
         }
@@ -502,12 +505,15 @@ namespace AZ
             {
                 // Need to create a buffer to get the requirements.
                 // This will not allocate or bind memory.
-                VkBuffer vkBuffer = CreateBufferResouce(descriptor);
-                AZ_Assert(vkBuffer != VK_NULL_HANDLE, "Failed to get memory requirements");
+                BufferCreateInfo createInfo = BuildBufferCreateInfo(descriptor);
+                VkBuffer vkBuffer = VK_NULL_HANDLE;
+                VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo.m_vkCreateInfo, VkSystemAllocator::Get(), &vkBuffer);
+                AssertSuccess(vkResult);
+
                 VkMemoryRequirements memoryRequirements = {};
                 m_context.GetBufferMemoryRequirements(GetNativeDevice(), vkBuffer, &memoryRequirements);
                 auto it2 = cache.insert(hash, memoryRequirements);
-                DestroyBufferResource(vkBuffer);
+                m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, VkSystemAllocator::Get());
                 return it2.first->second;
             }
         }
@@ -522,7 +528,7 @@ namespace AZ
             return m_supportedPipelineStageFlagsMask;
         }
 
-        VkImageUsageFlags Device::GetImageUsageFromFormat(RHI::Format format)
+        VkImageUsageFlags Device::GetImageUsageFromFormat(RHI::Format format) const
         {
             auto it = m_imageUsageOfFormat.find(format);
             if (it != m_imageUsageOfFormat.end())
@@ -576,10 +582,11 @@ namespace AZ
             return m_bindlessDescriptorPool;
         }
 
-        RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount)
+        RHI::Ptr<Buffer> Device::AcquireStagingBuffer(AZStd::size_t byteCount, AZStd::size_t alignment /* = 1*/)
         {
             RHI::Ptr<Buffer> stagingBuffer = Buffer::Create();
             RHI::BufferDescriptor bufferDesc(RHI::BufferBindFlags::CopyRead, byteCount);
+            bufferDesc.m_alignment = alignment;
             RHI::BufferInitRequest initRequest(*stagingBuffer, bufferDesc);
             const RHI::ResultCode result = m_stagingBufferPool->InitBuffer(initRequest);
             if (result != RHI::ResultCode::Success)
@@ -644,6 +651,8 @@ namespace AZ
             // Any containers that maintain references to DeviceObjects need to be cleared here to ensure the device
             // refcount reaches 0 before shutdown.
 
+            m_nullDescriptorManager.reset();
+
             m_commandQueueContext.Shutdown();
 
             m_bindlessDescriptorPool.Shutdown();
@@ -658,8 +667,6 @@ namespace AZ
             m_asyncUploadQueue.reset();
             m_commandListAllocator.Shutdown();
 
-            m_nullDescriptorManager.reset();
-
             // Make sure this is last to flush any objects released in the above calls.
             m_releaseQueue.Shutdown();
         }
@@ -668,6 +675,8 @@ namespace AZ
         {
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
+
+            ShutdownVmaAllocator();
 
             // Only destroy VkDevice if created locally and not passed in by a XR module
             if (!m_isXrNativeDevice)
@@ -738,7 +747,42 @@ namespace AZ
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) 
         {
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            physicalDevice.CompileMemoryStatistics(m_context, builder);
+            const auto& memProps = physicalDevice.GetMemoryProperties();
+            VmaBudget budgets[VK_MAX_MEMORY_HEAPS];
+            vmaGetHeapBudgets(GetVmaAllocator(), budgets);
+
+            VmaTotalStatistics detailStats;
+            bool detail = builder.GetReportFlags() == RHI::MemoryStatisticsReportFlags::Detail;
+            if (detail)
+            {
+                vmaCalculateStatistics(GetVmaAllocator(), &detailStats);
+            }
+
+            for (uint32_t i = 0; i < memProps.memoryHeapCount; ++i)
+            {
+                RHI::MemoryStatistics::Heap* heapStats = builder.AddHeap();
+                heapStats->m_name = AZStd::string::format("Heap %d", static_cast<int>(i));
+                heapStats->m_heapMemoryType =
+                    RHI::CheckBitsAll(memProps.memoryHeaps[i].flags, static_cast<VkMemoryHeapFlags>(VK_MEMORY_HEAP_DEVICE_LOCAL_BIT))
+                    ? RHI::HeapMemoryLevel::Device
+                    : RHI::HeapMemoryLevel::Host;
+                heapStats->m_memoryUsage.m_budgetInBytes = budgets[i].budget;
+                heapStats->m_memoryUsage.m_totalResidentInBytes = budgets[i].usage;
+                heapStats->m_memoryUsage.m_usedResidentInBytes = budgets[i].statistics.allocationBytes;
+
+                if (detail)
+                {
+                    const VmaStatistics& stats = budgets[i].statistics;
+                    VkDeviceSize unusedBytes = stats.blockBytes - stats.allocationBytes;
+                    heapStats->m_memoryUsage.m_fragmentation =
+                        unusedBytes > 0 ? 1.0f - (detailStats.memoryHeap[i].unusedRangeSizeMax / float(unusedBytes)) : 1.0f;
+
+                    char* jsonString = nullptr;
+                    vmaBuildStatsString(GetVmaAllocator(), &jsonString, true);
+                    heapStats->m_memoryUsage.m_extraStats = jsonString;
+                    vmaFreeStatsString(GetVmaAllocator(), jsonString);
+                }
+            }
         }
 
         void Device::UpdateCpuTimingStatisticsInternal() const
@@ -909,6 +953,14 @@ namespace AZ
                     encoded_rate_w = 2;
                     encoded_rate_h = 1;
                     break;
+                case RHI::ShadingRate::Rate4x1:
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 0;
+                    break;
+                case RHI::ShadingRate::Rate1x4:
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 2;
+                    break;
                 case RHI::ShadingRate::Rate4x4:
                     encoded_rate_w = encoded_rate_h = 2;
                     break;
@@ -948,6 +1000,14 @@ namespace AZ
                 case RHI::ShadingRate::Rate4x2:
                     encoded_rate_w = 2;
                     encoded_rate_h = 1;
+                    break;
+                case RHI::ShadingRate::Rate1x4:
+                    encoded_rate_w = 0;
+                    encoded_rate_h = 2;
+                    break;
+                case RHI::ShadingRate::Rate4x1:
+                    encoded_rate_w = 2;
+                    encoded_rate_h = 0;
                     break;
                 case RHI::ShadingRate::Rate4x4:
                     encoded_rate_w = encoded_rate_h = 2;
@@ -1127,57 +1187,7 @@ namespace AZ
             instance.GetContext().GetPhysicalDeviceQueueFamilyProperties(
                 nativePhysicalDevice, &queueFamilyCount, m_queueFamilyProperties.data());
         }
-
-        RHI::Ptr<Memory> Device::AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags, const RHI::BufferBindFlags bufferBindFlags)
-        {
-            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            const VkPhysicalDeviceMemoryProperties& memProp = physicalDevice.GetMemoryProperties();
-
-            RHI::Ptr<Memory> memory = Memory::Create();
-            Memory::Descriptor memoryDesc;
-            memoryDesc.m_sizeInBytes = sizeInBytes;
-
-            // Flags that we remove in each new allocation try.
-            VkMemoryPropertyFlags filterFlags[] =
-            {
-                VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, // Try removing the cache/coherent flags.
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,    // Remove the host visible flag in case we run out of host memory.
-                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,    // Try to remove the device local flag (so we fallback to the host visible memory).
-                ~0u                                     // This will remove all flags
-            };
-
-            VkMemoryPropertyFlags memoryFlags = flags;
-            uint32_t memoryTypesToUseMask = memoryTypeMask;
-            for (uint32_t filterIndex = 0; filterIndex < AZ_ARRAY_SIZE(filterFlags); filterIndex++)
-            {
-                // Try to allocate from all supported memory types that have necessary flags.
-                for (uint32_t memoryIndex = 0; memoryIndex < memProp.memoryTypeCount; ++memoryIndex)
-                {
-                    const uint32_t memoryTypeBit = AZ_BIT(memoryIndex);
-                    if (RHI::CheckBitsAll(memProp.memoryTypes[memoryIndex].propertyFlags, memoryFlags) &&
-                        RHI::CheckBitsAll(memoryTypesToUseMask, memoryTypeBit))
-                    {
-                        memoryDesc.m_memoryTypeIndex = memoryIndex;
-                        memoryDesc.m_bufferBindFlags = bufferBindFlags;
-                        auto result = memory->Init(*this, memoryDesc);
-                        if (result == RHI::ResultCode::Success)
-                        {
-                            AZ_Warning("Vulkan", memoryFlags == flags, "Could not allocate memory using VkMemoryPropertyFlags %u, fallback to using VkMemoryPropertyFlags %u instead", flags, memoryFlags);
-                            return memory;
-                        }
-                        memoryTypesToUseMask = RHI::ResetBits(memoryTypesToUseMask, memoryTypeBit);
-                    }
-                }
-
-                // Since we couldn't allocate with the current flags,
-                // remove some of them and try again.
-                memoryFlags = RHI::ResetBits(memoryFlags, filterFlags[filterIndex]);
-            }
-            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(false);
-            AZ_Assert(memory, "Failed to allocate memory size %llu bytes with flags %u, and memory types %u", static_cast<unsigned long long>(sizeInBytes), flags, memoryTypeMask);
-            return memory;
-        }
-
+        
         NullDescriptorManager& Device::GetNullDescriptorManager()
         {
             AZ_Assert(m_nullDescriptorManager, "NullDescriptorManager was not created. Check device capabilities.");
@@ -1205,37 +1215,274 @@ namespace AZ
             return bufferUsageFlags;
         }
 
-        VkBuffer Device::CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const
+        RHI::ResultCode Device::InitVmaAllocator(RHI::PhysicalDevice & physicalDeviceBase)
         {
-            AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
-            AZStd::vector<uint32_t> queueFamilies(GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask));
+            auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
+            const auto& physicalProperties = physicalDevice.GetPhysicalDeviceProperties();
 
-            VkBufferCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            createInfo.pNext = nullptr;
-            createInfo.flags = 0;
-            createInfo.size = descriptor.m_byteCount;
-            createInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
-            // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in the descriptor.
-            createInfo.sharingMode = 
-                (RHI::CheckBitsAny(
-                    descriptor.m_bindFlags, 
-                    RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) || 
-                    (queueFamilies.size()) <= 1) 
-                ? VK_SHARING_MODE_EXCLUSIVE 
-                : VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = static_cast<uint32_t>(queueFamilies.size());
-            createInfo.pQueueFamilyIndices = queueFamilies.empty() ? nullptr : queueFamilies.data();
+            // We pass the function pointers from the Glad context since we already loaded them.
+            VmaVulkanFunctions vulkanFunctions =
+            {
+                m_context.GetInstanceProcAddr,
+                m_context.GetDeviceProcAddr,
+                m_context.GetPhysicalDeviceProperties,
+                m_context.GetPhysicalDeviceMemoryProperties,
+                m_context.AllocateMemory,
+                m_context.FreeMemory,
+                m_context.MapMemory,
+                m_context.UnmapMemory,
+                m_context.FlushMappedMemoryRanges,
+                m_context.InvalidateMappedMemoryRanges,
+                m_context.BindBufferMemory,
+                m_context.BindImageMemory,
+                m_context.GetBufferMemoryRequirements,
+                m_context.GetImageMemoryRequirements,
+                m_context.CreateBuffer,
+                m_context.DestroyBuffer,
+                m_context.CreateImage,
+                m_context.DestroyImage,
+                m_context.CmdCopyBuffer,
+                m_context.GetBufferMemoryRequirements2,
+                m_context.GetImageMemoryRequirements2,
+                m_context.BindBufferMemory2,
+                m_context.BindImageMemory2,
+                m_context.GetPhysicalDeviceMemoryProperties2,
+            };
 
-            VkBuffer vkBuffer = VK_NULL_HANDLE;
-            VkResult vkResult = m_context.CreateBuffer(GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &vkBuffer);
-            AssertSuccess(vkResult);
-            return vkBuffer;
+            auto& instance = Instance::GetInstance();
+            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
+
+            VmaAllocatorCreateInfo allocatorInfo = {};
+            allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
+            allocatorInfo.device = m_nativeDevice;
+            allocatorInfo.instance = instance.GetNativeInstance();
+            // 1.2 is our current version for glad function pointers. Update this value when updating GLAD
+            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_2);
+            allocatorInfo.pVulkanFunctions = &vulkanFunctions;
+            allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
+
+            if (m_context.GetBufferMemoryRequirements2 && m_context.GetImageMemoryRequirements2)
+            {
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
+            }
+
+            if (m_context.BindBufferMemory2 && m_context.BindImageMemory2)
+            {
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
+            }
+
+            if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) !=
+                deviceExtensions.end())
+            {
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
+            }
+
+            if (physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress)
+            {
+                allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+            }
+
+            VkResult errorCode = vmaCreateAllocator(&allocatorInfo, &m_vmaAllocator);
+            AssertSuccess(errorCode);
+
+            return ConvertResult(errorCode);
         }
 
-        void Device::DestroyBufferResource(VkBuffer vkBuffer) const
+        void Device::ShutdownVmaAllocator()
         {
-            m_context.DestroyBuffer(GetNativeDevice(), vkBuffer, VkSystemAllocator::Get());
+            if (m_vmaAllocator != VK_NULL_HANDLE)
+            {
+                vmaDestroyAllocator(m_vmaAllocator);
+            }
+        }
+
+        VkImageUsageFlags Device::CalculateImageUsageFlags(const RHI::ImageDescriptor& descriptor) const
+        {
+            const RHI::ImageBindFlags bindFlags = descriptor.m_bindFlags;
+            VkImageUsageFlags usageFlags{};
+
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderRead))
+            {
+                usageFlags |= VK_IMAGE_USAGE_SAMPLED_BIT;
+            }
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderWrite))
+            {
+                usageFlags |= VK_IMAGE_USAGE_STORAGE_BIT;
+            }
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::Color))
+            {
+                usageFlags |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+            }
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil))
+            {
+                usageFlags |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+            }
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyWrite))
+            {
+                usageFlags |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+            }
+            if (RHI::CheckBitsAll(bindFlags, RHI::ImageBindFlags::Color | RHI::ImageBindFlags::ShaderRead) ||
+                RHI::CheckBitsAll(bindFlags, RHI::ImageBindFlags::DepthStencil | RHI::ImageBindFlags::ShaderRead))
+            {
+                usageFlags |= VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+            }
+            if (RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShadingRate))
+            {
+                switch (GetImageShadingRateMode())
+                {
+                case Device::ShadingRateImageMode::DensityMap:
+                    {
+                        usageFlags |= VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
+                    }
+                    break;
+                case Device::ShadingRateImageMode::ImageAttachment:
+                    {
+                        usageFlags |= VK_IMAGE_USAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+                    }
+                    break;
+                default:
+                    {
+                        AZ_Error("Image", false, "Image Shading Rate mode not supported on this platform");
+                    }
+                    break;
+                }
+            }
+
+            // add transfer src usage for all images since we may want them to be copyied for preview or readback
+            usageFlags |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+            const VkImageUsageFlags usageMask = GetImageUsageFromFormat(descriptor.m_format);
+
+            auto finalFlags = usageFlags & usageMask;
+
+            // Output a warning about desired usages that are not supported
+            if (finalFlags != usageFlags)
+            {
+                AZ_Warning("Vulkan", false, "Missing usage bit flags (unsupported): %x", usageFlags & ~finalFlags);
+            }
+
+            return finalFlags;
+        }
+
+        VkImageCreateFlags Device::CalculateImageCreateFlags(const RHI::ImageDescriptor& descriptor) const
+        {
+            VkImageCreateFlags flags{};
+
+            // Spec. of VkImageCreate:
+            // "If imageType is VK_IMAGE_TYPE_2D and flags contains VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+            //  extent.width and extent.height must be equal and arrayLayers must be greater than or equal to 6"
+            // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkImageCreateInfo.html
+            if (descriptor.m_dimension == RHI::ImageDimension::Image2D && descriptor.m_size.m_width == descriptor.m_size.m_height &&
+                descriptor.m_arraySize >= 6)
+            {
+                flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
+            }
+
+            // For required condition of VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT, refer the spec. of VkImageViewCreate:
+            // https://www.khronos.org/registry/vulkan/specs/1.1-extensions/man/html/VkImageViewCreateInfo.html
+            auto& physicalDevice = static_cast<const Vulkan::PhysicalDevice&>(GetPhysicalDevice());
+            if (physicalDevice.IsFeatureSupported(DeviceFeature::Compatible2dArrayTexture) &&
+                (descriptor.m_dimension == RHI::ImageDimension::Image3D))
+            {
+                // The KHR value will map to the core one in case compatible 2D array is part of core.
+                flags |= VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT_KHR;
+            }
+
+            if (physicalDevice.IsFeatureSupported(DeviceFeature::CustomSampleLocation) &&
+                descriptor.m_multisampleState.m_customPositionsCount > 0 &&
+                RHI::CheckBitsAny(descriptor.m_bindFlags, RHI::ImageBindFlags::DepthStencil))
+            {
+                flags |= VK_IMAGE_CREATE_SAMPLE_LOCATIONS_COMPATIBLE_DEPTH_BIT_EXT;
+            }
+
+            flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
+
+            return flags;
+        }
+
+        BufferCreateInfo Device::BuildBufferCreateInfo(const RHI::BufferDescriptor& descriptor) const
+        {
+            BufferCreateInfo createInfo;
+            AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
+            createInfo.m_queueFamilyIndices = GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask);
+
+            auto& vkCreateInfo = createInfo.m_vkCreateInfo;
+            vkCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            vkCreateInfo.pNext = nullptr;
+            vkCreateInfo.flags = 0;
+            vkCreateInfo.size = descriptor.m_byteCount;
+            vkCreateInfo.usage = GetBufferUsageFlagBitsUnderRestrictions(descriptor.m_bindFlags);
+            // Trying to guess here if the buffers are going to be used as attachments. Maybe it would be better to add an explicit flag in
+            // the descriptor.
+            vkCreateInfo.sharingMode =
+                (RHI::CheckBitsAny(
+                     descriptor.m_bindFlags,
+                     RHI::BufferBindFlags::ShaderWrite | RHI::BufferBindFlags::Predication | RHI::BufferBindFlags::Indirect) ||
+                 (createInfo.m_queueFamilyIndices.size()) <= 1)
+                ? VK_SHARING_MODE_EXCLUSIVE
+                : VK_SHARING_MODE_CONCURRENT;
+            vkCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.m_queueFamilyIndices.size());
+            vkCreateInfo.pQueueFamilyIndices = createInfo.m_queueFamilyIndices.empty() ? nullptr : createInfo.m_queueFamilyIndices.data();
+            return createInfo;
+        }
+
+        ImageCreateInfo Device::BuildImageCreateInfo(const RHI::ImageDescriptor& descriptor) const
+        {
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+
+            ImageCreateInfo createInfo;
+
+            auto& vkCreateInfo = createInfo.m_vkCreateInfo;
+            vkCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            vkCreateInfo.pNext = nullptr;
+            vkCreateInfo.format = ConvertFormat(descriptor.m_format);
+            vkCreateInfo.flags = CalculateImageCreateFlags(descriptor);
+            vkCreateInfo.imageType = ConvertToImageType(descriptor.m_dimension);
+            vkCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+            vkCreateInfo.usage = CalculateImageUsageFlags(descriptor);
+
+            VkImageFormatProperties formatProps{};
+            AssertSuccess(GetContext().GetPhysicalDeviceImageFormatProperties(
+                physicalDevice.GetNativePhysicalDevice(),
+                vkCreateInfo.format,
+                vkCreateInfo.imageType,
+                vkCreateInfo.tiling,
+                vkCreateInfo.usage,
+                vkCreateInfo.flags,
+                &formatProps));
+
+            AZ_Assert(descriptor.m_sharedQueueMask != RHI::HardwareQueueClassMask::None, "Invalid shared queue mask");
+            createInfo.m_queueFamilyIndices = GetCommandQueueContext().GetQueueFamilyIndices(descriptor.m_sharedQueueMask);
+
+            bool exclusiveOwnership =
+                createInfo.m_queueFamilyIndices.size() == 1; // Only supports one queue.
+                                           // If it's writable, then we assume that this will be used as an ImageAttachment and all proper
+                                           // ownership transfers will be handled by the FrameGraph.
+            exclusiveOwnership |= RHI::CheckBitsAny(
+                descriptor.m_bindFlags, RHI::ImageBindFlags::ShaderWrite | RHI::ImageBindFlags::Color | RHI::ImageBindFlags::DepthStencil);
+            exclusiveOwnership |=
+                RHI::CheckBitsAny(descriptor.m_sharedQueueMask, RHI::HardwareQueueClassMask::Copy) && // Supports copy queue
+                RHI::CountBitsSet(static_cast<uint32_t>(descriptor.m_sharedQueueMask)) ==
+                    2; // And ONLY copy + another queue. This means that the
+                       // copy queue can transition the resource to the correct queue
+                       // after finishing copying.
+
+            VkExtent3D extent = ConvertToExtent3D(descriptor.m_size);
+            extent.width = AZStd::min<uint32_t>(extent.width, formatProps.maxExtent.width);
+            extent.height = AZStd::min<uint32_t>(extent.height, formatProps.maxExtent.height);
+            extent.depth = AZStd::min<uint32_t>(extent.depth, formatProps.maxExtent.depth);
+            vkCreateInfo.extent = extent;
+            vkCreateInfo.mipLevels = AZStd::min<uint32_t>(descriptor.m_mipLevels, formatProps.maxMipLevels);
+            vkCreateInfo.arrayLayers = AZStd::min<uint32_t>(descriptor.m_arraySize, formatProps.maxArrayLayers);
+            VkSampleCountFlagBits sampleCountFlagBits = static_cast<VkSampleCountFlagBits>(RHI::FilterBits(
+                static_cast<VkSampleCountFlags>(ConvertSampleCount(descriptor.m_multisampleState.m_samples)), formatProps.sampleCounts));
+            vkCreateInfo.samples = (static_cast<uint32_t>(sampleCountFlagBits) > 0) ? sampleCountFlagBits : VK_SAMPLE_COUNT_1_BIT;
+            vkCreateInfo.sharingMode = exclusiveOwnership ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+            vkCreateInfo.queueFamilyIndexCount = static_cast<uint32_t>(createInfo.m_queueFamilyIndices.size());
+            vkCreateInfo.pQueueFamilyIndices = createInfo.m_queueFamilyIndices.empty() ? nullptr : createInfo.m_queueFamilyIndices.data();
+            vkCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+            return createInfo;
         }
 
         Device::ShadingRateImageMode Device::GetImageShadingRateMode() const
@@ -1246,6 +1493,11 @@ namespace AZ
         RHI::Ptr<BufferPool> Device::GetConstantBufferPool()
         {
             return m_constantBufferPool;
+        }
+
+        VmaAllocator& Device::GetVmaAllocator()
+        {
+            return m_vmaAllocator;
         }
     }
 }

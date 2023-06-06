@@ -45,6 +45,8 @@ namespace AZ
             Rate2x2,    // Specifies that the shading rate should reduce the resolution of both axes 2x.
             Rate2x4,    // Specifies that the shading rate should reduce horizontal resolution 2x, and reduce vertical resolution 4x.
             Rate4x2,    // Specifies that the shading rate should reduce horizontal resolution 4x, and reduce vertical resolution 2x.
+            Rate4x1,    // Specifies that the shading rate should reduce horizontal resolution 4x, and reduce vertical resolution 1x.
+            Rate1x4,    // Specifies that the shading rate should reduce horizontal resolution 1x, and reduce vertical resolution 4x.
             Rate4x4,    // Specifies that the shading rate should reduce the resolution of both axes 4x.
             Count
         };
@@ -59,6 +61,8 @@ namespace AZ
             Rate2x2 = AZ_BIT(static_cast<uint32_t>(ShadingRate ::Rate2x2)),
             Rate2x4 = AZ_BIT(static_cast<uint32_t>(ShadingRate ::Rate2x4)),
             Rate4x2 = AZ_BIT(static_cast<uint32_t>(ShadingRate ::Rate4x2)),
+            Rate4x1 = AZ_BIT(static_cast<uint32_t>(ShadingRate ::Rate4x1)),
+            Rate1x4 = AZ_BIT(static_cast<uint32_t>(ShadingRate ::Rate1x4)),
             Rate4x4 = AZ_BIT(static_cast<uint32_t>(ShadingRate ::Rate4x4))
         };
 

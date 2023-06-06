@@ -102,8 +102,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();
+
         system->RegisterPropertyEditor<LineEdit>();
+        system->RegisterNodeAttribute<LineEdit>(LineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<MultiLineEdit>();
+        system->RegisterNodeAttribute<MultiLineEdit>(MultiLineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<Quaternion>();
         system->RegisterPropertyEditor<Crc>();
         system->RegisterPropertyEditor<Vector2>();

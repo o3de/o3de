@@ -123,6 +123,7 @@ namespace AZ
             AZ::RHI::BufferDescriptor scratchBufferDescriptor;
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = buildSizesInfo.buildScratchSize;
+            scratchBufferDescriptor.m_alignment = accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment;
             
             AZ::RHI::BufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();

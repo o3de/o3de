@@ -89,11 +89,8 @@ namespace AzToolsFramework
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
             AssetBrowserInteractionNotificationBus::Handler::BusConnect();
 
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                // Assign this widget to the Editor Asset Browser Action Context.
-                AzToolsFramework::AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-            }
+            // Assign this widget to the Editor Asset Browser Action Context.
+            AzToolsFramework::AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
 
             QAction* deleteAction = new QAction("Delete Action", this);
             deleteAction->setShortcut(QKeySequence::Delete);
@@ -128,10 +125,7 @@ namespace AzToolsFramework
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
         {
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                AzToolsFramework::RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-            }
+            AzToolsFramework::RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
 
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();

@@ -210,6 +210,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         AZ::AzTest
                         Gem::${gem_name}.Editor.Private.Object
+                        Compression.Editor.API
+                RUNTIME_DEPENDENCIES
+                    Compression.Editor
             )
 
             # Add ${gem_name}.Editor.Tests to googletest
