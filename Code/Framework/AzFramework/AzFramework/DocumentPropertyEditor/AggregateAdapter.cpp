@@ -137,6 +137,7 @@ namespace AZ::DocumentPropertyEditor
         }
 
         // find entry in parent's index map and remove it
+        AZ_Assert(m_parent->m_pathIndexToChildMaps.size() > adapterIndex, "attempt to remove entry with invalid adapterIndex!");
         auto& parentsMap = m_parent->m_pathIndexToChildMaps[adapterIndex];
         auto mapEntryIter = AZStd::find_if(
             parentsMap.begin(),
