@@ -343,12 +343,12 @@ void Nodes::{{ nodeableNodeName }}::ConfigureVisualExtensions()
 }
 
 {# OnInit #}
-{% if attribute_Style is defined %}
 void Nodes::{{ nodeableNodeName }}::OnInit()
 {
+{% if attribute_Style is defined %}
     SetNodeStyle("{{attribute_Style}}");
-}
 {% endif %}
+}
 
 {# ConfigureSlots #}
 // Configure Slots and Build the Nodeable Execution Maps
