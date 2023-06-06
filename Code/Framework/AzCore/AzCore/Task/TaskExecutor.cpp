@@ -422,8 +422,19 @@ namespace AZ
             event->m_executor = this; // Used to validate event is not waited for inside a job
         }
 
+        // If there are no task in compiled task graph
+        // and a TaskGraphEvent has been supplied, then it needs
+        // to be signaled to release the semaphore so that the TaskGraphEvent::Wait
+        // function does not deadlock
+        auto& compiledTasks = graph.Tasks();
+        if (compiledTasks.empty() && event)
+        {
+            event->Signal();
+            return;
+        }
+
         // Submit all tasks that have no inbound edges
-        for (Internal::Task& task : graph.Tasks())
+        for (Internal::Task& task : compiledTasks)
         {
             if (task.IsRoot())
             {

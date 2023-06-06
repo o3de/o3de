@@ -13,13 +13,12 @@
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/ImageSubresource.h>
 #include <Atom/RHI.Reflect/Size.h>
-#include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/sort.h>
 #include <RHI/MemoryView.h>
 #include <RHI/Queue.h>
+#include <RHI/VulkanMemoryAllocation.h>
 #include <Atom/RHI/AsyncWorkQueue.h>
-#include <Atom/RHI/PageTiles.h>
 
 namespace AZ
 {
@@ -34,9 +33,6 @@ namespace AZ
         class Fence;
         class ImagePool;
         class StreamingImagePool;
-
-        // Same as HeapTiles in <RHI/TileAllocator.h>
-        using HeapTiles = RHI::PageTiles<Memory>;
 
         // contains all the information of the sparse image which includes memory bindings
         // To-do: add implementation to support non-color sparse image such as depth-stencil image
@@ -63,7 +59,7 @@ namespace AZ
             uint32_t m_mipTailBlockCount;
 
             // Memory binding data for one non-tail mip
-            using MultiHeapTiles = AZStd::vector<HeapTiles>; 
+            using MultiHeapTiles = AZStd::vector<RHI::Ptr<VulkanMemoryAllocation>>; 
             using MemoryViews = AZStd::vector<MemoryView>;
             using MipMemoryBinds = AZStd::vector<VkSparseImageMemoryBind>;
             struct NonTailMipInfo
@@ -121,6 +117,7 @@ namespace AZ
             friend class StreamingImagePool;
             friend class AliasedHeap;
             friend class Device;
+            friend class SwapChain;
 
         public:
             AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
@@ -130,9 +127,6 @@ namespace AZ
 
             ~Image();
             
-            /// It is internally used to handle VkImage as Vulkan::Image class.
-            RHI::ResultCode Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor);
-
             void Invalidate();
 
             VkImage GetNativeImage() const;
@@ -172,17 +166,30 @@ namespace AZ
 
             VkImageUsageFlags GetUsageFlags() const;
 
+            //! Flags used for initializing an image
+            enum class InitFlags : uint32_t
+            {
+                None = 0,
+                TrySparse = AZ_BIT(0)  // Try to create a sparse image first
+            };
+
         private:
             Image() = default;
 
-            RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, bool tryUseSparse);
-            RHI::ResultCode BindMemoryView(const MemoryView& memoryView);
+            RHI::ResultCode Init(Device& device, VkImage image, const RHI::ImageDescriptor& descriptor); // It is internally used to handle Swapchain images as Vulkan::Image class.
+            RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const InitFlags flags);
+            RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const MemoryView& memoryView);
+
+            //! Common initialization for all Init functions (init variables, set desciptor, set initflags, init DeviceObject, etc)
+            void OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, InitFlags flags);
+            //! Common post initialization for all Init functions (set name, get memory requirements, etc)
+            void OnPostInit();
 
             // Allocate memory and bind memory which can store mips up to residentMipLevel 
             RHI::ResultCode AllocateAndBindMemory(StreamingImagePool& imagePool, uint16_t residentMipLevel);
 
             // Create a VkImage which only requires regular (one time) memory binding
-            RHI::ResultCode BuildNativeImage();
+            RHI::ResultCode BuildNativeImage(const MemoryView* memoryView = nullptr);
 
             // Create a VkImage with sparse memory binding support
             RHI::ResultCode BuildSparseImage();
@@ -191,9 +198,6 @@ namespace AZ
 
             // Trim image to specified mip level. Release unused bound memory if updateMemoryBind is true
             RHI::ResultCode TrimImage(StreamingImagePool& imagePool, uint16_t targetMipLevel, bool updateMemoryBind);
-
-            VkImageCreateFlags CalculateImageCreateFlags() const;
-            VkImageUsageFlags CalculateImageUsageFlags() const;
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Image
@@ -255,7 +259,11 @@ namespace AZ
 
             // Usage flags used for creating the image.
             VkImageUsageFlags m_usageFlags;
+
+            // Flags used for initializing the image.
+            InitFlags m_initFlags = InitFlags::None;
         };
 
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(Image::InitFlags);
     }
 }

@@ -310,26 +310,23 @@ namespace UnitTest
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
                 viewportHandlerBuilder);
 
-            // If the new action manager is enabled, we need to register the MainWindowActionContextIdentifier action context to a dummy QMainWindow
+            // We need to register the MainWindowActionContextIdentifier action context to a dummy QMainWindow for the Action Manager
             // so that any actions/shortcuts registered to it from tools will work. This is typically only initialized in the Editor itself,
             // so it doesn't get registered in the ToolsApplicationFixture, but some tools we are testing rely on it (e.g. viewport interactions).
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                m_defaultMainWindow = new QMainWindow();
+            m_defaultMainWindow = new QMainWindow();
 
-                auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
 
-                AzToolsFramework::ActionContextProperties contextProperties;
-                contextProperties.m_name = "O3DE Editor";
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Editor";
 
-                actionManagerInterface->RegisterActionContext(
-                    EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
+            actionManagerInterface->RegisterActionContext(
+                EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
 
-                hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+            hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
 
-                AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
-            }
+            AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
 
             SetUpEditorFixtureImpl();
         }
@@ -339,30 +336,27 @@ namespace UnitTest
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
             
-            // If the new action manager is enabled, reset it between test runs.
-            if (AzToolsFramework::IsNewActionManagerEnabled())
+            // Reset the Action Manager between test runs.
+            auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+            if (auto actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get())
             {
-                auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
-
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(
-                    EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
-
-                if (auto actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get())
-                {
-                    actionManagerInternalInterface->Reset();
-                }
-                if (auto hotKeyManagerInternalInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInternalInterface>::Get())
-                {
-                    hotKeyManagerInternalInterface->Reset();
-                }
-                if (auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get())
-                {
-                    menuManagerInternalInterface->Reset();
-                }
-                if (auto toolBarManagerInternalInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInternalInterface>::Get())
-                {
-                    toolBarManagerInternalInterface->Reset();
-                }
+                actionManagerInternalInterface->Reset();
+            }
+            if (auto hotKeyManagerInternalInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInternalInterface>::Get())
+            {
+                hotKeyManagerInternalInterface->Reset();
+            }
+            if (auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get())
+            {
+                menuManagerInternalInterface->Reset();
+            }
+            if (auto toolBarManagerInternalInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInternalInterface>::Get())
+            {
+                toolBarManagerInternalInterface->Reset();
             }
 
             // Reset back to Default Handler to prevent having a handler with dangling "this" pointer

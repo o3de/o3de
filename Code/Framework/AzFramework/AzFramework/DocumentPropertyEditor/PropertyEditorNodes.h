@@ -252,11 +252,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
     struct LineEdit : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "LineEdit";
+        static constexpr auto PlaceholderText = AttributeDefinition<AZStd::string_view>("PlaceholderText");
     };
 
     struct MultiLineEdit : PropertyEditorDefinition
     {
         static constexpr AZStd::string_view Name = "MultiLineEdit";
+        static constexpr auto PlaceholderText = AttributeDefinition<AZStd::string_view>("PlaceholderText");
     };
 
     struct Quaternion : PropertyEditorDefinition

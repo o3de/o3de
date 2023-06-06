@@ -166,6 +166,16 @@ namespace AZ::Reflection
                 AZ::SerializeContext::IDataContainer* m_parentContainerInfo = nullptr;
                 void* m_parentContainerOverride = nullptr;
                 void* m_containerElementOverride = nullptr;
+
+                const AZ::Edit::ElementData* GetElementEditMetadata() const
+                {
+                    if (m_classElement)
+                    {
+                        return m_classElement->m_editData;
+                    }
+
+                    return nullptr;
+                }
             };
             AZStd::deque<StackEntry> m_stack;
             AZStd::vector<AZStd::pair<const char*, StackEntry>> m_nonSerializedElements;
@@ -235,7 +245,7 @@ namespace AZ::Reflection
                         return EndNode();
                     },
                     m_serializeContext,
-                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE,
+                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_READ,
                     nullptr);
 
                 // Note that this is the dummy parent node for the root node. It contains null classData and classElement.
@@ -587,6 +597,53 @@ namespace AZ::Reflection
                 return m_stack.back().m_instance;
             }
 
+            AZStd::string_view GetNodeDisplayLabel(const StackEntry& nodeData, AZStd::fixed_string<128>& labelAttributeBuffer)
+            {
+                // First check for overrides or for presence of parent container
+                if (!nodeData.m_labelOverride.empty())
+                {
+                    return nodeData.m_labelOverride;
+                }
+                else if (!nodeData.m_group.empty())
+                {
+                    return nodeData.m_group;
+                }
+                else if (m_stack.size() > 1)
+                {
+                    const StackEntry& parentNode = m_stack[m_stack.size() - 2];
+                    if (parentNode.m_classData && parentNode.m_classData->m_container)
+                    {
+                        labelAttributeBuffer = AZStd::fixed_string<128>::format("[%zu]", parentNode.m_childElementIndex);
+                        return labelAttributeBuffer;
+                    }
+                }
+
+                // No overrides, so check the element edit data, class data, and class element
+                if (const auto metadata = nodeData.GetElementEditMetadata(); metadata && metadata->m_name)
+                {
+                    return metadata->m_name;
+                }
+                else if (nodeData.m_classData)
+                {
+                    if (nodeData.m_classData->m_editData && nodeData.m_classData->m_editData->m_name)
+                    {
+                        return nodeData.m_classData->m_editData->m_name;
+                    }
+                    else if (
+                        nodeData.m_classElement && nodeData.m_classElement->m_name && nodeData.m_classData->m_container &&
+                        nodeData.m_classElement->m_nameCrc != nodeData.m_classData->m_container->GetDefaultElementNameCrc())
+                    {
+                        return nodeData.m_classElement->m_name;
+                    }
+                    else if (nodeData.m_classData->m_name)
+                    {
+                        return nodeData.m_classData->m_name;
+                    }
+                }
+
+                return {};
+            }
+
             void CacheAttributes()
             {
                 StackEntry& nodeData = m_stack.back();
@@ -732,10 +789,6 @@ namespace AZ::Reflection
                                     handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                                 }
 
-                                if (elementEditData->m_name)
-                                {
-                                    labelAttributeValue = elementEditData->m_name;
-                                }
                                 if (elementEditData->m_description)
                                 {
                                     descriptionAttributeValue = elementEditData->m_description;
@@ -746,11 +799,6 @@ namespace AZ::Reflection
                             {
                                 checkAttribute(it, nodeData.m_parentInstance, isParentAttribute);
                             }
-                        }
-
-                        if (labelAttributeValue.empty() && nodeData.m_classElement->m_name)
-                        {
-                            labelAttributeValue = nodeData.m_classElement->m_name;
                         }
 
                         for (auto it = nodeData.m_classElement->m_attributes.begin(); it != nodeData.m_classElement->m_attributes.end();
@@ -765,16 +813,6 @@ namespace AZ::Reflection
 
                     if (nodeData.m_classData)
                     {
-                        if (!isParentAttribute && labelAttributeValue.empty() && nodeData.m_classData->m_name)
-                        {
-                            // Don't inject labels from class data for UI elements
-                            if (nodeData.m_classElement == nullptr ||
-                                (nodeData.m_classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT) == 0)
-                            {
-                                labelAttributeValue = nodeData.m_classData->m_name;
-                            }
-                        }
-
                         if (!isParentAttribute && descriptionAttributeValue.empty() && nodeData.m_classData->m_editData &&
                             nodeData.m_classData->m_editData->m_description)
                         {
@@ -822,12 +860,6 @@ namespace AZ::Reflection
                                   DescriptorAttributes::ContainerElementOverride,
                                   Dom::Utils::ValueFromType<void*>(parentNode.m_containerElementOverride) });
                         }
-
-                        if (nodeData.m_labelOverride.empty())
-                        {
-                            labelAttributeBuffer = decltype(labelAttributeBuffer)::format("[%zu]", parentNode.m_childElementIndex);
-                            labelAttributeValue = labelAttributeBuffer;
-                        }
                     }
                 }
 
@@ -837,14 +869,7 @@ namespace AZ::Reflection
                         group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
-                if (!nodeData.m_labelOverride.empty())
-                {
-                    labelAttributeValue = nodeData.m_labelOverride;
-                }
-                else if (!nodeData.m_group.empty())
-                {
-                    labelAttributeValue = nodeData.m_group;
-                }
+                labelAttributeValue = GetNodeDisplayLabel(nodeData, labelAttributeBuffer);
 
                 if (!handlerName.IsEmpty())
                 {
