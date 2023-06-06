@@ -1617,8 +1617,25 @@ namespace ScriptCanvas
         return AZ::Failure(AZStd::string("SlotID not found in Node"));
     }
 
+    Data::Type Node::GetUnderlyingSlotDataType(const SlotId& slotId) const
+    {
+        // Return the slot's base data type, which is used to determine which types of variables or connectors can be hooked to the slot.
+
+        auto slotIter = m_slotIdIteratorCache.find(slotId);
+        if (slotIter != m_slotIdIteratorCache.end() && slotIter->second.HasDatum())
+        {
+            return slotIter->second.GetDatum()->GetType();
+        }
+
+        return Data::Type::Invalid();
+    }
+
+
     Data::Type Node::GetSlotDataType(const SlotId& slotId) const
     {
+        // Return the slot's current data type, which could be a subtype of the slot's defined data type, based on
+        // whatever variable is currently hooked into the slot.
+
         AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotDataType");
 
         const auto* slot = GetSlot(slotId);

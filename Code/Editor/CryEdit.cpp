@@ -91,7 +91,6 @@ AZ_POP_DISABLE_WARNING
 #include "GameExporter.h"
 #include "GameResourcesExporter.h"
 
-#include "ActionManager.h"
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
@@ -1013,8 +1012,6 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 
     if (m_bPreviewMode)
     {
-        GetIEditor()->EnableAcceleratos(false);
-
         // Load geometry object.
         if (!cmdInfo.m_strFileName.isEmpty())
         {

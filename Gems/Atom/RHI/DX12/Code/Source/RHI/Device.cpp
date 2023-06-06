@@ -867,6 +867,17 @@ namespace AZ
             return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
         }
 
+        RHI::ResultCode Device::InitInternalBindlessSrg(const RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            m_bindlesSrgBindingSlot = bindlessSrgDesc.m_bindlesSrgBindingSlot;
+            return RHI::ResultCode::Success;
+        }
+
+        uint32_t Device::GetBindlessSrgSlot() const
+        {
+            return m_bindlesSrgBindingSlot;
+        }
+
         void Device::DescriptorHeapCompactionNeeded()
         {
             m_isDescriptorHeapCompactionNeeded = true;

@@ -669,11 +669,8 @@ namespace AzToolsFramework
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            RemoveWidgetFromActionContextHelper(
-                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-        }
+        RemoveWidgetFromActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
 
         qApp->removeEventFilter(this);
 
@@ -3471,10 +3468,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CreateActions()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        }
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
         m_actionToAddComponents = new QAction(tr("Add component"), this);
         m_actionToAddComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);

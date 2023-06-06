@@ -12,7 +12,6 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
@@ -42,9 +41,7 @@ namespace AzToolsFramework
         class PrefabPublicInterface;
 
         class PrefabIntegrationManager final
-            : public EditorContextMenuBus::Handler
-            , public EditorEventsBus::Handler
-            , public PrefabInstanceContainerNotificationBus::Handler
+            : public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
             , private PrefabFocusNotificationBus::Handler
             , private PrefabPublicNotificationBus::Handler
@@ -58,14 +55,6 @@ namespace AzToolsFramework
             ~PrefabIntegrationManager();
 
             static void Reflect(AZ::ReflectContext* context);
-
-            // EditorContextMenuBus overrides ...
-            int GetMenuPosition() const override;
-            AZStd::string GetMenuIdentifier() const override;
-            void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
-
-            // EditorEventsBus overrides ...
-            void OnEscape() override;
 
             // EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
@@ -132,10 +121,6 @@ namespace AzToolsFramework
             void ContextMenu_DeleteSelected();
             void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
             void ContextMenu_RevertOverrides(AZ::EntityId entityId);
-
-            // Shortcut setup handlers (for legacy action manager)
-            void InitializeShortcuts();
-            void UninitializeShortcuts();
 
             // Reference detection
             static void GatherAllReferencedEntitiesAndCompare(

@@ -6,6 +6,7 @@
  *
  */
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
@@ -61,6 +62,12 @@ namespace AZ
             const auto& image = static_cast<const Image&>(resourceBase);
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
 
+            ImageComponentMapping componentMapping{};
+            if (const auto* descriptor = azrtti_cast<const ImageViewDescriptor*>(&viewDescriptor))
+            {
+                componentMapping = descriptor->m_componentMapping;
+            }
+
             // this can happen when image has been invalidated/released right before re-compiling the image
             if (image.GetNativeImage() == VK_NULL_HANDLE)
             {
@@ -101,7 +108,7 @@ namespace AZ
             createInfo.image = image.GetNativeImage();
             createInfo.viewType = imageViewType;
             createInfo.format = ConvertFormat(m_format);
-            createInfo.components = VkComponentMapping{}; // identity mapping
+            createInfo.components = ConvertComponentMapping(componentMapping);
             createInfo.subresourceRange = vkRange;
 
             const VkResult result =

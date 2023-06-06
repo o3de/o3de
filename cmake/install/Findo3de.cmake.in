@@ -42,7 +42,7 @@ if (disable_test_modules)
 endif()
 
 if ($ENV{O3DE_SNAP})
-    list(APPEND CMAKE_REQUIRED_INCLUDES "$ENV{SNAP}/usr/include;$ENV{SNAP}/usr/include/x86_64-linux-gnu;/snap/core22/current/usr/include;/snap/core22/current/usr/include/x86_64-linux-gnu")
+    list(APPEND CMAKE_REQUIRED_INCLUDES "$ENV{SNAP}/usr/include;$ENV{SNAP}/usr/include/x86_64-linux-gnu")
     list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "Wl,-L$ENV{SNAP}/usr/lib/x86_64-linux-gnu")
     list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-print-target-triple")
 endif()
