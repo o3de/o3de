@@ -23,7 +23,7 @@ namespace Archive
             return false;
         }
 
-        // Check the compression algorithm id is already registered with the compression algorithm id array
+        // Check if the compression algorithm id is already registered with the compression algorithm id array
         // If not, then register the compression algorithm at the first unused slot index
         size_t firstUnusedIndex = InvalidAlgorithmIndex;
         for (size_t compressionAlgorithmIndex{}; compressionAlgorithmIndex < archiveHeader.m_compressionAlgorithmsIds.size();

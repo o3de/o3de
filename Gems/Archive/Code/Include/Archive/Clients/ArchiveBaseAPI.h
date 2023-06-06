@@ -49,7 +49,7 @@ namespace Archive
 
     //! Updates the ArchiveHeader structure with compression algorithm ID if
     //! there is space in the ArchiveHeader compression algorithm ID array
-    //! @param compresionAlgorithmId compression algorithm ID to add to the archive header
+    //! @param compressionAlgorithmId compression algorithm ID to add to the archive header
     //! @param archiveHeader modifiable archive header reference to update
     //! with compression algorithm ID if a slot is available
     //! @return true if the specified compression algorithm ID was added

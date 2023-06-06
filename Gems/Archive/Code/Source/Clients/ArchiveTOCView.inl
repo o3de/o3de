@@ -102,7 +102,7 @@ namespace Archive
             ArchiveTocValidationResult tocValidationResult;
             tocValidationResult.m_errorCode = ArchiveTocErrorCode::InvalidMagicBytes;
             tocValidationResult.m_errorMessage = ArchiveTocValidationResult::ErrorString::format(
-                "The Archive TOC has an invalid magic byte sequence of %llu", tocView.m_magicBytes);
+                "The Archive TOC has an invalid magic byte sequence of %llx", tocView.m_magicBytes);
             return tocValidationResult;
         }
 
