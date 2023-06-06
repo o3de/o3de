@@ -44,6 +44,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {%- set attribute_VersionConverter = Class.attrib['VersionConverter'] %}
 {%- set attribute_EventHandler = Class.attrib['EventHandler'] %}
 {%- set attribute_Deprecated = Class.attrib['Deprecated'] %}
+{%- set attribute_Style = Class.attrib['Style'] %}
 
 {%- set attribute_Base = "ScriptCanvas::Nodeable" %}
 {% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
@@ -341,6 +342,14 @@ void Nodes::{{ nodeableNodeName }}::ConfigureVisualExtensions()
     OnConfigureVisualExtensions();
 }
 
+{# OnInit #}
+{% if attribute_Style is defined %}
+void Nodes::{{ nodeableNodeName }}::OnInit()
+{
+    SetNodeStyle("{{attribute_Style}}");
+}
+{% endif %}
+
 {# ConfigureSlots #}
 // Configure Slots and Build the Nodeable Execution Maps
 void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
@@ -361,7 +370,7 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
         in.slotId = slotId{{ macros.CleanName(itemName) }}Input;
 
 {% for paraItem in item.findall('Parameter') %}
-        {{ nodemacro.AddDataSlot("true", "in.inputs", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+        {{ nodemacro.AddDataSlot("true", "in.inputs", paraItem.attrib['DisplayGroup'], paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name'], paraItem.attrib['HideInputField'], paraItem.attrib['HideName']) }}
 {% endfor %}
         { // execution outs begin    
 {%      if item.findall("Branch")|length == 0 %}
@@ -383,7 +392,9 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
             AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
             out.slotId = outSlotId;
 {%          for return in item.findall('Return') %}
-                {{ nodemacro.AddDataSlot("false", "out.outputs", itemDisplayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], item.attrib['Name']) }}
+                {# Default to the input's display group if no group for this tag is defined #}
+                {% set displayGroup = return.attrib['DisplayGroup'] if return.attrib['DisplayGroup'] is defined else itemDisplayGroup %}
+                {{ nodemacro.AddDataSlot("false", "out.outputs", displayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], item.attrib['Name'], return.attrib['HideInputField'], return.attrib['HideName']) }}
 {%          endfor %}
             in.outs.push_back(out);
 {%      else %}
@@ -403,7 +414,9 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
                 AZ_Assert(outSlotId.IsValid(), "ExecutionOutput slot is not created successfully.");
                 out.slotId = outSlotId;
 {%              for return in branchItem.findall('Return') %}
-                    {{ nodemacro.AddDataSlot("false", "out.outputs", branchDisplayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], branchItem.attrib['Name']) }}
+                    {# Default to the branch's display group if no group for this tag is defined #}
+                    {% set displayGroup = return.attrib['DisplayGroup'] if return.attrib['DisplayGroup'] is defined else branchDisplayGroup %}
+                    {{ nodemacro.AddDataSlot("false", "out.outputs", displayGroup, return.attrib['Name'], return.attrib['Description'], return.attrib['DefaultValue'], return.attrib['Type'], branchItem.attrib['Name'], return.attrib['HideInputField'], return.attrib['HideName']) }}
 {%              endfor %}
                 in.outs.push_back(out);
             }
@@ -423,10 +436,10 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
         out.slotId = slotId{{ nodemacro.SlotName(itemName) }}Output;
         out.name = "{{itemName}}";
 {%      for paraItem in item.findall('Parameter') %}
-{{     nodemacro.AddDataSlot("false", "out.outputs", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{{     nodemacro.AddDataSlot("false", "out.outputs", paraItem.attrib['DisplayGroup'], paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name'], paraItem.attrib['HideInputField'], paraItem.attrib['HideName']) }}
 {%      endfor %}
 {%      for paraItem in item.findall('Return') %}
-{{     nodemacro.AddDataSlot("true", "out.returnValues.values", undefined, paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name']) }}
+{{     nodemacro.AddDataSlot("true", "out.returnValues.values", paraItem.attrib['DisplayGroup'], paraItem.attrib['Name'], paraItem.attrib['Description'], paraItem.attrib['DefaultValue'], paraItem.attrib['Type'], item.attrib['Name'], paraItem.attrib['HideInputField'], paraItem.attrib['HideName']) }}
 {%      endfor %}
         outs.push_back(out);
     }

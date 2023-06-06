@@ -108,6 +108,9 @@ public: \
               /* no slot configuration extension, Use Class attribute 'ExtendConfigureSlots' to extend them */
 
 {% endif %}
+{% if Class.attrib['Style'] is defined %}
+              void OnInit() override;
+{% endif %}
               void ConfigureVisualExtensions() override;
 
               size_t GenerateFingerprint() const override;
