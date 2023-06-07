@@ -432,6 +432,10 @@ namespace AzFramework
             {
                 WindowNotificationBus::Event(
                     reinterpret_cast<NativeWindowHandle>(m_xcbWindow), &WindowNotificationBus::Events::OnWindowResized, width, height);
+                if (!m_enableCustomizedResolution)
+                {
+                    WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, width, height);
+                }
             }
         }
     }
