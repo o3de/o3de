@@ -190,7 +190,6 @@ namespace AzFramework
     {
         return m_win32Handle;
     }
-    
     HWND NativeWindowImpl_Win32::GetWindowedPriority()
     {
         // If a debugger is attached and we're running in Windowed mode instead of Fullscreen mode,
