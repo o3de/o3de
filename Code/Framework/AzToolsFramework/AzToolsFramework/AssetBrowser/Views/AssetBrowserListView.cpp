@@ -13,6 +13,8 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
 AZ_PUSH_DISABLE_WARNING(
     4244 4251 4800, "-Wunknown-warning-option") // conversion from 'int' to 'float', possible loss of data, needs to have dll-interface to
@@ -119,6 +121,16 @@ namespace AzToolsFramework
             UpdateSizeSlot(parentWidget()->width());
             header()->setSortIndicatorShown(false);
             header()->setSectionsClickable(false);
+        }
+
+        void AssetBrowserListView::dragMoveEvent(QDragMoveEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+            }
+            event->ignore();
         }
 
         void AssetBrowserListView::SetName(const QString& name)
