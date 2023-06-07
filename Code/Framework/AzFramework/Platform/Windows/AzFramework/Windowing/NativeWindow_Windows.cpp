@@ -190,20 +190,20 @@ namespace AzFramework
     {
         return m_win32Handle;
     }
-
+    
     HWND NativeWindowImpl_Win32::GetWindowedPriority()
     {
-        bool isNotTopMost = AZ::Debug::Trace::Instance().IsDebuggerPresent();
+        // If a debugger is attached and we're running in Windowed mode instead of Fullscreen mode,
+        // don't make the window TOPMOST. Otherwise, the window will stay on top of the debugger window
+        // at every breakpoint, crash, etc, making it extremely difficult to debug when working on a single monitor system.
+        bool allowTopMost = !AZ::Debug::Trace::Instance().IsDebuggerPresent();
 
         // If we are launching with pix enabled we are probably trying to do a gpu capture and hence need to be able to
         // access RenderDoc or Pix behind the O3de app.
 #if defined(USE_PIX)
-        isNotTopMost = true;
+        allowTopMost = false;
 #endif
-        // If a debugger is attached and we're running in Windowed mode instead of Fullscreen mode,
-        // don't make the window TOPMOST. Otherwise, the window will stay on top of the debugger window
-        // at every breakpoint, crash, etc, making it extremely difficult to debug when working on a single monitor system.
-        return isNotTopMost ? HWND_NOTOPMOST : HWND_TOPMOST;
+        return allowTopMost ? HWND_TOPMOST : HWND_NOTOPMOST;
     }
 
     void NativeWindowImpl_Win32::SetWindowTitle(const AZStd::string& title)
