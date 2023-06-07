@@ -102,6 +102,8 @@ namespace AzToolsFramework
         ~DPERowWidget();
 
         DPERowWidget* GetPriorRowInLayout(size_t domIndex);
+        int GetDomIndexOfChild(const QWidget* childWidget) const; // returns domIndex of the given widget, -1 for not found
+        QWidget* GetChild(size_t domIndex);
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
         void RemoveChildAt(size_t childIndex, QWidget** newOwner = nullptr);
 
