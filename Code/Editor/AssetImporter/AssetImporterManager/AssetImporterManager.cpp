@@ -69,6 +69,7 @@ void AssetImporterManager::Exec()
     {
         m_currentAbsolutePath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
+
     m_fileDialog->setDirectory(m_currentAbsolutePath);
 
     connect(m_fileDialog, &QFileDialog::rejected, [this]()
@@ -153,6 +154,13 @@ void AssetImporterManager::Exec(const QStringList& dragAndDropFileList)
             reject();
         }
     }
+}
+
+void AssetImporterManager::Exec(const QStringList& dragAndDropFileList, const QString& suggestedPath)
+{
+    m_suggestedInitialPath = suggestedPath;
+
+    Exec(dragAndDropFileList);
 }
 
 // used to cancel actions and close the dialog
@@ -315,7 +323,7 @@ void AssetImporterManager::OnOpenSelectDestinationDialog()
 
     QString numberOfFilesMessage = m_pathMap.size() == 1 ? QString(tr("Importing 1 asset")) : QString(tr("Importing %1 assets").arg(m_pathMap.size()));
 
-    SelectDestinationDialog selectDestinationDialog(numberOfFilesMessage, mainWindow);
+    SelectDestinationDialog selectDestinationDialog(numberOfFilesMessage, mainWindow, m_suggestedInitialPath);
 
     // Browse Destination File Path
     connect(&selectDestinationDialog, &SelectDestinationDialog::BrowseDestinationPath, this, &AssetImporterManager::OnBrowseDestinationFilePath);

@@ -21,7 +21,7 @@ namespace AzToolsFramework
 {
     //! Base class for all property editor widgets in the DocumentPropertyEditor.
     //! Property handler widgets are registered to the PropertyEditorToolsSystemInterface and
-    //! instantited as part of the DocumentPropertyEditor, with one handler instance being constructed
+    //! instantiated as part of the DocumentPropertyEditor, with one handler instance being constructed
     //! for each property editor.
     class PropertyHandlerWidgetInterface
     {
@@ -59,7 +59,7 @@ namespace AzToolsFramework
             return "<undefined handler name>";
         }
 
-        //! If overrideen, this can be used to indicate that this handler should be added to the "default" pool of
+        //! If overridden, this can be used to indicate that this handler should be added to the "default" pool of
         //! property handlers. Default property handlers will have ShouldHandleNode queried for PropertyEditor nodes
         //! that don't have an explicit Type set.
         //! For example, a numeric spin box might be registered as a default handler, in which case a node like:
