@@ -22,6 +22,11 @@ namespace CompressionLZ4
         return GetLZ4CompressionAlgorithmId();
     }
 
+    AZStd::string_view CompressorLZ4::GetCompressionAlgorithmName() const
+    {
+        return GetLZ4CompressionAlgorithmName();
+    }
+
     [[nodiscard]] size_t CompressorLZ4::CompressBound([[maybe_unused]] size_t uncompressedBufferSize) const
     {
         return LZ4_compressBound(static_cast<int>(uncompressedBufferSize));
