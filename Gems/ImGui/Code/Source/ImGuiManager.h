@@ -81,7 +81,7 @@ namespace ImGui
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
 
         // AzFramework::WindowNotificationBus::Handler overrides...
-        void OnWindowResized(uint32_t width, uint32_t height) override;
+        void OnResolutionChanged(uint32_t width, uint32_t height) override;
 
         // Sets up initial window size and listens for changes
         void InitWindowSize();

@@ -426,6 +426,10 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
+                if (!m_enableCustomizedResolution)
+                {
+                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
+                }
             }
         }
     }

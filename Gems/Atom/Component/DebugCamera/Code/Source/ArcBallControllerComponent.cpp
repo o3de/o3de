@@ -88,7 +88,7 @@ namespace AZ
             AzFramework::WindowRequestBus::EventResult(
                 windowSize,
                 windowHandle,
-                &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                &AzFramework::WindowRequestBus::Events::GetRenderResolution);
 
             m_windowWidth = windowSize.m_width;
             m_windowHeight = windowSize.m_height;

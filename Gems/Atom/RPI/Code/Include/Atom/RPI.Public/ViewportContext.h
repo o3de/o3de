@@ -94,9 +94,7 @@ namespace AZ
             void OnEndPrepareRender() override;
 
             // WindowNotificationBus interface overrides...
-            //! Used to fire a notification when our window resizes.
-            void OnWindowResized(uint32_t width, uint32_t height) override;
-            //! Used to fire a notification when our window DPI changes.
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
             void OnDpiScaleFactorChanged(float dpiScaleFactor) override;
 
             using SizeChangedEvent = AZ::Event<AzFramework::WindowSize>;

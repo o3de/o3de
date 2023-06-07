@@ -237,6 +237,9 @@ namespace AZ
             //! Return the view type associated with this pipeline.
             ViewType GetViewType() const;
 
+            //! Update viewport and scissor based on pass tree's output
+            void UpdateViewportScissor();
+
         private:
             RenderPipeline() = default;
 
@@ -297,8 +300,6 @@ namespace AZ
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
-            // update viewport and scissor based on pass tree's output
-            void UpdateViewportScissor();
 
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 
