@@ -62,6 +62,12 @@ namespace Archive
     {
         ArchiveHeader();
 
+        //! An actual implementation of the ArchiveHeader copy constructor
+        //! is required as the const AZ::u32 m_magicBytes member
+        //! causes the copy constructor to be implicitly deleted
+        ArchiveHeader(const ArchiveHeader& other);
+        ArchiveHeader& operator=(const ArchiveHeader& other);
+
         //! Retrieves the Uncompressed Table of Contents(TOC) size
         //! by adding up the size of the TOC File Metadata table
         //! + TOC File Path Index table
@@ -167,11 +173,12 @@ namespace Archive
 
         //! Stores 32-bit IDS of up to 7 compression algorithms that this archive can use
         //! Each entry is initialized to the Invalid CompressionAlgorithmId
+        //! The capacity of the array is the value of the uncompressed algorithm index
         //! offset = 48
-        AZStd::array<Compression::CompressionAlgorithmId, 7> m_compressionAlgorithmsIds =
+        AZStd::array<Compression::CompressionAlgorithmId, UncompressedAlgorithmIndex> m_compressionAlgorithmsIds =
             []() constexpr
         {
-            AZStd::array<Compression::CompressionAlgorithmId, 7> compressionIdInitArray{};
+            AZStd::array<Compression::CompressionAlgorithmId, UncompressedAlgorithmIndex> compressionIdInitArray{};
             compressionIdInitArray.fill(Compression::Invalid);
             return compressionIdInitArray;
         }();
@@ -299,16 +306,27 @@ namespace Archive
     //! There are 3 blocks per block line as 3 "2 MiB" chunks can be encoded in a 64-bit integer
     //! This is done by storing the compressed block size using 21-bits
     constexpr AZ::u64 BlocksPerBlockLine = 3;
+    //! For a block line with a jump entry, instead of having 3 21-bit compressed block sizes,
+    //! one of the block entries is borrowed for the 16-bit jump offset entry
+    constexpr AZ::u64 BlocksPerBlockLineWithJump = BlocksPerBlockLine - 1;
     //! Maximum block line size is 3 blocks * 2 MiB = 6 MiB
     constexpr AZ::u64 MaxBlockLineSize = ArchiveBlockSizeForCompression * BlocksPerBlockLine;
+    //! Constant for the maximum number of block line entries for the file
+    //! before a jump offset is used which is 3 block lines(9 blocks)
+    constexpr AZ::u64 MaxBlocksNoJumpEntry = 9;
+    constexpr AZ::u64 MaxBlockLinesNoJumpEntry = MaxBlocksNoJumpEntry / BlocksPerBlockLine;
     //! When the remaining size of a file is above 18 MiB, a jump offset is used to the block line
     //! to indicate where the next block starts
-    constexpr AZ::u64 MaxRemainingFileSizeNoJumpEntry = MaxBlockLineSize * 3;
+    constexpr AZ::u64 MaxRemainingFileSizeNoJumpEntry = MaxBlockLineSize * MaxBlockLinesNoJumpEntry;
+    //! Specifies the number of block line entries that are skipped with a jump entry
+    //! The value is 3 block lines(1 jump entry + 8 blocks)
+    constexpr AZ::u64 BlocksToSkipWithJumpEntry = 8;
+    constexpr AZ::u64 BlockLinesToSkipWithJumpEntry = (BlocksToSkipWithJumpEntry + 1) / BlocksPerBlockLine;
     //! The compressed size of 8 "2 MiB" blocks are stored by the next 3 blocks including the current block
     //! if the remaining uncompressed size of a file is >= 18 MiB
     //! Since 16-bits are used to store the jump entry, the first block in the current block
     //! line is unavailable and 16 MiB of uncompressed sizes can be skipped
-    constexpr AZ::u64 FileSizeToSkipWithJumpEntry = MaxRemainingFileSizeNoJumpEntry - ArchiveBlockSizeForCompression;
+    constexpr AZ::u64 FileSizeToSkipWithJumpEntry = BlocksToSkipWithJumpEntry * ArchiveBlockSizeForCompression;
     //! Represents the maximum uncompressed size in bytes of the minimum amount of block lines(4)
     //! that is required for a file with a jump entry
     //! A file that is > 18 MiB requires a jump entry in the first block offset entry of the first block line
@@ -332,11 +350,11 @@ namespace Archive
         ArchiveBlockLine();
 
         //! Represents the compressed size of the first 2 MiB block in a block line
-        AZ::u64 m_block1 : 21;
+        AZ::u64 m_block0 : 21;
         //! Represents the compressed size of the middle 2 MiB block in a block line
-        AZ::u64 m_block2 : 21;
+        AZ::u64 m_block1 : 21;
         //! Represents the compressed size of the last 2 MiB block in a block line
-        AZ::u64 m_block3 : 21;
+        AZ::u64 m_block2 : 21;
         //! 1 if the block is used
         AZ::u64 m_blockUsed : 1;
     };
@@ -354,10 +372,10 @@ namespace Archive
         AZ::u64 m_blockJump : 16;
         //! Represents the compressed size(non-aligned) of the first block in the block line
         //! containing the jump table
-        AZ::u64 m_block1 : 21;
+        AZ::u64 m_block0 : 21;
         //! Represents the compressed size(non-aligned) of the last block in the block line
         //! containing the jump table
-        AZ::u64 m_block2 : 21;
+        AZ::u64 m_block1 : 21;
         //! 1 if the block is used
         AZ::u64 m_blockUsed : 1;
     };
@@ -424,6 +442,52 @@ namespace Archive
     //! Block Size = (44, 50] MiB; Uses 9 block lines
     //! ...
     constexpr AZ::u32 GetBlockLineCountIfCompressed(AZ::u64 uncompressedSize);
+
+    //! Retrieve the block range of compressed blocks to read from
+    //! a content file using the uncompressed offset to start reading +
+    //! the amount of uncompressed bytes to read from the file
+    constexpr AZStd::pair<AZ::u64, AZ::u64> GetBlockRangeToRead(AZ::u64 uncompressedOffset, AZ::u64 bytesToRead);
+
+    //! Stores the result of the GetBlockLineIndexFromBlockIndex function below
+    struct GetBlockLineIndexResult
+    {
+        explicit constexpr operator bool() const;
+        size_t m_blockLineIndex{ AZStd::numeric_limits<size_t>::max() };
+        size_t m_offsetInBlockLine{ AZStd::numeric_limits<size_t>::max() };
+        AZStd::fixed_string<256> m_errorMessage;
+    };
+    //! Calculates the block line index from the block index given the block count of a file
+    //! Both the block line index and the block offset within that index is returned
+    //! The block offset value can be used to fine the exact compressed block size
+    //! within the block line
+    //! The files block line section in steps of 3 block lines at time
+    //! For a file with <= 9 blocks
+    //! there is a single step of 3 block lines = 9 blocks processed
+    //!
+    //! For a file between [10, 18) blocks
+    //! the first step is 3 block lines = 8 blocks processed (1 entry is for the jump offset)
+    //! the final step is up to 3 more blocks lines = 9 blocks processed
+    //!
+    //! For a file between [18, 26) blocks
+    //! the first step is 3 block lines = 8 blocks processed (1 entry is for the jump offset)
+    //! the second step is 3 more block lines = 8 blocks processed (1 entry is for the jump offset)
+    //! the final step is up to 3 more blocks lines = 9 blocks processed
+    //!
+    //! If a file has 16 blocks and the block index value is 8,
+    //! the block line index should be 3 as the fourth block line entry
+    //! However if a file has 9 blocks and the block index value is 8
+    //! the block line index should be 2 as the third block line entry
+    //!
+    //! If a file has 25 blocks and the block index value is 16,
+    //! the block line index should be 6 as the seventh block line entry
+    //! However if a file has 17 blocks and the block index value is 16
+    //! the block line index should be 5 as the sixth block line index
+    //!
+    //! @param blockCount The amount of 2-MiB blocks for the file
+    //! @param blockIndex index into a specific 2-MiB block of the file
+    //! @return On success a result structure that contains the block line index and the offset within that block
+    constexpr GetBlockLineIndexResult GetBlockLineIndexFromBlockIndex(AZ::u64 blockCount, AZ::u64 blockIndex);
+
 } // namespace Archive
 
 // Implementation for any struct functions

@@ -50,7 +50,7 @@ namespace Archive
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(ArchiveWriter);
-        AZ_RTTI_NO_TYPE_INFO_DECL()
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL;
 
         ArchiveWriter();
@@ -89,11 +89,11 @@ namespace Archive
         //! Adds the content from the stream to the relative path
         //! based on the ArchiveWriterFileSettings
         ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
-            const ArchiveWriterFileSettings& fileSettings = {}) override;
+            const ArchiveWriterFileSettings& fileSettings) override;
 
         //! Used the span contents to add the file to the archive
         ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
-            const ArchiveWriterFileSettings& fileSettings = {}) override;
+            const ArchiveWriterFileSettings& fileSettings) override;
 
         //! Searches for a relative path within the archive
         //! @param relativePath Relative path within archive to search for

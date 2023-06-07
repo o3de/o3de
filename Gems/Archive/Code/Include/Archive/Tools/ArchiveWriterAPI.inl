@@ -27,7 +27,8 @@ namespace Archive
     // if the file path token isn't invalid
     inline ArchiveAddFileResult::operator bool() const
     {
-        return m_filePathToken != InvalidArchiveFileToken;
+        return m_filePathToken != InvalidArchiveFileToken
+            && m_resultOutcome.has_value();
     }
 
     // If the archive file was successfully removed

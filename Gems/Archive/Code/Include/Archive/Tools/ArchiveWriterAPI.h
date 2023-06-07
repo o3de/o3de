@@ -230,11 +230,11 @@ namespace Archive
         //! Adds the content from the stream to the relative path
         //! based on the ArchiveWriterFileSettings
         virtual ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
-            const ArchiveWriterFileSettings& fileSettings = {}) = 0;
+            const ArchiveWriterFileSettings& fileSettings) = 0;
 
         //! The span contents is used to supply file data for the file to the archive
         virtual ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
-            const ArchiveWriterFileSettings& fileSettings = {}) = 0;
+            const ArchiveWriterFileSettings& fileSettings) = 0;
 
         //! Searches for a relative path within the archive
         //! @param relativePath Relative path within archive to search for

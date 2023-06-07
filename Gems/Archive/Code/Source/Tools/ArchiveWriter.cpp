@@ -31,7 +31,7 @@ namespace Archive
 
     // ArchiveWriter forwarding functions
     // This is used to create an ArchiveWriter instance that is pointed
-    // to from an IArchiveWriter* to allow use of the ArchiveWriter in outside of the Archive Gem modules
+    // to from an IArchiveWriter* to allow use of the ArchiveWriter in modules outside of the Archive Gem
     AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter()
     {
         return AZStd::make_unique<ArchiveWriter>();
@@ -380,6 +380,8 @@ namespace Archive
 
     bool ArchiveWriter::BuildFilePathMap(const ArchiveTableOfContents& archiveToc)
     {
+        // Clear any old entries from the path map
+        m_pathMap.clear();
         // Build a map of file path to the index offset within the Archive TOC
         for (size_t filePathIndex{}; filePathIndex < archiveToc.m_filePaths.size(); ++filePathIndex)
         {
@@ -409,7 +411,12 @@ namespace Archive
             return false;
         }
 
-        return ReadArchiveHeaderAndToc();
+        if (!ReadArchiveHeaderAndToc())
+        {
+            UnmountArchive();
+            return false;
+        }
+        return true;
     }
 
     bool ArchiveWriter::MountArchive(ArchiveStreamPtr archiveStream)
@@ -424,7 +431,12 @@ namespace Archive
             return false;
         }
 
-        return ReadArchiveHeaderAndToc();
+        if (!ReadArchiveHeaderAndToc())
+        {
+            UnmountArchive();
+            return false;
+        }
+        return true;
     }
 
     bool ArchiveWriter::ReadArchiveHeaderAndToc()
@@ -458,6 +470,16 @@ namespace Archive
                 m_settings.m_errorCallback({ ArchiveWriterErrorCode::ErrorWritingTableOfContents,
                     AZStd::move(commitResult.error()) });
             }
+
+            // Clear out the path map, the archive TOC and the archive header
+            // deleted block size -> raw file offset
+            // and the removed file index into TOC vector set
+            // on unmount
+            m_pathMap.clear();
+            m_removedFileIndices.clear();
+            m_deletedBlockSizeToOffsetMap.clear();
+            m_archiveToc = {};
+            m_archiveHeader = {};
         }
 
         m_archiveStream.reset();
@@ -1185,15 +1207,17 @@ namespace Archive
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine1.m_blockLineWithJump.m_block1 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine1.m_blockLineWithJump.m_block0 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                     // Write out the second block offset entry
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine1.m_blockLineWithJump.m_block2 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine1.m_blockLineWithJump.m_block1 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                 }
 
@@ -1206,22 +1230,25 @@ namespace Archive
                     {
                         // Write out the third block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine2.m_blockLine.m_block1 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine2.m_blockLine.m_block0 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         // Write out the fourth block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine2.m_blockLine.m_block2 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine2.m_blockLine.m_block1 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         // Write out the fifth block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine2.m_blockLine.m_block3 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine2.m_blockLine.m_block2 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                 }
 
@@ -1234,22 +1261,25 @@ namespace Archive
                     {
                         // Write out the sixth block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine3.m_blockLine.m_block1 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine3.m_blockLine.m_block0 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         // Write out the seventh block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine3.m_blockLine.m_block2 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine3.m_blockLine.m_block1 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         // Write out the eighth block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine3.m_blockLine.m_block3 = blockOffsetSizePair.m_size;
-                        jumpOffset += static_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment));
+                        blockLine3.m_blockLine.m_block2 = blockOffsetSizePair.m_size;
+                        jumpOffset += aznumeric_cast<AZ::u16>(AZ_SIZE_ALIGN_UP(blockOffsetSizePair.m_size, ArchiveDefaultBlockAlignment)
+                            / ArchiveDefaultBlockAlignment);
                     }
                 }
 
@@ -1292,19 +1322,19 @@ namespace Archive
                     {
                         // Write out the first block offset entry
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine1.m_blockLine.m_block1 = blockOffsetSizePair.m_size;
+                        blockLine1.m_blockLine.m_block0 = blockOffsetSizePair.m_size;
                     }
                     // Write out the second block offset entry
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine1.m_blockLine.m_block2 = blockOffsetSizePair.m_size;
+                        blockLine1.m_blockLine.m_block1 = blockOffsetSizePair.m_size;
                     }
                     // Write out the third block offset entry
                     if (blockOffsetIndex < contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs.size())
                     {
                         blockOffsetSizePair = contentFileData.m_contentFileBlocks.m_blockOffsetSizePairs[blockOffsetIndex++];
-                        blockLine1.m_blockLine.m_block3 = blockOffsetSizePair.m_size;
+                        blockLine1.m_blockLine.m_block2 = blockOffsetSizePair.m_size;
                     }
                 }
 
@@ -1432,7 +1462,13 @@ namespace Archive
 
             // Update the result structure with the metadata about the removed file
             result.m_uncompressedSize = fileMetadata.m_uncompressedSize;
-            result.m_compressedSize = fileMetadata.m_compressedSizeInSectors * ArchiveDefaultBlockAlignment;
+
+            // Get the actual size that the compressed data takes on disk
+            if (auto rawFileSizeResult = GetRawFileSize(fileMetadata, m_archiveToc.m_blockOffsetTable);
+                rawFileSizeResult)
+            {
+                result.m_compressedSize = rawFileSizeResult.value();
+            }
             result.m_offset = fileMetadata.m_offset;
 
             // If the was compressed, retrieve the compression algorithm Id associated with the index
@@ -1517,8 +1553,13 @@ namespace Archive
                         // Only output compressed size if an compression that compresses data is being used
                         if (contentFileMetadata.m_compressionAlgoIndex < UncompressedAlgorithmIndex)
                         {
-                            fileMetadataString += MetadataString::format(R"(, compressed_size=%llu)",
-                                contentFileMetadata.m_compressedSizeInSectors * ArchiveDefaultBlockAlignment);
+                            if (auto rawFileSizeResult = GetRawFileSize(contentFileMetadata, m_archiveToc.m_blockOffsetTable);
+                                rawFileSizeResult)
+                            {
+                                AZ::u64 compressedSize = rawFileSizeResult.value();
+                                fileMetadataString += MetadataString::format(R"(, compressed_size=%llu)",
+                                    compressedSize);
+                            }
                             fileMetadataString += MetadataString::format(R"(, compression_algorithm_id=%u)",
                                 AZStd::to_underlying(m_archiveHeader.m_compressionAlgorithmsIds[contentFileMetadata.m_compressionAlgoIndex]));
                         }
