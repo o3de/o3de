@@ -711,26 +711,24 @@ namespace AZ::Reflection
                                 // to check here if we read in a 0 or 1 instead of a hash so we can handle
                                 // those special cases.
                                 AZ::u32 visibilityNumericValue = static_cast<AZ::u32>(visibility);
-                                if (visibilityNumericValue == 0)
+                                switch (visibilityNumericValue)
                                 {
+                                case 0:
                                     visibility = PropertyVisibility::Hide;
-                                }
-                                else if (visibilityNumericValue == 1)
-                                {
+                                    break;
+                                case 1:
                                     visibility = PropertyVisibility::Show;
+                                    break;
+                                default:
+                                    break;
                                 }
                                 return;
                             }
-                            else
+                            else if (auto visibilityBoolValue = VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
                             {
-                                auto visibilityBoolValue = VisibilityBoolean
-                                    .DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second));
-                                if (visibilityBoolValue.has_value())
-                                {
-                                    bool isVisible = visibilityBoolValue.value();
-                                    visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
-                                    return;
-                                }
+                                bool isVisible = visibilityBoolValue.value();
+                                visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
+                                return;
                             }
                         }
                         // The legacy ReadOnly property needs to be converted into the Disabled node property.
