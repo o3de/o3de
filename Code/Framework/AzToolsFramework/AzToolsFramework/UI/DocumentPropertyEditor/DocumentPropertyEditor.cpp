@@ -1019,8 +1019,10 @@ namespace AzToolsFramework
                                     m_domOrderedChildren[childIndex] = replacementWidget;
                                 }
                             }
-                            else
+                            else if (AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled())
                             {
+                                /* there are many unimplemented PropertyHandlers, so receiving an update for one is fine.
+                                 * However, a warning here is useful when debugging a missing widget that is expected to appear */
                                 AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
                             }
                         }
