@@ -3034,6 +3034,26 @@ void UiTextComponent::OnAtlasUnloaded(const TextureAtlasNamespace::TextureAtlas*
     }
 }
 
+// carbonated begin (alukyanov/lyshine-UiTextNotifications)
+#if defined(CARBONATED)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//! UiTextNotificationsBusBehaviorHandler Behavior context handler class
+class UiTextNotificationsBusBehaviorHandler
+    : public UiTextNotificationsBus::Handler
+    , public AZ::BehaviorEBusHandler
+{
+public:
+    AZ_EBUS_BEHAVIOR_BINDER(
+        UiTextNotificationsBusBehaviorHandler, "{ACCB73DC-86DD-4D1C-85B3-1E016BDAA495}", AZ::SystemAllocator, OnLayoutInvalidated);
+
+    void OnLayoutInvalidated() override
+    {
+        Call(FN_OnLayoutInvalidated);
+    }
+};
+#endif //#if defined(CARBONATED)
+// carbonated end
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC STATIC MEMBER FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3178,6 +3198,12 @@ void UiTextComponent::Reflect(AZ::ReflectContext* context)
             ->VirtualProperty("LineSpacing", "GetLineSpacing", "SetLineSpacing");
 
         behaviorContext->Class<UiTextComponent>()->RequestBus("UiTextBus");
+
+// carbonated begin (alukyanov/lyshine-UiTextNotifications)
+#if defined(CARBONATED)
+        behaviorContext->EBus<UiTextNotificationsBus>("UiTextNotificationsBus")->Handler<UiTextNotificationsBusBehaviorHandler>();
+#endif
+// carbonated end
 
         behaviorContext->EBus<UiClickableTextBus>("UiClickableTextBus")
             ->Event("SetClickableTextColor", &UiClickableTextBus::Events::SetClickableTextColor);
@@ -3731,8 +3757,14 @@ void UiTextComponent::MarkDrawBatchLinesDirty(bool invalidateLayout)
     if (invalidateLayout)
     {
         InvalidateLayout();
+
+// carbonated begin (alukyanov/lyshine-UiTextNotifications)
+#if defined(CARBONATED)
+        EBUS_EVENT_ID(GetEntityId(), UiTextNotificationsBus, OnLayoutInvalidated);
+#endif // #if defined(CARBONATED)
     }
 }
+// carbonated end
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 const UiTextComponent::DrawBatchLines& UiTextComponent::GetDrawBatchLines()
