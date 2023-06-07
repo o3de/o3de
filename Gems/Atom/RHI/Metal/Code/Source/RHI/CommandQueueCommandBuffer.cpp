@@ -117,7 +117,10 @@ namespace AZ
             
             //Each context will get a sub render encoder.
             id <MTLRenderCommandEncoder> renderCommandEncoder = [m_mtlParallelEncoder renderCommandEncoder];
-            renderCommandEncoder.label = [NSString stringWithCString:scopeName encoding:NSUTF8StringEncoding];
+            if (RHI::Validation::IsEnabled())
+            {
+                renderCommandEncoder.label = [NSString stringWithCString:scopeName encoding:NSUTF8StringEncoding];
+            }
             AZ_Assert(renderCommandEncoder != nil, "Could not create the RenderCommandEncoder");
             return renderCommandEncoder;
         }
