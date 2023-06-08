@@ -138,6 +138,16 @@ def _edit_objects(object_typename:str,
                   replace_objects: pathlib.Path or list = None,
                   release_archive_path: pathlib.Path = None,
                   download_prefix: str = None):
+    """
+    Edits and modifies the 'gem_data/projects_data/template_data' in the repo_json parameter
+    :param object_typename: The type object field you want to change
+    :param validator: validates the object you want to edit
+    :param add_objects: Any object paths you want to add to your repo_json object field
+    :param delete_objects: Any object_names to be removed from your repo_json object field
+    :param replace_objects: A list of object paths that will completely replace the current object_list
+    :param release_archive_path: Path where you want your release to be located
+    :param download_prefix: The prefix of the download uri
+    """
     # The beginning remote repo json template
     repo_objects_data = repo_json.get(f'{object_typename}s_data',[])
 
@@ -195,11 +205,9 @@ def _edit_objects(object_typename:str,
 
     # Remove duplicates from list 
     if delete_objects:      
-        # Convert delete_objects to individual string if multiple items received
         removal_list = delete_objects.split() if isinstance(delete_objects, str) else delete_objects
         # find name field of object you want to delete
         object_key = str(f'{object_typename}_name')
-        # Iterate over removal_lists received
         for removal_object in removal_list:
             # Remove the JSON object(s) with the specified object_name value
             repo_objects_data = [object_typename for object_typename in repo_objects_data if object_typename.get(object_key) != removal_object]
@@ -276,12 +284,20 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        download_prefix: str = None
                        ) -> int:
     """
-    Edits and modifies the project properties for the project located at 'proj_path' or with the name 'proj_name'.
-    :param repo_path: The path to the project folder
-    :param repo_name: The new name for the project
-    :param add_gems: New tags to add to 'user_tags'
-    :param delete_gems: Tags to remove from 'user_tags'
-    :param replace_gems: Tags to replace 'user_tags' with
+    Edits and modifies the remote repo properties for the repo.json located at 'repo_path'.
+    :param repo_path: The path to the repo.json file
+    :param repo_name: The new name for the remote repo
+    :param add_gems: Any gem paths to be added to the list
+    :param delete_gems: Any gem names to be removed from the list
+    :param replace_gems: A list of gem paths that will completely replace the current list of path
+    :add_projects: Any project paths to be added to the list
+    :delete_projects:  Any project names to be removed from the list
+    :replace_projects: A list of project paths that will completely replace the current list of path
+    :add_templates: Any template paths to be added to the list
+    :delete_templates: Any template names to be removed from the list
+    :replace_templates: A list of template paths that will completely replace the current list of path
+    :release_archive_path: Path where you want your release to be located
+    :download_prefix: The string prefix of the download uri
     """
     repo_json = get_repo_props(repo_path)
 
@@ -296,7 +312,6 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         repo_json['repo_name'] = repo_name
 
     if add_gems or delete_gems or replace_gems:
-        #_edit_gems(repo_json, add_gems, delete_gems, replace_gems, release_archive_path, download_prefix)
         _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, download_prefix)
 
     if add_projects or delete_projects or replace_projects:
@@ -380,7 +395,7 @@ def main():
     the_args = the_parser.parse_args()
     ret = the_args.func(the_args) if hasattr(the_args, 'func') else 1
     sys.exit(ret)
-    
+
 
 if __name__ == "__main__":
     main()
