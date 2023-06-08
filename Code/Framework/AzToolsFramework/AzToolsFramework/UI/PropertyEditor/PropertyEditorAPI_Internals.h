@@ -180,7 +180,7 @@ namespace AzToolsFramework
 
     // Wrapper type that takes a PropertyHandleBase from the ReflectedPropertyEditor and
     // provides a PropertyHandlerWidgetInterface for the DocumentPropertyEditor.
-    // Doesn't use the normal static ShouldHandleNode and GetHandlerName implementations,
+    // Doesn't use the normal static ShouldHandleType and GetHandlerName implementations,
     // so must be custom registered to the PropertyEditorToolsSystemInterface.
     template<typename WrappedType>
     class RpePropertyHandlerWrapper
@@ -327,6 +327,27 @@ namespace AzToolsFramework
                 }
             }
 
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            AZ_Assert(serializeContext, "Serialization context not available");
+
+            // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
+            // when downcasting to the generic type (e.g. for asset property downcasting to the generic AZ::Data::Asset<AZ::Data::AssetData>)
+            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != node.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+            else if (value.has_value())
+            {
+                typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
+            }
+            if (!typeId.IsNull())
+            {
+                m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
+            }
+
             if (m_widget)
             {
                 // Reset widget's attributes before reading in new values
@@ -354,21 +375,8 @@ namespace AzToolsFramework
             return m_rpeHandler.GetLastInTabOrder_Internal(GetWidget());
         }
 
-        static bool ShouldHandleNode(PropertyHandlerBase& rpeHandler, const AZ::Dom::Value& node)
+        static bool ShouldHandleType(PropertyHandlerBase& rpeHandler, const AZ::TypeId& typeId)
         {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
-            AZ::TypeId typeId = AZ::TypeId::CreateNull();
-            if (typeIdAttribute != node.MemberEnd())
-            {
-                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
-            }
-            else
-            {
-                AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-                typeId = AZ::Dom::Utils::GetValueTypeId(value);
-            }
-
             return rpeHandler.HandlesType(typeId);
         }
 
@@ -533,9 +541,9 @@ namespace AzToolsFramework
                 using HandlerType = RpePropertyHandlerWrapper<PropertyType>;
                 PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
                 registrationInfo.m_name = HandlerType::GetHandlerName(*this);
-                registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+                registrationInfo.m_shouldHandleType = [this](const AZ::TypeId& typeId)
                 {
-                    return HandlerType::ShouldHandleNode(*this, node);
+                    return HandlerType::ShouldHandleType(*this, typeId);
                 };
                 registrationInfo.m_factory = [this]()
                 {
