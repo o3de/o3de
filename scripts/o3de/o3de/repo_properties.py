@@ -83,8 +83,8 @@ def create_release(src_data_path: pathlib.Path,
         FileNotFoundError: If the json_data_path does not exist.
         ValueError: If the json_data_path is not a dict.
     """
-    #basename = f'{object_name}_release_1.0.0'
-    #zip_filename = f'{archive_filename}.zip'
+    # basename = f'{object_name}_release_1.0.0'
+    # zip_filename = f'{archive_filename}.zip'
     basename = archive_filename.stem
     zip_filename = archive_filename
 
@@ -152,9 +152,7 @@ def _edit_objects(object_typename:str,
     repo_objects_data = repo_json.get(f'{object_typename}s_data',[])
 
     if add_objects:
-        # path to the gem you are adding to repo.json remote repo 
         paths = add_objects.split() if isinstance(add_objects, str) else add_objects
-
         for object_path in paths:
             # gem data of the gem you want to add
             json_data = manifest.get_json_data(object_typename, object_path, validator)

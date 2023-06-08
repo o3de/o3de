@@ -28,7 +28,7 @@ TEST_TEMPLATE_REPO_JSON = '''
     "templates_data": []
 }
 '''
-# cls returns a dictionary of the template repo json
+# class returns a dictionary of the template repo json
 @pytest.fixture(scope='function')
 def init_repo_json_data(request):
     class RepoJsonData:
@@ -123,7 +123,7 @@ class TestEditRepoProperties:
                          'project1', None, None, [{'project_name':'project1'}],
                          'template1 template2', None, None, [{'template_name':'template1'}, {'template_name':'template2'}],
                          0),
-            # test remove all objects
+            # test remove all object types
             pytest.param(pathlib.Path('F:/repotest'),'Repotest1', 
                          'gem1 gem2', 'gem1', None, [{'gem_name':'gem2'}],
                          'project1', 'project1', None, [],
@@ -166,7 +166,7 @@ class TestEditRepoProperties:
                                                      add_templates, delete_templates, replace_templates)
             assert result == expected_result
             if result == 0:
-                assert self.repo_json.data.get('repo_name') == 'Repotest1'
+                assert self.repo_json.data.get('repo_name') == repo_name
                 assert self.repo_json.data.get('repo_uri') == 'https://test'
                 assert self.repo_json.data.get('$schemaVersion') == '1.0.0'
                 assert self.repo_json.data.get('origin') == 'o3de'
