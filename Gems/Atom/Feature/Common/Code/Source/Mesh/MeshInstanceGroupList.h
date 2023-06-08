@@ -30,7 +30,13 @@ namespace AZ::Render
         AZStd::vector<RHI::Ptr<RHI::DrawPacket>> m_perViewDrawPackets;
 
         // All draw items in a draw packet share the same root constant layout
-        RHI::Interval m_drawRootConstantInterval;
+        uint32_t m_drawRootConstantOffset = 0;
+
+        // The current instance group count
+        uint32_t m_count = 0;
+
+        // The page that this instance group belongs to
+        uint32_t m_pageIndex = 0;
 
         // We store a key with the data to make it faster to remove the instance without needing to recreate the key
         // or store it with the data for each individual instance
@@ -43,6 +49,9 @@ namespace AZ::Render
 
         // Enable draw motion or not. Set to true if any of mesh instance use this group has the same flag set in their ModelDataInstance
         bool m_isDrawMotion = false;
+
+        // If the group is transparent, sort depth in reverse
+        bool m_isTransparent = false;
     };
 
     //! Manages all the instance groups used by mesh instancing.
@@ -54,7 +63,8 @@ namespace AZ::Render
     public:
         using WeakHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
         using OwningHandle = StableDynamicArrayHandle<MeshInstanceGroupData>;
-        using ParallelRanges = StableDynamicArray<MeshInstanceGroupData>::ParallelRanges;
+        using StableDynamicArrayType = StableDynamicArray<MeshInstanceGroupData, 4096>;
+        using ParallelRanges = StableDynamicArrayType::ParallelRanges;
         // When adding a new entry, we get back both the index and the count of meshes in the group after inserting
         // The count can be used to determine if this is the first mesh in the group (and thus intialization may be required)
         // As well as to determine if the mesh has reached the threshold at which it can become instanced,
@@ -63,6 +73,7 @@ namespace AZ::Render
         {
             StableDynamicArrayWeakHandle<MeshInstanceGroupData> m_handle;
             uint32_t m_instanceCount = 0;
+            uint32_t m_pageIndex = 0;
         };
 
         // Adds a new instance group if none with a matching key exists, or increments the reference count if one already does,
@@ -103,7 +114,7 @@ namespace AZ::Render
         using DataMap = AZStd::unordered_map<MeshInstanceGroupKey, IndexMapEntry>;
 
     private:
-        StableDynamicArray<MeshInstanceGroupData> m_instanceGroupData;
+        StableDynamicArrayType m_instanceGroupData;
         DataMap m_dataMap;
         AZStd::concurrency_checker m_instanceDataConcurrencyChecker;
     };

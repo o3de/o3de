@@ -31,6 +31,7 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserModel;
+        class AssetBrowserTableView;
         class AssetBrowserFilterModel;
         class AssetBrowserThumbnailView;
         class EntryDelegate;
@@ -51,6 +52,10 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // QTreeView
             void setModel(QAbstractItemModel* model) override;
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
             //////////////////////////////////////////////////////////////////////////
 
             //! Set unique asset browser name, used to persist tree expansion states
@@ -76,6 +81,8 @@ namespace AzToolsFramework
             void DuplicateEntries();
             void MoveEntries();
             void AfterRename(QString newVal);
+
+            void SelectFileAtPathAfterUpdate(const AZStd::string& assetPath);
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
@@ -110,6 +117,9 @@ namespace AzToolsFramework
 
             void SetShowIndexAfterUpdate(QModelIndex index);
 
+            void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
+            void SetAttachedTableView(AssetBrowserTableView* tableView);
+
             void SetApplySnapshot(bool applySnapshot);
 
         Q_SIGNALS:
@@ -123,7 +133,6 @@ namespace AzToolsFramework
 
         protected:
             QModelIndexList selectedIndexes() const override;
-            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
@@ -142,10 +151,12 @@ namespace AzToolsFramework
             const int m_scUpdateInterval = 100;
 
             AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
+            AssetBrowserTableView* m_attachedTableView = nullptr;
 
             QString m_name;
 
             QModelIndex m_indexToSelectAfterUpdate;
+            AZStd::string m_fileToSelectAfterUpdate = "";
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0, bool useDisplayName = false);

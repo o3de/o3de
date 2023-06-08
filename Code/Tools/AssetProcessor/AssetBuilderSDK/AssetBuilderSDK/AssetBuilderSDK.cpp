@@ -25,10 +25,13 @@
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 //////////////////////////////////////////////////////////////////////////
 
-#include <xxhash/xxhash.h>
-
 namespace AssetBuilderSDK
 {
+    // Defined XXH_INLINE_ALL and include <xxhash/xxhash.h> inside the AssetBuilderSDK namespace to prevent any possible
+    // symbol collision outside of this module
+    #define XXH_INLINE_ALL
+    #include <xxhash/xxhash.h>
+
     const char* const ErrorWindow = "Error"; //Use this window name to log error messages.
     const char* const WarningWindow = "Warning"; //Use this window name to log warning messages.
     const char* const InfoWindow = "Info"; //Use this window name to log info messages.

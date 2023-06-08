@@ -182,7 +182,7 @@ namespace O3DE::ProjectManager
          * @param registerProject whether to register the project or not
          * @return an outcome with ProjectInfo on success 
          */
-        virtual AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) = 0;
+        virtual AZ::Outcome<ProjectInfo, IPythonBindings::ErrorPair> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject = true) = 0;
 
         /**
          * Get info about a project 
@@ -200,15 +200,17 @@ namespace O3DE::ProjectManager
         /**
          * Gathers all projects from the provided repo
          * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @param enabledOnly Whether to only include enabled repos 
          * @return A list of project infos or an error string on failure.
          */
-        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri, bool enabledOnly = true) = 0;
 
         /**
          * Gathers all projects from all registered repos
+         * @param enabledOnly Whether to only include enabled repos 
          * @return A list of project infos or an error string on failure.
          */
-        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() = 0;
+        virtual AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos(bool enabledOnly = true) = 0;
         
         /**
          * Adds existing project on disk
@@ -243,7 +245,7 @@ namespace O3DE::ProjectManager
         virtual DetailedOutcome AddGemsToProject(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) = 0;
 
         /**
-         * Get gems that are incompatibile with this project 
+         * Get gems that are incompatible with this project 
          * @param gemPaths the absolute paths to the gems
          * @param gemNames the names of the gems to add with optional version specifiers
          * @param projectPath the absolute path to the project
@@ -252,7 +254,7 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) = 0;
 
         /**
-         * Get objects that are incompatibile with the provided project and engine.
+         * Get objects that are incompatible with the provided project and engine.
          * The objects could be engine APIs or gems dependencies that might prevent this project from compiling
          * with the engine.
          * @param projectPath the absolute path to the project
@@ -286,30 +288,35 @@ namespace O3DE::ProjectManager
 
         /**
          * Gathers all project templates for the given repo.
+         * @param repoUri The repo URI
+         * @param enabledOnly Whether to only include enabled repos 
          * @return An outcome with a list of all ProjectTemplateInfos from the given repo on success
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri) const = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForRepo(const QString& repoUri, bool enabledOnly = true) const = 0;
 
         /**
          * Gathers all project templates for all templates registered from repos.
+         * @param enabledOnly Whether to only include enabled repos 
          * @return An outcome with a list of all ProjectTemplateInfos on success
          */
-        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos() const = 0;
+        virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplatesForAllRepos(bool enabledOnly = true) const = 0;
 
-        // Gem Repos
+        // Remote Repos
 
         /**
          * Refresh gem repo in the current engine.
          * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @param downloadMissingOnly true to only download missing objects, if false, re-download everything
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri, bool downloadMissingOnly = false) = 0;
 
         /**
          * Refresh all gem repos in the current engine.
+         * @param downloadMissingOnly true to only download missing objects, if false, re-download everything
          * @return true on success, false on failure.
          */
-        virtual bool RefreshAllGemRepos() = 0;
+        virtual bool RefreshAllGemRepos(bool downloadMissingOnly = false) = 0;
 
         /**
          * Registers this gem repo with the current engine.
@@ -326,6 +333,15 @@ namespace O3DE::ProjectManager
         virtual bool RemoveGemRepo(const QString& repoUri) = 0;
 
         /**
+         * Enables or disables a remote repo.  The repo remains registered, but
+         * the objects contained within are no longer included in queries or
+         * available to download
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool SetRepoEnabled(const QString& repoUri, bool enabled) = 0;
+
+        /**
          * Get all available gem repo infos. Gathers all repos registered with the engine.
          * @return A list of gem repo infos.
          */
@@ -334,15 +350,18 @@ namespace O3DE::ProjectManager
         /**
          * Gathers all gem infos from the provided repo
          * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @param enabledOnly Whether to only include enabled repos 
          * @return A list of gem infos.
          */
-        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri, bool enabledOnly = true) = 0;
 
         /**
          * Gathers all gem infos for all gems registered from repos.
+         * @param projectPath an optional project path to use for compatibility information
+         * @param enabledOnly Whether to only include enabled repos 
          * @return A list of gem infos.
          */
-        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() = 0;
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos(const QString& projectPath = "", bool enabledOnly = true) = 0;
 
         /**
          * Downloads and registers a Gem.

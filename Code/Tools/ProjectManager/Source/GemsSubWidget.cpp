@@ -40,7 +40,11 @@ namespace O3DE::ProjectManager
     void GemsSubWidget::Update(const QString& title, const QString& text, const QVector<Tag>& tags)
     {
         m_titleLabel->setText(title);
+
+        // hide the text label if it's empty
         m_textLabel->setText(text);
+        m_textLabel->setVisible(!text.isEmpty());
+
         m_tagWidget->Update(tags);
         m_tagWidget->adjustSize();
         adjustSize();

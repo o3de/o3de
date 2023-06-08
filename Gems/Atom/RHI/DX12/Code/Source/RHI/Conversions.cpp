@@ -1455,5 +1455,20 @@ namespace AZ
                     return RHI::ResultCode::Fail;
             }
         }
-   }
+
+        DXGI_SCALING ConvertScaling(RHI::Scaling scaling)
+        {
+            switch(scaling)
+            {
+                case RHI::Scaling::None:
+                    return DXGI_SCALING_NONE;
+                case RHI::Scaling::Stretch:
+                    return DXGI_SCALING_STRETCH;
+                case RHI::Scaling::AspectRatioStretch:
+                    return DXGI_SCALING_ASPECT_RATIO_STRETCH;
+                default:
+                    return DXGI_SCALING_STRETCH;
+            }
+        }
+    }
 }

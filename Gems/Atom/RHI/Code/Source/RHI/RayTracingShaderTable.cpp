@@ -50,6 +50,14 @@ namespace AZ
             return this;
         }
 
+        RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::CallableRecord(const AZ::Name& name)
+        {
+            m_callableRecords.emplace_back();
+            m_buildContext = &m_callableRecords.back();
+            m_buildContext->m_shaderExportName = name;
+            return this;
+        }
+
         RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::HitGroupRecord(const AZ::Name& name, uint32_t key /* = RayTracingShaderTableRecord::InvalidKey */)
         {
             m_hitGroupRecords.emplace_back();

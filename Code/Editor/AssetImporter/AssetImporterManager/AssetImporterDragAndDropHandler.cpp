@@ -48,6 +48,24 @@ void AssetImporterDragAndDropHandler::DragEnter(QDragEnterEvent* event, AzQtComp
     }
 }
 
+void AssetImporterDragAndDropHandler::DropAtLocation(QDropEvent* event, [[maybe_unused]] AzQtComponents::DragAndDropContextBase& context, QString& path)
+{
+    if (!m_dragAccepted)
+    {
+        return;
+    }
+
+    QStringList fileList = GetFileList(event);
+
+    if (!fileList.isEmpty())
+    {
+        Q_EMIT OpenAssetImporterManagerWithSuggestedPath(fileList, path);
+    }
+
+    // reset
+    m_dragAccepted = false;
+}
+
 void AssetImporterDragAndDropHandler::Drop(QDropEvent* event, AzQtComponents::DragAndDropContextBase& /*context*/)
 {
     if (!m_dragAccepted)

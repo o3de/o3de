@@ -399,7 +399,7 @@ namespace AZ
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const ImageView* const> imageViews,
             uint32_t* outIndices,
-            bool viewReadOnly,
+            AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
             BufferPoolDescriptor desc = static_cast<const BufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
@@ -417,19 +417,20 @@ namespace AZ
                 it->second.m_bindlessResources.clear();
             }
 
+            AZ_Assert(imageViews.size() == isViewReadOnly.size(), "Mismatch sizes. For each view we need to know if it is read only or readwrite");
             size_t i = 0;
             for (const ImageView* imageView : imageViews)
             {
                 it->second.m_bindlessResources.push_back(imageView);
-                BindlessResourceType resourceType = BindlessResourceType::ReadTexture;
+                BindlessResourceType resourceType = BindlessResourceType::m_Texture2D;
                 //Update the indirect buffer with view indices
-                if (viewReadOnly)
+                if (isViewReadOnly[i])
                 {
                     outIndices[i] = imageView->GetBindlessReadIndex();
                 }
                 else
                 {
-                    resourceType = BindlessResourceType::ReadWriteTexture;
+                    resourceType = BindlessResourceType::m_RWTexture2D;
                     outIndices[i] = imageView->GetBindlessReadWriteIndex();
                 }
                 it->second.m_bindlessResourceType = resourceType;
@@ -444,7 +445,7 @@ namespace AZ
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const BufferView* const> bufferViews,
             uint32_t* outIndices,
-            bool viewReadOnly,
+            AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
             BufferPoolDescriptor desc = static_cast<const BufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
@@ -462,19 +463,21 @@ namespace AZ
                 it->second.m_bindlessResources.clear();
             }
 
+            AZ_Assert(bufferViews.size() == isViewReadOnly.size(), "Mismatch sizes. For each view we need to know if it is read only or readwrite");
+            
             size_t i = 0;
             for (const BufferView* bufferView : bufferViews)
             {
                 it->second.m_bindlessResources.push_back(bufferView);
-                BindlessResourceType resourceType = BindlessResourceType::ReadBuffer;
+                BindlessResourceType resourceType = BindlessResourceType::m_ByteAddressBuffer;
                 //Update the indirect buffer with view indices
-                if (viewReadOnly)
+                if (isViewReadOnly[i])
                 {
                     outIndices[i] = bufferView->GetBindlessReadIndex();
                 }
                 else
                 {
-                    resourceType = BindlessResourceType::ReadWriteBuffer;
+                    resourceType = BindlessResourceType::m_RWByteAddressBuffer;
                     outIndices[i] = bufferView->GetBindlessReadWriteIndex();
                 }
                 it->second.m_bindlessResourceType = resourceType;

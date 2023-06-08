@@ -281,20 +281,28 @@ namespace TestImpact
         TestJobRunner>::ShardFixtureInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const
     {
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
-        const auto numTests = testEnumeration->GetNumEnabledTests();
-        const auto numShards = std::min(m_maxConcurrency, numTests);
+        const auto numFixtures = testEnumeration->GetNumEnabledTestSuites();
+        const auto numShards = std::min(m_maxConcurrency, numFixtures);
         ShardedTestsList shardTestList(numShards);
 
         size_t fixtureIndex = 0;
         for (const auto fixture : testEnumeration->GetTestSuites())
         {
-            if (!fixture.m_enabled)
+            if (fixture.m_enabled)
             {
-                continue;
-            }
+                const auto numEnabledTests = std::count_if(
+                    fixture.m_tests.begin(),
+                    fixture.m_tests.end(),
+                    [](const auto& test)
+                    {
+                        return test.m_enabled;
+                    });
 
-            shardTestList[fixtureIndex++ % numShards].emplace_back(
-                AZStd::string::format("%s.*", fixture.m_name.c_str()));
+                if (numEnabledTests)
+                {
+                    shardTestList[fixtureIndex++ % numShards].emplace_back(AZStd::string::format("%s.*", fixture.m_name.c_str()));
+                }
+            }
         }
 
         return shardTestList;

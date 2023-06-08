@@ -79,9 +79,9 @@ namespace AzToolsFramework
         if (fileExists)
         {
             if (auto mergeResult = registry->MergeSettingsFile(fullSettingsPath.Native(), format, anchorKey);
-                !mergeResult.IsSuccess())
+                !mergeResult)
             {
-                return AZ::Failure(mergeResult.GetError());
+                return AZ::Failure(mergeResult.GetMessages());
             }
         }
 

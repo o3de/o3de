@@ -19,6 +19,7 @@
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+
 namespace AZ
 {
     namespace Render
@@ -38,7 +39,14 @@ namespace AZ
                         }
                     }
                 }
-                AZ_Error("DecalTextureArrayFeatureProcessor", false, "GetTextureSizeFromMaterialAsset() unable to find an image in the given material.")
+
+                AZ_Error(
+                    "DecalTextureFeatureProcessor",
+                    false,
+                    "GetSizeFromMaterial() unable to load image in material ID '%s'",
+                    materialAsset->GetId().ToString<AZStd::string>().c_str()
+                );
+
                 return {};
             }
 

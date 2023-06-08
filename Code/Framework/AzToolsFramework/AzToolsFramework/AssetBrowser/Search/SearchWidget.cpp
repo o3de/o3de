@@ -83,7 +83,7 @@ namespace AzToolsFramework
             , m_filter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_stringFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_typesFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR))
-            , m_projectSourceFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
+            , m_engineFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_unusableProductsFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
             , m_folderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND))
         {
@@ -95,8 +95,8 @@ namespace AzToolsFramework
             m_typesFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
             m_typesFilter->SetTag("AssetTypes");
 
-            m_projectSourceFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            m_projectSourceFilter->SetTag("ProjectAssets");
+            m_engineFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
+            m_engineFilter->SetTag("ProjectAssets");
 
             m_unusableProductsFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
             m_unusableProductsFilter->SetTag("UnusableProducts");
@@ -174,9 +174,11 @@ namespace AzToolsFramework
                 SetTypeFilters(buildTypesFilterList());
             }
 
-            auto pathFilter = new AssetPathFilter();
-            pathFilter->SetAssetPath(AZ::IO::Path(AZ::Utils::GetProjectPath()));
-            m_projectSourceFilter->AddFilter(FilterConstType(pathFilter));
+            AZ::IO::Path projectPath{ AZ::Utils::GetProjectPath() };
+            AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
+            auto engineFilter = new EngineFilter();
+            engineFilter->SetEngineAndProject(enginePath, projectPath);
+            m_engineFilter->AddFilter(FilterConstType(engineFilter));
 
             AZStd::vector<AZ::Data::AssetType> types = BuildAssetTypeList();
             auto compositeTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
@@ -197,15 +199,15 @@ namespace AzToolsFramework
             m_folderFilter->AddFilter(FilterConstType(directoryFilter));
         }
 
-        void SearchWidget::ToggleProjectSourceAssetFilter(bool checked)
+        void SearchWidget::ToggleEngineFilter(bool checked)
         {
             if (!checked)
             {
-                m_filter->RemoveFilter(FilterConstType(m_projectSourceFilter));
+                m_filter->RemoveFilter(FilterConstType(m_engineFilter));
             }
             else
             {
-                m_filter->AddFilter(FilterConstType(m_projectSourceFilter));
+                m_filter->AddFilter(FilterConstType(m_engineFilter));
             }
         }
 
@@ -274,9 +276,9 @@ namespace AzToolsFramework
             return m_typesFilter;
         }
 
-        QSharedPointer<CompositeFilter> SearchWidget::GetProjectSourceFilter() const
+        QSharedPointer<CompositeFilter> SearchWidget::GetEngineFilter() const
         {
-            return m_projectSourceFilter;
+            return m_engineFilter;
         }
 
         QSharedPointer<CompositeFilter> SearchWidget::GetUnusableProductsFilter() const

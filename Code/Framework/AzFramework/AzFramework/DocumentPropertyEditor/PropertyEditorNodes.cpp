@@ -40,6 +40,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         system->RegisterNode<NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
@@ -49,6 +51,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
+        system->RegisterNodeAttribute<Label>(Label::ValueText);
 
         system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
@@ -60,6 +63,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ParentValue);
 
         system->RegisterNode<Container>();
         system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);
@@ -100,8 +104,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();
+
         system->RegisterPropertyEditor<LineEdit>();
+        system->RegisterNodeAttribute<LineEdit>(LineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<MultiLineEdit>();
+        system->RegisterNodeAttribute<MultiLineEdit>(MultiLineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<Quaternion>();
         system->RegisterPropertyEditor<Crc>();
         system->RegisterPropertyEditor<Vector2>();

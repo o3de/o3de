@@ -50,7 +50,7 @@ namespace AZ
             swapChainDesc.Width = descriptor.m_dimensions.m_imageWidth;
             swapChainDesc.Height = descriptor.m_dimensions.m_imageHeight;
             swapChainDesc.Format = ConvertFormat(descriptor.m_dimensions.m_imageFormat);
-            swapChainDesc.Scaling = DXGI_SCALING_NONE;
+            swapChainDesc.Scaling = ConvertScaling(descriptor.m_scalingMode);
             swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
             swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
             if (m_isTearingSupported)

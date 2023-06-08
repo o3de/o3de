@@ -46,7 +46,6 @@ namespace O3DE::ProjectManager
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
-        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
         connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyProjectRemoved, m_projectGemCatalogScreen, &GemCatalogScreen::NotifyProjectRemoved);
 
         m_stack = new QStackedWidget(this);
@@ -123,18 +122,20 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemRepos)
         {
             m_stack->setCurrentWidget(m_gemRepoScreen);
-            m_gemRepoScreen->Reinit();
+            m_gemRepoScreen->NotifyCurrentScreen();
             Update();
         }
         else if (screen == ProjectManagerScreen::ProjectGemCatalog)
         {
             m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+            m_projectGemCatalogScreen->NotifyCurrentScreen();
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
         else if (screen == ProjectManagerScreen::UpdateProjectSettings)
         {
             m_stack->setCurrentWidget(m_updateSettingsScreen);
+            m_updateSettingsScreen->NotifyCurrentScreen();
             Update();
         }
         else
@@ -148,6 +149,7 @@ namespace O3DE::ProjectManager
         if (UpdateProjectSettings(true))
         {
             m_projectGemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+            m_projectGemCatalogScreen->NotifyCurrentScreen();
             m_stack->setCurrentWidget(m_projectGemCatalogScreen);
             Update();
         }
@@ -158,6 +160,10 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() > 0)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            if (ScreenWidget* screenWidget = qobject_cast<ScreenWidget*>(m_stack->currentWidget()); screenWidget)
+            {
+                screenWidget->NotifyCurrentScreen();
+            }
             Update();
         }
         else

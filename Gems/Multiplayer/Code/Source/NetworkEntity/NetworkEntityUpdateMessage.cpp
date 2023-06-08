@@ -38,28 +38,13 @@ namespace Multiplayer
         }
     }
 
-    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityRole networkRole, NetEntityId entityId)
+    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityRole networkRole, NetEntityId entityId, bool isDeleted, bool wasMigrated)
         : m_networkRole(networkRole)
         , m_entityId(entityId)
-    {
-        ;
-    }
-
-    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityRole networkRole, NetEntityId entityId, const PrefabEntityId& prefabEntityId)
-        : m_networkRole(networkRole)
-        , m_entityId(entityId)
-        , m_hasValidPrefabId(true)
-        , m_prefabEntityId(prefabEntityId)
-    {
-        ;
-    }
-
-    NetworkEntityUpdateMessage::NetworkEntityUpdateMessage(NetEntityId entityId, bool wasMigrated)
-        : m_entityId(entityId)
-        , m_isDelete(true)
+        , m_isDelete(isDeleted)
         , m_wasMigrated(wasMigrated)
     {
-        // this is a delete entity message c-tor
+        ;
     }
 
     NetworkEntityUpdateMessage& NetworkEntityUpdateMessage::operator =(NetworkEntityUpdateMessage&& rhs)
@@ -113,11 +98,6 @@ namespace Multiplayer
         static const uint32_t sizeOfFlags = 1;
         static const uint32_t sizeOfEntityId = sizeof(NetEntityId);
         static const uint32_t sizeOfSliceId = 6;
-
-        if (m_isDelete)
-        {
-            return sizeOfFlags + sizeOfEntityId;
-        }
 
         // 2-byte size header + the actual blob payload itself
         const uint32_t sizeOfBlob = static_cast<uint32_t>((m_data != nullptr) ? sizeof(PropertyIndex) + m_data->GetSize() : 0);
@@ -210,24 +190,24 @@ namespace Multiplayer
             m_networkRole = static_cast<NetEntityRole>(networkTypeAndFlags & 0x0F);
         }
 
-        if (!m_isDelete)
+        // We always serialize the data, whether it's an update or a delete.
+        // This ensures that we have consistent entity data at the point of deletion in case any
+        // network properties are used during deactivation / deletion logic execution.
+
+        if (m_hasValidPrefabId)
         {
-            // We only transmit sliceEntryId's and property data globs if we're not deleting the entity
-            if (m_hasValidPrefabId)
-            {
-                // Only serialize the sliceEntryId if one was provided to the update message constructor
-                // otherwise a remote replicator should be set up and the sliceEntryId would be redundant
-                serializer.Serialize(m_prefabEntityId, "PrefabEntityId");
-            }
-
-            // m_data should never be nullptr unless this is a delete packet
-            if (m_data == nullptr)
-            {
-                m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
-            }
-
-            serializer.Serialize(*m_data, "Data");;
+            // Only serialize the prefabEntityId if one was provided.
+            // Otherwise, a remote replicator is expected to be set up and the prefabEntityId would be redundant
+            serializer.Serialize(m_prefabEntityId, "PrefabEntityId");
         }
+
+        // m_data should never be nullptr
+        if (m_data == nullptr)
+        {
+            m_data = AZStd::make_unique<AzNetworking::PacketEncodingBuffer>();
+        }
+
+        serializer.Serialize(*m_data, "Data");;
 
         return serializer.IsValid();
     }

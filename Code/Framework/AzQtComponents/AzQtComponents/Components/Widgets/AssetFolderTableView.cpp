@@ -25,6 +25,7 @@ namespace AzQtComponents
     {
         setSortingEnabled(true);
         setContextMenuPolicy(Qt::CustomContextMenu);
+        setSelectionMode(ExtendedSelection);
     }
 
     void AssetFolderTableView::setRootIndex(const QModelIndex& index)
@@ -44,9 +45,11 @@ namespace AzQtComponents
     void AssetFolderTableView::mousePressEvent(QMouseEvent* event)
     {
         const auto p = event->pos();
-        if (auto idx = indexAt(p); !idx.isValid())
+        auto idx = indexAt(p);
+        if (!idx.isValid() && selectionModel()->hasSelection())
         {
             selectionModel()->clear();
+            emit rowDeselected();
         }
         else
         {
@@ -59,7 +62,7 @@ namespace AzQtComponents
         const auto p = event->pos();
         if (auto idx = indexAt(p); idx.isValid())
         {
-            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::Rows);
             emit doubleClicked(idx);
         }
     }

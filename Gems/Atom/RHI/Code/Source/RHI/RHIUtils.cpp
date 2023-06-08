@@ -446,7 +446,7 @@ namespace AZ
 #endif
             char gpuMemDumpFileName[128];
             strftime(gpuMemDumpFileName, sizeof(gpuMemDumpFileName), "%Y-%m-%d.%H-%M-%S", &today);
-            AZStd::string filename = AZStd::string::format("%s/GpuMemoryLog_%s.%" PRIu64 ".json", path.c_str(), gpuMemDumpFileName, ltime);
+            AZStd::string filename = AZStd::string::format("%s/GpuMemoryLog_%s.%ld.json", path.c_str(), gpuMemDumpFileName, static_cast<long>(ltime));
 
             AZ::IO::SystemFile outputFile;
             if (!outputFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))

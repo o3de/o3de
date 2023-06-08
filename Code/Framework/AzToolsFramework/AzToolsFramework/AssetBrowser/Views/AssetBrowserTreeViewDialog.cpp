@@ -25,7 +25,7 @@ namespace AzToolsFramework
         {
             auto selectedAssets = m_ui->m_assetBrowserTreeViewWidget->isVisible()
                 ? m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets()
-                : m_ui->m_assetBrowserTableViewWidget->GetSelectedAssets();
+                : m_ui->m_assetBrowserListViewWidget->GetSelectedAssets();
             // exactly one item must be selected, even if multi-select option is disabled, still good practice to check
             if (selectedAssets.empty())
             {

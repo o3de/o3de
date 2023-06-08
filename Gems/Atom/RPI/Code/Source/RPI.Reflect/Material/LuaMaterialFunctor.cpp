@@ -317,7 +317,8 @@ namespace AZ
 
         void LuaMaterialFunctorAPI::RuntimeContext::Reflect(BehaviorContext* behaviorContext)
         {
-            auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::RuntimeContext>()
+            auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::RuntimeContext>();
+            builder
                 ->Method("SetShaderConstant_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<bool>)
                 ->Method("SetShaderConstant_int", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<int32_t>)
                 ->Method("SetShaderConstant_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<uint32_t>)
@@ -342,8 +343,8 @@ namespace AZ
                 ->Method("SetInternalMaterialPropertyValue_Image", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Image*>)
                 ;
 
-            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(builder);
-            LuaMaterialFunctorAPI::ConfigureShaders::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(builder);
+            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(&builder);
+            LuaMaterialFunctorAPI::ConfigureShaders::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(&builder);
         }
 
         template<typename LuaApiClass>
@@ -571,7 +572,8 @@ namespace AZ
 
         void LuaMaterialFunctorAPI::EditorContext::EditorContext::Reflect(BehaviorContext* behaviorContext)
         {
-            auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::EditorContext>()
+            auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::EditorContext>();
+            builder
                 ->Method("SetMaterialPropertyVisibility", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyVisibility)
                 ->Method("SetMaterialPropertyDescription", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyDescription)
                 ->Method("SetMaterialPropertyMinValue_int", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue<int32_t>)
@@ -589,7 +591,7 @@ namespace AZ
                 ->Method("SetMaterialPropertyGroupVisibility", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyGroupVisibility)
                 ;
 
-            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::EditorContext>(builder);
+            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::EditorContext>(&builder);
         }
 
         LuaMaterialFunctorAPI::EditorContext::EditorContext(

@@ -39,7 +39,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             Gem::SurfaceData.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -69,7 +69,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 AZ::AzToolsFramework
                 Gem::SurfaceData.Static
-                Gem::LmbrCentral.Editor
+                Gem::LmbrCentral.Editor.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )

@@ -274,6 +274,13 @@ namespace AzFramework
         // Get the content (client) rect of the focus window
         RECT clientRect = GetConstrainedClientRect(focusWindow);
 
+        // If the window is 0-sized in at least one dimension, just return a cursor position of (0, 0).
+        // This can happen when a window gets hidden by pressing Windows-D to go to the desktop.
+        if ((clientRect.left == clientRect.right) || (clientRect.top == clientRect.bottom))
+        {
+            return AZ::Vector2(0.0f, 0.0f);
+        }
+
         // Normalize the cursor position relative to the content (client rect) of the focus window
         const float clientRectWidth = static_cast<float>(clientRect.right - clientRect.left);
         const float clientRectHeight = static_cast<float>(clientRect.bottom - clientRect.top);
@@ -472,15 +479,12 @@ namespace AzFramework
         ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.left); // Converts the top-left point
         ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.right); // Converts the bottom-right point
 
-        // Get the desktop "work area" (i.e. area not including system taskbar) in screen coordinates
-        RECT workRect;
-        ::SystemParametersInfoW(SPI_GETWORKAREA, 0, &workRect, 0);
-
-        // Clip the client rect to the desktop work area
-        clientRect.left = AZStd::max(clientRect.left, workRect.left);
-        clientRect.right = AZStd::min(clientRect.right, workRect.right);
-        clientRect.top = AZStd::max(clientRect.top, workRect.top);
-        clientRect.bottom = AZStd::min(clientRect.bottom, workRect.bottom);
+        // Note that this returns a rectangle that could overlap other things like the system taskbar.
+        // We're making the assumption that the implementation of NativeWindow is drawing the window above everything,
+        // including the taskbar, so that any mouse movements and clicks within the window won't be able to change focus
+        // to the taskbar, popup email notifications, etc. If NativeWindow *doesn't* draw the window above everything,
+        // then the way we handle hidden contrained mouse inputs will need to change to ensure that it doesn't accidentally
+        // send clicks and movements to overlapping windows of higher priority.
 
         return clientRect;
     }

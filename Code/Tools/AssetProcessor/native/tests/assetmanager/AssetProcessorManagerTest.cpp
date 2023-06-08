@@ -1869,6 +1869,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_BasicTe
 
     // eliminate b --> c
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->RemoveSourceFileDependency(newEntry2.m_sourceDependencyID));
+    m_assetProcessorManager->m_dependencyCache = {};
 
     dependencies.clear();
     m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
@@ -1882,6 +1883,9 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_WithDif
 {
     // test to make sure that different TYPES of dependencies work as expected.
     using namespace AzToolsFramework::AssetDatabase;
+
+    // Cache does not handle mixed dependency types
+    m_assetProcessorManager->m_dependencyCacheEnabled = false;
 
     UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/a.txt"), QString("tempdata\n"));
     UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt"), QString("tempdata\n"));
@@ -1995,6 +1999,7 @@ TEST_F(AssetProcessorManagerTest, QueryAbsolutePathDependenciesRecursive_Missing
 
     // eliminate b --> c
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->RemoveSourceFileDependency(newEntry2.m_sourceDependencyID));
+    m_assetProcessorManager->m_dependencyCache = {};
 
     dependencies.clear();
     m_assetProcessorManager->QueryAbsolutePathDependenciesRecursive(m_aUuid, dependencies, SourceFileDependencyEntry::DEP_SourceToSource);
@@ -2405,7 +2410,7 @@ bool SearchDependencies(AzToolsFramework::AssetDatabase::ProductDependencyDataba
 
 void VerifyDependencies(
     AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer,
-    AZStd::vector<AZ::Data::AssetId> assetIds, 
+    AZStd::vector<AZ::Data::AssetId> assetIds,
     AZStd::initializer_list<const char*> unresolvedPaths = {})
 {
     EXPECT_EQ(dependencyContainer.size(), assetIds.size() + unresolvedPaths.size());
@@ -3997,6 +4002,9 @@ void SourceFileDependenciesTest::SetUp()
     QFile(m_assetRootDir.absoluteFilePath("subfolder1/b.txt")).remove();
     QFile(m_assetRootDir.absoluteFilePath("subfolder1/c.txt")).remove();
     QFile(m_assetRootDir.absoluteFilePath("subfolder1/d.txt")).remove();
+
+    // Cache does not handle mixed dependency types
+    m_assetProcessorManager->m_dependencyCacheEnabled = false;
 }
 
 void SourceFileDependenciesTest::SetupData(
@@ -5110,6 +5118,9 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     // This test checks that wildcard source dependencies are added to the database as "SourceLikeMatch",
     // find existing files which match the dependency and add them as either job or source file dependencies,
     // And recognize matching files as dependencies
+
+    // Cache does not handle mixed dependency types
+    m_assetProcessorManager->m_dependencyCacheEnabled = false;
 
     AZ::Uuid dummyBuilderUUID = AZ::Uuid::CreateRandom();
     UnitTestUtils::CreateDummyFile(m_assetRootDir.absoluteFilePath("subfolder1/wildcardTest.txt"));

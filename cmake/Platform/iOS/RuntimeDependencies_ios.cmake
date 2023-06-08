@@ -11,16 +11,26 @@ ly_set(LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS MODULE_LIBRARY SHARED_LIBRARY EXECUT
 
 include(cmake/Platform/Common/RuntimeDependencies_common.cmake)
 
-function(ly_get_filtered_runtime_dependencies dependencies target)
+function(o3de_get_filtered_dependencies_for_target dependencies target)
     
-    unset(all_dependencies)
     unset(filtered_dependencies)
-    ly_get_runtime_dependencies(all_dependencies ${target})
+    unset(target_copy_dependencies)
+    unset(target_target_dependencies)
+    unset(target_link_dependencies)
+    unset(target_imported_dependencies)
+    o3de_get_dependencies_for_target(
+        TARGET "${target}"
+        COPY_DEPENDENCIES_VAR target_copy_dependencies
+        TARGET_DEPENDENCIES_VAR target_target_dependencies
+        LINK_DEPENDENCIES_VAR target_link_dependencies
+        IMPORTED_DEPENDENCIES_VAR target_imported_dependencies
+    )
     
-    # ly_get_runtime_dependencies also returns asset files that are
+    # o3de_get_dependencies_for_target also returns asset files that are
     # associated with a target. However, we only want frameworks(runtime
     # libraries) here which Xcode will embed in the app bundle
-    foreach(dependency IN LISTS all_dependencies)
+    # Those dependenices come from the LINK_DEPENDENCIES for the target
+    foreach(dependency IN LISTS target_link_dependencies)
         if (TARGET ${dependency})
             # Imported libraries are used as alias to other targets, so
             # only non imported dependencies will be appended.
@@ -55,7 +65,7 @@ function(ly_delayed_generate_runtime_dependencies)
 
             # Recursively get all dependent frameworks for the game project.
             unset(dependencies)
-            ly_get_filtered_runtime_dependencies(dependencies ${project_name}.GameLauncher)
+            o3de_get_filtered_dependencies_for_target(dependencies ${project_name}.GameLauncher)
 
             if(dependencies)
                 set_target_properties(${project_name}.GameLauncher
@@ -98,7 +108,7 @@ function(ly_delayed_generate_runtime_dependencies)
         
         # We still need to add indirect dependencies(eg. 3rdParty)
         unset(dependencies)
-        ly_get_filtered_runtime_dependencies(dependencies AzTestRunner)
+        o3de_get_filtered_dependencies_for_target(dependencies AzTestRunner)
 
         if(dependencies)
             set_target_properties("AzTestRunner"

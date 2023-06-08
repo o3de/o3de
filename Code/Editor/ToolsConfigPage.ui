@@ -236,29 +236,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="7,6">
-     <item>
-      <widget class="QGroupBox" name="groupBox_2">
-       <property name="title">
-        <string>Shortcut</string>
-       </property>
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QKeySequenceEdit" name="m_macroShortcutKey"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="m_assignShortcut">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Assign</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
+    <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="7">
      <item>
       <widget class="QGroupBox" name="groupBox_3">
        <property name="title">

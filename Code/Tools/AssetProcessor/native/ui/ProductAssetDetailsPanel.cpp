@@ -25,6 +25,7 @@
 #include <QDir>
 #include <QStringLiteral>
 #include <QUrl>
+#include <native/ui/GoToButtonDelegate.h>
 #include <AzCore/Jobs/JobFunction.h>
 
 namespace AssetProcessor
@@ -42,6 +43,16 @@ namespace AssetProcessor
 
         connect(m_ui->ClearMissingDependenciesButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFileClicked);
         connect(m_ui->ClearScanFolderButton, &QPushButton::clicked, this, &ProductAssetDetailsPanel::OnClearScanFolderClicked);
+
+        auto* missingDependenciesDelegate = new GoToButtonDelegate(this);
+        connect(
+            missingDependenciesDelegate,
+            &GoToButtonDelegate::Clicked,
+            [this](const GoToButtonData& buttonData)
+            {
+                GoToProduct(buttonData.m_destination);
+            });
+        m_ui->MissingProductDependenciesTable->setItemDelegate(missingDependenciesDelegate);
     }
 
     ProductAssetDetailsPanel::~ProductAssetDetailsPanel()
@@ -342,12 +353,11 @@ namespace AssetProcessor
             {
                 hasMissingDependency = true;
                 ++missingDependencyCount;
-                GoToButton* rowGoToButton = new GoToButton(this);
-                connect(rowGoToButton->m_ui->goToPushButton, &QPushButton::clicked, [&, missingDependency] {
-                    GoToProduct(missingDependency.m_missingProductName);
-                });
-                m_ui->MissingProductDependenciesTable->setCellWidget(
-                    missingDependencyRowCount, static_cast<int>(MissingDependencyTableColumns::GoToButton), rowGoToButton);
+
+                auto* goToWidget = new QTableWidgetItem();
+                goToWidget->setData(0, QVariant::fromValue(GoToButtonData(missingDependency.m_missingProductName)));
+                m_ui->MissingProductDependenciesTable->setItem(missingDependencyRowCount,
+                    static_cast<int>(MissingDependencyTableColumns::GoToButton), goToWidget);
             }
 
             QTableWidgetItem* scanTime = new QTableWidgetItem(missingDependency.m_databaseEntry.m_lastScanTime.c_str());

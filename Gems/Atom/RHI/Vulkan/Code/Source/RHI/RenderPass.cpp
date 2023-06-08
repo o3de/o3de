@@ -375,7 +375,7 @@ namespace AZ
                 const RenderPass::Descriptor* m_descriptor = nullptr;
             };
 
-            template<typename T, VkStructureType type = static_cast<VkStructureType>(-1)>
+            template<typename T, VkStructureType type = AZStd::numeric_limits<VkStructureType>::max()>
             struct StructureTypeTraits
             {
                 static const VkStructureType struct_type = type;

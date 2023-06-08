@@ -419,9 +419,13 @@ namespace AZ
             desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
             desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
             
-            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress();
+            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable ? shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress() : 0;
             desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
             desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
+
+            desc.CallableShaderTable.StartAddress = shaderTableBuffers.m_callableTable ? shaderTableBuffers.m_callableTable->GetMemoryView().GetGpuAddress() : 0;
+            desc.CallableShaderTable.SizeInBytes = shaderTableBuffers.m_callableTableSize;
+            desc.CallableShaderTable.StrideInBytes = shaderTableBuffers.m_callableTableStride;
             
             desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
             desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;

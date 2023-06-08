@@ -48,6 +48,7 @@ namespace AZ
 
             // Pass overrides
             bool IsEnabled() const override;
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // revision number of the ray tracing TLAS when the shader table was built
@@ -55,9 +56,8 @@ namespace AZ
 
             // ray tracing shader and pipeline state
             Data::Instance<RPI::Shader> m_rayTracingShader;
-            Data::Instance<RPI::Shader> m_missShader;
             Data::Instance<RPI::Shader> m_closestHitShader;
-            Data::Instance<RPI::Shader> m_anyHitShader;
+            Data::Instance<RPI::Shader> m_missShader;
             RHI::Ptr<RHI::RayTracingPipelineState> m_rayTracingPipelineState;
 
             // ray tracing shader table
@@ -68,8 +68,6 @@ namespace AZ
             RHI::ConstPtr<RHI::PipelineState> m_globalPipelineState;
 
             RHI::ShaderInputNameIndex m_maxRecursionDepthNameIndex = "m_maxRecursionDepth";
-
-            bool m_initialized = false;
         };
     }   // namespace RPI
 }   // namespace AZ

@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 {# ------- #}
 
-{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName) %}
+{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName, hideInputField, hideName) %}
 
         // Data Slot: {{slotName}} ({% if isInput == "true" %}Input{% else %}Output{% endif %})
         {
@@ -140,8 +140,15 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
             static_assert(false, "DataSlot type is undefined for slot: {{ slotName }}");
 {% endif %}
             ScriptCanvas::DataSlotConfiguration dataSlotConfiguration;
+{% if hideName %}
+            dataSlotConfiguration.m_name = " ";
+{% else %}
             dataSlotConfiguration.m_name = "{{ slotName }}";
+{% endif %}
             dataSlotConfiguration.m_toolTip = "{{ slotDescription }}";
+{% if hideInputField %}
+            dataSlotConfiguration.m_canHaveInputField = false;
+{% endif %}
 {% if displayGroup is defined %}
             dataSlotConfiguration.m_displayGroup = "{{ displayGroup }}";
 {% elif parentName is defined%}

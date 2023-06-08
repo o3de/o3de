@@ -27,6 +27,8 @@ set(FILES
     native/ui/CacheServerData.cpp
     native/ui/ConnectionEditDialog.h
     native/ui/ConnectionEditDialog.cpp
+    native/ui/GoToButtonDelegate.h
+    native/ui/GoToButtonDelegate.cpp
     native/ui/GoToButton.h
     native/ui/GoToButton.cpp
     native/ui/GoToButton.ui

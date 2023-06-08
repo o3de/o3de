@@ -441,14 +441,11 @@ namespace ScriptCanvasEditor
 
         m_editorToolbar = aznew GraphCanvas::AssetEditorToolbar(ScriptCanvasEditor::AssetEditorId);
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
-            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
-            }
+            hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
         }
-
+        
         // Custom Actions
         {
             m_assignToSelectedEntity = new QToolButton();
@@ -684,12 +681,9 @@ namespace ScriptCanvasEditor
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
-            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
-            }
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
         }
 
         Clear();

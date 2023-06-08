@@ -352,6 +352,11 @@ namespace AZ
             QueueExpandToMipChainLevel(m_mipChainState.m_streamingTarget - 1);
         }
 
+        void StreamingImage::CancelExpanding()
+        {
+            TrimToMipChainLevel(m_mipChainState.m_residencyTarget);
+        }
+
         RHI::ResultCode StreamingImage::ExpandMipChain()
         {
             AZ_Assert(m_mipChainState.m_streamingTarget <= m_mipChainState.m_residencyTarget, "The target mip chain cannot be less detailed than the resident mip chain.")

@@ -63,7 +63,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* refreshButton = new QPushButton();
         refreshButton->setObjectName("RefreshButton");
-        connect( refreshButton, &QPushButton::clicked, [this] { emit OnRefresh(); });
+        connect(refreshButton, &QPushButton::clicked, [this] { emit OnRefresh(/*refreshRemoteRepos*/true); });
         topLayout->addWidget(refreshButton);
 
         auto refreshGemCountUI = [=]() {

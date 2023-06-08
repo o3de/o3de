@@ -280,6 +280,90 @@ namespace AZ
             return true;
         }
 
+        void RenderPipeline::UnregisterView(ViewPtr view)
+        {
+            auto registeredViewItr = m_persistentViewsByViewTag.find(view.get());
+            if (registeredViewItr != m_persistentViewsByViewTag.end())
+            {
+                return ResetPersistentView(registeredViewItr->second, view);
+            }
+
+            registeredViewItr = m_transientViewsByViewTag.find(view.get());
+            if (registeredViewItr != m_transientViewsByViewTag.end())
+            {
+                return RemoveTransientView(registeredViewItr->second, view);
+            }
+        }
+
+        void RenderPipeline::RemoveTransientView(const PipelineViewTag viewTag, ViewPtr view)
+        {
+            auto viewItr = m_pipelineViewsByTag.find(viewTag);
+            if (viewItr != m_pipelineViewsByTag.end())
+            {
+                PipelineViews& pipelineViews = viewItr->second;
+                if (pipelineViews.m_type == PipelineViewType::Persistent)
+                {
+                    AZ_Assert(
+                        false, "View [%s] was set as persistent view. Use ResetPersistentView to remove this view", viewTag.GetCStr());
+                    return;
+                }
+                for (int viewIndex = 0; viewIndex < pipelineViews.m_views.size(); ++viewIndex)
+                {
+                    if (pipelineViews.m_views[viewIndex] == view)
+                    {
+                        view->SetPassesByDrawList(nullptr);
+                        pipelineViews.m_views.erase(pipelineViews.m_views.begin() + viewIndex);
+                        m_transientViewsByViewTag.erase(view.get());
+                        break;
+                    }
+                }
+                if (pipelineViews.m_views.empty())
+                {
+                    m_pipelineViewsByTag.erase(viewTag);
+                }
+            }
+        }
+
+        void RenderPipeline::ResetPersistentView(const PipelineViewTag viewTag, ViewPtr view)
+        {
+            auto viewItr = m_pipelineViewsByTag.find(viewTag);
+            if (viewItr != m_pipelineViewsByTag.end())
+            {
+                PipelineViews& pipelineViews = viewItr->second;
+                if (pipelineViews.m_views.size() == 0)
+                {
+                    return;
+                }
+
+                if (pipelineViews.m_type == PipelineViewType::Transient)
+                {
+                    AZ_Assert(
+                        false,
+                        "View [%s] is a transient view. Use RemoveTransientView to remove it, or wait until the next frame.",
+                        viewTag.GetCStr());
+                    return;
+                }
+
+                AZ_Assert(
+                    pipelineViews.m_views[0] == view,
+                    "View [%s] is not registered for persistent view tag [%s]",
+                    pipelineViews.m_views[0]->GetName().GetCStr(),
+                    viewTag.GetCStr());
+
+                pipelineViews.m_views[0]->SetPassesByDrawList(nullptr);
+                m_persistentViewsByViewTag.erase(pipelineViews.m_views[0].get());
+                m_pipelineViewsByTag.erase(viewTag);
+                pipelineViews.m_views.clear();
+
+                if (m_scene)
+                {
+                    ViewPtr newView{ nullptr };
+                    SceneNotificationBus::Event(
+                        m_scene->GetId(), &SceneNotification::OnRenderPipelinePersistentViewChanged, this, viewTag, newView, view);
+                }
+            }
+        }
+
         void RenderPipeline::SetPersistentView(const PipelineViewTag& viewTag, ViewPtr view)
         {
             // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever

@@ -170,5 +170,7 @@ namespace AZ
         D3D12_SHADING_RATE_COMBINER ConvertShadingRateCombiner(RHI::ShadingRateCombinerOp op);
 
         RHI::ResultCode ConvertResult(HRESULT result);
+
+        DXGI_SCALING ConvertScaling(RHI::Scaling scaling);
     }
 }

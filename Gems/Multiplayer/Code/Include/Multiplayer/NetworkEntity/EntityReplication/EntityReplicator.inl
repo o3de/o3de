@@ -50,19 +50,4 @@ namespace Multiplayer
     {
         m_wasMigrated = wasMigrated;
     }
-
-    inline PropertyPublisher* EntityReplicator::GetPropertyPublisher()
-    {
-        return m_propertyPublisher.get();
-    }
-
-    inline const PropertyPublisher* EntityReplicator::GetPropertyPublisher() const
-    {
-        return m_propertyPublisher.get();
-    }
-
-    inline PropertySubscriber* EntityReplicator::GetPropertySubscriber()
-    {
-        return m_propertySubscriber.get();
-    }
 }

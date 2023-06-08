@@ -12,9 +12,10 @@
 
 #include <Compression/CompressionLZ4API.h>
 #include <Compression/CompressionTypeIds.h>
+#include <Compression/DecompressionInterfaceAPI.h>
 #include "DecompressorLZ4Impl.h"
 
-#include <Compression/DecompressionInterfaceAPI.h>
+#include <Clients/Streamer/DecompressorStackEntry.h>
 
 namespace CompressionLZ4
 {
@@ -57,6 +58,11 @@ namespace Compression
 
     void CompressionSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        // Reflect the Streamer DecompressionStackEntryConfig
+        // to allow a DecompressionStackEntry to be loaded using JSON Serialization
+        // from .setreg settings files
+        DecompressorRegistrarConfig::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CompressionSystemComponent, AZ::Component>()

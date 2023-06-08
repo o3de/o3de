@@ -12,19 +12,20 @@ import argparse
 import importlib.util
 import logging
 import os
+import stat
 import pathlib
-import psutil
 import re
 import shutil
 import subprocess
 import sys
 import urllib.request
+from urllib.parse import ParseResult
 import uuid
 import zipfile
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from o3de import gitproviderinterface, github_utils, validation as valid
+from o3de import github_utils, git_utils, validation as valid
 from subprocess import Popen, PIPE
 from typing import List, Tuple
 
@@ -230,6 +231,22 @@ def copyfileobj(fsrc, fdst, callback, length=0):
             return 1
     return 0
 
+def remove_dir_path(path:pathlib.Path):
+    """
+    Helper function to delete a folder, ignoring all errors if possible
+    :param path: The Path to the folder to delete
+    """
+    if path.exists() and path.is_dir():
+        files_to_delete = []
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                files_to_delete.append(os.path.join(root, file))
+        for file in files_to_delete:
+            os.chmod(file, stat.S_IWRITE)
+            os.remove(file)
+
+        shutil.rmtree(path.resolve(), ignore_errors=True)
+
 
 def validate_identifier(identifier: str) -> bool:
     """
@@ -327,16 +344,23 @@ def backup_folder(folder: str or pathlib.Path) -> None:
                 renamed = True
 
 
-def get_git_provider(parsed_uri):
+def get_git_provider(parsed_uri: ParseResult):
     """
     Returns a git provider if one exists given the passed uri
     :param parsed_uri: uniform resource identifier of a possible git repository
     :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
-    return github_utils.get_github_provider(parsed_uri)
+    # check for providers with unique APIs first
+    git_provider = github_utils.get_github_provider(parsed_uri)
+
+    if not git_provider:
+        # fallback to generic git provider
+        git_provider = git_utils.get_generic_git_provider(parsed_uri)
+
+    return git_provider
 
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
+def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -345,25 +369,16 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
     :param object_name: name of the object being downloaded
     :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
-    file_exists = False
-    if download_path.is_file():
-        if not force_overwrite:
-            file_exists = True
-        else:
-            try:
-                os.unlink(download_path)
-            except OSError:
-                logger.error(f'Could not remove existing download path {download_path}.')
-                return 1
+    file_exists = download_path.is_file()
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         try:
             current_request = urllib.request.Request(parsed_uri.geturl())
             resume_position = 0
-            if not force_overwrite:
-                if file_exists:
-                    resume_position = os.path.getsize(download_path)
-                    current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+            if file_exists and not force_overwrite:
+                resume_position = os.path.getsize(download_path)
+                current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+
             with urllib.request.urlopen(current_request) as s:
                 download_file_size = int(s.headers.get('content-length',0))
 
@@ -379,15 +394,23 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                 else:
                     logger.error(f'HTTP status {e.code} opening {parsed_uri.geturl()}')
                     return 1
+                
+                # remove the file only after we have a response from the server and something to replace it with
+                if file_exists and force_overwrite:
+                    try:
+                        os.unlink(download_path)
+                    except OSError:
+                        logger.error(f'Could not remove existing download path {download_path}.')
+                        return 1
 
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'
                     if total_size == 0 or downloaded > total_size:
-                        print(f'Downloading {object_name} - {downloaded} bytes')
+                        print(f'Downloading {object_name if object_name else parsed_uri.geturl()} - {downloaded} bytes')
                     else:
                         if downloaded == total_size:
                             end_ch = '\n'
-                        print(f'Downloading {object_name} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
+                        print(f'Downloading {object_name if object_name else parsed_uri.geturl()} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
 
                 if download_progress_callback == None:
                     download_progress_callback = print_progress
@@ -736,10 +759,8 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
     def on_terminate(proc) -> None:
         try:
             process_logger.info(f"process '{proc.args[0]}' with PID({proc.pid}) terminated with exit code {proc.returncode}")
-        except psutil.AccessDenied:
-            process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-        except psutil.NoSuchProcess:
-            process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+        except Exception:  # purposefully broad
+            process_logger.error("Exception encountered with termination request, with stacktrace:", exc_info=True)
 
     if not process_logger:
         process_logger = logger
@@ -748,18 +769,12 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
         try:
             process_logger.info(f"Terminating process '{proc.args[0]}' with PID({proc.pid})")
             proc.kill()
-        except psutil.AccessDenied:
-            process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-        except psutil.NoSuchProcess:
-            process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
         except Exception:  # purposefully broad
             process_logger.error("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
     try:
-        psutil.wait_procs(processes, timeout=30, callback=on_terminate)
-    except psutil.AccessDenied:
-        process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-    except psutil.NoSuchProcess:
-        process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+        for proc in processes:
+            proc.wait(timeout=30)
+            on_terminate(proc)
     except Exception:  # purposefully broad
         process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 

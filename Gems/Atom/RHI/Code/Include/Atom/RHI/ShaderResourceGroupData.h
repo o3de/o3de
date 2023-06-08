@@ -12,6 +12,9 @@
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferView.h>
+#include <AzCore/Preprocessor/Enum.h>
+
+
 
 namespace AZ
 {
@@ -19,6 +22,16 @@ namespace AZ
     {
         class ShaderResourceGroup;
         class ShaderResourceGroupPool;
+
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(
+            BindlessResourceType,
+            uint32_t,
+            m_Texture2D, // ReadTexture
+            m_RWTexture2D, // ReadWriteTexture
+            m_TextureCube, // ReadTextureCube
+            m_ByteAddressBuffer, // ReadBuffer
+            m_RWByteAddressBuffer, // ReadWriteBuffer
+            Count);
 
         //! Shader resource group data is a light abstraction over a flat table of shader resources
         //! and shader constants. It utilizes basic reflection information from the shader resource group layout
@@ -205,29 +218,10 @@ namespace AZ
                 SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
             };
 
-            //This enum order needs to match the order in Bindless.azsli
-            enum class BindlessResourceType : uint32_t
-            {
-                ReadTexture = 0,
-                ReadWriteTexture,
-                ReadBuffer,
-                ReadWriteBuffer,
-                ReadTextureCube,
-                Count
-            };
-
-            // This number matches FrequencyId of SRG_Bindless within SRGSemantics.azsli
-            // ShaderResourceGroupSemantic SRG_Bindless
-            // {
-            //     FrequencyId = 7;
-            // };
-            // TODO::Need a more data driven way here - https://github.com/o3de/o3de/issues/13324
-            static const uint32_t BindlessSRGFrequencyId = 7;
-
             // Structure to hold all the bindless views and the BindlessResourceType related to it
             struct BindlessResourceViews
             {
-                BindlessResourceType m_bindlessResourceType = BindlessResourceType::Count;
+                BindlessResourceType m_bindlessResourceType = AZ::RHI::BindlessResourceType::Count;
                 AZStd::vector<ConstPtr<ResourceView>> m_bindlessResources;
             };
             
@@ -241,21 +235,27 @@ namespace AZ
             uint32_t GetUpdateMask() const;
             
             //! Update the indirect buffer view with the indices of all the image views which reside in the global gpu heap.
+            //! Ideally higher level code can access bindless heap indices directly from the view and populate any indirect
+            //! buffer directly. This API is present in case we want RHI to track bindless resources which may be needed for
+            //! backends like the metal.
             void SetBindlessViews(
                 ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const ImageView* const> imageViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
             
             //! Update the indirect buffer view with the indices of all the buffer views which reside in the global gpu heap.
+            //! Ideally higher level code can access bindless heap indices directly from the view and populate any indirect
+            //! buffer directly. This API is present in case we want RHI to track bindless resources which may be needed for
+            //! backends like the metal.
             void SetBindlessViews(
                 ShaderInputBufferIndex indirectResourceBufferIndex,
                 const RHI::BufferView* indirectResourceBuffer,
                 AZStd::span<const BufferView* const> bufferViews,
                 uint32_t* outIndices,
-                bool viewReadOnly = true,
+                AZStd::span<bool> isViewReadOnly,
                 uint32_t arrayIndex = 0);
 
             //! Get the size of the bindless view map

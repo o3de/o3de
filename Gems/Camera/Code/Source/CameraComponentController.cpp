@@ -28,7 +28,7 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("Orthographic", &CameraComponentConfig::m_orthographic)
                 ->Field("Orthographic Half Width", &CameraComponentConfig::m_orthographicHalfWidth)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
@@ -37,7 +37,6 @@ namespace Camera
                 ->Field("SpecifyDimensions", &CameraComponentConfig::m_specifyFrustumDimensions)
                 ->Field("FrustumWidth", &CameraComponentConfig::m_frustumWidth)
                 ->Field("FrustumHeight", &CameraComponentConfig::m_frustumHeight)
-                ->Field("EditorEntityId", &CameraComponentConfig::m_editorEntityId)
                 ->Field("MakeActiveViewOnActivation", &CameraComponentConfig::m_makeActiveViewOnActivation)
                 ->Field("RenderToTexture", &CameraComponentConfig::m_renderTextureAsset)
                 ->Field("PipelineTemplate", &CameraComponentConfig::m_pipelineTemplate)

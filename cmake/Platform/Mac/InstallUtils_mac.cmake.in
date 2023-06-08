@@ -6,6 +6,13 @@
 #
 #
 
+# Values configured for the output locations of the target
+# Gathered from the generator expression for TARGET_FILE_DIR, TARGET_BUNDLE_DIR
+# and TARGET_BUNDLE_CONTENT_DIR
+cmake_path(SET target_file_dir "@target_file_dir@")
+cmake_path(SET target_bundle_dir "@target_bundle_dir@")
+cmake_path(SET target_bundle_content_dir "@target_bundle_content_dir@")
+
 function(fixup_qt_framework lib_name framework_path)
 
     file(REMOVE_RECURSE
@@ -40,7 +47,7 @@ function(fixup_python_framework framework_path)
         "${framework_path}/Resources"
         "${framework_path}/Headers"
     )
-    
+
     file(GLOB_RECURSE exe_file_list "${framework_path}/**/*.exe")
     if(exe_file_list)
         file(REMOVE_RECURSE ${exe_file_list})
@@ -61,7 +68,7 @@ function(fixup_python_framework framework_path)
         WORKING_DIRECTORY "${framework_path}"
     )
     file(CHMOD "${framework_path}/Versions/Current/Python"
-        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_WRITE GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
     )
 
 endfunction()
@@ -128,19 +135,28 @@ function(codesign_python_framework_binaries framework_path)
 
 endfunction()
 
-function(ly_copy source_files target_directory)
+function(ly_copy source_files relative_target_directory)
+    set(options)
+    set(oneValueArgs TARGET_FILE_DIR SOURCE_TYPE SOURCE_GEM_MODULE)
+    set(multiValueArgs)
+    cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    set(target_file_dir "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE_DIR}")
+    set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
+    set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
+
+    # Create the full path to the target directory
+    cmake_path(APPEND target_directory "${target_file_dir}" "${relative_target_directory}")
+
     foreach(source_file IN LISTS source_files)
         if("${source_file}" MATCHES "\\.[Ff]ramework")
-
             # fixup origin to copy the whole Framework folder
             string(REGEX REPLACE "(.*\\.[Ff]ramework).*" "\\1" source_file "${source_file}")
-
         endif()
 
         cmake_path(GET source_file FILENAME target_filename)
         cmake_path(APPEND full_target_directory "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}" "${target_directory}")
         cmake_path(APPEND target_file "${full_target_directory}" "${target_filename}")
-        
+
         if("${source_file}" IS_NEWER_THAN "${target_file}")
             message(STATUS "Copying ${source_file} to ${full_target_directory}...")
             file(MAKE_DIRECTORY "${full_target_directory}")
@@ -175,5 +191,3 @@ endfunction()
 function(ly_codesign_sdk)
     codesign_file("${LY_INSTALL_PATH_ORIGINAL}/O3DE_SDK.app" "none")
 endfunction()
-
-

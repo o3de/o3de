@@ -127,6 +127,7 @@ namespace AZ
                 const auto* sourceBufferMemoryView = static_cast<const Buffer*>(descriptor.m_sourceBuffer)->GetBufferMemoryView();
                 const auto* destinationImage = static_cast<const Image*>(descriptor.m_destinationImage);
                 const RHI::Format format = destinationImage->GetDescriptor().m_format;
+                uint32_t formatDimensionAlignment = GetFormatDimensionAlignment(format);
 
                 // VkBufferImageCopy::bufferRowLength is specified in texels not in bytes. 
                 // Because of this we need to convert m_sourceBytesPerRow from bytes to pixels to account 
@@ -137,8 +138,8 @@ namespace AZ
 
                 VkBufferImageCopy copy{};
                 copy.bufferOffset = sourceBufferMemoryView->GetOffset() + descriptor.m_sourceOffset;
-                copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * GetFormatDimensionAlignment(format);
-                copy.bufferImageHeight = descriptor.m_sourceSize.m_height;
+                copy.bufferRowLength = descriptor.m_sourceBytesPerRow / GetFormatSize(format) * formatDimensionAlignment;
+                copy.bufferImageHeight = RHI::AlignUp(descriptor.m_sourceSize.m_height, formatDimensionAlignment);
                 copy.imageSubresource.aspectMask = destinationImage->GetImageAspectFlags();
                 copy.imageSubresource.mipLevel = descriptor.m_destinationSubresource.m_mipSlice;
                 copy.imageSubresource.baseArrayLayer = descriptor.m_destinationSubresource.m_arraySlice;
@@ -486,7 +487,7 @@ namespace AZ
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
-                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
                 }
@@ -517,13 +518,30 @@ namespace AZ
             rayGenerationTable.size = shaderTableBuffers.m_rayGenerationTableSize;
 
             // miss table
-            addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
-            VkDeviceAddress missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            VkDeviceAddress missTableAddress = 0;
+            if (shaderTableBuffers.m_missTable)
+            {
+                addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+                missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            }
 
             VkStridedDeviceAddressRegionKHR missTable = {};
             missTable.deviceAddress = missTableAddress;
             missTable.stride = shaderTableBuffers.m_missTableStride;
             missTable.size = shaderTableBuffers.m_missTableSize;
+
+            // callable table
+            VkDeviceAddress callableTableAddress = 0;
+            if (shaderTableBuffers.m_callableTable)
+            {
+                addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_callableTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+                callableTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            }
+
+            VkStridedDeviceAddressRegionKHR callableTable = {};
+            callableTable.deviceAddress = callableTableAddress;
+            callableTable.stride = shaderTableBuffers.m_callableTableStride;
+            callableTable.size = shaderTableBuffers.m_callableTableSize;
 
             // hit group table
             addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_hitGroupTable.get())->GetBufferMemoryView()->GetNativeBuffer();
@@ -533,8 +551,6 @@ namespace AZ
             hitGroupTable.deviceAddress = hitGroupTableAddress;
             hitGroupTable.stride = shaderTableBuffers.m_hitGroupTableStride;
             hitGroupTable.size = shaderTableBuffers.m_hitGroupTableSize;
-
-            VkStridedDeviceAddressRegionKHR callableTable = {};
 
             context.CmdTraceRaysKHR(
                 m_nativeCommandBuffer,
@@ -826,7 +842,8 @@ namespace AZ
                 static_cast<Device&>(GetDevice())
                     .GetContext()
                     .CmdBindIndexBuffer(
-                        m_nativeCommandBuffer, indexBufferMemoryView->GetNativeBuffer(),
+                        m_nativeCommandBuffer,
+                        indexBufferMemoryView->GetNativeBuffer(),
                         indexBufferMemoryView->GetOffset() + indexBufferView.GetByteOffset(),
                         ConvertIndexBufferFormat(indexBufferView.GetIndexFormat()));
             }
@@ -1000,7 +1017,7 @@ namespace AZ
                 if (shaderResourceGroup == nullptr)
                 {
                     AZ_Assert(
-                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        srgBitset[m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot()],
                         "Bindless SRG slot needs to match the one described in the shader.");
                     vkDescriptorSet = m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet();
                 }
@@ -1074,7 +1091,7 @@ namespace AZ
                 const auto& srgBitset = pipelineLayout->GetAZSLBindingSlotsOfIndex(i);
                 for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
-                    if (srgBitset[bindingSlot] && bindingSlot != RHI::ShaderResourceGroupData::BindlessSRGFrequencyId)
+                    if (srgBitset[bindingSlot] && bindingSlot != m_descriptor.m_device->GetBindlessDescriptorPool().GetBindlessSrgBindingSlot())
                     {
                         const ShaderResourceGroup* shaderResourceGroup = bindings.m_SRGByAzslBindingSlot[bindingSlot];
                         AZ_Assert(shaderResourceGroup != nullptr, "NULL srg bound");

@@ -660,23 +660,17 @@ namespace AzToolsFramework
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
 
-        if (IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
-            // Assign this widget to the Editor Entity Property Editor Action Context.
-            AssignWidgetToActionContextHelper(
-                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-        }
+        // Assign this widget to the Editor Entity Property Editor Action Context.
+        AssignWidgetToActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            RemoveWidgetFromActionContextHelper(
-                    EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-        }
+        RemoveWidgetFromActionContextHelper(
+                EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
 
         qApp->removeEventFilter(this);
 
@@ -1862,10 +1856,18 @@ namespace AzToolsFramework
     {
         if (auto prefabOverridePublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabOverridePublicInterface>::Get())
         {
-            // Get icon path based on current component override state
-            AZStd::string iconOverlayPath;
             const AZStd::vector<AZ::Component*>& components = componentEditor.GetComponents();
             AZ_Assert(!components.empty() && components[0], "ComponentEditor should have at least one component.");
+
+            // Overrides on container entities are for internal use only and should not be exposed
+            AZ::EntityId entityId = components[0]->GetEntityId();
+            if (m_prefabPublicInterface->IsInstanceContainerEntity(entityId))
+            {
+                return;
+            }
+
+            // Get icon path based on current component override state
+            AZStd::string iconOverlayPath;
             AZ::EntityComponentIdPair entityComponentIdPair(components[0]->GetEntityId(), components[0]->GetId());
             if (auto overrideType = prefabOverridePublicInterface->GetComponentOverrideType(entityComponentIdPair);
                 overrideType.has_value())
@@ -1895,15 +1897,23 @@ namespace AzToolsFramework
         //caching allocated component editors for reuse and to preserve order
         if (m_componentEditorsUsed >= m_componentEditors.size())
         {
-            //create a new component editor since cache has been exceeded
-            bool replaceRPE = DocumentPropertyEditor::ShouldReplaceRPE();
-            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> dpeComponentAdapter = nullptr;
-            if (replaceRPE && Prefab::IsInspectorOverrideManagementEnabled())
+            // create a new component editor since cache has been exceeded
+
+            /* create a factory for component adapters
+             * depending on the preferences state, create the correct type of adapter, or none at all */
+            ComponentEditor::ComponentAdapterFactory adapterFactory =
+                [&]() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
             {
-                // Create a prefab specific component adapter
-                dpeComponentAdapter = AZStd::make_shared<Prefab::PrefabComponentAdapter>();
-            }
-            auto componentEditor = new ComponentEditor(m_serializeContext, this, this, replaceRPE, dpeComponentAdapter);
+                if (DocumentPropertyEditor::ShouldReplaceRPE())
+                {
+                    return (
+                        Prefab::IsInspectorOverrideManagementEnabled()
+                            ? AZStd::make_shared<Prefab::PrefabComponentAdapter>()
+                            : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+                }
+                return nullptr;
+            };
+            auto componentEditor = new ComponentEditor(m_serializeContext, this, this, adapterFactory);
             componentEditor->setAcceptDrops(true);
 
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, this, [this]()
@@ -3458,10 +3468,7 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::CreateActions()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-        }
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
         m_actionToAddComponents = new QAction(tr("Add component"), this);
         m_actionToAddComponents->setShortcutContext(Qt::WidgetWithChildrenShortcut);

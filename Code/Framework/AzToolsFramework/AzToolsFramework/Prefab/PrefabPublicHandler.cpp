@@ -566,6 +566,20 @@ namespace AzToolsFramework
 
                 CreateLink(instanceToCreate->get(), instanceToParentUnder->get().GetTemplateId(), undoBatch.GetUndoBatch(), AZStd::move(patch));
 
+                // Update the parent instance cache so that the new instance doesn't get recreated during propagation
+                if (PrefabDomReference cachedOwningInstanceDom = instanceToParentUnder->get().GetCachedInstanceDom();
+                    cachedOwningInstanceDom.has_value())
+                {
+                    const PrefabDom& targetTemplatePrefabDom = m_prefabSystemComponentInterface->FindTemplateDom(instanceToParentUnder->get().GetTemplateId());
+                    PrefabDomPath instancePath = PrefabDomUtils::GetPrefabDomInstancePath(instanceToCreate->get().GetInstanceAlias().c_str());
+                    const PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
+                    if (instanceValue)
+                    {
+                        PrefabDomUtils::AddNestedInstance(
+                            cachedOwningInstanceDom->get(), instanceToCreate->get().GetInstanceAlias(), *instanceValue);
+                    }
+                }
+
                 // Update parent entity DOM
                 PrefabDom parentEntityDomAfterAdding;
                 m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterAdding, *parentEntity);
@@ -1070,6 +1084,12 @@ namespace AzToolsFramework
                 PrefabUndoHelpers::UpdatePrefabInstance(
                     afterOwningInstance->get(), "Update new prefab instance", afterInstanceDomBeforeAdd, undoBatch);
             }
+        }
+
+        bool PrefabPublicHandler::IsOwnedByPrefabInstance(AZ::EntityId entityId) const
+        {
+            InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            return instanceReference.has_value();
         }
 
         bool PrefabPublicHandler::IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const

@@ -25,8 +25,12 @@ namespace AZ
 {
     namespace RPI
     {
-        //! Pass that outputs to a SwapChain
-        //! Holds all the passes needed to render a frame like depth, forward, post effects etc.
+        //! SwapChainPass is the root pass for a render pipeline which outputs to a swapchain.
+        //! It creates a swapchain attachment and uses it for the PipelineOutput binding of the RenderPipeline
+        //! Restrictions:
+        //! - The pass template should have a slot name "PipelineOutput"
+        //! - To support explicit render resolution ( swapchain has different size than the render pipeline's resolution),
+        //!     the pass template should have a pass request which creates the "CopyToSwapChain" pass
         class SwapChainPass final
             : public ParentPass
             , public AzFramework::WindowNotificationBus::Handler
@@ -55,6 +59,9 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) override final;
             
             // WindowNotificationBus::Handler overrides ...
+            // The m_pipelinOutputAttachment need to be recreated when render resolution changed
+            void OnResolutionChanged(uint32_t width, uint32_t height) override;
+            // Swapchain may get resized when window is resized
             void OnWindowResized(uint32_t width, uint32_t height) override;
 
         private:
@@ -67,7 +74,11 @@ namespace AZ
             // The SwapChain used when rendering this pass
             Ptr<PassAttachment> m_swapChainAttachment;
 
-            RHI::SwapChainDimensions m_swapChainDimensions;
+            // The intermediate attachment used for render pipeline's output
+            Ptr<PassAttachment> m_pipelinOutputAttachment;
+
+            // The swapchain pass need to do resize from pipeline output to device swapchain
+            bool m_needResize = false;
 
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;

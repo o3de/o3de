@@ -8,7 +8,6 @@
 
 import pytest
 import pathlib
-import psutil
 # import subprocess
 import logging
 import unittest.mock as mock
@@ -173,8 +172,6 @@ def test_load_and_execute_script(input_script_path, context_vars_dict, raisedExc
     # the successful case
     pytest.param({"args":['cmake', '--version'], "pid":0}, None),
     # these raise exceptions, but safe_kill_processes should intercept and log instead
-    pytest.param({"args":['cmake', '--version'], "pid":0}, psutil.AccessDenied),
-    pytest.param({"args":['cmake', '--version'], "pid":0}, psutil.NoSuchProcess),
     pytest.param({"args":['cmake', '--version'], "pid":0}, RuntimeError)
 ])
 def test_safe_kill_processes(process_obj, raisedException):

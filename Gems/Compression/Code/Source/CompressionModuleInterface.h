@@ -13,6 +13,8 @@
 
 namespace Compression
 {
+    class DecompressionRegistrarInterface;
+
     class CompressionModuleInterface
         : public AZ::Module
     {
@@ -22,10 +24,16 @@ namespace Compression
         AZ_CLASS_ALLOCATOR_DECL;
 
         CompressionModuleInterface();
+        ~CompressionModuleInterface() override;
 
         /**
          * Add required SystemComponents to the SystemEntity.
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+
+    private:
+        // DecompressionRegistrar interface used to register Decompression interfaces
+        // Available in ALL applications to allow decompression to occur
+        AZStd::unique_ptr<DecompressionRegistrarInterface> m_decompressionRegistrarInterface;
     };
 }// namespace Compression

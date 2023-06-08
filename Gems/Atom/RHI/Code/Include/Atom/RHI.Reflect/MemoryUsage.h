@@ -40,7 +40,7 @@ namespace AZ
             //! This helper function checks whether a new allocation is within the budget
             bool CanAllocate(size_t sizeInBytes) const
             {
-                if (m_budgetInBytes && (m_totalResidentInBytes + sizeInBytes) > m_budgetInBytes)
+                if (m_budgetInBytes && (m_usedResidentInBytes + sizeInBytes) > m_budgetInBytes)
                 {
                     return false;
                 }
@@ -53,12 +53,8 @@ namespace AZ
                 if (Validation::IsEnabled())
                 {
                     AZ_Assert(
-                        m_budgetInBytes >= m_totalResidentInBytes || m_budgetInBytes == 0,
-                        "Total resident memory is larger than memory budget. Memory budget %zu Total resident %zu", m_budgetInBytes, m_totalResidentInBytes.load());
-                    AZ_Assert(
-                        m_totalResidentInBytes >= m_usedResidentInBytes,
-                        "Used resident memory is larger than total resident memory. Total Resident Memory %zu Used Resident memory %zu", m_totalResidentInBytes.load(),
-                        m_usedResidentInBytes.load());
+                        m_budgetInBytes >= m_usedResidentInBytes || m_budgetInBytes == 0,
+                        "Used resident memory is larger than memory budget. Memory budget %zu resident %zu", m_budgetInBytes, m_usedResidentInBytes.load());
                 }
             }
 
@@ -83,8 +79,11 @@ namespace AZ
             // It may not exceed the total resident.
             AZStd::atomic_size_t m_usedResidentInBytes{ 0 };
 
-            // Number of bytes used by Unique Allocations
+            // Number of bytes used by Unique Allocations.
             AZStd::atomic_size_t m_uniqueAllocationBytes{ 0 };
+
+            // Platform specific allocator statistics in a JSON format.
+            AZStd::string m_extraStats;
         };
 
         //!

@@ -13,4 +13,6 @@ set(FILES
     Source/Clients/DecompressionRegistrarImpl.h
     Source/Clients/DecompressorLZ4Impl.cpp
     Source/Clients/DecompressorLZ4Impl.h
+    Source/Clients/Streamer/DecompressorStackEntry.cpp
+    Source/Clients/Streamer/DecompressorStackEntry.h
 )

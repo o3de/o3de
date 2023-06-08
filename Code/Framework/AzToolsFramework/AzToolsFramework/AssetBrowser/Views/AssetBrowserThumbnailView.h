@@ -63,6 +63,12 @@ namespace AzToolsFramework
 
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+
+            void SelectEntry(QString assetName);
 
             void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
             AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;

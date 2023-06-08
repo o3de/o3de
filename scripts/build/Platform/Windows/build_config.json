@@ -468,7 +468,7 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE -DO3DE_INSTALL_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
         "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
         "CMAKE_TARGET": "ALL_BUILD",
         "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=\"!CPACK_UPLOAD_URL!\"",
@@ -483,7 +483,7 @@
     "COMMAND": "pytest_windows.cmd",
     "PARAMETERS": {
       "PYTEST_PATH": "cmake\\Platform\\Windows\\Packaging\\Tests",
-      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!/development/Latest/Windows/o3de_installer.exe --project-path=%WORKSPACE%\\TestProject"
+      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!!INSTALLER_S3_PATH! --project-path=%WORKSPACE%\\TestProject"
     }
   },
   "install_profile_pipe": {

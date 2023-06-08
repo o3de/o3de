@@ -96,6 +96,11 @@ namespace AzToolsFramework
             m_rootIndex = index;
         }
 
+        const QModelIndex AssetBrowserThumbnailViewProxyModel::GetRootIndex() const
+        {
+            return m_rootIndex;
+        }
+
         bool AssetBrowserThumbnailViewProxyModel::GetShowSearchResultsMode() const
         {
             return m_searchResultsMode;
@@ -155,6 +160,12 @@ namespace AzToolsFramework
 
                 if (Utils::FromMimeData(data, entries))
                 {
+                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(entries);
+                    if (selectedAction == Qt::IgnoreAction)
+                    {
+                        return false;
+                    }
+
                     for (auto entry : entries)
                     {
                         using namespace AZ::IO;
@@ -176,7 +187,14 @@ namespace AzToolsFramework
                             Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
                             toPath = AZ::IO::Path(sourceparent->GetFullPath()) / filename.c_str() / "*";
                         }
-                        AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        if (selectedAction == Qt::MoveAction)
+                        {
+                            AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        }
+                        else
+                        {
+                            AssetBrowserViewUtils::CopyEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        }
                     }
                     return true;
                 }

@@ -34,7 +34,8 @@ def add_args(parser: argparse.ArgumentParser) -> None:
     sys.path.insert(0, str(o3de_package_dir))
     from o3de import engine_properties, engine_template, gem_properties, \
         global_project, register, print_registration, get_registration, \
-        enable_gem, disable_gem, project_properties, sha256, download, export_project
+        enable_gem, disable_gem, project_properties, sha256, download, \
+        export_project, repo
     # Remove the temporarily added path
     sys.path = sys.path[1:]
 
@@ -76,6 +77,10 @@ def add_args(parser: argparse.ArgumentParser) -> None:
 
     # export_project
     export_project.add_args(subparsers)
+    
+    # repo
+    repo.add_args(subparsers)
+
 
 if __name__ == "__main__":
     # parse the command line args

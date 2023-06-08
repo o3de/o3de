@@ -428,6 +428,7 @@ namespace O3DE::ProjectManager
         ProjectTemplateInfo resolvedTemplateInfo = templateInfo.IsValid() ? templateInfo : GetSelectedProjectTemplateInfo();
         if (!resolvedTemplateInfo.IsValid())
         {
+            QMessageBox::critical(this, tr("Failed to find project template"), tr("The remote project template info for %1 could not be found or is invalid.\n\nPlease try refreshing the remote repository it came from, or download the template and register it through the o3de CLI.").arg(templateInfo.m_name));
             return;
         }
 
