@@ -841,7 +841,7 @@ namespace AzFramework
                     }
 
 #if defined(AZ_ENABLE_TRACING)
-                    if (message.m_assetType == AZ::Data::s_invalidAssetType)
+                    if (isNewAsset && (message.m_assetType == AZ::Data::s_invalidAssetType))
                     {
                         AZ_TracePrintf(
                             "AssetCatalog",
