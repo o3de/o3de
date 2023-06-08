@@ -245,7 +245,7 @@ namespace AZ
         {
             // Find out if the asset is missing completely, or just still processing
             // and escalate the asset to the top of the list
-            AzFramework::AssetSystem::AssetStatus missingAssetStatus;
+            AzFramework::AssetSystem::AssetStatus missingAssetStatus = AzFramework::AssetSystem::AssetStatus::AssetStatus_Unknown;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 missingAssetStatus, &AzFramework::AssetSystem::AssetSystemRequests::GetAssetStatusById, asset.GetId().m_guid);
 
