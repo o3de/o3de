@@ -318,6 +318,9 @@ namespace AzQtComponents
 
         void SetSelectionCount(int selectionCount);
 
+        //! ALlows the owning widget to replace the drop down button container with its own container.
+        void UseAlternativeButtonContainer(QFrame* container);
+
     signals:
         void TextFilterChanged(const QString& activeTextFilter);
         void TypeFilterChanged(const SearchTypeFilterList& activeTypeFilters);
@@ -347,7 +350,7 @@ namespace AzQtComponents
 
         virtual FilterCriteriaButton* createCriteriaButton(const SearchTypeFilter& filter, int filterIndex);
 
-        FilterTextButton* createTextFilterButton(const QString& text);
+        void CreateTextFilterButton();
         void createAddFavoriteSearchButton();
         void RepositionFixedButtons();
 
@@ -377,6 +380,8 @@ namespace AzQtComponents
         QToolButton* m_addFavoritesButton = nullptr;
     private:
         int FindFilterIndex(const QString& category, const QString& displayName) const;
+        void SetupContainerLayout();
+
         bool m_usingFavoritesSystem = false;
 
         QTimer m_inputTimer;
@@ -390,6 +395,11 @@ namespace AzQtComponents
         static bool unpolish(Style* style, QWidget* widget, const Config& config);
 
         FilteredSearchItemDelegate* m_delegate = nullptr;
+
+        QFrame* m_buttonContainer = nullptr;
+        QFrame* m_containerLayout = nullptr;
+
+        int m_selectionCount = 0;
     };
 
     class FilteredSearchItemDelegate : public QStyledItemDelegate

@@ -383,6 +383,40 @@
         </layout>
        </item>
        <item>
+        <widget class="QFrame" name="searchButtonContainer" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QFrame" name="containerLayout" native="true">
+            <property name="minimumHeight">
+             <number>35</number>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QWidget" name="m_separator" native="true">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -397,7 +431,7 @@
           </size>
          </property>
         </widget>
-       </item>
+       </item>       
        <item>
         <widget class="QSplitter" name="m_splitter">
          <property name="sizePolicy">

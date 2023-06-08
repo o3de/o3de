@@ -733,16 +733,19 @@ namespace AzQtComponents
         // clear the label text by default
         clearLabelText();
 
-        m_ui->filteredLayout->setLayout(m_flowLayout);
-        m_ui->filteredParent->hide();
-        m_ui->filteredLayout->setContextMenuPolicy(Qt::CustomContextMenu);
+        m_buttonContainer = m_ui->filteredParent;
+        m_containerLayout = m_ui->filteredLayout;
 
+        CreateTextFilterButton();
+
+        SetupContainerLayout();
+        
         SetTypeFilterVisible(false);
         UpdateTextFilterWidth();
 
         m_ui->textSearch->setContextMenuPolicy(Qt::CustomContextMenu);
 
-        connect(m_ui->filteredLayout, &QWidget::customContextMenuRequested, this, &FilteredSearchWidget::OnClearFilterContextMenu);
+        
         connect(m_ui->textSearch, &QLineEdit::textChanged, this, &FilteredSearchWidget::OnTextChanged);
         // QLineEdit's clearButton only triggers a textEdited, not a textChanged, so we special case that
         connect(m_ui->textSearch, &QLineEdit::textEdited, this, [this](const QString& newText) {
@@ -755,7 +758,7 @@ namespace AzQtComponents
         connect(this, &FilteredSearchWidget::textFilterFillsWidthChanged, this, &FilteredSearchWidget::UpdateTextFilterWidth);
         connect(this, &FilteredSearchWidget::TypeFilterChanged, this, [this]()
         {
-            if (!m_displayEnabledFilters && !m_filterTextButton)
+            if (!m_displayEnabledFilters)
             {
                 return;
             }
@@ -776,6 +779,37 @@ namespace AzQtComponents
 
         m_inputTimer.setInterval(0);
         m_inputTimer.setSingleShot(true);
+    }
+
+    void FilteredSearchWidget::UseAlternativeButtonContainer(QFrame* container)
+    {
+        m_buttonContainer->hide();
+        m_containerLayout = container;
+
+        SetupContainerLayout();
+
+        if (m_filterTextButton)
+        {
+            m_flowLayout->addWidget(m_filterTextButton);
+        }
+
+        if (m_selectionCountButton)
+        {
+            m_flowLayout->addWidget(m_selectionCountButton);
+        }
+
+        if (m_addFavoritesButton)
+        {
+            m_flowLayout->addWidget(m_addFavoritesButton);
+        }
+    }
+
+    void FilteredSearchWidget::SetupContainerLayout()
+    {
+        m_containerLayout->setLayout(m_flowLayout);
+        m_buttonContainer->hide();
+        m_containerLayout->setContextMenuPolicy(Qt::CustomContextMenu);
+        connect(m_ui->filteredLayout, &QWidget::customContextMenuRequested, this, &FilteredSearchWidget::OnClearFilterContextMenu);
     }
 
     FilteredSearchWidget::~FilteredSearchWidget()
@@ -808,7 +842,7 @@ namespace AzQtComponents
             createAddFavoriteSearchButton();
             m_selectionCountButton = new SelectionCountButton(parentWidget());
             m_flowLayout->addWidget(m_selectionCountButton);
-            m_selectionCountButton->setVisible(false);
+            m_selectionCountButton->setVisible(true);
         }
     }
 
@@ -950,25 +984,33 @@ namespace AzQtComponents
 
     void FilteredSearchWidget::SetFilteredParentViewState()
     {
-        bool setVisible = false;
+        bool filtersActive = false;
 
-        for (SearchTypeFilter& filter : m_typeFilters)
+        SearchTypeFilterList checkedTypes;
+        for (const SearchTypeFilter& typeFilter : m_typeFilters)
         {
-            if (filter.enabled)
+            if (typeFilter.enabled)
             {
-                setVisible = true;
+                filtersActive = true;
                 break;
             }
         }
 
-        setVisible |= m_filterTextButton != nullptr;
-
         if (m_usingFavoritesSystem)
         {
-            setVisible = true;
+            if (!m_selectionCount && !m_filterTextButton->isVisible() && !filtersActive)
+            {
+                m_addFavoritesButton->setDisabled(true);
+            }
+            else
+            {
+                m_addFavoritesButton->setEnabled(true);
+            }
         }
-
-        m_ui->filteredParent->setVisible(setVisible);
+        else
+        {
+            m_buttonContainer->setVisible(filtersActive);
+        }
     }
 
     void FilteredSearchWidget::ClearTypeFilter()
@@ -1043,9 +1085,19 @@ namespace AzQtComponents
         return new FilterCriteriaButton(filter.displayName, this, filter.typeExtraButton, iconFilename);
     }
 
-    FilterTextButton* FilteredSearchWidget::createTextFilterButton(const QString& text)
+    void FilteredSearchWidget::CreateTextFilterButton()
     {
-        return new FilterTextButton(text, this, ":/stylesheet/img/search.svg");
+        m_filterTextButton = new FilterTextButton("", this, ":/stylesheet/img/search.svg");
+        connect(
+            m_filterTextButton,
+            &FilterTextButton::RequestClose,
+            this,
+            [this]()
+            {
+                ClearTextFilter();
+            });
+        m_flowLayout->addWidget(m_filterTextButton);
+        m_filterTextButton->hide();
     }
 
     void FilteredSearchWidget::SetFilterStateByIndex(int index, bool enabled)
@@ -1205,20 +1257,15 @@ namespace AzQtComponents
 
     void FilteredSearchWidget::SetSelectionCount(int selectionCount)
     {
+        m_selectionCount = selectionCount;
+
         if (m_selectionCountButton)
         {
             m_selectionCountButton->SetSelectionCount(selectionCount);
-            if (selectionCount == 0)
-            {
-                m_selectionCountButton->setVisible(false);
-            }
-            else
-            {
-                m_selectionCountButton->setVisible(true);
-            }
         }
 
         RepositionFixedButtons();
+        SetFilteredParentViewState();
     }
 
     void FilteredSearchWidget::emitTypeFilterChanged()
@@ -1299,7 +1346,7 @@ namespace AzQtComponents
         }
 
         m_displayEnabledFilters = visible;
-        m_ui->filteredParent->setVisible(m_displayEnabledFilters);
+        m_buttonContainer->setVisible(m_displayEnabledFilters);
     }
 
     void FilteredSearchWidget::OnTextChanged(const QString& activeTextFilter)
@@ -1322,25 +1369,19 @@ namespace AzQtComponents
 
         if (m_usingFavoritesSystem)
         {
-            if (m_filterTextButton)
+            m_filterTextButton->SetText(m_ui->textSearch->text());
+            if (m_ui->textSearch->text().isEmpty())
             {
-                m_filterTextButton->SetText(m_ui->textSearch->text());
-                if (m_ui->textSearch->text().isEmpty())
-                {
-                    delete m_filterTextButton;
-                    m_filterTextButton = nullptr;
-                }
+                m_filterTextButton->hide();
             }
-            else if (!m_ui->textSearch->text().isEmpty())
+            else
             {
-                m_filterTextButton = createTextFilterButton(m_ui->textSearch->text());
-                connect(m_filterTextButton, &FilterTextButton::RequestClose, this, [this]() { ClearTextFilter(); });
-                m_flowLayout->addWidget(m_filterTextButton);
+                m_filterTextButton->show();
             }
         }
 
-        SetFilteredParentViewState();
         RepositionFixedButtons();
+        SetFilteredParentViewState();
     }
 
     bool FilteredSearchWidget::polish(Style* style, QWidget* widget, const Config& config)

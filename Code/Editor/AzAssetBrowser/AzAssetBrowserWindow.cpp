@@ -121,6 +121,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     m_ui->m_toolsMenuButton->setVisible(false);
     m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
 
+    // Use our button container so it spans the entire AssetBrowser and not just the search widget.
+    m_ui->m_searchWidget->UseAlternativeButtonContainer(m_ui->containerLayout);
+
     m_assetBrowserModel->SetFilterModel(m_filterModel.data());
     m_assetBrowserModel->EnableTickBus();
 
@@ -1007,7 +1010,6 @@ int AzAssetBrowserWindow::GetSelectionCount()
     if (m_ui->m_tableView->GetTableViewActive())
     {
         return m_ui->m_tableView->GetSelectedAssets().size();
-        return;
     }
 
     return m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size();
