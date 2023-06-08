@@ -1015,8 +1015,8 @@ namespace AzToolsFramework
                                 auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
                                 if (replacementWidget)
                                 {
-                                    AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                                     m_domOrderedChildren[childIndex] = replacementWidget;
+                                    AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                                 }
                             }
                             else if (AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled())
@@ -1044,8 +1044,8 @@ namespace AzToolsFramework
 
                             // Replace the existing handler widget with one appropriate for the new type
                             auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
-                            AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                             m_domOrderedChildren[childIndex] = replacementWidget;
+                            AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                         }
                         else
                         {
