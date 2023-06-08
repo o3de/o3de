@@ -348,7 +348,7 @@ def add_parser_args(parser):
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument('--repo-path', '-rp', type=pathlib.Path, required=False,
                        help='The local path to the remote repository.')
-    group = parser.add_argument_group('properties', 'arguments for modifying individual project properties.')
+    group = parser.add_argument_group('properties', 'arguments for modifying individual remote repo properties.')
     group.add_argument('--repo-name','-rn',  type=str, required=False,
                        help='The name of the remote repository.')
     group = parser.add_mutually_exclusive_group(required=False)
