@@ -254,6 +254,8 @@ namespace Archive
         // then unmount the archive and return false
         if (!ReadArchiveHeaderAndToc())
         {
+            // UnmountArchive is invoked to reset
+            // the Archive Header, TOC and the path map structures
             UnmountArchive();
             return false;
         }
@@ -274,6 +276,8 @@ namespace Archive
 
         if (!ReadArchiveHeaderAndToc())
         {
+            // UnmountArchive is invoked to reset
+            // the Archive Header, TOC and the path map structures
             UnmountArchive();
             return false;
         }

@@ -262,10 +262,10 @@ namespace Archive
         //! stored in the Archive
         virtual ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) = 0;
 
-        //! Writes metadata for the archive to the supplied generic stream
+        //! Dump metadata for the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
         //! @return true if metadata was successfully written
-        virtual bool WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
+        virtual bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const = 0;
     };
 

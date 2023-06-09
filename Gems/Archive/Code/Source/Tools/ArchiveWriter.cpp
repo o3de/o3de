@@ -413,6 +413,10 @@ namespace Archive
 
         if (!ReadArchiveHeaderAndToc())
         {
+            // UnmountArchive is invoked to reset
+            // the Archive Header, TOC,
+            // file path -> file index map and entries
+            // and the deleted block offset table
             UnmountArchive();
             return false;
         }
@@ -433,6 +437,10 @@ namespace Archive
 
         if (!ReadArchiveHeaderAndToc())
         {
+            // UnmountArchive is invoked to reset
+            // the Archive Header, TOC,
+            // file path -> file index map and entries
+            // and the deleted block offset table
             UnmountArchive();
             return false;
         }
@@ -1506,7 +1514,7 @@ namespace Archive
             : ArchiveRemoveFileResult{};
     }
 
-    bool ArchiveWriter::WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
+    bool ArchiveWriter::DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
         const ArchiveMetadataSettings& metadataSettings) const
     {
         using MetadataString = AZStd::fixed_string<256>;
