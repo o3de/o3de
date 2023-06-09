@@ -8,6 +8,7 @@
 
 #include "ReflectionScreenSpaceDownsampleDepthLinearPass.h"
 #include "ReflectionScreenSpaceDownsampleDepthLinearChildPass.h"
+#include <Atom/RPI.Public/RPIUtils.h>
 
 namespace AZ
 {
