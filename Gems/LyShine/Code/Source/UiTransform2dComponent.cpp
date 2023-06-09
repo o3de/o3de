@@ -1174,6 +1174,15 @@ float UiTransform2dComponent::GetLocalWidth()
     {
         width = m_offsets.m_right - m_offsets.m_left;
     }
+// carbonated begin (alukyanov/fix-MADPORT-204): fix for MADPORT-204
+#ifdef CARBONATED
+    else
+    {
+        width = GetCanvasSpaceSizeNoScaleRotate().GetX();
+    }
+#endif
+// carbonated end
+
     return width;
 }
 
@@ -1201,6 +1210,15 @@ float UiTransform2dComponent::GetLocalHeight()
     {
         height = m_offsets.m_bottom - m_offsets.m_top;
     }
+// carbonated begin (alukyanov/fix-MADPORT-204): fix for MADPORT-204
+#ifdef CARBONATED
+    else
+    {
+        height = GetCanvasSpaceSizeNoScaleRotate().GetY();
+    }
+#endif
+// carbonated end
+
     return height;
 }
 
