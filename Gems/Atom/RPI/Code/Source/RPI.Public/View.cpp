@@ -166,9 +166,19 @@ namespace AZ
             return m_orFlags;
         }
 
+        void View::UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld)
+        {
+            m_viewToWorldMatrix = viewToWorld;
+
+            //Update view transform
+            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
+            m_viewTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                       Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp, m_viewToWorldMatrix.GetTranslation()).GetOrthogonalized();
+        }
+
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
         {
-            m_viewToWorldMatrix = worldToView.GetInverseFast();
+            UpdateViewToWorldMatrix(worldToView.GetInverseFast());
             m_position = m_viewToWorldMatrix.GetTranslation();
 
             m_worldToViewMatrix = worldToView;
@@ -185,11 +195,7 @@ namespace AZ
 
         AZ::Transform View::GetCameraTransform() const
         {
-            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
-            return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp,
-                m_viewToWorldMatrix.GetTranslation()
-            ).GetOrthogonalized();
+            return m_viewTransform;
         }
 
         void View::SetCameraTransform(const AZ::Matrix3x4& cameraTransform)
@@ -210,8 +216,8 @@ namespace AZ
                         0,0,0,1 };
             yUpWorld.StoreToRowMajorFloat12(viewToWorldMatrixRaw);
             const AZ::Matrix4x4 prevViewToWorldMatrix = m_viewToWorldMatrix;
-            m_viewToWorldMatrix = AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw);
-
+            UpdateViewToWorldMatrix(AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw));
+ 
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
@@ -675,5 +681,16 @@ namespace AZ
                 AZ_Warning("RPI::View", false, "Shader Resource Group failed to initialize");
             }
         }
+
+        void View::SetShadowPassRenderPipelineId(const RenderPipelineId renderPipelineId)
+        {
+            m_shadowPassRenderpipelineId = renderPipelineId;
+        }
+
+        RenderPipelineId View::GetShadowPassRenderPipelineId() const
+        {
+            return m_shadowPassRenderpipelineId;
+        }
+
     } // namespace RPI
 } // namespace AZ

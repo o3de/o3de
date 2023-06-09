@@ -183,6 +183,8 @@ namespace AZ::Reflection
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
 
+            static constexpr auto VisibilityBoolean = AZ::DocumentPropertyEditor::AttributeDefinition<bool>("VisibilityBoolean");
+
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
 
@@ -356,30 +358,6 @@ namespace AZ::Reflection
                 if (parentData.m_disableEditor || parentData.m_isAncestorDisabled)
                 {
                     nodeData->m_isAncestorDisabled = true;
-                }
-                else if (classElement && classElement->m_editData)
-                {
-                    if (auto readOnlyAttribute = classElement->m_editData->FindAttribute(AZ::Crc32("ReadOnly")); readOnlyAttribute)
-                    {
-                        Dom::Value readOnlyValue;
-                        if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
-                        {
-                            readOnlyValue = readOnlyAttribute->DomInvoke(parentData.m_instance, Dom::Value(Dom::Type::Array));
-                        }
-                        else
-                        {
-                            readOnlyValue = readOnlyAttribute->GetAsDomValue(parentData.m_instance);
-                        }
-
-                        if (readOnlyValue.IsBool())
-                        {
-                            nodeData->m_disableEditor |= readOnlyValue.GetBool();
-                        }
-                        else
-                        {
-                            AZ_Warning("LegacyReflectionBridge", false, "ReadOnly attribute yielded non-bool Value");
-                        }
-                    }
                 }
 
                 if (parentAssociativeInterface)
@@ -597,11 +575,18 @@ namespace AZ::Reflection
                 return m_stack.back().m_instance;
             }
 
-            AZStd::string_view GetNodeDisplayLabel(const StackEntry& nodeData, AZStd::fixed_string<128>& labelAttributeBuffer)
+            AZStd::string_view GetNodeDisplayLabel(StackEntry& nodeData, AZStd::fixed_string<128>& labelAttributeBuffer)
             {
+                using DocumentPropertyEditor::Nodes::PropertyEditor;
+
                 // First check for overrides or for presence of parent container
                 if (!nodeData.m_labelOverride.empty())
                 {
+                    return nodeData.m_labelOverride;
+                }
+                else if (auto nameLabelOverrideAttribute = Find(PropertyEditor::NameLabelOverride.GetName()); nameLabelOverrideAttribute)
+                {
+                    nodeData.m_labelOverride = PropertyEditor::NameLabelOverride.DomToValue(*nameLabelOverrideAttribute).value_or("");
                     return nodeData.m_labelOverride;
                 }
                 else if (!nodeData.m_group.empty())
@@ -705,11 +690,55 @@ namespace AZ::Reflection
                         visitedAttributes.insert(name);
 
                         // Handle visibility calculations internally, as we calculate and emit an aggregate visiblity value.
+                        // We also need to handle special cases here, because the Visibility attribute supports 3 different value types:
+                        //      1. AZ::Crc32 - This is the default
+                        //      2. AZ::u32 - This allows the user to specify a value of 1/0 for Show/Hide, respectively
+                        //      3. bool - This allows the user to specify true/false for Show/Hide, respectively
+                        //
+                        // We need to return out of checkAttribute for Visibility attributes since the attributeValue handling
+                        // below doesn't account for these special cases. The Visibility attribute instead gets cached at
+                        // the end of the CacheAttributes method after it has done further visibility computations.
                         if (name == PropertyEditor::Visibility.GetName())
                         {
-                            visibility = PropertyEditor::Visibility
-                                             .DomToValue(PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second))
-                                             .value_or(visibility);
+                            auto visibilityValue = PropertyEditor::Visibility.DomToValue(
+                                PropertyEditor::Visibility.LegacyAttributeToDomValue(instance, it->second));
+
+                            if (visibilityValue.has_value())
+                            {
+                                visibility = visibilityValue.value();
+
+                                // The PropertyEditor::Visibility is actually an AZ::u32 enum class, so we need
+                                // to check here if we read in a 0 or 1 instead of a hash so we can handle
+                                // those special cases.
+                                AZ::u32 visibilityNumericValue = static_cast<AZ::u32>(visibility);
+                                switch (visibilityNumericValue)
+                                {
+                                case 0:
+                                    visibility = PropertyVisibility::Hide;
+                                    break;
+                                case 1:
+                                    visibility = PropertyVisibility::Show;
+                                    break;
+                                default:
+                                    break;
+                                }
+                                return;
+                            }
+                            else if (auto visibilityBoolValue = VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
+                            {
+                                bool isVisible = visibilityBoolValue.value();
+                                visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
+                                return;
+                            }
+                        }
+                        // The legacy ReadOnly property needs to be converted into the Disabled node property.
+                        // If our ancestor is disabled we don't need to read the attribute because this node
+                        // will already be disabled as well.
+                        else if ((name == PropertyEditor::ReadOnly.GetName()) && !nodeData.m_isAncestorDisabled)
+                        {
+                            nodeData.m_disableEditor |= PropertyEditor::ReadOnly
+                                .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance, it->second))
+                                .value_or(nodeData.m_disableEditor);
                         }
 
                         // See if any registered attribute definitions can read this attribute

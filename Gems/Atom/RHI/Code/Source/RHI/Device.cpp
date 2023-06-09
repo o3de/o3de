@@ -9,6 +9,7 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
 #include <Atom/RHI/RHISystem.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/std/sort.h>
 
@@ -396,13 +397,17 @@ namespace AZ
                     AZ_Assert(shaderInputBufferUnboundedArray.m_count == RHI::Limits::Pipeline::UnboundedArraySize, "The array size needs to match the limit");
                 }
             }
-            AZ_Assert(bindlessSrgDesc.m_roTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only textures");
-            AZ_Assert(bindlessSrgDesc.m_rwTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write textures");
-            AZ_Assert(bindlessSrgDesc.m_roTextureCubeIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only cube textures");
-            AZ_Assert(bindlessSrgDesc.m_roBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only buffers");
-            AZ_Assert(bindlessSrgDesc.m_rwBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write buffers");
-            AZ_Assert(bindlessSrgDesc.m_bindlesSrgBindingSlot != AZ::RHI::InvalidIndex, "Invalid binding slot id for bindless srg");
 
+            // No need for this validation given null rhi
+            if (!AZ::RHI::IsNullRHI())
+            {          
+                AZ_Assert(bindlessSrgDesc.m_roTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only textures");
+                AZ_Assert(bindlessSrgDesc.m_rwTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write textures");
+                AZ_Assert(bindlessSrgDesc.m_roTextureCubeIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only cube textures");
+                AZ_Assert(bindlessSrgDesc.m_roBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only buffers");
+                AZ_Assert(bindlessSrgDesc.m_rwBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write buffers");
+                AZ_Assert(bindlessSrgDesc.m_bindlesSrgBindingSlot != AZ::RHI::InvalidIndex, "Invalid binding slot id for bindless srg");
+            }
             return InitInternalBindlessSrg(bindlessSrgDesc);
         }
     }

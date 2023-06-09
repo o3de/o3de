@@ -40,6 +40,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         system->RegisterNode<NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 

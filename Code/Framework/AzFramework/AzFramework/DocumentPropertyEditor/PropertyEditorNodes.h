@@ -36,6 +36,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         static constexpr AZStd::string_view Name = "NodeWithVisiblityControl";
         static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
+        static constexpr auto ReadOnly = AttributeDefinition<bool>("ReadOnly");
+        static constexpr auto NameLabelOverride = AttributeDefinition<AZStd::string_view>("NameLabelOverride");
 
         static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
         //! In some cases, a node may need to know that it is descended from a disabled ancestor. For example, disabled

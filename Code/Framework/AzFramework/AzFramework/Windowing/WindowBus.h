@@ -30,6 +30,16 @@ namespace AzFramework
 
         uint32_t m_width = 0;
         uint32_t m_height = 0;
+        
+        bool operator==(const WindowSize& rhs) const
+        {
+            return m_width == rhs.m_width && m_height == rhs.m_height;
+        }
+
+        bool operator!=(const WindowSize& rhs) const
+        {
+            return m_width != rhs.m_width || m_height != rhs.m_height;
+        }
     };
 
     //! Options for resizing and moving the window.
@@ -80,6 +90,21 @@ namespace AzFramework
         //! Generally desktop platforms support resizing, mobile platforms don't.
         virtual bool SupportsClientAreaResize() const = 0;
 
+        //! Enable custom render resolution which is different than client area size.
+        //! If custom render resolution is disabled, the render resolution is same as client area size
+        virtual void SetEnableCustomizedResolution(bool enable) = 0;
+        
+        //! If the custom render resolution is enabled.
+        virtual bool IsCustomizedResolutionEnabled() const = 0;
+
+        //! Get the render resolution.
+        //! If customized resolution is not enabled, it would return client area size
+        virtual WindowSize GetRenderResolution() const = 0;
+
+        //! Set render resolution for the window.
+        //! It should only be called when customized resolution is enabled. 
+        virtual void SetRenderResolution(WindowSize resolution) = 0;
+
         //! Get the full screen state of the window.
         //! \return True if the window is currently in full screen, false otherwise.
         virtual bool GetFullScreenState() const = 0;
@@ -127,6 +152,9 @@ namespace AzFramework
 
         //! This is called once when the window is Activated and also called if the user resizes the window.
         virtual void OnWindowResized(uint32_t width, uint32_t height) { AZ_UNUSED(width); AZ_UNUSED(height); };
+        
+        //! This is called when the window's desired render resolution is changed.
+        virtual void OnResolutionChanged(uint32_t width, uint32_t height) { AZ_UNUSED(width); AZ_UNUSED(height); };
 
         //! This is called if the window's underyling DPI scaling factor changes.
         virtual void OnDpiScaleFactorChanged(float dpiScaleFactor) { AZ_UNUSED(dpiScaleFactor); }

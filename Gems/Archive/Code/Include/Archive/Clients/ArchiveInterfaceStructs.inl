@@ -104,7 +104,7 @@ namespace Archive
         {
             result.m_errorCode = ArchiveHeaderErrorCode::InvalidMagicBytes;
             result.m_errorMessage = ArchiveHeaderValidationResult::ErrorString::format(
-                "Archive header has invalid magic byte sequence %u",
+                "Archive header has invalid magic byte sequence %x",
                 archiveHeader.m_magicBytes);
         }
         return result;
