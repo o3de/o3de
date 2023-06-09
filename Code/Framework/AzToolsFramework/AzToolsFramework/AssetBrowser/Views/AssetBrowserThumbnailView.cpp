@@ -46,6 +46,8 @@ namespace AzToolsFramework
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
+
+            // Turn off DynamicSort as sorting is now manual.
             m_assetFilterModel->setDynamicSortFilter(false);
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_thumbnailViewProxyModel->setSourceModel(m_assetFilterModel);
@@ -95,14 +97,7 @@ namespace AzToolsFramework
                     {
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                         entries.push_back(entry);
-                    }
-                    else if (!index.isValid() && m_assetTreeView)
-                    {
-                        entries = AZStd::move(m_assetTreeView->GetSelectedAssets()); 
-                    }
-                    
-                    if (m_thumbnailViewWidget->InSearchResultsMode())
-                        AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
+
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
                             auto action = menu.addAction(tr("Show In Folder"));
@@ -116,7 +111,12 @@ namespace AzToolsFramework
                                 });
                             menu.addSeparator();
                         }
-
+                    }
+                    else if (!index.isValid() && m_assetTreeView)
+                    {
+                        entries = AZStd::move(m_assetTreeView->GetSelectedAssets()); 
+                    }
+                    
                     AssetBrowserInteractionNotificationBus::Broadcast(
                         &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
 

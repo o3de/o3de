@@ -115,6 +115,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     AZ_Assert(m_assetBrowserModel, "Failed to get filebrowser model");
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
+    // Turn off DynamicSort as sorting is now manual.
     m_filterModel->setDynamicSortFilter(false);
 
     m_ui->m_assetBrowserListViewWidget->setVisible(false);
