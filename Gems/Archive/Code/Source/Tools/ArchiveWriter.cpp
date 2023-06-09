@@ -597,7 +597,7 @@ namespace Archive
             AZStd::span(m_archiveToc.m_blockOffsetTable).size_bytes());
 
         // 2. Write the Archive Table of Contents
-        // Both buffers lifetime must be encompess the tocWriteSpan below
+        // Both buffers lifetime must be encompass the tocWriteSpan below
         // to make sure the span points to a valid buffer
         AZStd::vector<AZStd::byte> tocRawBuffer;
         AZStd::vector<AZStd::byte> tocCompressBuffer;
@@ -693,8 +693,7 @@ namespace Archive
         AZ::IO::ByteContainerStream tocOutputStream(&tocOutputBuffer);
 
         tocOutputStream.Write(sizeof(ArchiveTocMagicBytes), &ArchiveTocMagicBytes);
-        // Write padding bytes to ensure that the file metadata entries
-        // start on a 16-byte boundary
+        // Write padding bytes to ensure that the file metadata entries start on a 32-byte boundary
         AZStd::byte fileMetadataAlignmentBytes[sizeof(ArchiveTocFileMetadata) - sizeof(ArchiveTocMagicBytes)]{};
         tocOutputStream.Write(AZStd::size(fileMetadataAlignmentBytes), fileMetadataAlignmentBytes);
 
@@ -895,7 +894,7 @@ namespace Archive
         // Update the archive stream
         ContentFileData contentFileData;
         contentFileData.m_relativeFilePath = result.m_relativeFilePath;
-        contentFileData.m_uncompressedSize = inputSpan.size();
+        contentFileData.m_uncompressedSpan = inputSpan;
         contentFileData.m_contentFileBlocks = AZStd::move(*compressOutcome);
 
         // Write the file content to the archive stream and store the archive file path token
@@ -1135,12 +1134,13 @@ namespace Archive
 
         // Get reference to the FileMetadata entry in the Archive
         ArchiveTocFileMetadata& fileMetadata = m_archiveToc.m_fileMetadataTable[archiveFileIndex];
-        fileMetadata.m_uncompressedSize = contentFileData.m_uncompressedSize;
+        fileMetadata.m_uncompressedSize = contentFileData.m_uncompressedSpan.size();
         // Divide by the ArchiveDefaultBlockAlignment(512) to convert the compressedSize to sectors
         const AZ::u64 alignedFileSize = AZ_SIZE_ALIGN_UP(contentFileData.m_contentFileBlocks.m_writeSpan.size(), ArchiveDefaultBlockAlignment);
         fileMetadata.m_compressedSizeInSectors = alignedFileSize / ArchiveDefaultBlockAlignment;
         fileMetadata.m_compressionAlgoIndex = contentFileData.m_contentFileBlocks.m_compressionAlgorithmIndex;
         fileMetadata.m_offset = ExtractWriteBlockOffset(alignedFileSize);
+        fileMetadata.m_crc32 = AZ::Crc32(contentFileData.m_uncompressedSpan);
 
         ArchiveTableOfContents::Path& filePath = m_archiveToc.m_filePaths[archiveFileIndex];
         filePath = contentFileData.m_relativeFilePath;
@@ -1169,11 +1169,11 @@ namespace Archive
         AZ::u64 blockLineFirstIndex = m_archiveToc.m_blockOffsetTable.size();
 
         // Reserve space for the number of block line entries stored
-        size_t blockLineCount = GetBlockLineCountIfCompressed(contentFileData.m_uncompressedSize);
+        AZ::u64 remainingUncompressedSize = contentFileData.m_uncompressedSpan.size();
+        size_t blockLineCount = GetBlockLineCountIfCompressed(remainingUncompressedSize);
         m_archiveToc.m_blockOffsetTable.reserve(m_archiveToc.m_blockOffsetTable.size() + blockLineCount);
 
         size_t blockOffsetIndex{};
-        AZ::u64 remainingUncompressedSize = contentFileData.m_uncompressedSize;
 
         // Three block lines which is up to 18MiB of uncompressed data is handled
         // each iteration of the loop.

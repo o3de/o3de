@@ -137,6 +137,7 @@ namespace Archive
         //! is not available.
         //! In that case, the file will be stored uncompressed
         Compression::CompressionAlgorithmId m_compressionAlgorithm{ Compression::Uncompressed };
+
         //! Stores any error messages that occur when adding the file from the archive
         ResultOutcome m_resultOutcome;
     };
@@ -158,13 +159,13 @@ namespace Archive
         //! The uncompressed size of the removed file
         AZ::u64 m_uncompressedSize{};
         //! the compressed size of the removed file
-        //! INFO: This value will be a multiple of 512
         AZ::u64 m_compressedSize{};
         //! The raw offset of the file in the ArchiveFile from the beginning of the raw file data block
         //! As the ArchiveHeader is 512-byte aligned to the beginning of the file
         //! this value is at least 512,
         //! NOTE: The TocOffsetU64 structure is used to enforce that the value is >= 512
         ArchiveHeader::TocOffsetU64 m_offset{};
+
         //! Stores any error messages that occur when removing the file from the archive
         ResultOutcome m_resultOutcome;
     };

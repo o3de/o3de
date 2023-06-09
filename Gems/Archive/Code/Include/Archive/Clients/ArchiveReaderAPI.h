@@ -127,10 +127,13 @@ namespace Archive
         //! this value is at least 512,
         //! NOTE: The TocOffsetU64 structure is used to enforce that the value is >= 512
         ArchiveHeader::TocOffsetU64 m_offset{};
+        //! CRC32 checksum of the uncompressed file data
+        AZ::Crc32 m_crc32{};
         //! Span which view of the extracted file data
         //! If the ArchiveReaderFileSettings specifies decompression should occur,
         //! Then the extracted file content will be the raw content
         AZStd::span<AZStd::byte> m_fileSpan;
+
         //! Stores any error messages related to extraction of the file from the archive
         ResultOutcome m_resultOutcome;
     };
@@ -161,6 +164,9 @@ namespace Archive
         //! this value is at least 512,
         //! NOTE: The TocOffsetU64 structure is used to enforce that the value is >= 512
         ArchiveHeader::TocOffsetU64 m_offset{};
+        //! CRC32 checksum of the uncompressed file data
+        AZ::Crc32 m_crc32{};
+
         //! Stores error and information messages with listing the contents of the file
         ResultOutcome m_resultOutcome;
     };
@@ -259,10 +265,10 @@ namespace Archive
         //! @return result structure that is convertible to a boolean value indicating if enumeration was successful
         virtual EnumerateArchiveResult EnumerateFilesInArchive(ListFileCallback listFileCallback) const = 0;
 
-        //! Writes metadata for the archive to the supplied generic stream
+        //! Dump metadata for the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
         //! @return true if metadata was successfully written
-        virtual bool WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
+        virtual bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const = 0;
     };
 

@@ -341,6 +341,7 @@ namespace Archive
         extractResult.m_uncompressedSize = listResult.m_uncompressedSize;
         extractResult.m_compressedSize = listResult.m_compressedSize;
         extractResult.m_offset = listResult.m_offset;
+        extractResult.m_crc32 = listResult.m_crc32;
         extractResult.m_resultOutcome = listResult.m_resultOutcome;
 
         // If querying of the file within the archive failed,
@@ -597,7 +598,7 @@ namespace Archive
                     blockIndex, blockCompressedSize, bytesRead));
             }
 
-            // As the read was successful add the aligned compressed size to the the fileRelativeSeekOffset
+            // As the read was successful add the aligned compressed size to the fileRelativeSeekOffset
             // The value is the read offset where the next block data starts
             fileRelativeSeekOffset += AZ_SIZE_ALIGN_UP(blockCompressedSize, ArchiveDefaultBlockAlignment);
         }
@@ -686,8 +687,8 @@ namespace Archive
         // Return a subspan that accounts for the start offset within the compressed file to start
         // reading from, up to the bytes read amount
         // Due to the logic in the function only reading the set of 2 MiB blocks that are needed
-        // the start offset for reading is calculated  a modulo operation
-        // with with the ArchiveBlockSizeForCompression (2 MiB).
+        // the start offset for reading is calculated by a modulo operation
+        // with the ArchiveBlockSizeForCompression (2 MiB).
         // The start offset will always be in the first read block
         size_t startOffset = fileSettings.m_startOffset % ArchiveBlockSizeForCompression;
         size_t endOffset = AZStd::min(decompressionResultSpan.size() - startOffset, maxBytesToReadForFile);
@@ -725,7 +726,7 @@ namespace Archive
         // The file has been found and has a non-empty path
         // Populate the ArchiveListFileResult structure
         ArchiveListFileResult listResult;
-        // Now the extract the path has stored in the file path blob into the extract result
+        // Extract the path stored in the file path blob into the extract result
         listResult.m_relativeFilePath = AZ::IO::PathView(
             m_archiveToc.m_tocView.m_filePathBlob.substr(filePathOffsetSize.m_offset, filePathOffsetSize.m_size));
         listResult.m_filePathToken = archiveFileToken;
@@ -757,6 +758,7 @@ namespace Archive
             listResult.m_compressedSize = rawFileSizeResult.value();
         }
         listResult.m_offset = fileMetadata.m_offset;
+        listResult.m_crc32 = fileMetadata.m_crc32;
 
         return listResult;
     }
@@ -811,7 +813,6 @@ namespace Archive
                     const ArchiveTocFileMetadata& fileMetadata = m_archiveToc.m_tocView.m_fileMetadataTable[filePathIndex];
 
                     // Use the compression algorithm index to lookup the compression algorithm ID
-                    // if the file the value is less than the size of the compression AlgorithmIds array
                     if (fileMetadata.m_compressionAlgoIndex < m_archiveHeader.m_compressionAlgorithmsIds.size())
                     {
                         listResult.m_compressionAlgorithm = m_archiveHeader.m_compressionAlgorithmsIds[
@@ -830,6 +831,7 @@ namespace Archive
                         listResult.m_compressedSize = rawFileSizeResult.value();
                     }
                     listResult.m_offset = fileMetadata.m_offset;
+                    listResult.m_crc32 = fileMetadata.m_crc32;
 
                     listFileCallback(AZStd::move(listResult));
                 }
@@ -842,7 +844,7 @@ namespace Archive
         return {};
     }
 
-    bool ArchiveReader::WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
+    bool ArchiveReader::DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
         const ArchiveMetadataSettings& metadataSettings) const
     {
         using MetadataString = AZStd::fixed_string<256>;

@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 
+#include <AzCore/Math/Crc.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/span.h>
@@ -238,7 +239,7 @@ namespace Archive
         " the ArchiveDefaultBlockAlignment");
 
     //! Represents an entry of a single file within the Archive
-    struct alignas(16) ArchiveTocFileMetadata
+    struct alignas(32) ArchiveTocFileMetadata
     {
         ArchiveTocFileMetadata();
 
@@ -280,9 +281,19 @@ namespace Archive
         //! The actual cap for Archive V1 layout is around 64TiB, since the m_blockTable can only
         //! represent 2^25 "2 MiB" blocks, which is (2^25 * 2^21) = 2^46 = 64TiB
         AZ::u64 m_offset : 39; // 64-bits
+
+        //! offset = 16
+        //! Stores a checksum value of the file uncompressed data
+        //! This can be used to validate that uncompressed file contents
+        AZ::Crc32 m_crc32{};
+
+        //! offset = 20
+        //! Add padding bytes to fill the File Metadata structure
+        //! with 0 bytes on construction
+        AZStd::byte m_unused[12]{};
     };
 
-    static_assert(sizeof(ArchiveTocFileMetadata) == 16, "File Metadata size should be 16 bytes");
+    static_assert(sizeof(ArchiveTocFileMetadata) == 32, "File Metadata size should be 16 bytes");
 
     //! Stores the size of a file path and an offset into the file path blob table for a single file
     //! in the archive

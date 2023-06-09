@@ -21,7 +21,7 @@ namespace Archive::Test
     // Note the ArchiveReader unit test are placed in the Archive.Editor.Tests
     // Tools module to have to the ArchiveWriter which is used to create
     // test archives to be read
-    // In theory if the all archives were written to a file on disk
+    // In theory if all archives were written to a file on disk
     // the test could be placed in the Archive.Tests client module
 
     // The ArchiveEditorTestEnvironment is tracking memory
@@ -103,8 +103,8 @@ namespace Archive::Test
         EXPECT_TRUE(mountErrorOccurred);
         EXPECT_FALSE(archiveReader->IsMounted());
 
-            // reset the mountErrorOccurred boolean
-            mountErrorOccurred = false;
+        // reset the mountErrorOccurred boolean
+        mountErrorOccurred = false;
 
         // now try explicitly mounting an archive using the MountArchive method
         archiveStreamPtr.reset(&archiveStream);
@@ -631,6 +631,13 @@ namespace Archive::Test
             AZStd::string_view textFileSpan(reinterpret_cast<const char*>(archiveExtractFileResult.m_fileSpan.data()),
                 archiveExtractFileResult.m_fileSpan.size());
             EXPECT_THAT(textFileSpan, ::testing::ContainerEq(fooFileData));
+
+            // Validate the CRC32 of the entire file contents
+            // NOTE: This only works on when extracting the entire uncompressed file
+            // If the file was extracted with the ArchiveReader::m_decompressFile option set to false
+            // and the file was compressed, then the CRC does not apply
+            // Also if a partial read of the file was done, the Crc32 also does not apply
+            EXPECT_EQ(archiveExtractFileResult.m_crc32, AZ::Crc32(archiveExtractFileResult.m_fileSpan));
         }
 
         {
@@ -674,6 +681,13 @@ namespace Archive::Test
             AZStd::string_view textFileSpan(reinterpret_cast<const char*>(archiveExtractFileResult.m_fileSpan.data()),
                 archiveExtractFileResult.m_fileSpan.size());
             EXPECT_THAT(textFileSpan, ::testing::ContainerEq(levelPrefabFileData));
+
+            // Validate the CRC32 of the entire file contents
+            // NOTE: This only works on when extracting the entire uncompressed file
+            // If the file was extracted with the ArchiveReader::m_decompressFile option set to false
+            // and the file was compressed, then the CRC does not apply
+            // Also if a partial read of the file was done, the Crc32 also does not apply
+            EXPECT_EQ(archiveExtractFileResult.m_crc32, AZ::Crc32(archiveExtractFileResult.m_fileSpan));
         }
     }
 

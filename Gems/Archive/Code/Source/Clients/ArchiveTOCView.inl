@@ -34,26 +34,26 @@ namespace Archive
         // magic bytes offset
         constexpr size_t MagicBytesOffset = 0;
 
-        // Round up the File metadata offset as it is 16-byte aligned
+        // Round up the File metadata offset as it is 32-byte aligned
         constexpr size_t FileMetadataTableOffset = AZ_SIZE_ALIGN_UP(
             MagicBytesOffset + sizeof(ArchiveTocMagicBytes),
-            16);
+            sizeof(ArchiveTocFileMetadata));
 
-        // The file path metadata entries is 16 bytes aligned
-        // so round up to the nearest 16th byte before reading the file path index entries
+        // The file path metadata entries is 32 bytes aligned
+        // so round up to the nearest multiple of alignment before reading the file path index entries
         const size_t FilePathIndexTableOffset = AZ_SIZE_ALIGN_UP(
             FileMetadataTableOffset + archiveHeader.m_tocFileMetadataTableUncompressedSize,
-            16);
+            sizeof(ArchiveTocFileMetadata));
         // The file path index entries are 8 bytes aligned
-        // so round up to the nearest 8th byte before reading the file path blob
+        // so round up to the nearest multiple of alignment before reading the file path blob
         const size_t FilePathBlobOffset = AZ_SIZE_ALIGN_UP(
             FilePathIndexTableOffset + archiveHeader.m_tocPathIndexTableUncompressedSize,
-            8);
+            sizeof(ArchiveTocFilePathIndex));
 
         // The block offset table starts on an address aligned at a multiple of 8 bytes
         const size_t BlockOffsetTableOffset = AZ_SIZE_ALIGN_UP(
             FilePathBlobOffset + archiveHeader.m_tocPathBlobUncompressedSize,
-            8);
+            sizeof(ArchiveBlockLineUnion));
 
         // Cast the first 8 of the TOC buffer
         tocView.m_magicBytes = *reinterpret_cast<decltype(tocView.m_magicBytes)*>(tocBuffer.data() + MagicBytesOffset);

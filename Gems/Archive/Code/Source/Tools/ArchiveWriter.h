@@ -178,11 +178,13 @@ namespace Archive
             //! This path has been posted processed to to account for any changes
             //! to file case due to the `ArchiveWriterFileSettings::m_fileCase` member
             AZ::IO::PathView m_relativeFilePath;
-            //! Size of the input span as supplied to @AddFileToArchive
-            AZ::u64 m_uncompressedSize;
             //! stores block data about the file contents to write to block section of archive
-            //! The block data contains offsets into the buffer to wrtie
+            //! The block data contains offsets into the buffer to write
             ContentFileBlocks m_contentFileBlocks;
+            //! Reference to the file contents span that was supplied to @AddFileToArchive
+            //! This is used to retrieve the uncompressed size of the file contents
+            //! and to perform a CRC32 over the uncompressed data
+            AZStd::span<const AZStd::byte> m_uncompressedSpan;
         };
         //! Update the archive header with the new file count and the location
         //! of the file in the archive

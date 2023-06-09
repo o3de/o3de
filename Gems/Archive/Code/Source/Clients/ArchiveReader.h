@@ -101,10 +101,10 @@ namespace Archive
         //! @return result structure that is convertible to a boolean value indicating if enumeration was successful
         EnumerateArchiveResult EnumerateFilesInArchive(ListFileCallback listFileCallback) const override;
 
-        //! Writes metadata for the archive to the supplied generic stream
+        //! Dump metadata for the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
         //! @return true if metadata was successfully written
-        bool WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
+        bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const override;
 
     private:
