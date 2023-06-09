@@ -586,7 +586,7 @@ namespace Archive
         {
             const AZ::u64 blockCompressedSize = GetCompressedSizeForBlock(fileBlockLineSpan, blockCount, blockIndex);
             // Get the next 2 MiB block (or less if in the final block) of memory to store the compressed block data
-            const size_t availableBytesInCompressedBlock = AZStd::min(compressedBlockRemainingSpan.size(),
+            const auto availableBytesInCompressedBlock = AZStd::min<size_t>(compressedBlockRemainingSpan.size(),
                 ArchiveBlockSizeForCompression);
             const AZStd::span<AZStd::byte> compressedBlockToReadInto = compressedBlockRemainingSpan.first(
                 availableBytesInCompressedBlock);
@@ -642,7 +642,7 @@ namespace Archive
             {
                 const AZ::u64 blockCompressedSize = GetCompressedSizeForBlock(fileBlockLineSpan, blockCount, blockIndex);
                 // Downsize the 2 MiB span that was used to read the compressed data to the exact compressed size
-                const size_t availableBytesInCompressedBlock = AZStd::min(compressedBlockRemainingSpan.size(),
+                const auto availableBytesInCompressedBlock = AZStd::min<size_t>(compressedBlockRemainingSpan.size(),
                     ArchiveBlockSizeForCompression);
                 AZStd::span<const AZStd::byte> compressedDataForBlock = compressedBlockRemainingSpan
                     .first(availableBytesInCompressedBlock)
@@ -653,7 +653,7 @@ namespace Archive
                 // Get the block span for storing the decompressed block
                 // As the uncompressed size is 2 MiB for all blocks except the last
                 // the entire contiguous file sequence will be available in the decompressedResultSpan after the loop
-                const size_t remainingBytesInBlockSpan = AZStd::min(decompressionRemainingSpan.size(),
+                const auto remainingBytesInBlockSpan = AZStd::min<size_t>(decompressionRemainingSpan.size(),
                     ArchiveBlockSizeForCompression);
                 AZStd::span<AZStd::byte> decompressionBlockSpan = decompressionRemainingSpan
                     .first(remainingBytesInBlockSpan);
@@ -695,7 +695,7 @@ namespace Archive
         // with the ArchiveBlockSizeForCompression (2 MiB).
         // The start offset will always be in the first read block
         size_t startOffset = fileSettings.m_startOffset % ArchiveBlockSizeForCompression;
-        size_t endOffset = AZStd::min(decompressionResultSpan.size() - startOffset, maxBytesToReadForFile);
+        size_t endOffset = AZStd::min<size_t>(decompressionResultSpan.size() - startOffset, maxBytesToReadForFile);
         return decompressionResultSpan.subspan(startOffset, endOffset);
     }
 
