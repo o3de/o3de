@@ -7,6 +7,8 @@
  */
 
 #include "ReflectionScreenSpaceDownsampleDepthLinearChildPass.h"
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <SpecularReflections/SpecularReflectionsFeatureProcessor.h>
 
 namespace AZ
