@@ -72,37 +72,6 @@ namespace AZ
 
     //=========================================================================
     //
-    // Crc32 constructor
-    //
-    //=========================================================================
-    constexpr Crc32::Crc32(AZStd::string_view view)
-        : m_value{ 0 }
-    {
-        if (!view.empty())
-        {
-            Set(view.data(), view.size(), true);
-        }
-    }
-
-    //=========================================================================
-    //
-    // Crc32 constructor
-    //
-    //=========================================================================
-    template<class ByteType, class>
-    constexpr Crc32::Crc32(const ByteType* data, size_t size, bool forceLowerCase)
-        : m_value{ 0 }
-    {
-        Set(data, size, forceLowerCase);
-    }
-    constexpr Crc32::Crc32(AZStd::span<const AZStd::byte> inputSpan)
-        : m_value{ 0 }
-    {
-        Set(inputSpan.data(), inputSpan.size(), false);
-    }
-
-    //=========================================================================
-    //
     // Crc32 - Set
     //
     //=========================================================================
@@ -162,6 +131,37 @@ namespace AZ
         -> AZStd::enable_if_t<sizeof(ByteType) == 1>
     {
         Internal::Crc32Set(data, size, forceLowerCase, m_value);
+    }
+
+    //=========================================================================
+    //
+    // Crc32 constructor
+    //
+    //=========================================================================
+    constexpr Crc32::Crc32(AZStd::string_view view)
+        : m_value{ 0 }
+    {
+        if (!view.empty())
+        {
+            Set(view.data(), view.size(), true);
+        }
+    }
+
+    //=========================================================================
+    //
+    // Crc32 constructor
+    //
+    //=========================================================================
+    template<class ByteType, class>
+    constexpr Crc32::Crc32(const ByteType* data, size_t size, bool forceLowerCase)
+        : m_value{ 0 }
+    {
+        Set(data, size, forceLowerCase);
+    }
+    constexpr Crc32::Crc32(AZStd::span<const AZStd::byte> inputSpan)
+        : m_value{ 0 }
+    {
+        Set(inputSpan.data(), inputSpan.size(), false);
     }
 
     //=========================================================================
