@@ -117,7 +117,6 @@ namespace AzToolsFramework
 
             void SetShowIndexAfterUpdate(QModelIndex index);
 
-            void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
             void SetAttachedTableView(AssetBrowserTableView* tableView);
 
             void SetApplySnapshot(bool applySnapshot);
