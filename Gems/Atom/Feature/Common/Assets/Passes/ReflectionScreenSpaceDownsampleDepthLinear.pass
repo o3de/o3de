@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "ReflectionScreenSpaceDownsampleDepthLinearPassTemplate",
+            "PassClass": "ReflectionScreenSpaceDownsampleDepthLinearPass",
+            "Slots": [
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DownsampledDepthLinearInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DownsampledDepthLinearImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthLinear"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.5,
+                            "HeightMultiplier": 0.5
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32G32_FLOAT",
+                        "MipLevels": 4,
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": [
+                            "ShaderReadWrite",
+                            "Color"
+                        ]
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DownsampledDepthLinearInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DownsampledDepthLinearImage"
+                    }
+                }
+            ]
+        }
+    }
+}
