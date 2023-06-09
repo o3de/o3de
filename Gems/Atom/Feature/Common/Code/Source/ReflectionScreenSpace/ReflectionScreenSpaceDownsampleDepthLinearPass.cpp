@@ -84,7 +84,7 @@ namespace AZ
                 // the first child pass reads from DepthLinear and writes to mip0 of DownsampledDepthLinear, subsequent
                 // passes read from the previous mip level of DownsampledDepthLinear and write to the current mip level
                 uint32_t currentMipLevel = attachmentIndex;
-                uint32_t previousMipLevel = AZStd::max(0, (int)currentMipLevel - 1);
+                uint32_t previousMipLevel = AZStd::max(0, aznumeric_cast<int32_t>(currentMipLevel) - 1);
                 
                 RPI::PassAttachmentBinding& inputAttachmentBinding = childPass->GetInputBinding(0);
                 RPI::PassAttachment* inputAttachment = nullptr;

@@ -43,7 +43,7 @@ PSOutput MainPS(VSOutput IN)
 
     float minDepth = 1e27f;
     float sigma = 0.0f;
-    float2 depthSamples[9];
+    float2 depthSamples[9]; // maximum of 3x3 samples depending on image width/height
     uint numSamples = 0;
 
     if (PassSrg::m_invOutputScale <= 1.0f)
