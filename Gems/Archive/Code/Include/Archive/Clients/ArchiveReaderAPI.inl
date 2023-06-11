@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTIMacros.h>
@@ -42,7 +43,7 @@ namespace Archive
         return m_resultOutcome.has_value();
     }
 
-    // Archive Writer interface TypeInfo, rtti and allocator macros
+    // Archive Reader interface TypeInfo, rtti and allocator macros
     AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(IArchiveReader, "IArchiveReader", IArchiveReaderTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(IArchiveReader);
     AZ_CLASS_ALLOCATOR_IMPL_INLINE(IArchiveReader, AZ::SystemAllocator);
@@ -63,5 +64,60 @@ namespace Archive
 
     // IArchiveReader impl
     inline IArchiveReader::~IArchiveReader() = default;
+
+    // ArchiveReaderFactory functions
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(IArchiveReaderFactory, "IArchiveReaderFactory", IArchiveReaderFactoryTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(IArchiveReaderFactory);
+    AZ_CLASS_ALLOCATOR_IMPL_INLINE(IArchiveReaderFactory, AZ::SystemAllocator);
+
+    inline IArchiveReaderFactory::~IArchiveReaderFactory() = default;
+
+    inline CreateArchiveReaderResult CreateArchiveReader()
+    {
+        auto archiveReaderFactory = AZ::Interface<IArchiveReaderFactory>::Get();
+        if (archiveReaderFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveReaderFactory is not registered with an"
+                " AZ::Interface<IArchiveReaderFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveReaderFactory->Create();
+    }
+    inline CreateArchiveReaderResult CreateArchiveReader(const ArchiveReaderSettings& readerSettings)
+    {
+        auto archiveReaderFactory = AZ::Interface<IArchiveReaderFactory>::Get();
+        if (archiveReaderFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveReaderFactory is not registered with an"
+                " AZ::Interface<IArchiveReaderFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveReaderFactory->Create(readerSettings);
+    }
+
+    inline CreateArchiveReaderResult CreateArchiveReader(AZ::IO::PathView archivePath,
+        const ArchiveReaderSettings& readerSettings)
+    {
+        auto archiveReaderFactory = AZ::Interface<IArchiveReaderFactory>::Get();
+        if (archiveReaderFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveReaderFactory is not registered with an"
+                " AZ::Interface<IArchiveReaderFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveReaderFactory->Create(archivePath, readerSettings);
+    }
+    inline CreateArchiveReaderResult CreateArchiveReader(IArchiveReader::ArchiveStreamPtr archiveStream,
+        const ArchiveReaderSettings& readerSettings)
+    {
+        auto archiveReaderFactory = AZ::Interface<IArchiveReaderFactory>::Get();
+        if (archiveReaderFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveReaderFactory is not registered with an"
+                " AZ::Interface<IArchiveReaderFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveReaderFactory->Create(AZStd::move(archiveStream), readerSettings);
+    }
 } // namespace Archive
 

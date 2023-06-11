@@ -16,6 +16,10 @@
 
 #include <Compression/CompressionLZ4API.h>
 
+// Archive Gem private implementation includes
+#include <Clients/ArchiveReaderFactory.h>
+#include <Tools/ArchiveWriterFactory.h>
+
 namespace Archive::Test
 {
     // Note the ArchiveReader unit test are placed in the Archive.Editor.Tests
@@ -31,22 +35,42 @@ namespace Archive::Test
         : public ::testing::Test
     {
     public:
-        ArchiveReaderFixture() = default;
-        ~ArchiveReaderFixture() = default;
+        ArchiveReaderFixture()
+        {
+            m_archiveReaderFactory = AZStd::make_unique<ArchiveReaderFactory>();
+            AZ::Interface<IArchiveReaderFactory>::Register(m_archiveReaderFactory.get());
+            m_archiveWriterFactory = AZStd::make_unique<ArchiveWriterFactory>();
+            AZ::Interface<IArchiveWriterFactory>::Register(m_archiveWriterFactory.get());
+        }
+        ~ArchiveReaderFixture()
+        {
+            AZ::Interface<IArchiveWriterFactory>::Unregister(m_archiveWriterFactory.get());
+            AZ::Interface<IArchiveReaderFactory>::Unregister(m_archiveReaderFactory.get());
+        }
 
     protected:
+        // Create and register an Archive Reader and Archive Writer factory
+        // to allow IArchiveReader and IArchiveWriter instances to be created
+        // The Archive Writer is needed to create the Archives in order to test the
+        // Archive Reader code
+        AZStd::unique_ptr<IArchiveReaderFactory> m_archiveReaderFactory;
+        AZStd::unique_ptr<IArchiveWriterFactory> m_archiveWriterFactory;
     };
 
 
     TEST_F(ArchiveReaderFixture, CreateArchiveReader_Succeeds)
     {
         {
-            auto archiveReader = CreateArchiveReader();
+            auto createArchiveReaderResult = CreateArchiveReader();
+            ASSERT_TRUE(createArchiveReaderResult);
+            AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
             ASSERT_NE(nullptr, archiveReader);
         }
 
         {
-            auto archiveReader = CreateArchiveReader(ArchiveReaderSettings{});
+            auto createArchiveReaderResult = CreateArchiveReader(ArchiveReaderSettings{});
+            ASSERT_TRUE(createArchiveReaderResult);
+            AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
             ASSERT_NE(nullptr, archiveReader);
         }
     }
@@ -64,8 +88,10 @@ namespace Archive::Test
         {
             mountErrorOccurred = true;
         };
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveStreamPtr),
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveStreamPtr),
             readerSettings);
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         EXPECT_TRUE(mountErrorOccurred);
         EXPECT_FALSE(archiveReader->IsMounted());
@@ -97,8 +123,10 @@ namespace Archive::Test
         {
             mountErrorOccurred = true;
         };
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveStreamPtr),
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveStreamPtr),
             readerSettings);
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         EXPECT_TRUE(mountErrorOccurred);
         EXPECT_FALSE(archiveReader->IsMounted());
@@ -121,7 +149,9 @@ namespace Archive::Test
         {
             // Create an empty archive with no files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
             ASSERT_TRUE(commitResult);
@@ -135,8 +165,10 @@ namespace Archive::Test
         {
             mountErrorOccurred = true;
         };
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr),
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr),
             readerSettings);
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_FALSE(mountErrorOccurred);
@@ -169,7 +201,9 @@ namespace Archive::Test
             // At least one of the files are compressed
             // and at one is not compressed
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -192,7 +226,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());
@@ -278,7 +314,9 @@ namespace Archive::Test
         {
             // Create an archive with files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -294,7 +332,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());
@@ -324,7 +364,9 @@ namespace Archive::Test
         {
             // Create an archive with a several files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -355,7 +397,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());
@@ -453,7 +497,10 @@ namespace Archive::Test
         {
             // Create an archive with a several files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -484,7 +531,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());
@@ -560,7 +609,9 @@ namespace Archive::Test
         {
             // Create an archive with a several files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -591,7 +642,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());
@@ -716,7 +769,9 @@ namespace Archive::Test
         {
             // Create an archive with a several files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -731,7 +786,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());
@@ -828,7 +885,9 @@ namespace Archive::Test
         {
             // Create an archive with a several files in it
             IArchiveWriter::ArchiveStreamPtr archiveWriterStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveWriterStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             ArchiveWriterFileSettings fileSettings;
 
@@ -859,7 +918,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveReader::ArchiveStreamPtr archiveReaderStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveReader> archiveReader = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        auto createArchiveReaderResult = CreateArchiveReader(AZStd::move(archiveReaderStreamPtr));
+        ASSERT_TRUE(createArchiveReaderResult);
+        AZStd::unique_ptr<IArchiveReader> archiveReader = AZStd::move(createArchiveReaderResult.value());
 
         // No error should occur and the archive should have been successfully mounted
         EXPECT_TRUE(archiveReader->IsMounted());

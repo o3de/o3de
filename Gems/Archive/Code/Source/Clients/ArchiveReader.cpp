@@ -25,29 +25,6 @@ namespace Archive
     AZ_RTTI_NO_TYPE_INFO_IMPL(ArchiveReader, IArchiveReader);
     AZ_CLASS_ALLOCATOR_IMPL(ArchiveReader, AZ::SystemAllocator);
 
-    // ArchiveReader forwarding functions
-    // This is used to create an ArchiveReader instance that is pointed
-    // to from an IArchiveReader* to allow use of the ArchiveReader in modules outside of the Archive Gem
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader()
-    {
-        return AZStd::make_unique<ArchiveReader>();
-    }
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader(const ArchiveReaderSettings& readerSettings)
-    {
-        return AZStd::make_unique<ArchiveReader>(readerSettings);
-    }
-
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader(AZ::IO::PathView archivePath,
-        const ArchiveReaderSettings& readerSettings)
-    {
-        return AZStd::make_unique<ArchiveReader>(archivePath, readerSettings);
-    }
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader(IArchiveReader::ArchiveStreamPtr archiveStream,
-        const ArchiveReaderSettings& readerSettings)
-    {
-        return AZStd::make_unique<ArchiveReader>(AZStd::move(archiveStream), readerSettings);
-    }
-
     ArchiveReader::ArchiveReader() = default;
 
     ArchiveReader::~ArchiveReader()

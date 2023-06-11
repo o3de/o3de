@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTIMacros.h>
@@ -59,5 +60,60 @@ namespace Archive
 
     // IArchiveWriter impl
     inline IArchiveWriter::~IArchiveWriter() = default;
+
+    // ArchiveWriterFactory functions
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(IArchiveWriterFactory, "IArchiveWriterFactory", IArchiveWriterFactoryTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(IArchiveWriterFactory);
+    AZ_CLASS_ALLOCATOR_IMPL_INLINE(IArchiveWriterFactory, AZ::SystemAllocator);
+
+    inline IArchiveWriterFactory::~IArchiveWriterFactory() = default;
+
+    inline CreateArchiveWriterResult CreateArchiveWriter()
+    {
+        auto archiveWriterFactory = AZ::Interface<IArchiveWriterFactory>::Get();
+        if (archiveWriterFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveWriterFactory is not registered with an"
+                " AZ::Interface<IArchiveWriterFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveWriterFactory->Create();
+    }
+    inline CreateArchiveWriterResult CreateArchiveWriter(const ArchiveWriterSettings& writerSettings)
+    {
+        auto archiveWriterFactory = AZ::Interface<IArchiveWriterFactory>::Get();
+        if (archiveWriterFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveWriterFactory is not registered with an"
+                " AZ::Interface<IArchiveWriterFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveWriterFactory->Create(writerSettings);
+    }
+
+    inline CreateArchiveWriterResult CreateArchiveWriter(AZ::IO::PathView archivePath,
+        const ArchiveWriterSettings& writerSettings)
+    {
+        auto archiveWriterFactory = AZ::Interface<IArchiveWriterFactory>::Get();
+        if (archiveWriterFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveWriterFactory is not registered with an"
+                " AZ::Interface<IArchiveWriterFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveWriterFactory->Create(archivePath, writerSettings);
+    }
+    inline CreateArchiveWriterResult CreateArchiveWriter(IArchiveWriter::ArchiveStreamPtr archiveStream,
+        const ArchiveWriterSettings& writerSettings)
+    {
+        auto archiveWriterFactory = AZ::Interface<IArchiveWriterFactory>::Get();
+        if (archiveWriterFactory == nullptr)
+        {
+            return AZStd::unexpected(ResultString("ArchiveWriterFactory is not registered with an"
+                " AZ::Interface<IArchiveWriterFactory>. Has the Archive Gem been set as active?"));
+        }
+
+        return archiveWriterFactory->Create(AZStd::move(archiveStream), writerSettings);
+    }
 } // namespace Archive
 

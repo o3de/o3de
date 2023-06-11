@@ -29,29 +29,6 @@ namespace Archive
     AZ_RTTI_NO_TYPE_INFO_IMPL(ArchiveWriter, IArchiveWriter);
     AZ_CLASS_ALLOCATOR_IMPL(ArchiveWriter, AZ::SystemAllocator);
 
-    // ArchiveWriter forwarding functions
-    // This is used to create an ArchiveWriter instance that is pointed
-    // to from an IArchiveWriter* to allow use of the ArchiveWriter in modules outside of the Archive Gem
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter()
-    {
-        return AZStd::make_unique<ArchiveWriter>();
-    }
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter(const ArchiveWriterSettings& writerSettings)
-    {
-        return AZStd::make_unique<ArchiveWriter>(writerSettings);
-    }
-
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter(AZ::IO::PathView archivePath,
-        const ArchiveWriterSettings& writerSettings)
-    {
-        return AZStd::make_unique<ArchiveWriter>(archivePath, writerSettings);
-    }
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter(IArchiveWriter::ArchiveStreamPtr archiveStream,
-        const ArchiveWriterSettings& writerSettings)
-    {
-        return AZStd::make_unique<ArchiveWriter>(AZStd::move(archiveStream), writerSettings);
-    }
-
     ArchiveWriter::ArchiveWriter() = default;
 
     ArchiveWriter::~ArchiveWriter()

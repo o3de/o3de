@@ -21,6 +21,12 @@
 
 #include <Compression/CompressionInterfaceStructs.h>
 
+namespace AZ
+{
+    template<typename T>
+    class Interface;
+}
+
 namespace AZ::IO
 {
     class GenericStream;
@@ -272,16 +278,38 @@ namespace Archive
             const ArchiveMetadataSettings& metadataSettings = {}) const = 0;
     };
 
-    //! Creates an instance of the Concrete ArchiveReader class
-    //! The parameters are forwarded to the ArchiveReader constructor and used to initialize the instance
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader();
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader(const ArchiveReaderSettings& readerSettings);
+    //! Factory which is used to creates instances of the ArchiveReader class
+    //! The Create functions parameters are forwarded to the ArchiveReader constructor
+    class IArchiveReaderFactory
+    {
+    public:
+        AZ_TYPE_INFO_WITH_NAME_DECL(IArchiveReaderFactory);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL;
 
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader(AZ::IO::PathView archivePath,
-        const ArchiveReaderSettings& readerSettings = {});
-    AZStd::unique_ptr<IArchiveReader> CreateArchiveReader(IArchiveReader::ArchiveStreamPtr archiveStream,
-        const ArchiveReaderSettings& readerSettings = {});
+        virtual ~IArchiveReaderFactory();
+        virtual AZStd::unique_ptr<IArchiveReader> Create() const = 0;
+        virtual AZStd::unique_ptr<IArchiveReader> Create(const ArchiveReaderSettings& readerSettings) const = 0;
+        virtual AZStd::unique_ptr<IArchiveReader> Create(AZ::IO::PathView archivePath,
+            const ArchiveReaderSettings& readerSettings) const = 0;
+        virtual AZStd::unique_ptr<IArchiveReader> Create(IArchiveReader::ArchiveStreamPtr archiveStream,
+            const ArchiveReaderSettings& readerSettings) const = 0;
+    };
 
+    // Helper Alias for access the IArchiveReaderFactory instance
+    using ArchiveReaderFactoryInterface = AZ::Interface<IArchiveReaderFactory>;
+
+    // The CreateArchiveReader functions are utility functions that help outside gem modules creating an ArchiveReader
+    // The return value is a CreateArchiveReaderResult, which will return a unique_ptr to the create ArchiveReader
+    // on success or a failure result string indicating why the ArchiveReader could not be created on failure
+    using CreateArchiveReaderResult = AZStd::expected<AZStd::unique_ptr<IArchiveReader>, ResultString>;
+    CreateArchiveReaderResult CreateArchiveReader();
+    CreateArchiveReaderResult CreateArchiveReader(const ArchiveReaderSettings& readerSettings);
+
+    CreateArchiveReaderResult CreateArchiveReader(AZ::IO::PathView archivePath,
+        const ArchiveReaderSettings& readerSettings = {});
+    CreateArchiveReaderResult CreateArchiveReader(IArchiveReader::ArchiveStreamPtr archiveStream,
+        const ArchiveReaderSettings& readerSettings = {});
 } // namespace Archive
 
 // Implementation for any struct functions

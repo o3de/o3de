@@ -157,6 +157,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(NAME ${gem_name}.Tools.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
     ly_create_alias(NAME ${gem_name}.Builders.API NAMESPACE Gem TARGETS Gem::${gem_name}.Editor.API)
 
+
+    ### AssetBundler additions ###
+    # Add the Clients.API and Tools.API as a build dependency of the AssetBundler if this gem is available
+    # as part of the current project
+    # This allows the Asset Bundler to have access to the gems API includes which it can use
+    # to create O3AR archive format files
+    target_link_libraries(AssetBundlerBatch.Static PUBLIC ${gem_name}.Clients ${gem_name}.Tools)
 endif()
 
 ################################################################################

@@ -12,7 +12,7 @@
 
 namespace Archive
 {
-    ArchiveTableOfContents::ArchiveTableOfContents() = default;
+    inline ArchiveTableOfContents::ArchiveTableOfContents() = default;
 
     // Archive Table of Contents file path wrapper
     inline ArchiveTableOfContents::Path::Path(AZ::IO::Path filePath)

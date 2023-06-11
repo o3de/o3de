@@ -9,6 +9,8 @@ set(FILES
     Source/ArchiveModuleInterface.h
     Source/Clients/ArchiveReader.cpp
     Source/Clients/ArchiveReader.h
+    Source/Clients/ArchiveReaderFactory.cpp
+    Source/Clients/ArchiveReaderFactory.h
     Source/Clients/ArchiveSystemComponent.cpp
     Source/Clients/ArchiveSystemComponent.h
     Source/Clients/ArchiveTOC.h

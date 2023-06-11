@@ -19,6 +19,12 @@
 #include <Compression/CompressionInterfaceStructs.h>
 #include <Compression/CompressionInterfaceAPI.h>
 
+namespace AZ
+{
+    template<typename T>
+    class Interface;
+}
+
 namespace AZ::IO
 {
     class GenericStream;
@@ -269,16 +275,38 @@ namespace Archive
             const ArchiveMetadataSettings& metadataSettings = {}) const = 0;
     };
 
-    //! Creates an instance of the Concrete ArchiveWriter class
-    //! The parameters are forwarded to the ArchiveWriter constructor and used to initialize the instance
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter();
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter(const ArchiveWriterSettings& writerSettings);
+    //! Factory which is used to creates instances of the ArchiveWriter class
+    //! The Create functions parameters are forwarded to the ArchiveWriter constructor
+    class IArchiveWriterFactory
+    {
+    public:
+        AZ_TYPE_INFO_WITH_NAME_DECL(IArchiveWriterFactory);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL;
 
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter(AZ::IO::PathView archivePath,
-        const ArchiveWriterSettings& writerSettings = {});
-    AZStd::unique_ptr<IArchiveWriter> CreateArchiveWriter(IArchiveWriter::ArchiveStreamPtr archiveStream,
-        const ArchiveWriterSettings& writerSettings = {});
+        virtual ~IArchiveWriterFactory();
+        virtual AZStd::unique_ptr<IArchiveWriter> Create() const = 0;
+        virtual AZStd::unique_ptr<IArchiveWriter> Create(const ArchiveWriterSettings& writerSettings) const = 0;
+        virtual AZStd::unique_ptr<IArchiveWriter> Create(AZ::IO::PathView archivePath,
+            const ArchiveWriterSettings& writerSettings) const = 0;
+        virtual AZStd::unique_ptr<IArchiveWriter> Create(IArchiveWriter::ArchiveStreamPtr archiveStream,
+            const ArchiveWriterSettings& writerSettings) const = 0;
+    };
 
+    // Helper Alias for access the IArchiveWriterFactory instance
+    using ArchiveWriterFactoryInterface = AZ::Interface<IArchiveWriterFactory>;
+
+    // The CreateArchiveWriter functions are utility functions that help outside gem modules creating an ArchiveWriter
+    // The return value is a CreateArchiveWriterResult, which will return a unique_ptr to the create ArchiveWriter
+    // on success or a failure result string indicating why the ArchiveWriter could not be created on failure
+    using CreateArchiveWriterResult = AZStd::expected<AZStd::unique_ptr<IArchiveWriter>, ResultString>;
+    CreateArchiveWriterResult CreateArchiveWriter();
+    CreateArchiveWriterResult CreateArchiveWriter(const ArchiveWriterSettings& writerSettings);
+
+    CreateArchiveWriterResult CreateArchiveWriter(AZ::IO::PathView archivePath,
+        const ArchiveWriterSettings& writerSettings = {});
+    CreateArchiveWriterResult CreateArchiveWriter(IArchiveWriter::ArchiveStreamPtr archiveStream,
+        const ArchiveWriterSettings& writerSettings = {});
 } // namespace Archive
 
 // Implementation for any struct functions
