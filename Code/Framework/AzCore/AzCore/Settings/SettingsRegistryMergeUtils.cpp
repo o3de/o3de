@@ -938,7 +938,7 @@ namespace AZ::SettingsRegistryMergeUtils
             // While all parsing and formatting errors are actual errors, config files that are not present
             // is not an error as they are always optional.  In this case, show a brief trace message
             // that indicates the location the file could be placed at in order to run it.
-            AZ_TracePrintf("SettingsRegistryMergeUtils", "Optional config file \"%s\" not found.\n", configPath.c_str());
+            AZ_Trace("SettingsRegistryMergeUtils", "Optional config file \"%s\" not found.\n", configPath.c_str());
             return false;
         }
 
