@@ -123,8 +123,8 @@ namespace AZ
                 m_visualizationBufferPools->Init(device);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
-                m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                    "Models/DiffuseProbeSphere.azmodel",
+                m_visualizationModelAsset = AZ::RPI::AssetUtils::LoadCriticalAsset<AZ::RPI::ModelAsset>(
+                    "models/diffuseprobesphere.azmodel",
                     AZ::RPI::AssetUtils::TraceLevel::Warning);
 
                 if (!m_visualizationModelAsset.IsReady())

@@ -44,7 +44,7 @@ namespace AZ
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridPrepare.azshader";
+            AZStd::string shaderFilePath = "shaders/diffuseglobalillumination/diffuseprobegridprepare.azshader";
             m_shader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_shader == nullptr)
             {
