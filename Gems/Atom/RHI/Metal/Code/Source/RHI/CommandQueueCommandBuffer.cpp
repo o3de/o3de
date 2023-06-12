@@ -71,7 +71,7 @@ namespace AZ
                         case MTLCommandBufferErrorPageFault:
                             AZ_Printf("RHI","Execution of this command generated an unserviceable GPU page fault. This error maybe caused by buffer read/write attribute mismatch or out of boundary access.\n");
                             break;
-                        case MTLCommandBufferErrorBlacklisted:
+                        case MTLCommandBufferErrorAccessRevoked:
                             AZ_Printf("RHI","Access to this device has been revoked because this client has been responsible for too many timeouts or hangs.\n");
                             break;
                         case MTLCommandBufferErrorNotPermitted:

@@ -271,7 +271,7 @@ namespace AzToolsFramework
                         // Iterate over each item in the current shared column, adding them to a single layout
                         while (sharedWidgetIndex < numItems)
                         {
-                            domIndex = m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex];
+                            domIndex = aznumeric_cast<int>(m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex]);
                             attributes = myRow->GetCachedAttributes(domIndex);
                             // Save the alignment of the last widget in the shared column with an alignment attribute
                             if (attributes)
@@ -570,7 +570,7 @@ namespace AzToolsFramework
 
     int DPERowWidget::GetDomIndexOfChild(const QWidget* childWidget) const
     {
-        for (int searchIndex = 0, numEntries = m_domOrderedChildren.size(); searchIndex < numEntries; ++searchIndex)
+        for (int searchIndex = 0, numEntries = aznumeric_cast<int>(m_domOrderedChildren.size()); searchIndex < numEntries; ++searchIndex)
         {
             if (m_domOrderedChildren[searchIndex] == childWidget)
             {
