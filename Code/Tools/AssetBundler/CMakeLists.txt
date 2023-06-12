@@ -108,7 +108,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
 
     # Copy test files needed for asset processor test to the executable directory
-    # This allows the test to reference it's files without using a non-portable path within the engine root
+    # This allows the test to reference its files using a portable path that can be provided
+    # to users on other machines
     ly_add_target_files(
         TARGETS
             AssetBundler.Tests

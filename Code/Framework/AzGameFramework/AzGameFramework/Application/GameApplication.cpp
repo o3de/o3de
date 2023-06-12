@@ -78,8 +78,8 @@ namespace AzGameFramework
         if (FixedValueString launcherType; registry.Get(launcherType, LauncherTypeTag)
             && !launcherType.empty())
         {
-            // Use the lowercase the platform name since the bootstrap.<launcher-type>.<config>.setreg is being loaded
-            // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
+            // The bootstrap setreg file that is loaded is in the form of
+            // bootstrap.<launcher-type-lower>.<config-lower>.setreg
             AZ::IO::FixedMaxPath filename = "bootstrap.";
             filename.Native() += launcherType;
             filename.Native() += '.';

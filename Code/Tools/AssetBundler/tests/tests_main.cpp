@@ -125,7 +125,7 @@ namespace AssetBundler
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            // Set the test engien root to be the executable directory
+            // Set the test engine root to be the executable directory
             m_data->m_testEngineRoot = (executableDirectory / RelativeTestFolder).LexicallyNormal().String();
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();

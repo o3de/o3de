@@ -21,8 +21,8 @@ namespace AZ::IO
 namespace AZ::SettingsRegistryMergeUtils
 {
     inline constexpr const char* OrganizationRootKey = "/Amazon";
-    inline constexpr const char* BuildTargetNameKey = "/Amazon/AzCore/Settings/BuildTargetName";
-    inline constexpr const char* SpecializationsRootKey = "/Amazon/AzCore/Settings/Specializations";
+    inline constexpr const char* BuildTargetNameKey = "/O3DE/Settings/BuildTargetName";
+    inline constexpr const char* SpecializationsRootKey = "/O3DE/Settings/Specializations";
     inline constexpr const char* BootstrapSettingsRootKey = "/Amazon/AzCore/Bootstrap";
     inline constexpr const char* FilePathsRootKey = "/O3DE/Runtime/FilePaths";
     inline constexpr const char* FilePathKey_BinaryFolder = "/O3DE/Runtime/FilePaths/BinaryFolder";
@@ -126,7 +126,7 @@ namespace AZ::SettingsRegistryMergeUtils
     //! The SpecializationsRootKey is visited to retrieve any specializations stored within that section of that registry
     void QuerySpecializationsFromRegistry(SettingsRegistryInterface& registry, SettingsRegistryInterface::Specializations& specializations);
 
-    //! Adds string the Settings Registry specialization section of the settings registry
+    //! Adds value as a string under the Settings Registry `SpecializationsRootKey`
     //! The specializations can be queried using the QuerySpecializationsFromRegistry function above
     void MergeSettingsToRegistry_AddSpecialization(SettingsRegistryInterface& registry, AZStd::string_view value);
 
