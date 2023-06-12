@@ -13,6 +13,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ
@@ -25,14 +26,16 @@ namespace AZ
 
         class RHISystem final
             : public RHISystemInterface
+            , public RHIMemoryStatisticsInterface
         {
         public:
             //! This function just initializes the native device and RHI::Device as a result.
             //! We can use this device to then query for device capabilities.
-            void InitDevice();
+            ResultCode InitDevice();
 
-            //! This function initializes the rest of the RHI/RHI backend. 
-            void Init();
+            //! This function initializes the rest of the RHI/RHI backend.
+            //! bindlessSrgLayout in this case is layout associated with the bindless srg (Bindless.azsli).
+            void Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = nullptr);
             void Shutdown();
 
             //! An external callback to build the frame graph.
@@ -41,9 +44,13 @@ namespace AZ
             //! Invokes the frame scheduler. The provided callback is invoked prior to compilation of the graph.
             void FrameUpdate(FrameGraphCallback frameGraphCallback);
 
-            // Register/Unregister xr system
-            void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
+            //! Register/Unregister xr system
+            bool RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
             void UnregisterXRSystem();
+
+            //! Get/Set functions for the number of active pipelines in use in a frame 
+            void SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines);
+            uint16_t GetNumActiveRenderPipelines() const;
 
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
@@ -53,18 +60,31 @@ namespace AZ
             RHI::PipelineStateCache* GetPipelineStateCache() override;
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
             double GetCpuFrameTime() const override;
-            const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
-            const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
             XRRenderingInterface* GetXRSystem() const override;
             //////////////////////////////////////////////////////////////////////////
 
+            //////////////////////////////////////////////////////////////////////////
+            // RHIMemoryStatisticsInterface Overrides
+            const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
+            const RHI::MemoryStatistics* GetMemoryStatistics() const override;
+            void WriteResourcePoolInfoToJson(
+                const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+                rapidjson::Document& doc) const override;
+            AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
+                AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+                AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
+                rapidjson::Document& doc, 
+                const AZStd::string& fileName) const override;
+            void TriggerResourcePoolAllocInfoDump() const override;
+            //////////////////////////////////////////////////////////////////////////
+
         private:
 
             //Enumerates the Physical devices and picks one to be used to initialize the RHI::Device with
-            void InitInternalDevices();
+            ResultCode InitInternalDevices();
 
             AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
             RHI::FrameScheduler m_frameScheduler;
@@ -72,6 +92,9 @@ namespace AZ
             RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             XRRenderingInterface* m_xrSystem = nullptr;
+
+            //Used for better verbosity related to gpu markers
+            uint16_t m_numActiveRenderPipelines = 0;
         };
     } // namespace RPI
 } // namespace AZ

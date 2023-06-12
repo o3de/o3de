@@ -103,6 +103,8 @@ namespace AzToolsFramework
         ~DPERowWidget();
 
         DPERowWidget* GetPriorRowInLayout(size_t domIndex);
+        int GetDomIndexOfChild(const QWidget* childWidget) const; // returns domIndex of the given widget, -1 for not found
+        QWidget* GetChild(size_t domIndex);
         void AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex);
         void RemoveChildAt(size_t childIndex, QWidget** newOwner = nullptr);
 
@@ -111,8 +113,8 @@ namespace AzToolsFramework
         void SetAttributesFromDom(const AZ::Dom::Value& domArray);
 
         void SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget);
-        void RemoveAttributes(size_t domIndex);
-        void ClearAttributes();
+        void RemoveCachedAttributes(size_t domIndex);
+        void ClearCachedAttributes();
 
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
@@ -151,17 +153,14 @@ namespace AzToolsFramework
             AZ::Dpe::Nodes::PropertyEditor::Align m_alignment = AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment;
             bool m_sharePriorColumn = false;
             bool m_minimumWidth = false;
-            AZStd::string_view m_descriptionString = {};
-            bool m_isDisabled = false;
 
             bool IsDefault() const
             {
-                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !m_sharePriorColumn &&
-                    !m_minimumWidth && m_descriptionString.empty() && !m_isDisabled;
+                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !m_sharePriorColumn && !m_minimumWidth;
             }
         };
-        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToAttributeInfo;
-        AttributeInfo* GetAttributes(size_t domIndex);
+        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToCachedAttributeInfo;
+        AttributeInfo* GetCachedAttributes(size_t domIndex);
 
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;
@@ -180,6 +179,13 @@ namespace AzToolsFramework
 
         explicit DocumentPropertyEditor(QWidget* parentWidget = nullptr);
         ~DocumentPropertyEditor();
+
+        /*! Sets whether this DPE should allow vertical scrolling and show a scrollbar, or just take up
+            the full space that its contents requests.
+            This is typically used when a DPE is going into another scroll area and it is undesirable
+            for the DPE to provide its own vertical scrollbar */
+        void SetAllowVerticalScroll(bool allowVerticalScroll);
+        virtual QSize sizeHint() const override;
 
         auto GetAdapter()
         {
@@ -232,7 +238,7 @@ namespace AzToolsFramework
                 ->GetPool<AzQtComponents::ElidingLabel>();
         }
 
-        void RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
+        void RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
 
         struct HandlerInfo
         {
@@ -255,6 +261,7 @@ namespace AzToolsFramework
 
     protected:
         QVBoxLayout* GetVerticalLayout();
+
         QWidget* GetWidgetAtPath(const AZ::Dom::Path& path);
 
         void HandleReset();
@@ -274,6 +281,7 @@ namespace AzToolsFramework
         AZ::DocumentPropertyEditor::DocumentAdapter::ChangedEvent::Handler m_referenceAdapterChangedHandler;
 
         QVBoxLayout* m_layout = nullptr;
+        bool m_allowVerticalScroll = true;
 
         AZStd::unique_ptr<DocumentPropertyEditorSettings> m_dpeSettings;
         bool m_isRecursiveExpansionOngoing = false;
@@ -293,7 +301,8 @@ namespace AzToolsFramework
         static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
         static void ReleaseHandler(HandlerInfo& handler);
 
-        AZStd::vector<AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
+        // Co-owns the handler pool that is needed in DPE and the ownership would be released when the DPE is deleted
+        AZStd::unordered_map<AZ::Name, AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
     };
 } // namespace AzToolsFramework
 

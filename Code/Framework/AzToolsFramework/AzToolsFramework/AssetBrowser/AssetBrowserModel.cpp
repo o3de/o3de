@@ -220,7 +220,6 @@ namespace AzToolsFramework
         Qt::ItemFlags AssetBrowserModel::flags(const QModelIndex& index) const
         {
             Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
-
             if (index.isValid())
             {
                 // We can only drop items onto folders so set flags accordingly
@@ -229,7 +228,7 @@ namespace AzToolsFramework
                 {
                     if (item->RTTI_IsTypeOf(ProductAssetBrowserEntry::RTTI_Type()) || item->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type()))
                     {
-                        return Qt::ItemIsDragEnabled | defaultFlags;
+                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
                     }
                     if (item->RTTI_IsTypeOf(FolderAssetBrowserEntry::RTTI_Type()))
                     {
@@ -246,7 +245,27 @@ namespace AzToolsFramework
             return list;
         }
 
-        bool AssetBrowserModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+        bool AssetBrowserModel::canDropMimeData(
+            const QMimeData* data,
+            [[maybe_unused]] Qt::DropAction action,
+            [[maybe_unused]] int row,
+            [[maybe_unused]] int column,
+            [[maybe_unused]] const QModelIndex& parent) const
+        {
+            if (data->hasFormat(SourceAssetBrowserEntry::GetMimeType()) || data->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        bool AssetBrowserModel::dropMimeData(
+            const QMimeData* data,
+            [[maybe_unused]] Qt::DropAction action,
+            [[maybe_unused]] int row,
+            [[maybe_unused]] int column,
+            const QModelIndex& parent)
         {
             if (action == Qt::IgnoreAction)
                 return true;
@@ -260,34 +279,89 @@ namespace AzToolsFramework
 
                 if (Utils::FromMimeData(data, entries))
                 {
-                    for (auto entry : entries)
+                    if (entries.empty())
                     {
-                        using namespace AZ::IO;
-                        Path fromPath;
-                        Path toPath;
-                        bool isFolder{ true };
- 
-                        if (entry && (entry->RTTI_IsTypeOf(SourceAssetBrowserEntry::RTTI_Type())))
-                        {
-                            fromPath = entry->GetFullPath();
-                            PathView filename = fromPath.Filename();
-                            toPath = item->GetFullPath();
-                            toPath /= filename;
-                            isFolder = false;
-                        }
-                        else
-                        {
-                            fromPath = entry->GetFullPath() + "/*";
-                            Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
-                            toPath = item->GetFullPath() + "/" + filename.c_str() + "/*";
-                        }
-                        AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        return false;
                     }
-                    return true;
+
+                    if (entries.size() > 1)
+                    {
+                        for (auto assetEntry : entries)
+                        {
+                            if (assetEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+                    if (isFolder && AssetBrowserViewUtils::IsEngineOrProjectFolder(entries[0]->GetFullPath()))
+                    {
+                        return false;
+                    }
+
+                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(entries);
+                    if (selectedAction == Qt::IgnoreAction)
+                    {
+                        return false;
+                    }
+
+                    AZStd::string folderPath = item->GetFullPath();
+                    bool connectedToAssetProcessor = false;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        connectedToAssetProcessor, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                    if (connectedToAssetProcessor)
+                    {
+                        for (auto entry : entries)
+                        {
+                            using namespace AZ::IO;
+                            bool isEmptyFolder = isFolder && AssetBrowserViewUtils::IsFolderEmpty(entry->GetFullPath());
+                            Path fromPath;
+                            Path toPath;
+                            if (isFolder)
+                            {
+                                Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
+                                if (isEmptyFolder)
+                                // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
+                                // This code is needed until that bug is fixed. GHI 13340
+                                {
+                                    fromPath = entry->GetFullPath();
+                                    toPath = AZStd::string::format(
+                                        "%.*s/%.*s", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                    AZ::IO::SystemFile::CreateDir(toPath.c_str());
+                                    AZ::IO::SystemFile::DeleteDir(fromPath.c_str());
+                                    return true;
+                                }
+                                else
+                                {
+                                    fromPath = AZStd::string::format("%.*s/*", AZ_STRING_ARG(entry->GetFullPath()));
+                                    toPath = AZStd::string::format(
+                                        "%.*s/%.*s/*", AZ_STRING_ARG(folderPath), AZ_STRING_ARG(filename.Native()));
+                                }
+                            }
+                            else
+                            {
+                                fromPath = entry->GetFullPath();
+                                PathView filename = fromPath.Filename();
+                                toPath = folderPath;
+                                toPath /= filename;
+                            }
+
+                            if (selectedAction == Qt::MoveAction)
+                            {
+                                AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                            }
+                            else
+                            {
+                                AssetBrowserViewUtils::CopyEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                            }
+                        }
+                        return true;
+                    }
                 }
             }
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
-
         }
 
         Qt::DropActions AssetBrowserModel::supportedDropActions() const

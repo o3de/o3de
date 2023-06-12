@@ -79,6 +79,11 @@ namespace AZ::DocumentPropertyEditor
         ed_debugDocumentPropertyEditorUpdates = enableDebugMode;
     }
 
+    bool DocumentAdapter::IsRow(const Dom::Value& domValue)
+    {
+        return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
+    }
+
     bool DocumentAdapter::IsEmpty()
     {
         const auto& contents = GetContents();

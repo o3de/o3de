@@ -47,7 +47,7 @@ ly_add_target(
             AZ::AzFramework
             Legacy::CryCommon
         PRIVATE
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
 )
 
 ly_add_target(
@@ -67,7 +67,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::PhysX.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -140,8 +140,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::PhysX.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
     )
 
     # use the PhysX.Editor module in dev tools:
@@ -186,6 +184,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::PhysX.Tests
+        LABELS REQUIRES_tiaf
     )
 
     # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
@@ -227,6 +226,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::PhysX.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

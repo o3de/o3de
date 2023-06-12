@@ -733,13 +733,13 @@ tags=tools,renderer,metal)"
         AZ::CommandLine commandLine;
         commandLine.Parse({ "--regset-file", regsetFile });
 
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, false);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, {});
 
         // Add a settings path to anchor loaded settings underneath
         regsetFile = AZStd::string::format("%s::/AnchorPath/Of/Settings", AZ::IO::SystemFile::GetNullFilename());
         commandLine.Parse({ "--regset-file", regsetFile });
 
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, false);
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_registry, commandLine, {});
         EXPECT_EQ(AZ::SettingsRegistryInterface::Type::NoType, m_registry->GetType("/AnchorPath/Of/Settings"));
     }
 

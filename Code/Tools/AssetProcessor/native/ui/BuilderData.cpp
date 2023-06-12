@@ -119,7 +119,7 @@ namespace AssetProcessor
             });
     }
 
-    void BuilderData::OnCreateJobsDurationChanged(QString sourceName)
+    void BuilderData::OnCreateJobsDurationChanged(QString sourceName, [[maybe_unused]] AZ::s64 scanFolderID)
     {
         QString statKey = QString("CreateJobs,").append(sourceName).append("%");
         m_dbConnection->QueryStatLikeStatName(

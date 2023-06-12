@@ -48,23 +48,30 @@ namespace O3DE::ProjectManager
         inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/20, /*right=*/20, /*bottom=*/20); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
 
-        // Content
-        inline constexpr static int s_nameDefaultWidth = 150;
-        inline constexpr static int s_creatorDefaultWidth = 120;
+        // Content TableView is ~842px minimum
+        inline constexpr static int s_nameDefaultWidth = 200;
+        inline constexpr static int s_creatorDefaultWidth = 240;
+        inline constexpr static int s_badgeDefaultWidth = 150;
         inline constexpr static int s_updatedDefaultWidth = 130;
+        inline constexpr static int s_buttonsDefaultWidth = 80;
 
         // Icon
-        inline constexpr static int s_iconSize = 24;
+        inline constexpr static int s_iconSize = 20;
         inline constexpr static int s_iconSpacing = 16;
-        inline constexpr static int s_refreshIconSize = 14;
+        inline constexpr static int s_refreshIconSize = 16;
         inline constexpr static int s_refreshIconSpacing = 10;
+
+        inline constexpr static int s_badgeWidth = 130;
+        inline constexpr static int s_badgeHeight = 30;
+        inline constexpr static int s_badgeLeftMargin = 25;
 
         enum class HeaderOrder
         {
             Name,
             Creator,
-            Update,
-            Delete
+            Badge,
+            Updated,
+            Buttons 
         };
 
     signals:
@@ -75,9 +82,9 @@ namespace O3DE::ProjectManager
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QPair<int, int> CalcColumnXBounds(HeaderOrder header) const;
-        QRect CalcDeleteButtonRect(const QRect& contentRect) const;
+        QRect CalcBadgeRect(const QRect& contentRect) const;
+        QRect CalcVisibilityButtonRect(const QRect& contentRect) const;
         QRect CalcRefreshButtonRect(const QRect& contentRect) const;
-        void DrawEditButtons(QPainter* painter, const QRect& contentRect) const;
 
         QAbstractItemModel* m_model = nullptr;
 
@@ -86,5 +93,9 @@ namespace O3DE::ProjectManager
         QPixmap m_refreshIcon;
         QPixmap m_editIcon;
         QPixmap m_deleteIcon;
+        QPixmap m_hiddenIcon;
+        QPixmap m_visibleIcon;
+        QPixmap m_blueBadge;
+        QPixmap m_greenBadge;
     };
 } // namespace O3DE::ProjectManager

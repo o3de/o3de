@@ -51,4 +51,7 @@ namespace EditorIdentifiers
 
     // Editor Widget Menus
     inline constexpr AZStd::string_view EntityOutlinerContextMenuIdentifier = "o3de.menu.editor.entityOutliner.context";
+
+    // Entity creation menu
+    inline constexpr AZStd::string_view EntityCreationMenuIdentifier = "o3de.menu.entity.create";
 }

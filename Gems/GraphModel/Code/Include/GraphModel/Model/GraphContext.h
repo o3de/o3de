@@ -14,6 +14,7 @@
 #include <AzCore/std/string/string.h>
 
 // GraphModel
+#include <GraphModel/Model/Common.h>
 #include <GraphModel/Model/DataType.h>
 
 namespace GraphModel
@@ -29,8 +30,6 @@ namespace GraphModel
         AZ_CLASS_ALLOCATOR(GraphContext, AZ::SystemAllocator);
         AZ_RTTI(GraphContext, "{4CD3C171-A7AA-4B62-96BB-F09F398A73E7}");
         static void Reflect(AZ::ReflectContext* context);
-
-        using DataTypeList = AZStd::vector<DataTypePtr>;
 
         GraphContext() = default;
         GraphContext(const AZStd::string& systemName, const AZStd::string& moduleExtension, const DataTypeList& dataTypes);
@@ -78,7 +77,7 @@ namespace GraphModel
         AZStd::string m_systemName;
         AZStd::string m_moduleExtension;
         DataTypeList m_dataTypes;
-        GraphModel::ModuleGraphManagerPtr m_moduleGraphManager;
+        ModuleGraphManagerPtr m_moduleGraphManager;
     };
 
 } // namespace GraphModel

@@ -366,7 +366,10 @@ def sync_layout_vfs(target_platform, project_path, asset_type, warning_on_missin
     create_link(vfs_asset_source, temp_vfs_layout_project_config_path, copy)
 
     # Copy minimum assets to the layout necessary for vfs
-    root_assets = ['engine.json', 'bootstrap.game.debug.setreg', 'bootstrap.game.profile.setreg', 'bootstrap.game.release.setreg']
+    root_assets = ['engine.json',
+                   'bootstrap.client.debug.setreg', 'bootstrap.client.profile.setreg', 'bootstrap.client.release.setreg',
+                   'bootstrap.server.debug.setreg', 'bootstrap.server.profile.setreg', 'bootstrap.server.release.setreg',
+                   'bootstrap.unified.debug.setreg', 'bootstrap.unified.profile.setreg', 'bootstrap.unified.release.setreg']
     for root_asset in root_assets:
         logging.debug("Copying %s -> %s",  os.path.join(project_asset_folder, root_asset), layout_target)
         shutil.copy2(os.path.join(project_asset_folder, root_asset), layout_target)

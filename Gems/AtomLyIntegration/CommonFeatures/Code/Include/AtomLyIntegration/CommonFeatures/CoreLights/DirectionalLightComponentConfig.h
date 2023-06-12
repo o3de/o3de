@@ -17,6 +17,11 @@ namespace AZ
 {
     namespace Render
     {
+        namespace DirectionalLightConstants
+        {
+            static const float MIN_CASCADE_FAR_DEPTH = 0.01f;
+        }
+
         struct DirectionalLightComponentConfig final
             : public ComponentConfig
         {
@@ -139,6 +144,7 @@ namespace AZ
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsEsmDisabled() const;
+            AZ::Crc32 UpdateCascadeFarDepths();
         };
     } // namespace Render
 } // namespace AZ

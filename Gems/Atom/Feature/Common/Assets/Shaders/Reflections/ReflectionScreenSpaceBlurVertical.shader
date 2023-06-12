@@ -10,8 +10,7 @@
     {
         "Depth" :
         {
-            "Enable" : true,	// required to bind the depth buffer SRV
-            "CompareFunc" : "Always"
+            "Enable" : false
         }
     },
 

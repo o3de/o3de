@@ -837,7 +837,7 @@ namespace PhysX
                 {
                     m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce] =
                         AZStd::make_unique<JointsSubComponentModeLinearFloat>(
-                            parameterString, ExponentBreakage, EditorJointConfig::s_breakageMax, EditorJointConfig::s_breakageMin);
+                            parameterString, ExponentBreakage, EditorJointConfig::BreakageMax, EditorJointConfig::BreakageMin);
 
                     const AzToolsFramework::ViewportUi::ButtonId buttonId =
                         Internal::RegisterClusterButton(group3ClusterId, "joints/MaxForce", SubModeData::MaxForceToolTip);
@@ -849,7 +849,7 @@ namespace PhysX
                 {
                     m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque] =
                         AZStd::make_unique<JointsSubComponentModeLinearFloat>(
-                            parameterString, ExponentBreakage, EditorJointConfig::s_breakageMax, EditorJointConfig::s_breakageMin);
+                            parameterString, ExponentBreakage, EditorJointConfig::BreakageMax, EditorJointConfig::BreakageMin);
 
                     const AzToolsFramework::ViewportUi::ButtonId buttonId =
                         Internal::RegisterClusterButton(group3ClusterId, "joints/MaxTorque", SubModeData::MaxTorqueToolTip);

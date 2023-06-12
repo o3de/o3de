@@ -11,6 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+
 #include <QItemSelection>
 #include <QWidget>
 #include <QMenu>
@@ -44,8 +46,6 @@ namespace AzToolsFramework
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
-            void HideProductAssets(bool checked);
-
             AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
             void SetName(const QString& name);
             QString& GetName();
@@ -63,6 +63,15 @@ namespace AzToolsFramework
 
             void setSelectionMode(QAbstractItemView::SelectionMode mode);
             QAbstractItemView::SelectionMode selectionMode() const;
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+
+            void SelectEntry(QString assetName);
+
+            void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
+            AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;
 
         signals:
             void entryClicked(const AssetBrowserEntry* entry);

@@ -290,8 +290,8 @@ namespace AtomToolsFramework
     // Visits all scan folders asynchronously, gathering all of the paths matching the filter. 
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn);
 
-    //! Collect a set of file paths from all project safe folders matching a wild card
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+    //! Collect a set of file paths from all project safe folders matching an extension
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension);
 
     //! Return a list of all asset safe folders except for those underneath the cache folder, usually intermediate asset folders.
     AZStd::vector<AZStd::string> GetNonCacheSourceFolders();

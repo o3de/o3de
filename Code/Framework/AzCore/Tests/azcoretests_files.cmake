@@ -235,6 +235,7 @@ set(FILES
     Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
+    Settings/TextParserTests.cpp
     Slice.cpp
     State.cpp
     Statistics.cpp

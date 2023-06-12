@@ -5,62 +5,70 @@ description: |
   Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations. 
 license: Apache-2.0
 confinement: classic
-base: core22
+base: core20
 
 parts:
   o3de:
     plugin: dump
     source: ./${CPACK_PACKAGE_NAME}
     source-type: local
+    build-attributes:
+      - enable-patchelf
     stage-packages:
-     - clang
-     - ninja-build
-     - libatomic1
-     - libfreetype6
-     - libpng16-16
-     - libgl1
-     - libxcb-icccm4
-     - libxcb-image0
-     - libxcb-keysyms1
-     - libxcb-randr0
-     - libxcb-render-util0
-     - libxcb-render0
-     - libxcb-shape0
-     - libxcb-xinerama0
-     - libxcb-xinput0
-     - libxcb-xkb1
-     - libxkbcommon-x11-0
-     - libxkbcommon0
-     - libpcre2-16-0
-     - libopengl0
-     - libice6
-     - libsm6
-     - libcurl4
-     - libfontconfig1
-     - libunwind-dev
-    stage-snaps:
-     - cmake
-
-layout:
-  /etc/o3de/${CPACK_PACKAGE_VERSION}/downloaded_packages:
-    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/downloaded_packages
-  /etc/o3de/${CPACK_PACKAGE_VERSION}/runtime:
-    bind: $SNAP/${CPACK_PACKAGE_VERSION}/python/runtime
+      - clang-12
+      - cmake
+      - libc-dev
+      - libclang-cpp12-dev
+      - libcurl4-openssl-dev
+      - libdbus-1-3
+      - libffi7
+      - libfontconfig1-dev
+      - libglu1-mesa-dev
+      - libpng16-16
+      - libsdl2-dev
+      - libsm6
+      - libssl-dev
+      - libstdc++-9-dev
+      - libtcl8.6
+      - libtk8.6
+      - libunwind-dev
+      - libxcb-icccm4
+      - libxcb-image0
+      - libxcb-keysyms1
+      - libxcb-randr0
+      - libxcb-render-util0
+      - libxcb-xfixes0-dev
+      - libxcb-xinerama0
+      - libxcb-xinput-dev
+      - libxcb-xinput0
+      - libxcb-xkb-dev
+      - libxkbcommon-dev
+      - libxkbcommon-x11-dev
+      - libzstd-dev
+      - llvm-12-dev
+      - mesa-common-dev
+      - ninja-build
+      - pkg-config
+      - zlib1g-dev
 
 apps:
   o3de:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/o3de
     environment:
-      LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      PKG_CONFIG: $SNAP/usr/bin/pkg-config --define-variable=libdir=$SNAP/usr/lib/x86_64-linux-gnu
       DISABLE_WAYLAND: 1
   editor:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/Editor
     environment:
-      LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
       DISABLE_WAYLAND: 1
   assetprocessor:
     command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/AssetProcessor
     environment:
-      LD_LIBRARY_PATH: $SNAP/${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default:$LD_LIBRARY_PATH
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
       DISABLE_WAYLAND: 1
     

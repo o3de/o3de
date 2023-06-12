@@ -84,11 +84,6 @@ namespace GraphCanvas
         }
 
         ResizeToContents();
-        
-        if (m_proxyWidget)
-        {
-            m_proxyWidget->update();
-        }
     }
 
     QGraphicsLayoutItem* StringNodePropertyDisplay::GetDisabledGraphicsLayoutItem()
@@ -180,7 +175,10 @@ namespace GraphCanvas
             QObject::connect(m_lineEdit, &QLineEdit::textChanged, [this]() { ResizeToContents(); });
             QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusIn, [this]() { EditStart(); });
             QObject::connect(m_lineEdit, &Internal::FocusableLineEdit::OnFocusOut, [this]() { EditFinished(); });
-            QObject::connect(m_lineEdit, &QLineEdit::editingFinished, [this]() { SubmitValue(); });
+            QObject::connect(m_lineEdit, &QLineEdit::editingFinished, [this]() {
+                SubmitValue();
+                UpdateDisplay();
+            });
 
             m_proxyWidget->setWidget(m_lineEdit);
             UpdateDisplay();
@@ -231,6 +229,11 @@ namespace GraphCanvas
                     SceneRequestBus::Event(GetSceneId(), &SceneRequests::StartNudging, fixedNodes);
                 }
             }
+        }
+        
+        if (m_proxyWidget)
+        {
+            m_proxyWidget->update();
         }
     }
 

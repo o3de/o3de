@@ -68,6 +68,7 @@ namespace AZ
 
             CommandList::InheritanceInfo inheritanceInfo{ m_renderPassContext.m_framebuffer.get(), m_subpassIndex };
             commandList->BeginCommandBuffer(&inheritanceInfo);
+            commandList->BeginDebugLabel(commandList->GetName().GetCStr());
             m_scope->Begin(*commandList);
         }
 
@@ -75,6 +76,7 @@ namespace AZ
         {
             CommandList& commandList = static_cast<CommandList&>(*context.GetCommandList());
             m_scope->End(commandList);
+            commandList.EndDebugLabel();
             commandList.EndCommandBuffer();
         }
 

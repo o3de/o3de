@@ -131,8 +131,15 @@ namespace Multiplayer
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
-        void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
-        void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
+
+        //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or
+        //! SessionNotificationBus::OnCreateSessionEnd.
+        void AddSessionInitHandler(SessionInitEvent::Handler&) override {}
+
+        //! @deprecated If looking for an event when the multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or
+        //! SessionNotificationBus::OnDestroySessionEnd.
+        void AddSessionShutdownHandler(SessionShutdownEvent::Handler&) override {}
+
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
         void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) override;
@@ -194,8 +201,6 @@ namespace Multiplayer
         
         IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
-        SessionInitEvent m_initEvent;
-        SessionShutdownEvent m_shutdownEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         EndpointDisconnectedEvent m_endpointDisconnectedEvent;

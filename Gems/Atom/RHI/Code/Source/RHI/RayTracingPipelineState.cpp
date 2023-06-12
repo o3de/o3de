@@ -69,6 +69,13 @@ namespace AZ
             return this;
         }
 
+        RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::CallableShaderName(const AZ::Name& callableShaderName)
+        {
+            AZ_Assert(m_shaderLibraryBuildContext && m_hitGroupBuildContext == nullptr, "CallableShaderName can only be added to a ShaderLibrary");
+            m_shaderLibraryBuildContext->m_callableShaderName = callableShaderName;
+            return this;
+        }
+
         RayTracingPipelineStateDescriptor* RayTracingPipelineStateDescriptor::ClosestHitShaderName(const AZ::Name& closestHitShaderName)
         {
             AZ_Assert(m_shaderLibraryBuildContext || m_hitGroupBuildContext, "ClosestHitShaderName can only be added to a ShaderLibrary or a HitGroup");

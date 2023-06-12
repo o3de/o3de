@@ -380,6 +380,9 @@ namespace AZ
                     case RHI::ShaderInputBufferType::Typed:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
                         break;
+                    case RHI::ShaderInputBufferType::AccelerationStructure:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
+                        break;
                     default:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                         break;
@@ -467,7 +470,8 @@ namespace AZ
 
         bool DescriptorSetLayout::IsBindlessSRGLayout()
         {
-            return m_shaderResourceGroupLayout->GetBindingSlot() == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId;
+            auto& device = static_cast<Device&>(GetDevice());
+            return m_shaderResourceGroupLayout->GetBindingSlot() == device.GetBindlessDescriptorPool().GetBindlessSrgBindingSlot();
         }
     }
 }

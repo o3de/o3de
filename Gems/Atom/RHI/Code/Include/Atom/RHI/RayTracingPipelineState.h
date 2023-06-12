@@ -24,6 +24,7 @@ namespace AZ
 
             AZ::Name m_rayGenerationShaderName;
             AZ::Name m_missShaderName;
+            AZ::Name m_callableShaderName;
             AZ::Name m_closestHitShaderName;
             AZ::Name m_anyHitShaderName;
         };
@@ -100,6 +101,7 @@ namespace AZ
 
             RayTracingPipelineStateDescriptor* RayGenerationShaderName(const AZ::Name& name);
             RayTracingPipelineStateDescriptor* MissShaderName(const AZ::Name& name);
+            RayTracingPipelineStateDescriptor* CallableShaderName(const AZ::Name& callableShaderName);
             RayTracingPipelineStateDescriptor* ClosestHitShaderName(const AZ::Name& closestHitShaderName);
             RayTracingPipelineStateDescriptor* AnyHitShaderName(const AZ::Name& anyHitShaderName);
 

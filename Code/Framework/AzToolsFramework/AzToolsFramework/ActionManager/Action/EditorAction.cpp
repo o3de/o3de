@@ -41,6 +41,7 @@ namespace AzToolsFramework
     {
         UpdateIconFromPath();
         m_action = new QAction(m_icon, m_name.c_str(), this);
+        m_action->setObjectName(m_identifier.c_str());
 
         QObject::connect(
             m_action, &QAction::triggered, this,

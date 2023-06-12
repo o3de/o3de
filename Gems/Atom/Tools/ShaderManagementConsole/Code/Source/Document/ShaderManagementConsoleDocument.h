@@ -65,6 +65,15 @@ namespace ShaderManagementConsole
         // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
         bool LoadShaderVariantListSourceData();
 
+        // Copy shaderVariantIN to shaderVariantOUT, if the targetOption exist, update the value to targetValue
+        // Return value is stableId += size of shaderVariantIN
+        AZ::u32 UpdateOptionValue(
+            AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo>& shaderVariantIN,
+            AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo>& shaderVariantOUT,
+            AZ::Name targetOption,
+            AZ::Name targetValue,
+            AZ::u32 stableId);
+
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;
 

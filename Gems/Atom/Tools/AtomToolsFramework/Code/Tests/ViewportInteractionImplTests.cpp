@@ -82,7 +82,11 @@ namespace UnitTest
         return viewportInteractionRequests.ViewportWorldToScreen(worldResult);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ViewportInteractionImplFixture, DISABLED_ViewportInteractionRequestsMapsFromScreenToWorldAndBack)
+#else
     TEST_F(ViewportInteractionImplFixture, ViewportInteractionRequestsMapsFromScreenToWorldAndBack)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         using AzFramework::ScreenPoint;
 

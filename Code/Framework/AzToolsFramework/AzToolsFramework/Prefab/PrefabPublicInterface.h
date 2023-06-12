@@ -106,6 +106,13 @@ namespace AzToolsFramework
                 AZ::EntityId entityId, UndoSystem::URSequencePoint* parentUndoBatch) = 0;
 
             /**
+             * Detects if an entity is owned by a prefab.
+             * @param entityId The entity to query.
+             * @return True if the entity is owned by a prefab instance, false otherwise.
+             */
+            virtual bool IsOwnedByPrefabInstance(AZ::EntityId entityId) const = 0;
+
+            /**
              * Detects if an entity is owned by a procedural prefab.
              * @param entityId The entity to query.
              * @return True if the entity is owned by a procedural prefab instance, false otherwise.

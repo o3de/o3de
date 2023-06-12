@@ -26,7 +26,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_BASECOLOR)
     {
         // array index of the baseColor texture for this material in the m_materialTextures unbounded array
-        uint baseColorTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_BASECOLOR_TEXTURE_OFFSET];
+        uint baseColorTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_BASECOLOR_TEXTURE_OFFSET)];
 
 #if USE_BINDLESS_SRG
         textureData.m_baseColor = Bindless::GetTexture2D(baseColorTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0);
@@ -46,7 +46,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_NORMAL)
     {
         // array index of the normal texture for this material in the m_materialTextures unbounded array
-        uint normalTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_NORMAL_TEXTURE_OFFSET];
+        uint normalTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_NORMAL_TEXTURE_OFFSET)];
 
 #if USE_BINDLESS_SRG
         textureData.m_normal = Bindless::GetTexture2D(normalTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).rgb;
@@ -63,7 +63,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_METALLIC)
     {
         // array index of the metallic texture for this material in the m_materialTextures unbounded array
-        uint metallicTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_METALLIC_TEXTURE_OFFSET];
+        uint metallicTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_METALLIC_TEXTURE_OFFSET)];
 
 #if USE_BINDLESS_SRG
         textureData.m_metallic = Bindless::GetTexture2D(metallicTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).r;
@@ -73,14 +73,14 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     }
     else
     {
-        textureData.m_metallic = materialInfo.m_metallicFactor;
+        textureData.m_metallic = saturate(materialInfo.m_metallicFactor);
     }
 
     // roughness
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_ROUGHNESS)
     {
         // array index of the roughness texture for this material in the m_materialTextures unbounded array
-        uint roughnessTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_ROUGHNESS_TEXTURE_OFFSET];
+        uint roughnessTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_ROUGHNESS_TEXTURE_OFFSET)];
 
 #if USE_BINDLESS_SRG
         textureData.m_roughness = Bindless::GetTexture2D(roughnessTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).r;
@@ -90,7 +90,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     }
     else
     {
-        textureData.m_roughness = materialInfo.m_roughnessFactor;
+        textureData.m_roughness = saturate(materialInfo.m_roughnessFactor);
     }
 
     // emissive
@@ -99,7 +99,7 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
     if (materialInfo.m_textureFlags & TEXTURE_FLAG_EMISSIVE)
     {
         // array index of the emissive texture for this material in the m_materialTextures unbounded array
-        uint emissiveTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[materialInfo.m_textureStartIndex + MATERIAL_EMISSIVE_TEXTURE_OFFSET];
+        uint emissiveTextureArrayIndex = RayTracingMaterialSrg::m_materialTextureIndices[NonUniformResourceIndex(materialInfo.m_textureStartIndex + MATERIAL_EMISSIVE_TEXTURE_OFFSET)];
 
 #if USE_BINDLESS_SRG
         textureData.m_emissiveColor *= Bindless::GetTexture2D(emissiveTextureArrayIndex).SampleLevel(RayTracingMaterialSrg::LinearSampler, uv, 0).rgb;
@@ -113,4 +113,3 @@ TextureData GetHitTextureData(RayTracingMaterialSrg::MaterialInfo materialInfo, 
 
     return textureData;
 }
-    

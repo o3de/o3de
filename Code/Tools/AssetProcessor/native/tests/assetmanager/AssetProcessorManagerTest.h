@@ -281,6 +281,12 @@ struct PathDependencyTest
     bool ProcessAsset(TestAsset& asset, const OutputAssetSet& outputAssets, const AssetBuilderSDK::ProductPathDependencySet& dependencies = {}, const AZStd::string& folderPath = "subfolder1/", const AZStd::string& extension = ".txt");
 
     void RunWildcardTest(bool useCorrectDatabaseSeparator, AssetBuilderSDK::ProductPathDependencyType pathDependencyType, bool buildDependenciesFirst);
+
+    void RunWildcardDependencyTestOnPaths(
+        const AZStd::string& wildcardDependency,
+        const AZStd::vector<AZStd::string>& expectedMatchingPaths,
+        const AZStd::vector<AZStd::string>& expectedNotMatchingPaths);
+
     AssetProcessor::AssetDatabaseConnection* m_sharedConnection{};
 };
 

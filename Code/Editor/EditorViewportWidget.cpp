@@ -218,7 +218,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 
     GetIEditor()->RegisterNotifyListener(this);
 
-    m_displayContext.pIconManager = GetIEditor()->GetIconManager();
     GetIEditor()->GetUndoManager()->AddListener(this);
 
     // The renderer requires something, so don't allow us to shrink to absolutely nothing
@@ -603,6 +602,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 }
 
                 m_preGameModeViewTM = GetViewTM();
+
                 // this should only occur for the main viewport and no others.
                 ShowCursor();
 
@@ -793,23 +793,6 @@ void EditorViewportWidget::RenderSnapMarker()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnMenuResolutionCustom()
-{
-    CCustomResolutionDlg resDlg(width(), height(), parentWidget());
-    if (resDlg.exec() == QDialog::Accepted)
-    {
-        ResizeView(resDlg.GetWidth(), resDlg.GetHeight());
-
-        const QString text = QString::fromLatin1("%1 x %2").arg(resDlg.GetWidth()).arg(resDlg.GetHeight());
-
-        QStringList customResPresets;
-        CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-        CViewportTitleDlg::UpdateCustomPresets(text, customResPresets);
-        CViewportTitleDlg::SaveCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView()
 {
     Camera::EditorCameraSystemRequestBus::Broadcast(&Camera::EditorCameraSystemRequests::CreateCameraEntityFromViewport);
@@ -891,6 +874,13 @@ void EditorViewportWidget::SetViewportId(int id)
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
+    UpdateScene();
+
+    if (m_pPrimaryViewport == this)
+    {
+        SetAsActiveViewport();
+    }
+
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
     m_editorModularViewportCameraComposer =
@@ -899,13 +889,6 @@ void EditorViewportWidget::SetViewportId(int id)
 
     m_editorViewportSettings.Connect(AzFramework::ViewportId(id));
 
-    UpdateScene();
-
-    if (m_pPrimaryViewport == this)
-    {
-        SetAsActiveViewport();
-    }
-
     m_editorViewportSettingsCallbacks = SandboxEditor::CreateEditorViewportSettingsCallbacks();
 
     m_gridShowingHandler = SandboxEditor::GridShowingChangedEvent::Handler(
@@ -913,8 +896,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridShowingChanged, showing);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetGridShowingChangedEvent(m_gridShowingHandler);
 
     m_gridSnappingHandler = SandboxEditor::GridSnappingChangedEvent::Handler(
@@ -922,8 +904,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingChanged, snapping);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
 
     m_angleSnappingHandler = SandboxEditor::AngleSnappingChangedEvent::Handler(
@@ -931,8 +912,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnAngleSnappingChanged, snapping);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
 
     m_cameraSpeedScaleHandler = SandboxEditor::CameraSpeedScaleChangedEvent::Handler(
@@ -940,8 +920,7 @@ void EditorViewportWidget::SetViewportId(int id)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnCameraSpeedScaleChanged, scale);
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetCameraSpeedScaleChangedEvent(m_cameraSpeedScaleHandler);
 
     m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
@@ -962,16 +941,14 @@ void EditorViewportWidget::SetViewportId(int id)
         [this]([[maybe_unused]] float nearPlaneDistance)
         {
             OnDefaultCameraNearFarChanged();
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearPlaneDistanceHandler);
 
     m_farPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
         [this]([[maybe_unused]] float farPlaneDistance)
         {
             OnDefaultCameraNearFarChanged();
-        }
-    );
+        });
     m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_farPlaneDistanceHandler);
 }
 
@@ -1141,25 +1118,6 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
                 {
                     floatViewMenu->addSeparator();
                 }
-
-                QMenu* resolutionMenu = floatViewMenu->addMenu(tr("Resolution"));
-
-                QStringList customResPresets;
-                CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-                CViewportTitleDlg::AddResolutionMenus(
-                    resolutionMenu,
-                    [this](int width, int height)
-                    {
-                        ResizeView(width, height);
-                    },
-                    customResPresets);
-                if (!resolutionMenu->actions().isEmpty())
-                {
-                    resolutionMenu->addSeparator();
-                }
-                QAction* customResolutionAction = resolutionMenu->addAction(tr("Custom..."));
-                connect(customResolutionAction, &QAction::triggered, this, &EditorViewportWidget::OnMenuResolutionCustom);
-                break;
             }
         }
     }
@@ -1272,16 +1230,6 @@ void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 
 void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (!AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
-        // or clear the current selection
-        if (event->key() == Qt::Key_Escape)
-        {
-            QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
-        }
-    }
-
     // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
     // key events when the key is held down. This is standard, but makes responding to key events for game style input silly
     // because we want the movement to be butter smooth.

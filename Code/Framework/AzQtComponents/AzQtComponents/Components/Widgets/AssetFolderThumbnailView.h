@@ -69,6 +69,7 @@ namespace AzQtComponents
             int topItemsHorizontalSpacing;
             int topItemsVerticalSpacing;
             int childrenItemsHorizontalSpacing;
+            int scrollSpeed;
             Thumbnail rootThumbnail;
             Thumbnail childThumbnail;
             ExpandButton expandButton;
@@ -112,14 +113,13 @@ namespace AzQtComponents
         void setRootIndex(const QModelIndex &index) override;
 
         void SetShowSearchResultsMode(bool searchMode);
-
-        void HideProductAssets(bool checked);
+        bool InSearchResultsMode() const;
 
     signals:
         void rootIndexChanged(const QModelIndex& idx);
-        void showInFolderTriggered(const QModelIndex& idx);
         void contextMenu(const QModelIndex& idx);
         void afterRename(const QString& value) const;
+        void deselected();
 
     protected:
         friend class Style;

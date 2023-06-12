@@ -56,6 +56,7 @@ namespace Multiplayer
         void HandleSendClientInputCorrection
         (
             AzNetworking::IConnection* invokingConnection,
+            const Multiplayer::HostFrameId& inputHostFrameId,
             const Multiplayer::ClientInputId& inputId,
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
@@ -120,6 +121,7 @@ namespace Multiplayer
 #if AZ_TRAIT_CLIENT
         ClientInputId m_clientInputId = ClientInputId{ 0 }; // Clients incrementing inputId
         ClientInputId m_lastCorrectionInputId = ClientInputId{ 0 };
+        HostFrameId m_lastCorrectionHostFrameId = InvalidHostFrameId;
 #endif
 
         ClientInputId m_lastClientInputId = ClientInputId{ 0 }; // Last inputId processed by the server

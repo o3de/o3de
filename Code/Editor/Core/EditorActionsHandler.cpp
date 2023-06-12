@@ -48,6 +48,7 @@
 
 #include <QDesktopServices>
 #include <QDir>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
@@ -201,6 +202,15 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
 
         m_actionManagerInterface->RegisterActionContext(
             EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, contextProperties);
+    }
+
+    // Editor Console
+    {
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Editor - Console";
+
+        m_actionManagerInterface->RegisterActionContext(
+            EditorIdentifiers::EditorConsoleActionContextIdentifier, contextProperties);
     }
 
     // Editor Entity Property Editor (Entity Inspector)
@@ -561,8 +571,8 @@ void EditorActionsHandler::OnActionRegistrationHook()
     {
         AzToolsFramework::ActionProperties actionProperties;
         actionProperties.m_name = "Exit";
-        actionProperties.m_description = "Open a different project in the Project Manager.";
-        actionProperties.m_category = "Project";
+        actionProperties.m_description = "Exit the Editor";
+        actionProperties.m_category = "Editor";
 
         m_actionManagerInterface->RegisterAction(
             EditorIdentifiers::MainWindowActionContextIdentifier,
@@ -960,55 +970,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, IsLevelLoaded);
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier, actionIdentifier);
         m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::GameModeStateChangedUpdaterIdentifier, actionIdentifier);
-
-        // This action is only accessible outside of Component Modes
-        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
-    }
-
-    // Export Selected Objects
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.exportSelectedObjects";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Export Selected Objects";
-        actionProperties.m_description = "Export Selected Objects.";
-        actionProperties.m_category = "Game";
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnExportSelectedObjects();
-            }
-        );
-
-        m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, AreEntitiesSelected);
-        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
-
-        // This action is only accessible outside of Component Modes
-        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
-    }
-
-    // Export Occlusion Mesh
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.exportOcclusionMesh";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Export Occlusion Mesh";
-        actionProperties.m_description = "Export Occlusion Mesh.";
-        actionProperties.m_category = "Game";
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnFileExportOcclusionMesh();
-            }
-        );
 
         // This action is only accessible outside of Component Modes
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
@@ -1849,6 +1810,11 @@ void EditorActionsHandler::OnMenuRegistrationHook()
         menuProperties.m_name = "Viewport Context Menu";
         m_menuManagerInterface->RegisterMenu(EditorIdentifiers::ViewportContextMenuIdentifier, menuProperties);
     }
+    {
+        AzToolsFramework::MenuProperties menuProperties;
+        menuProperties.m_name = "Create";
+        m_menuManagerInterface->RegisterMenu(EditorIdentifiers::EntityCreationMenuIdentifier, menuProperties);
+    }
 
 }
 
@@ -1926,8 +1892,6 @@ void EditorActionsHandler::OnMenuBindingHook()
         }
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.simulate", 200);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 300);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.exportSelectedObjects", 400);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.exportOcclusionMesh", 500);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.movePlayerAndCameraSeparately", 700);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 800);
@@ -2022,6 +1986,8 @@ void EditorActionsHandler::OnMenuBindingHook()
     }
 
     // Entity Outliner Context Menu
+    m_menuManagerInterface->AddSubMenuToMenu(
+        EditorIdentifiers::EntityOutlinerContextMenuIdentifier, EditorIdentifiers::EntityCreationMenuIdentifier, 200);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 10000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 20000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, 30000);
@@ -2034,6 +2000,8 @@ void EditorActionsHandler::OnMenuBindingHook()
     m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.view.centerOnSelection", 80100);
 
     // Viewport Context Menu
+    m_menuManagerInterface->AddSubMenuToMenu(
+        EditorIdentifiers::ViewportContextMenuIdentifier, EditorIdentifiers::EntityCreationMenuIdentifier, 200);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 10000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 20000);
     m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, 30000);
@@ -2628,7 +2596,7 @@ void EditorActionsHandler::RefreshToolActions()
                 },
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]() -> bool
                 {
-                    return viewpaneManager->IsVisible(viewpaneName);
+                    return viewpaneManager->IsEnumeratedInstanceVisible(viewpaneName);
                 }
             );
 

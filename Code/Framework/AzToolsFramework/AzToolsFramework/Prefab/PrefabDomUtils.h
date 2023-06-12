@@ -214,6 +214,15 @@ namespace AzToolsFramework
 
             AZStd::string PrefabDomValueToString(const PrefabDomValue& prefabDomValue);
 
+            //! Adds a nested instance to the prefab DOM and optionally initialize its contents.
+            //! @param prefabDom The prefab DOM to udpate.
+            //! @param nestedInstanceAlias The alias of the nested instance to be added.
+            //! @param nestedInstanceDom An optional value to assign to the added nested instance in the prefab DOM.
+            void AddNestedInstance(
+                PrefabDom& prefabDom,
+                const InstanceAlias& nestedInstanceAlias,
+                PrefabDomValueConstReference nestedInstanceDom = AZStd::nullopt);
+
             //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
             //! If present in metadata, linkIds will be stored to instance dom.
             struct LinkIdMetadata

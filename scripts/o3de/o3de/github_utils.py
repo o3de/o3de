@@ -13,10 +13,11 @@ import json
 import logging
 import pathlib
 import urllib.parse
+from urllib.parse import ParseResult
 import urllib.request
 import subprocess
 
-from o3de import gitproviderinterface
+from o3de import gitproviderinterface, utils
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
@@ -24,7 +25,7 @@ logger = logging.getLogger('o3de.github_utils')
 logging.basicConfig(format=LOG_FORMAT)
 
 class GitHubProvider(gitproviderinterface.GitProviderInterface):
-    def get_specific_file_uri(parsed_uri):
+    def get_specific_file_uri(self, parsed_uri: ParseResult):
         components = parsed_uri.path.split('/')
         components = [ele for ele in components if ele.strip()]
 
@@ -48,11 +49,25 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return parsed_uri
 
-    def clone_from_git(uri, download_path: pathlib.Path) -> int:
+    def clone_from_git(self, uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
         """
         :param uri: uniform resource identifier
         :param download_path: location path on disk to download file
+        :param ref: optional source control reference (commit/branch/tag) 
         """
+        if download_path.exists():
+            # check if the path is not empty
+            if any(download_path.iterdir()):
+                if not force_overwrite:
+                    logger.error(f'Cannot clone into non-empty folder {download_path}')
+                    return 1
+                else:
+                    try:
+                        utils.remove_dir_path(download_path)
+                    except OSError:
+                        logger.error(f'Could not remove existing download path {download_path}')
+                        return 1
+
         params = ["git", "clone", uri, download_path.as_posix()]
         try:
             with subprocess.Popen(params, stdout=subprocess.PIPE) as proc:
@@ -61,9 +76,18 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
             logger.error(str(e))
             return 1
 
+        if proc.returncode == 0 and ref:
+            params = ["git", "-C", download_path.as_posix(), "reset", "--hard", ref]
+            try:
+                with subprocess.Popen(params, stdout=subprocess.PIPE) as proc:
+                    print(proc.stdout.read())
+            except Exception as e:
+                logger.error(str(e))
+                return 1
+
         return proc.returncode
 
-def get_github_provider(parsed_uri) -> GitHubProvider or None:
+def get_github_provider(parsed_uri: ParseResult) -> GitHubProvider or None:
     if 'github.com' in parsed_uri.netloc:
         components = parsed_uri.path.split('/')
         components = [ele for ele in components if ele.strip()]
@@ -72,6 +96,6 @@ def get_github_provider(parsed_uri) -> GitHubProvider or None:
             return None
 
         if components[1].endswith(".git"):
-            return GitHubProvider
+            return GitHubProvider()
 
     return None

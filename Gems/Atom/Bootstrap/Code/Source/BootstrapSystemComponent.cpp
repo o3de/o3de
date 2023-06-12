@@ -46,10 +46,14 @@
 #include <AzCore/Console/IConsole.h>
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
-AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default Render pipeline name");
+AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default render pipeline name");
+AZ_CVAR(AZ::CVarFixedString, r_default_openxr_pipeline_name, "passes/MultiViewRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr render pipeline name");
+AZ_CVAR(AZ::CVarFixedString, r_default_openxr_left_pipeline_name, "passes/XRLeftRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr Left eye render pipeline name");
+AZ_CVAR(AZ::CVarFixedString, r_default_openxr_right_pipeline_name, "passes/XRRightRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr Right eye render pipeline name");
 AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
+AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 
 namespace AZ
 {
@@ -175,6 +179,24 @@ namespace AZ
                     }
                 }
 
+                const AZStd::string resolutionModeCvarName("r_resolutionMode");
+                if (pCmdLine->HasSwitch(resolutionModeCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(resolutionModeCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(resolutionModeCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto resolutionMode = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (resolutionMode >= 0)
+                            {
+                                r_resolutionMode = resolutionMode;
+                            }
+                        }
+                    }
+                }
+
             }
 
             void BootstrapSystemComponent::Activate()
@@ -227,6 +249,15 @@ namespace AZ
                         if (m_nativeWindow)
                         {
                             // wait until swapchain has been created before setting fullscreen state
+                            if (r_resolutionMode > 0u)
+                            {
+                                m_nativeWindow->SetEnableCustomizedResolution(true);
+                                m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
+                            }
+                            else
+                            {
+                                m_nativeWindow->SetEnableCustomizedResolution(false);
+                            }
                             m_nativeWindow->SetFullScreenState(r_fullscreen);
                         }
                     });
@@ -406,7 +437,7 @@ namespace AZ
                         ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::QueryApplicationType, appType);
                         if (appType.IsGame())
                         {
-                            pipelineName = "passes/MultiViewRenderPipeline.azasset";
+                            pipelineName = r_default_openxr_pipeline_name;
                         }
                     }
 
@@ -452,8 +483,8 @@ namespace AZ
                             ? AZ::RPI::ViewType::XrLeft
                             : AZ::RPI::ViewType::XrRight;
                         const AZStd::string_view xrPipelineAssetName = (viewType == AZ::RPI::ViewType::XrLeft)
-                            ? "passes/XRLeftRenderPipeline.azasset"
-                            : "passes/XRRightRenderPipeline.azasset";
+                            ? static_cast<AZ::CVarFixedString>(r_default_openxr_left_pipeline_name)
+                            : static_cast<AZ::CVarFixedString>(r_default_openxr_right_pipeline_name);
 
                         if (!LoadPipeline(scene, viewportContext, xrPipelineAssetName, viewType, multisampleState))
                         {

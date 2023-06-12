@@ -116,6 +116,8 @@ def MaterialEditor_BasicFunctionalityChecks_AllChecksPass():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
+        # Disable registry settings to prevent message boxes from blocking test progression.
+        atom_tools_utils.disable_document_message_box_settings()
 
         # Set constants before starting test steps.
         standard_pbr_material_type = os.path.join(atom_tools_utils.MATERIAL_TYPES_PATH, "StandardPBR.materialtype")

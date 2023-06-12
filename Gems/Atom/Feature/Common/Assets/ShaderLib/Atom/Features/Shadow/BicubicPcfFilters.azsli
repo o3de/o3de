@@ -22,6 +22,9 @@
 // Computes shadows using a 3x3 kernel, but optimized to 4-taps using bilinear fetches.
 //--------------------------------------------------------------------------------------------------
 
+// Margin to avoid counting samples past the shadows bounds as being in shadow.
+static const float DepthMargin = 1.0 - 1e-6;
+
 struct SampleShadowMapBicubicParameters
 {
     Texture2DArray<float> shadowMap;
@@ -62,7 +65,10 @@ float SampleShadowMapBicubic_4Tap(SampleShadowMapBicubicParameters param)
     for(int i = 0 ; i < 4; ++i)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;       
-        const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
+        fragmentDistance = min(fragmentDistance, DepthMargin);
+
         shadow += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
     }
 
@@ -108,7 +114,9 @@ float SampleShadowMapBicubic_9Tap(SampleShadowMapBicubicParameters param)
     for(int i = 0 ; i < 9 ; ++i)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
-        const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
+        fragmentDistance = min(fragmentDistance, DepthMargin);
        
         shadowResult += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
     }
@@ -158,7 +166,9 @@ float SampleShadowMapBicubic_16Tap(SampleShadowMapBicubicParameters param)
     for(int i = 0 ; i < 16 ; ++i)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
-        const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
+        fragmentDistance = min(fragmentDistance, DepthMargin);
 
         shadow += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
     }

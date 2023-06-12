@@ -20,6 +20,8 @@ namespace Multiplayer
     class NetBindComponent;
     class EntityReplicationManager;
 
+    //! @class PropertySubscriber
+    //! @brief Private helper class for the EntityReplicator to help manage applying entity adds/updates/deletes to subscribers
     class PropertySubscriber
     {
     public:

@@ -531,7 +531,7 @@ namespace AzQtComponents
         AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
         const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
         AZ_POP_DISABLE_WARNING
-        QString plainTextPath;
+
         QString linkColor = isEnabled() ? m_config.linkColor : m_config.disabledLinkColor;
         auto formatLink = [linkColor](const QString& fullPath, const QString& shortPath) -> QString
         {
@@ -552,8 +552,6 @@ namespace AzQtComponents
         }
 
         // last section is not clickable
-        plainTextPath = m_truncatedPaths.takeLast();
-
         int index = m_currentPathSize - 1;
 
         // to estimate how much the rendered html will take, we need to take icons into account
@@ -561,8 +559,16 @@ namespace AzQtComponents
 
         const QString firstIconHtml = generateIconHtml(index);
         totalIconsWidth += firstIconHtml.isEmpty() ? .0 : iconSpaceWidth;
-        htmlString.prepend(generateIconHtml(index) + plainTextPath);
+
+        if ((fm.horizontalAdvance(m_truncatedPaths.last()) + totalIconsWidth) > availableWidth)
+        {
+            m_label->clear();
+            return;
+        }
+        htmlString.prepend(firstIconHtml + m_truncatedPaths.takeLast());
         --index;
+
+        QString plainTextPath;
 
         if (!m_truncatedPaths.isEmpty())
         {
@@ -698,7 +704,7 @@ namespace AzQtComponents
     void BreadCrumbs::showTruncatedPathsMenu()
     {
         QMenu hiddenPaths;
-        for (int i = m_truncatedPaths.size() - 1; i >= 0; i--)
+        for (int i = 0; i < m_truncatedPaths.size(); ++i)
         {
             hiddenPaths.addAction(m_truncatedPaths.at(i), [this, i]() {
                 onLinkActivated(buildPathFromList(m_truncatedPaths, i + 1));

@@ -22,13 +22,11 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::LmbrCentral
-            Gem::SurfaceData
+            Gem::LmbrCentral.API
+            Gem::SurfaceData.Static
             Legacy::CryCommon
         PUBLIC
             Gem::AtomLyIntegration_CommonFeatures.Static
-    RUNTIME_DEPENDENCIES
-        Gem::GradientSignal
 )
 
 ly_add_target(
@@ -112,5 +110,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::Vegetation.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

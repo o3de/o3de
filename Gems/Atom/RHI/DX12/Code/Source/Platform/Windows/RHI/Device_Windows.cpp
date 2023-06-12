@@ -20,6 +20,8 @@
 #include <Atom/RHI/FactoryManagerBus.h>
 #include <comdef.h>
 
+#include <dx12ma/D3D12MemAlloc.h>
+
 namespace AZ
 {
     namespace DX12
@@ -421,14 +423,7 @@ namespace AZ
 
         bool Device::AssertSuccess(HRESULT hr)
         {
-            if (hr == DXGI_ERROR_DEVICE_REMOVED)
-            {
-                OnDeviceRemoved();
-            }
-
-            bool success = SUCCEEDED(hr);
-            AZ_Assert(success, "HRESULT not a success %x", hr);
-            return success;
+            return DX12::AssertSuccess(hr);
         }
 
         void Device::OnDeviceRemoved()
@@ -886,6 +881,13 @@ namespace AZ
 
         RHI::ResultCode Device::BeginFrameInternal()
         {
+#ifdef USE_AMD_D3D12MA
+            static uint32_t frameIndex = 0;
+            if (m_dx12MemAlloc)
+            {
+                m_dx12MemAlloc->SetCurrentFrameIndex(++frameIndex);
+            }
+#endif
             m_commandQueueContext.Begin();
             return RHI::ResultCode::Success;
         }

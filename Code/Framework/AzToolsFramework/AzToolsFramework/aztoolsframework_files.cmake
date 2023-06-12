@@ -26,6 +26,9 @@ set(FILES
     ActionManager/HotKey/HotKeyManager.h
     ActionManager/HotKey/HotKeyManagerInterface.h
     ActionManager/HotKey/HotKeyManagerInternalInterface.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.cpp
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -402,26 +405,28 @@ set(FILES
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
+    UI/DocumentPropertyEditor/GenericButtonHandler.cpp
+    UI/DocumentPropertyEditor/GenericButtonHandler.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
+    UI/DocumentPropertyEditor/KeyQueryDPE.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
-    UI/DocumentPropertyEditor/IPropertyEditor.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
-    UI/DocumentPropertyEditor/KeyQueryDPE.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/SettingsRegistrar.cpp
     UI/DocumentPropertyEditor/SettingsRegistrar.h
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp
@@ -699,10 +704,14 @@ set(FILES
     AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
+    AssetBrowser/AssetBrowserTableFilterModel.cpp
+    AssetBrowser/AssetBrowserTableFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
-    AssetBrowser/AssetBrowserTableModel.cpp
-    AssetBrowser/AssetBrowserTableModel.h
+    AssetBrowser/AssetBrowserListModel.cpp
+    AssetBrowser/AssetBrowserListModel.h
+    AssetBrowser/AssetBrowserTableViewProxyModel.cpp
+    AssetBrowser/AssetBrowserTableViewProxyModel.h
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp
@@ -717,6 +726,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTreeView.h
     AssetBrowser/Views/AssetBrowserTreeViewDialog.cpp
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
+    AssetBrowser/Views/AssetBrowserListView.cpp
+    AssetBrowser/Views/AssetBrowserListView.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp
@@ -909,6 +920,10 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.h
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.h
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.cpp
     Prefab/Undo/PrefabUndoDelete.h
     Prefab/Undo/PrefabUndoDelete.cpp
     Prefab/Undo/PrefabUndoDeleteAsOverride.h

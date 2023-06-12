@@ -6,8 +6,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core
+    Stack
 )
+from constructs import Construct
 
 from .real_time_data_processing import RealTimeDataProcessing
 from .data_ingestion import DataIngestion
@@ -17,7 +18,7 @@ from .data_lake_integration import DataLakeIntegration
 from .dashboard import Dashboard
 
 
-class AWSMetricsStack(core.Stack):
+class AWSMetricsStack(Stack):
     """
     Create the feature stack for the AWSMetrics Gem.
 
@@ -27,7 +28,7 @@ class AWSMetricsStack(core.Stack):
     """
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id_: str,
                  application_name: str,
                  optional_features: dict,
@@ -73,7 +74,8 @@ class AWSMetricsStack(core.Stack):
             application_name=application_name,
             analytics_processing_lambda_name=self._real_time_data_processing.analytics_processing_lambda_name,
             delivery_stream_name=self._batch_processing.delivery_stream_name if batch_processing_enabled else '',
-            events_processing_lambda_name=self._batch_processing.events_processing_lambda_name if batch_processing_enabled else ''
+            events_processing_lambda_name=
+                self._batch_processing.events_processing_lambda_name if batch_processing_enabled else ''
         )
 
     @property

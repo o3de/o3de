@@ -69,7 +69,7 @@ namespace AzToolsFramework
             //! Default loading thumbnail used when thumbnail is found by is not yet generated
             SharedThumbnail m_loadingThumbnail;
             //! Maximum number of concurrent jobs allowed.
-            const int m_maxThumbnailJobs{ 64 };
+            int m_maxThumbnailJobs;
             //! Current number of jobs running.
             int m_currentJobsCount;
         };

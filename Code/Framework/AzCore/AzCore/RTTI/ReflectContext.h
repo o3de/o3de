@@ -270,13 +270,12 @@ namespace AZ
         }
 
         /// Gets a marshaleld Dom::Value representation of this attribute bound to a given instance.
-        /// By default this just serializes a pointer to the instance and this attribute, but for non-invokable
-        /// attributes this is just abbreviated to a marshalled version of the data stored in the attribute.
+        /// By default this is just abbreviated to a marshalled version of the data stored in the attribute,
+        /// but for invokable attributes, override this method to serializes a pointer to the instance and this attribute
         virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance)
         {
             AZ::Dom::Value result(AZ::Dom::Type::Object);
             result[s_typeField] = Dom::Value(GetTypeName(), false);
-            result[s_instanceField] = AZ::Dom::Utils::ValueFromType(instance);
             result[s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
             return result;
         }
@@ -304,13 +303,15 @@ namespace AZ
         bool m_describesChildren = false;
         bool m_childClassOwned = false;
 
+    protected:
+        static const AZ::Name s_typeField;
+        static const AZ::Name s_instanceField;
+        static const AZ::Name s_attributeField;
+
     private:
         AZStd::unique_ptr<void, ContextDeleter> m_contextData; ///< a generic value you can use to store extra data associated with the attribute
 
         static void DefaultDelete(void*) { }
-        static const AZ::Name s_typeField;
-        static const AZ::Name s_instanceField;
-        static const AZ::Name s_attributeField;
     };
 
     typedef AZ::u32 AttributeId;
@@ -348,7 +349,7 @@ namespace AZ
         T& operator = (T& data) { m_data = data; return m_data; }
         T& operator = (const T& data) { m_data = data; return m_data; }
 
-        AZ::Dom::Value GetAsDomValue(void*) override
+        AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance) override
         {
             if constexpr (AZStd::is_copy_constructible_v<T>)
             {
@@ -687,6 +688,16 @@ namespace AZ
                 return Invoke(instance, args...);
             }), arguments);
         }
+
+        AZ::Dom::Value GetAsDomValue(void* instance) override
+        {
+            auto classInstance = reinterpret_cast<C*>(instance);
+            AZ::Dom::Value result(AZ::Dom::Type::Object);
+            result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
+            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+            result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+            return result;
+        }
     private:
         FunctionPtr m_memFunction;
     };
@@ -715,6 +726,16 @@ namespace AZ
         AZ::Uuid GetInstanceType() const override
         {
             return AzTypeInfo<C>::Uuid();
+        }
+
+        AZ::Dom::Value GetAsDomValue(void* instance) override
+        {
+            auto classInstance = reinterpret_cast<C*>(instance);
+            AZ::Dom::Value result(AZ::Dom::Type::Object);
+            result[Attribute::s_typeField] = Dom::Value(Attribute::GetTypeName(), false);
+            result[Attribute::s_instanceField] = AZ::Dom::Utils::ValueFromType(classInstance);
+            result[Attribute::s_attributeField] = AZ::Dom::Utils::ValueFromType(this);
+            return result;
         }
 
         FunctionPtr GetMemberFunctionPtr() const

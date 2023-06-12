@@ -137,7 +137,7 @@ namespace EMotionFX
 
         const char* AnimGraphAssetHandler::GetBrowserIcon() const
         {
-            return "Editor/Images/AssetBrowser/AnimGraph_16.svg";
+            return "Editor/Images/AssetBrowser/AnimGraph_80.svg";
         }
 
         //////////////////////////////////////////////////////////////////////////

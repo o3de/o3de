@@ -85,14 +85,10 @@ set(FILES
     Source/RHI/RenderPassBuilder.cpp
     Source/RHI/RenderPassBuilder.h
     Source/RHI/ResourcePoolResolver.h
-    Source/RHI/MemoryTypeView.h
     Source/RHI/MemoryView.h
-    Source/RHI/Memory.cpp
-    Source/RHI/Memory.h
-    Source/RHI/MemoryTypeAllocator.h
-    Source/RHI/MemoryAllocator.h
-    Source/RHI/MemoryPageAllocator.cpp
-    Source/RHI/MemoryPageAllocator.h
+    Source/RHI/MemoryTypeView.h
+    Source/RHI/VulkanMemoryAllocation.cpp
+    Source/RHI/VulkanMemoryAllocation.h
     Source/RHI/Instance.cpp
     Source/RHI/Instance.h
     Source/RHI/PhysicalDevice.cpp
@@ -139,7 +135,6 @@ set(FILES
     Source/RHI/AliasingBarrierTracker.cpp
     Source/RHI/TransientAttachmentPool.cpp
     Source/RHI/TransientAttachmentPool.h
-    Source/RHI/TileAllocator.h
     Source/RHI/SignalEvent.cpp
     Source/RHI/SignalEvent.h
     Source/RHI/NullDescriptorManager.cpp
@@ -151,10 +146,7 @@ set(FILES
     Source/RHI/ReleaseContainer.h
     Source/RHI/BufferMemory.cpp
     Source/RHI/BufferMemory.h
-    Source/RHI/BufferMemoryPageAllocator.cpp
-    Source/RHI/BufferMemoryPageAllocator.h
     Source/RHI/BufferMemoryView.h
-    Source/RHI/BufferMemoryAllocator.h
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h

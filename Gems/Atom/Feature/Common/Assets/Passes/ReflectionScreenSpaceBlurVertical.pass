@@ -8,41 +8,28 @@
             "PassClass": "ReflectionScreenSpaceBlurChildPass",
             "Slots": [
                 {
-                    "Name": "DepthInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
-                },
-                {
                     "Name": "Input",
-                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_input",
+                    "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "Output",
-                    "SlotType": "InputOutput",
+                    "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
-                },
-                {
-                    "Name": "DownsampledDepthOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ],
             "Connections": [
                 {
-                    "LocalSlot": "DepthInput",
+                    "LocalSlot": "Input",
                     "AttachmentRef": {
                         "Pass": "Parent",
-                        "Attachment": "DepthInput"
+                        "Attachment": "ScreenSpaceReflectionInputOutput"
                     }
                 }
             ],
-            "PassData": {
+            "PassData":
+            {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.shader"

@@ -21,6 +21,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Commands/EntityManipulatorCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeSwitcher.h>
@@ -1026,12 +1027,6 @@ namespace AzToolsFramework
 
         m_editorHelpers = AZStd::make_unique<EditorHelpers>(entityDataCache);
 
-        // New Action Manager registers an action to handle Escape.
-        if (!IsNewActionManagerEnabled())
-        {
-            EditorEventsBus::Handler::BusConnect();
-        }
-
         ActionManagerRegistrationNotificationBus::Handler::BusConnect();        
         EditorTransformComponentSelectionRequestBus::Handler::BusConnect(entityContextId);
         ToolsApplicationNotificationBus::Handler::BusConnect();
@@ -1050,24 +1045,17 @@ namespace AzToolsFramework
         CreateSpaceSelectionCluster();
         CreateSnappingCluster();
 
-        if (IsNewActionManagerEnabled())
-        {
-            m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-            AZ_Assert(
-                m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
+        m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+        AZ_Assert(
+            m_actionManagerInterface, "PrefabCould not get ActionManagerInterface on EditorTransformComponentSelection construction.");
 
-            m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
-            AZ_Assert(
-                m_hotKeyManagerInterface, "PrefabCould not get HotKeyManagerInterface on EditorTransformComponentSelection construction.");
+        m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
+        AZ_Assert(
+            m_hotKeyManagerInterface, "PrefabCould not get HotKeyManagerInterface on EditorTransformComponentSelection construction.");
 
-            m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
-            AZ_Assert(
-                m_menuManagerInterface, "PrefabCould not get MenuManagerInterface on EditorTransformComponentSelection construction.");
-        }
-        else
-        {
-            RegisterActions();
-        }
+        m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+        AZ_Assert(
+            m_menuManagerInterface, "PrefabCould not get MenuManagerInterface on EditorTransformComponentSelection construction.");
 
         SetupBoxSelect();
         RefreshSelectedEntityIdsAndRegenerateManipulators();
@@ -1095,11 +1083,6 @@ namespace AzToolsFramework
         DestroyCluster(m_spaceCluster.m_clusterId);
         DestroyCluster(m_snappingCluster.m_clusterId);
 
-        if (!IsNewActionManagerEnabled())
-        {
-            UnregisterActions();
-        }
-
         m_pivotOverrideFrame.Reset();
 
         ReadOnlyEntityPublicNotificationBus::Handler::BusDisconnect();
@@ -1114,11 +1097,6 @@ namespace AzToolsFramework
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorTransformComponentSelectionRequestBus::Handler::BusDisconnect();
         ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-
-        if (!IsNewActionManagerEnabled())
-        {
-            EditorEventsBus::Handler::BusDisconnect();
-        }
     }
 
     void EditorTransformComponentSelection::SetupBoxSelect()
@@ -2202,11 +2180,6 @@ namespace AzToolsFramework
         EditorActionRequestBus::Broadcast(&EditorActionRequests::AddActionViaBusCrc, actionId, actions.back().get());
     }
 
-    void EditorTransformComponentSelection::OnEscape()
-    {
-        DeselectEntities();
-    }
-
     // helper to enumerate all scene/level entities (will filter out system entities)
     template<typename Func>
     static void EnumerateEditorEntities(const Func& func)
@@ -2243,308 +2216,26 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorTransformComponentSelection::RegisterActions()
-    {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-        const auto lockUnlock = [this](const bool lock)
-        {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-            ScopedUndoBatch undoBatch(LockSelectionUndoRedoDesc);
-
-            if (m_entityIdManipulators.m_manipulators)
-            {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-            }
-
-            // make a copy of selected entity ids
-            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
-            for (AZ::EntityId entityId : selectedEntityIds)
-            {
-                ScopedUndoBatch::MarkEntityDirty(entityId);
-                SetEntityLockState(entityId, lock);
-            }
-
-            RegenerateManipulators();
-        };
-
-        // lock selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_L) }, LockSelection, LockSelectionTitle, LockSelectionDesc,
-            [lockUnlock]
-            {
-                lockUnlock(true);
-            });
-
-        // unlock selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_L) }, UnlockSelection, LockSelectionTitle, LockSelectionDesc,
-            [lockUnlock]
-            {
-                lockUnlock(false);
-            });
-
-        const auto showHide = [this](const bool show)
-        {
-            AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-            ScopedUndoBatch undoBatch(HideSelectionUndoRedoDesc);
-
-            if (m_entityIdManipulators.m_manipulators)
-            {
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-            }
-
-            // make a copy of selected entity ids
-            const auto selectedEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
-            for (AZ::EntityId entityId : selectedEntityIds)
-            {
-                ScopedUndoBatch::MarkEntityDirty(entityId);
-                SetEntityVisibility(entityId, show);
-            }
-
-            RegenerateManipulators();
-        };
-
-        // hide selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_H) }, HideSelection, HideSelectionTitle, HideSelectionDesc,
-            [showHide]
-            {
-                showHide(false);
-            });
-
-        // show selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_H) }, ShowSelection, HideSelectionTitle, HideSelectionDesc,
-            [showHide]
-            {
-                showHide(true);
-            });
-
-        // unlock all entities in the level/scene
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_L) }, UnlockAll, UnlockAllTitle, UnlockAllDesc,
-            []
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(UnlockAllUndoRedoDesc);
-
-                EnumerateEditorEntities(
-                    [](AZ::EntityId entityId)
-                    {
-                        ScopedUndoBatch::MarkEntityDirty(entityId);
-                        SetEntityLockState(entityId, false);
-                    });
-            });
-
-        // show all entities in the level/scene
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H) }, ShowAll, ShowAllTitle, ShowAllDesc,
-            []
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(ShowAllEntitiesUndoRedoDesc);
-
-                EnumerateEditorEntities(
-                    [](const AZ::EntityId entityId)
-                    {
-                        ScopedUndoBatch::MarkEntityDirty(entityId);
-                        SetEntityVisibility(entityId, true);
-                    });
-            });
-
-        // select all entities in the level/scene
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_A) }, SelectAll, SelectAllTitle, SelectAllDesc,
-            [this]
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(SelectAllEntitiesUndoRedoDesc);
-
-                if (m_entityIdManipulators.m_manipulators)
-                {
-                    auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
-
-                    // note, nothing will change that the manipulatorCommand needs to keep track
-                    // for after so no need to call SetManipulatorAfter
-
-                    manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
-                    manipulatorCommand.release();
-                }
-
-                EnumerateEditorEntities(
-                    [this](AZ::EntityId entityId)
-                    {
-                        if (IsSelectableInViewport(entityId))
-                        {
-                            AddEntityToSelection(entityId);
-                        }
-                    });
-
-                auto nextEntityIds = EntityIdVectorFromContainer(m_selectedEntityIds);
-
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, SelectAllEntitiesUndoRedoDesc);
-                selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                selectionCommand.release();
-
-                SetSelectedEntities(nextEntityIds);
-                RegenerateManipulators();
-            });
-
-        // invert current selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I) }, InvertSelect, InvertSelectionTitle, InvertSelectionDesc,
-            [this]
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(InvertSelectionUndoRedoDesc);
-
-                if (m_entityIdManipulators.m_manipulators)
-                {
-                    auto manipulatorCommand =
-                        AZStd::make_unique<EntityManipulatorCommand>(CreateManipulatorCommandStateFromSelf(), ManipulatorUndoRedoName);
-
-                    // note, nothing will change that the manipulatorCommand needs to keep track
-                    // for after so no need to call SetManipulatorAfter
-
-                    manipulatorCommand->SetParent(undoBatch.GetUndoBatch());
-                    manipulatorCommand.release();
-                }
-
-                EntityIdSet entityIds;
-                EnumerateEditorEntities(
-                    [this, &entityIds](AZ::EntityId entityId)
-                    {
-                        const auto entityIdIt = AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), entityId);
-                        if (entityIdIt == m_selectedEntityIds.end())
-                        {
-                            if (IsSelectableInViewport(entityId))
-                            {
-                                entityIds.insert(entityId);
-                            }
-                        }
-                    });
-
-                m_selectedEntityIds = entityIds;
-
-                auto nextEntityIds = EntityIdVectorFromContainer(entityIds);
-
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(nextEntityIds, InvertSelectionUndoRedoDesc);
-                selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                selectionCommand.release();
-
-                SetSelectedEntities(nextEntityIds);
-                RegenerateManipulators();
-            });
-
-        // duplicate selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_D) }, DuplicateSelect, DuplicateTitle, DuplicateDesc,
-            []
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(DuplicateUndoRedoDesc);
-                auto selectionCommand = AZStd::make_unique<SelectionCommand>(EntityIdList(), DuplicateUndoRedoDesc);
-                selectionCommand->SetParent(undoBatch.GetUndoBatch());
-                selectionCommand.release();
-
-                bool handled = false;
-                EditorRequestBus::Broadcast(&EditorRequests::CloneSelection, handled);
-
-                // selection update handled in AfterEntitySelectionChanged
-            });
-
-        // delete selection
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_Delete) }, DeleteSelect, DeleteTitle, DeleteDesc,
-            [this]
-            {
-                AZ_PROFILE_FUNCTION(AzToolsFramework);
-
-                ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
-
-                CreateEntityManipulatorDeselectCommand(undoBatch);
-
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequests::DeleteEntitiesAndAllDescendants, EntityIdVectorFromContainer(m_selectedEntityIds));
-
-                m_selectedEntityIds.clear();
-                m_pivotOverrideFrame.Reset();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_Space) }, EditEscaspe, "", "",
-            [this]
-            {
-                DeselectEntities();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_P) }, EditPivot, TogglePivotTitleEditMenu, TogglePivotDesc,
-            [this]
-            {
-                ToggleCenterPivotSelection();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_R) }, EditReset, ResetEntityTransformTitle, ResetEntityTransformDesc,
-            [this]
-            {
-                switch (m_mode)
-                {
-                case Mode::Rotation:
-                    ResetOrientationForSelectedEntitiesLocal();
-                    break;
-                case Mode::Scale:
-                    CopyScaleToSelectedEntitiesIndividualLocal(1.0f);
-                    break;
-                case Mode::Translation:
-                    ResetTranslationForSelectedEntitiesLocal();
-                    break;
-                }
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::CTRL + Qt::Key_R) }, EditResetManipulator, ResetManipulatorTitle, ResetManipulatorDesc,
-            [this]
-            {
-                DelegateClearManipulatorOverride();
-            });
-
-        AddAction(
-            m_actions, { QKeySequence(Qt::Key_U) }, ViewportUiVisible, "Toggle Viewport UI", "Hide/Show Viewport UI",
-            [this]
-            {
-                SetAllViewportUiVisible(!m_viewportUiVisible);
-            });
-
-        EditorMenuRequestBus::Broadcast(&EditorMenuRequests::RestoreEditMenuToDefault);
-    }
-
     void EditorTransformComponentSelection::OnActionUpdaterRegistrationHook()
     {
-        if (!IsNewActionManagerEnabled())
-        {
-            return;
-        }
-
         m_actionManagerInterface->RegisterActionUpdater(TransformModeChangedUpdaterIdentifier);
     }
 
     void EditorTransformComponentSelection::OnActionRegistrationHook()
     {
-        if (!IsNewActionManagerEnabled())
+        auto IsInEditorPickMode = []() -> bool
         {
-            return;
-        }
+            if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+            {
+                auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+                if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        };
 
         // Duplicate
         {
@@ -2647,9 +2338,15 @@ namespace AzToolsFramework
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                [this, IsInEditorPickMode]()
                 {
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+                    // Don't allow users to delete entities while in Entity Picker mode.
+                    if (IsInEditorPickMode())
+                    {
+                        return;
+                    }
 
                     ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
 
@@ -2665,8 +2362,14 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->InstallEnabledStateCallback(
                 actionIdentifier,
-                []() -> bool
+                [IsInEditorPickMode]() -> bool
                 {
+                    // Disable this action in Entity Picker mode.
+                    if (IsInEditorPickMode())
+                    {
+                        return false;
+                    }
+
                     auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
                     if (!readOnlyEntityPublicInterface)
                     {
@@ -2693,8 +2396,9 @@ namespace AzToolsFramework
                 }
             );
 
-            // Trigger update whenever entity selection changes.
+            // Update this action's enabled state whenever entity selection changes, or entity pick mode is triggered.
             m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+            m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntityPickingModeChangedUpdaterIdentifier, actionIdentifier);
 
             // This action is only accessible outside of Component Modes
             m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -3405,16 +3109,6 @@ namespace AzToolsFramework
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.duplicate", 40100);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.delete", 40200);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.edit.togglePivot", 60200);
-    }
-
-    void EditorTransformComponentSelection::UnregisterActions()
-    {
-        for (auto& action : m_actions)
-        {
-            EditorActionRequestBus::Broadcast(&EditorActionRequests::RemoveActionViaBus, action.get());
-        }
-
-        m_actions.clear();
     }
 
     void EditorTransformComponentSelection::UnregisterManipulator()

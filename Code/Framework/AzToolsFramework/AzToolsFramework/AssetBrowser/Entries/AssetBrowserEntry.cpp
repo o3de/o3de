@@ -59,7 +59,12 @@ namespace AzToolsFramework
             "Sub ID",
             "Asset Type",
             "Class ID",
-            "Display Name"
+            "Display Name",
+            "Type",
+            "Disk Size (KiB)",
+            "Vertices",
+            "Approximate Size",
+            "Source Control Status"
         };
 
         AssetBrowserEntry::AssetBrowserEntry()
@@ -165,7 +170,7 @@ namespace AzToolsFramework
             return m_displayName;
         }
 
-         const QString& AssetBrowserEntry::GetDisplayPath() const
+        const QString& AssetBrowserEntry::GetDisplayPath() const
         {
             return m_displayPath;
         }
@@ -191,6 +196,26 @@ namespace AzToolsFramework
             }
 
             return m_fullPath.Native();
+        }
+
+        const size_t AssetBrowserEntry::GetDiskSize() const
+        {
+            return m_diskSize;
+        }
+
+        const AZ::u64 AssetBrowserEntry::GetModificationTime() const
+        {
+            return m_modificationTime;
+        }
+
+        const AZ::Vector3& AssetBrowserEntry::GetDimension() const
+        {
+            return m_dimension;
+        }
+
+        const uint32_t AssetBrowserEntry::GetNumVertices() const
+        {
+            return m_vertices;
         }
 
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const

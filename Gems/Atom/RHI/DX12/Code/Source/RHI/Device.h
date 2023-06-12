@@ -27,6 +27,14 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
+#define USE_AMD_D3D12MA
+#ifdef USE_AMD_D3D12MA
+#include <dx12ma/D3D12MemAlloc.h>
+
+AZ_DX12_REFCOUNTED(D3D12MA::Allocator);
+AZ_DX12_REFCOUNTED(D3D12MA::Allocation);
+#endif
+
 namespace AZ
 {
     namespace RHI
@@ -69,6 +77,12 @@ namespace AZ
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);
 
+#ifdef USE_AMD_D3D12MA
+            MemoryView CreateD3d12maBuffer(
+                const RHI::BufferDescriptor& bufferDescriptor,
+                D3D12_RESOURCE_STATES initialState,
+                D3D12_HEAP_TYPE heapType);
+#endif
             MemoryView CreateBufferCommitted(
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
@@ -145,13 +159,16 @@ namespace AZ
             // callback function which is called when device was removed
             void OnDeviceRemoved();
 
+            // return the binding slot of the bindless srg
+            uint32_t GetBindlessSrgSlot() const;
+
         private:
             Device();
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-
+            RHI::ResultCode InitInternalBindlessSrg(const RHI::BindlessSrgDescriptor& bindlessSrgDesc) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
             void UpdateCpuTimingStatisticsInternal() const override;
@@ -175,11 +192,25 @@ namespace AZ
 
             void InitDeviceRemovalHandle();
 
+#ifdef USE_AMD_D3D12MA
+            RHI::ResultCode InitD3d12maAllocator();
+#endif
             void InitFeatures();
+
+            void ConvertBufferDescriptorToResourceDesc(
+                const RHI::BufferDescriptor& bufferDescriptor,
+                D3D12_RESOURCE_STATES initialState,
+                D3D12_RESOURCE_DESC& output
+            );
 
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
+
+#ifdef USE_AMD_D3D12MA
+            RHI::Ptr<D3D12MA::Allocator> m_dx12MemAlloc;
+            D3d12maReleaseQueue m_D3d12maReleaseQueue;
+#endif
 
             ReleaseQueue m_releaseQueue;
 
@@ -211,6 +242,9 @@ namespace AZ
             bool m_onDeviceRemoved = false;
             AZStd::mutex m_onDeviceRemovedMutex;
             HANDLE m_waitHandle;
+
+            // Cache bindless srg bind slot
+            uint32_t m_bindlesSrgBindingSlot = AZ::RHI::InvalidIndex;
         };
     }
 }

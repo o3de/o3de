@@ -94,7 +94,14 @@ namespace AZ
 
         const char* ShaderPlatformInterface::GetAzslHeader([[maybe_unused]] const AssetBuilderSDK::PlatformInfo& platform) const
         {
-            return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
+            if (platform.HasTag("mobile"))
+            {
+                return AZ_TRAIT_ATOM_MOBILE_AZSL_SHADER_HEADER;
+            }
+            else
+            {
+                return AZ_TRAIT_ATOM_AZSL_SHADER_HEADER;
+            }
         }
 
         // Takes in HLSL source file path and then compiles the HLSL to bytecode and
@@ -202,6 +209,14 @@ namespace AZ
             const bool graphicsDevMode = RHI::IsGraphicsDevModeEnabled();
             if (graphicsDevMode || BuildHasDebugInfo(shaderBuildArguments))
             {
+                // Remark: Ideally we'd use "-fspv-debug=vulkan-with-source", but
+                // - DXC 1.6.2106 crashes with this error when compiling large shaders (small shaders works fine).
+                //     dxc failed : unknown SPIR-V debug info control parameter: vulkan-with-source
+                // - DXC 1.7.2212.1 crashes with the following error when compiling large shaders:
+                //     fatal error: generated SPIR-V is invalid: ID '2123[%2123]' has not been defined
+                //        %2122 = OpExtInst %void %2 DebugTypeFunction %uint_3 %void %2123 %1415
+                // 
+                // There are already several bug reports like this one: https://github.com/microsoft/DirectXShaderCompiler/issues/4767
                 RHI::ShaderBuildArguments::AppendArguments(dxcArguments, { "-fspv-debug=line" });
             }
 
@@ -225,7 +240,15 @@ namespace AZ
                 AZ_Assert(false, "Invalid Shader stage.");
             }
 
-            AZStd::string prependFile{ AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER };
+            AZStd::string prependFile;
+            if (platform.HasTag("mobile"))
+            {
+                prependFile = AZ_TRAIT_ATOM_MOBILE_AZSL_PLATFORM_HEADER;
+            }
+            else
+            {
+                prependFile = AZ_TRAIT_ATOM_AZSL_PLATFORM_HEADER;
+            }
 
             RHI::PrependArguments args;
             args.m_sourceFile = shaderSourceFile.c_str();

@@ -59,6 +59,11 @@ namespace PhysX
         if (numShapes > 0)
         {
             auto* scene = Utils::GetDefaultScene();
+            if (scene == nullptr)
+            {
+                return;
+            }
+
             auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
             PHYSX_SCENE_READ_LOCK(pxScene);
 
@@ -328,10 +333,8 @@ namespace PhysX
             return false;
         }
 
-        const bool isAssetScaleUniform =
-            AZ::IsClose(physicsAssetConfiguration.m_assetScale.GetX(), physicsAssetConfiguration.m_assetScale.GetY()) &&
-            AZ::IsClose(physicsAssetConfiguration.m_assetScale.GetX(), physicsAssetConfiguration.m_assetScale.GetZ());
-        const bool hasNonUniformScale = !isAssetScaleUniform || (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        const bool hasNonUniformScale = !Physics::Utils::HasUniformScale(physicsAssetConfiguration.m_assetScale) ||
+            (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
         Utils::CreateShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
             physicsAssetConfiguration.m_subdivisionLevel, m_shapes);
 

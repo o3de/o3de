@@ -18,8 +18,9 @@ namespace Compression
         : public DecompressionRegistrarInterface
     {
     public:
-        AZ_RTTI(DecompressionRegistrarImpl, "{2353362A-A059-4681-ADF0-5ABE41E85A6B}", DecompressionRegistrarInterface);
-        AZ_CLASS_ALLOCATOR(DecompressionRegistrarImpl, AZ::SystemAllocator);
+        AZ_TYPE_INFO_WITH_NAME_DECL(DecompressionRegistrarImpl);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL;
 
         DecompressionRegistrarImpl();
         ~DecompressionRegistrarImpl();

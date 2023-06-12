@@ -23,15 +23,10 @@ namespace GraphModelIntegration
 
     AZStd::string StringDataInterface::GetString() const
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
-        {
-            return slot->GetValue<AZStd::string>();
-        }
-        else
-        {
-            return "";
-        }
+        GraphModel::SlotPtr slot = m_slot.lock();
+        return slot ? slot->GetValue<AZStd::string>() : AZStd::string();
     }
+
     void StringDataInterface::SetString(const AZStd::string& value)
     {
         if (GraphModel::SlotPtr slot = m_slot.lock())
@@ -45,11 +40,9 @@ namespace GraphModelIntegration
                 GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
                 slot->SetValue(trimValue);
-                GraphControllerNotificationBus::Event(
-                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
-                GraphControllerNotificationBus::Event(
-                    graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
+                GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
     }
-}
+} // namespace GraphModelIntegration

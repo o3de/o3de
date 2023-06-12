@@ -16,15 +16,16 @@
 #endif
 
 #include "../MaterialFunctions/EvaluateTangentFrame.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
 
 // TODO: The body of this function is copy pasted from BasePBR_PixelGeometryEval.azsli as that file could not be included here
 // since the file references an option o_normal_useTexture, which is not defined for the Eye shader. Need to find an elegant
 // way to handle this.
 PixelGeometryData EvaluatePixelGeometry_Eye(
     float3 positionWS,
-    float3 normalWS,
-    float3 tangentWS,
-    float3 bitangentWS,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
     float2 uvs[UvSetCount],
     bool isFrontFace,
     bool evaluateTangentFrame)
@@ -57,9 +58,9 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(
     float3 positionWS,
-    float3 normalWS,
-    float3 tangentWS,
-    float3 bitangentWS,
+    real3 normalWS,
+    real3 tangentWS,
+    real3 bitangentWS,
     float2 uv[UvSetCount],
     float3 localPosition,
     bool isFrontFace)
@@ -76,16 +77,16 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
-    float3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(IN.normal), real4(IN.tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     // Bitangent is temporarily added back to fix the eye material screenshot test.
-    bitangentWS = normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz);
+    bitangentWS = normalize(mul(objectToWorld, real4(IN.bitangent, 0.0)).xyz);
 
-    return EvaluatePixelGeometry_Eye(
+    PixelGeometryData geoData = EvaluatePixelGeometry_Eye(
         IN.worldPosition,
         normalWS,
         tangentWS,
@@ -93,4 +94,8 @@ PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
         IN.uvs,
         IN.localPosition,
         isFrontFace);
+
+    geoData.objectToWorld = objectToWorld;
+    geoData.objectToWorldIT = objectToWorldIT;
+    return geoData;
 }

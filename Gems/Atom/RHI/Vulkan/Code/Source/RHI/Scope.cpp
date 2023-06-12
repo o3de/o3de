@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <algorithm>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferProperty.h>
@@ -82,9 +83,7 @@ namespace AZ
 
         void Scope::Begin(CommandList& commandList) const
         {
-            commandList.SetName(GetId());
             commandList.GetValidator().BeginScope(*this);
-            commandList.BeginDebugLabel(AZStd::string::format("%s Scope", GetId().GetCStr()).c_str());
 
             for (RHI::ResourcePoolResolver* resolverBase : GetResourcePoolResolves())
             {
@@ -95,7 +94,6 @@ namespace AZ
 
         void Scope::End(CommandList& commandList) const
         {
-            commandList.EndDebugLabel();
             commandList.GetValidator().EndScope();
         }
 

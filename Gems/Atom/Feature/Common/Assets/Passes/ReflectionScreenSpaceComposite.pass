@@ -43,11 +43,6 @@
                     }
                 },
                 {
-                    "Name": "PreviousFrameInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "Shader"
-                },
-                {
                     "Name": "DepthStencilInput",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil",

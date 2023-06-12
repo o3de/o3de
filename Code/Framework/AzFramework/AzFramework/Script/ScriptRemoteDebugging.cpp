@@ -12,6 +12,9 @@
 #include <AzFramework/Network/IRemoteTools.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
+#include <AzFramework/AzFramework_Traits_Platform.h> // Need to know the state of AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -418,6 +421,23 @@ namespace AzFramework
         {
             m_executionState = SDA_STATE_PAUSED;
 
+#if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+            // We are about to block the main thread, only allowing to process
+            // network events. This works fine on Windows, but on Linux the mouse
+            // pointer doesn't show up when the user ALT+TAB out of the Editor window.
+            // We need to make mouse cursor visible again and it fixes all the Linux
+            // problems, and it doesn't hurt Windows either.
+            SystemCursorState systemCursorState{}; // Remember the state of the cursor.
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id,
+                [&systemCursorState](AzFramework::InputSystemCursorRequests* requests)
+                {
+                    systemCursorState = requests->GetSystemCursorState();
+                    requests->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
+                }
+            );
+#endif
+
             ScriptDebugAckBreakpoint response;
             response.m_id = AZ_CRC("BreakpointHit", 0xf1a38e0b);
             response.m_moduleName = breakpoint->m_sourceName;
@@ -445,6 +465,15 @@ namespace AzFramework
                 AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
                 AZStd::this_thread::yield();
             }
+
+#if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
+            // Restore the state of the mouse cursor, and the game should continue running as usual.
+            AzFramework::InputSystemCursorRequestBus::Event(
+                AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                systemCursorState);
+#endif
+
         }
     }
     //-------------------------------------------------------------------------

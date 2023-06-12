@@ -11,8 +11,15 @@
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 
+#include <Compression/CompressionTypeIds.h>
+
 namespace Compression
 {
+    AZ_TYPE_INFO_WITH_NAME_IMPL(DecompressionRegistrarImpl, "DecompressionRegistrarImpl",
+        DecompressionRegistrarImplTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(DecompressionRegistrarImpl, DecompressionRegistrarInterface);
+    AZ_CLASS_ALLOCATOR_IMPL(DecompressionRegistrarImpl, AZ::SystemAllocator);
+
     DecompressionRegistrarImpl::DecompressionInterfaceDeleter::DecompressionInterfaceDeleter() = default;
     DecompressionRegistrarImpl::DecompressionInterfaceDeleter::DecompressionInterfaceDeleter(bool shouldDelete)
         : m_delete(shouldDelete)

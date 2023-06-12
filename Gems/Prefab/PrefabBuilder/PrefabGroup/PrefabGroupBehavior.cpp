@@ -135,18 +135,24 @@ namespace AZ::SceneAPI::Behaviors
     {
         if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
         {
+            bool skip = false;
+
             // this toggle makes constructing default mesh groups and a prefab optional
             bool createDefaultPrefab = true;
             settingsRegistry->Get(createDefaultPrefab, s_PrefabGroupBehaviorCreateDefaultKey);
             if (createDefaultPrefab == false)
             {
-                return Events::ProcessingResult::Ignored;
+                AZ_Info(
+                    "PrefabGroupBehavior",
+                    "Skipping default prefab generation - registry setting %s is disabled\n",
+                    s_PrefabGroupBehaviorCreateDefaultKey);
+                skip = true;
             }
 
             // do not make a Prefab Group if the animation policy will be applied (if ignore actors is set)
             bool ignoreActors = true;
             settingsRegistry->Get(ignoreActors, s_PrefabGroupBehaviorIgnoreActorsKey);
-            if (ignoreActors)
+            if (!skip && ignoreActors)
             {
                 AZStd::set<AZStd::string> appliedPolicies;
                 AZ::SceneAPI::Events::GraphMetaInfoBus::Broadcast(
@@ -156,8 +162,33 @@ namespace AZ::SceneAPI::Behaviors
 
                 if (appliedPolicies.contains("ActorGroupBehavior"))
                 {
-                    return Events::ProcessingResult::Ignored;
+                    AZ_Info(
+                        "PrefabGroupBehavior",
+                        "Skipping default prefab generation - scene has an Actor group present and registry setting %s"
+                        " is enabled\n",
+                        s_PrefabGroupBehaviorIgnoreActorsKey);
+                    skip = true;
                 }
+            }
+
+            // Remove the prefab group so it doesn't try fail to process an empty prefab group during export
+            if (skip)
+            {
+                for (auto manifestItemIdx = 0; manifestItemIdx < scene.GetManifest().GetEntryCount(); ++manifestItemIdx)
+                {
+                    const auto* prefabGroup =
+                        azrtti_cast<const SceneData::PrefabGroup*>(scene.GetManifest().GetValue(manifestItemIdx).get());
+                    if (prefabGroup)
+                    {
+                        if (prefabGroup->GetPrefabDomRef().has_value() == false)
+                        {
+                            scene.GetManifest().RemoveEntry(prefabGroup);
+                            return Events::ProcessingResult::Ignored;
+                        }
+                    }
+                }
+
+                return Events::ProcessingResult::Ignored;
             }
         }
 

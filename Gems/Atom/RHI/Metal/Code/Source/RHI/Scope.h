@@ -86,6 +86,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Scope
+            void InitInternal() override;
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
@@ -93,9 +94,6 @@ namespace AZ
             
             //! Cache the multisample state and at the same time hook up the custom sample msaa positions for the render pass.
             void ApplyMSAACustomPositions(const ImageView* imageView);
-            
-            /// Depth stencil attachment access.
-            RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
 
             /// Render pass descriptor needed for RenderCommandEncoder or ParallelCommandEncoder
             MTLRenderPassDescriptor*    m_renderPassDescriptor = nil;
@@ -141,7 +139,8 @@ namespace AZ
             /// Track all the heaps that will need too be made resident for this scope
             AZStd::set<id<MTLHeap>> m_residentHeaps;
 
-            
+            /// Cache marker name which will be used for labelling.
+            Name m_markerName;
         };
     }
 }

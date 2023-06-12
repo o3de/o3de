@@ -10,6 +10,7 @@
 
 #include <Atom/ImageProcessing/ImageProcessingDefines.h>
 #include <AzCore/Serialization/DataPatch.h>
+#include <AzCore/std/containers/set.h>
 
 namespace AZ
 {
@@ -148,6 +149,8 @@ namespace ImageProcessingAtom
         MipGenEvalType m_mipGenEval;
 
         MipGenType m_mipGenType;
+
+        AZStd::set<AZStd::string> m_tags;
 
     private:
         // Platform overrides in form of DataPatch. Each entry is a patch for a specified platform.

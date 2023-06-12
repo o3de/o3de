@@ -59,6 +59,8 @@ namespace NvCloth
 
         bool ContainsBackstopData(AssetHelper* assetHelper, const AZStd::string& meshNode) const;
 
+        void UpdateConfigMeshNodeData();
+
         ClothConfiguration m_config;
 
         AZStd::unique_ptr<ClothComponentMesh> m_clothComponentMesh;

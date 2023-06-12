@@ -114,15 +114,18 @@ namespace AzToolsFramework
              * call the Deactivate() function of the base class.
              */
             virtual void Deactivate() override;
-            //////////////////////////////////////////////////////////////////////////
+
+            //! Function to call after setting the entity in this component.
+            //! For an editor component, this would set up the serialized identifier.
+            void OnAfterEntitySet() override final;
 
             //! Sets the provided string as the serialized identifier for the component.
             //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.
-            void SetSerializedIdentifier(AZStd::string serializedIdentifier) override;
+            void SetSerializedIdentifier(AZStd::string serializedIdentifier) override final;
 
             //! Gets the serialzied identifier of this component within an entity.
             //! @return The serialized identifier of this component.
-            AZStd::string GetSerializedIdentifier() const override;
+            AZStd::string GetSerializedIdentifier() const override final;
 
             /**
              * Gets the transform interface of the entity that the component
@@ -196,6 +199,11 @@ namespace AzToolsFramework
              * @param context A pointer to the reflection context.
              */
             static void Reflect(AZ::ReflectContext* context);
+
+        private:
+            //! Generates a component serialized identifier based on existing components of the same type.
+            //! @return Serialized identifier string that can be used as a component alias.
+            AZStd::string GenerateComponentSerializedIdentifier();
 
         private:
             AZStd::string m_alias;

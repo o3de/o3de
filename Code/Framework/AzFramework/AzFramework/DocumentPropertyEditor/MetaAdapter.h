@@ -27,7 +27,7 @@ namespace AZ::DocumentPropertyEditor
         virtual void HandleReset() = 0;
         virtual void HandleDomChange(const Dom::Patch& patch) = 0;
 
-        static bool IsRow(const Dom::Value& domValue);
+        using DocumentAdapter::IsRow;
         bool IsRow(const Dom::Path& sourcePath) const;
         
         //! returns the first path in the ancestry of sourcePath that is of type Row, including self

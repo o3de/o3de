@@ -67,8 +67,9 @@ namespace AZ::Settings
         //! So it is recommmended that users binding a lambda bind at most 2 reference or pointer members
         //! to avoid dynamic heap allocations
         //!
+        //! NOTE: This function will not be called if the key is empty
         //! @return True should be returned from this function to indicate that parsing of the config entry
-        //! has a succeed
+        //! has succeeded
         using ParseConfigEntryFunc = AZStd::function<bool(const ConfigEntry&)>;
 
         ParseConfigEntryFunc m_parseConfigEntryFunc;
@@ -128,7 +129,7 @@ namespace AZ::Settings
 
         //! Function which is invoked on the config line after filtering through the SectionHeaderFunc
         //! to determine the delimiter of the line
-        //! The structure contains a functor which returns true if a character is a valid delimiter
+        //! The structure contains a functor which returns a ConfigKeyValuePair to split the key value pair
         DelimiterFunc m_delimiterFunc = &DefaultDelimiterFunc;
     };
 

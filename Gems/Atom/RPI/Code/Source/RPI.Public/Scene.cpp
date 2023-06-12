@@ -485,6 +485,11 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
+            if (!m_activated)
+            {
+                return;
+            }
+
             m_prevSimulationTime = m_simulationTime;
             m_simulationTime = simulationTime;
 
@@ -706,6 +711,11 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
+            if (!m_activated)
+            {
+                return;
+            }
+
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent();
@@ -733,6 +743,8 @@ namespace AZ
                     }
                 }
             }
+
+            m_numActiveRenderPipelines = aznumeric_cast<uint16_t>(activePipelines.size());
 
             // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
             if (m_pipelineStatesLookupNeedsRebuild)
@@ -813,6 +825,23 @@ namespace AZ
             }
 
             {
+                AZ_PROFILE_SCOPE(RPI, "Scene FinalizeVisibleObjectLists");
+
+                for (auto& view : m_renderPacket.m_views)
+                {
+                    view->FinalizeVisibleObjectList();
+                }
+            }
+
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene OnEndCulling");
+                for (auto& fp : m_featureProcessors)
+                {
+                    fp->OnEndCulling(m_renderPacket);
+                }
+            }
+
+            {
                 AZ_PROFILE_SCOPE(RPI, "FinalizeDrawLists");
                 if (jobPolicy == RHI::JobPolicy::Serial || 
                     m_renderPacket.m_views.size() <= 1) // FinalizeDrawListsX both immediately wait for the job to complete, skip job if only 1 job would be generated
@@ -879,6 +908,11 @@ namespace AZ
 
         void Scene::UpdateSrgs()
         {
+            if (!m_activated)
+            {
+                return;
+            }
+
             PrepareSceneSrg();
 
             for (auto& view : m_renderPacket.m_views)
@@ -935,7 +969,7 @@ namespace AZ
             return m_pipelines;
         }
         
-        void Scene::OnSceneNotifictaionHandlerConnected(SceneNotification* handler)
+        void Scene::OnSceneNotificationHandlerConnected(SceneNotification* handler)
         {
             for (auto renderPipeline : m_pipelines)
             {

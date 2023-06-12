@@ -366,20 +366,31 @@ namespace AZ
             const char* fullSourceFileName)
         {
             const AZStd::string_view path(fullSourceFileName);
+            if (path.ends_with("physxmaterial") || path.ends_with("physicsmaterial"))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/PhysXMaterial_80.svg");
+            }
             if (path.ends_with(AZ::RPI::MaterialSourceData::Extension))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/material.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/Material_80.svg");
             }
             if (path.ends_with(AZ::RPI::MaterialTypeSourceData::Extension))
             {
                 return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/materialtype.svg");
             }
-
             if (path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphNodeExtensionWithDot) ||
                 path.ends_with(AZ::Render::EditorMaterialComponentUtil::MaterialGraphTemplateExtensionWithDot))
             {
-                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Menu/material_canvas.svg");
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/MaterialGraph_80.svg");
+            }
+            if (path.ends_with(AZ::RPI::BufferAsset::Extension))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/BufferAsset_80.svg");
+            }
+            if (path.ends_with(AZ::RPI::ShaderAsset::Extension))
+            {
+                return AzToolsFramework::AssetBrowser::SourceFileDetails(":/Icons/Shader_80.svg");
             }
             return AzToolsFramework::AssetBrowser::SourceFileDetails();
         }

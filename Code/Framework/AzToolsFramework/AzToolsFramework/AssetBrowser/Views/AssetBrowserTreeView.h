@@ -31,7 +31,9 @@ namespace AzToolsFramework
     {
         class AssetBrowserEntry;
         class AssetBrowserModel;
+        class AssetBrowserTableView;
         class AssetBrowserFilterModel;
+        class AssetBrowserThumbnailView;
         class EntryDelegate;
 
         class AssetBrowserTreeView
@@ -50,6 +52,10 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // QTreeView
             void setModel(QAbstractItemModel* model) override;
+            void dragEnterEvent(QDragEnterEvent* event) override;
+            void dragMoveEvent(QDragMoveEvent* event) override;
+            void dropEvent(QDropEvent* event) override;
+            void dragLeaveEvent(QDragLeaveEvent* event) override;
             //////////////////////////////////////////////////////////////////////////
 
             //! Set unique asset browser name, used to persist tree expansion states
@@ -76,6 +82,8 @@ namespace AzToolsFramework
             void MoveEntries();
             void AfterRename(QString newVal);
 
+            void SelectFileAtPathAfterUpdate(const AZStd::string& assetPath);
+
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserViewRequestBus
             void SelectProduct(AZ::Data::AssetId assetID) override;
@@ -101,6 +109,18 @@ namespace AzToolsFramework
 
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
+            void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
+            AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;
+
+            void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
+            AssetBrowserThumbnailView* GetAttachedThumbnailView() const;
+
+            void SetShowIndexAfterUpdate(QModelIndex index);
+
+            void SetAttachedTableView(AssetBrowserTableView* tableView);
+
+            void SetApplySnapshot(bool applySnapshot);
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -124,10 +144,18 @@ namespace AzToolsFramework
 
             bool m_expandToEntriesByDefault = false;
 
+            bool m_applySnapshot = true;
+
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
 
+            AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
+            AssetBrowserTableView* m_attachedTableView = nullptr;
+
             QString m_name;
+
+            QModelIndex m_indexToSelectAfterUpdate;
+            AZStd::string m_fileToSelectAfterUpdate = "";
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0, bool useDisplayName = false);

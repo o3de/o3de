@@ -321,7 +321,7 @@
             <number>0</number>
            </property>
            <item>
-            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_assetBrowserTableViewWidget">
+            <widget class="AzToolsFramework::AssetBrowser::AssetBrowserListView" name="m_assetBrowserListViewWidget">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                <horstretch>0</horstretch>
@@ -382,23 +382,12 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView">
-          </widget>
-          <widget class="QWidget" name="m_tableView">
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView"/>
+          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
             <property name="spacing">
              <number>0</number>
             </property>
-            <item>
-             <widget class="QLabel" name="m_tableViewPlaceholder">
-              <property name="text">
-               <string>Table view placeholder</string>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignCenter</set>
-              </property>
-             </widget>
-            </item>
            </layout>
           </widget>
          </widget>
@@ -423,8 +412,13 @@
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h</header>
   </customwidget>
   <customwidget>
-   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserListView</class>
    <extends>QTableView</extends>
+   <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AzToolsFramework::AssetBrowser::AssetBrowserTableView</class>
+   <extends>AzQtComponents::TableView</extends>
    <header>AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h</header>
   </customwidget>
   <customwidget>

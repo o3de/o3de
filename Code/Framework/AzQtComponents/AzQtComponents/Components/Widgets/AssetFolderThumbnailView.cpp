@@ -7,11 +7,13 @@
  */
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
+#include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: 'QInputEvent::modState': class 'QFlags<Qt::KeyboardModifier>' needs to have dll-interface to be used by clients of class 'QInputEvent'
                                                                     // 4800: 'QFlags<QPainter::RenderHint>::Int': forcing value to bool 'true' or 'false' (performance warning)
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QMenu>
 #include <QMouseEvent>
@@ -156,11 +158,20 @@ namespace AzQtComponents
 
         // pixmap
 
-        const auto& iconVariant = index.data(Qt::DecorationRole);
-        if (!iconVariant.isNull())
+        const auto& qVariant = index.data(Qt::DecorationRole);
+        if (!qVariant.isNull())
         {
-            const auto& icon = iconVariant.value<QIcon>();
-            icon.paint(painter, imageRect);
+            QIcon icon;
+            if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
+            {
+                icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
+            else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+            {
+                icon.addPixmap(pixmap.scaled(imageRect.size(), Qt::KeepAspectRatio, Qt::SmoothTransformation), QIcon::Normal, QIcon::Off);
+                icon.paint(painter, imageRect);
+            }
         }
 
         if (isTopLevel)
@@ -306,6 +317,7 @@ namespace AzQtComponents
         config.topItemsVerticalSpacing = settings.value(QStringLiteral("TopItemsVerticalSpacing"), config.topItemsVerticalSpacing).toInt();
         config.childrenItemsHorizontalSpacing =
             settings.value(QStringLiteral("ChildrenItemsHorizontalSpacing"), config.childrenItemsHorizontalSpacing).toInt();
+        config.scrollSpeed = settings.value(QStringLiteral("ScrollSpeed"), config.scrollSpeed).toInt();
 
         settings.beginGroup(QStringLiteral("RootThumbnail"));
         readThumbnail(settings, config.rootThumbnail);
@@ -334,6 +346,7 @@ namespace AzQtComponents
         config.topItemsHorizontalSpacing = 18;
         config.topItemsVerticalSpacing = 18;
         config.childrenItemsHorizontalSpacing = 7;
+        config.scrollSpeed = 45;
 
         config.rootThumbnail.width = 96;
         config.rootThumbnail.height = 96;
@@ -399,6 +412,7 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
+        setSelectionMode(ExtendedSelection);
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -407,6 +421,13 @@ namespace AzQtComponents
             {
                 emit afterRename(value);
             });
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -616,7 +637,7 @@ namespace AzQtComponents
 
     bool AssetFolderThumbnailView::isExpandable(const QModelIndex& index) const
     {
-        return (m_hideProductAssets ? false : index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>());
+        return index.data(static_cast<int>(AssetFolderThumbnailView::Role::IsExpandable)).value<bool>();
     }
 
     void AssetFolderThumbnailView::paintEvent(QPaintEvent* event)
@@ -734,7 +755,6 @@ namespace AzQtComponents
         const auto p = event->pos() + QPoint{horizontalOffset(), verticalOffset()};
 
         // check the expand/collapse buttons on one of the top level items was clicked
-
         {
             auto it = std::find_if(
                 m_itemGeometry.keyBegin(),
@@ -770,9 +790,49 @@ namespace AzQtComponents
         auto idx = indexAtPos(p);
         if (idx.isValid())
         {
-            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-            emit clicked(idx);
+            bool isRightClick = event->button() == Qt::RightButton;
+            if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ControlModifier)
+            {
+                auto selectionFlag = isRightClick ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Toggle;
+                selectionModel()->select(idx, selectionFlag);
+            }
+            else if (selectionMode() == ExtendedSelection && QGuiApplication::queryKeyboardModifiers() == Qt::ShiftModifier)
+            {
+                auto selectedIndex =
+                    (selectionModel()->hasSelection() ? selectionModel()->currentIndex() : model()->index(0, 0, rootIndex()));
+                QItemSelectionRange indexRange;
+                if (selectedIndex.row() < idx.row())
+                {
+                    indexRange = QItemSelectionRange(selectedIndex, idx);
+                }
+                else if (selectedIndex.row() > idx.row())
+                {
+                    indexRange = QItemSelectionRange(idx, selectedIndex);
+                }
+                if (!indexRange.isEmpty())
+                {
+                    QItemSelectionModel::SelectionFlag selectionFlag;
+                    if (selectionModel()->isSelected(idx) && !isRightClick)
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Deselect;
+                    }
+                    else
+                    {
+                        selectionFlag = QItemSelectionModel::SelectionFlag::Select;
+                    }
+                    for (auto index : indexRange.indexes())
+                    {
+                        selectionModel()->select(index, selectionFlag);
+                    }
+                }
+            }
+            else if (!selectionModel()->isSelected(idx))
+            {
+                selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            }
             update();
+            // Pass event to base class to enable drag/drop selections.
+            QAbstractItemView::mousePressEvent(event);
             return;
         }
 
@@ -797,9 +857,10 @@ namespace AzQtComponents
         }
 
         // If empty space in the view is clicked, clear the current selection and update the view
-        if (!idx.isValid())
+        if (!idx.isValid() && selectionModel()->hasSelection())
         {
             selectionModel()->clear();
+            emit deselected();
             update();
             return;
         }
@@ -826,29 +887,9 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
-
-        if (idx.isValid() && m_showSearchResultsMode)
-        {
-            QMenu* menu = new QMenu;
-            auto action = menu->addAction("Show In Folder");
-            connect(
-                action,
-                &QAction::triggered,
-                this,
-                [this, idx]()
-                {
-                    emit showInFolderTriggered(idx);
-                });
-            menu->exec(event->globalPos());
-            delete menu;
-        }
-        else
-        {
-            emit contextMenu(idx);
-        }
+        emit contextMenu(idx);
     }
 
     int AssetFolderThumbnailView::rootThumbnailSizeInPixels() const
@@ -910,6 +951,7 @@ namespace AzQtComponents
         }
 
         verticalScrollBar()->setPageStep(viewport()->height());
+        verticalScrollBar()->setSingleStep(m_config.scrollSpeed);
         verticalScrollBar()->setRange(0, y + rowHeight - viewport()->height());
     }
 
@@ -1043,11 +1085,10 @@ namespace AzQtComponents
         m_showSearchResultsMode = searchMode;
     }
 
-    void AssetFolderThumbnailView::HideProductAssets(bool checked)
+    bool AssetFolderThumbnailView::InSearchResultsMode() const
     {
-        m_hideProductAssets = checked;
+        return m_showSearchResultsMode;
     }
-
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderThumbnailView.cpp"

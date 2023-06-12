@@ -76,6 +76,10 @@ namespace AssetProcessor
         AZ::IO::Path m_cacheOutputDir;
         AZ::IO::Path m_intermediateOutputDir;
         AZ::IO::Path m_relativePath;
+
+        // UUID of the original source asset.
+        // If this job is for an intermediate asset, the UUID is for the direct source which produced the intermediate.
+        // If the original source asset is not using metadata files, this value will be empty.
         AZ::Uuid m_sourceUuid;
 
         Params(const Params&) = default;

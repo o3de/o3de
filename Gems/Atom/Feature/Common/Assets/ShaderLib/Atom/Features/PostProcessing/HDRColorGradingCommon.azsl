@@ -97,7 +97,7 @@ float3 ColorGradeSplitTone (
     float3 splitToneHighlightsColor) 
 {
     float3 frameSplitTone = NoNanPow(frameColor, 1.0 / 2.2);
-    const float t = SaturateWithEpsilon(CalculateLuminance(SaturateWithEpsilon(frameSplitTone), ColorSpaceId::ACEScg) + balance);
+    const float t = SaturateWithEpsilon(CalculateLuminance(SaturateWithEpsilon(frameSplitTone.x), ColorSpaceId::ACEScg) + balance);
     const float3 shadows = lerp(0.5, splitToneShadowsColor, 1.0 - t);
     const float3 highlights = lerp(0.5, splitToneHighlightsColor, t);
     frameSplitTone = BlendMode_SoftLight(frameSplitTone, shadows);
@@ -153,7 +153,7 @@ float3 ColorGrade(float3 frameColor)
     frameColor = lerp(frameColor, ColorGradeSaturation(frameColor, PassSrg::m_colorGradingPreSaturation), PassSrg::m_colorAdjustmentWeight);
     frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeSplitTone(frameColor, PassSrg::m_splitToneBalance, PassSrg::m_splitToneWeight,
-                                        PassSrg::m_splitToneShadowsColor, PassSrg::m_splitToneHighlightsColor);
+                                        PassSrg::m_splitToneShadowsColor.rgb, PassSrg::m_splitToneHighlightsColor.rgb);
     frameColor = ColorGradeChannelMixer(frameColor, PassSrg::m_channelMixingRed, PassSrg::m_channelMixingGreen, PassSrg::m_channelMixingBlue);
     frameColor = max(frameColor, 0.0);
     frameColor = ColorGradeShadowsMidtonesHighlights(frameColor, PassSrg::m_smhShadowsStart, PassSrg::m_smhShadowsEnd,

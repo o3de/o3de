@@ -78,9 +78,7 @@ namespace Physics
             AZStd::string m_name;
             AZ::Data::Asset<MaterialAsset> m_materialAsset;
 
-        private:
-            friend class MaterialSlots;
-            AZ::Data::AssetId GetDefaultMaterialAssetId() const;
+            // Used for the ReadOnly attribute of m_materialAsset in edit context.
             bool m_slotsReadOnly = false;
         };
 

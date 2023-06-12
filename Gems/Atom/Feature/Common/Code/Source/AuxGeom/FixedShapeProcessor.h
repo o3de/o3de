@@ -70,8 +70,11 @@ namespace AZ
             //! Processes all the fixed shape objects for a frame
             void ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket);
 
-            //! do any cleanup from last frame.
+            //! Prepare frame.
             void PrepareFrame();
+                        
+            //! Do any cleanup after current frame is rendered.
+            void FrameEnd();
 
             //! Notify this FixedShapeProcessor to update its pipeline states
             void SetUpdatePipelineStates();
