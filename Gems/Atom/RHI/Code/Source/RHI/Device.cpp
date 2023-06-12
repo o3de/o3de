@@ -78,8 +78,6 @@ namespace AZ
             m_physicalDevice = &physicalDevice;
             m_deviceIndex = deviceIndex;
 
-            AZ_Assert(deviceIndex == 0, "Multi-device support is not implemented yet.");
-
             RHI::ResultCode resultCode = InitInternal(physicalDevice);
 
             if (resultCode == ResultCode::Success)
