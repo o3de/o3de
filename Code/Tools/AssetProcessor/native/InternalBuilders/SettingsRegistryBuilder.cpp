@@ -307,12 +307,12 @@ namespace AssetProcessor
                     }
                     file.Close();
 
-                    // Hash all specializations tags
+                    // Hash only the launcher type and build config specializations tags
                     size_t hashedSpecialization{};
-                    for (size_t specIndex{}; specIndex < specialization.GetCount(); ++specIndex)
-                    {
-                        AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(specIndex));
-                    }
+                    // Get the launcher type specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(0));
+                    // Get the build config specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(1));
                     AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
                         " This can result in a product ID collision with other builders for this asset.",
                         AZ_STRING_ARG(specializationString));
