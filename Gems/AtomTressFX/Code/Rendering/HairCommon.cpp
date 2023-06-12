@@ -156,13 +156,6 @@ namespace AZ
                 }
                 return rhiImage;
             }
-
-            Data::Instance<RPI::StreamingImage> UtilityClass::LoadStreamingImage(
-                const char* textureFilePath, [[maybe_unused]] const char* sampleName)
-            {
-                return AZ::RPI::LoadStreamingTexture(textureFilePath);
-            }
-
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
