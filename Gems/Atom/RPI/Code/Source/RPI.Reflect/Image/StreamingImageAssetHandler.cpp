@@ -39,10 +39,13 @@ namespace AZ
             Data::AssetHandler::LoadResult loadResult = Data::AssetHandler::LoadResult::Error;
             if (assetData)
             {
-                loadResult = Utils::LoadObjectFromStreamInPlace<StreamingImageAsset>(*stream, *assetData, m_serializeContext) ?
-                    Data::AssetHandler::LoadResult::LoadComplete :
-                    Data::AssetHandler::LoadResult::Error;
-                
+                if (stream->GetLength() > 0)
+                {
+                    loadResult = Utils::LoadObjectFromStreamInPlace<StreamingImageAsset>(*stream, *assetData, m_serializeContext)
+                        ? Data::AssetHandler::LoadResult::LoadComplete
+                        : Data::AssetHandler::LoadResult::Error;
+                }
+               
                 if (loadResult == Data::AssetHandler::LoadResult::LoadComplete)
                 {
                     // ImageMipChainAsset has some internal variables need to initialized after it was loaded.
