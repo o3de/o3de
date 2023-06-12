@@ -566,7 +566,15 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
-                if (!parentContainer->IsFixedSize())
+
+                bool parentCanBeModified = true;
+                if (auto parentCanBeModifiedValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerCanBeModified);
+                    parentCanBeModifiedValue)
+                {
+                    parentCanBeModified = parentCanBeModifiedValue->IsBool() && parentCanBeModifiedValue->GetBool();
+                }
+
+                if (!parentContainer->IsFixedSize() && parentCanBeModified)
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
