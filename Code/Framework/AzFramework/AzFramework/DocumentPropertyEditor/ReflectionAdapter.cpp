@@ -665,7 +665,13 @@ namespace AZ::DocumentPropertyEditor
                         }
                     }
 
-                    if (!container->IsFixedSize())
+                    bool canBeModified = true;
+                    if (auto canBeModifiedValue = attributes.Find(Nodes::Container::ContainerCanBeModified.GetName()); canBeModifiedValue)
+                    {
+                        canBeModified = canBeModifiedValue->IsBool() && canBeModifiedValue->GetBool();
+                    }
+
+                    if (canBeModified && !container->IsFixedSize())
                     {
                         bool isDisabled = false;
                         if (auto disabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::Disabled.GetName()); disabledValue)

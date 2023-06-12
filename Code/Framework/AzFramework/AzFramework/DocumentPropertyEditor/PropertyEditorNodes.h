@@ -113,6 +113,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
         static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
+        static constexpr auto ContainerCanBeModified = AttributeDefinition<bool>("ContainerCanBeModified");
     };
 
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
