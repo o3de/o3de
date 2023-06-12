@@ -63,7 +63,7 @@ namespace AZ
             }
         }
 
-        float ConvertEmissiveUnitFunctor::GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex)
+        float ConvertEmissiveUnitFunctor::GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex) const
         {
             PhotometricUnit sourceType;
             if (lightUnitIndex == m_ev100Index)

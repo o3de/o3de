@@ -31,7 +31,7 @@ namespace AZ
             using RPI::MaterialFunctor::Process;
             void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
             void Process(RPI::MaterialFunctorAPI::EditorContext& context) override;
-            float GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex);
+            float GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex) const;
 
         private:
 

@@ -129,10 +129,9 @@ namespace AZ
 
             m_rayTracingFeatureProcessor = GetParentScene()->GetFeatureProcessor<RayTracingFeatureProcessor>();
             m_reflectionProbeFeatureProcessor = GetParentScene()->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
-            m_handleGlobalShaderOptionUpdate =
-                RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler{ [this](const AZ::Name&, RPI::ShaderOptionValue)
-                                                                                     {
-                                                                                         m_forceRebuildDrawPackets = true; }
+            m_handleGlobalShaderOptionUpdate = RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
+            {
+                [this](const AZ::Name&, RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
             };
             RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
             EnableSceneNotification();
@@ -2229,32 +2228,45 @@ namespace AZ
                                 subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
+                            // When we have an emissive intensity, the unit of the intensity is defined in the material settings.
+                            // For non-raytracing materials, the intensity is converted, and set in the shader, by a Functor.
+                            // This (and the other) Functors are normally called in the Compile function of the Material
+                            // We can't use the Compile function here, because the raytracing material behaves bit differently
+                            // Therefor we need to look for the right Functor to convert the intensity here
                             propertyIndex = material->FindPropertyIndex(s_emissive_intensity_Name);
                             if (propertyIndex.IsValid())
                             {
                                 auto unitPropertyIndex = material->FindPropertyIndex(s_emissive_unit_Name);
-                                AZ_Assert(
+                                AZ_WarningOnce(
+                                    "MeshFeatureProcessor",
                                     propertyIndex.IsValid(),
-                                    "MeshFeatureProcessor: Materials with an emissive intensity need a unit for the intensity");
-                                auto intensity = material->GetPropertyValue<float>(propertyIndex);
-                                auto unit = material->GetPropertyValue<uint32_t>(unitPropertyIndex);
-                                bool foundEmissiveUnitFunctor = false;
-                                for (const auto& functor : material->GetAsset()->GetMaterialFunctors())
+                                    "Emissive intensity property missing in material %s. Materials with an emissive intensity need a unit for the intensity.",
+                                    material->GetAsset()->GetId().ToFixedString().c_str());
+                                if (unitPropertyIndex.IsValid())
                                 {
-                                    auto emissiveFunctor = azdynamic_cast<ConvertEmissiveUnitFunctor*>(functor);
-                                    if (emissiveFunctor != nullptr)
+                                    auto intensity = material->GetPropertyValue<float>(propertyIndex);
+                                    auto unit = material->GetPropertyValue<uint32_t>(unitPropertyIndex);
+                                    bool foundEmissiveUnitFunctor = false;
+                                    for (const auto& functor : material->GetAsset()->GetMaterialFunctors())
                                     {
-                                        intensity = emissiveFunctor->GetProcessedValue(intensity, unit);
-                                        foundEmissiveUnitFunctor = true;
-                                        break;
+                                        auto emissiveFunctor = azdynamic_cast<ConvertEmissiveUnitFunctor*>(functor);
+                                        if (emissiveFunctor != nullptr)
+                                        {
+                                            intensity = emissiveFunctor->GetProcessedValue(intensity, unit);
+                                            foundEmissiveUnitFunctor = true;
+                                            break;
+                                        }
+                                    }
+                                    AZ_WarningOnce(
+                                        "MeshFeatureProcessor",
+                                        foundEmissiveUnitFunctor,
+                                        "Could not find ConvertEmissiveUnitFunctor for material %s",
+                                        material->GetAsset()->GetId().ToFixedString().c_str());
+                                    if (foundEmissiveUnitFunctor)
+                                    {
+                                        subMesh.m_emissiveColor *= intensity;
                                     }
                                 }
-                                material->GetAsset()->GetId().ToFixedString().c_str();
-                                AZ_Assert(
-                                    foundEmissiveUnitFunctor,
-                                    "MeshFeatureProcessor: Could not find ConvertEmissiveUnitFunctor for material %s",
-                                    material->GetAsset()->GetId().ToFixedString().c_str());
-                                subMesh.m_emissiveColor *= intensity;
                             }
                         }
                     }
