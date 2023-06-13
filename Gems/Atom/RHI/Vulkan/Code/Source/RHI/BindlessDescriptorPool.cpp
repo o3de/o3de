@@ -21,6 +21,10 @@ namespace AZ::Vulkan
     void BindlessDescriptorPool::Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
     {
         m_device = &device;
+        if (!device.GetFeatures().m_unboundedArrays)
+        {
+            return;
+        }
 
         const uint32_t MaxBindlessIndices = static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count);
         m_bindlessSrgDesc = bindlessSrgDesc;
@@ -113,6 +117,10 @@ namespace AZ::Vulkan
 
     void BindlessDescriptorPool::Shutdown()
     {
+        if (!m_device->GetFeatures().m_unboundedArrays)
+        {
+            return;
+        }
         m_device->GetContext().FreeDescriptorSets(m_device->GetNativeDevice(), m_pool->GetNativeDescriptorPool(), 1, &m_set);
         m_device->GetContext().DestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, VkSystemAllocator::Get());
 

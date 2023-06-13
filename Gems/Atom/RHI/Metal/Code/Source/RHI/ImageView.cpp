@@ -96,9 +96,10 @@ namespace AZ
             bool isDSRendertarget = RHI::CheckBitsAny(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::DepthStencil) &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
-                        
+
+            m_isBindlessUASupported = device.GetFeatures().m_unboundedArrays || device.GetFeatures().m_simulateBindlessUA;
             // Cache the read and readwrite index of the view withn the global Bindless Argument buffer
-            if (!viewDescriptor.m_isArray && !isDSRendertarget)
+            if (m_isBindlessUASupported && !viewDescriptor.m_isArray && !isDSRendertarget)
             {
                 if (viewDescriptor.m_isCubemap)
                 {
@@ -154,7 +155,11 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
-            
+            if (!m_isBindlessUASupported)
+            {
+                return;
+            }
+
             if(viewDescriptor.m_isCubemap)
             {
                 if (m_readIndex != ~0u)

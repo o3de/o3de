@@ -67,16 +67,18 @@ namespace AZ
 #endif
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
 
-                if (shaderRead)
+                if (device.GetFeatures().m_unboundedArrays)
                 {
-                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadBuffer(this);
-                }
+                    if (shaderRead)
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadBuffer(this);
+                    }
 
-                if (shaderReadWrite)
-                {
-                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteBuffer(this);
+                    if (shaderReadWrite)
+                    {
+                        m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteBuffer(this);
+                    }
                 }
-
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
             else if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
@@ -113,6 +115,11 @@ namespace AZ
         void BufferView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
+            if (!device.GetFeatures().m_unboundedArrays)
+            {
+                return;
+            }
+
             if (m_readIndex != InvalidBindlessIndex)
             {
                 device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);

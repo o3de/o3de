@@ -64,6 +64,9 @@ namespace AZ
             //! Index related to the position of the read and readwrite view within the global Bindless Argument Buffer
             uint32_t m_readIndex = InvalidBindlessIndex;
             uint32_t m_readWriteIndex = InvalidBindlessIndex;
+
+            //! Boolean to indicate is unbounded arrays are supported for bindless srg
+            bool m_isBindlessUASupported = false;
         };
     }
 }

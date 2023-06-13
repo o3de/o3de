@@ -70,8 +70,10 @@ namespace AZ
             const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? viewDescriptor.m_overrideBindFlags : buffer.GetDescriptor().m_bindFlags;
             bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+
+            m_isBindlessUASupported = device.GetFeatures().m_unboundedArrays || device.GetFeatures().m_simulateBindlessUA;
             // Cache the read and readwrite index of the view within the global Bindless Argument buffer
-            if (shaderRead || shaderReadWrite)
+            if (m_isBindlessUASupported && (shaderRead || shaderReadWrite))
             {
                 if (shaderRead)
                 {
@@ -115,6 +117,10 @@ namespace AZ
         void BufferView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
+            if (!m_isBindlessUASupported)
+            {
+                return;
+            }
 
             if (m_readIndex != InvalidBindlessIndex)
             {

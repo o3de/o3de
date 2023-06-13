@@ -125,7 +125,7 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            if (!viewDescriptor.m_isArray && !isDSRendertarget)
+            if (!viewDescriptor.m_isArray && !isDSRendertarget && device.GetFeatures().m_unboundedArrays)
             {
                 if (!viewDescriptor.m_isCubemap)
                 {
@@ -178,6 +178,10 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+            if(!device.GetFeatures().m_unboundedArrays)
+            {
+                return;
+            }
 
             if (m_readIndex != InvalidBindlessIndex)
             {

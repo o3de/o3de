@@ -1087,8 +1087,12 @@ namespace AZ
             // to determine if ray tracing is supported on this device
             StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
             StringList::iterator itRayTracingExtension = AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
-            m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
             m_features.m_unboundedArrays = physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
+            if (m_features.m_unboundedArrays)
+            {
+                // Ray tracing needs unbounded arrays to work
+                m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
+            }
 
             if (physicalDevice.IsOptionalDeviceExtensionSupported(OptionalDeviceExtension::FragmentShadingRate))
             {

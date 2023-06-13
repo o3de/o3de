@@ -102,7 +102,13 @@ namespace AZ
             // Free list allocator per bindless resource type
             RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::BindlessResourceType::Count)];
             Device* m_device = nullptr;
+
+            // Boolean to indicate that native unbounded array support exists 
             bool m_unboundedArraySupported = false;
+
+            // Boolean to indiacate that simulated unbounded array support exists
+            bool m_unboundedArraySimulated = false;
+
             // Mutex to protect bindless heap related updates
             AZStd::mutex m_mutex;
 

@@ -21,7 +21,13 @@ namespace AZ::Metal
         m_device = device;
         m_bindlessSrgDesc = bindlessSrgDesc;
         m_unboundedArraySupported = device->GetFeatures().m_unboundedArrays;
-        
+        m_unboundedArraySimulated = device->GetFeatures().m_simulateBindlessUA;
+
+        if (!m_unboundedArraySupported && !m_unboundedArraySimulated)
+        {
+            return;
+        }
+
         AZStd::vector<id<MTLBuffer>> mtlArgBuffers;
         AZStd::vector<NSUInteger> mtlArgBufferOffsets;
         AZStd::vector<MTLArgumentDescriptor*> argBufferDescriptors;
@@ -95,7 +101,7 @@ namespace AZ::Metal
                                                   offsets:    mtlArgBufferOffsets.data()
                                                   withRange:  range];
         }
-        else
+        else if (m_unboundedArraySimulated)
         {
             m_boundedArgBuffer = ArgumentBuffer::Create();
             //For the bounded approach we have one AB that holds all the bindless resource types
