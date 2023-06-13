@@ -32,7 +32,7 @@ namespace Archive
     //! to validate the archive table of contents against its header
     struct ArchiveTocValidationResult
     {
-        explicit operator bool() const;
+        explicit constexpr operator bool() const;
         ArchiveTocErrorCode m_errorCode{};
         using ErrorString = AZStd::basic_fixed_string<char, 512, AZStd::char_traits<char>>;
         ErrorString m_errorMessage;
@@ -104,6 +104,51 @@ namespace Archive
     size_t EnumerateFilePathIndexOffsets(FilePathIndexEntryVisitor callback,
         const ArchiveTableOfContentsView& tocView);
 } // namespace Archive
+
+// Separate namespace block to create visual spacing around utility functions
+// for querying the the Table of Contents View
+namespace Archive
+{
+   //! Retrieves a subspan from the archive TOC BlockLine Offset Table
+   //! that contains the block lines associated with a specific file
+   //! @param tocView readonly view into the Archive TOC
+   //!        The file metadata table and block offset table is accessed using the TOC view
+   //! @param fileMetadataTableIndex index into the file metadata table
+   //!        This is used to lookup the uncompressed size and the first block line offset entry
+   //!        for a file
+   //! @return On success return a span over a view of each block line associated with the file
+   //!         at the provided file metadata table index.
+   //!         On failure returns an error message providing the reason the span could not be created
+    using FileBlockLineOutcome = AZStd::expected<AZStd::span<const ArchiveBlockLineUnion>, ResultString>;
+    FileBlockLineOutcome GetBlockLineSpanForFile(const ArchiveTableOfContentsView& tocView,
+        size_t fileMetadataTableIndex);
+
+    //! Queries the compressed size at the block index in the block line span for the compressed file
+    //! @param fileBlockLineSpan span of the block lines associated with a single file
+    //!       The entire TOC block line span should NOT be passed to this function
+    //!       The span that is passed in should be from a call of GetBlockLineSpanForFile()
+    //! @param blockCount The number of 2-MiB blocks for the file
+    //! @param blockIndex index of block entry in the block line span to read the compressed size
+    //! @return the compressed size value for the block if block index corresponds to a block in the file
+    //!         otherwise 0 is returned
+    AZ::u64 GetCompressedSizeForBlock(AZStd::span<const ArchiveBlockLineUnion> fileBlockLineSpan,
+        AZ::u64 blockCount, AZ::u64 blockIndex);
+
+   //! Gets the raw size for the file in the archive
+   //! If the file is uncompressed then the uncompressed size is returned from the file metadata
+   //! If the file is compressed, then this returns the size needed to read the contiguous
+   //! sequence of compressed blocks exact
+   //!
+   //! @param fileMetadata reference to the TOC file metadata entry which contains the start offset into
+   //!        the block offset table for the file.
+   //!        The TOC file metadata structure m_uncompressedSize member is used to determine
+   //! @param tocBlockOffsetTable span for the entire TOC block line offset table
+   //! @return On success return the exact size for the file as stored in the archive
+   //!         On failure returns an error message with the failure reason
+    using GetRawFileSizeOutcome = AZStd::expected<AZ::u64, ResultString>;
+    GetRawFileSizeOutcome GetRawFileSize(const ArchiveTocFileMetadata& fileMetadata,
+        AZStd::span<const ArchiveBlockLineUnion> tocBlockOffsetTable);
+}
 
 // Implementation for any struct functions
 #include "ArchiveTOCView.inl"

@@ -68,8 +68,8 @@ namespace Archive
         // If the compression algorithm id is uncompressed
         // return a value of 7 which is the highest 3-bit value(0b111)
         // The compression algorithm Id array contains 7 elements for registering compression algorithms.
-        // The index of 7 is used to represent the file is uncompressed the purposes of storing
-        // that information the archive table of contents for an uncompressed file
+        // The index of 7 is used to represent that the file is uncompressed for th  purpose of storing
+        // that information the archive TOC for an uncompressed file
         if (compressionAlgorithmId == Compression::Uncompressed)
         {
             return UncompressedAlgorithmIndex;
