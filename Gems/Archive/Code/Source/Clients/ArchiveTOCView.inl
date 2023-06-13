@@ -176,7 +176,7 @@ namespace Archive
             // Invoke the visitor callback if the file path size > 0
             if (filePathIndexEntry.m_size > 0)
             {
-                callback(filePathIndexEntry.m_offset, filePathIndexEntry.m_size);
+                callback(filePathIndexEntry.m_offset, static_cast<AZ::u16>(filePathIndexEntry.m_size));
                 ++filePathsVisited;
             }
         }
@@ -346,4 +346,3 @@ namespace Archive
     }
 
 } // namespace Archive
-
