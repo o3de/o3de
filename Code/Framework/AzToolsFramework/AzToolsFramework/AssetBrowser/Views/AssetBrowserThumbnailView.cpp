@@ -46,6 +46,9 @@ namespace AzToolsFramework
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
+
+            // Turn off DynamicSort as sorting is now manual.
+            m_assetFilterModel->setDynamicSortFilter(false);
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_thumbnailViewProxyModel->setSourceModel(m_assetFilterModel);
             m_thumbnailViewWidget->setModel(m_thumbnailViewProxyModel);
@@ -87,11 +90,14 @@ namespace AzToolsFramework
                 this,
                 [this](const QModelIndex& index)
                 {
+                    AZStd::vector<const AssetBrowserEntry*> entries;
+                    QMenu menu(this);
+
                     if (index.isValid())
                     {
-                        QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
+                        entries.push_back(entry);
+
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
                             auto action = menu.addAction(tr("Show In Folder"));
@@ -105,17 +111,18 @@ namespace AzToolsFramework
                                 });
                             menu.addSeparator();
                         }
-                        AssetBrowserInteractionNotificationBus::Broadcast(
-                            &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
-
-                        if (!menu.isEmpty())
-                        {
-                            menu.exec(QCursor::pos());
-                        }
                     }
                     else if (!index.isValid() && m_assetTreeView)
                     {
-                        m_assetTreeView->OnContextMenu(QCursor::pos());
+                        entries = AZStd::move(m_assetTreeView->GetSelectedAssets()); 
+                    }
+                    
+                    AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+
+                    if (!menu.isEmpty())
+                    {
+                        menu.exec(QCursor::pos());
                     }
                 });
 
@@ -482,6 +489,18 @@ namespace AzToolsFramework
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
 
+        void AssetBrowserThumbnailView::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode)
+        {
+            m_assetFilterModel->SetSortMode(mode);
+
+            m_assetFilterModel->sort(0, Qt::DescendingOrder);
+        }
+
+        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserThumbnailView::GetSortMode() const
+        {
+            return m_assetFilterModel->GetSortMode();
+        }
+        
         void AssetBrowserThumbnailView::SelectEntry(QString assetName)
         {
             QModelIndex rootIndex = m_thumbnailViewProxyModel->GetRootIndex();

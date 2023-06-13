@@ -58,7 +58,7 @@ ly_add_target(
     AUTOMOC
     AUTOUIC
     AUTORCC
-    FILES_CMAKE 
+    FILES_CMAKE
         assetbundlergui_files.cmake
         assetbundler_exe_files.cmake
         Platform/${PAL_PLATFORM_NAME}/assetbundlergui_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
@@ -105,6 +105,103 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME AZ::AssetBundler.Tests
         TEST_COMMAND $<TARGET_FILE:AZ::AssetBundler.Tests> --unittest
+    )
+
+    # Copy test files needed for asset processor test to the executable directory
+    # This allows the test to reference its files using a portable path that can be provided
+    # to users on other machines
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/AssetProcessorPlatformConfig.setreg
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir
+    )
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Assets/Engine/SeedAssetList.seed
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Assets/Engine
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/DummyProject/AssetProcessorGamePlatformConfig.setreg
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/DummyProject/project.json
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/DummyProject/SeedAssetList.seed
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/DummyProject/SeedAssetListObjectStreamXML.seed
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/DummyProject
+    )
+
+     ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemA/AssetProcessorGemConfig.setreg
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemA/gem.json
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemA
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemA/Assets/seedList.seed
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemA/Assets
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemB/gem.json
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemB
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemB/Assets/seedList.seed
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemB/Assets
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemB/Assets/Platforms/GemBSharedAssetList.seed
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemB/Assets/Platforms/randomfile.txt
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemB/Assets/Platforms
+    )
+
+    ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemB/Assets/Platforms/ios/AssetSeedList.seed
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemB/Assets/Platforms/ios
+    )
+
+     ly_add_target_files(
+        TARGETS
+            AssetBundler.Tests
+        FILES
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/Gems/GemC/gem.json
+        OUTPUT_SUBDIRECTORY
+            AssetBundler.Tests.dir/Gems/GemC
     )
 
 endif()

@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Buses/DragAndDrop.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 
 namespace AZ
@@ -31,6 +32,9 @@ namespace AzToolsFramework
         class PreviewerFactory;
         class ProductAssetBrowserEntry;
         class SourceAssetBrowserEntry;
+        class AssetBrowserTreeView;
+        class AssetBrowserTableView;
+        class AssetBrowserThumbnailView;
     }
 }
 
@@ -63,6 +67,16 @@ public:
 
     static bool OpenWithOS(const AZStd::string& fullEntryPath);
     void AddCreateMenu(QMenu* menu, const AZStd::string fullFolderPath);
+    void CreateSortAction(
+        QMenu* menu,
+        AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+        QString name,
+        AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode);
+    void AddSortMenu(QMenu* menu,
+        AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView
+        );
 
 protected:
 

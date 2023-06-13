@@ -1015,8 +1015,8 @@ namespace AzToolsFramework
                                 auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
                                 if (replacementWidget)
                                 {
-                                    AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                                     m_domOrderedChildren[childIndex] = replacementWidget;
+                                    AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                                 }
                             }
                             else if (AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled())
@@ -1044,8 +1044,8 @@ namespace AzToolsFramework
 
                             // Replace the existing handler widget with one appropriate for the new type
                             auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
-                            AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                             m_domOrderedChildren[childIndex] = replacementWidget;
+                            AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
                         }
                         else
                         {
@@ -1736,15 +1736,8 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
     {
-        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-        auto handlerName = GetNameForHandlerId(handler.handlerId);
-        auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-
-        if (handlerPool)
-        {
-            handlerPool->RecycleInstance(handler.handlerInterface);
-        }
-        else
+        // GHI-16135: Revisit recycling handler instances once we have a mechanism to reset the handlers/widgets for re-use
+        // and have implemented
         {
             // if there is no handler pool, then delete the handler immediately; parent widgets won't delete it twice
             delete handler.handlerInterface;
