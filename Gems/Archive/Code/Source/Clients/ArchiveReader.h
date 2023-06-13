@@ -186,8 +186,8 @@ namespace Archive
             // Default a table of contents reader that has an empty vector
             // and default constructed view
             ArchiveTableOfContentsReader();
-            // Takes ownership of the buffer containing the Table of Contents raw data
-            // and an ArchiveTableOfContentsView instance
+            // Stores the buffer containing the Table of Contents raw data
+            // and an ArchiveTableOfContentsView instance which is a read-only view into that raw data
             ArchiveTableOfContentsReader(AZStd::vector<AZStd::byte> tocBuffer, ArchiveTableOfContentsView tocView);
 
             ArchiveTableOfContentsView m_tocView;

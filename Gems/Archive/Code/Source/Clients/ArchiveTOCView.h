@@ -109,8 +109,10 @@ namespace Archive
 // for querying the the Table of Contents View
 namespace Archive
 {
-   //! Retrieves a subspan from the Table of Contents Archive BlockLine Offset Table
+   //! Retrieves a subspan from the archive TOC BlockLine Offset Table
    //! that contains the block lines associated with a specific file
+   //! @param tocView readonly view into the Archive TOC
+   //!        The file metadata table and block offset table is accessed using the TOC view
    //! @param fileMetadataTableIndex index into the file metadata table
    //!        This is used to lookup the uncompressed size and the first block line offset entry
    //!        for a file
