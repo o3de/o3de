@@ -211,7 +211,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 2872571093
+                "subId": 3428050507
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.client.release.setreg"
@@ -219,7 +219,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 3617796014
+                "subId": 2733667963
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.client.profile.setreg"
@@ -227,7 +227,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 3128343591
+                "subId": 3945067969
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.client.debug.setreg"
@@ -235,7 +235,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 68654025
+                "subId": 3877526290
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.server.release.setreg"
@@ -243,7 +243,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 3046526190
+                "subId": 3451833122
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.server.profile.setreg"
@@ -251,7 +251,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 2583959823
+                "subId": 2263697560
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.server.debug.setreg"
@@ -259,7 +259,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 2402393288
+                "subId": 3208209838
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.unified.release.setreg"
@@ -267,7 +267,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 1383733705
+                "subId": 3520632254
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.unified.profile.setreg"
@@ -275,7 +275,7 @@
         {
             "assetId": {
                 "guid": "{3B28A661-E723-5EBE-AB52-EC5829D88C31}",
-                "subId": 4106752934
+                "subId": 2660526372
             },
             "platformFlags": 255,
             "pathHint": "bootstrap.unified.debug.setreg"
