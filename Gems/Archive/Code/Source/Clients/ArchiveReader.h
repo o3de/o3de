@@ -68,6 +68,16 @@ namespace Archive
         //! The outputSpan should be a pre-allocated buffer that is large enough
         //! to fit either the uncompressed size of the file if the `m_decompressFile` setting is true
         //! or the compressed size of the file if the `m_decompressFile` setting is false
+        //!
+        //! @param outputSpan pre-allocated buffer that should be large enough to store the extracted
+        //! file
+        //! @param fileSettings settings which can configure whether the file should be decompressed,
+        //! the start offset where to start reading content within the file, how many bytes
+        //! to read from the file, etc...
+        //! @return ArchiveExtractFileResult structure which on success contains
+        //! a span of the actual data extracted from the Archive.
+        //! NOTE: The extracted data can be smaller than the outputSpan.size()
+        //! On failure, the result outcome member contains the error that occurred
         ArchiveExtractFileResult ExtractFileFromArchive(AZStd::span<AZStd::byte> outputSpan,
             const ArchiveReaderFileSettings& fileSettings) override;
 
@@ -76,9 +86,8 @@ namespace Archive
         //! metadata about the file
         //! @return ArchiveListResult with metadata for the file if found
         ArchiveListFileResult ListFileInArchive(ArchiveFileToken filePathToken) const override;
-        //! List the file metadata from the archive using the ArchiveFileToken
-        //! @param filePathToken identifier token that can be used to quickly lookup
-        //! metadata about the file
+        //! List the file metadata from the archive using the relative FilePath
+        //! @param relativePath File path to lookup within the archive
         //! @return ArchiveListResult with metadata for the file if found
         ArchiveListFileResult ListFileInArchive(AZ::IO::PathView relativePath) const override;
 
@@ -102,23 +111,13 @@ namespace Archive
         EnumerateArchiveResult EnumerateFilesInArchive(ListFileCallback listFileCallback) const override;
 
         //! Dump metadata for the archive to the supplied generic stream
-        //! @param metadataStream with human readable data about files within the archive will be written to the stream
+        //! @param metadataStream archive file metadata will be written to the stream
+        //! @param metadataSettings settings using which control the file metadata to write to the stream
         //! @return true if metadata was successfully written
         bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const override;
 
     private:
-        //! Queries the archive header for the index matching the specified compression
-        //! algorithm id
-        //! @param compressionAlgorithmId Id to query for the index in the archive header
-        //! for the compression algorithm Id array
-        //! @return the index of the registered compression algorithm Id
-        //! Special Case: If the input ID is `Compression::Uncompressed`, then
-        //! the value of `Compression::UncompressedAlgorithmIndex` is return instead
-        //! If the algorithm Id is not registered then the value of `InvalidAlgorithmIndex`
-        //! is returned
-        size_t FindCompressionAlgorithmId(Compression::CompressionAlgorithmId);
-
         //! Reads the Archive Header into memory.
         //! Afterwards the Archive Header is used to read the TOC into memory
         //! and build any structures for acceleration of lookups
@@ -140,27 +139,27 @@ namespace Archive
         //! @param fileBuffer pre-allocated span to populate buffer with data
         //! @param offset absolute file within mounted archive to start reading data from
         //! @param fileSize the amount of data to read at the specified offset
+        //! @param fileSettings setting structure which is used to configure where the
+        //! start offset for reading within the extracted file and how many bytes to read from that
+        //! start offset
         //! @return result outcome which contains an error messages related to reading the file
         //! if it fails
         using ReadRawFileOutcome = AZStd::expected<AZStd::span<AZStd::byte>, ResultString>;
-        ReadRawFileOutcome ReadRawFileIntoBuffer(AZStd::span<AZStd::byte> fileBuffer, AZ::u64 offset,
-            AZ::u64 fileSize,
+        ReadRawFileOutcome ReadRawFileIntoBuffer(AZStd::span<AZStd::byte> fileBuffer,
+            AZ::u64 offset, AZ::u64 fileSize,
             const ArchiveReaderFileSettings& fileSettings);
 
         //! Decompressed the content from the input buffer
         //! @param decompressionResultSpan span to populated with decompressed results
-        //! @param compressedInputSpan compressed data span to decompress
         //! @param fileSettings settings which indicate the max number of decompression task
         //! to use for decompressing the file content.
         //! This parameter also contains settings for selecting an offset within the decompressed
         //! file to start reading, as well as a cap on the number of bytes to read from that start offset
-        //! @param blockOffsetIndex start index into the block line table vector which contains
-        //! the compressed sizes of each 2 MiB block of the file
         //! @param extractFileResult Contains the compressed size, raw offset within the archive and uncompressed
         //! size of the file needed for extracting
         //! @return result outcome with a span containing a view of the decompressed file data
         //! within the offset range specified by
-        //! [ArchiveReaderFileSettings::m_startOffset,ArchiveReaderFileSettings::m_startOffset + ArchiveReaderFileSettings::m_bytesToRead)
+        //! [ArchiveReaderFileSettings::m_startOffset, ArchiveReaderFileSettings::m_startOffset + ArchiveReaderFileSettings::m_bytesToRead)
         //! Otherwise an error message string providing reasons why decompression failed
         using ReadCompressedFileOutcome = AZStd::expected<AZStd::span<AZStd::byte>, ResultString>;
         ReadCompressedFileOutcome ReadCompressedFileIntoBuffer(AZStd::span<AZStd::byte> decompressionResultSpan,

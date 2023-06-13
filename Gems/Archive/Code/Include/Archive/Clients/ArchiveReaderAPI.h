@@ -235,6 +235,16 @@ namespace Archive
         //! The outputSpan should be a pre-allocated buffer that is large enough
         //! to fit either the uncompressed size of the file if the `m_decompressFile` setting is true
         //! or the compressed size of the file if the `m_decompressFile` setting is false
+        //!
+        //! @param outputSpan pre-allocated buffer that should be large enough to store the extracted
+        //! file
+        //! @param fileSettings settings which can configure whether the file should be decompressed,
+        //! the start offset where to start reading content within the file, how many bytes
+        //! to read from the file, etc...
+        //! @return ArchiveExtractFileResult structure which on success contains
+        //! a span of the actual data extracted from the Archive.
+        //! NOTE: The extracted data can be smaller than the outputSpan.size()
+        //! On failure, the result outcome member contains the error that occurred
         virtual ArchiveExtractFileResult ExtractFileFromArchive(AZStd::span<AZStd::byte> outputSpan,
             const ArchiveReaderFileSettings& fileSettings) = 0;
 
@@ -243,9 +253,8 @@ namespace Archive
         //! metadata about the file
         //! @return ArchiveListResult with metadata for the file if found
         virtual ArchiveListFileResult ListFileInArchive(ArchiveFileToken filePathToken) const = 0;
-        //! List the file metadata from the archive using the ArchiveFileToken
-        //! @param filePathToken identifier token that can be used to quickly lookup
-        //! metadata about the file
+        //! List the file metadata from the archive using the relative FilePath
+        //! @param relativePath File path to lookup within the archive
         //! @return ArchiveListResult with metadata for the file if found
         virtual ArchiveListFileResult ListFileInArchive(AZ::IO::PathView relativePath) const = 0;
 
@@ -273,7 +282,8 @@ namespace Archive
 
         //! Dump metadata for the archive to the supplied generic stream
         //! @param metadataStream with human readable data about files within the archive will be written to the stream
-        //! @return true if metadata was successfully written
+        //! @param metadataStream archive file metadata will be written to the stream
+        //! @param metadataSettings settings using which control the file metadata to write to the stream
         virtual bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const = 0;
     };

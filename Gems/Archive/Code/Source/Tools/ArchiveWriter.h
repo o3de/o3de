@@ -87,11 +87,30 @@ namespace Archive
         [[nodiscard]] CommitResult Commit() override;
 
         //! Adds the content from the stream to the relative path
-        //! based on the ArchiveWriterFileSettings
+        //! @param inputStream stream class where data for the file is source from
+        //! The entire stream is read into the memory and written into archive
+        //! @param fileSettings settings used to configure the relative path to
+        //! write to the archive for the given file data.
+        //! It also allows users to configure the compression algorithm to use,
+        //! and whether the AddFileToArchive logic fails if an existing file is being added
+        //! @return ArchiveAddFileResult containing the actual compression file path
+        //! as saved to the Archive TOC, the compression algorithm used
+        //! and an Archive File Token which can be used to remove the file if need be
+        //! On failure, the result outcome contains any errors that have occurred
         ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
             const ArchiveWriterFileSettings& fileSettings) override;
 
-        //! Used the span contents to add the file to the archive
+        //! Use the span contents to add the file to the archive
+        //! @param inputSpan view of data which will be written to the archive
+        //! at the relative path supplied in the @fileSettings parameter
+        //! @param fileSettings settings used to configure the relative path to
+        //! write to the archive for the given file data.
+        //! It also allows users to configure the compression algorithm to use,
+        //! and whether the AddFileToArchive logic fails if an existing file is being added
+        //! @return ArchiveAddFileResult containing the actual compression file path
+        //! as saved to the Archive TOC, the compression algorithm used
+        //! and an Archive File Token which can be used to remove the file if need be
+        //! On failure, the result outcome contains any errors that have occurred
         ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
             const ArchiveWriterFileSettings& fileSettings) override;
 
@@ -121,7 +140,8 @@ namespace Archive
         ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) override;
 
         //! Dump metadata for the archive to the supplied generic stream
-        //! @param metadataStream with human readable data about files within the archive will be written to the stream
+        //! @param metadataStream archive file metadata will be written to the stream
+        //! @param metadataSettings settings using which control the file metadata to write to the stream
         //! @return true if metadata was successfully written
         bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const override;
