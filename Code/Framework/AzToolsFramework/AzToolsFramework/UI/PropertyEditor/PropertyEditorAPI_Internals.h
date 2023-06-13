@@ -398,7 +398,30 @@ namespace AzToolsFramework
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
 
             m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-            const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+
+            auto typeIdAttribute = m_domNode.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != m_domNode.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+
+            // If the expected TypeId differs from m_proxyClassData.m_typeId (WrappedType),
+            // then it means this handler was written for a base-class/m_proxyClassElement.m_genericClassInfo
+            //      e.g. AZ::Data::Asset<AZ::Data::AssetData> when the actual type is for a specific asset data such as
+            //           AZ::Data::Asset<RPI::ModelAsset>
+            // So we need to marshal it with a typed pointer, which is how the data gets read in as well
+            // For everything else, we can just use ValueFromType which can imply the type from the value itself
+            AZ::Dom::Value newValue;
+            if (!typeId.IsNull() && typeId != m_proxyClassData.m_typeId)
+            {
+                newValue = AZ::Dom::Utils::MarshalTypedPointerToValue(&m_proxyValue, typeId);
+            }
+            else
+            {
+                newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+            }
+
             PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
             OnRequestPropertyNotify();
         }
