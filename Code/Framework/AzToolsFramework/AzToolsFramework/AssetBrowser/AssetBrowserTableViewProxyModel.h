@@ -46,7 +46,6 @@ namespace AzToolsFramework
 
             bool GetShowSearchResultsMode() const;
             void SetShowSearchResultsMode(bool searchMode);
-            const AZStd::string ExtensionToType(AZStd::string_view str) const;
 
         private:
             QPersistentModelIndex m_rootIndex;

@@ -132,23 +132,13 @@ namespace AzToolsFramework
             {
                 QVariant leftData = sourceModel()->data(source_left, AssetBrowserModel::Roles::EntryRole);
                 QVariant rightData = sourceModel()->data(source_right, AssetBrowserModel::Roles::EntryRole);
+
                 if (leftData.canConvert<const AssetBrowserEntry*>() && rightData.canConvert<const AssetBrowserEntry*>())
                 {
                     auto leftEntry = qvariant_cast<const AssetBrowserEntry*>(leftData);
                     auto rightEntry = qvariant_cast<const AssetBrowserEntry*>(rightData);
 
-                    // folders should always come first
-                    if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry) && azrtti_istypeof<const SourceAssetBrowserEntry*>(rightEntry))
-                    {
-                        return false;
-                    }
-                    if (azrtti_istypeof<const SourceAssetBrowserEntry*>(leftEntry) && azrtti_istypeof<const FolderAssetBrowserEntry*>(rightEntry))
-                    {
-                        return true;
-                    }
-
-                    // if both entries are of same type, sort alphabetically
-                    return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    return leftEntry->lessThan(rightEntry, sortColumn(), m_collator);
                 }
             }
             return QSortFilterProxyModel::lessThan(source_left, source_right);
@@ -231,7 +221,6 @@ namespace AzToolsFramework
                 );
             }
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
