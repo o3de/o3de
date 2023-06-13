@@ -246,6 +246,10 @@ namespace AZ
 
         Data::AssetId StreamingImageAssetHandler::AssetMissingInCatalog(const Data::Asset<Data::AssetData>& asset)
         {
+            AZ_Info("Streaming Image",
+                "Streaming Image id " AZ_STRING_FORMAT " not found in asset catalog, using fallback image.\n",
+                AZ_STRING_ARG(asset.GetId().ToFixedString()));
+
             // Find out if the asset is missing completely, or just still processing
             // and escalate the asset to the top of the list
             AzFramework::AssetSystem::AssetStatus missingAssetStatus = AzFramework::AssetSystem::AssetStatus::AssetStatus_Unknown;
