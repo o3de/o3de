@@ -841,7 +841,7 @@ namespace Archive
             {
                 auto errorString = MetadataString::format("Error: The Archive TOC of contents has a mismatched size between"
                     " the file path index vector (size=%zu) and the file metadata vector (size=%zu).\n"
-                    "This indicates a code error in the ArchiveReader",
+                    "This indicates a code error in the ArchiveReader.",
                     m_archiveToc.m_tocView.m_filePathIndexTable.size(), m_archiveToc.m_tocView.m_fileMetadataTable.size());
                 metadataStream.Write(errorString.size(), errorString.data());
                 return false;
