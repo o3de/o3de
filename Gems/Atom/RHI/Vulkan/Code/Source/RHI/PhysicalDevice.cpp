@@ -288,7 +288,8 @@ namespace AZ
                 (m_vulkan12Features.separateDepthStencilLayouts));
             m_features.set(static_cast<size_t>(DeviceFeature::DescriptorIndexing), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_descriptor_indexing));
             m_features.set(static_cast<size_t>(DeviceFeature::BufferDeviceAddress), VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_buffer_device_address));
-            // Disable memory budget extension for now since it's crashing the driver when querying heap budgets.
+            // Disable memory budget extension for now since it's crashing the driver when the VkPhysicalDeviceMemoryBudgetPropertiesEXT structure
+            // is included in the pNext chain of VkPhysicalDeviceMemoryProperties2
             m_features.set(
                 static_cast<size_t>(DeviceFeature::MemoryBudget),
                 VK_DEVICE_EXTENSION_SUPPORTED(context, EXT_memory_budget) && m_deviceProperties.vendorID != VendorID_Intel);
