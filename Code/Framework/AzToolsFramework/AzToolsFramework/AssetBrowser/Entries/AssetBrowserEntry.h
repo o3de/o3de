@@ -117,6 +117,8 @@ namespace AzToolsFramework
             const AZStd::string GetFullPath() const;
             //! Return the size on disk of the asset
             const size_t GetDiskSize() const;
+            //! Return the time the file was last modified.
+            const AZ::u64 GetModificationTime() const;
             //! Returns the dimension of the model
             const AZ::Vector3& GetDimension() const;
             //! Returns the number of vertices in the model
@@ -160,6 +162,7 @@ namespace AzToolsFramework
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
+            AZ::u64 m_modificationTime;
             size_t m_diskSize;
             AZ::Vector3 m_dimension{ NAN, NAN, NAN };
             uint32_t m_vertices{ 0 };

@@ -745,11 +745,28 @@ namespace AzToolsFramework
             m_indexToSelectAfterUpdate = index;
         }
 
+        void AssetBrowserTreeView::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode)
+        {
+            m_assetBrowserSortFilterProxyModel->SetSortMode(mode);
+
+            m_assetBrowserSortFilterProxyModel->sort(0, Qt::DescendingOrder);
+        }
+
+        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserTreeView::GetSortMode() const
+        {
+            return m_assetBrowserSortFilterProxyModel->GetSortMode();
+        }
+
         void AssetBrowserTreeView::SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView)
         {
             m_attachedThumbnailView = thumbnailView;
         }
 
+        AssetBrowserThumbnailView* AssetBrowserTreeView::GetAttachedThumbnailView() const
+        {
+            return m_attachedThumbnailView;
+        }
+        
         void AssetBrowserTreeView::SetAttachedTableView(AssetBrowserTableView* tableView)
         {
             m_attachedTableView = tableView;

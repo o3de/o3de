@@ -92,7 +92,7 @@ namespace O3DELauncher
     AZStd::string_view GetBuildTargetName();
 
     //////////////////////////////////////////////////////////////////////////
-    // The following functions are defined per launcher type (e.g. Game/Server)
+    // The following functions are defined per launcher type (e.g. Client/Server/Unified)
     //////////////////////////////////////////////////////////////////////////
 
     //! Indicates if it should wait for a connection to the AssetProcessor (will attempt to open it if true)
@@ -103,5 +103,8 @@ namespace O3DELauncher
 
     //! Gets the name of the log file to use
     const char* GetLogFilename();
-}
 
+    //! Returns the SettingsRegistry specialization tag
+    //! that can be used to load settings for the specific launcher
+    const char* GetLauncherTypeSpecialization();
+}

@@ -44,7 +44,7 @@ namespace AZ
         static constexpr char PlatformFolder[] = "Platform";
 
         //! Represents a fixed size non-allocating string type that can be used to query the settings registry using Get()
-        //! If the value is longer than FixedValueString::max_size(), then either the heap allocating 
+        //! If the value is longer than FixedValueString::max_size(), then either the heap allocating
         //! AZStd::string overload must be used or the Visit method must be used
         using FixedValueString = AZ::StringFunc::Path::FixedString;
 
@@ -83,6 +83,16 @@ namespace AZ
             AZStd::fixed_vector<TagName, MaxCount> m_names;
             AZStd::fixed_vector<size_t, MaxCount> m_hashes;
         };
+        // The Settings Registry specialization is a list of tags between
+        // <dots> that are part of a .setreg(patch) file that is used
+        // to determine if the file should be loaded
+        // It is of the form <basename>.<tag1>.<tag2> ... .<tagN>.setreg
+        // Example tag files are:
+        // 1. streamer.editor.setreg
+        //  -> the filename tag here is "editor"
+        // 2. custom_settings.asset_processor.windows.setreg
+        //  -> the filename tags here are "asset_processor" and "windows"
+        using FilenameTags = Specializations;
 
         //! Type of the store value, or None if there's no value stored.
         enum class Type
@@ -217,7 +227,7 @@ namespace AZ
         //! @return Whether or not entries could be visited.
         virtual bool Visit(Visitor& visitor, AZStd::string_view path) const = 0;
         //! Traverses over the entries in the Settings Registry. Use this version if only the names and/or types are needed.
-        //! @param callback A callback function that will repeatedly be called as entries are encountered. 
+        //! @param callback A callback function that will repeatedly be called as entries are encountered.
         //! @param path An offset at which traversal should start.
         //! @return Whether or not entries could be visited.
         virtual bool Visit(const VisitorCallback& callback, AZStd::string_view path) const = 0;
@@ -315,7 +325,7 @@ namespace AZ
         //! @param value The new value to store.
         //! @return Whether or not the value was stored. An invalid path will return false;
         virtual bool Set(AZStd::string_view path, const char* value) = 0;
-        
+
         //! Sets the value at the provided path to the serialized version of the provided struct/class.
         //! Classes used for this call need to be registered with the Serialize Context.
         //! Prefer to use SetObject(AZStd::string_view path, const T& result) over this one.
@@ -332,7 +342,7 @@ namespace AZ
         template<typename T>
         bool SetObject(AZStd::string_view path, const T& value) { return SetObject(path, &value, azrtti_typeid(value)); }
 
-        //! Remove the value at the provided path 
+        //! Remove the value at the provided path
         //! @param path The path to a value that should be removed
         //! @return Whether or not the path was found and removed. An invalid path will return false;
         virtual bool Remove(AZStd::string_view path) = 0;

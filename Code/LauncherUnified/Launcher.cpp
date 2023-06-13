@@ -128,6 +128,8 @@ namespace
 
 namespace O3DELauncher
 {
+    inline constexpr AZStd::string_view LauncherTypeTag = "/O3DE/Runtime/LauncherType";
+
     AZ_CVAR(bool, bg_ConnectToAssetProcessor, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "If true, the process will launch and connect to the asset processor");
 
     bool PlatformMainInfo::CopyCommandLine(int argc, char** argv)
@@ -411,6 +413,12 @@ namespace O3DELauncher
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
+        //Store the launcher type to the Settings Registry
+        AZStd::string_view launcherType = GetLauncherTypeSpecialization();
+        settingsRegistry->Set(LauncherTypeTag, launcherType);
+        // Also add the launcher type as a specialization as well
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, launcherType);
+
         AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
             R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"
             R"( for Launcher target "%.*s")" "\n",
@@ -559,7 +567,7 @@ namespace O3DELauncher
                 auto autoExecFile = AZ::IO::FixedMaxPath{pathToAssets} / "autoexec.cfg";
                 AZ::Interface<AZ::IConsole>::Get()->ExecuteConfigFile(autoExecFile.Native());
 
-                // Find out if console command file was passed 
+                // Find out if console command file was passed
                 // via --console-command-file=%filename% and execute it
                 ExecuteConsoleCommandFile(gameApplication);
 
