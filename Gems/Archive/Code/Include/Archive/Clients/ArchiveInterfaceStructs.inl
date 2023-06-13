@@ -378,7 +378,7 @@ namespace Archive
         if (blockIndex >= blockCount)
         {
             result.m_errorMessage = "Block index is out of range of the number of block count."
-                " A block line index cannot be returned";
+                " A block line index cannot be returned.";
             return result;
         }
 
@@ -386,9 +386,7 @@ namespace Archive
         {
             auto GetFinalIndexForFinalBlockLineSetOf3 = [](AZ::u64 blockCount) constexpr
             {
-                return blockCount <= MaxBlocksNoJumpEntry
-                    ? MaxBlocksNoJumpEntry
-                    : AZ_SIZE_ALIGN_UP(blockCount - MaxBlocksNoJumpEntry, BlocksToSkipWithJumpEntry) + MaxBlocksNoJumpEntry;
+                return AZ_SIZE_ALIGN_UP(blockCount - MaxBlocksNoJumpEntry, BlocksToSkipWithJumpEntry) + MaxBlocksNoJumpEntry;
             };
 
             return blockCount <= MaxBlocksNoJumpEntry ? 0 : GetFinalIndexForFinalBlockLineSetOf3(blockCount) - MaxBlocksNoJumpEntry;

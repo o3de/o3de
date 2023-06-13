@@ -68,8 +68,8 @@ namespace Archive
     // Define the Archive TableOfContentReader constructors
     ArchiveReader::ArchiveTableOfContentsReader::ArchiveTableOfContentsReader() = default;
 
-    // Takes ownership of the buffer containing the Table of Contents raw data
-    // and an ArchiveTableOfContentsView instance
+    // Stores the buffer containing the Table of Contents raw data
+    // and an ArchiveTableOfContentsView instance that points into that raw data
     ArchiveReader::ArchiveTableOfContentsReader::ArchiveTableOfContentsReader(AZStd::vector<AZStd::byte> tocBuffer,
         ArchiveTableOfContentsView tocView)
         : m_tocBuffer(AZStd::move(tocBuffer))
@@ -394,7 +394,7 @@ namespace Archive
         // Calculate the start offset where to read the file content from
         // It must be within the the range of [offset, offset + size)
         AZ::IO::OffsetType readOffset = AZStd::clamp(offset, offset + fileSettings.m_startOffset, offset + fileSize);
-        // Next clamp the bytesToRead to be not read pass the end of the file
+        // Next clamp the bytesToRead to not read pass the end of the file
         AZ::IO::SizeType bytesAvailableForRead = (offset + fileSize) - readOffset;
 
         // Set the amount of bytes to read to be the minimum of the file size and the amount of bytes to read
@@ -411,7 +411,7 @@ namespace Archive
             bytesRead < bytesToRead)
         {
             return AZStd::unexpected(ResultString::format("Attempted to read %llu bytes from the archive at offset %lld."
-                " But only %llu bytes were able to be read", bytesToRead, readOffset, bytesRead));
+                " But only %llu bytes were able to be read.", bytesToRead, readOffset, bytesRead));
         }
 
         // Make a span with the exact amount of data read
@@ -466,7 +466,7 @@ namespace Archive
                 extractFileResult.m_relativeFilePath.c_str()));
         }
 
-        // Clamp the the bytes that can read for the file to be at
+        // Clamp the bytes that can read for the file to be at
         // most the difference in uncompressed size and the start offset
         AZ::u64 maxBytesToReadForFile = AZStd::min(fileSettings.m_bytesToRead,
             extractFileResult.m_uncompressedSize - fileSettings.m_startOffset);
@@ -699,7 +699,7 @@ namespace Archive
             errorResult.m_resultOutcome = AZStd::unexpected(
                 ResultString::format(R"(A file token "%llu" is being used to extract the file,)"
                     " but the file path stored in the TOC is empty."
-                    "This indicates that the token is referring to a deleted file",
+                    "This indicates that the token is referring to a deleted file.",
                     static_cast<AZ::u64>(archiveFileToken)));
             return errorResult;
         }
@@ -750,8 +750,7 @@ namespace Archive
         {
             ArchiveListFileResult errorResult;
             errorResult.m_resultOutcome = AZStd::unexpected(
-                ResultString(R"(An empty file path has been supplied."
-                " An empty path cannot be found in the archive.)"));
+                ResultString("An empty file path has been supplied and cannot be found in the archive."));
             return errorResult;
         }
         auto foundIt = m_pathMap.find(relativePath);
@@ -842,7 +841,7 @@ namespace Archive
             {
                 auto errorString = MetadataString::format("Error: The Archive TOC of contents has a mismatched size between"
                     " the file path index vector (size=%zu) and the file metadata vector (size=%zu).\n"
-                    "This indicates a code error in the ArchiveReader in keeping both vectors in sync and should never occur",
+                    "This indicates a code error in the ArchiveReader",
                     m_archiveToc.m_tocView.m_filePathIndexTable.size(), m_archiveToc.m_tocView.m_fileMetadataTable.size());
                 metadataStream.Write(errorString.size(), errorString.data());
                 return false;
@@ -897,32 +896,4 @@ namespace Archive
         }
         return true;
     }
-
-
-    size_t ArchiveReader::FindCompressionAlgorithmId(Compression::CompressionAlgorithmId compressionAlgorithmId)
-    {
-        // If the compression algorithm id is invalid return the invalid algorithm index
-        if (compressionAlgorithmId == Compression::Invalid)
-        {
-            return InvalidAlgorithmIndex;
-        }
-
-        // If the compression algorithm id is uncompressed
-        // return a value of 7 which is the highest 3-bit value(0b111)
-        // The compression algorithm Id array contains 7 elements for registering compression algorithms.
-        // The index of 7 is used to represent the file is uncompressed the purposes of storing
-        // that information the archive table of contents for an uncompressed file
-        if (compressionAlgorithmId == Compression::Uncompressed)
-        {
-            return UncompressedAlgorithmIndex;
-        }
-
-        // Locate the compression algorithm Id in the compression algorithm id array
-        auto foundIt = AZStd::find(m_archiveHeader.m_compressionAlgorithmsIds.begin(), m_archiveHeader.m_compressionAlgorithmsIds.end(),
-            compressionAlgorithmId);
-        return foundIt != m_archiveHeader.m_compressionAlgorithmsIds.end()
-            ? AZStd::distance(m_archiveHeader.m_compressionAlgorithmsIds.begin(), foundIt)
-            : InvalidAlgorithmIndex;
-    }
-
 } // namespace Archive

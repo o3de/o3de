@@ -163,7 +163,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     # as part of the current project
     # This allows the Asset Bundler to have access to the gems API includes which it can use
     # to create O3AR archive format files
-    target_link_libraries(AssetBundlerBatch.Static PUBLIC ${gem_name}.Clients ${gem_name}.Tools)
+    target_link_libraries(AssetBundlerBatch.Static PUBLIC ${gem_name}.API ${gem_name}.Editor.API)
 endif()
 
 ################################################################################

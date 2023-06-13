@@ -199,7 +199,7 @@ namespace Archive
         //! Stores mapping of FilePath to index within the file path table in the Archive TOC
         //! The index is used to as the ArchiveFileToken
         //! IMPORTANT: The PathView is a view into the m_archiveToc TOC buffer
-        //! and therefore this map should be clear before re-reading another archive TOC
+        //! and therefore this map should be cleared before reading another archive TOC
         using FilePathTable = AZStd::unordered_map<AZ::IO::PathView, size_t>;
         FilePathTable m_pathMap;
 
