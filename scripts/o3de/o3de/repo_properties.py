@@ -15,7 +15,8 @@ import json
 import logging
 import hashlib
 import shutil
-
+from packaging.version import Version, InvalidVersion
+from packaging.specifiers import SpecifierSet
 from o3de import manifest, utils, validation
 
 logger = logging.getLogger('o3de.repo_properties')
@@ -56,17 +57,18 @@ def merge_json_data(json_path: pathlib.Path, json_data: dict) -> dict:
 
     return merged_json_data
 
-def create_release(src_data_path: pathlib.Path, 
+def create_remote_object_archive(src_data_path: pathlib.Path, 
                    json_data_path: pathlib.Path, 
                    archive_filename: pathlib.PurePath, 
                    releases_path: pathlib.Path, 
                    repo_uri:str,
                    download_prefix:str) -> dict:
     """
-    Creates a release for the given src_data_path.
+    Creates a release of a specific version of a 
+    remote object for the given src_data_path.
     The release is saved to the releases_path.
-    Returns the json data.
-    
+    Returns the json data. 
+ 
     Args:
         src_data_path (pathlib.Path): The path to the src root folder.
         json_data_path (pathlib.Path): The path to the json data.
@@ -83,22 +85,18 @@ def create_release(src_data_path: pathlib.Path,
         FileNotFoundError: If the json_data_path does not exist.
         ValueError: If the json_data_path is not a dict.
     """
-    # basename = f'{object_name}_release_1.0.0'
-    # zip_filename = f'{archive_filename}.zip'
-    basename = archive_filename.stem
-    zip_filename = archive_filename
 
     json_data = merge_json_data(json_data_path, {
         'repo_uri':repo_uri,
-        'download_source_uri':f'{download_prefix}/{zip_filename}',
+        'download_source_uri':f'{download_prefix}/{archive_filename}',
     })
 
-    logging.info(f"Creating '{releases_path / zip_filename}'")
+    logging.info(f"Creating '{releases_path / archive_filename}'")
 
     # create the release zip file
-    shutil.make_archive(releases_path / basename, 'zip', src_data_path)
+    shutil.make_archive(releases_path / archive_filename.stem, 'zip', src_data_path)
 
-    zip_path = releases_path / zip_filename
+    zip_path = releases_path / archive_filename
 
     with zip_path.open('rb') as f:
         json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
@@ -106,13 +104,12 @@ def create_release(src_data_path: pathlib.Path,
     return json_data
 
 # retrieves json data of the repository from a file path
-def get_repo_props(path: pathlib.Path) -> dict:
+def get_repo_props(path: pathlib.Path) -> dict or None:
     repo_json = manifest.get_json_data_file(path, "Repo", validation.valid_o3de_repo_json)
     if not isinstance(repo_json, dict):
-        logger.error(f'Could not retrieve repo.json file for {path}')
+        logger.error(f'Could not retrieve repo.json file from {path} or the repo.json file is invalid.')
         return None
     return repo_json
-
 
 def _find_index(data:list, key:str, value:str) -> int:
     for index, item in enumerate(data):
@@ -145,39 +142,44 @@ def _edit_objects(object_typename:str,
     :param add_objects: Any object paths you want to add to your repo_json object field
     :param delete_objects: Any object_names to be removed from your repo_json object field
     :param replace_objects: A list of object paths that will completely replace the current object_list
-    :param release_archive_path: Path where you want your release to be located
+    :param release_archive_path: Optional local path to a folder where a release archive should be written
     :param download_prefix: The prefix of the download uri
     """
     # The beginning remote repo json template
     repo_objects_data = repo_json.get(f'{object_typename}s_data',[])
-
-    if add_objects:
-        paths = add_objects.split() if isinstance(add_objects, str) else add_objects
+   
+    if add_objects or replace_objects:
+        if replace_objects:
+            repo_objects_data = []
+            paths = replace_objects.split() if isinstance(replace_objects, str) else replace_objects
+        else:
+            paths = add_objects.split() if isinstance(add_objects, str) else add_objects
         for object_path in paths:
-            # gem data of the gem you want to add
+            # object JSON data of the object you want to add
             json_data = manifest.get_json_data(object_typename, object_path, validator)
             if json_data:
                 if release_archive_path:
                     version = json_data.get('version','0.0.0')
                     archive_filename = pathlib.PurePath(f"{json_data[f'{object_typename}_name']}-{version}-{object_typename}.zip".lower())
-                    json_data = create_release(object_path, 
-                                   object_path / f'{object_typename}.json', 
-                                   archive_filename, 
-                                   release_archive_path, 
-                                   repo_json['repo_uri'], 
-                                   download_prefix)
+                    json_data = create_remote_object_archive(object_path, 
+                                object_path / f'{object_typename}.json', 
+                                archive_filename, 
+                                release_archive_path, 
+                                repo_json['repo_uri'], 
+                                download_prefix)
                 index = _find_index(repo_objects_data, f'{object_typename}_name', json_data[f'{object_typename}_name'])
-                # if the added gem is same with partial changes
+                # index will be non-negative if an instance of this object already exists in the repo.json
                 if index != -1:
                     # we want changes only
                     version_data = _changed(repo_objects_data[index], json_data)
                     if not version_data:
-                        # there is no difference between the gem being added and 
-                        # what already exists in gems_data
+                        # there is no difference between the object being added and 
+                        # what already exists in repo.json
+                        logger.warning(f"No changes were found between the object JSON data in repo.json and the object data being added from {object_path}")
                         continue
 
                     # versions data must always include the version
-                    version_data['version'] = json_data['version']
+                    version_data['version'] = json_data.get('version','0.0.0')
 
                     # versions data must always include one of the download/source uris
                     if 'download_source_uri' in json_data:
@@ -192,7 +194,10 @@ def _edit_objects(object_typename:str,
                         # update the existing version
                         if version_data:
                             repo_objects_data[index]['versions_data'][version_index] = version_data
-                    else:
+                    # if version is same, update field                        
+                    elif repo_objects_data[index].get('version','0.0.0') == version_data['version']:
+                        repo_objects_data[index].update(version_data)
+                    else:    
                         # add the new version
                         if 'versions_data' not in repo_objects_data[index]:
                             repo_objects_data[index]['versions_data'] = [version_data] 
@@ -201,71 +206,40 @@ def _edit_objects(object_typename:str,
                 else:
                     repo_objects_data.append(json_data)
 
-    # Remove duplicates from list 
     if delete_objects:      
         removal_list = delete_objects.split() if isinstance(delete_objects, str) else delete_objects
         # find name field of object you want to delete
         object_key = str(f'{object_typename}_name')
+        
         for removal_object in removal_list:
             # Remove the JSON object(s) with the specified object_name value
-            repo_objects_data = [object_typename for object_typename in repo_objects_data if object_typename.get(object_key) != removal_object]
-
-    
-    # Replace 
-    if replace_objects:
-        paths = replace_objects.split() if isinstance(replace_objects, str) else replace_objects
-        for object_path in paths:
-            # clear suggect object field
-            repo_objects_data = []
-            # add gems back to cleared object field
-            json_data = manifest.get_json_data(object_typename, object_path, validator)
-
-            if json_data:
-                if release_archive_path:
-                    version = json_data.get('version','0.0.0')
-                    archive_filename = pathlib.PurePath(f"{json_data[f'{object_typename}_name']}-{version}-{object_typename}.zip".lower())
-                    json_data = create_release(object_path, 
-                                   object_path / f'{object_typename}.json', 
-                                   archive_filename, 
-                                   release_archive_path, 
-                                   repo_json['repo_uri'], 
-                                   download_prefix)
-                index = _find_index(repo_objects_data, f'{object_typename}_name', json_data[f'{object_typename}_name'])
-                # if the added gem is same with partial changes
-                if index != -1:
-                    # we want changes only
-                    version_data = _changed(repo_objects_data[index], json_data)
-                    if not version_data:
-                        # there is no difference between the gem being added and 
-                        # what already exists in gems_data
-                        continue
-
-                    # versions data must always include the version
-                    version_data['version'] = json_data['version']
-
-                    # versions data must always include one of the download/source uris
-                    if 'download_source_uri' in json_data:
-                        version_data['download_source_uri'] = json_data['download_source_uri']
-                    if 'source_control_uri' in json_data:
-                        version_data['source_control_uri'] = json_data['source_control_uri']
-                    if 'source_control_ref' in json_data:
-                        version_data['source_control_ref'] = json_data['source_control_ref']
-
-                    version_index = _find_index(repo_objects_data[index].get('versions_data',[]), 'version', json_data['version'])
-                    if version_index != -1:
-                        # update the existing version
-                        if version_data:
-                            repo_objects_data[index]['versions_data'][version_index] = version_data
-                    else:
-                        # add the new version
-                        if 'versions_data' not in repo_objects_data[index]:
-                            repo_objects_data[index]['versions_data'] = [version_data] 
-                        else:
-                            repo_objects_data[index]['versions_data'].append(version_data) 
-                else:
-                    repo_objects_data.append(json_data)
+            object_name, version_specifier = utils.get_object_name_and_optional_version_specifier(removal_object)
+            if not version_specifier:
+                # Remove the JSON object(s) with the specified object_name value
+                repo_objects_data = [object_typename for object_typename in repo_objects_data if object_typename.get(object_key) != object_name]
+            else:
+               index = _find_index(repo_objects_data, f'{object_typename}_name', object_name)
+               #if version exists 
+               if index > -1:
+                   # returns the version data field associated object version data with input, if not return version data return empty field
+                   versions_data = repo_objects_data[index].get('versions_data',[])
+                   if versions_data:
+                       # remove matching versions
+                       versions_data = [data for data in versions_data if Version(data.get('version', '0.0.0')) not in SpecifierSet(version_specifier)]
+                       repo_objects_data[index]['versions_data'] = versions_data
+                              
+                   # remove/replace base version if it matches
+                   if Version(repo_objects_data[index].get('version', '0.0.0')) in SpecifierSet(version_specifier):
+                       if versions_data:
+                            # updates the base version with newer version
+                            repo_objects_data[index].update(versions_data.pop(0))
+                            repo_objects_data[index]['versions_data'] = versions_data
+                       else: 
+                            # versions data is empty so remove the whole object entry
+                            del repo_objects_data[index]              
 
     repo_json[f'{object_typename}s_data'] = repo_objects_data
+     #if older version is removed, merged the items thats changed in the newer version if newer version exist and update version
 
 def edit_repo_props(repo_path: pathlib.Path = None,
                        repo_name: str = None,
@@ -353,7 +327,8 @@ def add_parser_args(parser):
     group.add_argument('--add-gems', '-ag', type=pathlib.Path, nargs='*', required=False,
                        help="Adds gem(s) to the 'gems_data' property. Space delimited list (ex. -ag c:/gem1 c:/gem2)")
     group.add_argument('--delete-gems', '-dg', type=str, nargs='*', required=False,
-                       help='Removes gems(s) from the gems_data property. Space delimited list (ex. -db A B C')
+                       help='Removes gems(s) from the gems_data property by gem name with optional version specifier.'
+                       'Space delimited list (ex. -dg gemA==1.0.0 gemB gemC>2.0.0')
     group.add_argument('--replace-gems', '-rg', type=pathlib.Path, nargs='*', required=False,
                        help='Replace entirety of gems_data property with the provided gems')
 
@@ -361,7 +336,8 @@ def add_parser_args(parser):
     group.add_argument('--add-templates', '-at', type=pathlib.Path, nargs='*', required=False,
                        help="Adds template(s) to the 'templates_data' property. Space delimited list (ex. -at c:/template1 c:/template2)")
     group.add_argument('--delete-templates', '-dt', type=str, nargs='*', required=False,
-                       help='Removes templates(s) from the templates_data property. Space delimited list (ex. -dt A B C')
+                       help='Removes templates(s) from the templates_data property by template name with optional version specifier.'
+                        ' Space delimited list (ex. -dt templateA templateB==1.0.0 templateC>1.0.0')
     group.add_argument('--replace-templates', '-rt', type=pathlib.Path, nargs='*', required=False,
                        help='Replace entirety of templates_data property with the provided templates')
 
@@ -369,7 +345,8 @@ def add_parser_args(parser):
     group.add_argument('--add-projects', '-apr', type=pathlib.Path, nargs='*', required=False,
                        help="Adds projects(s) to the 'projects_data' property. Space delimited list (ex. -at c:/project1 c:/project2)") 
     group.add_argument('--delete-projects', '-dpr', type=str, nargs='*', required=False,
-                       help='Removes projects(s) from the projects_data property. Space delimited list (ex. -dp A B C')
+                       help='Removes projects(s) from the projects_data property by project name with optional version specifier'
+                       'Space delimited list (ex. -dpr projectA==1.0.0 projectB projectC>2.0.0')
     group.add_argument('--replace-projects', '-rpr', type=pathlib.Path, nargs='*', required=False,
                        help='Replace entirety of projects_data property with the provided projects')
 
@@ -378,7 +355,8 @@ def add_parser_args(parser):
     modify_gems_group.add_argument('--release-archive-path','-rap',  type=pathlib.Path, required=False,
                             help='Create a release archive at the specified local path and update the download_source_uri and sha256 fields.')
     modify_gems_group.add_argument('--download-prefix','-dp',  type=str, required=False,
-                            help='Download prefix for the release archive.')
+                            help='a URL prefix for a file attached to a GitHub release might look like this:'
+                            '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
     parser.set_defaults(func=_edit_repo_props)
 
 
