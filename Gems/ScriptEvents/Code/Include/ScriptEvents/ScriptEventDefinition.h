@@ -89,6 +89,13 @@ namespace ScriptEvents
 
         void RegisterInternal();
         void Register(AZ::ScriptDataContext& dc);
+
+// carbonated begin (alukyanov/fix-scriptevent-carbonated)
+#if defined(CARBONATED)
+        void IsRegistered(AZ::ScriptDataContext& dc);
+#endif
+// carbonated end
+
         void Release(AZ::ScriptDataContext& dc);
 
         Method& NewMethod()

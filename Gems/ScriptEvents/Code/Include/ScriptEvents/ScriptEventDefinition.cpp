@@ -24,6 +24,18 @@ namespace ScriptEvents
         RegisterInternal();
     }
 
+// carbonated begin (alukyanov/fix-scriptevent-carbonated)
+#if defined(CARBONATED)
+    void ScriptEvent::IsRegistered(AZ::ScriptDataContext& dc)
+    {
+        bool result = false;
+        ScriptEventBus::BroadcastResult(result, &ScriptEventRequests::IsScriptEventRegistered, this->GetName());
+
+        dc.PushResult(result);
+    }
+#endif
+// carbonated end
+
     void ScriptEvent::Release(AZ::ScriptDataContext&)
     {
     }
@@ -66,6 +78,11 @@ namespace ScriptEvents
                 ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                 ->Method("AddMethod", &ScriptEvent::AddMethod)
                 ->Method("Register", &ScriptEvent::Register)
+// carbonated begin (alukyanov/fix-scriptevent-carbonated)                
+#if defined(CARBONATED)
+                ->Method("IsRegistered", &ScriptEvent::IsRegistered)
+#endif
+// carbonated end
                 ->Property("Name", BehaviorValueProperty(&ScriptEvent::m_name))
                 ->Property("AddressType", BehaviorValueProperty(&ScriptEvent::m_addressType))
                 ->Property("Events", BehaviorValueProperty(&ScriptEvent::m_methods))
