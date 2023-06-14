@@ -30,7 +30,9 @@ namespace AZ
             // Declarations...
 
             //! Finds the AssetId for a given product file path.
-            Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType, bool autoGenerateId = false);
+            Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType);
+
+            bool TryToCompileAsset(const AZStd::string& assetFilePath, TraceLevel reporting);
 
             //! Gets an Asset<AssetDataT> reference for a given product file path. This function does not cause the asset to load.
             //! @return a null asset if the asset could not be found.
@@ -133,21 +135,10 @@ namespace AZ
             template<typename AssetDataT>
             Data::Asset<AssetDataT> LoadCriticalAsset(const AZStd::string& assetFilePath, TraceLevel reporting)
             {
-                bool apConnected = false;
-                AzFramework::AssetSystemRequestBus::BroadcastResult(
-                    apConnected, &AzFramework::AssetSystemRequestBus::Events::ConnectedWithAssetProcessor);
-                if (apConnected)
-                {
-                    AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-                    AzFramework::AssetSystemRequestBus::BroadcastResult(
-                        status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilePath);
-                    if (status != AzFramework::AssetSystem::AssetStatus_Compiled && status != AzFramework::AssetSystem::AssetStatus_Unknown)
-                    {
-                        AssetUtilsInternal::ReportIssue(reporting, AZStd::string::format("Could not compile asset '%s'", assetFilePath.c_str()).c_str());
-                        return {};
-                    }
-                }
+                TryToCompileAsset(assetFilePath, reporting);
 
+                // Whether or not we were able to successfully compile the asset, we'll still try to load it.
+                // A failed compile could mean that the asset relies on intermediate assets that haven't been created yet.
                 return LoadAssetByProductPath<AssetDataT>(assetFilePath.c_str(), reporting);
             }
 
