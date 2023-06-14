@@ -17,9 +17,9 @@ namespace AZ
 {
     namespace Vulkan
     {
-        static const uint32_t VendorID_Nvidia = 0x10DE;
-        static const uint32_t VendorID_AMD = 0x1002;
-        static const uint32_t VendorID_Intel = 0x8086;
+        [[maybe_unused]] static constexpr uint32_t VendorID_Nvidia = 0x10DE;
+        [[maybe_unused]] static constexpr uint32_t VendorID_AMD = 0x1002;
+        [[maybe_unused]] static constexpr uint32_t VendorID_Intel = 0x8086;
 
         RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
         {
