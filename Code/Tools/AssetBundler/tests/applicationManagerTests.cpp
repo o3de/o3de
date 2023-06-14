@@ -49,7 +49,7 @@ namespace AssetBundler
         : public UnitTest::LeakDetectionFixture
     {
     public:
-        
+
         void SetUp() override
         {
             UnitTest::LeakDetectionFixture::SetUp();
@@ -67,8 +67,7 @@ namespace AssetBundler
             }
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            AZ::IO::FixedMaxPath enginePath;
-            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            AZ::IO::FixedMaxPath enginePath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*registry);
             registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
@@ -81,17 +80,17 @@ namespace AssetBundler
             m_data->m_applicationManager->Start(AzFramework::Application::Descriptor(), startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
-            ASSERT_TRUE(!engineRoot.empty()) << "Unable to locate engine root.\n";
-            m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).String();
+            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+            ASSERT_TRUE(!executableDirectory.empty()) << "Unable to locate engine root.\n";
+            m_data->m_testEngineRoot = (executableDirectory / RelativeTestFolder).String();
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_data->m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            // we need to set it to nullptr first because otherwise the 
+            // we need to set it to nullptr first because otherwise the
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_data->m_localFileIO);
@@ -139,7 +138,7 @@ namespace AssetBundler
             // Add the gem to the list of active gems
             AZ::Test::AddActiveGem(gemName, * settingsRegistry);
 
-            // Set the Gem path underneat the o3de Manifest section of the SettingsRegistry
+            // Set the Gem path underneath the o3de Manifest section of the SettingsRegistry
             auto gemSourcePathKey = FixedValueString::format("%s/%s/Path",
                 AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey, gemName.c_str());
             auto gemSourcePath = AZ::IO::Path(m_data->m_testEngineRoot) / "Gems" / gemName;

@@ -22,4 +22,9 @@ namespace O3DELauncher
     {
         return "@log@/Game.log";
     }
+
+    const char* GetLauncherTypeSpecialization()
+    {
+        return "client";
+    }
 }

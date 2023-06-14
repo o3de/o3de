@@ -27,8 +27,10 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Viewport/ViewportBus.h>
+#include <CrySystem/System.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
+#include <ISystem.h>
 #include <sstream>
 #include <string>
 
@@ -452,6 +454,21 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
             {
                 ToggleThroughImGuiVisibleState();
             }
+
+            if (inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::Escape)
+            {
+                CSystem* cSys = static_cast<CSystem*>(GetISystem());
+                if (cSys)
+                {
+                    ISystemUserCallback* pCallback = cSys->GetUserCallback();
+                    {
+                        if (pCallback)
+                        {
+                            pCallback->OnProcessSwitch();
+                        }
+                    }
+                }
+            }
         }
 
         // Handle Keyboard Modifier Keys
@@ -725,7 +742,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
     m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
 
-void ImGuiManager::OnWindowResized(uint32_t width, uint32_t height)
+void ImGuiManager::OnResolutionChanged(uint32_t width, uint32_t height)
 {
     m_windowSize.m_width = width;
     m_windowSize.m_height = height;
@@ -742,7 +759,7 @@ void ImGuiManager::InitWindowSize()
 
         if (windowHandle)
         {
-            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
             AzFramework::WindowNotificationBus::Handler::BusConnect(windowHandle);
         }
     }

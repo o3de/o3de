@@ -50,7 +50,7 @@ namespace Archive
     {
     public:
         AZ_TYPE_INFO_WITH_NAME_DECL(ArchiveWriter);
-        AZ_RTTI_NO_TYPE_INFO_DECL()
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         AZ_CLASS_ALLOCATOR_DECL;
 
         ArchiveWriter();
@@ -87,13 +87,32 @@ namespace Archive
         [[nodiscard]] CommitResult Commit() override;
 
         //! Adds the content from the stream to the relative path
-        //! based on the ArchiveWriterFileSettings
+        //! @param inputStream stream class where data for the file is source from
+        //! The entire stream is read into the memory and written into archive
+        //! @param fileSettings settings used to configure the relative path to
+        //! write to the archive for the given file data.
+        //! It also allows users to configure the compression algorithm to use,
+        //! and whether the AddFileToArchive logic fails if an existing file is being added
+        //! @return ArchiveAddFileResult containing the actual compression file path
+        //! as saved to the Archive TOC, the compression algorithm used
+        //! and an Archive File Token which can be used to remove the file if need be
+        //! On failure, the result outcome contains any errors that have occurred
         ArchiveAddFileResult AddFileToArchive(AZ::IO::GenericStream& inputStream,
-            const ArchiveWriterFileSettings& fileSettings = {}) override;
+            const ArchiveWriterFileSettings& fileSettings) override;
 
-        //! Used the span contents to add the file to the archive
+        //! Use the span contents to add the file to the archive
+        //! @param inputSpan view of data which will be written to the archive
+        //! at the relative path supplied in the @fileSettings parameter
+        //! @param fileSettings settings used to configure the relative path to
+        //! write to the archive for the given file data.
+        //! It also allows users to configure the compression algorithm to use,
+        //! and whether the AddFileToArchive logic fails if an existing file is being added
+        //! @return ArchiveAddFileResult containing the actual compression file path
+        //! as saved to the Archive TOC, the compression algorithm used
+        //! and an Archive File Token which can be used to remove the file if need be
+        //! On failure, the result outcome contains any errors that have occurred
         ArchiveAddFileResult AddFileToArchive(AZStd::span<const AZStd::byte> inputSpan,
-            const ArchiveWriterFileSettings& fileSettings = {}) override;
+            const ArchiveWriterFileSettings& fileSettings) override;
 
         //! Searches for a relative path within the archive
         //! @param relativePath Relative path within archive to search for
@@ -120,10 +139,11 @@ namespace Archive
         //! stored in the Archive
         ArchiveRemoveFileResult RemoveFileFromArchive(AZ::IO::PathView relativePath) override;
 
-        //! Writes metadata for the archive to the supplied generic stream
-        //! @param metadataStream with human readable data about files within the archive will be written to the stream
+        //! Dump metadata for the archive to the supplied generic stream
+        //! @param metadataStream archive file metadata will be written to the stream
+        //! @param metadataSettings settings using which control the file metadata to write to the stream
         //! @return true if metadata was successfully written
-        bool WriteArchiveMetadata(AZ::IO::GenericStream& metadataStream,
+        bool DumpArchiveMetadata(AZ::IO::GenericStream& metadataStream,
             const ArchiveMetadataSettings& metadataSettings = {}) const override;
 
     private:
@@ -178,11 +198,13 @@ namespace Archive
             //! This path has been posted processed to to account for any changes
             //! to file case due to the `ArchiveWriterFileSettings::m_fileCase` member
             AZ::IO::PathView m_relativeFilePath;
-            //! Size of the input span as supplied to @AddFileToArchive
-            AZ::u64 m_uncompressedSize;
             //! stores block data about the file contents to write to block section of archive
-            //! The block data contains offsets into the buffer to wrtie
+            //! The block data contains offsets into the buffer to write
             ContentFileBlocks m_contentFileBlocks;
+            //! Reference to the file contents span that was supplied to @AddFileToArchive
+            //! This is used to retrieve the uncompressed size of the file contents
+            //! and to perform a CRC32 over the uncompressed data
+            AZStd::span<const AZStd::byte> m_uncompressedSpan;
         };
         //! Update the archive header with the new file count and the location
         //! of the file in the archive

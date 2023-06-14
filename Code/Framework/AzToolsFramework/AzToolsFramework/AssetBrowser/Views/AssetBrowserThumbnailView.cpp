@@ -13,16 +13,22 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
 #include <AzCore/Interface/Interface.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
 #if !defined(Q_MOC_RUN)
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
 #include <QVBoxLayout>
 #endif
 
@@ -40,6 +46,9 @@ namespace AzToolsFramework
         {
             // Using our own instance of AssetBrowserFilterModel to be able to show also files when the main model
             // only lists directories, and at the same time get sort and filter entries features from AssetBrowserFilterModel.
+
+            // Turn off DynamicSort as sorting is now manual.
+            m_assetFilterModel->setDynamicSortFilter(false);
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
             m_thumbnailViewProxyModel->setSourceModel(m_assetFilterModel);
             m_thumbnailViewWidget->setModel(m_thumbnailViewProxyModel);
@@ -81,11 +90,14 @@ namespace AzToolsFramework
                 this,
                 [this](const QModelIndex& index)
                 {
+                    AZStd::vector<const AssetBrowserEntry*> entries;
+                    QMenu menu(this);
+
                     if (index.isValid())
                     {
-                        QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
+                        entries.push_back(entry);
+
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
                             auto action = menu.addAction(tr("Show In Folder"));
@@ -99,17 +111,18 @@ namespace AzToolsFramework
                                 });
                             menu.addSeparator();
                         }
-                        AssetBrowserInteractionNotificationBus::Broadcast(
-                            &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
-
-                        if (!menu.isEmpty())
-                        {
-                            menu.exec(QCursor::pos());
-                        }
                     }
                     else if (!index.isValid() && m_assetTreeView)
                     {
-                        m_assetTreeView->OnContextMenu(QCursor::pos());
+                        entries = AZStd::move(m_assetTreeView->GetSelectedAssets()); 
+                    }
+                    
+                    AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+
+                    if (!menu.isEmpty())
+                    {
+                        menu.exec(QCursor::pos());
                     }
                 });
 
@@ -165,6 +178,8 @@ namespace AzToolsFramework
             auto layout = new QVBoxLayout();
             layout->addWidget(m_thumbnailViewWidget);
             setLayout(layout);
+
+            setAcceptDrops(true);
 
             AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
@@ -332,6 +347,60 @@ namespace AzToolsFramework
             return m_thumbnailViewWidget->selectionMode();
         }
 
+        void AssetBrowserThumbnailView::dragEnterEvent(QDragEnterEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragEnter, event, context);
+        }
+
+        void AssetBrowserThumbnailView::dragMoveEvent(QDragMoveEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragMove, event, context);
+        }
+
+        void AssetBrowserThumbnailView::dropEvent(QDropEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            const AssetBrowserEntry* item = m_thumbnailViewProxyModel->mapToSource(m_thumbnailViewProxyModel->GetRootIndex())
+                                                .data(AssetBrowserModel::Roles::EntryRole)
+                                                .value<const AssetBrowserEntry*>();
+            AZStd::string pathName = item->GetFullPath();
+            
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DropAtLocation, event, context, QString(pathName.data()));
+        }
+
+        void AssetBrowserThumbnailView::dragLeaveEvent(QDragLeaveEvent* event)
+        {
+            using namespace AzQtComponents;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragLeave, event);
+        }
+
         void AssetBrowserThumbnailView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
             Q_UNUSED(deselected);
@@ -420,6 +489,18 @@ namespace AzToolsFramework
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
 
+        void AssetBrowserThumbnailView::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode)
+        {
+            m_assetFilterModel->SetSortMode(mode);
+
+            m_assetFilterModel->sort(0, Qt::DescendingOrder);
+        }
+
+        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserThumbnailView::GetSortMode() const
+        {
+            return m_assetFilterModel->GetSortMode();
+        }
+        
         void AssetBrowserThumbnailView::SelectEntry(QString assetName)
         {
             QModelIndex rootIndex = m_thumbnailViewProxyModel->GetRootIndex();

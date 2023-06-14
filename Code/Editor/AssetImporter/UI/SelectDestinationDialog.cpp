@@ -105,7 +105,7 @@ private:
     mutable QString m_toolTip;
 };
 
-SelectDestinationDialog::SelectDestinationDialog(QString message, QWidget* parent)
+SelectDestinationDialog::SelectDestinationDialog(QString message, QWidget* parent, QString suggestedDestination)
     : QDialog(parent)
     , m_ui(new Ui::SelectDestinationDialog)
     , m_validator(new DestinationDialogValidator(this))
@@ -115,7 +115,7 @@ SelectDestinationDialog::SelectDestinationDialog(QString message, QWidget* paren
     QString radioButtonMessage = QString(g_copyFilesMessage).arg(g_assetProcessorLink);
     m_ui->RaidoButtonMessage->setText(radioButtonMessage);
 
-    SetPreviousDestinationDirectory();
+    SetPreviousOrSuggestedDestinationDirectory(suggestedDestination);
 
     m_ui->DestinationLineEdit->lineEdit()->setValidator(m_validator);
     m_ui->DestinationLineEdit->setClearButtonEnabled(true);
@@ -158,7 +158,7 @@ void SelectDestinationDialog::InitializeButtons()
 
 }
 
-void SelectDestinationDialog::SetPreviousDestinationDirectory()
+void SelectDestinationDialog::SetPreviousOrSuggestedDestinationDirectory(QString suggestedDestination)
 {
     QString gameRootAbsPath = GetAbsoluteRootDirectoryPath();
     QSettings settings;
@@ -173,6 +173,11 @@ void SelectDestinationDialog::SetPreviousDestinationDirectory()
     if (previousDestination.isEmpty() || !QDir(previousDestination).exists() || !previousDestination.startsWith(gameRootAbsPath, Qt::CaseInsensitive))
     {
         previousDestination = gameRootAbsPath;
+    }
+
+    if (!suggestedDestination.isEmpty())
+    {
+        previousDestination = suggestedDestination;
     }
 
     m_ui->DestinationLineEdit->setText(QDir::toNativeSeparators(previousDestination));

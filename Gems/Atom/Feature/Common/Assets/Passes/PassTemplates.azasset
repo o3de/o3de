@@ -369,6 +369,14 @@
                 "Path": "Passes/ReflectionScreenSpaceTrace.pass"
             },
             {
+                "Name": "ReflectionScreenSpaceDownsampleDepthLinearPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceDownsampleDepthLinear.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceDownsampleDepthLinearChildPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceDownsampleDepthLinearChild.pass"
+            },
+            {
                 "Name": "ReflectionScreenSpaceBlurPassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceBlur.pass"
             },

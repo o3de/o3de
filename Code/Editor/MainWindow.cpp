@@ -317,7 +317,8 @@ MainWindow::MainWindow(QWidget* parent)
 
     AssetImporterDragAndDropHandler* assetImporterDragAndDropHandler = new AssetImporterDragAndDropHandler(this, m_assetImporterManager);
     connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManager, this, &MainWindow::OnOpenAssetImporterManager);
-
+    connect(assetImporterDragAndDropHandler, &AssetImporterDragAndDropHandler::OpenAssetImporterManagerWithSuggestedPath, this, &MainWindow::OnOpenAssetImporterManagerAtPath);
+        
     setFocusPolicy(Qt::StrongFocus);
 
     setAcceptDrops(true);
@@ -364,6 +365,11 @@ HWND MainWindow::GetNativeHandle()
 void MainWindow::OnOpenAssetImporterManager(const QStringList& dragAndDropFileList)
 {
     m_assetImporterManager->Exec(dragAndDropFileList);
+}
+
+void MainWindow::OnOpenAssetImporterManagerAtPath(const QStringList& dragAndDropFileList, const QString& path)
+{
+    m_assetImporterManager->Exec(dragAndDropFileList, path);
 }
 
 CLayoutWnd* MainWindow::GetLayout() const

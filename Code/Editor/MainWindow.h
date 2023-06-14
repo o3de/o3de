@@ -203,6 +203,7 @@ private Q_SLOTS:
     void OnEscapeAction();
 
     void OnOpenAssetImporterManager(const QStringList& list);
+    void OnOpenAssetImporterManagerAtPath(const QStringList& list, const QString& path);
 
 private:
     friend class EditorActionsHandler;

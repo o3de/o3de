@@ -94,6 +94,9 @@ namespace AZ
             
             //! Whether the adapter supports wave/subgroup operation
             bool m_waveOperation = false;
+                        
+            //! Whether swapchain scaling support is available.
+            RHI::ScalingFlags m_swapchainScalingFlags = RHI::ScalingFlags::None;
 
             /// Additional features here.
         };

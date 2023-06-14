@@ -17,18 +17,18 @@ namespace AZ::IO
         Invalid = 0,
         //! Open the file in read mode ("r")
         //! if ModeRead is specified without ModeWrite, the file is open in file share write mode
-        //! when on platforms that uses WinAPI
+        //! when on platforms that use WinAPI
         ModeRead = (1 << 0),
         //! Open the file in write mode ("w")
         //! If the ModeAppend option is not specified, the file is truncated
         ModeWrite = (1 << 1),
         //! Opens the file in append mode ("a")
-        //! The file is opened and and set the write offset to the end of the file
+        //! The file is opened and sets the write offset to the end of the file
         ModeAppend = (1 << 2),
         //! Opens the file with the binary option("b") set
         ModeBinary = (1 << 3),
         //! Opens the file with the text option("t") set
-        //! This may affect how newlines are handled on Windows platforms
+        //! This affects may affect how newlines are handled on different platforms ("\n" vs "\r\n")
         ModeText = (1 << 4),
         //! Open the file in update mode with the ("+") symbol
         //! If ModeRead is also set and the file doe NOT exist, it will not be created

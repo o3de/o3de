@@ -233,7 +233,10 @@ namespace AZ
         
         void CommandListBase::SetNameInternal(const AZStd::string_view& name)
         {
-            m_encoderScopeName = [NSString stringWithCString:name.data() encoding:NSUTF8StringEncoding];
+            if (RHI::Validation::IsEnabled())
+            {
+                m_encoderScopeName = [NSString stringWithCString:name.data() encoding:NSUTF8StringEncoding];
+            }
         }
         
         void CommandListBase::SetRenderPassInfo(MTLRenderPassDescriptor* renderPassDescriptor,

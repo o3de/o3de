@@ -43,6 +43,8 @@ namespace Archive
 
         //! Wrapper path structure to ensure the Table of Contents only contain paths that
         //! uses the Posix Path Separator '/'
+        //! This is used to normalize how the paths within the Table of Contents
+        //! are stored across platforms(Linux/MacOS vs Windows)
         struct Path
         {
             Path() = default;
@@ -56,7 +58,7 @@ namespace Archive
             Path& operator=(const Path&) = default;
             Path& operator=(Path&&) = default;
             //! Add support for storing an AZ::IO::Path into the table of contents
-            //! as a path with a
+            //! as a path with only Posix Path Separators of '/'
             Path& operator=(AZ::IO::Path filePath);
             Path& operator=(AZ::IO::PathView filePath);
 
@@ -80,7 +82,7 @@ namespace Archive
         };
 
         //! vector storing a copy of each file path in memory
-//! It's length matches the value of m_fileCount
+        //! Its length matches the value of m_fileCount
         using ArchiveFilePathTable = AZStd::vector<Path>;
         ArchiveFilePathTable m_filePaths;
 
