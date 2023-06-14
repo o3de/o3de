@@ -99,6 +99,14 @@ namespace PhysX
 
         //! Get the maximum joint velocity for all the degrees of freedom of this joint.
         virtual float GetMaxJointVelocity() const = 0;
+
+        //! Get the current joint position.
+        virtual float GetJointPosition(ArticulationJointAxis jointAxis) const = 0;
+
+        //! Get the current joint position.
+        virtual float GetJointVelocity(ArticulationJointAxis jointAxis) const = 0;
+
+
     };
 
     using ArticulationJointRequestBus = AZ::EBus<ArticulationJointRequests>;

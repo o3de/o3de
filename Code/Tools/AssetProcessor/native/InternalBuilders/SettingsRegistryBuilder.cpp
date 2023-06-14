@@ -35,7 +35,7 @@ namespace AssetProcessor
         builderDesc.m_busId = m_builderId;
         builderDesc.m_createJobFunction = AZStd::bind(&SettingsRegistryBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDesc.m_processJobFunction = AZStd::bind(&SettingsRegistryBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDesc.m_version = 2;
+        builderDesc.m_version = 3;
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDesc);
 
@@ -159,6 +159,9 @@ namespace AssetProcessor
             { AZStd::string_view{"unified"}, AZStd::string_view{"debug"} }
         };
 
+        constexpr size_t LauncherTypeIndex = 0;
+        constexpr size_t BuildConfigIndex = 1;
+
         // Add the project specific specializations
         auto projectName = AZ::Utils::GetProjectName();
         if (!projectName.empty())
@@ -259,8 +262,8 @@ namespace AssetProcessor
                 if (auto& operationMessages = mergeResult.GetMessages();
                     !operationMessages.empty())
                 {
-                    AZStd::string_view launcherString = specialization.GetSpecialization(0);
-                    AZStd::string_view buildConfiguration = specialization.GetSpecialization(1);
+                    AZStd::string_view launcherString = specialization.GetSpecialization(LauncherTypeIndex);
+                    AZStd::string_view buildConfiguration = specialization.GetSpecialization(BuildConfigIndex);
                     AZ_Info("Settings Registry Builder", R"(Launcher Type: "%.*s", Build configuration: "%.*s")" "\n"
                         "Merging the Engine, Gem, Project Registry directories resulted in the following messages:\n%s\n",
                         AZ_STRING_ARG(launcherString), AZ_STRING_ARG(buildConfiguration),
@@ -286,9 +289,9 @@ namespace AssetProcessor
                 if (AZ::IO::ByteContainerStream outputStream(&outputBuffer);
                     AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(registry, "", outputStream, dumperSettings))
                 {
-                    AZStd::string_view specializationString(specialization.GetSpecialization(0));
+                    AZStd::string_view specializationString(specialization.GetSpecialization(LauncherTypeIndex));
                     outputPath.Native() += specializationString; // Append launcher type (client, server, or unified)
-                    specializationString = specialization.GetSpecialization(1);
+                    specializationString = specialization.GetSpecialization(BuildConfigIndex);
                     outputPath.Native() += '.';
                     outputPath.Native() += specializationString; // Append configuration
                     outputPath.Native() += ".setreg";
@@ -307,12 +310,12 @@ namespace AssetProcessor
                     }
                     file.Close();
 
-                    // Hash all specializations tags
+                    // Hash only the launcher type and build config specializations tags
                     size_t hashedSpecialization{};
-                    for (size_t specIndex{}; specIndex < specialization.GetCount(); ++specIndex)
-                    {
-                        AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(specIndex));
-                    }
+                    // Get the launcher type specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(LauncherTypeIndex));
+                    // Get the build config specialization tag
+                    AZStd::hash_combine(hashedSpecialization, specialization.GetSpecialization(BuildConfigIndex));
                     AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
                         " This can result in a product ID collision with other builders for this asset.",
                         AZ_STRING_ARG(specializationString));

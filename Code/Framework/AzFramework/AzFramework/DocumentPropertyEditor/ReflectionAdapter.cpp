@@ -566,7 +566,15 @@ namespace AZ::DocumentPropertyEditor
                 }
 
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
-                if (!parentContainer->IsFixedSize())
+
+                bool parentCanBeModified = true;
+                if (auto parentCanBeModifiedValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerCanBeModified);
+                    parentCanBeModifiedValue)
+                {
+                    parentCanBeModified = parentCanBeModifiedValue->IsBool() && parentCanBeModifiedValue->GetBool();
+                }
+
+                if (!parentContainer->IsFixedSize() && parentCanBeModified)
                 {
                     m_builder.BeginPropertyEditor<Nodes::ContainerActionButton>();
                     m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
@@ -665,7 +673,13 @@ namespace AZ::DocumentPropertyEditor
                         }
                     }
 
-                    if (!container->IsFixedSize())
+                    bool canBeModified = true;
+                    if (auto canBeModifiedValue = attributes.Find(Nodes::Container::ContainerCanBeModified.GetName()); canBeModifiedValue)
+                    {
+                        canBeModified = canBeModifiedValue->IsBool() && canBeModifiedValue->GetBool();
+                    }
+
+                    if (canBeModified && !container->IsFixedSize())
                     {
                         bool isDisabled = false;
                         if (auto disabledValue = attributes.Find(Nodes::NodeWithVisiblityControl::Disabled.GetName()); disabledValue)
