@@ -198,7 +198,7 @@ namespace Archive
 
         // Build a map of file path view to within the FilePathIndex array of the TOC View
         auto BuildViewOfFilePaths = [this, filePathBlobTable = &tocView.m_filePathBlob, filePathIndex = 0]
-        (AZ::u32 filePathBlobOffset, AZ::u16 filePathSize) mutable
+        (AZ::u64 filePathBlobOffset, AZ::u16 filePathSize) mutable
         {
             AZ::IO::PathView contentPathView(filePathBlobTable->substr(filePathBlobOffset, filePathSize));
             m_pathMap.emplace(contentPathView, filePathIndex++);
@@ -779,7 +779,7 @@ namespace Archive
         ResultOutcome fileResultOutcome;
         // Lambda is marked mutable to allow the filePathIndex variable to be incremented each call
         auto EnumerateAllFiles = [&listFileCallback, &fileResultOutcome, this, filePathIndex = 0]
-        (AZ::u32 filePathBlobOffset, AZ::u16 filePathSize) mutable
+        (AZ::u64 filePathBlobOffset, AZ::u16 filePathSize) mutable
             {
                 // Invoke callback on each file with a non-empty path
                 if (AZ::IO::PathView contentPathView(m_archiveToc.m_tocView.m_filePathBlob.substr(filePathBlobOffset, filePathSize));

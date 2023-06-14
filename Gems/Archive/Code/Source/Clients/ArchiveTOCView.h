@@ -95,7 +95,7 @@ namespace Archive
     //! and the length of that file path
     //! @param filePathBlobOffset Offset into the raw archive TOC file path blob table where the deleted file path starts
     //! @param filePathSize length of the deleted file path. The value is guaranteed to be >0
-    using FilePathIndexEntryVisitor = AZStd::function<void(AZ::u32 filePathBlobOffset, AZ::u16 filePathSize)>;
+    using FilePathIndexEntryVisitor = AZStd::function<void(AZ::u64 filePathBlobOffset, AZ::u16 filePathSize)>;
 
     //! Enumerates each file path index found in the TOC View
     //! @param callback to invoke when a deleted path index entry is found
