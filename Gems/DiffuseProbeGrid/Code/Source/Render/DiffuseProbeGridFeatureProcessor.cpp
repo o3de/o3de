@@ -127,12 +127,15 @@ namespace AZ
                     "models/diffuseprobesphere.azmodel",
                     AZ::RPI::AssetUtils::TraceLevel::Warning);
 
-                if (!m_visualizationModelAsset.IsReady())
+                if (m_visualizationModelAsset.GetId().IsValid())
                 {
-                    m_visualizationModelAsset.QueueLoad();
-                }
+                    if (!m_visualizationModelAsset.IsReady())
+                    {
+                        m_visualizationModelAsset.QueueLoad();
+                    }
 
-                Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                    Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                }
             }
 
             // query buffer attachmentId
