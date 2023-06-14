@@ -70,8 +70,8 @@ namespace AzToolsFramework
 
             void SelectEntry(QString assetName);
 
-            void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
-            AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;
+            void SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode);
+            AssetBrowserEntry::AssetEntrySortMode GetSortMode() const;
 
         signals:
             void entryClicked(const AssetBrowserEntry* entry);

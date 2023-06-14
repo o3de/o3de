@@ -11,6 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+
 #include <QItemSelection>
 #include <QWidget>
 #include <QAbstractItemView>
@@ -29,7 +31,6 @@ namespace AzToolsFramework
         class AssetBrowserTableFilterModel;
         class AssetBrowserTreeView;
         class AssetBrowserTableViewProxyModel;
-        class AssetBrowserEntry;
 
         class ExpandedTableViewDelegate
             : public QStyledItemDelegate
@@ -55,6 +56,9 @@ namespace AzToolsFramework
 
             explicit AssetBrowserTableView(QWidget* parent = nullptr);
             ~AssetBrowserTableView() override;
+
+            AssetBrowserEntry::AssetEntrySortMode ColumnToSortMode(const int columnIndex) const;
+            int SortModeToColumn(const AssetBrowserEntry::AssetEntrySortMode sortMode) const;
 
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
@@ -84,6 +88,8 @@ namespace AzToolsFramework
 
             void SelectEntry(QString assetName);
 
+            void SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode);
+            AssetBrowserEntry::AssetEntrySortMode GetSortMode() const;
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);

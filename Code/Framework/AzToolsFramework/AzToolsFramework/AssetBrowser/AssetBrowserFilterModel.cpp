@@ -16,6 +16,7 @@
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 
 #include <QSharedPointer>
 #include <QTimer>
@@ -138,10 +139,9 @@ namespace AzToolsFramework
                     auto leftEntry = qvariant_cast<const AssetBrowserEntry*>(leftData);
                     auto rightEntry = qvariant_cast<const AssetBrowserEntry*>(rightData);
 
-/*<<<<<<< HEAD
-                    return leftEntry->lessThan(rightEntry, sortColumn(), m_collator);
-=======*/
-                    const SourceAssetBrowserEntry* leftSource = azrtti_cast<const SourceAssetBrowserEntry*>(leftEntry);
+                    return leftEntry->lessThan(rightEntry, m_sortMode, m_collator);
+
+                    /* const SourceAssetBrowserEntry* leftSource = azrtti_cast<const SourceAssetBrowserEntry*>(leftEntry);
                     const SourceAssetBrowserEntry* rightSource = azrtti_cast<const SourceAssetBrowserEntry*>(rightEntry);
 
                     // folders should always come first
@@ -161,7 +161,7 @@ namespace AzToolsFramework
                     }
                     switch (m_sortMode)
                     {
-                    case AssetBrowserSortMode::FileType:
+                    case AssetBrowserEntry::AssetEntrySortMode::FileType:
                         if (leftSource && rightSource)
                         {
                             if (leftSource->GetExtension() != rightSource->GetExtension())
@@ -170,9 +170,9 @@ namespace AzToolsFramework
                             }
                         }
                         return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                    case AssetBrowserSortMode::LastModified:
+                    case AssetBrowserEntry::AssetEntrySortMode::LastModified:
                         return leftEntry->GetModificationTime() < rightEntry->GetModificationTime();
-                    case AssetBrowserSortMode::Size:
+                    case AssetBrowserEntry::AssetEntrySortMode::Size:
                         if (leftEntry->GetDiskSize() == rightEntry->GetDiskSize())
                         {
                             return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
@@ -180,7 +180,7 @@ namespace AzToolsFramework
                         return leftEntry->GetDiskSize() < rightEntry->GetDiskSize();
                     default:
                         return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                    }
+                    }*/
 
                 }
             }
@@ -265,15 +265,26 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserFilterModel::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+        void AssetBrowserFilterModel::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode sortMode)
         {
             m_sortMode = sortMode;
         }
 
-        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserFilterModel::GetSortMode() const
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserFilterModel::GetSortMode() const
         {
             return m_sortMode;
         }
+
+        void AssetBrowserFilterModel::SetSortOrder(const Qt::SortOrder sortOrder)
+        {
+            m_sortOrder = sortOrder;
+        }
+
+        Qt::SortOrder AssetBrowserFilterModel::GetSortOrder() const
+        {
+            return m_sortOrder;
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

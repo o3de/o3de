@@ -47,6 +47,16 @@ namespace AzToolsFramework
 
             Q_OBJECT
         public:
+            enum class AssetEntrySortMode
+            {
+                Name,
+                FileType,
+                LastModified,
+                Size,
+                Vertices,
+                Dimensions
+            };
+
             enum class AssetEntryType
             {
                 Root,
@@ -151,7 +161,7 @@ namespace AzToolsFramework
             void SetThumbnailKey(SharedThumbnailKey thumbnailKey);
             virtual SharedThumbnailKey CreateThumbnailKey() = 0;
 
-            bool lessThan(const AssetBrowserEntry* other, const int sortColumn, const QCollator& collator) const;
+            bool lessThan(const AssetBrowserEntry* other, const AssetBrowserEntry::AssetEntrySortMode sortColumn, const QCollator& collator) const;
             void SetFullPath(const AZ::IO::Path& fullPath);
 
         protected:

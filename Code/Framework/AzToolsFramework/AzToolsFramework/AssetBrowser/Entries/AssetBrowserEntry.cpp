@@ -16,6 +16,7 @@
 #include <AzCore/Serialization/Utils.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -375,7 +376,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const int sortColumn, const QCollator& collator) const
+        bool AssetBrowserEntry::lessThan(const AssetBrowserEntry* other, const AssetEntrySortMode sortMode, const QCollator& collator) const
         {
             // folders should always come first
             if (azrtti_istypeof<const FolderAssetBrowserEntry*>(this) && azrtti_istypeof<const SourceAssetBrowserEntry*>(other))
@@ -387,9 +388,9 @@ namespace AzToolsFramework
                 return true;
             }
 
-            switch (sortColumn)
+            switch (sortMode)
             {
-            case AssetBrowserTableViewProxyModel::Type:
+            case AssetEntrySortMode::FileType:
                 {
                     int comparison = collator.compare(GetEntryTypeAsString(), other->GetEntryTypeAsString());
                     if (comparison == 0)
@@ -398,15 +399,17 @@ namespace AzToolsFramework
                     }
                     return comparison > 0;
                 }
-            case AssetBrowserTableViewProxyModel::DiskSize:
+            case AssetBrowserEntry::AssetEntrySortMode::LastModified:
+                return GetModificationTime() < other->GetModificationTime();
+            case AssetEntrySortMode::Size:
                 return GetDiskSize() > other->GetDiskSize();
-            case AssetBrowserTableViewProxyModel::Vertices:
+            case AssetEntrySortMode::Vertices:
                 if (GetNumVertices() == other->GetNumVertices())
                 {
                     return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
                 }
                 return GetNumVertices() > other->GetNumVertices();
-            case AssetBrowserTableViewProxyModel::ApproxSize:
+            case AssetEntrySortMode::Dimensions:
                 AZ::Vector3 leftDimension = GetDimension();
                 AZ::Vector3 rightDimension = other->GetDimension();
 
