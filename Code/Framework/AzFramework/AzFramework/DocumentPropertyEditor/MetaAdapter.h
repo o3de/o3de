@@ -15,6 +15,8 @@ namespace AZ::DocumentPropertyEditor
     class MetaAdapter : public DocumentAdapter
     {
     public:
+        AZ_RTTI(MetaAdapter, "{EACCE41D-CB10-4D30-BF32-376AADB86722}");
+
         DocumentAdapterPtr GetSourceAdapter() const { return m_sourceAdapter; }
         void SetSourceAdapter(DocumentAdapterPtr sourceAdapter);
 
