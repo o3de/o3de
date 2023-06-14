@@ -39,8 +39,12 @@ namespace AWSCore
         //! Be aware that the ARNs for some resources omit the Region, the account ID, or both the Region and the account ID.
         inline AZStd::string ExtractArnData(AZStd::string_view awsArn, ArnFormatDataIndex arnDataIndex)
         {
+            // ARNs that omit region or account id will leave an empty entry.
+            // For example, IAM ARNs will omit the region (notice the 2 colons '::' specifying no region)
+            //     arn:aws:iam::123456789012:<user_data>
+            constexpr bool keepEmptyStrings = true;
             AZStd::vector<AZStd::string> tokenizedGameLiftArn;
-            AZ::StringFunc::Tokenize(awsArn, tokenizedGameLiftArn, ":");
+            AZ::StringFunc::Tokenize(awsArn, tokenizedGameLiftArn, ":", keepEmptyStrings);
             if (tokenizedGameLiftArn.size() >= arnDataIndex)
             {
                 return tokenizedGameLiftArn[arnDataIndex];
