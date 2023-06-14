@@ -211,6 +211,7 @@ namespace ScriptCanvas
                 ->Field("VariableReference", &Slot::m_variableReference)
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
                 ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
+                ->Field("CreatesImplicitConnections", &Slot::m_createsImplicitConnections)
                 ;
         }
 
@@ -226,6 +227,7 @@ namespace ScriptCanvas
         , m_id(slotConfiguration.m_slotId)
         , m_isVisible(slotConfiguration.m_isVisible)
         , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
+        , m_createsImplicitConnections(slotConfiguration.m_createsImplicitConnections)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -437,6 +439,11 @@ namespace ScriptCanvas
     bool Slot::CanHaveInputField() const
     {
         return m_canHaveInputField;
+    }
+
+    bool Slot::CreatesImplicitConnections() const
+    {
+        return m_createsImplicitConnections;
     }
 
     bool Slot::CanConvertToValue() const
@@ -933,7 +940,6 @@ namespace ScriptCanvas
     {
         ScriptCanvas::ModifiableDatumView datumView;
         GetNode()->ModifyUnderlyingSlotDatum(GetId(), datumView);
-
         bool isVisible = !IsConnected() && datumView.GetDataType().IsValid();
 
         datumView.SetVisibility(isVisible ? AZ::Edit::PropertyVisibility::ShowChildrenOnly : AZ::Edit::PropertyVisibility::Hide);

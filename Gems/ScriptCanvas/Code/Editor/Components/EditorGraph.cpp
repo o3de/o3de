@@ -1074,13 +1074,18 @@ namespace ScriptCanvasEditor
             ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
             : AZ::EntityId();
 
-        if (AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
+        if (ScriptCanvas::Connection* connectionComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
+            ScriptCanvas::Endpoint sourceEndpoint = connectionComponent->GetSourceEndpoint();
+            ScriptCanvas::Endpoint targetEndpoint = connectionComponent->GetTargetEndpoint();
+
             ScriptCanvas::GraphNotificationBus::Event
                 ( GetScriptCanvasId()
                 , &ScriptCanvas::GraphNotifications::OnDisonnectionComplete
                 , connectionId);
             DisconnectById(scConnectionId);
+
+            UpdateCorrospondingImplicitConnection(sourceEndpoint, targetEndpoint);
         }
     }
 
@@ -1130,8 +1135,54 @@ namespace ScriptCanvasEditor
             ScriptCanvas::GraphNotificationBus::Event(GetScriptCanvasId(), &ScriptCanvas::GraphNotifications::OnConnectionComplete, connectionId);
         }
 
-
+        UpdateCorrospondingImplicitConnection(scSourceEndpoint, scTargetEndpoint);
+        
         return scConnected;
+    }
+
+    void EditorGraph::UpdateCorrospondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint)
+    {
+        const ScriptCanvas::Node* sourceNode = FindNode(sourceEndpoint.GetNodeId());
+        const ScriptCanvas::Node* targetNode = FindNode(targetEndpoint.GetNodeId());
+
+        // Retrieve the source node's execution out and target node's execution in
+        const ScriptCanvas::Slot* sourceNodeExecutionSlot = sourceNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut(), false)[0];
+        const ScriptCanvas::Slot* targetNodeExecutionSlot = targetNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn(), false)[0];
+
+        // If either the source or target slot execution slots on these nodes are implicit, then check if the implicit connection should be updated
+        if (sourceNodeExecutionSlot->CreatesImplicitConnections() || targetNodeExecutionSlot->CreatesImplicitConnections())
+        {
+            // If a connection exists between the provided endpoints, try to create an implicit connection
+            AZ::Entity* foundEntity = nullptr;
+            if (FindConnection(foundEntity, sourceEndpoint, targetEndpoint))
+            {
+                ConnectByEndpoint(sourceNodeExecutionSlot->GetEndpoint(), targetNodeExecutionSlot->GetEndpoint());
+            }
+            // If a connection doesn't exist between the provided endpoints, check if the implicit connection should be removed
+            else
+            {
+                AZStd::vector<const ScriptCanvas::Slot*> sourceNodeDataSlots = sourceNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataOut(), false);
+
+                int numDataConnectionsBetween = 0;
+
+                // Count the number of data connections between the nodes of the two endpoints
+                for (const ScriptCanvas::Slot* dataSlot : sourceNodeDataSlots)
+                {
+                    for (ScriptCanvas::EndpointResolved connectedNode : sourceNode->GetConnectedNodes(*dataSlot))
+                    {
+                        if (connectedNode.first == targetNode)
+                        {
+                            numDataConnectionsBetween++;
+                        }
+                    }
+                }
+                // If there are no connections, remove the implicit execution connection
+                if (numDataConnectionsBetween == 0)
+                {
+                    DisconnectByEndpoint(sourceNodeExecutionSlot->GetEndpoint(), targetNodeExecutionSlot->GetEndpoint());
+                }
+            }
+        }
     }
 
     bool EditorGraph::IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const
@@ -3727,6 +3778,16 @@ namespace ScriptCanvasEditor
 
                 ScriptCanvas::ConnectionRequestBus::EventResult(scriptCanvasSourceEndpoint, connectionId, &ScriptCanvas::ConnectionRequests::GetSourceEndpoint);
                 ScriptCanvas::ConnectionRequestBus::EventResult(scriptCanvasTargetEndpoint, connectionId, &ScriptCanvas::ConnectionRequests::GetTargetEndpoint);
+
+                ScriptCanvas::Slot* sourceSlot = FindSlot(scriptCanvasSourceEndpoint);
+                ScriptCanvas::Slot* targetSlot = FindSlot(scriptCanvasTargetEndpoint);
+
+                // Implicit connections don't have corresponding Graph Canvas entities
+                if ((sourceSlot && sourceSlot->CreatesImplicitConnections()) ||
+                    (targetSlot && targetSlot->CreatesImplicitConnections()))
+                {
+                    continue;
+                }
 
                 AZ::EntityId graphCanvasSourceNode;
 
