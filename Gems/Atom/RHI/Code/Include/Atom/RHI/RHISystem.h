@@ -33,8 +33,9 @@ namespace AZ
             //! We can use this device to then query for device capabilities.
             ResultCode InitDevice();
 
-            //! This function initializes the rest of the RHI/RHI backend. 
-            void Init();
+            //! This function initializes the rest of the RHI/RHI backend.
+            //! bindlessSrgLayout in this case is layout associated with the bindless srg (Bindless.azsli).
+            void Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = nullptr);
             void Shutdown();
 
             //! An external callback to build the frame graph.

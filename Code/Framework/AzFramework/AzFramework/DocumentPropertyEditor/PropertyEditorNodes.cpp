@@ -40,6 +40,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         system->RegisterNode<NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
@@ -67,6 +69,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::ContainerCanBeModified);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
@@ -102,8 +105,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();
+
         system->RegisterPropertyEditor<LineEdit>();
+        system->RegisterNodeAttribute<LineEdit>(LineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<MultiLineEdit>();
+        system->RegisterNodeAttribute<MultiLineEdit>(MultiLineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<Quaternion>();
         system->RegisterPropertyEditor<Crc>();
         system->RegisterPropertyEditor<Vector2>();

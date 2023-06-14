@@ -1230,16 +1230,6 @@ void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 
 void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 {
-    if (!AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
-        // or clear the current selection
-        if (event->key() == Qt::Key_Escape)
-        {
-            QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
-        }
-    }
-
     // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
     // key events when the key is held down. This is standard, but makes responding to key events for game style input silly
     // because we want the movement to be butter smooth.

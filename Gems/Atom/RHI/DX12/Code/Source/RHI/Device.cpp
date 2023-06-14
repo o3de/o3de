@@ -231,6 +231,12 @@ namespace AZ
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+
+            // DXGI_SCALING_ASPECT_RATIO_STRETCH is only compatible with CreateSwapChainForCoreWindow or CreateSwapChainForComposition,
+            // not Win32 window handles and associated methods (cannot find an MSDN source for that)
+            // Source: https://stackoverflow.com/questions/58586223/d3d11-createswapchainforhwnd-fails-with-either-dxgi-error-invalid-call-or-e-inva
+            // Create swapchain would fail if uses DXGI_SCALING_ASPECT_RATIO_STRETCH
+            m_features.m_swapchainScalingFlags = RHI::ScalingFlags::Stretch;
                         
             D3D12_FEATURE_DATA_D3D12_OPTIONS options;
             GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
@@ -865,6 +871,17 @@ namespace AZ
         RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
         {            
             return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
+        }
+
+        RHI::ResultCode Device::InitInternalBindlessSrg(const RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            m_bindlesSrgBindingSlot = bindlessSrgDesc.m_bindlesSrgBindingSlot;
+            return RHI::ResultCode::Success;
+        }
+
+        uint32_t Device::GetBindlessSrgSlot() const
+        {
+            return m_bindlesSrgBindingSlot;
         }
 
         void Device::DescriptorHeapCompactionNeeded()

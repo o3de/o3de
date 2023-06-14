@@ -154,13 +154,12 @@ namespace AZ
                                 ->EnumAttribute(DiffuseProbeGridMode::RealTime, "Real Time (Ray-Traced)")
                                 ->EnumAttribute(DiffuseProbeGridMode::Baked, "Baked")
                                 ->EnumAttribute(DiffuseProbeGridMode::AutoSelect, "Auto Select")
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Bake Textures")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
-                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                                ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
+                        ->EndGroup()
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
                         ;
 
                     editContext->Class<DiffuseProbeGridComponentController>(

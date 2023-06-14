@@ -99,10 +99,7 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
 
 CLayoutViewPane::~CLayoutViewPane() 
 {
-    if (AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
-    }
+    AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
     if (m_viewportScrollArea)
     {

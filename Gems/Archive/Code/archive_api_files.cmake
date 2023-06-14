@@ -5,10 +5,11 @@
 #
 
 set(FILES
-    Include/Archive/ArchiveBaseAPI.h
-    Include/Archive/ArchiveInterfaceStructs.h
-    Include/Archive/ArchiveInterfaceStructs.inl
     Include/Archive/ArchiveTypeIds.h
-    Include/Archive/ArchiveWriterAPI.h
-    Include/Archive/ArchiveWriterAPI.inl
+    Include/Archive/Clients/ArchiveBaseAPI.inl
+    Include/Archive/Clients/ArchiveBaseAPI.h
+    Include/Archive/Clients/ArchiveInterfaceStructs.h
+    Include/Archive/Clients/ArchiveInterfaceStructs.inl
+    Include/Archive/Clients/ArchiveReaderAPI.h
+    Include/Archive/Clients/ArchiveReaderAPI.inl
 )

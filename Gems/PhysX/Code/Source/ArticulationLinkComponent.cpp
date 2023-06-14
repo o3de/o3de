@@ -714,6 +714,24 @@ namespace PhysX
         return 0.0f;
     }
 
+    float ArticulationLinkComponent::GetJointPosition(ArticulationJointAxis jointAxis) const
+    {
+        if (auto* joint = GetDriveJoint())
+        {
+            return joint->getJointPosition(GetPxArticulationAxis(jointAxis));
+        }
+        return 0.0f;
+    }
+
+    float ArticulationLinkComponent::GetJointVelocity(ArticulationJointAxis jointAxis) const
+    {
+        if (auto* joint = GetDriveJoint())
+        {
+            return joint->getJointVelocity(GetPxArticulationAxis(jointAxis));
+        }
+        return 0.0f;
+    }
+
     void ArticulationLinkComponent::SetFrictionCoefficient(float frictionCoefficient)
     {
         if (auto* joint = GetDriveJoint())

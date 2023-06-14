@@ -12,35 +12,29 @@
 #include "Device.h"
 #include "ImageView.h"
 #include <Atom/RHI.Reflect/VkAllocator.h>
-
+#include <Atom/RHI/ShaderResourceGroupData.h>
 #include <vulkan/vulkan.h>
 
 namespace AZ::Vulkan
 {
-    // TODO(BINDLESS): This number is way too big and wastes memory. It's hardcoded here to match the unbounded array descriptor request
-    // count in the pipeline layout.
-    constexpr static uint32_t UnboundedArraySize = 100000u;
-
-    void BindlessDescriptorPool::Init(Device& device)
+    
+    void BindlessDescriptorPool::Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
     {
         m_device = &device;
-        const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
-        const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
-        const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
-        const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-        const uint32_t roTextureCubeIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTextureCube);
-        const uint32_t MaxBindlessIndices = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count);
+
+        const uint32_t MaxBindlessIndices = static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count);
+        m_bindlessSrgDesc = bindlessSrgDesc;
 
         {
             DescriptorPool::Descriptor desc;
             desc.m_device = &device;
             
             desc.m_descriptorPoolSizes.resize_no_construct(MaxBindlessIndices);
-            desc.m_descriptorPoolSizes[roTextureIndex] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[rwTextureIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[roBufferIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[rwBufferIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UnboundedArraySize };
-            desc.m_descriptorPoolSizes[roTextureCubeIndex] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, UnboundedArraySize };
+            desc.m_descriptorPoolSizes[m_bindlessSrgDesc.m_roTextureIndex] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, RHI::Limits::Pipeline::UnboundedArraySize };
+            desc.m_descriptorPoolSizes[m_bindlessSrgDesc.m_rwTextureIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, RHI::Limits::Pipeline::UnboundedArraySize };
+            desc.m_descriptorPoolSizes[m_bindlessSrgDesc.m_roBufferIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, RHI::Limits::Pipeline::UnboundedArraySize };
+            desc.m_descriptorPoolSizes[m_bindlessSrgDesc.m_rwBufferIndex] = { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, RHI::Limits::Pipeline::UnboundedArraySize };
+            desc.m_descriptorPoolSizes[m_bindlessSrgDesc.m_roTextureCubeIndex] = { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, RHI::Limits::Pipeline::UnboundedArraySize };
             desc.m_maxSets = 1;
             desc.m_collectLatency = 1;
             desc.m_updateAfterBind = true;
@@ -50,35 +44,32 @@ namespace AZ::Vulkan
         }
 
         {
-            // TODO(BINDLESS): Here, we aren't using the SRG abstraction to create the native binding layout because we'd need a shader to
-            // hook up reflection, similar to how the scene/view SRGs are reflected. For now, this layout is fixed but needs to match the
-            // Bindless.azsli SRG declaration.
             VkDescriptorSetLayoutBinding bindings[MaxBindlessIndices];
       
-            bindings[roTextureIndex].binding = roTextureIndex;
-            bindings[roTextureIndex].descriptorCount = UnboundedArraySize;
-            bindings[roTextureIndex].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            bindings[roTextureIndex].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[m_bindlessSrgDesc.m_roTextureIndex].binding = m_bindlessSrgDesc.m_roTextureIndex;
+            bindings[m_bindlessSrgDesc.m_roTextureIndex].descriptorCount = RHI::Limits::Pipeline::UnboundedArraySize;
+            bindings[m_bindlessSrgDesc.m_roTextureIndex].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            bindings[m_bindlessSrgDesc.m_roTextureIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[rwTextureIndex].binding = rwTextureIndex;
-            bindings[rwTextureIndex].descriptorCount = UnboundedArraySize;
-            bindings[rwTextureIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-            bindings[rwTextureIndex].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[m_bindlessSrgDesc.m_rwTextureIndex].binding = m_bindlessSrgDesc.m_rwTextureIndex;
+            bindings[m_bindlessSrgDesc.m_rwTextureIndex].descriptorCount = RHI::Limits::Pipeline::UnboundedArraySize;
+            bindings[m_bindlessSrgDesc.m_rwTextureIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+            bindings[m_bindlessSrgDesc.m_rwTextureIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[roBufferIndex].binding = roBufferIndex;
-            bindings[roBufferIndex].descriptorCount = UnboundedArraySize;
-            bindings[roBufferIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            bindings[roBufferIndex].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[m_bindlessSrgDesc.m_roBufferIndex].binding = m_bindlessSrgDesc.m_roBufferIndex;
+            bindings[m_bindlessSrgDesc.m_roBufferIndex].descriptorCount = RHI::Limits::Pipeline::UnboundedArraySize;
+            bindings[m_bindlessSrgDesc.m_roBufferIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            bindings[m_bindlessSrgDesc.m_roBufferIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[rwBufferIndex].binding = rwBufferIndex;
-            bindings[rwBufferIndex].descriptorCount = UnboundedArraySize;
-            bindings[rwBufferIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-            bindings[rwBufferIndex].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[m_bindlessSrgDesc.m_rwBufferIndex].binding = m_bindlessSrgDesc.m_rwBufferIndex;
+            bindings[m_bindlessSrgDesc.m_rwBufferIndex].descriptorCount = RHI::Limits::Pipeline::UnboundedArraySize;
+            bindings[m_bindlessSrgDesc.m_rwBufferIndex].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+            bindings[m_bindlessSrgDesc.m_rwBufferIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
-            bindings[roTextureCubeIndex].binding = roTextureCubeIndex;
-            bindings[roTextureCubeIndex].descriptorCount = UnboundedArraySize;
-            bindings[roTextureCubeIndex].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-            bindings[roTextureCubeIndex].stageFlags = VK_SHADER_STAGE_ALL;
+            bindings[m_bindlessSrgDesc.m_roTextureCubeIndex].binding = m_bindlessSrgDesc.m_roTextureCubeIndex;
+            bindings[m_bindlessSrgDesc.m_roTextureCubeIndex].descriptorCount = RHI::Limits::Pipeline::UnboundedArraySize;
+            bindings[m_bindlessSrgDesc.m_roTextureCubeIndex].descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+            bindings[m_bindlessSrgDesc.m_roTextureCubeIndex].stageFlags = VK_SHADER_STAGE_ALL;
 
             VkDescriptorBindingFlags bindingFlags[MaxBindlessIndices];
             for (size_t i = 0; i != MaxBindlessIndices; ++i)
@@ -112,7 +103,7 @@ namespace AZ::Vulkan
         for (size_t i = 0; i != MaxBindlessIndices; ++i)
         {
             RHI::FreeListAllocator::Descriptor desc;
-            desc.m_capacityInBytes = UnboundedArraySize;
+            desc.m_capacityInBytes = RHI::Limits::Pipeline::UnboundedArraySize;
             desc.m_alignmentInBytes = 1;
             desc.m_garbageCollectLatency = RHI::Limits::Device::FrameCountMax;
             desc.m_policy = RHI::FreeListAllocatorPolicy::FirstFit;
@@ -143,20 +134,18 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadImage(ImageView* view)
     {
-        const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
-        
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = view->GetBindlessReadIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
             // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
-            RHI::VirtualAddress address = m_allocators[roTextureIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_roTextureIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
-        VkWriteDescriptorSet write = PrepareWrite(heapIndex, roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+        VkWriteDescriptorSet write = PrepareWrite(heapIndex, m_bindlessSrgDesc.m_roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = RHI::CheckBitsAny(view->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil)
             ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL
@@ -170,20 +159,18 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadWriteImage(ImageView* view)
     {
-        const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
-
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = view->GetBindlessReadWriteIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
             // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
-            RHI::VirtualAddress address = m_allocators[rwTextureIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_rwTextureIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
-        VkWriteDescriptorSet write = PrepareWrite(heapIndex, rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+        VkWriteDescriptorSet write = PrepareWrite(heapIndex, m_bindlessSrgDesc.m_rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = RHI::CheckBitsAny(view->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil)
             ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
@@ -198,22 +185,20 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadBuffer(BufferView* view)
     {
-        const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
-
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = view->GetBindlessReadIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
             // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
-            RHI::VirtualAddress address = m_allocators[roBufferIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_roBufferIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
-        VkWriteDescriptorSet write = PrepareWrite(heapIndex, roBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        VkWriteDescriptorSet write = PrepareWrite(heapIndex, m_bindlessSrgDesc.m_roBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
         bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
@@ -226,22 +211,20 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadWriteBuffer(BufferView* view)
     {
-        const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = view->GetBindlessReadWriteIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
             // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
-            RHI::VirtualAddress address = m_allocators[rwBufferIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_rwBufferIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
-        VkWriteDescriptorSet write = PrepareWrite(heapIndex, rwBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+        VkWriteDescriptorSet write = PrepareWrite(heapIndex, m_bindlessSrgDesc.m_rwBufferIndex, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = bufferMemoryView.GetNativeBuffer();
         bufferInfo.offset = bufferMemoryView.GetOffset() + viewDesc.m_elementSize * viewDesc.m_elementOffset;
@@ -254,20 +237,18 @@ namespace AZ::Vulkan
 
     uint32_t BindlessDescriptorPool::AttachReadCubeMapImage(ImageView* view)
     {
-        const uint32_t roTextureCubeIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTextureCube);
-
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
         uint32_t heapIndex = view->GetBindlessReadIndex();
         if (heapIndex == ImageView::InvalidBindlessIndex)
         {
             // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
-            RHI::VirtualAddress address = m_allocators[roTextureCubeIndex].Allocate(1, 1);
+            RHI::VirtualAddress address = m_allocators[m_bindlessSrgDesc.m_roTextureCubeIndex].Allocate(1, 1);
             AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
             heapIndex = static_cast<uint32_t>(address.m_ptr);
         }
 
-        VkWriteDescriptorSet write = PrepareWrite(heapIndex, roTextureCubeIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+        VkWriteDescriptorSet write = PrepareWrite(heapIndex, m_bindlessSrgDesc.m_roTextureCubeIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         imageInfo.imageView = view->GetNativeImageView();
@@ -280,41 +261,36 @@ namespace AZ::Vulkan
     void BindlessDescriptorPool::DetachReadImage(uint32_t index)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
-        m_allocators[roTextureIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_roTextureIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadWriteImage(uint32_t index)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
-        m_allocators[rwTextureIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_rwTextureIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadBuffer(uint32_t index)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
-        m_allocators[roBufferIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_roBufferIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadWriteBuffer(uint32_t index)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
-        m_allocators[rwBufferIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_rwBufferIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::DetachReadCubeMapImage(uint32_t index)
     {
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        const uint32_t roTextureCubeMapIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTextureCube);
-        m_allocators[roTextureCubeMapIndex].DeAllocate({ index });
+        m_allocators[m_bindlessSrgDesc.m_roTextureCubeIndex].DeAllocate({ index });
     }
 
     void BindlessDescriptorPool::GarbageCollect()
     {
-        for (size_t i = 0; i != static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count); ++i)
+        for (size_t i = 0; i != static_cast<uint32_t>(AZ::RHI::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();
         }
@@ -323,5 +299,10 @@ namespace AZ::Vulkan
     VkDescriptorSet BindlessDescriptorPool::GetNativeDescriptorSet()
     {
         return m_set;
+    }
+
+    uint32_t BindlessDescriptorPool::GetBindlessSrgBindingSlot()
+    {
+        return m_bindlessSrgDesc.m_bindlesSrgBindingSlot;
     }
 } // namespace AZ::Vulkan

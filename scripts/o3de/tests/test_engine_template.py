@@ -78,6 +78,29 @@ TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
 TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE = string.Template(
     TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestGem"})
 
+TEST_TEMPLATE_REPO_JSON = """\
+{
+    "repo_name": "${Name}",
+    "repo_uri": "${RepoURI}",
+    "$schemaVersion": "1.0.0",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
+    "summary": "${Summary}",
+    "additional_info": "${AdditionalInfo}",
+    "last_updated": "",
+    "gems_data": [],
+    "projects_data": [],
+    "templates_data": [],
+    "repos": []
+}
+"""
+
+TEST_REPO_JSON = string.Template(TEST_TEMPLATE_REPO_JSON).safe_substitute({'Name': 'TestRepo', 
+                                                                           'RepoURI' : "http://test.com", 
+                                                                           'Summary': 'summary',
+                                                                           'Origin': 'o3de', 
+                                                                           'OriginURL': "https://github.com/o3de/o3de"})
+
 TEST_TEMPLATE_JSON_CONTENTS = """\
 {
     "template_name": "Templates",
@@ -120,6 +143,32 @@ TEST_TEMPLATE_JSON_CONTENTS = """\
 }
 """
 
+TEST_TEMPLATE_REMOTEREPO_JSON_CONTENTS = """\
+{
+    "template_name": "RemoteRepo",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Remote Repository",
+    "summary": "This is an O3DE remote repository template.",
+    "canonical_tags": [
+        "Template",
+        "Repo"
+    ],
+    "user_tags": [
+        "RemoteRepo"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "repo.json",
+            "isTemplated": true
+        }
+    ],
+    "createDirectories": []
+}
+"""
 
 TEST_CONCRETE_TEMPLATE_JSON_CONTENTS = string.Template(
     TEST_TEMPLATE_JSON_CONTENTS).safe_substitute({'Name': 'TestTemplate'})
@@ -297,6 +346,57 @@ class TestCreateTemplate:
 
             return test_folder
 
+    #test create Remote repo
+    @pytest.mark.parametrize(
+        "force, expect_results",
+         [
+            pytest.param(True, 0),
+            pytest.param(False, 0)
+        ]
+    )
+    def test_create_repo(self, tmpdir, force, expect_results):
+        concrete_contents = TEST_REPO_JSON
+        templated_contents = TEST_TEMPLATE_REPO_JSON 
+        template_json_contents = TEST_TEMPLATE_REMOTEREPO_JSON_CONTENTS
+
+        instantiated_name = 'TestRepo'
+
+        engine_root = (pathlib.Path(tmpdir) / 'engine-root').resolve()
+        engine_root.mkdir(parents=True, exist_ok=True)
+
+        template_default_folder = engine_root / 'Templates'
+        template_default_folder.mkdir(parents=True, exist_ok=True)
+
+        template_json = template_default_folder / 'template.json'
+        with template_json.open('w') as s:
+            s.write(template_json_contents)
+        
+        file_template_path = template_default_folder / 'Template' / "repo.json"
+        file_template_path.parent.mkdir(parents=True, exist_ok=True)
+        with file_template_path.open('w') as file_template_handle:
+            file_template_handle.write(templated_contents)
+
+        template_dest_path = engine_root / instantiated_name
+       
+        # Skip registration in test
+        def download_repo_manifest(manifest_uri: str, force_overwrite: bool = True) -> pathlib.Path or None:
+            # return the path to the .json file
+            return manifest_uri
+        with patch('o3de.repo.download_repo_manifest', side_effect=download_repo_manifest) as download_repo_manifest_patch, \
+                    patch('o3de.manifest.load_o3de_manifest', return_value={}) as load_o3de_manifest_patch, \
+                    patch('o3de.repo.process_add_o3de_repo', return_value=0) as process_o3de_manifest_patch, \
+                    patch('o3de.manifest.get_registered', return_value=template_default_folder) as get_registered_patch, \
+                    patch('o3de.manifest.save_o3de_manifest', return_value=True) as save_o3de_manifest_patch:
+                result = engine_template.create_repo(template_dest_path, repo_name="TestRepo", repo_uri = "http://test.com", summary="summary", origin='o3de', origin_url='https://github.com/o3de/o3de')
+        assert expect_results == result 
+        if expect_results == 0:
+            test_folder = template_dest_path
+            assert test_folder.is_dir()
+            test_repo_file = test_folder / 'repo.json'
+            assert test_repo_file.is_file()
+            with test_repo_file.open('r') as s:
+                s_data = s.read()
+            assert s_data == concrete_contents
 
     # Use a SHA-1 Hash of the destination_name for every Random_Uuid for determinism in the test
     @pytest.mark.parametrize(

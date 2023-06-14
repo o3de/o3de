@@ -47,6 +47,17 @@ namespace AZ
             void AddRequiredComponents(AZStd::span<AZ::TypeId const> requiredComponents);
             void AddRequiredComponents(AZStd::initializer_list<AZ::TypeId const> requiredComponents);
 
+            /// Adds Gem Names which should be active in the test environment
+            /// Any gem names added to this environment will be looked up through the O3DE manifest registration system
+            /// to locate their gem root path.
+            /// The gem root path is the directory containing the gem.json file.
+            /// Each gem name is mapped as a key in the registered Settings Registry and FileIO global instances
+            /// to the gem root path location on disk
+            /// @param gemNames Set of Gem Names to treat as active via adding keys each gem name
+            /// underneath the `AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey` key
+            /// and adding a FileIO alias of @gemroot:<gem-name>@
+            void AddActiveGems(AZStd::span<AZStd::string_view const> gemNames);
+
             /// Allows derived environments to set up which gems, components etc the environment should load.
             virtual void AddGemsAndComponents() {}
 
@@ -68,14 +79,12 @@ namespace AZ
             /// Allows derived environments to create a desired instance of the application (for example ToolsApplication).
             virtual AZ::ComponentApplication* CreateApplicationInstance();
         protected:
-            class Parameters
+            struct Parameters
             {
-            public:
-                ~Parameters();
-
                 AZStd::vector<AZ::ComponentDescriptor*> m_componentDescriptors;
                 AZStd::vector<AZStd::string> m_dynamicModulePaths;
                 AZStd::vector<AZ::TypeId> m_requiredComponents;
+                AZStd::vector<AZStd::string> m_activeGems;
             };
 
             class GemTestEntity :

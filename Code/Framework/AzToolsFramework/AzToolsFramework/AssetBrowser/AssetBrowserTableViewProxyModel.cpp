@@ -9,6 +9,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
@@ -216,5 +217,62 @@ namespace AzToolsFramework
             }
         }
 
+        bool AssetBrowserTableViewProxyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+        {
+            if (action == Qt::IgnoreAction)
+            {
+                return true;
+            }
+
+            auto sourceparent = mapToSource(parent).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+
+            // We should only have an item as a folder but will check
+            if (sourceparent && (sourceparent->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
+            {
+                AZStd::vector<const AssetBrowserEntry*> entries;
+
+                if (Utils::FromMimeData(data, entries))
+                {
+                    Qt::DropAction selectedAction = AssetBrowserViewUtils::SelectDropActionForEntries(entries);
+                    if (selectedAction == Qt::IgnoreAction)
+                    {
+                        return false;
+                    }
+
+                    for (auto entry : entries)
+                    {
+                        using namespace AZ::IO;
+                        Path fromPath;
+                        Path toPath;
+                        bool isFolder{ true };
+
+                        if (entry && (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
+                        {
+                            fromPath = entry->GetFullPath();
+                            PathView filename = fromPath.Filename();
+                            toPath = sourceparent->GetFullPath();
+                            toPath /= filename;
+                            isFolder = false;
+                        }
+                        else
+                        {
+                            fromPath = entry->GetFullPath() + "/*";
+                            Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
+                            toPath = AZ::IO::Path(sourceparent->GetFullPath()) / filename.c_str() / "*";
+                        }
+                        if (selectedAction == Qt::MoveAction)
+                        {
+                            AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        }
+                        else
+                        {
+                            AssetBrowserViewUtils::CopyEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                        }
+                    }
+                    return true;
+                }
+            }
+            return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

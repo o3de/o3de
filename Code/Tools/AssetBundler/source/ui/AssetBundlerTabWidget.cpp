@@ -13,7 +13,6 @@
 
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QApplication>
@@ -28,8 +27,8 @@
 
 namespace AssetBundler
 {
-    const char AssetBundlerCommonSettingsFile[] = "AssetBundlerCommonSettings.json";
-    const char AssetBundlerUserSettingsFile[] = "AssetBundlerUserSettings.json";
+    constexpr AZ::IO::PathView AssetBundlerCommonSettingsFile = "AssetBundlerCommonSettings.json";
+    constexpr AZ::IO::PathView AssetBundlerUserSettingsFile = "AssetBundlerUserSettings.json";
 
     const char ScanPathsKey[] = "ScanPaths";
 
@@ -188,7 +187,7 @@ namespace AssetBundler
 
     void AssetBundlerTabWidget::AddScanPathToAssetBundlerSettings(AssetBundlingFileType fileType, AZStd::string filePath)
     {
-        AZStd::string defaultFolderPath;
+        AZ::IO::Path defaultFolderPath;
         switch (fileType)
         {
         case AssetBundlingFileType::SeedListFileType:
@@ -212,10 +211,10 @@ namespace AssetBundler
             break;
         }
 
-        AzFramework::StringFunc::Path::Normalize(filePath);
-        AzFramework::StringFunc::Path::Normalize(defaultFolderPath);
+        auto normalizedFilePath = AZ::IO::PathView(filePath).LexicallyNormal();
+        defaultFolderPath = defaultFolderPath.LexicallyNormal();
 
-        if (AzFramework::StringFunc::StartsWith(filePath, defaultFolderPath))
+        if (normalizedFilePath.IsRelativeTo(defaultFolderPath))
         {
             // file is already in a watched folder, no need to add it to the settings file
             return;
@@ -342,16 +341,18 @@ namespace AssetBundler
 
     AZStd::string AssetBundlerTabWidget::GetAssetBundlerUserSettingsFile(const char* currentProjectFolderPath)
     {
-        AZStd::string absoluteFilePath;
-        AzFramework::StringFunc::Path::ConstructFull(currentProjectFolderPath, AssetBundlerUserSettingsFile, absoluteFilePath);
-        return absoluteFilePath;
+        AZ::IO::Path absoluteFilePath = AZ::IO::Path(currentProjectFolderPath)
+            / AZ::SettingsRegistryInterface::DevUserRegistryFolder
+            / AssetBundlerUserSettingsFile;
+        return absoluteFilePath.Native();
     }
 
     AZStd::string AssetBundlerTabWidget::GetAssetBundlerCommonSettingsFile(const char* currentProjectFolderPath)
     {
-        AZStd::string absoluteFilePath;
-        AzFramework::StringFunc::Path::ConstructFull(currentProjectFolderPath, AssetBundlerCommonSettingsFile, absoluteFilePath);
-        return absoluteFilePath;
+        AZ::IO::Path absoluteFilePath = AZ::IO::Path(currentProjectFolderPath)
+            / AZ::SettingsRegistryInterface::RegistryFolder
+            / AssetBundlerCommonSettingsFile;
+        return absoluteFilePath.Native();
     }
 
     void AssetBundlerTabWidget::CreateEmptyAssetBundlerSettings(const AZStd::string& filePath)
