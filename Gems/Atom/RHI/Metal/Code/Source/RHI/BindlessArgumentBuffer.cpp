@@ -25,7 +25,7 @@ namespace AZ::Metal
 
         if (!m_unboundedArraySupported && !m_unboundedArraySimulated)
         {
-            return;
+            return RHI::ResultCode::Success;
         }
 
         AZStd::vector<id<MTLBuffer>> mtlArgBuffers;
