@@ -94,6 +94,8 @@
 #include <RayTracing/RayTracingPassData.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpacePass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h>
+#include <ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h>
+#include <ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h>
 #include <ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.h>
@@ -285,6 +287,8 @@ namespace AZ
             // Add Reflection passes
             passSystem->AddPassCreator(Name("ReflectionScreenSpacePass"), &Render::ReflectionScreenSpacePass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceTracePass"), &Render::ReflectionScreenSpaceTracePass::Create);
+            passSystem->AddPassCreator(Name("ReflectionScreenSpaceDownsampleDepthLinearPass"), &Render::ReflectionScreenSpaceDownsampleDepthLinearPass::Create);
+            passSystem->AddPassCreator(Name("ReflectionScreenSpaceDownsampleDepthLinearChildPass"), &Render::ReflectionScreenSpaceDownsampleDepthLinearChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurPass"), &Render::ReflectionScreenSpaceBlurPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceBlurChildPass"), &Render::ReflectionScreenSpaceBlurChildPass::Create);
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceFilterPass"), &Render::ReflectionScreenSpaceFilterPass::Create);

@@ -80,7 +80,6 @@ struct PSOutput
 {    
     float4 m_color  : SV_Target0;
     float4 m_coords : SV_Target1;
-    float m_depth   : SV_Depth;
 };
 
 PSOutput MainPS(VSOutput IN)
@@ -186,25 +185,8 @@ PSOutput MainPS(VSOutput IN)
         result.rgb *= specularF0.rgb;
     }
 
-    // downsample depth
-    float downsampledDepth = 0.0f;
-    for (int y = -2; y < 2; ++y)
-    {
-        for (int x = -2; x < 2; ++x)
-        {
-            float depth = PassSrg::m_depth.Load(fullScreenCoords + int2(x, y), 0).r;
-
-            // take the closest depth sample (larger depth value due to reverse depth)
-            if (depth > downsampledDepth)
-            {
-                downsampledDepth = depth;
-            }
-        }
-    }
-
     PSOutput OUT;
     OUT.m_color = result;
     OUT.m_coords = float4(hitCoords.xy, 0.0f, (float)foundHit);
-    OUT.m_depth = downsampledDepth;
     return OUT;
 }
