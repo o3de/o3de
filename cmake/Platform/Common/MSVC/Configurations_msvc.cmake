@@ -139,6 +139,17 @@ else()
     )
 endif()
 
+set(O3DE_BUILD_WITH_DEBUG_SYMBOLS_RELEASE FALSE CACHE BOOL "Add debug symbols when building in release configuration. (default = FALSE)")
+if(O3DE_BUILD_WITH_DEBUG_SYMBOLS_RELEASE)
+    ly_append_configurations_options(
+        COMPILATION_RELEASE
+            /Od             # Enable debug symbols
+            /Zi             # Generate debugging information (no Edit/Continue)
+        LINK_NON_STATIC_RELEASE
+            /DEBUG          # Generate pdbs
+    )
+endif()
+
 # Configure system includes
 ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG
     /experimental:external # Turns on "external" headers feature for MSVC compilers, required for MSVC < 16.10

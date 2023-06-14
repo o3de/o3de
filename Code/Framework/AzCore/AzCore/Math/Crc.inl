@@ -72,36 +72,6 @@ namespace AZ
 
     //=========================================================================
     //
-    // Crc32 constructor
-    //
-    //=========================================================================
-    constexpr Crc32::Crc32(AZStd::string_view view)
-        : m_value{ 0 }
-    {
-        if (!view.empty())
-        {
-            Set(view.data(), view.size(), true);
-        }
-    }
-
-    //=========================================================================
-    //
-    // Crc32 constructor
-    //
-    //=========================================================================
-    constexpr Crc32::Crc32(const uint8_t* data, size_t size, bool forceLowerCase)
-        : m_value{ 0 }
-    {
-        Set(data, size, forceLowerCase);
-    }
-    constexpr Crc32::Crc32(const char* data, size_t size, bool forceLowerCase)
-        : m_value{ 0 }
-    {
-        Set(data, size, forceLowerCase);
-    }
-
-    //=========================================================================
-    //
     // Crc32 - Set
     //
     //=========================================================================
@@ -156,14 +126,42 @@ namespace AZ
         }
     }
 
-    constexpr void Crc32::Set(const uint8_t* data, size_t size, bool forceLowerCase)
+    template <class ByteType>
+    constexpr auto Crc32::Set(const ByteType* data, size_t size, bool forceLowerCase)
+        -> AZStd::enable_if_t<sizeof(ByteType) == 1>
     {
         Internal::Crc32Set(data, size, forceLowerCase, m_value);
     }
 
-    constexpr void Crc32::Set(const char* data, size_t size, bool forceLowerCase)
+    //=========================================================================
+    //
+    // Crc32 constructor
+    //
+    //=========================================================================
+    constexpr Crc32::Crc32(AZStd::string_view view)
+        : m_value{ 0 }
     {
-        Internal::Crc32Set(data, size, forceLowerCase, m_value);
+        if (!view.empty())
+        {
+            Set(view.data(), view.size(), true);
+        }
+    }
+
+    //=========================================================================
+    //
+    // Crc32 constructor
+    //
+    //=========================================================================
+    template<class ByteType, class>
+    constexpr Crc32::Crc32(const ByteType* data, size_t size, bool forceLowerCase)
+        : m_value{ 0 }
+    {
+        Set(data, size, forceLowerCase);
+    }
+    constexpr Crc32::Crc32(AZStd::span<const AZStd::byte> inputSpan)
+        : m_value{ 0 }
+    {
+        Set(inputSpan.data(), inputSpan.size(), false);
     }
 
     //=========================================================================
@@ -182,14 +180,16 @@ namespace AZ
     //=========================================================================
     // Crc32 - Add
     //=========================================================================
-    constexpr void Crc32::Add(const uint8_t* data, size_t size, bool forceLowerCase)
+    template <class ByteType>
+    constexpr auto Crc32::Add(const ByteType* data, size_t size, bool forceLowerCase)
+        -> AZStd::enable_if_t<sizeof(ByteType) == 1>
     {
         Combine(Crc32{ data, size, forceLowerCase }, size);
     }
 
-    constexpr void Crc32::Add(const char* data, size_t size, bool forceLowerCase)
+    constexpr void Crc32::Add(AZStd::span<const AZStd::byte> inputSpan)
     {
-        Combine(Crc32{ data, size, forceLowerCase }, size);
+        Combine(Crc32{ inputSpan }, inputSpan.size());
     }
 
     constexpr u32 MatrixTimes(u32* mat, u32 vec)
