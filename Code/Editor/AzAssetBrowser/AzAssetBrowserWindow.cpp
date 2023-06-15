@@ -331,9 +331,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         {
             // If multiple AssetBrowsers are open, only the focused browser should perform the rename.
             QWidget* focusWidget = QApplication::focusWidget();
-
-            auto children = this->findChildren<QWidget*>();
-            if (!children.contains(focusWidget))
+            if (!isAncestorOf(focusWidget))
             {
                 return;
             }
