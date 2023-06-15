@@ -48,9 +48,13 @@ def merge_json_data(json_path: pathlib.Path, json_data: dict) -> dict:
             existing_json_data = json.load(f)
 
         merged_json_data = existing_json_data | json_data
+        
+        if merged_json_data == existing_json_data and 'version' in existing_json_data:
+            # no changes were made, avoid making unnecessary change to the file modification time
+            return existing_json_data
 
         if not 'version' in merged_json_data:
-            merged_json_data['version'] = '1.0.0'
+            merged_json_data['version'] = '0.0.0'
 
         with open(json_path, 'w') as f:
             f.write(json.dumps(merged_json_data, indent=4) + '\n')
@@ -62,7 +66,8 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
                    archive_filename: pathlib.PurePath, 
                    releases_path: pathlib.Path, 
                    repo_uri:str,
-                   download_prefix:str) -> dict:
+                   force: bool,
+                   download_prefix:str) -> dict or int:
     """
     Creates a release of a specific version of a 
     remote object for the given src_data_path.
@@ -86,23 +91,27 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         ValueError: If the json_data_path is not a dict.
     """
 
-    json_data = merge_json_data(json_data_path, {
-        'repo_uri':repo_uri,
-        'download_source_uri':f'{download_prefix}/{archive_filename}',
-    })
-
-    logging.info(f"Creating '{releases_path / archive_filename}'")
-
-    # create the release zip file
-    shutil.make_archive(releases_path / archive_filename.stem, 'zip', src_data_path)
-
     zip_path = releases_path / archive_filename
+    # check if a object.zip folder already exist in the path - ask user if they want to overwrite the current zip
+    if not force and zip_path.exists():
+        logger.error(f'{zip_path} already exists.  Use the --force to overwrite the existing zip or '
+                     'provide a new location to save your archive.')
+        return 1
+    else:
+        # create the release zip file
+        json_data = merge_json_data(json_data_path, {
+            'repo_uri':repo_uri,
+            'download_source_uri':f'{download_prefix}/{archive_filename}',
+        })
 
-    with zip_path.open('rb') as f:
-        json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
+        logging.info(f"Creating '{releases_path / archive_filename}'")
+
+        shutil.make_archive(releases_path / archive_filename.stem, 'zip', src_data_path)
+        with zip_path.open('rb') as f:
+            json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
 
     return json_data
-
+    
 # retrieves json data of the repository from a file path
 def get_repo_props(path: pathlib.Path) -> dict or None:
     repo_json = manifest.get_json_data_file(path, "Repo", validation.valid_o3de_repo_json)
@@ -134,9 +143,10 @@ def _edit_objects(object_typename:str,
                   delete_objects: str or list = None,
                   replace_objects: pathlib.Path or list = None,
                   release_archive_path: pathlib.Path = None,
+                  force: bool = None,
                   download_prefix: str = None):
     """
-    Edits and modifies the 'gem_data/projects_data/template_data' in the repo_json parameter
+    Modifies the 'gems_data/projects_data/templates_data' in repo_json
     :param object_typename: The type object field you want to change
     :param validator: validates the object you want to edit
     :param add_objects: Any object paths you want to add to your repo_json object field
@@ -158,6 +168,8 @@ def _edit_objects(object_typename:str,
             # object JSON data of the object you want to add
             json_data = manifest.get_json_data(object_typename, object_path, validator)
             if json_data:
+                # for a project called TestProject that is version 1.0.0, 
+                # --release_archive_path would create a filename of `testproject-1.0.0-project.zip`
                 if release_archive_path:
                     version = json_data.get('version','0.0.0')
                     archive_filename = pathlib.PurePath(f"{json_data[f'{object_typename}_name']}-{version}-{object_typename}.zip".lower())
@@ -166,7 +178,9 @@ def _edit_objects(object_typename:str,
                                 archive_filename, 
                                 release_archive_path, 
                                 repo_json['repo_uri'], 
+                                force,
                                 download_prefix)
+                    if type(json_data) == int: return 1
                 index = _find_index(repo_objects_data, f'{object_typename}_name', json_data[f'{object_typename}_name'])
                 # index will be non-negative if an instance of this object already exists in the repo.json
                 if index != -1:
@@ -180,8 +194,10 @@ def _edit_objects(object_typename:str,
 
                     # versions data must always include the version
                     version_data['version'] = json_data.get('version','0.0.0')
-
+                
                     # versions data must always include one of the download/source uris
+                    if not 'download_source_uri' in json_data and not 'source_control_uri' in json_data :
+                        logger.warning('No download_source_uri found and sorce_control_uri found!')
                     if 'download_source_uri' in json_data:
                         version_data['download_source_uri'] = json_data['download_source_uri']
                     if 'source_control_uri' in json_data:
@@ -253,6 +269,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        delete_templates: str or list = None,
                        replace_templates: pathlib.Path or list = None,
                        release_archive_path: pathlib.Path = None,
+                       force: bool = None,
                        download_prefix: str = None
                        ) -> int:
     """
@@ -284,13 +301,13 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         repo_json['repo_name'] = repo_name
 
     if add_gems or delete_gems or replace_gems:
-        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, download_prefix)
+        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix)
 
     if add_projects or delete_projects or replace_projects:
-        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, download_prefix)
+        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix)
 
     if add_templates or delete_templates or replace_templates:
-        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, download_prefix)
+        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix)
 
     return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1
 
@@ -312,6 +329,7 @@ def _edit_repo_props(args: argparse) -> int:
                               replace_templates=args.replace_templates,
 
                               release_archive_path=args.release_archive_path,
+                              force=args.force,
                               download_prefix=args.download_prefix
                               )
 
@@ -354,6 +372,8 @@ def add_parser_args(parser):
                                                   description='path arguments to use with the --add-gems or --replace-gems option')
     modify_gems_group.add_argument('--release-archive-path','-rap',  type=pathlib.Path, required=False,
                             help='Create a release archive at the specified local path and update the download_source_uri and sha256 fields.')
+    modify_gems_group.add_argument('--force', '-f', action='store_true', default=False,
+                                                help='Copies over instantiated template directory even if it exist.')
     modify_gems_group.add_argument('--download-prefix','-dp',  type=str, required=False,
                             help='a URL prefix for a file attached to a GitHub release might look like this:'
                             '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')

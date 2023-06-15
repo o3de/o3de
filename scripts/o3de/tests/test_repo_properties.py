@@ -264,9 +264,6 @@ class TestEditRepoProperties:
                          None, None, None, None,
                          None, None, None, None,
                          0),
-
-            # Adding a gem without a version, then adding a gem with the same name but with a version and then removing the unversioned 
-            # gem by using the delete_gems = ['gemA==0.0.0'] or delete_gems = ['gemA<1.0.0']
             ]
     ) 
     # Where actual test starts
