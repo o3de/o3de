@@ -461,7 +461,7 @@ namespace AtomToolsFramework
                     {
                         layoutSettingsMenu->addAction(
                             layoutName.c_str(),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -483,7 +483,7 @@ namespace AtomToolsFramework
                         // Since these layouts were created and saved by the user, give them the option to restore and delete them.
                         layoutMenu->addAction(
                             tr("Load"),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -556,7 +556,7 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::RestoreSavedLayout()
     {
-        // Attempt to restore the layout that was saved the last time the application was closed. 
+        // Attempt to restore the layout that was saved the last time the application was closed.
         const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
         if (!windowState.empty())
         {

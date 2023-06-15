@@ -109,9 +109,14 @@ namespace AzToolsFramework
 
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
-            void SetShowIndexAfterUpdate(QModelIndex index);
+            void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
+            AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;
 
             void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
+            AssetBrowserThumbnailView* GetAttachedThumbnailView() const;
+
+            void SetShowIndexAfterUpdate(QModelIndex index);
+
             void SetAttachedTableView(AssetBrowserTableView* tableView);
 
             void SetApplySnapshot(bool applySnapshot);

@@ -5,7 +5,7 @@
 				<Class name="AZ::Uuid" field="guid" value="{69CD1E4D-A474-53A8-8A06-BD4077C6C1AC}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
 				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
-			<Class name="unsigned int" field="platformFlags" value="1073741825" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			<Class name="AZStd::string" field="pathHint" value="physx_dependencies.xml" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 	</Class>

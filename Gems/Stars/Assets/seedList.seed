@@ -5,7 +5,7 @@
 				<Class name="AZ::Uuid" field="guid" value="{A2640D6F-A59B-579A-A433-13844CA44859}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
 				<Class name="unsigned int" field="subId" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			</Class>
-			<Class name="unsigned int" field="platformFlags" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="platformFlags" value="255" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
 			<Class name="AZStd::string" field="pathHint" value="shaders/stars/stars.azshader" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 	</Class>

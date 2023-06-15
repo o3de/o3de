@@ -271,7 +271,7 @@ namespace AzToolsFramework
                         // Iterate over each item in the current shared column, adding them to a single layout
                         while (sharedWidgetIndex < numItems)
                         {
-                            domIndex = m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex];
+                            domIndex = aznumeric_cast<int>(m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex]);
                             attributes = myRow->GetCachedAttributes(domIndex);
                             // Save the alignment of the last widget in the shared column with an alignment attribute
                             if (attributes)
@@ -570,7 +570,7 @@ namespace AzToolsFramework
 
     int DPERowWidget::GetDomIndexOfChild(const QWidget* childWidget) const
     {
-        for (int searchIndex = 0, numEntries = m_domOrderedChildren.size(); searchIndex < numEntries; ++searchIndex)
+        for (int searchIndex = 0, numEntries = aznumeric_cast<int>(m_domOrderedChildren.size()); searchIndex < numEntries; ++searchIndex)
         {
             if (m_domOrderedChildren[searchIndex] == childWidget)
             {
@@ -1736,15 +1736,8 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
     {
-        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-        auto handlerName = GetNameForHandlerId(handler.handlerId);
-        auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-
-        if (handlerPool)
-        {
-            handlerPool->RecycleInstance(handler.handlerInterface);
-        }
-        else
+        // GHI-16135: Revisit recycling handler instances once we have a mechanism to reset the handlers/widgets for re-use
+        // and have implemented
         {
             // if there is no handler pool, then delete the handler immediately; parent widgets won't delete it twice
             delete handler.handlerInterface;

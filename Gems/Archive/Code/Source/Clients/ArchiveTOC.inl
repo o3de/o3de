@@ -12,87 +12,87 @@
 
 namespace Archive
 {
-    ArchiveTableOfContents::ArchiveTableOfContents() = default;
+    inline ArchiveTableOfContents::ArchiveTableOfContents() = default;
 
     // Archive Table of Contents file path wrapper
-    ArchiveTableOfContents::Path::Path(AZ::IO::Path filePath)
+    inline ArchiveTableOfContents::Path::Path(AZ::IO::Path filePath)
         : m_posixPath{ AZStd::move(filePath.Native()), AZ::IO::PosixPathSeparator }
     {
         // Convert the path to use Posix path separators
         m_posixPath.MakePreferred();
     }
 
-    ArchiveTableOfContents::Path::Path(AZ::IO::PathView filePath)
+    inline ArchiveTableOfContents::Path::Path(AZ::IO::PathView filePath)
         : m_posixPath{ filePath.Native(), AZ::IO::PosixPathSeparator }
     {
         // Convert the path to use Posix path separators
         m_posixPath.MakePreferred();
     }
 
-    auto ArchiveTableOfContents::Path::operator=(AZ::IO::Path filePath) -> Path&
+    inline auto ArchiveTableOfContents::Path::operator=(AZ::IO::Path filePath) -> Path&
     {
         m_posixPath = AZ::IO::Path(AZStd::move(filePath.Native()), AZ::IO::PosixPathSeparator).MakePreferred();
         return *this;
     }
 
-    auto ArchiveTableOfContents::Path::operator=(AZ::IO::PathView filePath) -> Path&
+    inline auto ArchiveTableOfContents::Path::operator=(AZ::IO::PathView filePath) -> Path&
     {
         m_posixPath = AZ::IO::Path(filePath.Native(), AZ::IO::PosixPathSeparator).MakePreferred();
         return *this;
     }
 
-    ArchiveTableOfContents::Path::operator AZ::IO::Path&() &
+    inline ArchiveTableOfContents::Path::operator AZ::IO::Path&() &
     {
         return m_posixPath;
     }
 
-    ArchiveTableOfContents::Path::operator const AZ::IO::Path&() const&
+    inline ArchiveTableOfContents::Path::operator const AZ::IO::Path&() const&
     {
         return m_posixPath;
     }
 
-    ArchiveTableOfContents::Path::operator AZ::IO::Path&&() &&
+    inline ArchiveTableOfContents::Path::operator AZ::IO::Path&&() &&
     {
         return AZStd::move(m_posixPath);
     }
 
-    ArchiveTableOfContents::Path::operator const AZ::IO::Path&&() const&&
+    inline ArchiveTableOfContents::Path::operator const AZ::IO::Path&&() const&&
     {
         return AZStd::move(m_posixPath);
     }
 
-    bool ArchiveTableOfContents::Path::empty() const
+    inline bool ArchiveTableOfContents::Path::empty() const
     {
         return m_posixPath.empty();
     }
-    void ArchiveTableOfContents::Path::clear()
+    inline void ArchiveTableOfContents::Path::clear()
     {
         m_posixPath.clear();
     }
 
-    const typename AZ::IO::Path::string_type& ArchiveTableOfContents::Path::Native() const& noexcept
+    inline const typename AZ::IO::Path::string_type& ArchiveTableOfContents::Path::Native() const& noexcept
     {
         return m_posixPath.Native();
     }
 
-    const typename AZ::IO::Path::string_type&& ArchiveTableOfContents::Path::Native() const&& noexcept
+    inline const typename AZ::IO::Path::string_type&& ArchiveTableOfContents::Path::Native() const&& noexcept
     {
         return AZStd::move(m_posixPath.Native());
     }
-    typename AZ::IO::Path::string_type& ArchiveTableOfContents::Path::Native() & noexcept
+    inline typename AZ::IO::Path::string_type& ArchiveTableOfContents::Path::Native() & noexcept
     {
         return m_posixPath.Native();
     }
-    typename AZ::IO::Path::string_type&& ArchiveTableOfContents::Path::Native() && noexcept
+    inline typename AZ::IO::Path::string_type&& ArchiveTableOfContents::Path::Native() && noexcept
     {
         return AZStd::move(m_posixPath.Native());
     }
-    const typename AZ::IO::Path::value_type* ArchiveTableOfContents::Path::c_str() const noexcept
+    inline const typename AZ::IO::Path::value_type* ArchiveTableOfContents::Path::c_str() const noexcept
     {
         return m_posixPath.c_str();
     }
 
-    auto ArchiveTableOfContents::CreateFromTocView(
+    inline auto ArchiveTableOfContents::CreateFromTocView(
         const ArchiveTableOfContentsView& tocView) -> CreateFromTocViewOutcome
     {
         ArchiveTableOfContents tableOfContents;

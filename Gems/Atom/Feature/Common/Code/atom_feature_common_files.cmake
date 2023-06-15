@@ -280,6 +280,10 @@ set(FILES
     Source/ReflectionScreenSpace/ReflectionScreenSpacePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceDownsampleDepthLinearChildPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp

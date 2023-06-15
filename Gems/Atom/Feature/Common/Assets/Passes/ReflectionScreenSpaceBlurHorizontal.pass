@@ -14,12 +14,25 @@
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
+                    "Name": "DownsampledDepthLinear",
+                    "ShaderInputName": "m_downsampledDepthLinear",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
                     "Name": "Output",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget"
                 }
             ],
             "Connections": [
+                {
+                    "LocalSlot": "DownsampledDepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DownsampledDepthLinear"
+                    }
+                },
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {

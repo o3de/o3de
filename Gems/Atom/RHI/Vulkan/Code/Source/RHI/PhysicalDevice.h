@@ -34,6 +34,7 @@ namespace AZ
             DescriptorIndexing,
             BufferDeviceAddress,
             SubgroupOperation,
+            MemoryBudget,
             Count // Must be last
         };
 

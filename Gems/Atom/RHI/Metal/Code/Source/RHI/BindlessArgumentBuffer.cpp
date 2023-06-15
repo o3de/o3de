@@ -84,7 +84,7 @@ namespace AZ::Metal
             argDescriptor.dataType = MTLDataTypePointer;
             argDescriptor.index = 0;
             argDescriptor.access = MTLArgumentAccessReadOnly;
-            argDescriptor.arrayLength = static_cast<uint32_t>(BindlessResourceType::Count) - 1;
+            argDescriptor.arrayLength = static_cast<uint32_t>(RHI::BindlessResourceType::Count) - 1;
             argBufferDescriptors[0] = argDescriptor;
             m_rootArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRoot");
             [argDescriptor release] ;
@@ -99,7 +99,7 @@ namespace AZ::Metal
         {
             m_boundedArgBuffer = ArgumentBuffer::Create();
             //For the bounded approach we have one AB that holds all the bindless resource types
-            for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+            for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
             {
                 MTLArgumentDescriptor* resourceArgDescriptor = [[MTLArgumentDescriptor alloc] init];
                 
@@ -147,7 +147,7 @@ namespace AZ::Metal
         }
 
         //Init the free list allocator related to the unbounded arrays for each resource type
-        for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
         {
             RHI::FreeListAllocator::Descriptor desc;
             desc.m_capacityInBytes = RHI::Limits::Pipeline::UnboundedArraySize;
@@ -406,7 +406,7 @@ namespace AZ::Metal
 
     void BindlessArgumentBuffer::GarbageCollect()
     {
-        for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();
         }

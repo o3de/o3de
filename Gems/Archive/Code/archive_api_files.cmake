@@ -10,4 +10,6 @@ set(FILES
     Include/Archive/Clients/ArchiveBaseAPI.h
     Include/Archive/Clients/ArchiveInterfaceStructs.h
     Include/Archive/Clients/ArchiveInterfaceStructs.inl
+    Include/Archive/Clients/ArchiveReaderAPI.h
+    Include/Archive/Clients/ArchiveReaderAPI.inl
 )

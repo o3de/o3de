@@ -10,37 +10,32 @@
                 {
                     "Name": "ReflectionInput",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_reflection",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "DownsampledDepthInput",
+                    "Name": "DepthLinear",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
+                    "ShaderInputName": "m_depthLinear",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DownsampledDepthLinearInput",
+                    "SlotType": "Input",
+                    "ShaderInputName": "m_downsampledDepthLinear",
+                    "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "NormalInput",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_normal",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
                     "Name": "SpecularF0Input",
                     "SlotType": "Input",
+                    "ShaderInputName": "m_specularF0",
                     "ScopeAttachmentUsage": "Shader"
-                },
-                {
-                    "Name": "DepthStencilTextureInput",
-                    "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader",
-                    "ImageViewDesc": {
-                        "AspectFlags": [
-                            "Depth"
-                        ]
-                    }
                 },
                 {
                     "Name": "DepthStencilInput",
