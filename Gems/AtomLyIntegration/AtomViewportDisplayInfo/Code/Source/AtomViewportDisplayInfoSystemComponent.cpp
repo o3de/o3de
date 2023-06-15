@@ -254,7 +254,6 @@ namespace AZ::Render
             return;
         }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
-        const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
         RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
