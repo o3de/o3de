@@ -96,10 +96,10 @@ function(o3de_copy_file_to_bundle)
     set(oneValueArgs SOURCE_FILE SOURCE_TYPE SOURCE_GEM_MODULE RELATIVE_TARGET_DIRECTORY)
     set(multiValueArgs)
     cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    set(source_file "${${CMAKE_CURRENT_FUNCTION}_SOURCE_FILE}")
+    cmake_path(SET source_file NORMALIZE "${${CMAKE_CURRENT_FUNCTION}_SOURCE_FILE}")
     set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
     set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
-    set(relative_target_directory "${${CMAKE_CURRENT_FUNCTION}_RELATIVE_TARGET_DIRECTORY}")
+    cmake_path(SET relative_target_directory NORMALIZE "${${CMAKE_CURRENT_FUNCTION}_RELATIVE_TARGET_DIRECTORY}")
 
     # Use the final component of the source file has the target_filename
     cmake_path(GET source_file FILENAME target_filename)
@@ -141,6 +141,19 @@ function(o3de_copy_file_to_bundle)
         cmake_path(COMPARE "${source_framework_filename}" EQUAL "Python.framework" is_python_framework)
         if(is_python_framework)
             set_property(SOURCE "${CMAKE_CURRENT_LIST_FILE}" PROPERTY DEPENDS_ON_PYTHON TRUE)
+            ly_is_newer_than("${source_framework_directory}" "${target_file}" is_python_newer)
+
+            # If 3rdParty python is newer it needs to be removed before copying it to the bundle.
+            # Otherwise the copy would file to do a previous invovation of this script
+            # creating symlinks to the "Python.framework/Versions/3.10/Headers" directory
+            # Because the source framework has real "Headers" directory the copy would fail
+            # with the following error
+            # file COPY cannot make directory
+            #  "<build-dir>/bin/profile/AssetProcessor.app/Contents/Frameworks/Python.framework/Versions/3.10/Headers":
+            #  No such file or directory.
+            if (is_python_newer)
+                file(REMOVE_RECURSE "${target_file}")
+            endif()
         else()
             # Do not copy other Frameworks to the bundle manually
             set(explicit_copy_to_bundle FALSE)
@@ -224,10 +237,10 @@ function(o3de_copy_file_to_filesystem)
     set(oneValueArgs SOURCE_FILE SOURCE_TYPE SOURCE_GEM_MODULE TARGET_FILE)
     set(multiValueArgs)
     cmake_parse_arguments("${CMAKE_CURRENT_FUNCTION}" "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    set(source_file "${${CMAKE_CURRENT_FUNCTION}_SOURCE_FILE}")
+    cmake_path(SET source_file NORMALIZE "${${CMAKE_CURRENT_FUNCTION}_SOURCE_FILE}")
     set(source_type "${${CMAKE_CURRENT_FUNCTION}_SOURCE_TYPE}")
     set(source_is_gem "${${CMAKE_CURRENT_FUNCTION}_SOURCE_GEM_MODULE}")
-    set(target_file "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE}")
+    cmake_path(SET target_file NORMALIZE "${${CMAKE_CURRENT_FUNCTION}_TARGET_FILE}")
     cmake_path(GET target_file PARENT_PATH target_directory)
 
     # Only copy the the source_file to destination if they are different
