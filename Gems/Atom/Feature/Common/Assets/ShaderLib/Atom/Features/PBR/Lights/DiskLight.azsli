@@ -9,7 +9,10 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+#if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
 
 #if ENABLE_DISK_LIGHTS
 enum DiskLightFlag

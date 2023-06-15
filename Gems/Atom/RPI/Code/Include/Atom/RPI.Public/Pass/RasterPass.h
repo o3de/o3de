@@ -77,6 +77,10 @@ namespace AZ
             // we need to creates a combined draw list which combines all the draw lists to one and cache it until they are submitted. 
             RHI::DrawList m_combinedDrawList;
             
+            // Forces viewport and scissor to match width/height of output image at specified index.
+            // Does nothing if index is negative.
+            s32 m_viewportAndScissorTargetOutputIndex = -1;
+
             RHI::Scissor m_scissorState;
             RHI::Viewport m_viewportState;
             bool m_overrideScissorSate = false;
