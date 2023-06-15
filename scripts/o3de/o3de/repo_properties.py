@@ -94,7 +94,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
     zip_path = releases_path / archive_filename
     # check if a object.zip folder already exist in the path - ask user if they want to overwrite the current zip
     if not force and zip_path.exists():
-        logger.error(f'{zip_path} already exists.  Use the --force to overwrite the existing zip or '
+        logger.error(f'{zip_path} already exists.  Use --force command to overwrite the existing zip or '
                      'provide a new location to save your archive.')
         return 1
     else:
