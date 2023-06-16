@@ -2119,7 +2119,9 @@ namespace AZ
                     material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
-                if (streamBufferViews.size() < 5)
+                // The code below expects streams for positions, normals, tangents, bitangents, and uvs.
+                constexpr size_t NumExpectedStreams = 5;
+                if (streamBufferViews.size() < NumExpectedStreams)
                 {
                     AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams, skipping.");
                     continue;
