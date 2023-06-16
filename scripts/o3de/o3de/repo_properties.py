@@ -67,7 +67,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
                    releases_path: pathlib.Path, 
                    repo_uri:str,
                    force: bool,
-                   download_prefix:str) -> dict or int:
+                   download_prefix:str) -> dict:
     """
     Creates a release of a specific version of a 
     remote object for the given src_data_path.
@@ -96,7 +96,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
     if not force and zip_path.exists():
         logger.error(f'{zip_path} already exists.  Use --force command to overwrite the existing zip or '
                      'provide a new location to save your archive.')
-        return 1
+        return {}
     else:
         # create the release zip file
         json_data = merge_json_data(json_data_path, {
@@ -180,7 +180,10 @@ def _edit_objects(object_typename:str,
                                 repo_json['repo_uri'], 
                                 force,
                                 download_prefix)
-                    if type(json_data) == int: return 1
+                    # if create_remote_object_archive is not successful, then exit
+                    if not json_data:
+                        return 1
+                    
                 index = _find_index(repo_objects_data, f'{object_typename}_name', json_data[f'{object_typename}_name'])
                 # index will be non-negative if an instance of this object already exists in the repo.json
                 if index != -1:
@@ -194,7 +197,6 @@ def _edit_objects(object_typename:str,
 
                     # versions data must always include the version
                     version_data['version'] = json_data.get('version','0.0.0')
-                
                     # versions data must always include one of the download/source uris
                     if not 'download_source_uri' in json_data and not 'source_control_uri' in json_data :
                         logger.warning('No download_source_uri found and sorce_control_uri found!')
@@ -373,7 +375,7 @@ def add_parser_args(parser):
     modify_gems_group.add_argument('--release-archive-path','-rap',  type=pathlib.Path, required=False,
                             help='Create a release archive at the specified local path and update the download_source_uri and sha256 fields.')
     modify_gems_group.add_argument('--force', '-f', action='store_true', default=False,
-                                                help='Copies over instantiated template directory even if it exist.')
+                            help='Overwrites the release-archive zip file if there is already an existing zip with the same name')
     modify_gems_group.add_argument('--download-prefix','-dp',  type=str, required=False,
                             help='a URL prefix for a file attached to a GitHub release might look like this:'
                             '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
