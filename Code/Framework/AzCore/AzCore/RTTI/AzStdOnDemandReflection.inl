@@ -337,6 +337,21 @@ namespace AZ
             return thisPtr;
         }
 
+// carbonated begin (alukyanov/tacmap-lua): Method "Replace" was removed in O3DE but still used by MadWorld lua script
+#if defined(CARBONATED)
+        static AZ::Outcome<void, void> Replace(ContainerType& thisContainer, size_t index, T& value)
+        {
+            if (index >= 0 && index < thisContainer.size())
+            {
+                thisContainer[index] = value;
+                return AZ::Success();
+            }
+
+            return AZ::Failure();
+        }
+#endif
+// carbonated end
+
         static bool IsScriptEventType()
         {
             return AZStd::is_same<T, AZ::EntityId>::value;
@@ -446,6 +461,13 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Attribute(AZ::ScriptCanvasAttributes::OverloadArgumentGroup, AZ::OverloadArgumentGroupInfo({ "ContainerGroup", "", "" }, { "ContainerGroup" }))
                     ->Method("PushBack", static_cast<void(ContainerType::*)(typename ContainerType::const_reference)>(&ContainerType::push_back))
+// carbonated begin (alukyanov/tacmap-lua): Method "Replace" was removed in O3DE but still used by MadWorld lua script
+#if defined(CARBONATED)
+                    ->Method("Replace", &Replace, { { {}, { "Index", "The index to replace", nullptr, BehaviorParameter::Traits::TR_INDEX }, {} } })
+                        ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeSlots, AttributeIsValid::IfPresent)
+                        ->Attribute(AZ::ScriptCanvasAttributes::AutoUnpackOutputOutcomeFailureSlotName, "Index out of range")
+#endif
+// carbonated end
                     ->Method("Reserve", &ContainerType::reserve)
                     ->Method("Resize", static_cast<void(ContainerType::*)(size_t)>(&ContainerType::resize))
                     ->Method(k_sizeName, [](ContainerType& thisPtr) { return aznumeric_cast<int>(thisPtr.size()); })
