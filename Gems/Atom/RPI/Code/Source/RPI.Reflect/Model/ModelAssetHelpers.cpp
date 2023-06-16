@@ -62,75 +62,68 @@ namespace AZ
         void ModelAssetHelpers::CreateUnitCube(ModelAsset* modelAsset)
         {
             // Build a mesh containing a unit cube.
-            //    5+----+6
-            //    /|   /|
-            //  1+----+2|
-            //   |4+--|-+7
-            //   |    |/
-            //  0+----+3
+            // The vertices are duplicated for each face so that we can have correct per-face normals and UVs.
 
+            // 6 vertices per face, 6 faces.
             const AZStd::array<uint32_t, 6 * 6> indices = {
-                0, 2, 1, 0, 3, 2,   // front face
-                3, 6, 2, 3, 7, 6,   // right face
-                7, 5, 6, 7, 4, 5,   // back face
-                4, 1, 5, 4, 0, 1,   // left face
-                1, 6, 5, 1, 2, 6,   // top face
-                7, 0, 3, 7, 4, 0    // bottom face
+                 0,  1,  2,  0,  2,  3,   // front face
+                 4,  5,  6,  4,  6,  7,   // right face
+                 8,  9, 10,  8, 10, 11,   // back face
+                12, 13, 14, 12, 14, 15,   // left face
+                16, 17, 18, 16, 18, 19,   // top face
+                20, 21, 22, 20, 22, 23    // bottom face
             };
 
-            const AZStd::array<float, 3 * 8> positions = {
-                -0.5f, -0.5f, -0.5f,    // front bottom left
-                -0.5f, -0.5f, +0.5f,    // front top left
-                +0.5f, -0.5f, +0.5f,    // front top right
-                +0.5f, -0.5f, -0.5f,    // front bottom right
-                -0.5f, +0.5f, -0.5f,    // back bottom left
-                -0.5f, +0.5f, +0.5f,    // back top left
-                +0.5f, +0.5f, +0.5f,    // back top right
-                +0.5f, +0.5f, -0.5f,    // back bottom right
+            // 3 values per position, 4 positions per face, 6 faces
+            const AZStd::array<float, 3 * 4 * 6> positions = {
+                -0.5f, -0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f,     // front
+                +0.5f, -0.5f, -0.5f, +0.5f, +0.5f, -0.5f, +0.5f, +0.5f, +0.5f, +0.5f, -0.5f, +0.5f,     // right
+                +0.5f, +0.5f, -0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f, +0.5f, +0.5f, +0.5f, +0.5f,     // back
+                -0.5f, +0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, +0.5f, -0.5f, +0.5f, +0.5f,     // left
+                -0.5f, -0.5f, +0.5f, +0.5f, -0.5f, +0.5f, +0.5f, +0.5f, +0.5f, -0.5f, +0.5f, +0.5f,     // top
+                -0.5f, +0.5f, -0.5f, +0.5f, +0.5f, -0.5f, +0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f,     // bottom
             };
 
-            const AZStd::array<float, 2 * 8> uvs = {
-                0.0f, 0.0f,
-                0.0f, 1.0f,
-                1.0f, 1.0f,
-                1.0f, 0.0f,
-                1.0f, 0.0f,
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f
+            // 2 values per position, 4 positions per face, 6 faces
+            // This aribtrarily maps the UVs to use the full texture on each face.
+            // This choice can be changed if a different mapping would be more usable.
+            const AZStd::array<float, 2 * 4 * 6> uvs = {
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // front
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // right
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // back
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // left
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // top
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // bottom
             };
 
-            const AZStd::array<float, 3 * 8> normals = {
-                -0.333f, -0.333f, -0.333f, // front bottom left
-                -0.333f, -0.333f, +0.333f, // front top left
-                +0.333f, -0.333f, +0.333f, // front top right
-                +0.333f, -0.333f, -0.333f, // front bottom right
-                -0.333f, +0.333f, -0.333f, // back bottom left
-                -0.333f, +0.333f, +0.333f, // back top left
-                +0.333f, +0.333f, +0.333f, // back top right
-                +0.333f, +0.333f, -0.333f, // back bottom right
+            // 3 values per position, 4 positions per face, 6 faces
+            const AZStd::array<float, 3 * 4 * 6> normals = {
+                +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f,     // front (-Y)
+                +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f,     // right (+X)
+                +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f,     // back (+Y)
+                -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f,     // left (-X)
+                +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f,     // top (+Z)
+                +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f,     // bottom (-Z)
             };
 
-            const AZStd::array<float, 4 * 8> tangents = {
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
-                0.0f, 0.0f, 1.0f, 1.0f,
+            // 4 values per position, 4 positions per face, 6 faces
+            const AZStd::array<float, 4 * 4 * 6> tangents = {
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // front (+Z)
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // right (+Z)
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // back (+Z)
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // left (+Z)
+                0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top (+Y)
+                0.0f, -1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f, -1.0f, 0.0f, 1.0f, // bottom (-Y)
             };
 
-            const AZStd::array<float, 3 * 8> bitangents = {
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
-                0.0f, 0.0f, 1.0f,
+            // 3 values per position, 4 positions per face, 6 faces
+            const AZStd::array<float, 3 * 4 * 6> bitangents = {
+                +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, // front (+X)
+                +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, // right (+Y)
+                -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, // back (-X)
+                +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, // left (-Y)
+                +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, // top (+X)
+                +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, // bottom (+X)
             };
 
             // First build a model LOD asset that contains a mesh for the given data.
