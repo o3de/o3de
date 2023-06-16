@@ -940,6 +940,7 @@ namespace ScriptCanvas
     {
         ScriptCanvas::ModifiableDatumView datumView;
         GetNode()->ModifyUnderlyingSlotDatum(GetId(), datumView);
+
         bool isVisible = !IsConnected() && datumView.GetDataType().IsValid();
 
         datumView.SetVisibility(isVisible ? AZ::Edit::PropertyVisibility::ShowChildrenOnly : AZ::Edit::PropertyVisibility::Hide);
