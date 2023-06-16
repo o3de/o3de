@@ -25,7 +25,8 @@ namespace AzToolsFramework
     public:
         AZ_RTTI(DocumentPropertyEditorSettings, "{7DECB0A1-A1AB-41B2-B31F-E52D3C3014A6}");
 
-        using ExpanderStateMap = AZStd::unordered_map<AZStd::string, bool>;
+        using PathType = AZ::IO::BasicPath<AZStd::string>;
+        using ExpanderStateMap = AZStd::unordered_map<PathType, bool>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
         //! Use this constructor when temporary in-memory only storage is desired
@@ -55,7 +56,8 @@ namespace AzToolsFramework
         //! Serialized map of expanded element states
         ExpanderStateMap m_expandedElementStates;
 
-    private:
+    protected:
+        virtual PathType GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const;
         void SaveExpanderStates();
         bool LoadExpanderStates();
 
@@ -74,4 +76,11 @@ namespace AzToolsFramework
         AZStd::string m_fullSettingsRegistryPath;
         AZStd::string m_settingsRegistryBasePath;
     };
+
+    class LabeledRowDPEExpanderSettings : public DocumentPropertyEditorSettings
+    {
+    protected:
+        PathType GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const override;
+    };
+
 } // namespace AzToolsFramework

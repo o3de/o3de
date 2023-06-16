@@ -42,6 +42,11 @@ namespace AzToolsFramework
         }
     }
 
+    DocumentPropertyEditorSettings::PathType DocumentPropertyEditorSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
+    {
+        return PathType(rowPath.ToString(), AZ::IO::PosixPathSeparator);
+    }
+
     void DocumentPropertyEditorSettings::SaveExpanderStates()
     {
         m_settingsRegistrar.StoreObjectSettings(m_fullSettingsRegistryPath, this);
@@ -107,27 +112,27 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditorSettings::SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
     {
-        m_expandedElementStates[rowPath.ToString()] = isExpanded;
+        m_expandedElementStates[GetStringPathForDomPath(rowPath)] = isExpanded;
     }
 
     bool DocumentPropertyEditorSettings::GetExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
-        AZStd::string strPath = rowPath.ToString();
-        if (m_expandedElementStates.contains(strPath))
+        auto path = GetStringPathForDomPath(rowPath);
+        if (m_expandedElementStates.contains(path))
         {
-            return m_expandedElementStates[strPath];
+            return m_expandedElementStates[path];
         }
         return false;
     }
 
     bool DocumentPropertyEditorSettings::HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const
     {
-        return m_expandedElementStates.contains(rowPath.ToString());
+        return m_expandedElementStates.contains(GetStringPathForDomPath(rowPath));
     }
 
     void DocumentPropertyEditorSettings::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
-        m_expandedElementStates.erase(rowPath.ToString());
+        m_expandedElementStates.erase(GetStringPathForDomPath(rowPath));
     }
 
     void DocumentPropertyEditorSettings::SetCleanExpanderStateCallback(CleanExpanderStateCallback function)

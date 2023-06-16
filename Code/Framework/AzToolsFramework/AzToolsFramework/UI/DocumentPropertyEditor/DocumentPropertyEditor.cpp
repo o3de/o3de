@@ -1217,6 +1217,7 @@ namespace AzToolsFramework
 
     void DPERowWidget::SetExpanded(bool expanded, bool recurseToChildRows)
     {
+        m_expandingProgrammatically = true;
         m_columnLayout->SetExpanded(expanded);
 
         if (recurseToChildRows)
@@ -1230,6 +1231,7 @@ namespace AzToolsFramework
                 }
             }
         }
+        m_expandingProgrammatically = false;
     }
 
     bool DPERowWidget::IsExpanded() const
@@ -1242,11 +1244,12 @@ namespace AzToolsFramework
         DocumentPropertyEditor* dpe = GetDPE();
         bool isExpanded = expanderState != Qt::Unchecked;
 
+        const bool expandRecursively = (!m_expandingProgrammatically && QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier));
         if (!isExpanded)
         {
-            if (QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+            if (expandRecursively)
             {
-                // Store collapsed state for all children before deletion if shift was pressed
+                // Store collapsed state for all children before deletion if expanding recursively
                 SaveExpanderStatesForChildRows(false);
             }
 
@@ -1264,10 +1267,12 @@ namespace AzToolsFramework
         }
         else
         {
-            if (QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+            bool initialRecursiveExpander = false;
+            if (expandRecursively)
             {
-                // Flag DPE as in the middle of a recursive expand operation if shift was pressed
+                // Flag DPE as in the middle of a recursive expand operation if expanding recursively
                 dpe->SetRecursiveExpansionOngoing(true);
+                initialRecursiveExpander = true;
             }
 
             auto myValue = dpe->GetDomValueForRow(this);
@@ -1280,11 +1285,18 @@ namespace AzToolsFramework
                     AddChildFromDomValue(myValue[valueIndex], valueIndex);
                 }
             }
-
-            dpe->SetRecursiveExpansionOngoing(false);
+            if (initialRecursiveExpander)
+            {
+                dpe->SetRecursiveExpansionOngoing(false);
+                SaveExpanderStatesForChildRows(true);
+            }
         }
 
-        dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+        if (!m_expandingProgrammatically)
+        {
+            // only save our expander state if our expanse/collapse was user-driven
+            dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+        }
     }
 
     bool DPERowWidget::HasChildRows() const
@@ -1432,7 +1444,7 @@ namespace AzToolsFramework
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {
-            m_dpeSettings->SetCleanExpanderStateCallback(
+            /*m_dpeSettings->SetCleanExpanderStateCallback(
                 [this](DocumentPropertyEditorSettings::ExpanderStateMap& storedStates)
                 {
                     const auto& rootValue = m_adapter->GetContents();
@@ -1443,7 +1455,7 @@ namespace AzToolsFramework
                             return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
                         });
                     return numErased > 0;
-                });
+                });*/
 
             // We need to rebuild the view using the stored expander states
             HandleReset();
@@ -1480,7 +1492,7 @@ namespace AzToolsFramework
     {
         if (m_dpeSettings)
         {
-            return m_dpeSettings->RemoveExpanderStateForRow(rowPath);
+            m_dpeSettings->RemoveExpanderStateForRow(rowPath);
         }
     }
 

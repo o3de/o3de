@@ -161,6 +161,8 @@ namespace AzToolsFramework
         AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToCachedAttributeInfo;
         AttributeInfo* GetCachedAttributes(size_t domIndex);
 
+        bool m_expandingProgrammatically = false; //!< indicates whether an expansion is in progress
+
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;
         AZStd::optional<bool> m_expandByDefault;
