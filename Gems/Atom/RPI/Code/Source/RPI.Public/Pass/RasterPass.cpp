@@ -137,7 +137,7 @@ namespace AZ
                 u32 targetWidth = target.GetAttachment()->m_descriptor.m_image.m_size.m_width;
                 u32 targetHeight = target.GetAttachment()->m_descriptor.m_image.m_size.m_height;
                 m_scissorState = RHI::Scissor(0, 0, targetWidth, targetHeight);
-                m_viewportState = RHI::Viewport(0, (float)targetWidth, 0, (float)targetHeight);
+                m_viewportState = RHI::Viewport(0, static_cast<float>(targetWidth), 0, static_cast<float>(targetHeight));
             }
             else
             {
