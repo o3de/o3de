@@ -409,7 +409,6 @@ namespace AssetProcessor
             {
                 continue;
             }
-
             QString input = rcJob->GetJobEntry().m_sourceAssetReference.RelativePath().c_str();
             if (input.endsWith(searchTerm, Qt::CaseInsensitive))
             {
