@@ -405,15 +405,7 @@ namespace AssetProcessor
         // try to narrowly exact-match the search term in case the search term refers to a specific actual source file:
         for (const RCJob* rcJob : m_jobs)
         {
-            // Only look for jobs that match the requested platform or the "common" platform.
-            if ((platform != rcJob->GetPlatformInfo().m_identifier.c_str()) &&
-                (AssetBuilderSDK::CommonPlatformName != rcJob->GetPlatformInfo().m_identifier.c_str()))
-            {
-                continue;
-            }
-
-            // Only look for jobs that haven't finished processing yet.
-            if ((rcJob->GetState() != RCJob::pending) && (rcJob->GetState() != RCJob::processing))
+            if ((platform != rcJob->GetPlatformInfo().m_identifier.c_str()) || (rcJob->GetState() != RCJob::pending))
             {
                 continue;
             }
@@ -585,15 +577,7 @@ namespace AssetProcessor
 
         for (const RCJob* rcJob : m_jobs)
         {
-            // Only look for jobs that match the requested platform or the "common" platform.
-            if ((platform != rcJob->GetPlatformInfo().m_identifier.c_str())
-                && (AssetBuilderSDK::CommonPlatformName != rcJob->GetPlatformInfo().m_identifier.c_str()))
-            {
-                continue;
-            }
-
-            // Only look for jobs that haven't finished processing yet.
-            if ((rcJob->GetState() != RCJob::pending) && (rcJob->GetState() != RCJob::processing))
+            if ((platform != rcJob->GetPlatformInfo().m_identifier.c_str()) || (rcJob->GetState() != RCJob::pending))
             {
                 continue;
             }
