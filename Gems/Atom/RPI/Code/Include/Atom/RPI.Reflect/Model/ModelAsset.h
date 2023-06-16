@@ -31,6 +31,7 @@ namespace AZ
             : public AZ::Data::AssetData
         {
             friend class ModelAssetCreator;
+            friend class ModelAssetHelpers;
 
         public:
             static const char* DisplayName;
@@ -81,6 +82,15 @@ namespace AZ
             const AZStd::vector<AZ::Name>& GetTags() const;
 
         private:
+            //! Initialize the ModelAsset with the given set of data.
+            //! This is used by ModelAssetHelpers to overwrite an already-created ModelAsset.
+            void InitData(
+                AZ::Name name,
+                AZStd::span<Data::Asset<ModelLodAsset>> lodAssets,
+                const ModelMaterialSlotMap& materialSlots,
+                const ModelMaterialSlot& fallbackSlot,
+                AZStd::span<AZ::Name> tags);
+
             // AssetData overrides...
             bool HandleAutoReload() override
             {
@@ -132,6 +142,15 @@ namespace AZ
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 
+            Data::AssetId AssetMissingInCatalog(const Data::Asset<Data::AssetData>& asset) override;
+
+            Data::AssetHandler::LoadResult LoadAssetData(
+                const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+                AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+                const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
+
+        private:
+            static const Data::AssetId s_defaultModelAssetId;
         };
     } //namespace RPI
 } // namespace AZ
