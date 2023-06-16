@@ -2306,7 +2306,7 @@ def create_repo(repo_path: pathlib.Path,
                 origin_url: str = None,
                 summary: str = None,
                 additional_info: str = None,
-                force: bool = False,
+                force: bool = None,
                 replace: list = None,
                 no_register: bool = False) -> int:
 
@@ -2331,10 +2331,15 @@ def create_repo(repo_path: pathlib.Path,
         logger.error('Remote repository URI cannot be empty.')
         return 1
     
-    # check if a repo.json file already exist in directory - can only have one repo.json file per project
+    # check if path is empty and
+    if not force and repo_path.is_dir():
+        logger.error(f'{repo_path} already exists. Use the --force command to overwrite the existing directory.')
+        return 1
     repo_json_path = repo_path / 'repo.json'
-    if not force and repo_json_path.is_file():
-        logger.error(f'{repo_json_path} already exists.  Use the --force to overwrite the existing file.')
+    # if a repo.json file already exist in directory - can only have one repo.json file per project
+    if repo_json_path.is_file():
+        logger.error(f'{repo_json_path} already exists. If you want to edit the repo.json properties, use edit-repo-properties command.'
+                     'If you want to create a new remote repo template, create a new directory.')
         return 1
     elif repo_path.is_file():
         logger.error(f'{repo_path} already exists and is a file instead of a directory.')
