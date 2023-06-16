@@ -123,6 +123,29 @@ namespace Compression
         return decompressionIter != m_decompressionInterfaces.end() ? decompressionIter->m_decompressionInterface.get() : nullptr;
     }
 
+    IDecompressionInterface* DecompressionRegistrarImpl::FindDecompressionInterface(AZStd::string_view algorithmName) const
+    {
+        // Potentially the entire vector is iterated over
+        IDecompressionInterface* resultInterface{};
+        auto FindCompressionInterfaceByName = [algorithmName, &resultInterface](const IDecompressionInterface& decompressionInterface)
+        {
+            if (decompressionInterface.GetCompressionAlgorithmName() == algorithmName)
+            {
+                // const_cast is being used here to avoid making a second visitor overload
+                // NOTE: this is function is internal to the implementation of the Decompression Registrar
+                resultInterface = const_cast<IDecompressionInterface*>(&decompressionInterface);
+                // The matching interface has been found, halt visitation.
+                return false;
+            }
+
+            return true;
+        };
+        AZStd::scoped_lock lock(m_decompressionInterfaceMutex);
+
+        VisitDecompressionInterfaces(FindCompressionInterfaceByName);
+        return resultInterface;
+    }
+
     bool DecompressionRegistrarImpl::IsRegistered(CompressionAlgorithmId compressionAlgorithmId) const
     {
         AZStd::scoped_lock lock(m_decompressionInterfaceMutex);

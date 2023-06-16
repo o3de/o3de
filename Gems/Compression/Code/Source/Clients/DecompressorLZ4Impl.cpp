@@ -22,6 +22,11 @@ namespace CompressionLZ4
         return GetLZ4CompressionAlgorithmId();
     }
 
+    AZStd::string_view DecompressorLZ4::GetCompressionAlgorithmName() const
+    {
+        return GetLZ4CompressionAlgorithmName();
+    }
+
     Compression::DecompressionResultData DecompressorLZ4::DecompressBlock(
         AZStd::span<AZStd::byte> decompressionBuffer, const AZStd::span<const AZStd::byte>& compressedData,
         [[maybe_unused]] const Compression::DecompressionOptions& decompressionOptions) const
@@ -47,7 +52,7 @@ namespace CompressionLZ4
         {
             // LZ4_compress_HC returns a zero value for corrupt data and insufficient buffer
             resultData.m_decompressionOutcome.m_resultString += Compression::DecompressionResultString::format(
-                "LZ4_decompress_safe call has failed. Either the decompression buffer cannot fit all decompressed content"
+                "LZ4_decompress_safe call has failed. Either the decompression buffer cannot fit all decompressed content "
                 "or the source stream is malformed. Dest buffer capacity: %zu, source stream size: %zu",
                 decompressionBuffer.size(), compressedData.size());
             resultData.m_decompressionOutcome.m_result = Compression::DecompressionResult::Failed;
