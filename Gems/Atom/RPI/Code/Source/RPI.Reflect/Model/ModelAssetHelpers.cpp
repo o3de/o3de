@@ -138,10 +138,10 @@ namespace AZ
 
                 constexpr uint32_t positionElementCount = aznumeric_cast<uint32_t>(positions.size() / 3);
                 constexpr uint32_t indexElementCount = aznumeric_cast<uint32_t>(indices.size());
-                constexpr uint32_t uvElementCount = aznumeric_cast<uint32_t>(positions.size() / 2);
-                constexpr uint32_t normalElementCount = aznumeric_cast<uint32_t>(positions.size() / 3);
-                constexpr uint32_t tangentElementCount = aznumeric_cast<uint32_t>(positions.size() / 4);
-                constexpr uint32_t bitangentElementCount = aznumeric_cast<uint32_t>(positions.size() / 3);
+                constexpr uint32_t uvElementCount = aznumeric_cast<uint32_t>(uvs.size() / 2);
+                constexpr uint32_t normalElementCount = aznumeric_cast<uint32_t>(normals.size() / 3);
+                constexpr uint32_t tangentElementCount = aznumeric_cast<uint32_t>(tangents.size() / 4);
+                constexpr uint32_t bitangentElementCount = aznumeric_cast<uint32_t>(bitangents.size() / 3);
 
                 constexpr uint32_t PositionElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
                 constexpr uint32_t IndexElementSize = aznumeric_cast<uint32_t>(sizeof(uint32_t));
@@ -181,7 +181,7 @@ namespace AZ
                 creator.AddMeshStreamBuffer(
                     AZ::RHI::ShaderSemantic(AZ::Name("BITANGENT")),
                     AZ::Name(),
-                    { CreateBufferAsset(tangents.data(), bitangentElementCount, BitangentElementSize),
+                    { CreateBufferAsset(bitangents.data(), bitangentElementCount, BitangentElementSize),
                       AZ::RHI::BufferViewDescriptor::CreateTyped(0, bitangentElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
                 creator.AddMeshStreamBuffer(
                     AZ::RHI::ShaderSemantic(AZ::Name("UV")),
