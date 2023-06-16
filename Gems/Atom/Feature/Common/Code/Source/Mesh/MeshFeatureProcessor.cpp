@@ -2119,6 +2119,12 @@ namespace AZ
                     material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
+                if (streamBufferViews.size() < 5)
+                {
+                    AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams, skipping.");
+                    continue;
+                }
+
                 // note that the element count is the size of the entire buffer, even though this mesh may only
                 // occupy a portion of the vertex buffer.  This is necessary since we are accessing it using
                 // a ByteAddressBuffer in the raytracing shaders and passing the byte offset to the shader in a constant buffer.
