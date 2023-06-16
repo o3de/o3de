@@ -334,7 +334,7 @@ namespace AZ
                 if (renderPipeline->FindFirstPass(opaquePassName) == nullptr)
                 {
                     AZ_Warning("HairFeatureProcessor", false, "Can't find %s in the render pipeline. Atom TressFX won't be rendered", opaquePassName.GetCStr());
-                    return;
+                    return false;
                 }
 
                 const char* passRequestAssetFilePath = "Passes/AtomTressFX_PassRequest.azasset";
