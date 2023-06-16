@@ -257,7 +257,6 @@ def _edit_objects(object_typename:str,
                             del repo_objects_data[index]              
 
     repo_json[f'{object_typename}s_data'] = repo_objects_data
-     #if older version is removed, merged the items thats changed in the newer version if newer version exist and update version
 
 def edit_repo_props(repo_path: pathlib.Path = None,
                        repo_name: str = None,
