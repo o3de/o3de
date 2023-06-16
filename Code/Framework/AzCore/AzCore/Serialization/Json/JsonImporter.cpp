@@ -52,6 +52,17 @@ namespace AZ
     {
         using namespace JsonSerializationResult;
 
+        if (settings.m_importer == nullptr)
+        {
+            AZStd::string reportMessage = "Json Importer is nullptr for ResolveImports.";
+            if (!importPathStack.empty())
+            {
+                reportMessage += AZStd::string::format(" Skipping resolving imports for file '%s'.", importPathStack.back().c_str());
+            }
+            return settings.m_reporting(reportMessage,
+                ResultCode(Tasks::Import, Outcomes::Skipped), element);
+        }
+
         if (jsonDoc.IsObject())
         {
             for (auto& field : jsonDoc.GetObject())
@@ -98,17 +109,21 @@ namespace AZ
                     if ((settings.m_resolveFlags & ImportTracking::Imports) == ImportTracking::Imports)
                     {
                         rapidjson::Pointer path(element.Get().data(), element.Get().size());
-                        settings.m_importer->AddImportDirective(path, importName.String());
+                        settings.m_importer->AddImportDirective(path, importName.String(), importAbsPath.String());
                     }
                     if ((settings.m_resolveFlags & ImportTracking::Dependencies) == ImportTracking::Dependencies)
                     {
                         settings.m_importer->AddImportedFile(importAbsPath.String());
                     }
 
-                    ResultCode result = ResolveNestedImports(jsonDoc, allocator, importPathStack, settings, importAbsPath, element);
-                    if (result.GetOutcome() == Outcomes::Catastrophic)
+                    if (settings.m_resolveNestedImports)
                     {
-                        return result;
+                        if (ResultCode result = ResolveNestedImports(jsonDoc, allocator, importPathStack,
+                            settings, importAbsPath, element);
+                            result.GetOutcome() == Outcomes::Catastrophic)
+                        {
+                            return result;
+                        }
                     }
                     settings.m_importer->ApplyPatch(jsonDoc, patch, allocator);
                 }
@@ -144,21 +159,170 @@ namespace AZ
         return ResultCode(Tasks::Import, Outcomes::Success);
     }
 
+    JsonSerializationResult::ResultCode JsonImportResolver::StoreNestedImports(const rapidjson::Value& jsonDoc,
+        ImportPathStack& importPathStack,
+        JsonImportSettings& settings, const AZ::IO::FixedMaxPath& importPath, StackedString& element)
+    {
+        using namespace JsonSerializationResult;
+
+        for (auto& path : importPathStack)
+        {
+            if (importPath == path)
+            {
+                return settings.m_reporting(
+                    AZStd::string::format("'%s' was already imported in this chain. This indicates a cyclic dependency.", importPath.c_str()),
+                    ResultCode(Tasks::Import, Outcomes::Catastrophic), element);
+            }
+        }
+
+        importPathStack.push_back(importPath);
+        AZ::StackedString importElement(AZ::StackedString::Format::JsonPointer);
+        JsonImportSettings nestedImportSettings;
+        nestedImportSettings.m_importer = settings.m_importer;
+        nestedImportSettings.m_reporting = settings.m_reporting;
+        nestedImportSettings.m_resolveFlags = ImportTracking::All;
+        ResultCode result = StoreImports(jsonDoc, importPathStack, nestedImportSettings, importElement);
+        importPathStack.pop_back();
+
+        if (result.GetOutcome() == Outcomes::Catastrophic)
+        {
+            return result;
+        }
+
+        return ResultCode(Tasks::Import, Outcomes::Success);
+    }
+
+    JsonSerializationResult::ResultCode JsonImportResolver::StoreImports(const rapidjson::Value& jsonDoc,
+        ImportPathStack& importPathStack,
+        JsonImportSettings& settings, StackedString& element)
+    {
+        using namespace JsonSerializationResult;
+
+        if (settings.m_importer == nullptr)
+        {
+            AZStd::string reportMessage = "Json Importer is nullptr for ResolveImports.";
+            if (!importPathStack.empty())
+            {
+                reportMessage += AZStd::string::format(" Skipping storing imports for file '%s'.", importPathStack.back().c_str());
+            }
+            return settings.m_reporting(reportMessage,
+                ResultCode(Tasks::Import, Outcomes::Skipped), element);
+        }
+
+        if (jsonDoc.IsObject())
+        {
+            for (auto& field : jsonDoc.GetObject())
+            {
+                if (strncmp(field.name.GetString(), JsonSerialization::ImportDirectiveIdentifier, field.name.GetStringLength()) == 0)
+                {
+                    // Read the import directive path from the $import field
+                    const rapidjson::Value& importDirective = field.value;
+                    AZ::IO::FixedMaxPath importAbsPath = importPathStack.back();
+                    importAbsPath.RemoveFilename();
+                    AZ::IO::FixedMaxPath importName;
+                    if (importDirective.IsObject())
+                    {
+                        auto filenameField = importDirective.FindMember("filename");
+                        if (filenameField != importDirective.MemberEnd())
+                        {
+                            importName = AZ::IO::FixedMaxPath(
+                                AZStd::string_view(filenameField->value.GetString(), filenameField->value.GetStringLength()));
+                        }
+                    }
+                    else
+                    {
+                        importName =
+                            AZ::IO::FixedMaxPath(AZStd::string_view(importDirective.GetString(), importDirective.GetStringLength()));
+                    }
+
+                    // Resolve the any file @..@ aliases in the relative importName if it starts with one
+                    if (auto fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+                    {
+                        // Replace alias doesn't "resolve" the path as FileIOBase::ResolvePath would
+                        // It only replaces an alias, it doesn't make a relative path absolute by
+                        // making subpath of the asset cache
+                        fileIo->ReplaceAlias(importName, importName);
+                    }
+
+                    // Create an absolute path using the directoy of the current JSON file and appending the $import
+                    // directive path to it.
+                    importAbsPath /= importName;
+
+                    if ((settings.m_resolveFlags & ImportTracking::Imports) == ImportTracking::Imports)
+                    {
+                        rapidjson::Pointer path(element.Get().data(), element.Get().size());
+                        settings.m_importer->AddImportDirective(path, importName.String(), AZStd::move(importAbsPath).String());
+                    }
+                    if ((settings.m_resolveFlags & ImportTracking::Dependencies) == ImportTracking::Dependencies)
+                    {
+                        settings.m_importer->StoreImport(importAbsPath);
+                    }
+
+                    if (settings.m_resolveNestedImports)
+                    {
+                        if (ResultCode result = StoreNestedImports(jsonDoc, importPathStack,
+                            settings, importAbsPath, element);
+                            result.GetOutcome() == Outcomes::Catastrophic)
+                        {
+                            return result;
+                        }
+                    }
+                }
+                else if (field.value.IsObject() || field.value.IsArray())
+                {
+                    ScopedStackedString entryName(element, AZStd::string_view(field.name.GetString(), field.name.GetStringLength()));
+                    ResultCode result = StoreImports(field.value, importPathStack, settings, element);
+                    if (result.GetOutcome() == Outcomes::Catastrophic)
+                    {
+                        return result;
+                    }
+                }
+            }
+        }
+        else if (jsonDoc.IsArray())
+        {
+            int index = 0;
+            for (rapidjson::Value::ConstValueIterator elem = jsonDoc.Begin(); elem != jsonDoc.End(); ++elem, ++index)
+            {
+                if (!elem->IsObject() && !elem->IsArray())
+                {
+                    continue;
+                }
+                ScopedStackedString entryName(element, index);
+                ResultCode result = StoreImports(*elem, importPathStack, settings, element);
+                if (result.GetOutcome() == Outcomes::Catastrophic)
+                {
+                    return result;
+                }
+            }
+        }
+
+        return ResultCode(Tasks::Import, Outcomes::Success);
+    }
+
     JsonSerializationResult::ResultCode JsonImportResolver::RestoreImports(rapidjson::Value& jsonDoc,
         rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings)
     {
         using namespace JsonSerializationResult;
+
+        if (settings.m_importer == nullptr)
+        {
+            AZStd::string reportMessage = "Json Importer is nullptr for RestoreImports.";
+            return settings.m_reporting(reportMessage,
+                ResultCode(Tasks::Import, Outcomes::Skipped), "");
+        }
 
         if (jsonDoc.IsObject() || jsonDoc.IsArray())
         {
             const BaseJsonImporter::ImportDirectivesList& importDirectives = settings.m_importer->GetImportDirectives();
             for (auto& import : importDirectives)
             {
-                rapidjson::Pointer importPtr = import.first;
+                rapidjson::Pointer importPtr = import.m_importDirectiveJsonPath;
                 rapidjson::Value* currentValue = importPtr.Get(jsonDoc);
 
                 rapidjson::Value importedValue(rapidjson::kObjectType);
-                importedValue.AddMember(rapidjson::StringRef(JsonSerialization::ImportDirectiveIdentifier), rapidjson::StringRef(import.second.c_str()), allocator);
+                importedValue.AddMember(rapidjson::StringRef(JsonSerialization::ImportDirectiveIdentifier),
+                    rapidjson::StringRef(import.m_importDirectiveFilePath.c_str()), allocator);
                 ResultCode resolveResult = JsonSerialization::ResolveImports(importedValue, allocator, settings);
                 if (resolveResult.GetOutcome() == Outcomes::Catastrophic)
                 {
@@ -167,7 +331,7 @@ namespace AZ
 
                 rapidjson::Value patch;
                 settings.m_importer->CreatePatch(patch, importedValue, *currentValue, allocator);
-                settings.m_importer->RestoreImport(currentValue, patch, allocator, import.second);
+                settings.m_importer->RestoreImport(currentValue, patch, allocator, import.m_importDirectiveFilePath);
             }
         }
 
@@ -222,8 +386,32 @@ namespace AZ
         return ResultCode(Tasks::Import, Outcomes::Success);
     }
 
+    JsonSerializationResult::ResultCode BaseJsonImporter::StoreImport(AZ::IO::PathView importedFilePath)
+    {
+        using namespace JsonSerializationResult;
+
+        // Attempt to replace any file aliases at the beginning of the path
+        // with a mapped file path if it exist.
+        AZ::IO::FixedMaxPath unaliasedImportedPath;
+        if (auto fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+        {
+            // Replace alias doesn't "resolve" the path as FileIOBase::ResolvePath would
+            // It only replaces an alias, it doesn't make a relative path absolute by
+            // making subpath of the asset cache
+            fileIo->ReplaceAlias(unaliasedImportedPath, importedFilePath);
+        }
+        else
+        {
+            unaliasedImportedPath = importedFilePath;
+        }
+
+        m_importedFiles.emplace(unaliasedImportedPath.String());
+
+        return ResultCode(Tasks::Import, Outcomes::Success);
+    }
+
     JsonSerializationResult::ResultCode BaseJsonImporter::RestoreImport(rapidjson::Value* importPtr,
-        rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename)
+        rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator, AZ::IO::PathView importFilename)
     {
         using namespace JsonSerializationResult;
 
@@ -231,13 +419,17 @@ namespace AZ
         if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {
             rapidjson::Value importDirective(rapidjson::kObjectType);
-            importDirective.AddMember(rapidjson::StringRef("filename"), rapidjson::StringRef(importFilename.c_str()), allocator);
+            importDirective.AddMember(rapidjson::StringRef("filename"),
+                rapidjson::StringRef(importFilename.Native().data(), importFilename.Native().size()),
+                allocator);
             importDirective.AddMember(rapidjson::StringRef("patch"), patch, allocator);
             importPtr->AddMember(rapidjson::StringRef(JsonSerialization::ImportDirectiveIdentifier), importDirective, allocator);
         }
         else
         {
-            importPtr->AddMember(rapidjson::StringRef(JsonSerialization::ImportDirectiveIdentifier), rapidjson::StringRef(importFilename.c_str()), allocator);
+            importPtr->AddMember(rapidjson::StringRef(JsonSerialization::ImportDirectiveIdentifier),
+                rapidjson::StringRef(importFilename.Native().data(), importFilename.Native().size()),
+                allocator);
         }
 
         return ResultCode(Tasks::Import, Outcomes::Success);
@@ -263,12 +455,22 @@ namespace AZ
         return JsonSerialization::CreatePatch(patch, allocator, source, target, JsonMergeApproach::JsonMergePatch);
     }
 
-    void BaseJsonImporter::AddImportDirective(const rapidjson::Pointer& jsonPtr, AZStd::string importFile)
+    void BaseJsonImporter::AddImportDirective(const rapidjson::Pointer& jsonPtr, AZ::IO::Path importFile,
+        AZ::IO::Path resolvedFile)
     {
-        m_importDirectives.emplace_back(jsonPtr, AZStd::move(importFile));
+        auto IsNewImportDirective = [&jsonPtr, &importFile](const JsonImportMetadata& importMetadata)
+        {
+            return jsonPtr == importMetadata.m_importDirectiveJsonPath
+                && importFile == importMetadata.m_importDirectiveFilePath;
+        };
+        if (auto foundImportIt = AZStd::find_if(m_importDirectives.begin(), m_importDirectives.end(), IsNewImportDirective);
+            foundImportIt == m_importDirectives.end())
+        {
+            m_importDirectives.push_back({ jsonPtr, AZStd::move(importFile), AZStd::move(resolvedFile) });
+        }
     }
 
-    void BaseJsonImporter::AddImportedFile(AZStd::string importedFile)
+    void BaseJsonImporter::AddImportedFile(AZ::IO::Path importedFile)
     {
         m_importedFiles.insert(AZStd::move(importedFile));
     }
