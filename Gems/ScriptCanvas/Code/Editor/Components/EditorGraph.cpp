@@ -1146,8 +1146,22 @@ namespace ScriptCanvasEditor
         const ScriptCanvas::Node* targetNode = FindNode(targetEndpoint.GetNodeId());
 
         // Retrieve the source node's execution out and target node's execution in
-        const ScriptCanvas::Slot* sourceNodeExecutionSlot = sourceNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut(), false)[0];
-        const ScriptCanvas::Slot* targetNodeExecutionSlot = targetNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn(), false)[0];
+        const ScriptCanvas::Slot* sourceNodeExecutionSlot;
+        const ScriptCanvas::Slot* targetNodeExecutionSlot;
+
+        AZStd::vector< const ScriptCanvas::Slot* > sourceNodeExecutionSlots = sourceNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut(), false);
+        AZStd::vector< const ScriptCanvas::Slot* > targetNodeExecutionSlots = targetNode->GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn(), false);
+
+        // Ensure there is exactly 1 non-latent execution source and target slot
+        if (sourceNodeExecutionSlots.size() == 1 && targetNodeExecutionSlots.size() == 1)
+        {
+            sourceNodeExecutionSlot = sourceNodeExecutionSlots[0];
+            targetNodeExecutionSlot = targetNodeExecutionSlots[0];
+        }
+        else
+        {
+            return;
+        }
 
         // If either the source or target slot execution slots on these nodes are implicit, then check if the implicit connection should be updated
         if (sourceNodeExecutionSlot->CreatesImplicitConnections() || targetNodeExecutionSlot->CreatesImplicitConnections())
