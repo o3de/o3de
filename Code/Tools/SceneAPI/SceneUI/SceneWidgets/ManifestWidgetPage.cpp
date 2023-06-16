@@ -316,7 +316,7 @@ namespace AZ
                         }
                     }
 
-                    ui->m_addButton->setText(QString::fromLatin1("Add another %1").arg(className.c_str()));
+                    ui->m_addButton->setText(QString::fromLatin1("Add %1").arg(className.c_str()));
                     connect(ui->m_addButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnSingleGroupAdd);
                 }
                 else
@@ -347,7 +347,7 @@ namespace AZ
 
                     ui->m_addButton->setMenu(menu);
 
-                    AZStd::string buttonText = "Add another ";
+                    AZStd::string buttonText = "Add ";
                     AzFramework::StringFunc::Join(buttonText, classNames.begin(), classNames.end(), " or ");
                     ui->m_addButton->setText(buttonText.c_str());
                 }

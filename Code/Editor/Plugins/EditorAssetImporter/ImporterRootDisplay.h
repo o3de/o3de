@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QMenu>
 #include <QScopedPointer>
 
 #include <AzCore/std/smart_ptr/shared_ptr.h>
@@ -105,14 +106,22 @@ public:
 
     QString GetHeaderFileName() const;
 
-    void UpdateTimeStamp(const QString& manifestFilePath);
+    void UpdateTimeStamp(const QString& manifestFilePath, bool enableInspector);
 
     bool HasUnsavedChanges() const;
 
-    void AppendUnsaveChangesToTitle(QDockWidget& dockWidget);
+    void AppendUnsaveChangesToTitle();
 
 signals:
     void SaveClicked();
+    void ResetSettings();
+    void ClearChanges();
+    void AssignScript();
+    void InspectClicked();
+    void HelpClicked();
+
+protected slots:
+    void AddEditMenu();
 
 private:
     // ManifestMetaInfoBus
@@ -123,5 +132,7 @@ private:
     Ui::ImporterRootDisplay* ui;
     QScopedPointer<AZ::SceneAPI::UI::ManifestWidget> m_manifestWidget;
     bool m_hasUnsavedChanges;
+    QString m_filePath;
+    QMenu* m_editMenu;
     AZStd::shared_ptr<SceneSettingsRootDisplayScriptRequestHandler> m_requestHandler;
 };

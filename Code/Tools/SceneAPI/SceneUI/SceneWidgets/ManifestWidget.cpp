@@ -30,8 +30,6 @@ namespace AZ
                 , m_serializeContext(serializeContext)
             {
                 ui->setupUi(this);
-
-                AzQtComponents::TabWidget::applySecondaryStyle(ui->m_tabs, false);
             }
             
             ManifestWidget::~ManifestWidget()

@@ -73,6 +73,7 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 
 AssetImporterWindow::~AssetImporterWindow()
 {
+    close();
     disconnect();
 }
 
@@ -158,25 +159,29 @@ void AssetImporterWindow::Init()
     }
 
     ui->setupUi(this);
-
-    if (!gSettings.enableSceneInspector)
-    {
-        ui->m_actionInspect->setVisible(false);
-    }
-
-    ResetMenuAccess(WindowState::InitialNothingLoaded);
         
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
     m_rootDisplay.reset(aznew ImporterRootDisplayWidget(m_serializeContext));
     connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::SaveClicked, this, &AssetImporterWindow::SaveClicked);
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::HelpClicked, this, &AssetImporterWindow::OnOpenDocumentation);
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::InspectClicked, this, &AssetImporterWindow::OnInspect);
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::ResetSettings, this, &AssetImporterWindow::OnSceneResetRequested);
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::ClearChanges, this, &AssetImporterWindow::OnClearUnsavedChangesRequested);
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::AssignScript, this, &AssetImporterWindow::OnAssignScript);
 
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
 
     m_overlay->SetRoot(m_rootDisplay.data());
     ui->m_settingsAreaLayout->addWidget(m_overlay.data());
+    const int handleCount = ui->m_mainAreaSplitter->count();
+    for (int handleIndex = 0; handleIndex < handleCount; ++handleIndex)
+    {
+        auto handle = ui->m_mainAreaSplitter->handle(handleIndex);
+        handle->setEnabled(false);
+    }
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
@@ -260,8 +265,14 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     SceneSettingsCard::Layout layout,
     SceneSettingsCard::State state)
 {
+    QLayoutItem* previousCard;
+    while ((previousCard = ui->m_cardAreaLayout->takeAt(0)) != nullptr)
+    {
+        delete previousCard->widget();
+        delete previousCard;
+    }
+
     SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, fileName, layout, ui->m_cardAreaLayoutWidget);
-    
     card->setExpanded(false);
     ui->m_notificationAreaLayoutWidget->show();
     card->SetState(state);
@@ -386,7 +397,7 @@ void AssetImporterWindow::SaveClicked()
     m_assetImporterDocument->SaveScene(output,
         [output, this, isSourceControlActive, card](bool wasSuccessful)
         {
-            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
+            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str(), gSettings.enableSceneInspector);
             if (output->HasAnyWarnings())
             {
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "%s", output->BuildWarningMessage().c_str());
@@ -519,20 +530,6 @@ void AssetImporterWindow::OnAssignScript()
     }
 }
 
-void AssetImporterWindow::ResetMenuAccess(WindowState state)
-{
-    if (state == WindowState::FileLoaded)
-    {
-        ui->m_actionResetSettings->setEnabled(true);
-        ui->m_actionInspect->setEnabled(true);
-    }
-    else
-    {
-        ui->m_actionResetSettings->setEnabled(false);
-        ui->m_actionInspect->setEnabled(false);
-    }
-}
-
 void AssetImporterWindow::OnOpenDocumentation()
 {
     QDesktopServices::openUrl(QString(s_documentationWebAddress));
@@ -560,7 +557,6 @@ void AssetImporterWindow::OnInspect()
 void AssetImporterWindow::OverlayLayerAdded()
 {
     setCursor(Qt::WaitCursor);
-    ResetMenuAccess(WindowState::OverlayShowing);
 }
 
 void AssetImporterWindow::OverlayLayerRemoved()
@@ -572,51 +568,10 @@ void AssetImporterWindow::OverlayLayerRemoved()
 
     setCursor(Qt::ArrowCursor);
 
-    // Reset menu access
-    if (m_assetImporterDocument->GetScene())
+    if (!m_assetImporterDocument->GetScene())
     {
-        ResetMenuAccess(WindowState::FileLoaded);
-    }
-    else
-    {
-        ResetMenuAccess(WindowState::InitialNothingLoaded);
-
         ui->m_initialBrowseContainer->show();
         m_rootDisplay->hide();
-    }
-}
-
-void AssetImporterWindow::SetTitle(const char* filePath)
-{
-    QWidget* dock = parentWidget();
-    while (dock)
-    {
-        QDockWidget* converted = qobject_cast<QDockWidget*>(dock);
-        if (converted)
-        {
-            AZStd::string extension;
-            if (AzFramework::StringFunc::Path::GetExtension(filePath, extension, false))
-            {
-                extension[0] = static_cast<char>(toupper(extension[0]));
-                for (size_t i = 1; i < extension.size(); ++i)
-                {
-                    extension[i] = static_cast<char>(tolower(extension[i]));
-                }
-            }
-            else
-            {
-                extension = "Scene";
-            }
-            AZStd::string fileName;
-            AzFramework::StringFunc::Path::GetFileName(filePath, fileName);
-            converted->setWindowTitle(QString("%1 Settings - %2").arg(extension.c_str(), fileName.c_str()));
-            m_rootDisplay->AppendUnsaveChangesToTitle(*converted);
-            break;
-        }
-        else
-        {
-            dock = dock->parentWidget();
-        }
     }
 }
 
@@ -628,7 +583,7 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
         sceneHeaderText = QString::fromUtf8(scene->GetManifestFilename().c_str(), static_cast<int>(scene->GetManifestFilename().size()));
     }
 
-     if (scene)
+    if (scene)
     {
         m_rootDisplay->SetSceneDisplay(sceneHeaderText, scene);
     }
@@ -640,7 +595,8 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
     m_rootDisplay->SetPythonBuilderText(m_scriptProcessorRuleFilename.c_str());
 
     // UpdateSceneDisplay gets called both when the file is saved from this tool, as well as when it's modified externally.
-    m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
+    m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str(), gSettings.enableSceneInspector);
+
 }
 
 void AssetImporterWindow::HandleAssetLoadingCompleted()
@@ -652,7 +608,6 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     }
 
     m_fullSourcePath = m_assetImporterDocument->GetScene()->GetSourceFilename();
-    SetTitle(m_fullSourcePath.c_str());
 
     using namespace AZ::SceneAPI;
     m_scriptProcessorRuleFilename.clear();

@@ -171,6 +171,21 @@ namespace AzQtComponents
         }
     }
 
+    void SegmentBar::setVisibility(int index, bool isVisible)
+    {
+        if (QAbstractButton* btn = button(index))
+        {
+            btn->setVisible(isVisible);
+            updateTabs();
+        }
+    }
+
+    bool SegmentBar::isVisible(int index) const
+    {
+        const QAbstractButton* btn = button(index);
+        return btn ? btn->isVisible() : false;
+    }
+
     QColor SegmentBar::tabTextColor(int index) const
     {
         const QAbstractButton* btn = button(index);

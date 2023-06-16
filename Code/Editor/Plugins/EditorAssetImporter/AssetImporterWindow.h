@@ -102,16 +102,7 @@ private:
     void Init();
     void OpenFileInternal(const AZStd::string& filePath);
     bool IsAllowedToChangeSourceFile();
-    
-    enum class WindowState
-    {
-        InitialNothingLoaded,
-        FileLoaded,
-        OverlayShowing
-    };
 
-    void ResetMenuAccess(WindowState state);
-    void SetTitle(const char* filePath);
     void HandleAssetLoadingCompleted();
 
     SceneSettingsCard* CreateSceneSettingsCard(

@@ -25,6 +25,7 @@ namespace AZ
 {
     class AssetBrowserContextProvider
         : public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+        , public AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler
     {
     public:
         AssetBrowserContextProvider();
@@ -32,9 +33,14 @@ namespace AZ
      
         /////////////////////////////////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
-        void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
         AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
         /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler
+        bool PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
+        QMainWindow* GetSceneSettings() override;
+        //////////////////////////////////////////////////////////////////////////
 
     protected:
         bool HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry) const; // return true if we care about this kind of source file.

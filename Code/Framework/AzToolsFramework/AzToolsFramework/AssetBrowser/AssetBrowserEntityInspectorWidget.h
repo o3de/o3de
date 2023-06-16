@@ -14,8 +14,10 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
+#include <AzQtComponents/Components/Widgets/SegmentControl.h>
 #include <QFormLayout>
 #include <QLabel>
+#include <QMainWindow>
 #include <QStackedLayout>
 #include <QTreeWidget>
 #endif
@@ -43,8 +45,7 @@ namespace AzToolsFramework
             void ClearPreview() override;
         private:
             // Query the direct and reverse source dependencies of a source asset browser entry
-            void PopulateSourceDependencies(
-                const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);
+            void PopulateSourceDependencies(const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);
             // Query the direct and reverse product depdencies of a product asset browser entry
             bool PopulateProductDependencies(const ProductAssetBrowserEntry* productEntry);
             // Create an incoming or outgoing dependecy QTreeWidgetItem for each valid Uuid
@@ -53,6 +54,8 @@ namespace AzToolsFramework
             void CreateProductDependencyTree(const AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing);
             // Adds the name and icon of an asset browser entry under a QTreeWidgetItem
             void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
+
+            const AssetBrowserEntry* m_currentEntry = nullptr;
 
             AZStd::shared_ptr<AssetDatabase::AssetDatabaseConnection> m_databaseConnection;
             bool m_databaseReady = false;
@@ -63,11 +66,16 @@ namespace AzToolsFramework
 
             QLabel* m_previewImage = nullptr;
 
-            QWidget* m_assetDetailWidget = nullptr;
-            QFormLayout* m_assetDetailLayout = nullptr;
+            AzQtComponents::SegmentControl* m_segmentControl = nullptr;
+            QWidget* m_detailsWidget = nullptr;
+            QMainWindow* m_sceneSettings = nullptr;
 
             AzQtComponents::Card* m_dependentAssetsCard = nullptr;
             QTreeWidget* m_dependentProducts = nullptr;
+
+            AzQtComponents::Card* m_detailsCard = nullptr;
+            QWidget* m_assetDetailWidget = nullptr;
+            QFormLayout* m_assetDetailLayout = nullptr;
 
             QFont m_headerFont;
         };

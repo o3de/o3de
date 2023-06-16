@@ -322,6 +322,12 @@ namespace AzToolsFramework
                 }
             }
 
+            if (m_parentRow && m_parentRow->m_isSceneSetting)
+            {
+                m_isSceneSetting = true;
+                setStyleSheet("QFrame {background-color: #555555; color: white; }");
+            }
+
             RefreshAttributesFromNode(true);
 
             // --------------------- HANDLER discovery:
@@ -973,6 +979,16 @@ namespace AzToolsFramework
         {
             m_forceAutoExpand = false; // Does not always expand by default
             reader.Read<bool>(m_forceAutoExpand);
+        }
+        else if (attributeName == AZ::Edit::Attributes::CategoryStyle)
+        {
+            AZStd::string categoryAttributeValue;
+            reader.Read<AZStd::string>(categoryAttributeValue);
+            if (categoryAttributeValue.compare("display divider") == 0)
+            {
+                m_isSceneSetting = true;
+                setStyleSheet("QFrame {background-color: #333333; margin-top: 5px; border-top-left-radius: 2px; border-top-right-radius: 2px; padding-top: -3px}");
+            }
         }
         // Attribute types you are NOT allowed to update at runtime
         else if ((initial) && (attributeName == AZ::Edit::Attributes::ContainerCanBeModified))
