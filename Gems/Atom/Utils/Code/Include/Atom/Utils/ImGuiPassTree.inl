@@ -11,6 +11,7 @@
 #include <Atom/RHI.Reflect/MultisampleState.h>
 
 #include <Atom/RPI.Public/Pass/ParentPass.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -275,6 +276,13 @@ namespace AZ::Render
                     | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
                 bool nodeOpen = Scriptable_ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
+
+
+                AZ::RPI::RasterPass* asRasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
+                if (asRasterPass)
+                {
+                    ImGui::Text("Raster pass with %d draw items", asRasterPass->GetDrawItemCount());
+                }
 
                 if (ImGui::IsItemClicked())
                 {

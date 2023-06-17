@@ -39,6 +39,10 @@ namespace AZ
             RHI::Scissor m_overrideScissor = RHI::Scissor::CreateNull();
 
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
+
+            // Forces viewport and scissor to match width/height of output image at specified index.
+            // Does nothing if index is negative.
+            s32 m_viewportAndScissorTargetOutputIndex = -1;
         };
     } // namespace RPI
 } // namespace AZ

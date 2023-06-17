@@ -85,6 +85,7 @@ namespace AZ
                 m_viewportState = rasterData->m_overrideViewport;
                 m_overrideViewportState = true;
             }
+            m_viewportAndScissorTargetOutputIndex = rasterData->m_viewportAndScissorTargetOutputIndex;
         }
 
         RasterPass::~RasterPass()
@@ -130,15 +131,25 @@ namespace AZ
 
         void RasterPass::FrameBeginInternal(FramePrepareParams params)
         {
-            if (!m_overrideScissorSate)
+            if (m_viewportAndScissorTargetOutputIndex >= 0)
             {
-                m_scissorState = params.m_scissorState;
+                PassAttachmentBinding& target = GetOutputBinding(m_viewportAndScissorTargetOutputIndex);
+                u32 targetWidth = target.GetAttachment()->m_descriptor.m_image.m_size.m_width;
+                u32 targetHeight = target.GetAttachment()->m_descriptor.m_image.m_size.m_height;
+                m_scissorState = RHI::Scissor(0, 0, targetWidth, targetHeight);
+                m_viewportState = RHI::Viewport(0, static_cast<float>(targetWidth), 0, static_cast<float>(targetHeight));
             }
-            if (!m_overrideViewportState)
+            else
             {
-                m_viewportState = params.m_viewportState;
+                if (!m_overrideScissorSate)
+                {
+                    m_scissorState = params.m_scissorState;
+                }
+                if (!m_overrideViewportState)
+                {
+                    m_viewportState = params.m_viewportState;
+                }
             }
-
             UpdateDrawList();
 
             RenderPass::FrameBeginInternal(params);
