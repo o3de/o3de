@@ -98,7 +98,7 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
             // Cache the read and readwrite index of the view withn the global Bindless Argument buffer
-            if (device.GetBindlessDescriptorPool().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
+            if (device.GetBindlessArgumentBuffer().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
             {
                 if (viewDescriptor.m_isCubemap)
                 {
@@ -154,7 +154,7 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
-            if (device.GetBindlessDescriptorPool().IsInitialized())
+            if (device.GetBindlessArgumentBuffer().IsInitialized())
             {
                 if (viewDescriptor.m_isCubemap)
                 {
