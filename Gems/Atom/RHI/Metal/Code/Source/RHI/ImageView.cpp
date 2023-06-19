@@ -97,9 +97,8 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            m_isBindlessUASupported = device.GetFeatures().m_unboundedArrays || device.GetFeatures().m_simulateBindlessUA;
             // Cache the read and readwrite index of the view withn the global Bindless Argument buffer
-            if (m_isBindlessUASupported && !viewDescriptor.m_isArray && !isDSRendertarget)
+            if (device.GetBindlessDescriptorPool().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
             {
                 if (viewDescriptor.m_isCubemap)
                 {
@@ -155,27 +154,25 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
-            if (!m_isBindlessUASupported)
+            if (device.GetBindlessDescriptorPool().IsInitialized())
             {
-                return;
-            }
-
-            if(viewDescriptor.m_isCubemap)
-            {
-                if (m_readIndex != ~0u)
+                if (viewDescriptor.m_isCubemap)
                 {
-                    device.GetBindlessArgumentBuffer().DetachReadCubeMapImage(m_readIndex);
+                    if (m_readIndex != ~0u)
+                    {
+                        device.GetBindlessArgumentBuffer().DetachReadCubeMapImage(m_readIndex);
+                    }
                 }
-            }
-            else
-            {
-                if (m_readIndex != ~0u)
+                else
                 {
-                    device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
-                }
-                if (m_readWriteIndex != ~0u)
-                {
-                    device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                    if (m_readIndex != ~0u)
+                    {
+                        device.GetBindlessArgumentBuffer().DetachReadImage(m_readIndex);
+                    }
+                    if (m_readWriteIndex != ~0u)
+                    {
+                        device.GetBindlessArgumentBuffer().DetachReadWriteImage(m_readWriteIndex);
+                    }
                 }
             }
         }

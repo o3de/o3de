@@ -347,8 +347,7 @@ namespace AZ
 
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
         {
-            m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
-            return RHI::ResultCode::Success;
+            return m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
         }
 
         RHI::ResultCode Device::InitializeLimits()
@@ -1090,7 +1089,7 @@ namespace AZ
             m_features.m_unboundedArrays = physicalDevice.GetPhysicalDeviceDescriptorIndexingFeatures().shaderStorageTexelBufferArrayNonUniformIndexing;
             if (m_features.m_unboundedArrays)
             {
-                // Ray tracing needs unbounded arrays to work
+                // Ray tracing needs raytracing extensions and unbounded arrays to work
                 m_features.m_rayTracing = (itRayTracingExtension != deviceExtensions.end());
             }
 

@@ -409,9 +409,10 @@ namespace AZ
                 AZ_Assert(bindlessSrgDesc.m_roBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only buffers");
                 AZ_Assert(bindlessSrgDesc.m_rwBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write buffers");
                 AZ_Assert(bindlessSrgDesc.m_bindlesSrgBindingSlot != AZ::RHI::InvalidIndex, "Invalid binding slot id for bindless srg");
+                return InitInternalBindlessSrg(bindlessSrgDesc);
             }
 
-            return InitInternalBindlessSrg(bindlessSrgDesc);
+            return ResultCode::Success;
         }
     }
 }

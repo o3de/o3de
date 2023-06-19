@@ -109,7 +109,7 @@ namespace AZ
             }
             Base::ShutdownInternal();
         }
-        
+
         RHI::ResultCode ShaderResourceGroupPool::InitGroupInternal(RHI::ShaderResourceGroup& groupBase)
         {
             ShaderResourceGroup& group = static_cast<ShaderResourceGroup&>(groupBase);

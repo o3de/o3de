@@ -71,9 +71,8 @@ namespace AZ
             bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
 
-            m_isBindlessUASupported = device.GetFeatures().m_unboundedArrays || device.GetFeatures().m_simulateBindlessUA;
             // Cache the read and readwrite index of the view within the global Bindless Argument buffer
-            if (m_isBindlessUASupported && (shaderRead || shaderReadWrite))
+            if (device.GetBindlessDescriptorPool().IsInitialized() && (shaderRead || shaderReadWrite))
             {
                 if (shaderRead)
                 {
@@ -117,18 +116,16 @@ namespace AZ
         void BufferView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            if (!m_isBindlessUASupported)
+            if (device.GetBindlessDescriptorPool().IsInitialized())
             {
-                return;
-            }
-
-            if (m_readIndex != InvalidBindlessIndex)
-            {
-                device.GetBindlessArgumentBuffer().DetachReadBuffer(m_readIndex);
-            }
-            if (m_readWriteIndex != InvalidBindlessIndex)
-            {
-                device.GetBindlessArgumentBuffer().DetachReadWriteBuffer(m_readWriteIndex);
+                if (m_readIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadBuffer(m_readIndex);
+                }
+                if (m_readWriteIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadWriteBuffer(m_readWriteIndex);
+                }
             }
         }
 

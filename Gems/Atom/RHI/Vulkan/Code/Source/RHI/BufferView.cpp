@@ -67,7 +67,7 @@ namespace AZ
 #endif
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
 
-                if (device.GetFeatures().m_unboundedArrays)
+                if (device.GetBindlessDescriptorPool().IsInitialized())
                 {
                     if (shaderRead)
                     {
@@ -115,21 +115,19 @@ namespace AZ
         void BufferView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
-            if (!device.GetFeatures().m_unboundedArrays)
+            if (device.GetBindlessDescriptorPool().IsInitialized())
             {
-                return;
-            }
+                if (m_readIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
+                    m_readIndex = InvalidBindlessIndex;
+                }
 
-            if (m_readIndex != InvalidBindlessIndex)
-            {
-                device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
-                m_readIndex = InvalidBindlessIndex;
-            }
-
-            if (m_readWriteIndex != InvalidBindlessIndex)
-            {
-                device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
-                m_readWriteIndex = InvalidBindlessIndex;
+                if (m_readWriteIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
+                    m_readWriteIndex = InvalidBindlessIndex;
+                }
             }
         }
 

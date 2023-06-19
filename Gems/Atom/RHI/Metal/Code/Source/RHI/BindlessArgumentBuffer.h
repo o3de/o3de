@@ -86,6 +86,9 @@ namespace AZ
             //! Return the binding slot for the bindless srg
             uint32_t GetBindlessSrgBindingSlot();
 
+            //! Boolean to return true if the pool is initialized
+            bool IsInitialized() const;
+
         private:
 
             //Bindless ABs + the rootAB which will act as a container. This is used for unbounded arrays.
