@@ -100,7 +100,7 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> m_boundedArgBuffer;
 
             // Free list allocator per bindless resource type
-            RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(BindlessResourceType::Count)];
+            RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::BindlessResourceType::Count)];
             Device* m_device = nullptr;
             bool m_unboundedArraySupported = false;
             // Mutex to protect bindless heap related updates

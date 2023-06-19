@@ -144,6 +144,7 @@ namespace AzToolsFramework
                 source->m_scanFolderId = fileDatabaseEntry.m_scanFolderPK;
                 source->m_extension = absoluteFilePath.Extension().Native();
                 source->m_diskSize = AZ::IO::SystemFile::Length(absoluteFilePath.c_str());
+                source->m_modificationTime = AZ::IO::SystemFile::ModificationTime(absoluteFilePath.c_str());
                 AZ::IO::FixedMaxPath assetPath;
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {

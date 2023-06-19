@@ -15,6 +15,9 @@
 
 #include <Compression/CompressionLZ4API.h>
 
+// Archive Gem private implementation includes
+#include <Tools/ArchiveWriterFactory.h>
+
 namespace Archive::Test
 {
     // The ArchiveEditorTestEnvironment is tracking memory
@@ -24,10 +27,20 @@ namespace Archive::Test
         : public ::testing::Test
     {
     public:
-        ArchiveWriterFixture() = default;
-        ~ArchiveWriterFixture() = default;
+        ArchiveWriterFixture()
+        {
+            m_archiveWriterFactory = AZStd::make_unique<ArchiveWriterFactory>();
+            AZ::Interface<IArchiveWriterFactory>::Register(m_archiveWriterFactory.get());
+        }
+        ~ArchiveWriterFixture()
+        {
+            AZ::Interface<IArchiveWriterFactory>::Unregister(m_archiveWriterFactory.get());
+        }
 
     protected:
+        // Create and register Archive Writer factory
+        // to allow IArchiveWriter instances to be created
+        AZStd::unique_ptr<IArchiveWriterFactory> m_archiveWriterFactory;
     };
 
     // Helper function for converting a string view to a byte span
@@ -41,12 +54,16 @@ namespace Archive::Test
     TEST_F(ArchiveWriterFixture, CreateArchiveWriter_Succeeds)
     {
         {
-            auto archiveWriter = CreateArchiveWriter();
+            auto createArchiveWriterResult = CreateArchiveWriter();
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
             ASSERT_NE(nullptr, archiveWriter);
         }
 
         {
-            auto archiveWriter = CreateArchiveWriter(ArchiveWriterSettings{});
+            auto createArchiveWriterResult = CreateArchiveWriter(ArchiveWriterSettings{});
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
             ASSERT_NE(nullptr, archiveWriter);
         }
     }
@@ -58,7 +75,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
         ASSERT_TRUE(commitResult);
@@ -79,7 +98,9 @@ namespace Archive::Test
         {
             // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
             IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
             ASSERT_TRUE(commitResult);
@@ -98,7 +119,9 @@ namespace Archive::Test
         {
             // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
             IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-            AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+            auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+            ASSERT_TRUE(createArchiveWriterResult);
+            AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
             // Recommit the existing archive with no changes
             IArchiveWriter::CommitResult commitResult = archiveWriter->Commit();
@@ -120,7 +143,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         // Add an uncompressed file to the Archive
         AZStd::string_view fileContent = "Hello World";
@@ -174,7 +199,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         // Add an uncompressed file to the Archive
         AZStd::string_view fileContent = "Hello World";
@@ -235,7 +262,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         AZStd::array<ArchiveAddFileResult, 2> addedFileResults;
 
@@ -324,7 +353,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         EXPECT_TRUE(archiveWriter->IsMounted());
 
@@ -434,7 +465,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         AZStd::array<ArchiveAddFileResult, 2> addedFileResults;
 
@@ -676,7 +709,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         // Add an compressed file to archive
         AZStd::string_view fileContent = "Hello World";
@@ -767,7 +802,9 @@ namespace Archive::Test
 
         // Set the ArchiveStreamDeleter to not delete the stack ByteContainerStream
         IArchiveWriter::ArchiveStreamPtr archiveStreamPtr(&archiveStream, { false });
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         // Add a compressed file to archive
         ArchiveWriterFileSettings fileSettings;
@@ -816,8 +853,10 @@ namespace Archive::Test
 
         ArchiveWriterSettings writerSettings;
         writerSettings.m_tocCompressionAlgorithm = CompressionLZ4::GetLZ4CompressionAlgorithmId();
-        AZStd::unique_ptr<IArchiveWriter> archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr),
+        auto createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr),
             writerSettings);
+        ASSERT_TRUE(createArchiveWriterResult);
+        AZStd::unique_ptr<IArchiveWriter> archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         // Add an compressed file to archive
         AZStd::string_view fileContent = "Hello World";
@@ -865,7 +904,9 @@ namespace Archive::Test
         archiveWriter.reset();
 
         archiveStreamPtr.reset(&archiveStream);
-        archiveWriter = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        createArchiveWriterResult = CreateArchiveWriter(AZStd::move(archiveStreamPtr));
+        ASSERT_TRUE(createArchiveWriterResult);
+        archiveWriter = AZStd::move(createArchiveWriterResult.value());
 
         // Validate the Table of Contents by updating an existing file
         fileSettings.m_fileMode = ArchiveWriterFileMode::AddNewOrUpdateExisting;

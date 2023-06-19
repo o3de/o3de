@@ -386,6 +386,94 @@ AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
     AzQtComponents::DragAndDropItemViewEventsBus::Handler::BusDisconnect();
 }
 
+void AzAssetBrowserRequestHandler::CreateSortAction(
+    QMenu* menu,
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+    QString name,
+    AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+{
+    QAction* action = menu->addAction(
+        name,
+        [thumbnailView, treeView, sortMode]()
+        {
+            if (thumbnailView)
+            {
+                thumbnailView->SetSortMode(sortMode);
+            }
+            else if (treeView)
+            {
+                treeView->SetSortMode(sortMode);
+                if (treeView->GetAttachedThumbnailView())
+                {
+                    treeView->GetAttachedThumbnailView()->SetSortMode(sortMode);
+                }
+            }
+        });
+
+    action->setCheckable(true);
+
+    if (thumbnailView)
+    {
+        if (thumbnailView->GetSortMode() == sortMode)
+        {
+            action->setChecked(true);
+        }
+    }
+    else if (treeView)
+    {
+        // If there is a thumbnailView attached, the sorting will be happening in there.
+        if (treeView->GetAttachedThumbnailView())
+        {
+            if (treeView->GetAttachedThumbnailView()->GetSortMode() == sortMode)
+            {
+                action->setChecked(true);
+            }
+        }
+        else if (treeView->GetSortMode() == sortMode)
+        {
+            action->setChecked(true);
+        }
+    }
+}
+    
+
+void AzAssetBrowserRequestHandler::AddSortMenu(
+    QMenu* menu,
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView)
+{
+    using namespace AzToolsFramework::AssetBrowser;
+
+    QMenu* sortMenu = menu->addMenu(QObject::tr("Sort by"));
+    
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Name"),
+        AssetBrowserFilterModel::AssetBrowserSortMode::Name);
+    
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Type"), AssetBrowserFilterModel::AssetBrowserSortMode::FileType);
+
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Date"),
+        AssetBrowserFilterModel::AssetBrowserSortMode::LastModified);
+
+    CreateSortAction(
+        sortMenu,
+        thumbnailView,
+        treeView,
+        QObject::tr("Size"), AssetBrowserFilterModel::AssetBrowserSortMode::Size);
+}
+
 void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
 {
     using namespace AzToolsFramework::AssetBrowser;
@@ -496,6 +584,11 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteEntriesButtonPressed, caller);
                 });
         }
+    }
+
+    if (calledFromAssetBrowser)
+    {
+        AddSortMenu(menu, thumbnailView, treeView);
     }
 
     size_t numOfEntries = entries.size();

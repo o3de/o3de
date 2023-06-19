@@ -30,6 +30,8 @@ namespace AZ::Reflection
         const Name Container = Name::FromStringLiteral("Container", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ParentContainer = Name::FromStringLiteral("ParentContainer", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ParentContainerInstance = Name::FromStringLiteral("ParentContainerInstance", AZ::Interface<AZ::NameDictionary>::Get());
+        const Name ParentContainerCanBeModified =
+            Name::FromStringLiteral("ParentContainerCanBeModified", AZ::Interface<AZ::NameDictionary>::Get());
         const Name ContainerElementOverride = Name::FromStringLiteral("ContainerElementOverride", AZ::Interface<AZ::NameDictionary>::Get());
     } // namespace DescriptorAttributes
 
@@ -191,7 +193,8 @@ namespace AZ::Reflection
             virtual ~InstanceVisitor() = default;
 
             InstanceVisitor(
-                IReadWrite* visitor, void* instance,
+                IReadWrite* visitor,
+                void* instance,
                 const AZ::TypeId& typeId,
                 SerializeContext* serializeContext,
                 bool visitFromRoot = true)
@@ -203,7 +206,19 @@ namespace AZ::Reflection
 
                 m_visitFromRoot = visitFromRoot;
 
-                RegisterPrimitiveHandlers<bool, char, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
+                RegisterPrimitiveHandlers<
+                    bool,
+                    char,
+                    AZ::u8,
+                    AZ::u16,
+                    AZ::u32,
+                    AZ::u64,
+                    AZ::s8,
+                    AZ::s16,
+                    AZ::s32,
+                    AZ::s64,
+                    float,
+                    double>();
             }
 
             template<typename T>
@@ -328,8 +343,7 @@ namespace AZ::Reflection
                     const char* name = "";
                     for (auto eltIt = classData->m_editData->m_elements.begin(); eltIt != classData->m_editData->m_elements.end(); ++eltIt)
                     {
-                        if (
-                            eltIt->m_elementId == AZ::Edit::ClassElements::Group ||
+                        if (eltIt->m_elementId == AZ::Edit::ClassElements::Group ||
                             eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
@@ -347,7 +361,7 @@ namespace AZ::Reflection
                         }
                     }
                 }
-                
+
                 // Push the current node into the stack
                 m_stack.push_back(
                     { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
@@ -362,8 +376,7 @@ namespace AZ::Reflection
 
                 if (parentAssociativeInterface)
                 {
-                    if (nodeData->m_instance ==
-                        parentAssociativeInterface->GetValueByKey(parentData.m_instance, nodeData->m_instance))
+                    if (nodeData->m_instance == parentAssociativeInterface->GetValueByKey(parentData.m_instance, nodeData->m_instance))
                     {
                         // the element *is* the key. This is some kind of set and has only one read-only value per entry
                         nodeData->m_skipLabel = true;
@@ -393,7 +406,7 @@ namespace AZ::Reflection
 
                 if (parentData.m_extractKeyedPair)
                 {
-                    // alternate behavoir for the pair children. The first is the key, stringify it
+                    // alternate behavior for the pair children. The first is the key, stringify it
                     if (parentData.m_childElementIndex % 2 == 0)
                     {
                         // store the label override in the parent for the next child to consume
@@ -501,7 +514,7 @@ namespace AZ::Reflection
                 }
                 // Iterate over non serialized elements to see if any of them should be added
                 const char* elementName = "";
-                if (nodeData.m_classElement&& nodeData.m_classElement->m_editData&& nodeData.m_classElement->m_editData->m_name)
+                if (nodeData.m_classElement && nodeData.m_classElement->m_editData && nodeData.m_classElement->m_editData->m_name)
                 {
                     elementName = nodeData.m_classElement->m_editData->m_name;
                 }
@@ -509,7 +522,8 @@ namespace AZ::Reflection
                 while (iter != m_nonSerializedElements.end())
                 {
                     // If the parent of the element that was just created has the same name as the parent of any non serialized elements,
-                    // and the element that was just created is the element immediately before any non serialized element, create that serialized element
+                    // and the element that was just created is the element immediately before any non serialized element, create that
+                    // serialized element
                     if (m_stack.back().m_classData && m_stack.back().m_classData->m_name == iter->second.m_classData->m_name &&
                         elementName == iter->first)
                     {
@@ -724,7 +738,9 @@ namespace AZ::Reflection
                                 }
                                 return;
                             }
-                            else if (auto visibilityBoolValue = VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
+                            else if (
+                                auto visibilityBoolValue =
+                                    VisibilityBoolean.DomToValue(VisibilityBoolean.LegacyAttributeToDomValue(instance, it->second)))
                             {
                                 bool isVisible = visibilityBoolValue.value();
                                 visibility = isVisible ? PropertyVisibility::Show : PropertyVisibility::Hide;
@@ -736,9 +752,10 @@ namespace AZ::Reflection
                         // will already be disabled as well.
                         else if ((name == PropertyEditor::ReadOnly.GetName()) && !nodeData.m_isAncestorDisabled)
                         {
-                            nodeData.m_disableEditor |= PropertyEditor::ReadOnly
-                                .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance, it->second))
-                                .value_or(nodeData.m_disableEditor);
+                            nodeData.m_disableEditor |=
+                                PropertyEditor::ReadOnly
+                                    .DomToValue(PropertyEditor::ReadOnly.LegacyAttributeToDomValue(instance, it->second))
+                                    .value_or(nodeData.m_disableEditor);
                         }
 
                         // See if any registered attribute definitions can read this attribute
@@ -779,8 +796,7 @@ namespace AZ::Reflection
                             // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
                             // because such nodes also have internal EnumValueKey attributes that we won't use.
                             // The cached values will be stored as a GenericValueList attribute.
-                            if (name == enumValueKeyName &&
-                                !visitedAttributes.contains(enumValuesCrcName) &&
+                            if (name == enumValueKeyName && !visitedAttributes.contains(enumValuesCrcName) &&
                                 !visitedAttributes.contains(genericValueListName))
                             {
                                 genericValueCache.ArrayPushBack(attributeValue);
@@ -889,13 +905,25 @@ namespace AZ::Reflection
                                   DescriptorAttributes::ContainerElementOverride,
                                   Dom::Utils::ValueFromType<void*>(parentNode.m_containerElementOverride) });
                         }
+
+                        auto canBeModifiedValue =
+                            Find(Name(), DocumentPropertyEditor::Nodes::Container::ContainerCanBeModified.GetName(), parentNode);
+                        if (canBeModifiedValue)
+                        {
+                            bool canBeModified = canBeModifiedValue->IsBool() && canBeModifiedValue->GetBool();
+                            if (!canBeModified)
+                            {
+                                nodeData.m_cachedAttributes.push_back({ group,
+                                                                        DescriptorAttributes::ParentContainerCanBeModified, Dom::Value(canBeModified) });
+                            }
+                        }
                     }
                 }
 
                 if (genericValueCache.ArraySize() > 0)
                 {
-                    nodeData.m_cachedAttributes.push_back({
-                        group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
+                    nodeData.m_cachedAttributes.push_back(
+                        { group, DocumentPropertyEditor::Nodes::PropertyEditor::GenericValueList<AZ::u64>.GetName(), genericValueCache });
                 }
 
                 labelAttributeValue = GetNodeDisplayLabel(nodeData, labelAttributeBuffer);

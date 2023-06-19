@@ -376,8 +376,8 @@ namespace AZ::ScriptAutomation
         {
             AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
             AZStd::string renderPipelinePath;
-            console->GetCvarValue("r_default_pipeline_name", renderPipelinePath);
-            AZ_Assert(renderPipelinePath.size() > 0, "Invalid render pipeline path obtained from r_default_pipeline_name CVAR");
+            console->GetCvarValue("r_renderPipelinePath", renderPipelinePath);
+            AZ_Assert(renderPipelinePath.size() > 0, "Invalid render pipeline path obtained from r_renderPipelinePath CVAR");
             return AZ::IO::PathView(renderPipelinePath).Stem().String();
         }
 

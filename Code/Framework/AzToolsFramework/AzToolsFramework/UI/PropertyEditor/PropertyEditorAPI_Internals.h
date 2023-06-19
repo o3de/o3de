@@ -180,7 +180,7 @@ namespace AzToolsFramework
 
     // Wrapper type that takes a PropertyHandleBase from the ReflectedPropertyEditor and
     // provides a PropertyHandlerWidgetInterface for the DocumentPropertyEditor.
-    // Doesn't use the normal static ShouldHandleNode and GetHandlerName implementations,
+    // Doesn't use the normal static ShouldHandleType and GetHandlerName implementations,
     // so must be custom registered to the PropertyEditorToolsSystemInterface.
     template<typename WrappedType>
     class RpePropertyHandlerWrapper
@@ -235,21 +235,9 @@ namespace AzToolsFramework
             {
                 const AZ::Name& name = attributeIt->first;
 
-                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName())
+                if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
+                    name == PropertyEditor::ValueType.GetName())
                 {
-                    continue;
-                }
-                else if (name == PropertyEditor::ValueType.GetName())
-                {
-                    // Type id from the node could be a specialized type different from the type id set up in the constructor.
-                    m_proxyClassData.m_typeId = AZ::Dom::Utils::DomValueToTypeId(attributeIt->second);
-
-                    if (m_proxyClassData.m_typeId.IsNull())
-                    {
-                        AZ::Dom::Value theValue = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-                        m_proxyClassData.m_typeId = AZ::Dom::Utils::GetValueTypeId(theValue);
-                    }
-
                     continue;
                 }
                 else if (name == PropertyEditor::ParentValue.GetName())
@@ -339,13 +327,25 @@ namespace AzToolsFramework
                 }
             }
 
-            AZ::SerializeContext* sc = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+            AZ_Assert(serializeContext, "Serialization context not available");
 
-            if (sc)
+            // Set the m_genericClassInfo (if any) for our type in case the property handler needs to access it
+            // when downcasting to the generic type (e.g. for asset property downcasting to the generic AZ::Data::Asset<AZ::Data::AssetData>)
+            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != node.MemberEnd())
             {
-                // Set up the generic class info. Property handlers like asset property handlers would need this.
-                m_proxyClassElement.m_genericClassInfo = sc->FindGenericClassInfo(m_proxyClassData.m_typeId);
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+            else if (value.has_value())
+            {
+                typeId = AZ::Dom::Utils::GetValueTypeId(value.value());
+            }
+            if (!typeId.IsNull())
+            {
+                m_proxyClassElement.m_genericClassInfo = serializeContext->FindGenericClassInfo(typeId);
             }
 
             if (m_widget)
@@ -375,42 +375,9 @@ namespace AzToolsFramework
             return m_rpeHandler.GetLastInTabOrder_Internal(GetWidget());
         }
 
-        static bool ShouldHandleNode(PropertyHandlerBase& rpeHandler, const AZ::Dom::Value& node)
+        static bool ShouldHandleType(PropertyHandlerBase& rpeHandler, const AZ::TypeId& typeId)
         {
-            using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
-            auto typeIdAttribute = node.FindMember(PropertyEditor::ValueType.GetName());
-            AZ::TypeId typeId = AZ::TypeId::CreateNull();
-            if (typeIdAttribute != node.MemberEnd())
-            {
-                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
-            }
-            else
-            {
-                AZ::Dom::Value value = PropertyEditor::Value.ExtractFromDomNode(node).value_or(AZ::Dom::Value());
-                typeId = AZ::Dom::Utils::GetValueTypeId(value);
-            }
-
-            bool handled = rpeHandler.HandlesType(typeId);
-
-            if (!handled)
-            {
-                AZ::SerializeContext* sc = nullptr;
-                AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-                // Some instance type ids stored in the node are specialized type ids.
-                // So we need to check the generic type id to see if it matches the handler's type id.
-                // Example: Asset<ScriptAsset> is a specialized type and its generic type is Asset.
-                if (const auto* genericInfo = sc->FindGenericClassInfo(typeId))
-                {
-                    if (genericInfo->GetGenericTypeId() != typeId)
-                    {
-                        auto genericTypeId = genericInfo->GetGenericTypeId();
-                        handled = rpeHandler.HandlesType(genericTypeId);
-                    }
-                }
-            }
-
-            return handled;
+            return rpeHandler.HandlesType(typeId);
         }
 
         static const AZStd::string_view GetHandlerName(PropertyHandlerBase& rpeHandler)
@@ -431,7 +398,30 @@ namespace AzToolsFramework
             using AZ::DocumentPropertyEditor::Nodes::PropertyEditor;
 
             m_rpeHandler.WriteGUIValuesIntoProperty_Internal(GetWidget(), &m_proxyNode);
-            const AZ::Dom::Value newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+
+            auto typeIdAttribute = m_domNode.FindMember(PropertyEditor::ValueType.GetName());
+            AZ::TypeId typeId = AZ::TypeId::CreateNull();
+            if (typeIdAttribute != m_domNode.MemberEnd())
+            {
+                typeId = AZ::Dom::Utils::DomValueToTypeId(typeIdAttribute->second);
+            }
+
+            // If the expected TypeId differs from m_proxyClassData.m_typeId (WrappedType),
+            // then it means this handler was written for a base-class/m_proxyClassElement.m_genericClassInfo
+            //      e.g. AZ::Data::Asset<AZ::Data::AssetData> when the actual type is for a specific asset data such as
+            //           AZ::Data::Asset<RPI::ModelAsset>
+            // So we need to marshal it with a typed pointer, which is how the data gets read in as well
+            // For everything else, we can just use ValueFromType which can imply the type from the value itself
+            AZ::Dom::Value newValue;
+            if (!typeId.IsNull() && typeId != m_proxyClassData.m_typeId)
+            {
+                newValue = AZ::Dom::Utils::MarshalTypedPointerToValue(&m_proxyValue, typeId);
+            }
+            else
+            {
+                newValue = AZ::Dom::Utils::ValueFromType(m_proxyValue);
+            }
+
             PropertyEditor::OnChanged.InvokeOnDomNode(m_domNode, newValue, changeType);
             OnRequestPropertyNotify();
         }
@@ -574,9 +564,9 @@ namespace AzToolsFramework
                 using HandlerType = RpePropertyHandlerWrapper<PropertyType>;
                 PropertyEditorToolsSystemInterface::HandlerData registrationInfo;
                 registrationInfo.m_name = HandlerType::GetHandlerName(*this);
-                registrationInfo.m_shouldHandleNode = [this](const AZ::Dom::Value& node)
+                registrationInfo.m_shouldHandleType = [this](const AZ::TypeId& typeId)
                 {
-                    return HandlerType::ShouldHandleNode(*this, node);
+                    return HandlerType::ShouldHandleType(*this, typeId);
                 };
                 registrationInfo.m_factory = [this]()
                 {

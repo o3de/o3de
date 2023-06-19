@@ -22,9 +22,15 @@ namespace CompressionLZ4
     //! @return LZ4 Compression AlgorithmId
     constexpr Compression::CompressionAlgorithmId GetLZ4CompressionAlgorithmId();
 
+    //! Human readable name associated with the compression algorithm
+    constexpr AZStd::string_view GetLZ4CompressionAlgorithmName()
+    {
+        return "LZ4";
+    }
+
     constexpr Compression::CompressionAlgorithmId GetLZ4CompressionAlgorithmId()
     {
-        constexpr Compression::CompressionAlgorithmId AlgorithmId{ AZ::u32(AZStd::hash<AZStd::string_view>{}("LZ4")) };
+        constexpr Compression::CompressionAlgorithmId AlgorithmId{ AZ::u32(AZStd::hash<AZStd::string_view>{}(GetLZ4CompressionAlgorithmName())) };
         return AlgorithmId;
     }
 } // namespace CompressionLZ4
