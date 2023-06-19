@@ -350,9 +350,8 @@ namespace AZ
 
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
         {
-            m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
-
-            RHI::ResultCode result = RHI::ResultCode::Success;
+            RHI::ResultCode result = m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
             if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
             {
