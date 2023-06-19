@@ -286,6 +286,8 @@ namespace AzQtComponents
         void SetTextFilterVisible(bool visible);
         void SetTextFilter(const QString& textFilter);
         void ClearTextFilter();
+        void AddFavoritesButtonPressed();
+        bool IsAnyFilterActive();
 
         void AddWidgetToSearchWidget(QWidget* w);
         void SetFilteredParentVisible(bool visible);

@@ -760,12 +760,7 @@ void AzAssetBrowserWindow::SetOneColumnMode()
 
 void AzAssetBrowserWindow::AddFavoriteSearchButtonPressed()
 {
-    if (!GetSelectionCount())
-    {
-        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
-    }
-
-    AddFavoriteEntriesButtonPressed();
+    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchButtonPressed, m_ui->m_searchWidget);
 }
 
 void AzAssetBrowserWindow::AddFavoriteEntriesButtonPressed()

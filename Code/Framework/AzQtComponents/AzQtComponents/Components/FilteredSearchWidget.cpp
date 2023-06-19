@@ -982,19 +982,23 @@ namespace AzQtComponents
         return -1;
     }
 
-    void FilteredSearchWidget::SetFilteredParentViewState()
+    bool FilteredSearchWidget::IsAnyFilterActive()
     {
-        bool filtersActive = false;
-
         SearchTypeFilterList checkedTypes;
         for (const SearchTypeFilter& typeFilter : m_typeFilters)
         {
             if (typeFilter.enabled)
             {
-                filtersActive = true;
-                break;
+                return true;
             }
         }
+
+        return false;
+    }
+
+    void FilteredSearchWidget::SetFilteredParentViewState()
+    {
+        bool filtersActive = IsAnyFilterActive();
 
         if (m_usingFavoritesSystem)
         {
@@ -1046,8 +1050,50 @@ namespace AzQtComponents
             this,
             [this]
             {
-                emit addFavoriteSearchPressed();
+                AddFavoritesButtonPressed();
             });
+    }
+
+    void FilteredSearchWidget::AddFavoritesButtonPressed()
+    {
+        bool filtersActive = IsAnyFilterActive();
+
+        if (m_selectionCount && (m_filterTextButton->isVisible() || filtersActive))
+        {
+            QMenu menu(this);
+
+            menu.addAction(
+                QObject::tr("Selected Assets"),
+                [this]()
+                {
+                    emit addFavoriteEntriesPressed();
+                });
+            menu.addAction(
+                QObject::tr("Search/Filter"),
+                [this]()
+                {
+                    emit addFavoriteSearchPressed();
+                });
+            menu.addAction(
+                QObject::tr("All"),
+                [this]()
+                {
+                    emit addFavoriteEntriesPressed();
+                    emit addFavoriteSearchPressed();
+                });
+            menu.exec(QCursor::pos());
+        }
+        else
+        {
+            if (m_selectionCount)
+            {
+                emit addFavoriteEntriesPressed();
+            }
+            if (m_filterTextButton->isVisible() || filtersActive)
+            {
+                emit addFavoriteSearchPressed();
+            }
+        }
     }
 
     void FilteredSearchWidget::RepositionFixedButtons()
