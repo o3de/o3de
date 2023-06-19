@@ -423,7 +423,7 @@ namespace AZ::Metal
         return m_bindlessSrgDesc.m_bindlesSrgBindingSlot;
     }
 
-    bool BindlessDescriptorPool::IsInitialized() const
+    bool BindlessArgumentBuffer::IsInitialized() const
     {
         return m_rootArgBuffer || m_boundedArgBuffer;
     }
