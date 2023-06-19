@@ -33,6 +33,13 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
 
+// carbonated begin (akostin/onframebeginend): Allow custom actions on begin/end frame
+#if defined(CARBONATED)
+#include <CryCommon/CrySystemPostTickBus.h>
+#include <CryCommon/CrySystemPreTickBus.h>
+#endif
+// carbonated end
+
 AZ_DEFINE_BUDGET(CrySystem);
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -625,6 +632,12 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         }
     }
 
+    // carbonated begin (akostin/onframebeginend): Allow custom actions on begin/end frame
+    #if defined(CARBONATED)
+    CrySystemPreTickBus::Broadcast(&CrySystemPreTick::OnFrameBegin);
+    #endif
+    // carbonated end
+
     //////////////////////////////////////////////////////////////////////
     //update console system
     if (m_env.pConsole)
@@ -698,6 +711,12 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     {
         gEnv->pCryPak->DisableRuntimeFileAccess(true);
     }
+
+    // carbonated begin (akostin/onframebeginend): Allow custom actions on begin/end frame
+    #if defined(CARBONATED)
+    CrySystemPostTickBus::Broadcast(&CrySystemPostTick::OnFrameEnd);
+    #endif
+    // carbonated end
 
     // Also broadcast for anyone else that needs to draw global debug to do so now
     AzFramework::DebugDisplayEventBus::Broadcast(&AzFramework::DebugDisplayEvents::DrawGlobalDebugInfo);
