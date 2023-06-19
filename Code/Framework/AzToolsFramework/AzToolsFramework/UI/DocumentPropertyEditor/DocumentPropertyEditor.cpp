@@ -1381,7 +1381,7 @@ namespace AzToolsFramework
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>();
+        m_dpeSettings = AZStd::make_unique<LabeledRowDPEExpanderSettings>(this);
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1440,7 +1440,7 @@ namespace AzToolsFramework
         // the in-memory settings to be saved to disk (in settings destructor) before they're loaded
         // from disk (in settings constructor)
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>(keyStr, propertyEditorName);
+        m_dpeSettings = AZStd::make_unique<LabeledRowDPEExpanderSettings>(keyStr, propertyEditorName, this);
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {

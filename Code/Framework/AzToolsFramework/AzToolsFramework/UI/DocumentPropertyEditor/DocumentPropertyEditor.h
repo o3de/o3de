@@ -192,6 +192,11 @@ namespace AzToolsFramework
         {
             return m_adapter;
         }
+
+        const auto GetAdapter() const
+        {
+            return m_adapter;
+        }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
         void SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);

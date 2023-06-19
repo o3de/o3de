@@ -19,6 +19,8 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    class DocumentPropertyEditor;
+
     //! This serializable class stores and loads the DocumentPropertyEditor settings such as tree node expansion state.
     class DocumentPropertyEditorSettings
     {
@@ -30,9 +32,10 @@ namespace AzToolsFramework
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
         //! Use this constructor when temporary in-memory only storage is desired
-        DocumentPropertyEditorSettings() = default;
+        DocumentPropertyEditorSettings(const DocumentPropertyEditor* owningEditor = nullptr);
         //! Use this constructor when storing settings in a persistent registry file on-disk
-        DocumentPropertyEditorSettings(const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName);
+        DocumentPropertyEditorSettings(
+            const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName, const DocumentPropertyEditor* owningEditor);
 
         virtual ~DocumentPropertyEditorSettings();
 
@@ -75,10 +78,23 @@ namespace AzToolsFramework
 
         AZStd::string m_fullSettingsRegistryPath;
         AZStd::string m_settingsRegistryBasePath;
+        const DocumentPropertyEditor* m_owningEditor = nullptr;
     };
 
     class LabeledRowDPEExpanderSettings : public DocumentPropertyEditorSettings
     {
+    public:
+        LabeledRowDPEExpanderSettings(const DocumentPropertyEditor* owningEditor = nullptr)
+            : DocumentPropertyEditorSettings(owningEditor)
+        {
+        }
+
+        LabeledRowDPEExpanderSettings(
+            const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName, const DocumentPropertyEditor* owningEditor)
+            : DocumentPropertyEditorSettings(settingsRegistryKey, propertyEditorName, owningEditor)
+        {
+        }
+
     protected:
         PathType GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const override;
     };

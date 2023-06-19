@@ -12,9 +12,17 @@
 
 namespace AzToolsFramework
 {
+    DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(const DocumentPropertyEditor* owningEditor)
+        : m_shouldSettingsPersist(true)
+        , m_owningEditor(owningEditor)
+    {
+    }
+
     DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(
         const AZStd::string& settingsRegistryKey,
-        const AZStd::string& propertyEditorName)
+        const AZStd::string& propertyEditorName,
+        const DocumentPropertyEditor* owningEditor)
+        : DocumentPropertyEditorSettings(owningEditor)
     {
         m_settingsRegistryBasePath = AZStd::string::format("%s/%s", RootSettingsRegistryPath, propertyEditorName.c_str());
         m_fullSettingsRegistryPath = AZStd::string::format("%s/%s", m_settingsRegistryBasePath.c_str(), settingsRegistryKey.c_str());
@@ -24,7 +32,6 @@ namespace AzToolsFramework
             .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
 
         m_wereSettingsLoaded = LoadExpanderStates();
-        m_shouldSettingsPersist = true;
     }
 
     DocumentPropertyEditorSettings::~DocumentPropertyEditorSettings()
@@ -139,4 +146,28 @@ namespace AzToolsFramework
     {
         m_cleanExpanderStateCallback = function;
     }
+
+    DocumentPropertyEditorSettings::PathType LabeledRowDPEExpanderSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
+    {
+        AZ_Assert(m_owningEditor, "must have a valid owning editor to resolve paths!");
+        PathType newPath;
+
+        const auto& fullContents = m_owningEditor->GetAdapter()->GetContents();
+        AZ::Dom::Path subPath;
+        for (auto pathComponent : rowPath)
+        {
+            subPath.Push(pathComponent);
+            auto rowValue = fullContents[subPath];
+            for (auto arrayIter = rowValue.ArrayBegin(), endIter = rowValue.ArrayEnd(); arrayIter != endIter; ++arrayIter)
+            {
+                auto& currChild = *arrayIter;
+                if (arrayIter->GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
+                {
+                    newPath.Append(AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(currChild).value_or(""));
+                }
+            }
+        }
+        return newPath;
+    }
+
 } // namespace AzToolsFramework
