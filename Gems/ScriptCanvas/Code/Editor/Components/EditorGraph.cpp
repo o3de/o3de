@@ -1145,6 +1145,11 @@ namespace ScriptCanvasEditor
         const ScriptCanvas::Node* sourceNode = FindNode(sourceEndpoint.GetNodeId());
         const ScriptCanvas::Node* targetNode = FindNode(targetEndpoint.GetNodeId());
 
+        if (!sourceNode || !targetNode)
+        {
+            return;
+        }
+
         // Retrieve the source node's execution out and target node's execution in
         const ScriptCanvas::Slot* sourceNodeExecutionSlot;
         const ScriptCanvas::Slot* targetNodeExecutionSlot;
