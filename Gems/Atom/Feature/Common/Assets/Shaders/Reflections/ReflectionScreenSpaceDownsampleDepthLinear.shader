@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceTrace.azsl",
+    "Source" : "ReflectionScreenSpaceDownsampleDepthLinear.azsl",
 
     "RasterState" :
     {
@@ -10,8 +10,7 @@
     {
         "Depth" :
         {
-            "Enable" : false,
-            "CompareFunc" : "Always"
+            "Enable" : false
         }
     },
 

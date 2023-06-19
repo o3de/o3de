@@ -38,7 +38,7 @@ class TestAutomation_RHIValidation_Vulkan_LowEndPipeline(EditorTestSuite):
         "-autotest_mode",
         "-rhi=vulkan",
         "-rhi-device-validation=enable",
-        "--r_default_pipeline_name=passes/LowEndRenderPipeline.azasset"
+        "--r_renderPipelinePath=passes/LowEndRenderPipeline.azasset"
         ]  # Default is ["-BatchMode", "-autotest_mode"]
     use_null_renderer = False  # Default is True
 
