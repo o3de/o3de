@@ -55,7 +55,7 @@ namespace AZ
 
                 if (descriptor.m_renderStates.m_depthStencilState.m_depth.m_enable || descriptor.m_renderStates.m_depthStencilState.m_stencil.m_enable)
                 {
-                if (renderTargetConfiguration.GetDepthStencilFormat() == RHI::Format::Unknown)
+                    if (renderTargetConfiguration.GetDepthStencilFormat() == RHI::Format::Unknown)
                     {
                         AZ_Error("PipelineState", false, "Depth-stencil format is not set.");
                         error = true;

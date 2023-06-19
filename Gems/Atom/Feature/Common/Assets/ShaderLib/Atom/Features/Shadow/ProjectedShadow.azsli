@@ -8,6 +8,12 @@
 
 #pragma once
 
+#ifndef ENABLE_SHADOWS
+#define ENABLE_SHADOWS              1
+#endif
+
+#if ENABLE_SHADOWS
+
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
@@ -338,3 +344,5 @@ float3 ProjectedShadow::GetAtlasPosition(float2 texturePosition)
 
     return float3(coordInTexture, slice);
 }
+
+#endif // ENABLE_SHADOWS
