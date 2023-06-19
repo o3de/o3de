@@ -19,6 +19,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
@@ -509,6 +510,11 @@ namespace AzToolsFramework
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
 
+        void AssetBrowserTableView::SetSearchString(const QString& searchString)
+        {
+            m_expandedTableViewProxyModel->SetSearchString(searchString);
+        }
+
         ExpandedTableViewDelegate::ExpandedTableViewDelegate(QWidget* parent)
             : QStyledItemDelegate(parent)
 
@@ -525,7 +531,6 @@ namespace AzToolsFramework
                 int height = options.rect.height();
                 QRect iconRect(0, options.rect.y() + 5, height - 10, height - 10);
                 QSize iconSize = iconRect.size();
-                QStyle* style = options.widget ? options.widget->style() : qApp->style();
 
                 const auto& qVariant = index.data(Qt::UserRole + 1);
                 if (!qVariant.isNull())
@@ -542,10 +547,15 @@ namespace AzToolsFramework
                         icon.paint(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter);
                     }
                 }
-                QRect textRect{options.rect};
+                QRect textRect{ options.rect };
                 textRect.setX(textRect.x() + 4);
-                style->drawItemText(
-                    painter, options.rect, Qt::AlignLeft | Qt::AlignVCenter, options.palette, options.state & QStyle::State_Enabled, text.toString());
+
+                QStyleOptionViewItem optionV4{ option };
+                initStyleOption(&optionV4, index);
+                optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+                RichTextHighlighter::PaintHighlightedRichText(text.toString(), painter, optionV4, textRect);
+
             }
         }
 

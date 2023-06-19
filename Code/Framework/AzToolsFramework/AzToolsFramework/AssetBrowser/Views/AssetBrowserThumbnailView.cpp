@@ -523,5 +523,11 @@ namespace AzToolsFramework
                 }
             }
         }
+
+        void AssetBrowserThumbnailView::SetSearchString(const QString& searchString)
+        {
+            m_thumbnailViewProxyModel->SetSearchString(searchString);
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

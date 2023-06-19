@@ -12,6 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 namespace AzToolsFramework
 {
@@ -40,7 +41,16 @@ namespace AzToolsFramework
                     switch (index.column())
                     {
                     case Name:
-                        return static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+                        {
+                            QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+
+                            if (!m_searchString.empty())
+                            {
+                                // highlight characters in filter
+                                name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                            }
+                            return name;
+                        }
                     case Type:
                         {
                             switch (assetBrowserEntry->GetEntryType())
@@ -273,6 +283,11 @@ namespace AzToolsFramework
                 }
             }
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+        }
+
+        void AssetBrowserTableViewProxyModel::SetSearchString(const QString& searchString)
+        {
+             m_searchString = searchString.toUtf8().data();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

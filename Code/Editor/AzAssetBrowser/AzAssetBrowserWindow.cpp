@@ -628,18 +628,34 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
 
     if (ed_useNewAssetBrowserListView)
     {
+        auto thumbnailWidget = m_ui->m_thumbnailView->GetThumbnailViewWidget();
+        auto expandedTableWidget = m_ui->m_tableView->GetExpandedTableViewWidget();
+
         if (hasFilter)
         {
-            auto thumbnailWidget = m_ui->m_thumbnailView->GetThumbnailViewWidget();
             if (thumbnailWidget)
             {
                 thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
+                m_ui->m_thumbnailView->SetSearchString(m_ui->m_searchWidget->GetFilterString());
             }
-            auto expandedTableWidget = m_ui->m_tableView->GetExpandedTableViewWidget();
             if (expandedTableWidget)
             {
                 expandedTableWidget->setRootIndex(expandedTableWidget->model()->index(0, 0, {}));
+                m_ui->m_tableView->SetSearchString(m_ui->m_searchWidget->GetFilterString());
             }
+            m_ui->m_assetBrowserTreeViewWidget->SetSearchString(m_ui->m_searchWidget->GetFilterString());
+        }
+        else
+        {
+            if (thumbnailWidget)
+            {
+                m_ui->m_thumbnailView->SetSearchString("");
+            }
+            if (expandedTableWidget)
+            {
+                m_ui->m_tableView->SetSearchString("");
+            }
+            m_ui->m_assetBrowserTreeViewWidget->SetSearchString("");
         }
     }
 }
