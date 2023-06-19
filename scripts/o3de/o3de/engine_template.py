@@ -2341,7 +2341,7 @@ def create_repo(repo_path: pathlib.Path,
         logger.error(f'{repo_path} already exists and is a file instead of a directory.')
         return 1
     elif not repo_path.is_dir():
-        os.makedirs(repo_path, exist_ok=force)
+        os.makedirs(repo_path, exist_ok=True)
 
     if not repo_name:
         # repo name default is the last component of repo_path
