@@ -120,6 +120,10 @@ namespace AzToolsFramework
 
         bool AssetBrowserTableViewProxyModel::hasChildren(const QModelIndex& parent) const
         {
+            if (m_searchResultsMode)
+            {
+                return (rowCount(parent) > 0) && (columnCount(parent) > 0);
+            }
             if (parent != m_rootIndex)
             {
                 return false;
