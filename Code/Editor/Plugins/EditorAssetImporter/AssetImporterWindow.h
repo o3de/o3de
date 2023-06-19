@@ -87,7 +87,7 @@ public:
     
     void OpenFile(const AZStd::string& filePath);
     
-    void closeEvent(QCloseEvent* ev) override;
+    bool CanClose();
 
 public slots:
     void OnClearUnsavedChangesRequested();
@@ -102,6 +102,7 @@ private:
     void Init();
     void OpenFileInternal(const AZStd::string& filePath);
     bool IsAllowedToChangeSourceFile();
+    bool ShouldSaveBeforeClose();
 
     void HandleAssetLoadingCompleted();
 

@@ -43,6 +43,9 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
             void ClearPreview() override;
+            //////////////////////////////////////////////////////////////////////////
+
+            bool HasUnsavedChanges();
         private:
             // Query the direct and reverse source dependencies of a source asset browser entry
             void PopulateSourceDependencies(const SourceAssetBrowserEntry* sourceEntry, AZStd::vector<const ProductAssetBrowserEntry*> productList);

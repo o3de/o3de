@@ -124,8 +124,8 @@ void ImporterRootDisplayWidget::SetSceneHeaderText(const QString& headerText)
 
 void ImporterRootDisplayWidget::SetPythonBuilderText(QString pythonBuilderText)
 {
-    ui->m_pythonBuilderScript->setText(pythonBuilderText);
-    ui->headerFrame->setVisible(!pythonBuilderText.isEmpty());
+    //ui->m_pythonBuilderScript->setText(pythonBuilderText);
+    //ui->headerFrame->setVisible(!pythonBuilderText.isEmpty());
 }
 
 QString ImporterRootDisplayWidget::GetHeaderFileName() const
@@ -189,6 +189,7 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath,
         const QDateTime lastModifiedTime(info.lastModified());
         QString lastModifiedDisplay(lastModifiedTime.toString(Qt::TextDate));
         ui->m_timeStampTitle->setVisible(true);
+        ui->m_timeStamp->setVisible(true);
         ui->m_timeStamp->setText(lastModifiedDisplay);
     }
     else
@@ -197,12 +198,11 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath,
         // Don't mark this as dirty, because standard dirty workflows (popup "Would you like to save changes?" on closing, for example)
         // shouldn't be applied to unsaved, unmodified scene settings.
         ui->m_timeStampTitle->setVisible(false);
-        ui->m_timeStamp->setText(tr("Unmodified file"));
+        ui->m_timeStamp->setVisible(false);
     }
     ui->m_saveButton->setVisible(true);
     ui->m_editButton->setVisible(true);
     ui->m_helpButton->setVisible(true);
-    ui->m_timeStamp->setVisible(true);
 
     if (enableInspector)
     {

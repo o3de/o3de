@@ -108,6 +108,7 @@ public:
 
     QMainWindow* EditImportSettings(const AZStd::string& sourceFilePath);
     QMainWindow* OpenImportSettings();
+    bool SaveBeforeClosing();
 
 private:
     AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadSceneLibrary(const char* name, bool explicitInit);

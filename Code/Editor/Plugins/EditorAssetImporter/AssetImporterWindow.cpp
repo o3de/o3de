@@ -37,6 +37,7 @@ class CXTPDockingPaneLayout; // Needed for settings.h
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzQtComponents/Components/StyledDetailsTableModel.h>
 #include <AzQtComponents/Components/StylesheetPreprocessor.h>
+#include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <AzQtComponents/Components/Widgets/TableView.h>
 #include <Util/PathUtil.h>
 
@@ -73,7 +74,6 @@ AssetImporterWindow::AssetImporterWindow(QWidget* parent)
 
 AssetImporterWindow::~AssetImporterWindow()
 {
-    close();
     disconnect();
 }
 
@@ -107,37 +107,34 @@ void AssetImporterWindow::OpenFile(const AZStd::string& filePath)
     OpenFileInternal(filePath);
 }
 
-void AssetImporterWindow::closeEvent(QCloseEvent* ev)
+bool AssetImporterWindow::CanClose()
 {
     if (m_isClosed)
     {
-        return;
+        return false;
     }
 
     if (m_sceneSettingsCardOverlay != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex)
     {
         QMessageBox::critical(this, "Processing In Progress", "Please wait until processing has completed to try again.",
             QMessageBox::Ok, QMessageBox::Ok);
-        ev->ignore();
-        return;
+        return true;
     }
 
     if (!m_overlay->CanClose())
     {
         QMessageBox::critical(this, "Unable to close", "Unable to close one or more windows at this time.",
             QMessageBox::Ok, QMessageBox::Ok);
-        ev->ignore();
-        return;
+        return true;
     }
 
-    if (!IsAllowedToChangeSourceFile())
+    if (ShouldSaveBeforeClose())
     {
-        ev->ignore();
-        return;
+        return true;
     }
 
-    ev->accept();
     m_isClosed = true;
+    return false;
 }
 
 void AssetImporterWindow::Init()
@@ -325,16 +322,11 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
     const int result = QMessageBox::question(
         this,
         tr("Save Changes?"),
-        tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
+        tr("Changes have been made to the asset during this session. Would you like to save prior to switching assets?"),
         QMessageBox::Yes,
-        QMessageBox::No,
-        QMessageBox::Cancel);
+        QMessageBox::No);
 
-    if (result == QMessageBox::Cancel)
-    {
-        return false;
-    }
-    else if (result == QMessageBox::No)
+    if (result == QMessageBox::No)
     {
         return true;
     }
@@ -342,19 +334,52 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
     AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
     m_assetImporterDocument->SaveScene(
         output,
-        [this](bool wasSuccessful)
+        [](bool wasSuccessful)
         {
-            if(wasSuccessful)
+            if (!wasSuccessful)
             {
-                m_isClosed = true;
-
+                QMessageBox messageBox(
+                    QMessageBox::Icon::Warning,
+                    tr("Failed to save"),
+                    tr("An error has been encountered saving this file. See the logs for details."));
+                messageBox.exec();
                 // Delete the parent, because this window is nested inside another, dockable window.
                 // Just deleting this will leave the dockable window open.
                 // Requesting the panel that this is docked in to close, will result in issues on some re-open states,
                 // if only the panel is closed, then the next time it's opened, the scene settings won't be correctly loaded.
-                this->parent()->deleteLater();
+                //m_isClosed = true;
+                //this->parent()->deleteLater();
             }
-            else
+        });
+
+    return true;
+}
+
+bool AssetImporterWindow::ShouldSaveBeforeClose()
+{
+    if (!m_rootDisplay->HasUnsavedChanges())
+    {
+        return false;
+    }
+
+    const int result = QMessageBox::question(
+        this,
+        tr("Save Changes?"),
+        tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
+        QMessageBox::Yes,
+        QMessageBox::No);
+
+    if (result == QMessageBox::No)
+    {
+        return false;
+    }
+    m_isSaving = true;
+    AZStd::shared_ptr<AZ::ActionOutput> output = AZStd::make_shared<AZ::ActionOutput>();
+    m_assetImporterDocument->SaveScene(
+        output,
+        [this](bool wasSuccessful)
+        {
+            if (!wasSuccessful)
             {
                 QMessageBox messageBox(
                     QMessageBox::Icon::Warning,
@@ -362,11 +387,25 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
                     tr("An error has been encountered saving this file. See the logs for details."));
                 messageBox.exec();
             }
+
+            QWidget* dock = parentWidget();
+            while (dock)
+            {
+                QDockWidget* converted = qobject_cast<QDockWidget*>(dock);
+                if (converted)
+                {
+                    m_isClosed = true;
+                    converted->deleteLater();
+                    break;
+                }
+                else
+                {
+                    dock = dock->parentWidget();
+                }
+            }
         });
 
-    // Don't close yet, in case the save fails.
-    // Scene saving is asynchronous, and will close the panel if it's successful.
-    return false;
+    return true;
 }
 
 void AssetImporterWindow::SaveClicked()

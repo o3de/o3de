@@ -290,13 +290,16 @@ namespace AzToolsFramework
                     m_dependentAssetsCard->hide();
                 }
 
-                bool validSceneSettings = false;
-                AssetBrowserPreviewRequestBus::BroadcastResult(validSceneSettings, &AssetBrowserPreviewRequest::PreviewSceneSettings, selectedEntry);
-                if (validSceneSettings)
+                if (m_sceneSettings)
                 {
-                    QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
-                    m_segmentControl->setTabText(1, QString("%1 Settings - %2").arg(fileType.toUpper(), name));
-                    m_segmentControl->tabBar()->setVisibility(1, true);
+                    bool validSceneSettings = false;
+                    AssetBrowserPreviewRequestBus::BroadcastResult(validSceneSettings, &AssetBrowserPreviewRequest::PreviewSceneSettings, selectedEntry);
+                    if (validSceneSettings)
+                    {
+                        QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
+                        m_segmentControl->setTabText(1, QString("%1 Settings - %2").arg(fileType.toUpper(), name));
+                        m_segmentControl->tabBar()->setVisibility(1, true);
+                    }
                 }
             }
             else if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(selectedEntry))
@@ -538,6 +541,17 @@ namespace AzToolsFramework
                     item->setIcon(0, icon);
                 }
             }
+        }
+
+        bool AssetBrowserEntityInspectorWidget::HasUnsavedChanges()
+        {
+            if (m_sceneSettings)
+            {
+                bool hasUnsavedChanges = false;
+                AssetBrowserPreviewRequestBus::BroadcastResult(hasUnsavedChanges, &AssetBrowserPreviewRequest::SaveBeforeClosing);
+                return hasUnsavedChanges;
+            }
+            return false;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

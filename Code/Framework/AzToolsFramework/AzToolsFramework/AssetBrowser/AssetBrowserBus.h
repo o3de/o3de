@@ -344,10 +344,14 @@ namespace AzToolsFramework
             //! Clears the asset browser inspector panel
             virtual void ClearPreview(){};
 
-            //! Displays the scene settings preview in the asset browser inspector panel
+            //! Preview the selected entry in the scene settings window, returns true if successful 
             virtual bool PreviewSceneSettings([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){ return false; };
 
+            //! Opens and returns the scene settings window
             virtual QMainWindow* GetSceneSettings() { return nullptr; }
+
+            //! return true if the asset browser inspector panel has unsaved changes and must save before closing
+            virtual bool SaveBeforeClosing() { return false; };
         };
         using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;
 

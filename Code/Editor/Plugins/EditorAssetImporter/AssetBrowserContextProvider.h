@@ -40,6 +40,7 @@ namespace AZ
         // AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler
         bool PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
         QMainWindow* GetSceneSettings() override;
+        bool SaveBeforeClosing() override;
         //////////////////////////////////////////////////////////////////////////
 
     protected:

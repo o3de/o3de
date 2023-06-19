@@ -23,7 +23,7 @@
    <item row="2" column="0">
     <widget class="QFrame" name="headerFrame">
      <property name="styleSheet">
-      <string notr="true">QFrame#headerFrame { border:1px solid rgb(126, 126, 126); margin-bottom: 4px }</string>
+      <string notr="true">QFrame#headerFrame {border-color: transparent; border-width: 5px 7px 9px 7px; border-image: url(:/Cards/img/UI20/Cards/shadow.png) 5 7 9 7; border-top-left-radius: 2px; border-top-right-radius: 2px; background-color: #333333; margin-bottom: 10px;}</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -84,6 +84,52 @@
             </property>
            </spacer>
           </item>
+          <item>
+           <widget class="QPushButton" name="m_closeButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="baseSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Removes this from the window.</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset theme=":/SceneUI/Common/CloseIcon.svg"/>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>12</width>
+              <height>12</height>
+             </size>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
        </layout>
@@ -97,73 +143,48 @@
       <number>6</number>
      </property>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_4">
-       <item>
-        <widget class="QPushButton" name="m_saveButton">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Saves any changes to the scene settings to disk.</string>
-         </property>
-         <property name="styleSheet">
-          <string notr="true"/>
-         </property>
-         <property name="text">
-          <string>Save</string>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>16</width>
-           <height>16</height>
-          </size>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QLabel" name="m_timeStampTitle">
-           <property name="text">
-            <string>Last save:</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="m_timeStamp">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
-       </item>
-      </layout>
+      <widget class="QPushButton" name="m_saveButton">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Saves any changes to the scene settings to disk.</string>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="text">
+        <string>Save</string>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item>
       <widget class="QToolButton" name="m_editButton">
@@ -221,6 +242,40 @@
    </item>
    <item row="6" column="0">
     <layout class="QVBoxLayout" name="m_manifestWidgetAreaLayout"/>
+   </item>
+   <item row="7" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="m_timeStampTitle">
+       <property name="text">
+        <string>Last save:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="m_timeStamp">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>

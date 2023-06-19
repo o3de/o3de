@@ -14,6 +14,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 
+#include <QCloseEvent>
 #include <QVBoxLayout>
 
 QComponentEntityEditorInspectorWindow::QComponentEntityEditorInspectorWindow(QWidget* parent)
@@ -35,6 +36,16 @@ QComponentEntityEditorInspectorWindow::~QComponentEntityEditorInspectorWindow()
     AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
     gEnv->pSystem->GetISystemEventDispatcher()->RemoveListener(this);
+}
+
+void QComponentEntityEditorInspectorWindow::closeEvent(QCloseEvent* ev)
+{
+    if (m_assetBrowserInspector && m_assetBrowserInspector->HasUnsavedChanges())
+    {
+        ev->ignore();
+        return;
+    }
+    ev->accept();
 }
 
 void QComponentEntityEditorInspectorWindow::OnSystemEvent([[maybe_unused]] ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)

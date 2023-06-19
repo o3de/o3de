@@ -101,22 +101,45 @@ QMainWindow* AssetImporterPlugin::EditImportSettings(const AZStd::string& source
 {
     if (!m_assetImporterWindow)
     {
-        OpenImportSettings();
+        return nullptr;
     }
 
     AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(m_assetImporterWindow);
+    if (!assetImporterWindow)
+    {
+        return nullptr;
+    }
+
     assetImporterWindow->OpenFile(sourceFilePath);
     return m_assetImporterWindow;
 }
 
 QMainWindow* AssetImporterPlugin::OpenImportSettings()
 {
+    // Can only be one asset importer window at a time
     if (m_assetImporterWindow)
     {
-        delete m_assetImporterWindow;
+        return nullptr;
     }
+
     m_assetImporterWindow = new AssetImporterWindow();
     return m_assetImporterWindow;
+}
+
+bool AssetImporterPlugin::SaveBeforeClosing()
+{
+    if (!m_assetImporterWindow)
+    {
+        return false;
+    }
+
+    AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(m_assetImporterWindow);
+    if (!assetImporterWindow)
+    {
+        return false;
+    }
+
+    return assetImporterWindow->CanClose();
 }
 
 SceneSettingsAssetImporterForScriptRequestHandler::SceneSettingsAssetImporterForScriptRequestHandler()

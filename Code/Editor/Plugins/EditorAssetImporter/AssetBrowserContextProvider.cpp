@@ -97,4 +97,9 @@ namespace AZ
     {
         return AssetImporterPlugin::GetInstance()->OpenImportSettings();
     }
+
+    bool AssetBrowserContextProvider::SaveBeforeClosing()
+    {
+        return AssetImporterPlugin::GetInstance()->SaveBeforeClosing();
+    }
 }
