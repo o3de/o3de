@@ -1500,6 +1500,9 @@ namespace AZ
         {
             Data::Asset<RPI::ModelAsset> modelAsset = asset;
 
+            // Update our model asset reference to contain the latest loaded version.
+            m_modelAsset = asset;
+
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
             m_parent->m_originalModelAsset = asset;
 
@@ -1590,29 +1593,27 @@ namespace AZ
             AzFramework::AssetSystemRequestBus::Broadcast(
                 &AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetByUuid, m_modelAsset.GetId().m_guid);
         }
+
+        void ModelDataInstance::MeshLoader::OnCatalogAssetRemoved(
+            const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+        {
+            OnCatalogAssetChanged(assetId);
+        }
         
+        void ModelDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+        {
+            // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+            OnCatalogAssetChanged(assetId);
+        }
+
         void ModelDataInstance::MeshLoader::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
             if (assetId == m_modelAsset.GetId())
             {
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
 
-                // If the asset was modified, reload it
-                AZ::SystemTickBus::QueueFunction(
-                    [=]() mutable
-                    {
-                        ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
-            }
-        }
-
-        void ModelDataInstance::MeshLoader::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-        {
-            if (assetId == m_modelAsset.GetId())
-            {
-                Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
-                
-                // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
+                // If the asset was modified, reload it. This will also cause a model to change back to the default missing
+                // asset if it was removed, and it will replace the default missing asset with the real asset if it was added.
                 AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
                     {
