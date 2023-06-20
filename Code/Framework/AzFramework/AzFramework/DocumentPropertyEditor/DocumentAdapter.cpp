@@ -91,10 +91,10 @@ namespace AZ::DocumentPropertyEditor
         return contents.IsArrayEmpty();
     }
 
-    DocumentPropertyEditorSettings* DocumentAdapter::CreateExpanderSettings(
+    ExpanderSettings* DocumentAdapter::CreateExpanderSettings(
         DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
     {
-        return new DocumentPropertyEditorSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
+        return new ExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
     }
 
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)

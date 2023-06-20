@@ -18,7 +18,7 @@ namespace AZ::DocumentPropertyEditor
     // Forward declarations
     class DocumentAdapter;
     class RoutingAdapter;
-    class DocumentPropertyEditorSettings;
+    class ExpanderSettings;
 
     using DocumentAdapterPtr = AZStd::shared_ptr<DocumentAdapter>;
     using ConstDocumentAdapterPtr = AZStd::shared_ptr<const DocumentAdapter>;
@@ -158,7 +158,7 @@ namespace AZ::DocumentPropertyEditor
 
         bool IsEmpty();
 
-        virtual DocumentPropertyEditorSettings* CreateExpanderSettings(DocumentAdapter* referenceAdapter,
+        virtual ExpanderSettings* CreateExpanderSettings(DocumentAdapter* referenceAdapter,
             const AZStd::string& settingsRegistryKey = AZStd::string(),
             const AZStd::string& propertyEditorName = AZStd::string());
 

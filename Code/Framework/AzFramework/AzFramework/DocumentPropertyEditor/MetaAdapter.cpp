@@ -39,7 +39,7 @@ namespace AZ::DocumentPropertyEditor
         HandleReset();
     }
 
-    DocumentPropertyEditorSettings* MetaAdapter::CreateExpanderSettings(
+    ExpanderSettings* MetaAdapter::CreateExpanderSettings(
         DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
     {
         AZ_Assert(m_sourceAdapter, "MetaAdapter::CreateExpanderSettings called before source adapter was specified!");

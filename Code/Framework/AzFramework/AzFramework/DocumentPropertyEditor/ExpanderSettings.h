@@ -24,22 +24,22 @@ namespace AZ::DocumentPropertyEditor
     class DocumentPropertyEditor;
 
     //! This serializable class stores and loads the DocumentPropertyEditor settings such as tree node expansion state.
-    class DocumentPropertyEditorSettings
+    class ExpanderSettings
     {
     public:
-        AZ_RTTI(DocumentPropertyEditorSettings, "{7DECB0A1-A1AB-41B2-B31F-E52D3C3014A6}");
+        AZ_RTTI(ExpanderSettings, "{7DECB0A1-A1AB-41B2-B31F-E52D3C3014A6}");
 
         using PathType = AZ::IO::BasicPath<AZStd::string>;
         using ExpanderStateMap = AZStd::unordered_map<PathType, bool>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
-        DocumentPropertyEditorSettings(
+        ExpanderSettings(
             const AZ::DocumentPropertyEditor::DocumentAdapter* adapter = nullptr,
             //! if settingsRegistryKey or propertyEditorName is empty, the expander state will only be stored in-memory (temporary) 
             const AZStd::string& settingsRegistryKey = AZStd::string(),
             const AZStd::string& propertyEditorName = AZStd::string());
 
-        virtual ~DocumentPropertyEditorSettings();
+        virtual ~ExpanderSettings();
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -83,17 +83,14 @@ namespace AZ::DocumentPropertyEditor
         const AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter;
     };
 
-    class LabeledRowDPEExpanderSettings : public DocumentPropertyEditorSettings
+    class LabeledRowDPEExpanderSettings : public ExpanderSettings
     {
     public:
         LabeledRowDPEExpanderSettings(
             const AZ::DocumentPropertyEditor::DocumentAdapter* adapter = nullptr,
             //! if settingsRegistryKey or propertyEditorName is empty, the expander state will only be stored in-memory (temporary)
             const AZStd::string& settingsRegistryKey = AZStd::string(),
-            const AZStd::string& propertyEditorName = AZStd::string())
-            : DocumentPropertyEditorSettings(adapter, settingsRegistryKey, propertyEditorName)
-        {
-        }
+            const AZStd::string& propertyEditorName = AZStd::string());
 
     protected:
         PathType GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const override;

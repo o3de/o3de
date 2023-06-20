@@ -64,7 +64,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    DocumentPropertyEditorSettings* RowAggregateAdapter::CreateExpanderSettings(
+    ExpanderSettings* RowAggregateAdapter::CreateExpanderSettings(
         DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
     {
         AZ_Assert(!m_adapters.empty(), "RowAggregateAdapter::CreateExpanderSettings called before any adapters were added!");

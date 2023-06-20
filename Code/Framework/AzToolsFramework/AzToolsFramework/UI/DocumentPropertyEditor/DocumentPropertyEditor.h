@@ -280,7 +280,7 @@ namespace AzToolsFramework
         QVBoxLayout* m_layout = nullptr;
         bool m_allowVerticalScroll = true;
 
-        AZStd::unique_ptr<AZ::DocumentPropertyEditor::DocumentPropertyEditorSettings> m_dpeSettings;
+        AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings> m_dpeSettings;
         bool m_isRecursiveExpansionOngoing = false;
         bool m_spawnDebugView = false;
 

@@ -77,7 +77,7 @@ namespace AZ::DocumentPropertyEditor
         const void* GetInstance() const { return m_instance; }
         AZ::TypeId GetTypeId() const { return m_typeId; }
 
-        DocumentPropertyEditorSettings* CreateExpanderSettings(
+        ExpanderSettings* CreateExpanderSettings(
             DocumentAdapter* referenceAdapter,
             const AZStd::string& settingsRegistryKey = AZStd::string(),
             const AZStd::string& propertyEditorName = AZStd::string()) override;

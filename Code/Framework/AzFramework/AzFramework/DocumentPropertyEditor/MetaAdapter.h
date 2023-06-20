@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor
         virtual Dom::Path MapFromSourcePath(const Dom::Path& sourcePath) const = 0;
         virtual Dom::Path MapToSourcePath(const Dom::Path& filterPath) const = 0;
 
-        DocumentPropertyEditorSettings* CreateExpanderSettings(
+        ExpanderSettings* CreateExpanderSettings(
             DocumentAdapter* referenceAdapter,
             const AZStd::string& settingsRegistryKey = AZStd::string(),
             const AZStd::string& propertyEditorName = AZStd::string()) override;

@@ -1381,7 +1381,7 @@ namespace AzToolsFramework
 
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
-        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::DocumentPropertyEditorSettings>(
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
             m_adapter->CreateExpanderSettings(m_adapter.get()));
 
         // populate the view from the full adapter contents, just like a reset
@@ -1441,24 +1441,11 @@ namespace AzToolsFramework
         // the in-memory settings to be saved to disk (in settings destructor) before they're loaded
         // from disk (in settings constructor)
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::DocumentPropertyEditorSettings>(
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
             m_adapter->CreateExpanderSettings(m_adapter.get(), keyStr, propertyEditorName));
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {
-            /*m_dpeSettings->SetCleanExpanderStateCallback(
-                [this](DocumentPropertyEditorSettings::ExpanderStateMap& storedStates)
-                {
-                    const auto& rootValue = m_adapter->GetContents();
-                    auto numErased = AZStd::erase_if(
-                        storedStates,
-                        [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
-                        {
-                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
-                        });
-                    return numErased > 0;
-                });*/
-
             // We need to rebuild the view using the stored expander states
             HandleReset();
         }

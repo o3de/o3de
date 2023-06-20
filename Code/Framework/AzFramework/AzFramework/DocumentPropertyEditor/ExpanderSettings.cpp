@@ -15,7 +15,7 @@
 
 namespace AZ::DocumentPropertyEditor
 {
-    DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(
+    ExpanderSettings::ExpanderSettings(
         const AZ::DocumentPropertyEditor::DocumentAdapter* adapter,
         const AZStd::string& settingsRegistryKey,
         const AZStd::string& propertyEditorName)
@@ -32,30 +32,46 @@ namespace AZ::DocumentPropertyEditor
                 .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
 
             m_wereSettingsLoaded = LoadExpanderStates();
+
+            if (m_wereSettingsLoaded)
+            {
+                SetCleanExpanderStateCallback(
+                [this](ExpanderSettings::ExpanderStateMap& storedStates)
+                {
+                    const auto& rootValue = m_adapter->GetContents();
+                    auto numErased = AZStd::erase_if(
+                        storedStates,
+                        [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
+                        {
+                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
+                        });
+                    return numErased > 0;
+                });
+            }
         }
     }
 
-    DocumentPropertyEditorSettings::~DocumentPropertyEditorSettings()
+    ExpanderSettings::~ExpanderSettings()
     {
         SaveAndCleanExpanderStates();
     }
 
-    void DocumentPropertyEditorSettings::Reflect(AZ::ReflectContext* context)
+    void ExpanderSettings::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)->Field(
-                "ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
+            serializeContext->Class<ExpanderSettings>()->Version(0)->Field(
+                "ExpandedElements", &ExpanderSettings::m_expandedElementStates);
         }
     }
 
-    DocumentPropertyEditorSettings::PathType DocumentPropertyEditorSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
+    ExpanderSettings::PathType ExpanderSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
     {
         return PathType(rowPath.ToString(), AZ::IO::PosixPathSeparator);
     }
 
-    void DocumentPropertyEditorSettings::SaveExpanderStates()
+    void ExpanderSettings::SaveExpanderStates()
     {
         m_settingsRegistrar.StoreObjectSettings(m_fullSettingsRegistryPath, this);
 
@@ -75,7 +91,7 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    bool DocumentPropertyEditorSettings::LoadExpanderStates()
+    bool ExpanderSettings::LoadExpanderStates()
     {
         bool loaded = false;
         auto loadOutcome = m_settingsRegistrar.LoadSettingsFromFile(m_settingsFilepath);
@@ -99,7 +115,7 @@ namespace AZ::DocumentPropertyEditor
         return loaded;
     }
 
-    void DocumentPropertyEditorSettings::SaveAndCleanExpanderStates()
+    void ExpanderSettings::SaveAndCleanExpanderStates()
     {
         // Attempt to remove old settings from registry if the local state was successfully cleaned
         // This way we save and dump to file the most accurate expander settings
@@ -118,12 +134,12 @@ namespace AZ::DocumentPropertyEditor
         }
     }
 
-    void DocumentPropertyEditorSettings::SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
+    void ExpanderSettings::SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
     {
         m_expandedElementStates[GetStringPathForDomPath(rowPath)] = isExpanded;
     }
 
-    bool DocumentPropertyEditorSettings::GetExpanderStateForRow(const AZ::Dom::Path& rowPath)
+    bool ExpanderSettings::GetExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
         auto path = GetStringPathForDomPath(rowPath);
         if (m_expandedElementStates.contains(path))
@@ -133,22 +149,33 @@ namespace AZ::DocumentPropertyEditor
         return false;
     }
 
-    bool DocumentPropertyEditorSettings::HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const
+    bool ExpanderSettings::HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const
     {
         return m_expandedElementStates.contains(GetStringPathForDomPath(rowPath));
     }
 
-    void DocumentPropertyEditorSettings::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
+    void ExpanderSettings::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
         m_expandedElementStates.erase(GetStringPathForDomPath(rowPath));
     }
 
-    void DocumentPropertyEditorSettings::SetCleanExpanderStateCallback(CleanExpanderStateCallback function)
+    void ExpanderSettings::SetCleanExpanderStateCallback(CleanExpanderStateCallback function)
     {
         m_cleanExpanderStateCallback = function;
     }
 
-    DocumentPropertyEditorSettings::PathType LabeledRowDPEExpanderSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
+    LabeledRowDPEExpanderSettings::LabeledRowDPEExpanderSettings(
+        const AZ::DocumentPropertyEditor::DocumentAdapter* adapter,
+        const AZStd::string& settingsRegistryKey,
+        const AZStd::string& propertyEditorName)
+        : ExpanderSettings(adapter, settingsRegistryKey, propertyEditorName)
+    {
+        // Note: labeled row adapters, like the one used in the inspector, can have so many differently named/pathed
+        // elements visible depending on internal state, that it is undesirable to clean them out when switching entities
+        m_cleanExpanderStateCallback = nullptr;
+    }
+
+    ExpanderSettings::PathType LabeledRowDPEExpanderSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
     {
         AZ_Assert(m_adapter, "must have a valid owning editor to resolve paths!");
         PathType newPath(AZ::IO::PosixPathSeparator);

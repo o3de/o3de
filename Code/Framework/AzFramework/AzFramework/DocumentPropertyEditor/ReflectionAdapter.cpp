@@ -910,7 +910,7 @@ namespace AZ::DocumentPropertyEditor
         NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
     }
 
-    DocumentPropertyEditorSettings* ReflectionAdapter::CreateExpanderSettings(
+    ExpanderSettings* ReflectionAdapter::CreateExpanderSettings(
         DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
     {
         return new LabeledRowDPEExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
