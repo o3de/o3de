@@ -162,6 +162,17 @@ namespace AssetProcessor
         constexpr size_t LauncherTypeIndex = 0;
         constexpr size_t BuildConfigIndex = 1;
 
+        // Append the specialization filename tag of "launcher" get all the `<filename>.*.launcher.*.setreg` files
+        // to be merged into the aggregate Settings Registry
+        constexpr AZStd::string_view LauncherFilenameTag = "launcher";
+        for (AZ::SettingsRegistryInterface::FilenameTags& specialization : specializations)
+        {
+            specialization.Append(LauncherFilenameTag);
+            // Also add the "game" tag for backwards compatibility with any existing
+            // `<filename>.*.game.*.setreg` files
+            specialization.Append("game");
+        }
+
         // Add the project specific specializations
         auto projectName = AZ::Utils::GetProjectName();
         if (!projectName.empty())
