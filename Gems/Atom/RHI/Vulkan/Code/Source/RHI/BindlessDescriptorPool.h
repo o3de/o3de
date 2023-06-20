@@ -23,7 +23,7 @@ namespace AZ::Vulkan
     class BindlessDescriptorPool
     {
     public:
-        void Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc);
+        RHI::ResultCode Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc);
         void Shutdown();
 
         //! Add/Update a read only buffer descriptor to the global bindless heap 
@@ -64,6 +64,9 @@ namespace AZ::Vulkan
 
         //! Return the binding slot for the bindless srg
         uint32_t GetBindlessSrgBindingSlot();
+
+        //! Boolean to return true if the pool is initialized
+        bool IsInitialized() const;
 
     private:
         VkWriteDescriptorSet PrepareWrite(uint32_t index, uint32_t binding, VkDescriptorType type);
