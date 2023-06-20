@@ -393,7 +393,7 @@ class TestEditRepoProperties:
                 assert self.repo_json.data.get('repo_uri') == 'https://test.com'
                 assert self.repo_json.data.get('$schemaVersion') == '1.0.0'
                 assert self.repo_json.data.get('origin') == 'o3de'
- 
+
                 for gem in self.repo_json.data.get('gems_data', []):
                     if release_archive_path:
                         zip_path = release_archive_path / pathlib.Path(gem['download_source_uri']).name
