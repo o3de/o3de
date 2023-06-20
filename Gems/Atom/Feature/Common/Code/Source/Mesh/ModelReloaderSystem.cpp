@@ -19,7 +19,7 @@ namespace AZ
             AZStd::scoped_lock lock(m_pendingReloadMutex);
             if (m_pendingReloads.find(modelAsset.GetId()) == m_pendingReloads.end())
             {
-                ModelReloader* reloader = new ModelReloader(modelAsset, m_removeModelHandler);
+                ModelReloader* reloader = new ModelReloader(modelAsset);
                 m_pendingReloads[modelAsset.GetId()] = reloader;
             }
 

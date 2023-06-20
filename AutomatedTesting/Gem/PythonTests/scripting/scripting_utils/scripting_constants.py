@@ -4,7 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Holds constants used across both hydra and non-hydra scripts.
+We are deprecating this file and moving the constants to area specific files. See the EditorPythonTestTools > consts
+folder for more info
 """
 import os
 import azlmbr.paths as paths
@@ -70,13 +71,28 @@ BASE_LEVEL_NAME = "Base"
 SAVE_STRING = "Save"
 NAME_STRING = "Name"
 WAIT_FRAMES = 200
+WAIT_TIME_1 = 1
 WAIT_TIME_3 = 3
 WAIT_TIME_5 = 5
+
 VARIABLE_TYPES = ["Boolean", "Color", "EntityId", "Number", "String", "Transform", "Vector2", "Vector3", "Vector4"]
+
+VARIABLE_TYPES_DICT = {
+    "Boolean": "Boolean",
+    "Color": "Color",
+    "EntityId": "EntityId",
+    "Number": "Number",
+    "String": "String",
+    "Transform": "Transform",
+    "Vector2": "Vector2",
+    "Vector3": "Vector3",
+    "Vector4": "Vector4"
+    }
+
 ENTITY_STATES = {
-        "active": 0,
-        "inactive": 1,
-        "editor": 2,
+    "active": 0,
+    "inactive": 1,
+    "editor": 2,
     }
 
 """

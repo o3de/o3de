@@ -6,10 +6,10 @@
  *
  */
 
-#include "RuntimeAsset.h"
-
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetSerializer.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptEvents/ScriptEventsAsset.h>
 
 namespace DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
 {
@@ -29,17 +29,6 @@ namespace DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead
 
         // add description above
         Current,
-    };
-
-    enum class FunctionRuntimeDataVersion
-    {
-        MergeBackEnd2dotZero,
-        AddSubgraphInterface,
-        RemoveLegacyData,
-        RemoveConnectionToRuntimeData,
-
-        // add description above
-        Current
     };
 }
 
@@ -67,7 +56,7 @@ namespace ScriptCanvas
 
     void RuntimeData::Reflect(AZ::ReflectContext* reflectContext)
     {
-        Translation::RuntimeInputs::Reflect(reflectContext);
+        RuntimeInputs::Reflect(reflectContext);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
         {
@@ -254,55 +243,5 @@ namespace ScriptCanvas
                     ;
             }
         }
-    }
-
-    ////////////////////////
-    // SubgraphInterfaceData
-    ////////////////////////
-
-    SubgraphInterfaceAssetDescription::SubgraphInterfaceAssetDescription()
-        : AssetDescription(
-            azrtti_typeid<SubgraphInterfaceAsset>(),
-            "Script Canvas Function Interface",
-            "Script Canvas Function Interface",
-            "@projectroot@/scriptcanvas",
-            ".scriptcanvas_fn_compiled",
-            "Script Canvas Function Interface",
-            "Untitled-Function-%i",
-            "Script Canvas Compiled Function Interfaces (*.scriptcanvas_fn_compiled)",
-            "Script Canvas Function Interface",
-            "Script Canvas Function Interface",
-            "Icons/ScriptCanvas/Viewport/ScriptCanvas_Function.png",
-            AZ::Color(1.0f, 0.0f, 0.0f, 1.0f),
-            false
-        )
-    {}
-
-    void SubgraphInterfaceData::Reflect(AZ::ReflectContext* reflectContext)
-    {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
-        {
-            serializeContext->Class<SubgraphInterfaceData>()
-                ->Version(static_cast<int>(DoNotVersionRuntimeAssetsBumpTheBuilderVersionInstead::FunctionRuntimeDataVersion::Current))
-                ->Field("name", &SubgraphInterfaceData::m_name)
-                ->Field("interface", &SubgraphInterfaceData::m_interface)
-                ;
-        }
-    }
-
-    SubgraphInterfaceData::SubgraphInterfaceData(SubgraphInterfaceData&& other)
-    {
-        *this = AZStd::move(other);
-    }
-
-    SubgraphInterfaceData& SubgraphInterfaceData::operator=(SubgraphInterfaceData&& other)
-    {
-        if (this != &other)
-        {
-            m_name = AZStd::move(other.m_name);
-            m_interface = AZStd::move(other.m_interface);
-        }
-
-        return *this;
     }
 }

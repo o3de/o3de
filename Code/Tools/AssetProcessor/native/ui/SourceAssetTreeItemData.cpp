@@ -20,8 +20,9 @@ namespace AssetProcessor
         const AZStd::string& assetDbName,
         QString name,
         bool isFolder,
+        const AZ::s64 scanFolderID,
         AZ::s64 analysisJobDuration)
-        : AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull())
+        : AssetTreeItemData(assetDbName, name, isFolder, sourceInfo ? sourceInfo->m_sourceGuid : AZ::Uuid::CreateNull(), scanFolderID)
         , m_analysisDuration(analysisJobDuration)
     {
         if (sourceInfo && scanFolderInfo)

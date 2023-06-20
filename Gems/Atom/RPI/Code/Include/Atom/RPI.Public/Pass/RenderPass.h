@@ -42,7 +42,7 @@ namespace AZ
 
         public:
             AZ_RTTI(RenderPass, "{9441D114-60FD-487B-B2B7-0FBBC8A96FC2}", Pass);
-            AZ_CLASS_ALLOCATOR(RenderPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RenderPass, SystemAllocator);
             virtual ~RenderPass();
 
             //! Build and return RenderAttachmentConfiguration of this pass from its render attachments
@@ -153,7 +153,7 @@ namespace AZ
 
             // List of all ShaderResourceGroups to be bound during rendering or computing
             // Derived classed may call BindSrg function to add other srgs the list
-            ShaderResourceGroupList m_shaderResourceGroupsToBind;
+            AZStd::unordered_map<uint8_t, const RHI::ShaderResourceGroup*> m_shaderResourceGroupsToBind;
             
             // View tag used to associate a pipeline view for this pass.
             PipelineViewTag m_viewTag;

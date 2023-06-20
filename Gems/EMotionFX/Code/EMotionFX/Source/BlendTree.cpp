@@ -24,7 +24,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTree, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTree, AnimGraphAllocator)
 
     BlendTree::BlendTree()
         : AnimGraphNode()
@@ -274,7 +274,7 @@ namespace EMotionFX
             HierarchicalSyncInputNode(animGraphInstance, finalNode, uniqueData);
 
             // pass the global weight along to the child nodes
-            finalNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, finalNode, timePassedInSeconds);
         }
     }
 

@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/ranges/transform_view.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 
 #define AZ_TEST_VALIDATE_EMPTY_TREE(_Tree_) \
     EXPECT_EQ(0, _Tree_.size());     \
@@ -48,10 +49,10 @@ namespace UnitTest
     };
 
     class Tree_RedBlack
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
-    
+
     TEST_F(Tree_RedBlack, Test)
     {
         array<int, 5> elements = {
@@ -168,7 +169,7 @@ namespace UnitTest
     }
 
     class Tree_IntrusiveMultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct Node
@@ -279,7 +280,7 @@ namespace UnitTest
 
     // SetContainerTest-Begin
     class Tree_Set
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -399,7 +400,7 @@ namespace UnitTest
     TEST_F(Tree_Set, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::set<int, AZStd::less<int>, AZ::AZStdIAllocator> setWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::set<int, AZStd::less<int>, AZ::AllocatorPointerWrapper> setWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         auto insertIter = setWithCustomAllocator.emplace(1);
         EXPECT_TRUE(insertIter.second);
         insertIter = setWithCustomAllocator.emplace(1);
@@ -408,7 +409,7 @@ namespace UnitTest
     }
 
     class Tree_MultiSet
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -523,14 +524,14 @@ namespace UnitTest
     TEST_F(Tree_MultiSet, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::multiset<int, AZStd::less<int>, AZ::AZStdIAllocator> setWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::multiset<int, AZStd::less<int>, AZ::AllocatorPointerWrapper> setWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         setWithCustomAllocator.emplace(1);
         setWithCustomAllocator.emplace(1);
         EXPECT_EQ(2, setWithCustomAllocator.size());
     }
 
     class Tree_Map
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -670,7 +671,7 @@ namespace UnitTest
     TEST_F(Tree_Map, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::map<int, int, AZStd::less<int>, AZ::AZStdIAllocator> mapWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::map<int, int, AZStd::less<int>, AZ::AllocatorPointerWrapper> mapWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         auto insertIter = mapWithCustomAllocator.emplace(1, 1);
         EXPECT_TRUE(insertIter.second);
         insertIter = mapWithCustomAllocator.emplace(1, 2);
@@ -688,7 +689,7 @@ namespace UnitTest
     }
 
     class Tree_MultiMap
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -825,7 +826,7 @@ namespace UnitTest
     TEST_F(Tree_MultiMap, ExplicitAllocatorSucceeds)
     {
         AZ::OSAllocator customAllocator;
-        AZStd::multimap<int, int, AZStd::less<int>, AZ::AZStdIAllocator> mapWithCustomAllocator{ AZ::AZStdIAllocator(&customAllocator) };
+        AZStd::multimap<int, int, AZStd::less<int>, AZ::AllocatorPointerWrapper> mapWithCustomAllocator{ AZ::AllocatorPointerWrapper(&customAllocator) };
         mapWithCustomAllocator.emplace(1, 1);
         mapWithCustomAllocator.emplace(1, 2);
         EXPECT_EQ(2, mapWithCustomAllocator.size());
@@ -833,18 +834,8 @@ namespace UnitTest
 
     template<typename ContainerType>
     class TreeSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
 
@@ -954,6 +945,23 @@ namespace UnitTest
         EXPECT_EQ(7, testContainer.size());
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(-73, static_cast<int32_t>(extractedNode.value()));
+    }
+
+    TYPED_TEST(TreeSetContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using SetType = typename TypeParam::SetType;
+        using node_type = typename SetType::node_type;
+
+        SetType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(-73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.value() = static_cast<int32_t>(extractedNode.value()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        // Lookup reinserted node
+        foundIter = testContainer.find(-72);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeSetContainers, InsertNodeHandleSucceeds)
@@ -1135,18 +1143,18 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
     template<template <typename, typename, typename> class ContainerTemplate>
     struct TreeSetWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, AZStd::less<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorSet(intList, AZStd::less<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1158,7 +1166,11 @@ namespace UnitTest
     TYPED_TEST_CASE(TreeSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeSetDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1175,7 +1187,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1192,29 +1204,19 @@ namespace UnitTest
 
         EXPECT_EQ(1, systemAllocatorMap.size());
         EXPECT_EQ(1, systemAllocatorMap.count(2));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
 
         EXPECT_EQ(3, osAllocatorMap.size());
         EXPECT_EQ(1, osAllocatorMap.count(1));
         EXPECT_EQ(1, osAllocatorMap.count(2));
         EXPECT_EQ(1, osAllocatorMap.count(3));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
     }
 
     template<typename ContainerType>
     class TreeMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    protected:
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            AllocatorsFixture::TearDown();
-        }
     };
 
     template<typename ContainerType>
@@ -1283,6 +1285,22 @@ namespace UnitTest
         EXPECT_FALSE(extractedNode.empty());
         EXPECT_EQ(73, static_cast<int32_t>(extractedNode.key()));
         EXPECT_EQ(0xfee1badd, extractedNode.mapped());
+    }
+
+    TYPED_TEST(TreeMapContainers, ExtractAndReinsertNodeHandleByIteratorSucceeds)
+    {
+        using MapType = typename TypeParam::MapType;
+        using node_type = typename MapType::node_type;
+
+        MapType testContainer = TypeParam::Create();
+        auto foundIter = testContainer.find(73);
+        auto nextIter = AZStd::next(foundIter);
+        node_type extractedNode = testContainer.extract(foundIter);
+        extractedNode.key() = static_cast<int32_t>(extractedNode.key()) + 1;
+        testContainer.insert(nextIter, AZStd::move(extractedNode));
+
+        foundIter = testContainer.find(74);
+        ASSERT_NE(testContainer.end(), foundIter);
     }
 
     TYPED_TEST(TreeMapContainers, InsertNodeHandleSucceeds)
@@ -1606,18 +1624,18 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
     template<template <typename, typename, typename, typename> class ContainerTemplate>
     struct TreeMapWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::less<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorMap(intList, AZStd::less<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorMap;
         }
     };
@@ -1629,7 +1647,11 @@ namespace UnitTest
     TYPED_TEST_CASE(TreeMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(TreeMapDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(TreeMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1646,7 +1668,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1663,13 +1685,13 @@ namespace UnitTest
 
         EXPECT_EQ(1, systemAllocatorMap.size());
         EXPECT_EQ(1, systemAllocatorMap.count(2));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::SystemAllocator>::Get()), systemAllocatorMap.get_allocator());
 
         EXPECT_EQ(3, osAllocatorMap.size());
         EXPECT_EQ(1, osAllocatorMap.count(1));
         EXPECT_EQ(1, osAllocatorMap.count(2));
         EXPECT_EQ(1, osAllocatorMap.count(3));
-        EXPECT_EQ(AZ::AZStdIAllocator(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
+        EXPECT_EQ(AZ::AllocatorPointerWrapper(&AZ::AllocatorInstance<AZ::OSAllocator>::Get()), osAllocatorMap.get_allocator());
     }
 
     namespace TreeContainerTransparentTestInternal
@@ -1730,7 +1752,7 @@ namespace UnitTest
 
     template <typename ContainerType>
     class TreeContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override

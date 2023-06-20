@@ -12,6 +12,8 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
 #include <Atom/RHI.Reflect/Format.h>
+#include <Atom/RHI/XRRenderingInterface.h>
+#include <AtomCore/Instance/Instance.h>
 
 namespace AZ::RHI
 {
@@ -22,6 +24,8 @@ namespace AZ::RPI
 {
     static const int XRMaxNumControllers = 2;
     static const int XRMaxNumViews = 2;
+    class PassTemplate;
+    class AttachmentImage;
 
     //! XR View specific Fov data (in radians).
     struct FovData
@@ -47,7 +51,7 @@ namespace AZ::RPI
     class XRRenderingInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRRenderingInterface, AZ::SystemAllocator);
         AZ_RTTI(XRRenderingInterface, "{18177EAF-3014-4349-A28F-BF58442FFC2B}");
 
         XRRenderingInterface() = default;
@@ -98,7 +102,7 @@ namespace AZ::RPI
         virtual float GetControllerScale(const AZ::u32 handIndex) const = 0;
 
         //! Creates an off-center projection matrix suitable for VR. Angles are in radians and distance is in meters.
-        virtual AZ::Matrix4x4 CreateProjectionOffset(
+        virtual AZ::Matrix4x4 CreateStereoscopicProjection(
             float angleLeft, float angleRight, float angleBottom, float angleTop, float nearDist, float farDist, bool reverseDepth) = 0;
 
         //! Returns the XR specific RHI rendering interface.
@@ -127,13 +131,19 @@ namespace AZ::RPI
 
         //! Return the X button state from the controller.
         virtual float GetTriggerState(const AZ::u32 handIndex) const = 0;
+
+        //! Initialize a shading rate image attachment of a pass template with contents suitable for a foveated level.
+        //! Returns the image that was created and initialized.
+        //! If no foveated level is specified, the value will be retrieved from the settings registry.
+        virtual AZ::Data::Instance<AZ::RPI::AttachmentImage> InitPassFoveatedAttachment(
+            const PassTemplate& passTemplate, const RHI::XRFoveatedLevel* level = nullptr) const = 0;
     };
 
     //! This class contains the interface that will be used to register the XR system with RPI and RHI.
     class IXRRegisterInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(IXRRegisterInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(IXRRegisterInterface, AZ::SystemAllocator);
         AZ_RTTI(IXRRegisterInterface, "{89FA72F6-EA61-43AA-B129-7DC63959D5EA}");
 
         IXRRegisterInterface() = default;

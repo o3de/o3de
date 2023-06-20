@@ -1,0 +1,157 @@
+{
+    "shaderTemplates": [
+        // Unlike Standard and Enhanced, BaseLighting doesn't have "_CustomZ" just because BasePBR.materialtype doesn't use alpha cutout or POM PDO, so we don't need it right now.
+        // But that could be added if some other material type wants to use BaseLighting with one of these features, as they don't really relate to the lighting model.
+        {
+            "shader": "./ForwardPass_BaseLighting.shader.template",
+            "azsli": "./ForwardPass_BaseLighting.azsli",
+            "tag": "forward"
+        },
+        // TODO(MaterialPipeline): There is a lot of duplication between many of these templates, and should be reduced. 
+        // We could reuse duplicate .shader.template files in multiple templates.
+        // We could move preprocessor flag definitions out of azsli files and into either the .shader.template file or even the pipelineScript.
+        {
+            "shader": "./ForwardPass_StandardLighting.shader.template",
+            "azsli": "./ForwardPass_StandardLighting.azsli",
+            "tag": "forward"
+        },
+        {
+            "shader": "./ForwardPass_StandardLighting_CustomZ.shader.template",
+            "azsli": "./ForwardPass_StandardLighting_CustomZ.azsli",
+            "tag": "forward_customZ"
+        },
+        {
+            "shader": "./ForwardPass_EnhancedLighting.shader.template",
+            "azsli": "./ForwardPass_EnhancedLighting.azsli",
+            "tag": "forward"
+        },
+        {
+            "shader": "./ForwardPass_EnhancedLighting_CustomZ.shader.template",
+            "azsli": "./ForwardPass_EnhancedLighting_CustomZ.azsli",
+            "tag": "forward_customZ"
+        },
+        {
+            "shader": "./ForwardPass_SkinLighting.shader.template",
+            "azsli": "./ForwardPass_SkinLighting.azsli",
+            "tag": "forward"
+        },
+        {
+            "shader": "./Transparent_StandardLighting.shader.template",
+            "azsli": "./Transparent_StandardLighting.azsli",
+            "tag": "transparent"
+        },
+        {
+            "shader": "./Transparent_EnhancedLighting.shader.template",
+            "azsli": "./Transparent_EnhancedLighting.azsli",
+            "tag": "transparent"
+        },
+        // TODO(MaterialPipeline): The TintedTransparent shaders uses the same azsli file as the normal Transparent shaders, they just need
+        // a different blend state. This results in a redundant shader compilation. We should find some way to reuse the same compiled bytecode
+        // rather than compiling each transparent shader twice. Note we are trying to avoid using the lua material functor's render state override
+        // features, so they can be deprecated. See https://github.com/o3de/sig-graphics-audio/issues/74
+        {
+            "shader": "./TintedTransparent_StandardLighting.shader.template",
+            "azsli": "./Transparent_StandardLighting.azsli",
+            "tag": "tintedTransparent"
+        },
+        {
+            "shader": "./TintedTransparent_EnhancedLighting.shader.template",
+            "azsli": "./Transparent_EnhancedLighting.azsli",
+            "tag": "tintedTransparent"
+        },
+        {
+            "shader": "../Common/DepthPass.shader.template",
+            "azsli": "../Common/DepthPass.azsli",
+            "tag": "depth"
+        },
+        {
+            "shader": "../Common/DepthPass_CustomZ.shader.template",
+            "azsli": "../Common/DepthPass_CustomZ.azsli",
+            "tag": "depth_customZ"
+        },
+        {
+            "shader": "../Common/ShadowmapPass.shader.template",
+            "azsli": "../Common/DepthPass.azsli",
+            "tag": "shadow"
+        },
+        {
+            "shader": "../Common/ShadowmapPass_CustomZ.shader.template",
+            "azsli": "../Common/DepthPass_CustomZ.azsli",
+            "tag": "shadow_customZ"
+        },
+        // TODO(MaterialPipeline): Need to hook up the MeshMotionVector shader for each pipeline
+        //{
+        //    "file": "Shaders/MotionVector/MeshMotionVector.shader",
+        //    "tag": "MeshMotionVector"
+        //},
+        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
+        {
+            "shader": "../Common/DepthPassTransparentMin.shader.template",
+            "azsli": "../Common/DepthPass.azsli",
+            "tag": "depthPassTransparentMin"
+        },
+        {
+            "shader": "../Common/DepthPassTransparentMax.shader.template",
+            "azsli": "../Common/DepthPass.azsli",
+            "tag": "depthPassTransparentMax"
+        },
+        {
+            "shader": "../Common/MeshMotionVector.shader.template",
+            "azsli": "../Common/MeshMotionVector.azsli",
+            "tag": "meshMotionVector"
+        }
+    ],
+    "runtime": {
+        "properties": [
+            {
+                "name": "isTransparent",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "isTintedTransparent",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "castShadows",
+                "type": "Bool",
+                "defaultValue": true
+            },
+            {
+                "name": "doubleSided",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelDepth",
+                "type": "Bool",
+                "defaultValue": false
+            },
+            {
+                "name": "hasPerPixelClip",
+                "type": "Bool",
+                "defaultValue": false
+            }
+        ],
+        "functors": 
+        [
+            {
+                "type": "Lua",
+                "args": {
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
+                    "file": "Materials/Pipelines/Common/ShaderEnable.lua"
+                }
+            },
+            {
+                "type": "Lua",
+                "args": {
+                    //TODO(MaterialPipeline): Make the builder touch up this path so it can be relative to the .materialpipeline file
+                    "file": "Materials/Pipelines/Common/DoubleSided.lua"
+                }
+            }
+        ]
+    },
+    "pipelineScript": "./MainPipelineScript.lua"
+}
+

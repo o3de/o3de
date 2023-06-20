@@ -20,7 +20,7 @@ namespace UnitTest
     struct ConfigInt
     {
         AZ_TYPE_INFO(UnitTest::ConfigInt, "{1FAF6E55-7FA4-4FFA-8C41-34F422B8E8AB}");
-        AZ_CLASS_ALLOCATOR(ConfigInt, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConfigInt, AZ::SystemAllocator);
 
         int m_value;
 
@@ -33,7 +33,7 @@ namespace UnitTest
         }
     };
 
-    struct ConfigurableStackTests : public ScopedAllocatorSetupFixture
+    struct ConfigurableStackTests : public LeakDetectionFixture
     {
         void Reflect(AZ::ReflectContext* context)
         {
@@ -51,7 +51,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
@@ -73,7 +73,7 @@ namespace UnitTest
             Reflect(m_serializeContext.get());
             m_serializeContext->DisableRemoveReflection();
 
-            ScopedAllocatorSetupFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void ObjectTest(AZStd::string_view jsonText)

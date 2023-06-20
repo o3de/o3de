@@ -10,7 +10,6 @@
 
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <Multiplayer/Components/MultiplayerComponent.h>
 #include <Multiplayer/NetworkInput/IMultiplayerComponentInput.h>
 
 namespace Multiplayer
@@ -25,6 +24,7 @@ namespace Multiplayer
         {
             AZ::Name m_gemName;
             AZ::Name m_componentName;
+            AZ::HashValue64 m_versionHash;
             PropertyNameLookupFunction m_componentPropertyNameLookupFunction;
             RpcNameLookupFunction m_componentRpcNameLookupFunction;
             AllocComponentInputFunction m_allocComponentInputFunction;
@@ -67,11 +67,26 @@ namespace Multiplayer
         //! @return reference to the requested component data, an empty container will be returned if the NetComponentId does not exist
         const ComponentData& GetMultiplayerComponentData(NetComponentId netComponentId) const;
 
+        //! Returns the combined hashes of all the multiplayer components creating a single system version hash that can be quickly compared between the server and client app.
+        //! @return a 64-bit system-wide hash value representing of all of the multiplayer components
+        AZ::HashValue64 GetSystemVersionHash() const;
+
+        //! Gets the mapping of all the multiplayer components by AZ::Name and hash version value.
+        //! @return a map of all the multiplayer components by name and hash version value
+        const Multiplayer::ComponentVersionMap& GetMultiplayerComponentVersionHashes() const;
+
+        //! Finds the multiplayer component version hash by name.
+        //! @param hash value that will be set if the component is found.
+        //! @return True if we found the multiplayer component and filled out the hash value; otherwise false.
+        bool FindComponentVersionHashByName(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const;
+
         //! This releases all owned memory, should only be called during multiplayer shutdown.
         void Reset();
 
     private:
         NetComponentId m_nextNetComponentId = NetComponentId{ 0 };
         AZStd::unordered_map<NetComponentId, ComponentData> m_componentData;
+        AZ::HashValue64 m_systemVersionHash = AZ::HashValue64{ 0 };
+        Multiplayer::ComponentVersionMap m_componentVersionHashes;
     };
 }

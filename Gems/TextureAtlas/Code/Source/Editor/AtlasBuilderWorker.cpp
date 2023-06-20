@@ -286,7 +286,7 @@ namespace TextureAtlasBuilder
                     {
                         AZStd::string color = AZStd::string::format("%s%s%s%s", args[1].substr(7).c_str(), args[1].substr(5, 2).c_str(),
                                                                     args[1].substr(3, 2).c_str(), args[1].substr(1, 2).c_str());
-                        data.m_unusedColor.FromU32(AZStd::stoul(color, nullptr, 16));
+                        data.m_unusedColor.FromU32(static_cast<AZ::u32>(AZStd::stoul(color, nullptr, 16)));
                     }
                 }
                 else if (args[0] == "presetname")
@@ -1044,7 +1044,8 @@ namespace TextureAtlasBuilder
 
             // The Image Processing Gem can produce multiple output files under certain
             // circumstances, but the texture atlas is not expected to produce such output
-            if (outProducts.size() > 1)
+            // There should only be the texture atlas and its abdata file
+            if (outProducts.size() > 2)
             {
                 AZ_Error("AtlasBuilder", false, "Image processing resulted in multiple output files. Texture atlas is expected to produce one output.");
                 response.m_outputProducts.clear();

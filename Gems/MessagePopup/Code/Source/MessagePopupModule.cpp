@@ -18,7 +18,7 @@ namespace MessagePopup
     {
     public:
         AZ_RTTI(MessagePopupModule, "{79CE538B-D7D1-4066-8C0E-5794121BE8A8}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(MessagePopupModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MessagePopupModule, AZ::SystemAllocator);
 
         MessagePopupModule()
             : CryHooksModule()

@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "RandomPointOnSphere",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointOnSphere"
@@ -42,7 +41,6 @@
                 },
                 {
                     "base": "RandomPointInCircle",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInCircle"
@@ -74,7 +72,6 @@
                 },
                 {
                     "base": "RandomPointInSquare",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInSquare"
@@ -106,7 +103,6 @@
                 },
                 {
                     "base": "RandomUnitVector2",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomUnitVector2"
@@ -130,7 +126,6 @@
                 },
                 {
                     "base": "RandomVector2",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomVector2"
@@ -168,7 +163,6 @@
                 },
                 {
                     "base": "RandomPointInCylinder",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInCylinder"
@@ -206,7 +200,6 @@
                 },
                 {
                     "base": "RandomQuaternion",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomQuaternion"
@@ -244,7 +237,6 @@
                 },
                 {
                     "base": "RandomVector4",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomVector4"
@@ -282,7 +274,6 @@
                 },
                 {
                     "base": "RandomPointInBox",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInBox"
@@ -314,7 +305,6 @@
                 },
                 {
                     "base": "RandomPointOnCircle",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointOnCircle"
@@ -346,7 +336,6 @@
                 },
                 {
                     "base": "RandomPointInEllipsoid",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInEllipsoid"
@@ -378,7 +367,6 @@
                 },
                 {
                     "base": "RandomInteger",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomInteger"
@@ -416,7 +404,6 @@
                 },
                 {
                     "base": "RandomPointInWedge",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInWedge"
@@ -478,7 +465,6 @@
                 },
                 {
                     "base": "RandomGrayscale",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomGrayscale"
@@ -516,7 +502,6 @@
                 },
                 {
                     "base": "RandomPointInCone",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInCone"
@@ -554,7 +539,6 @@
                 },
                 {
                     "base": "RandomColor",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomColor"
@@ -592,7 +576,6 @@
                 },
                 {
                     "base": "RandomNumber",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomNumber"
@@ -630,7 +613,6 @@
                 },
                 {
                     "base": "RandomPointInSphere",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInSphere"
@@ -662,7 +644,6 @@
                 },
                 {
                     "base": "RandomUnitVector3",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomUnitVector3"
@@ -686,7 +667,6 @@
                 },
                 {
                     "base": "RandomVector3",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomVector3"
@@ -724,7 +704,6 @@
                 },
                 {
                     "base": "RandomPointInArc",
-                    "context": "MathRandom_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RandomPointInArc"

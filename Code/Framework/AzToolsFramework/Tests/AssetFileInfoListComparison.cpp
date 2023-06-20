@@ -42,7 +42,7 @@ namespace // anonymous
 namespace UnitTest
 {
     class AssetFileInfoListComparisonTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
@@ -94,7 +94,9 @@ namespace UnitTest
             // asset3 -> asset4
             assetRegistry.RegisterAssetDependency(m_assets[3], AZ::Data::ProductDependency(m_assets[4], 0));
 
-            m_application->Start(AzFramework::Application::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(AzFramework::Application::Descriptor(), startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash

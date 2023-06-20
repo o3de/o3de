@@ -18,10 +18,7 @@ namespace UnitTest
     {
         using namespace AZ::Data;
 
-        AllocatorsTestFixture::SetUp();
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+        LeakDetectionFixture::SetUp();
 
         AssetManager::Descriptor desc;
         AssetManager::Create(desc);
@@ -44,10 +41,7 @@ namespace UnitTest
         m_reflectionManager->Clear();
         m_reflectionManager.reset();
 
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 }
 

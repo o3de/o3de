@@ -32,7 +32,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(MainWindowSavedState, "{0892EAAA-8440-4409-9E8B-35BEF203E8E1}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(MainWindowSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MainWindowSavedState, AZ::SystemAllocator);
 
         // the dh object stream cannot store more than 4k and sometimes the window state is about 5k.
         AZStd::vector< AZStd::vector<AZ::u8> > m_serializableWindowState;

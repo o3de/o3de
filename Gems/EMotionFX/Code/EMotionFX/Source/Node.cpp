@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(Node, NodeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(Node, NodeAllocator)
 
     Node::Node(const char* name, Skeleton* skeleton)
         : BaseObject()

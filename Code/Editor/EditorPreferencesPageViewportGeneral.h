@@ -10,10 +10,14 @@
 
 #include "Include/IPreferencesPage.h"
 #include <AzCore/Math/Color.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <QIcon>
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 class CEditorPreferencesPage_ViewportGeneral : public IPreferencesPage
 {
@@ -52,7 +56,6 @@ private:
     {
         AZ_TYPE_INFO(Display, "{F0376933-FA0B-4B58-9DD9-6F6EBC7386CA}")
 
-        bool m_showSafeFrame;
         bool m_highlightSelGeom;
         bool m_highlightSelVegetation;
         bool m_highlightOnMouseOver;

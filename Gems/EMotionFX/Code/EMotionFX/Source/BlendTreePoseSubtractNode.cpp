@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSubtractNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreePoseSubtractNode, AnimGraphAllocator)
 
     BlendTreePoseSubtractNode::BlendTreePoseSubtractNode()
         : AnimGraphNode()
@@ -195,12 +195,12 @@ namespace EMotionFX
         {
             if (inputNode)
             {
-                inputNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
             }
 
             if (subtractNode)
             {
-                subtractNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, subtractNode, timePassedInSeconds);
             }
             return;
         }
@@ -238,12 +238,12 @@ namespace EMotionFX
 
         if (inputNode)
         {
-            inputNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
         }
 
         if (subtractNode)
         {
-            subtractNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, subtractNode, timePassedInSeconds);
         }
     }
 
@@ -257,7 +257,7 @@ namespace EMotionFX
         // Do the same if we are not disabled but have no second pose.
         if ((m_disabled && inputNode) || (!m_disabled && inputNode && !subtractNode))
         {
-            inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
             RequestRefDatas(animGraphInstance);
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
             AnimGraphRefCountedData* data = uniqueData->GetRefCountedData();
@@ -279,11 +279,11 @@ namespace EMotionFX
 
         if (inputNode)
         {
-            inputNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, inputNode, timePassedInSeconds);
         }
         if (subtractNode)
         {
-            subtractNode->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, subtractNode, timePassedInSeconds);
         }
 
         RequestRefDatas(animGraphInstance);

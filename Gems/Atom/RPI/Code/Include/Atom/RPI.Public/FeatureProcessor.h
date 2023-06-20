@@ -75,7 +75,7 @@ namespace AZ
             };            
 
             AZ_RTTI(FeatureProcessor, "{B8027170-C65C-4237-964D-B557FC9D7575}");
-            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FeatureProcessor, AZ::SystemAllocator);
 
             FeatureProcessor() = default;
             virtual ~FeatureProcessor() = default;
@@ -88,9 +88,16 @@ namespace AZ
 
             //! Perform any necessary deactivation.
             virtual void Deactivate() {}
-
+            
+            //! O3DE_DEPRECATION_NOTICE(GHI-12687)
+            //! @deprecated use AddRenderPasses(RenderPipeline*)
             //! Apply changes and add additional render passes to the render pipeline from the feature processors
-            virtual void ApplyRenderPipelineChange(RenderPipeline* ) {}
+            virtual void ApplyRenderPipelineChange([[maybe_unused]] RenderPipeline* pipeline) {}
+
+            //! Add additional render passes to the render pipeline before it's finalized
+            //! The render pipeline must have m_allowModification set to true (see Scene::TryApplyRenderPipelineChanges() function)
+            //! This function is called when the render pipeline is added or rebuilt
+            virtual void AddRenderPasses([[maybe_unused]] RenderPipeline* pipeline) {}
 
             //! Allows the feature processor to expose supporting views based on
             //! the main views passed in. Main views (persistent views) are views that must be 
@@ -112,7 +119,13 @@ namespace AZ
             //! 
             //!  - This is called every frame.
             //!  - This may be called in parallel with other feature processors.
+            //!  - This may be called in parallel with culling
             virtual void Render(const RenderPacket&) {}
+            
+            //! Notifies when culling is finished, but draw lists have not been finalized or sorted
+            //! If a feature processor uses visibility lists instead of letting the culling system submit draw items
+            //! it should access the visibility lists here
+            virtual void OnEndCulling(const RenderPacket&) {}
 
             //! The feature processor may do clean up when the current render frame is finished
             //!  - This is called every RPI::RenderTick.

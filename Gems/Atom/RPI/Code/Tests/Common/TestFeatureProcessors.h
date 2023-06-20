@@ -14,6 +14,7 @@ namespace UnitTest
         : public AZ::RPI::FeatureProcessor
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestFeatureProcessor1, AZ::SystemAllocator)
         AZ_RTTI(TestFeatureProcessor1, "{CCC3EB15-D80E-4F5A-93F4-B0F993A5E7F5}", AZ::RPI::FeatureProcessor);
 
         static void Reflect(AZ::ReflectContext* context)
@@ -47,30 +48,28 @@ namespace UnitTest
         void Render(const RenderPacket&)  override {};
 
         // Overrides for scene notification bus handler
-        void OnRenderPipelineAdded(AZ::RPI::RenderPipelinePtr pipeline) override
-        {
-            m_pipelineCount++;
-            m_lastPipeline = pipeline.get();
-        }
-
-        void OnRenderPipelineRemoved(AZ::RPI::RenderPipeline* pipeline) override
-        {
-            m_pipelineCount--;
-            m_lastPipeline = pipeline;
-        }
-
         void OnRenderPipelinePersistentViewChanged(AZ::RPI::RenderPipeline* renderPipeline, AZ::RPI::PipelineViewTag viewTag, AZ::RPI::ViewPtr newView, AZ::RPI::ViewPtr previousView) override
         {
             m_viewSetCount++;
             m_lastPipeline = renderPipeline;
         }
 
-        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override
+        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override
         {
-            m_pipelineChangedCount++;
-            m_lastPipeline = renderPipeline;
+            if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Added)
+            {            
+                m_pipelineCount++;
+            }
+            else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::Removed)
+            {
+                m_pipelineCount--;
+            }
+            else if (changeType == AZ::RPI::SceneNotification::RenderPipelineChangeType::PassChanged)
+            {
+                m_pipelineChangedCount++;
+            }
+            m_lastPipeline = pipeline;
         }
-
     }; 
     
     class TestFeatureProcessor2 final
@@ -106,6 +105,7 @@ namespace UnitTest
         : public TestFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestFeatureProcessorImplementation, AZ::SystemAllocator)
         AZ_RTTI(TestFeatureProcessorImplementation, "{2FEB6299-A03E-4341-9234-47786F5A53C3}", TestFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context)
@@ -128,6 +128,7 @@ namespace UnitTest
         : public TestFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestFeatureProcessorImplementation2, AZ::SystemAllocator)
         AZ_RTTI(TestFeatureProcessorImplementation2, "{48E98E91-373E-43D4-BFD2-991B9FF8CEE8}", TestFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context)

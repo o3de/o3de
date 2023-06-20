@@ -25,7 +25,7 @@ namespace UnitTest
 {
     using namespace AzToolsFramework;
 
-    class ManipulatorViewTest : public AllocatorsTestFixture
+    class ManipulatorViewTest : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
 
@@ -33,7 +33,9 @@ namespace UnitTest
         void SetUp() override
         {
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-            m_app.Start(AzFramework::Application::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(AzFramework::Application::Descriptor(), startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.

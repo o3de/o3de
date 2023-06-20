@@ -33,8 +33,6 @@ namespace ScriptCanvas
  
         //! ScriptCanvasRegistry
         void Reflect(AZ::ReflectContext* context) override;
-        void Init([[maybe_unused]] NodeRegistry* nodeRegistry) override {}
-        AZStd::vector<AZ::ComponentDescriptor*> GetComponentDescriptors() override { return {}; }
 
         //! Get AutoGen registry name
         static const char* GetRegistryName();

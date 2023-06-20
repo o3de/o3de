@@ -1477,7 +1477,7 @@ bool AZ::FFont::UpdateTexture()
     range.m_mipSliceMax = 0;
     range.m_arraySliceMin = 0;
     range.m_arraySliceMax = 0;
-    RHI::ImageSubresourceLayoutPlaced layout;
+    RHI::ImageSubresourceLayout layout;
     m_fontImage->GetSubresourceLayouts(range, &layout, nullptr);
 
     RHI::ImageUpdateRequest imageUpdateReq;
@@ -1537,7 +1537,7 @@ void AZ::FFont::Prepare(const char* str, bool updateTexture, const AtomFont::Gly
 
         // Let any listeners know that the font texture has changed
         // TODO Update to an AZ::Event when Cry use of this bus is cleaned out.
-        EBUS_EVENT(FontNotificationBus, OnFontTextureUpdated, this);
+        FontNotificationBus::Broadcast(&FontNotificationBus::Events::OnFontTextureUpdated, this);
     }
     else
     {
@@ -1638,7 +1638,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     internalParams.m_ctx.EnableFrame(false);
     internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
     internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
-    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale * internalParams.m_viewportContext->GetDpiScalingFactor()));
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
     internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
 
     if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||

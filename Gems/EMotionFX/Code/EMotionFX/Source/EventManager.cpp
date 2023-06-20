@@ -19,7 +19,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventManager, MotionEventManagerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventManager, MotionEventManagerAllocator)
 
     // the constructor
     EventManager::EventManager()

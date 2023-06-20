@@ -37,7 +37,7 @@ namespace AZ
         // path information.
         typedef AZStd::string BreakpointId;
 
-        AZ_CLASS_ALLOCATOR(ScriptContextDebug, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ScriptContextDebug, SystemAllocator);
 
         ScriptContextDebug(ScriptContext& scriptContext, bool isEnableStackRecord = false);
         ~ScriptContextDebug();

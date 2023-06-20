@@ -65,7 +65,7 @@ namespace AzToolsFramework
             ToolsApplicationRequestBus::BroadcastResult(levelEntityId, &ToolsApplicationRequests::GetCurrentLevelEntityId);
             if (!levelEntityId.IsValid())
             {
-                return EditorComponentAPIRequests::AddComponentsOutcome(AZStd::string("Invalid Level EntityId. Most likely there's no level loaded in the Editor."));
+                return EditorComponentAPIRequests::AddComponentsOutcome(AZStd::unexpect, AZStd::string("Invalid Level EntityId. Most likely there's no level loaded in the Editor."));
             }
 
             EditorComponentAPIRequests::AddComponentsOutcome outcome;
@@ -110,7 +110,7 @@ namespace AzToolsFramework
             ToolsApplicationRequestBus::BroadcastResult(levelEntityId, &ToolsApplicationRequests::GetCurrentLevelEntityId);
             if (!levelEntityId.IsValid())
             {
-                return EditorComponentAPIRequests::GetComponentOutcome(AZStd::string("GetComponentOfType - Component type of id ") + componentTypeId.ToString<AZStd::string>() + " not found on Level Entity");
+                return EditorComponentAPIRequests::GetComponentOutcome(AZStd::unexpect, AZStd::string("GetComponentOfType - Component type of id ") + componentTypeId.ToString<AZStd::string>() + " not found on Level Entity");
             }
 
             EditorComponentAPIRequests::GetComponentOutcome outcome;
@@ -125,7 +125,7 @@ namespace AzToolsFramework
             ToolsApplicationRequestBus::BroadcastResult(levelEntityId, &ToolsApplicationRequests::GetCurrentLevelEntityId);
             if (!levelEntityId.IsValid())
             {
-                return EditorComponentAPIRequests::GetComponentsOutcome(AZStd::string("GetComponentsOfType - Component type of id ") + componentTypeId.ToString<AZStd::string>() + " not found on Level Entity");
+                return EditorComponentAPIRequests::GetComponentsOutcome(AZStd::unexpect, AZStd::string("GetComponentsOfType - Component type of id ") + componentTypeId.ToString<AZStd::string>() + " not found on Level Entity");
             }
 
             EditorComponentAPIRequests::GetComponentsOutcome outcome;

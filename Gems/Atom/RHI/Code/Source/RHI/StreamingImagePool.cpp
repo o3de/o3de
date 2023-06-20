@@ -11,6 +11,7 @@ namespace AZ
 {
     namespace RHI
     {
+
         StreamingImageInitRequest::StreamingImageInitRequest(
             Image& image,
             const ImageDescriptor& descriptor,
@@ -73,7 +74,7 @@ namespace AZ
         ResultCode StreamingImagePool::Init(Device& device, const StreamingImagePoolDescriptor& descriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
-
+            SetName(AZ::Name("StreamingImagePool"));
             return ResourcePool::Init(
                 device, descriptor,
                 [this, &device, &descriptor]()
@@ -174,6 +175,26 @@ namespace AZ
             return m_descriptor;
         }
 
+        void StreamingImagePool::SetLowMemoryCallback(LowMemoryCallback callback)
+        {
+            m_memoryReleaseCallback = callback;
+        }
+        
+        bool StreamingImagePool::SetMemoryBudget(size_t newBudget)
+        {
+            if (newBudget != 0 && newBudget < ImagePoolMininumSizeInBytes)
+            {
+                return false;
+            }
+
+            return SetMemoryBudgetInternal(newBudget) == ResultCode::Success;
+        }
+
+        bool StreamingImagePool::SupportTiledImage() const
+        {
+            return SupportTiledImageInternal();
+        }
+
         ResultCode StreamingImagePool::InitInternal(Device&, const StreamingImagePoolDescriptor&)
         {
             return ResultCode::Success;
@@ -192,6 +213,16 @@ namespace AZ
         ResultCode StreamingImagePool::TrimImageInternal(Image&, uint32_t)
         {
             return ResultCode::Unimplemented;
+        }
+        
+        ResultCode StreamingImagePool::SetMemoryBudgetInternal([[maybe_unused]] size_t newBudget)
+        {
+            return ResultCode::Unimplemented;
+        }
+
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return false;
         }
     }
 }

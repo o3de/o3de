@@ -7,14 +7,18 @@
             "name": "doubleSided",
             "displayName": "Double-sided",
             "description": "Whether to render back-faces or just front-faces.",
-            "type": "Bool"
+            "type": "Bool",
+            "connection": {
+                "type": "InternalProperty",
+                "name": "doubleSided"
+            }
         },
         {
             "name": "applySpecularAA",
             "displayName": "Apply Specular AA",
             "description": "Whether to apply specular anti-aliasing in the shader.",
             "type": "Bool",
-            "defaultValue": false,
+            "defaultValue": true,
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_applySpecularAA"
@@ -22,13 +26,26 @@
         },
         {
             "name": "enableShadows",
-            "displayName": "Enable Shadows",
-            "description": "Whether to use the shadow maps.",
+            "displayName": "Receive Shadows",
+            "description": "Whether to use the shadow maps during lighting.",
             "type": "Bool",
             "defaultValue": true,
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_enableShadows"
+            }
+        },
+        {
+            // This will have to be connected manually by the .materialtype, because some material types
+            // have an additional "Shadowmap_WithPS" shader in addition to "Shadowmap".
+            "name": "castShadows",
+            "displayName": "Cast Shadows",
+            "description": "Whether to cast shadows onto other objects.",
+            "type": "Bool",
+            "defaultValue": true,
+            "connection": {
+                "type": "InternalProperty",
+                "name": "castShadows"
             }
         },
         {
@@ -84,14 +101,6 @@
             "connection": {
                 "type": "ShaderOption",
                 "name": "o_materialUseForwardPassIBLSpecular"
-            }
-        }
-    ],
-    "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua"
             }
         }
     ]

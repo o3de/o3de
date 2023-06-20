@@ -20,6 +20,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QMessageBox>
+#include <QProgressDialog>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -33,7 +34,7 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDiffuseProbeGridComponent, BaseClass>()
-                    ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
+                    ->Version(3, ConvertToEditorRenderComponentAdapter<1>) // added emissive multiplier
                     ->Field("probeSpacingX", &EditorDiffuseProbeGridComponent::m_probeSpacingX)
                     ->Field("probeSpacingY", &EditorDiffuseProbeGridComponent::m_probeSpacingY)
                     ->Field("probeSpacingZ", &EditorDiffuseProbeGridComponent::m_probeSpacingZ)
@@ -45,6 +46,7 @@ namespace AZ
                     ->Field("edgeBlendIbl", &EditorDiffuseProbeGridComponent::m_edgeBlendIbl)
                     ->Field("frameUpdateCount", &EditorDiffuseProbeGridComponent::m_frameUpdateCount)
                     ->Field("transparencyMode", &EditorDiffuseProbeGridComponent::m_transparencyMode)
+                    ->Field("emissiveMultiplier", &EditorDiffuseProbeGridComponent::m_emissiveMultiplier)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
                     ->Field("showVisualization", &EditorDiffuseProbeGridComponent::m_showVisualization)
@@ -120,6 +122,12 @@ namespace AZ
                                 ->EnumAttribute(DiffuseProbeGridTransparencyMode::ClosestOnly, "Closest Only")
                                 ->EnumAttribute(DiffuseProbeGridTransparencyMode::None, "None")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnTransparencyModeChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_emissiveMultiplier, "Emissive Multiplier", "Multiplier for the emissive intensity")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEmissiveMultiplierChanged)
+                                ->Attribute(Edit::Attributes::Decimals, 1)
+                                ->Attribute(Edit::Attributes::Step, 0.1f)
+                                ->Attribute(Edit::Attributes::Min, 0.0f)
+                                ->Attribute(Edit::Attributes::Max, 10.0f)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
@@ -146,13 +154,12 @@ namespace AZ
                                 ->EnumAttribute(DiffuseProbeGridMode::RealTime, "Real Time (Ray-Traced)")
                                 ->EnumAttribute(DiffuseProbeGridMode::Baked, "Baked")
                                 ->EnumAttribute(DiffuseProbeGridMode::AutoSelect, "Auto Select")
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Bake Textures")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                            ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
-                                ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
-                                ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
-                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
+                        ->EndGroup()
+                        ->UIElement(AZ::Edit::UIHandlers::Button, "Bake Textures", "Bake the Diffuse Probe Grid textures to static assets that will be used when the mode is set to Baked")
+                            ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
+                            ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Textures")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::BakeDiffuseProbeGrid)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &EditorDiffuseProbeGridComponent::GetBakeDiffuseProbeGridVisibilitySetting)
                         ;
 
                     editContext->Class<DiffuseProbeGridComponentController>(
@@ -189,6 +196,13 @@ namespace AZ
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
             AZ::TickBus::Handler::BusConnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusConnect();
+            m_boxChangedByGridHandler = AZ::Event<bool>::Handler([]([[maybe_unused]] bool value)
+                {
+                    AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
+                        AzToolsFramework::Refresh_EntireTree);
+                });
+            m_controller.RegisterBoxChangedByGridHandler(m_boxChangedByGridHandler);
 
             AZ::u64 entityId = (AZ::u64)GetEntityId();
             m_controller.m_configuration.m_entityId = entityId;
@@ -196,6 +210,9 @@ namespace AZ
 
         void EditorDiffuseProbeGridComponent::Deactivate()
         {
+            m_editorModeSet = false;
+
+            m_boxChangedByGridHandler.Disconnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();
             AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusDisconnect();
@@ -408,6 +425,12 @@ namespace AZ
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
+        AZ::u32 EditorDiffuseProbeGridComponent::OnEmissiveMultiplierChanged()
+        {
+            m_controller.SetEmissiveMultiplier(m_emissiveMultiplier);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
         AZ::u32 EditorDiffuseProbeGridComponent::OnEditorModeChanged()
         {
             // this will update the configuration and also change the DiffuseProbeGrid mode
@@ -564,8 +587,25 @@ namespace AZ
             m_bakeInProgress = true;
             m_controller.BakeTextures(bakeTexturesCallback);
 
+            QProgressDialog bakeDialog;
+            bakeDialog.setWindowFlags(bakeDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
+            bakeDialog.setLabelText(QObject::tr("Baking Diffuse Probe Grid..."));
+            bakeDialog.setWindowModality(Qt::WindowModal);
+            bakeDialog.setMaximumSize(QSize(256, 96));
+            bakeDialog.setMaximum(0);
+            bakeDialog.setMinimumDuration(0);
+            bakeDialog.setAutoClose(false);
+            bakeDialog.setCancelButton(nullptr);
+            bakeDialog.show();
+
             while (m_bakeInProgress)
             {
+                if (bakeDialog.wasCanceled())
+                {
+                    m_bakeInProgress = false;
+                    break;
+                }
+
                 QApplication::processEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             }

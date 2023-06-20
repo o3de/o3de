@@ -19,6 +19,7 @@ namespace AZ::Render
         : public AZ::Render::RenderDebugFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(RenderDebugFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(AZ::Render::RenderDebugFeatureProcessor, "{1F14912D-43E1-4992-9822-BE8967E59EA3}", AZ::Render::RenderDebugFeatureProcessorInterface);
 
         static void Reflect(AZ::ReflectContext* context);

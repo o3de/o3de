@@ -81,6 +81,10 @@ namespace WhiteBox
             behaviorContext->Class<WhiteBoxMeshHandle>("WhiteBoxMeshHandle")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "whitebox.api")
+                ->Method("IsValid", [](WhiteBoxMeshHandle* whiteBoxMeshHandle) 
+                {
+                    return WhiteBoxMeshFromHandle(*whiteBoxMeshHandle) != nullptr;
+                })
                 ->Method(
                     "InitializeAsUnitCube",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
@@ -94,10 +98,22 @@ namespace WhiteBox
                         return Api::MeshFaceCount(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
                     })
                 ->Method(
+                    "MeshVertexCount",
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle)
+                    {
+                        return Api::MeshVertexCount(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle));
+                    })
+                ->Method(
                     "FacePolygonHandle",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::FaceHandle faceHandle)
                     {
                         return Api::FacePolygonHandle(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), faceHandle);
+                    })
+                ->Method(
+                    "FaceVertexHandles",
+                    [](WhiteBoxMeshHandle* whiteBoxMeshHandle, const Api::FaceHandle faceHandle)
+                    {
+                        return Api::FaceVertexHandles(*WhiteBoxMeshFromHandle(*whiteBoxMeshHandle), faceHandle);
                     })
                 ->Method(
                     "AddVertex",

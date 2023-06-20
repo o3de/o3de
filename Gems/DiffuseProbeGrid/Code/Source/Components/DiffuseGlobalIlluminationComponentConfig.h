@@ -21,7 +21,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(DiffuseGlobalIlluminationComponentConfig, "{0D0835D6-6094-4EF8-BEAC-5FF8A4E4C119}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(DiffuseGlobalIlluminationComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseGlobalIlluminationComponentConfig, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

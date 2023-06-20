@@ -47,7 +47,7 @@ ly_add_target(
             AZ::AzFramework
             Legacy::CryCommon
         PRIVATE
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
 )
 
 ly_add_target(
@@ -67,7 +67,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::PhysX.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -75,6 +75,7 @@ ly_add_target(
 # use the PhysX module in clients and servers:
 ly_create_alias(NAME PhysX.Clients NAMESPACE Gem TARGETS Gem::PhysX)
 ly_create_alias(NAME PhysX.Servers NAMESPACE Gem TARGETS Gem::PhysX)
+ly_create_alias(NAME PhysX.Unified NAMESPACE Gem TARGETS Gem::PhysX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
@@ -139,8 +140,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::PhysX.Editor.Static
-        RUNTIME_DEPENDENCIES
-            Gem::LmbrCentral.Editor
     )
 
     # use the PhysX.Editor module in dev tools:
@@ -185,6 +184,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::PhysX.Tests
+        LABELS REQUIRES_tiaf
     )
 
     # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
@@ -226,15 +226,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::PhysX.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
-    
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/RagdollConfiguration.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/PhysX/Code/Tests
-            )
 endif()

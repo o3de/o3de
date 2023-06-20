@@ -20,7 +20,6 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
@@ -196,6 +195,18 @@ namespace AzNetworking
                 }
             }
             return success;
+        }
+    };
+
+    
+    // Pair
+    template<class KeyType, class ValueType>
+    struct SerializeObjectHelper<AZStd::pair<KeyType, ValueType>>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZStd::pair<KeyType, ValueType>& value)
+        {
+            bool result = serializer.Serialize(value.first, "key") && serializer.Serialize(value.second, "value");
+            return result;
         }
     };
 

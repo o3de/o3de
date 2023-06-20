@@ -29,13 +29,15 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec1(Vec1::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec1 the last 3 elements could be garbage.
+            return Sse::SplatFirst(value); // {value.x, value.x, value.x, value.x}
         }
 
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec2(Vec2::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec2 the last 2 elements could be garbage.
+            return Sse::ReplaceThird(value, 0.0f); // {value.x, value.y, 0.0f, unused}
         }
 
 
@@ -221,6 +223,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Div(FloatArgType arg1, FloatArgType arg2)
         {
+            // In Vec3 the last element can be zero, avoid doing division by zero
+            arg2 = Sse::ReplaceFourth(arg2, 1.0f);
             return Sse::Div(arg1, arg2);
         }
 
@@ -504,14 +508,20 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::Reciprocal(FloatArgType value)
         {
-            value = Sse::ReplaceFourth(value, 1.0f);
-            return Sse::Reciprocal(value);
+            // In Vec3 the last element (w) can be garbage or 0
+            // Using (value.x, value.y, value.z, 1) to avoid divisions by 0.
+            return Sse::Reciprocal(
+                Sse::ReplaceFourth(value, 1.0f));
         }
 
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::ReciprocalEstimate(FloatArgType value)
         {
-            return Sse::ReciprocalEstimate(value);
+            // In Vec3 the last element (w) can be garbage or 0
+            // Using (value.x, value.y, value.z, 1) to avoid divisions by 0.
+            return Sse::ReciprocalEstimate(
+                Sse::ReplaceFourth(value, 1.0f)
+            );
         }
 
 

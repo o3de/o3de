@@ -19,7 +19,7 @@ namespace EMotionFX
     const char* AnimGraphTriggerAction::s_modeTriggerOnStart = "On Enter";
     const char* AnimGraphTriggerAction::s_modeTriggerOnExit = "On Exit";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTriggerAction, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTriggerAction, AnimGraphAllocator)
 
     AnimGraphTriggerAction::AnimGraphTriggerAction()
         : AnimGraphObject()

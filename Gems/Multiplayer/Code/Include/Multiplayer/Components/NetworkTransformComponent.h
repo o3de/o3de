@@ -31,14 +31,18 @@ namespace Multiplayer
     private:
         void OnPreRender(float deltaTime);
         void OnCorrection();
+        void OnTransformChanged();
         void OnParentChanged(NetEntityId parentId);
         
         EntityPreRenderEvent::Handler m_entityPreRenderEventHandler;
         EntityCorrectionEvent::Handler m_entityCorrectionEventHandler;
+        AZ::Event<AZ::Quaternion>::Handler m_rotationChangedEventHandler;
+        AZ::Event<AZ::Vector3>::Handler m_translationChangedEventHandler;
+        AZ::Event<float>::Handler m_scaleChangedEventHandler;
         AZ::Event<NetEntityId>::Handler m_parentChangedEventHandler;
         AZ::Event<uint8_t>::Handler m_resetCountChangedEventHandler;
 
-        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId(0);
+        Multiplayer::HostFrameId m_targetHostFrameId = HostFrameId{ 0 };
         bool m_syncTransformImmediate = false;
     };
 
@@ -50,6 +54,10 @@ namespace Multiplayer
 
         void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+#if AZ_TRAIT_SERVER
+        void HandleMultiplayerTeleport(AzNetworking::IConnection* invokingConnection, const AZ::Vector3& teleportToPosition) override;
+#endif
 
     private:
         void OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm);

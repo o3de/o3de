@@ -19,7 +19,7 @@ class TestEditorTestUtils(unittest.TestCase):
     @mock.patch('ly_test_tools.environment.process_utils.kill_processes_named')
     def test_KillAllLyProcesses_IncludeAP_CallsCorrectly(self, mock_kill_processes_named):
         process_list = ['Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher',
-                        'MaterialEditor', 'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
+                        'MaterialEditor', 'MaterialCanvas', 'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder']
 
         editor_test_utils.kill_all_ly_processes(include_asset_processor=True)
         mock_kill_processes_named.assert_called_once_with(process_list, ignore_extensions=True)
@@ -226,31 +226,3 @@ class TestEditorTestUtils(unittest.TestCase):
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
             expected = editor_test_utils._check_log_errors_warnings(mock_log_path)
         assert expected
-
-    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
-    def test_SplitBatchedEditorLogFile_FoundTestCase_SavesTwoLogs(self):
-        mock_workspace = mock.MagicMock()
-        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
-        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
-
-        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
-                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
-                    '\\SurfaceDataRefreshes_RemainsStable.py (testcase ) \n plus some other text \n'
-        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
-            editor_test_utils.split_batched_editor_log_file(mock_workspace, starting_path, destination_file)
-
-        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
-
-    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
-    def test_SplitBatchedEditorLogFile_DidNotFindTestCase_SavesOneLog(self):
-        mock_workspace = mock.MagicMock()
-        starting_path = "C:/Git/o3de/AutomatedTesting/user/log_test_1/(1)editor_test.log"
-        destination_file = "C:/Git/o3de/build/windows/Testing/LyTestTools/arbitrary/(1)editor_test.log"
-
-        mock_data = 'plus some text here \n and more dummy (python) - Running automated test: ' \
-                    'C:\\Git\\o3de\\AutomatedTesting\\Gem\\PythonTests\\largeworlds\\dyn_veg\\EditorScripts' \
-                    '\\SurfaceDataRefreshes_RemainsStable.\n plus some other text \n'
-        with mock.patch('builtins.open', mock.mock_open(read_data=mock_data)) as mock_file:
-            editor_test_utils.split_batched_editor_log_file(mock_workspace, starting_path, destination_file)
-
-        assert mock_workspace.artifact_manager.save_artifact.call_count == 1

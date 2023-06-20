@@ -48,7 +48,7 @@ namespace SurfaceData
     class SurfacePointList
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfacePointList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfacePointList, AZ::SystemAllocator);
         AZ_TYPE_INFO(SurfacePointList, "{DBA02848-2131-4279-BDEF-3581B76AB736}");
 
         SurfacePointList() = default;

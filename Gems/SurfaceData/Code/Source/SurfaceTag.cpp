@@ -15,6 +15,8 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/sort.h>
 
+AZ_DECLARE_BUDGET(SurfaceData);
+
 namespace SurfaceData
 {
     namespace SurfaceTagUtil
@@ -95,7 +97,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::GetRegisteredTags()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         SurfaceTagNameSet labels;
         SurfaceDataTagProviderRequestBus::Broadcast(&SurfaceDataTagProviderRequestBus::Events::GetRegisteredSurfaceTagNames, labels);
@@ -141,7 +143,7 @@ namespace SurfaceData
 
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> SurfaceTag::BuildSelectableTagList() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableTags = GetRegisteredTags();
 
@@ -159,7 +161,7 @@ namespace SurfaceData
 
     AZStd::string SurfaceTag::GetDisplayName() const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         AZStd::string name;
         FindDisplayName(GetRegisteredTags(), name);

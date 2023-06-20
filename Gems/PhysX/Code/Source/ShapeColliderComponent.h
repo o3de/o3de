@@ -20,7 +20,7 @@ namespace PhysX
     namespace Utils
     {
         Physics::CapsuleShapeConfiguration ConvertFromLmbrCentralCapsuleConfig(
-            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig);
+            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig, const AZ::Vector3& scale = Physics::ShapeConstants::DefaultScale);
     } // namespace Utils
 
     namespace ShapeConstants
@@ -42,6 +42,10 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         ShapeColliderComponent() = default;
+
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // BaseColliderComponent
         void UpdateScaleForShapeConfigs() override;

@@ -8,8 +8,6 @@
 #pragma once
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI.Reflect/Vulkan/BufferPoolDescriptor.h>
-#include <RHI/BufferMemoryAllocator.h>
 
 namespace AZ
 {
@@ -26,23 +24,16 @@ namespace AZ
 
         public:
             AZ_RTTI(BufferPool, "F3DE9E13-12F2-489E-8665-6895FD7446C0", Base);
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
             ~BufferPool() = default;
             static RHI::Ptr<BufferPool> Create();
 
             Device& GetDevice() const;
 
-            void GarbageCollect();
-
         private:
             BufferPool() = default;
 
             BufferPoolResolver* GetResolver();
-
-            //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
              // RHI::BufferPool
@@ -56,13 +47,6 @@ namespace AZ
             RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
             void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal(const AZStd::string_view& name) override;
-            //////////////////////////////////////////////////////////////////////////
-
-            BufferMemoryAllocator m_memoryAllocator;
         };
     }
 }

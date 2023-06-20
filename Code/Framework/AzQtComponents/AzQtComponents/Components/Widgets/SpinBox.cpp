@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QDoubleSpinBox>
 #include <QEvent>
+#include <QGuiApplication>
 #include <QLineEdit>
 #include <QMouseEvent>
 #include <QObject>
@@ -31,6 +32,7 @@
 #include <QTextLayout>
 
 #include <QtWidgets/private/qstylesheetstyle_p.h>
+#include <qcoreevent.h>
 
 namespace AzQtComponents
 {
@@ -74,15 +76,15 @@ private:
         ProcessingArrowButtons
     };
     int m_xPos = 0;
-    QPointer<QAbstractSpinBox> m_spinBoxChanging;
+    QPointer<QAbstractSpinBox> m_spinBoxChanging = nullptr;
+    QPointer<QScreen> m_activeScreen = nullptr;
     State m_state = Inactive;
     QAbstractSpinBox* m_mouseFocusedSpinBox = nullptr;
     QAbstractSpinBox* m_mouseFocusedSpinBoxSingleClicked = nullptr;
 
     bool filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* event);
     bool filterLineEditEvents(QLineEdit* lineEdit, QEvent* event);
-    bool handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* event);
-    void setInializeSpinboxValue(QAbstractSpinBox* spinBox, bool clearText = false);
+    void setInitializeSpinboxValue(QAbstractSpinBox* spinBox, bool clearText = false);
 
     QTimer* SpinBoxScrollTimer(QAbstractSpinBox* spinBox);
 
@@ -127,6 +129,77 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
     bool filterEvent = false;
     switch (event->type())
     {
+        case QEvent::MouseMove:
+        {
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+            if ((mouseEvent->buttons() & (Qt::LeftButton | Qt::MiddleButton)) && m_state == Dragging)
+            {
+                const int delta = mouseEvent->x() - m_xPos;
+                if (qAbs(delta) <= qAbs(m_config.pixelsPerStep))
+                {
+                    break;
+                }
+
+                m_xPos = mouseEvent->x();
+                int step = delta > 0 ? 1 : -1;
+                if (mouseEvent->modifiers() & Qt::ShiftModifier)
+                {
+                    step *= 10;
+                }
+
+                if (step > 0)
+                {
+                    spinBox->setProperty(g_spinBoxValueIncreasingName, true);
+                    spinBox->setProperty(g_spinBoxValueDecreasingName, false);
+                    spinBox->setProperty(g_spinBoxScrollIncreasingName, true);
+                    spinBox->setProperty(g_spinBoxScrollDecreasingName, false);
+                }
+                else
+                {
+                    spinBox->setProperty(g_spinBoxValueIncreasingName, false);
+                    spinBox->setProperty(g_spinBoxValueDecreasingName, true);
+                    spinBox->setProperty(g_spinBoxScrollIncreasingName, false);
+                    spinBox->setProperty(g_spinBoxScrollDecreasingName, true);
+                }
+
+                spinBox->stepBy(step);
+
+                if (m_activeScreen)
+                {
+                    const QPoint hotspot = spinBox->cursor().hotSpot();
+                    const QRect screenRect = m_activeScreen->geometry().adjusted(hotspot.x(), hotspot.y(), -hotspot.x(), -hotspot.y());
+                    QPoint screenPos = mouseEvent->screenPos().toPoint();
+                    const int xPos = screenPos.x();
+                    int newXPos = xPos;
+                    // cursor bounces on the left and right side of the screen
+                    // looks like buggy behaviour so mouse cursor is wrapped
+                    // around to the other side of the screen.
+                    if (xPos >= screenRect.right())
+                    {
+                        // wraps mouse cursor around to the left side of the screen
+                        newXPos = screenRect.left() + 1;
+                    }
+                    else if (xPos <= screenRect.left())
+                    {
+                        // wraps mouse cursor around to the right side of the screen
+                        newXPos = screenRect.right() - 1;
+                    }
+
+                    if (newXPos != xPos)
+                    {
+                        // Update our local x position so we can continue to step when the mouse moves
+                        const int screenDelta = xPos - newXPos;
+                        m_xPos -= screenDelta;
+
+                        // Move the mouse cursor away from the edge of the screen.
+                        screenPos.setX(newXPos);
+                        QCursor::setPos(m_activeScreen, screenPos);
+                    }
+                }
+            }
+            setInitializeSpinboxValue(spinBox);
+            break;
+        }
         case QEvent::HoverEnter:
         case QEvent::HoverLeave:
         case QEvent::HoverMove:
@@ -281,15 +354,13 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             // Handle digits
             const bool isDigit = (keyEvent->key() >= Qt::Key_0) && (keyEvent->key() <= Qt::Key_9);
             const bool isForFloatingPointDecimal = (qobject_cast<QDoubleSpinBox*>(spinBox) && (keyEvent->key() == Qt::Key_Period));
-            if (isDigit ||
-                keyEvent->key() == Qt::Key_Backspace ||
-                isForFloatingPointDecimal
-               )
+            if (isDigit || keyEvent->key() == Qt::Key_Backspace || isForFloatingPointDecimal)
             {
                 emitValueChangeBegan(spinBox);
                 // emitValueChangeEnded is called when Qt::Key_Return or Qt::Key_Enter is released,
                 // or in QEvent::FocusOut.
             }
+            setInitializeSpinboxValue(spinBox, true);
 
             break;
         }
@@ -314,49 +385,58 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             }
             break;
         }
-
         case QEvent::MouseButtonDblClick:
         case QEvent::MouseButtonPress:
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
-
             if (mouseEvent->button() == Qt::LeftButton)
             {
                 QStyleOptionSpinBox styleOption;
                 initStyleOption(spinBox, &styleOption);
-                const auto control = spinBox->style()->hitTestComplexControl(QStyle::CC_SpinBox,
-                                                                             &styleOption,
-                                                                             mouseEvent->pos(),
-                                                                             spinBox);
+                const auto control = spinBox->style()->hitTestComplexControl(QStyle::CC_SpinBox, &styleOption, mouseEvent->pos(), spinBox);
                 const auto enabledSteps = stepEnabled(spinBox);
-                if (((control == QStyle::SC_SpinBoxUp) && (enabledSteps & QSpinBox::StepUpEnabled)) ||
-                    ((control == QStyle::SC_SpinBoxDown) && (enabledSteps & QSpinBox::StepDownEnabled)))
+
+                const bool buttonUpPressed = (control == QStyle::SC_SpinBoxUp && (enabledSteps & QSpinBox::StepUpEnabled));
+                const bool buttonDownPressed = (control == QStyle::SC_SpinBoxDown && (enabledSteps & QSpinBox::StepDownEnabled));
+
+                if (buttonUpPressed || buttonDownPressed)
                 {
-                    emitValueChangeBegan(spinBox);
-                    // emitValueChangeEnded is called in SpinBoxWatcher::handleMouseDragStepping
-
+                    spinBox->setProperty(g_spinBoxUpPressedPropertyName, buttonUpPressed);
+                    spinBox->setProperty(g_spinBoxDownPressedPropertyName, buttonDownPressed);
                     m_state = ProcessingArrowButtons;
-                    spinBox->setProperty(g_spinBoxDraggingName, false);
-
-                    if (control == QStyle::SC_SpinBoxUp)
-                    {
-                        spinBox->setProperty(g_spinBoxUpPressedPropertyName, true);
-                    }
-                    else if (control == QStyle::SC_SpinBoxDown)
-                    {
-                        spinBox->setProperty(g_spinBoxDownPressedPropertyName, true);
+                }
+                else
+                {
+                    m_state = Dragging;
                 }
             }
+            else if (mouseEvent->button() == Qt::MiddleButton)
+            {
+                m_state = Dragging;
             }
+
+            if(m_state == Dragging) 
+            {
+                m_activeScreen = QGuiApplication::screenAt(mouseEvent->globalPos());
+                m_xPos = mouseEvent->x();
+                spinBox->grabMouse();
+            }
+            spinBox->setProperty(g_spinBoxDraggingName, m_state == Dragging);
+            emitValueChangeBegan(spinBox);
             break;
         }
-
         case QEvent::MouseButtonRelease:
         {
+            emitValueChangeEnded(spinBox);
+            m_state = Inactive;
+            spinBox->setProperty(g_spinBoxDraggingName, false);
             spinBox->setProperty(g_spinBoxUpPressedPropertyName, false);
             spinBox->setProperty(g_spinBoxDownPressedPropertyName, false);
             spinBox->setProperty(g_spinBoxValueDecreasingName, false);
             spinBox->setProperty(g_spinBoxValueIncreasingName, false);
+            resetCursor(spinBox);
+            spinBox->releaseMouse();
+            spinBox->update();
             break;
         }
 
@@ -392,7 +472,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
                 timer->start();
             }
 
-            setInializeSpinboxValue(spinBox, true);
+            setInitializeSpinboxValue(spinBox, true);
 
             // Qt::ScrollEnd is only supported on macOS and only applies to trackpads, not scroll
             // wheels.
@@ -410,8 +490,8 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             else if (angleDelta.y() != 0)
             {
                 const auto enabledSteps = stepEnabled(spinBox);
-                if (((angleDelta.y() < 0) && (enabledSteps & QSpinBox::StepDownEnabled)) ||
-                    ((angleDelta.y() > 0) && (enabledSteps & QSpinBox::StepUpEnabled)))
+                if ((angleDelta.y() < 0 && (enabledSteps & QSpinBox::StepDownEnabled)) ||
+                    (angleDelta.y() > 0 && (enabledSteps & QSpinBox::StepUpEnabled)))
                 {
                     emitValueChangeBegan(spinBox);
                     // emitValueChangeEnded is called in QEvent::FocusOut
@@ -444,8 +524,8 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             auto keyEvent = static_cast<QKeyEvent*>(event);
             switch (keyEvent->key())
             {
-            case (Qt::Key_Up):
-            case (Qt::Key_Down):
+            case Qt::Key_Up:
+            case Qt::Key_Down:
                 event->accept();
                 return true;
                 break;
@@ -457,7 +537,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
         }
     }
 
-    return filterEvent ? filterEvent : handleMouseDragStepping(spinBox, event);
+    return filterEvent;
 }
 
 bool SpinBoxWatcher::filterLineEditEvents(QLineEdit* lineEdit, QEvent* event)
@@ -550,7 +630,7 @@ bool SpinBoxWatcher::filterLineEditEvents(QLineEdit* lineEdit, QEvent* event)
     return filterEvent;
 }
 
-void SpinBoxWatcher::setInializeSpinboxValue(QAbstractSpinBox* spinBox, bool clearText)
+void SpinBoxWatcher::setInitializeSpinboxValue(QAbstractSpinBox* spinBox, bool clearText)
 {
     if (auto lineEdit = spinBox->findChild<QLineEdit*>(QString(), Qt::FindDirectChildrenOnly)) {
         if (lineEdit->property(g_spinBoxIntializedValueName).isValid() && !lineEdit->property(g_spinBoxIntializedValueName).toBool()) {
@@ -572,136 +652,6 @@ QTimer* SpinBoxWatcher::SpinBoxScrollTimer(QAbstractSpinBox* spinBox)
     }
 
     return timer;
-}
-
-bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* event)
-{
-    if (!spinBox || !event)
-    {
-        return false;
-    }
-
-    switch (event->type())
-    {
-        case QEvent::KeyPress:
-        {
-            setInializeSpinboxValue(spinBox, true);
-            break;
-        }
-        case QEvent::MouseButtonPress:
-        {
-            auto mouseEvent = static_cast<QMouseEvent*>(event);
-            bool buttonUpPressed = spinBox->property(g_spinBoxUpPressedPropertyName).toBool();
-            bool buttonDownPressed = spinBox->property(g_spinBoxDownPressedPropertyName).toBool();
-
-            if (((mouseEvent->button() & Qt::LeftButton) && (m_state == Inactive) && !buttonDownPressed && !buttonUpPressed) ||
-                (mouseEvent->button() & Qt::MiddleButton))
-            {
-                m_xPos = mouseEvent->x();
-                emitValueChangeBegan(spinBox);
-                m_state = Dragging;
-                spinBox->setProperty(g_spinBoxDraggingName, true);
-            }
-            setInializeSpinboxValue(spinBox);
-            break;
-        }
-
-        case QEvent::MouseButtonDblClick:
-        {
-            emitValueChangeBegan(spinBox);
-            break;
-        }
-
-        case QEvent::MouseMove:
-        {
-            auto mouseEvent = static_cast<QMouseEvent*>(event);
-            if ((m_state == Dragging) && (mouseEvent->buttons() & (Qt::LeftButton | Qt::MiddleButton)))
-            {
-                const int delta = mouseEvent->x() - m_xPos;
-                if (qAbs(delta) <= qAbs(m_config.pixelsPerStep))
-                {
-                    break;
-                }
-
-                m_xPos = mouseEvent->x();
-                int step = delta > 0 ? 1 : -1;
-                if (mouseEvent->modifiers() & Qt::ShiftModifier)
-                {
-                    step *= 10;
-                }
-
-                if (step > 0)
-                {
-                    spinBox->setProperty(g_spinBoxValueIncreasingName, true);
-                    spinBox->setProperty(g_spinBoxValueDecreasingName, false);
-                    spinBox->setProperty(g_spinBoxScrollIncreasingName, true);
-                    spinBox->setProperty(g_spinBoxScrollDecreasingName, false);
-                }
-                else
-                {
-                    spinBox->setProperty(g_spinBoxValueIncreasingName, false);
-                    spinBox->setProperty(g_spinBoxValueDecreasingName, true);
-                    spinBox->setProperty(g_spinBoxScrollIncreasingName, false);
-                    spinBox->setProperty(g_spinBoxScrollDecreasingName, true);
-                }
-
-                spinBox->stepBy(step);
-
-                // Check if we need to move the mouse cursor away from the edge of the screen. A
-                // native window may not exist.
-                if (QWindow* windowHandle = spinBox->window()->windowHandle())
-                {
-                    QScreen* screen = windowHandle->screen();
-                    const QPoint hotspot = spinBox->cursor().hotSpot();
-                    const QRect screenRect = screen->geometry().adjusted(hotspot.x(), hotspot.y(), -hotspot.x(), -hotspot.y());
-                    QPoint screenPos = mouseEvent->screenPos().toPoint();
-                    const int xPos = screenPos.x();
-                    int newXPos = xPos;
-                    // cursor bounces on the left and right side of the screen
-                    // looks like buggy behaviour so mouse cursor is wrapped
-                    // around to the other side of the screen.
-                    if (xPos >= screenRect.right())
-                    {
-                        // wraps mouse cursor around to the left side of the screen
-                        newXPos = screenRect.left() + 1;
-                    }
-                    else if (xPos <= screenRect.left())
-                    {
-                        // wraps mouse cursor around to the right side of the screen
-                        newXPos = screenRect.right() - 1;
-                    }
-
-                    if (newXPos != xPos)
-                    {
-                        // Update our local x position so we can continue to step when the mouse moves
-                        const int screenDelta = xPos - newXPos;
-                        m_xPos -= screenDelta;
-
-                        // Move the mouse cursor away from the edge of the screen.
-                        screenPos.setX(newXPos);
-                        QCursor::setPos(screen, screenPos);
-                    }
-                }
-            }
-            setInializeSpinboxValue(spinBox);
-            break;
-        }
-
-        case QEvent::MouseButtonRelease:
-        {
-            emitValueChangeEnded(spinBox);
-            m_state = Inactive;
-            spinBox->setProperty(g_spinBoxDraggingName, false);
-            spinBox->update();
-            resetCursor(spinBox);
-            break;
-        }
-
-        default:
-            break;
-    }
-
-    return false;
 }
 
 void SpinBoxWatcher::initStyleOption(QAbstractSpinBox* spinBox, QStyleOptionSpinBox* option)

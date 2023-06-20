@@ -8,18 +8,20 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactTestSequenceBus.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReport.h>
 #include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <Artifact/TestImpactArtifactException.h>
 #include <BuildTarget/Common/TestImpactBuildTarget.h>
 #include <Dependency/TestImpactDynamicDependencyMap.h>
 #include <Dependency/TestImpactSourceCoveringTestsList.h>
-#include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
+#include <Process/Scheduler/TestImpactProcessSchedulerBus.h>
 #include <TestRunner/Common/Enumeration/TestImpactTestEnumeration.h>
+#include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
+#include <TestEngine/Common/TestImpactTestEngine.h>
 #include <TestImpactTestTargetExclusionList.h>
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -28,63 +30,78 @@ namespace TestImpact
 {
     static inline constexpr const char* const LogCallSite = "TestImpact";
 
-    //! Simple helper class for tracking basic timing information.
-    class Timer
-    {
-    public:
-        Timer();
-
-        //! Returns the time point that the timer was instantiated.
-        AZStd::chrono::steady_clock::time_point GetStartTimePoint() const;
-
-        //! Returns the time point that the timer was instantiated relative to the specified starting time point.
-        AZStd::chrono::steady_clock::time_point GetStartTimePointRelative(const Timer& start) const;
-
-        //! Returns the time elapsed (in milliseconds) since the timer was instantiated.
-        AZStd::chrono::milliseconds GetElapsedMs() const;
-
-        //! Returns the current time point relative to the time point the timer was instantiated.
-        AZStd::chrono::steady_clock::time_point GetElapsedTimepoint() const;
-
-    private:
-        AZStd::chrono::steady_clock::time_point m_startTime;
-    };
-
     //! Attempts to read all of the target descriptor files from the specified configuration directories.
     AZStd::vector<TargetDescriptor> ReadTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig);
 
     //! Handler for test run complete events.
     template<typename TestTarget>
-    class TestRunCompleteCallbackHandler
+    class TestEngineNotificationHandler
+        : private ProcessSchedulerNotificationBus::Handler
+        , private TestEngineNotificationBus<TestTarget>::Handler
     {
     public:
-        TestRunCompleteCallbackHandler(size_t totalTests, AZStd::optional<TestRunCompleteCallback> testCompleteCallback)
-            : m_totalTests(totalTests)
-            , m_testCompleteCallback(testCompleteCallback)
-        {
-        }
-
-        void operator()(const TestEngineJob<TestTarget>& testJob)
-        {
-            if (m_testCompleteCallback.has_value())
-            {
-                Client::TestRunBase testRun(
-                    testJob.GetTestTarget()->GetNamespace(),
-                    testJob.GetTestTarget()->GetName(),
-                    testJob.GetCommandString(),
-                    testJob.GetStartTime(),
-                    testJob.GetDuration(),
-                    testJob.GetTestResult());
-
-                (*m_testCompleteCallback)(testRun, ++m_numTestsCompleted, m_totalTests);
-            }
-        }
+        TestEngineNotificationHandler(size_t totalTests);
+        ~TestEngineNotificationHandler();
 
     private:
+        // TestEngineNotificationBus override ...
+        void OnJobComplete(const TestEngineJob<TestTarget>& testJob) override;
+        void OnRealtimeStdContent(
+            [[maybe_unused]] ProcessId processId,
+            [[maybe_unused]] const AZStd::string& stdOutput,
+            [[maybe_unused]] const AZStd::string& stdError,
+            const AZStd::string& stdOutputDelta,
+            const AZStd::string& stdErrorDelta) override;
+
         const size_t m_totalTests; //!< The total number of tests to run for the entire sequence.
         size_t m_numTestsCompleted = 0; //!< The running total of tests that have completed.
-        AZStd::optional<TestRunCompleteCallback> m_testCompleteCallback;
     };
+
+    template<typename TestTarget>
+    TestEngineNotificationHandler<TestTarget>::TestEngineNotificationHandler(size_t totalTests)
+        : m_totalTests(totalTests)
+    {
+        ProcessSchedulerNotificationBus::Handler::BusConnect();
+        TestEngineNotificationBus<TestTarget>::Handler::BusConnect();
+    }
+
+    template<typename TestTarget>
+    TestEngineNotificationHandler<TestTarget>::~TestEngineNotificationHandler()
+    {
+        TestEngineNotificationBus<TestTarget>::Handler::BusDisconnect();
+        ProcessSchedulerNotificationBus::Handler::BusDisconnect();
+    }
+
+    template<typename TestTarget>
+    void TestEngineNotificationHandler<TestTarget>::OnJobComplete(const TestEngineJob<TestTarget>& testJob)
+    {
+        Client::TestRunBase testRun(
+            testJob.GetTestTarget()->GetNamespace(),
+            testJob.GetTestTarget()->GetName(),
+            testJob.GetCommandString(),
+            testJob.GetStdOutput(),
+            testJob.GetStdError(),
+            testJob.GetStartTime(),
+            testJob.GetDuration(),
+            testJob.GetTestResult());
+
+        TestSequenceNotificationsBaseBus::Broadcast(
+            &TestSequenceNotificationsBaseBus::Events::OnTestRunComplete, testRun, ++m_numTestsCompleted, m_totalTests);
+    }
+
+    template<typename TestTarget>
+    void TestEngineNotificationHandler<TestTarget>::OnRealtimeStdContent(
+        [[maybe_unused]] ProcessId processId,
+        [[maybe_unused]] const AZStd::string& stdOutput,
+        [[maybe_unused]] const AZStd::string& stdError,
+        const AZStd::string& stdOutputDelta,
+        const AZStd::string& stdErrorDelta)
+    {
+        // Job info about in-flight processes isn't available until completion so realtime std content will be
+        // anomynous for the client
+        TestSequenceNotificationsBaseBus::Broadcast(
+            &TestSequenceNotificationsBaseBus::Events::OnRealtimeStdContent, stdOutputDelta, stdErrorDelta);
+    }
 
     //! Updates the dynamic dependency map and serializes the entire map to disk.
     template<typename ProductionTarget, typename TestTarget, typename TestCoverage>
@@ -337,6 +354,8 @@ namespace TestImpact
                 testJob.GetTestTarget()->GetNamespace(),
                 testJob.GetTestTarget()->GetName(),
                 testJob.GetCommandString(),
+                testJob.GetStdOutput(),
+                testJob.GetStdError(),
                 relativeStartTime,
                 testJob.GetDuration(),
                 testJob.GetTestResult());
@@ -446,23 +465,21 @@ namespace TestImpact
     //! @tparam TestJob The test engine job type returned by the functor.
     //! @param maxConcurrency The maximum concurrency being used for this sequence.
     //! @param policyState The policy state being used for the sequence.
-    //! @param suiteType The suite type used for this sequence.
+    //! @param suiteSet The suites type used for this sequence.
+    //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @param timer The timer to use for the test run timings.
     //! @param testRunner The test runner functor to use for each of the test runs.
     //! @param includedSelectedTestTargets The subset of test targets that were selected to run and not also fully excluded from running.
     //! @param excludedSelectedTestTargets The subset of test targets that were selected to run but were fully excluded running.
     //! @param discardedTestTargets The subset of test targets that were discarded from the test selection and will not be run.
     //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
-    //! @param testSequenceStartCallback The client function to be called after the test targets have been selected but prior to running the
-    //! tests.
-    //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
-    //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
     //! @param updateCoverage The function to call to update the dynamic dependency map with test coverage (if any).
     template<typename TestTarget, typename TestRunnerFunctor, typename TestJob>
     Client::ImpactAnalysisSequenceReport ImpactAnalysisTestSequenceWrapper(
         size_t maxConcurrency,
         const ImpactAnalysisSequencePolicyState& policyState,
-        SuiteType suiteType,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
         const Timer& sequenceTimer,
         const TestRunnerFunctor& testRunner,
         const AZStd::vector<const TestTarget*>& includedSelectedTestTargets,
@@ -471,9 +488,6 @@ namespace TestImpact
         const AZStd::vector<const TestTarget*>& draftedTestTargets,
         const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
         const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-        AZStd::optional<ImpactAnalysisTestSequenceStartCallback> testSequenceStartCallback,
-        AZStd::optional<TestSequenceCompleteCallback<Client::ImpactAnalysisSequenceReport>> testSequenceEndCallback,
-        AZStd::optional<TestRunCompleteCallback> testCompleteCallback,
         AZStd::optional<AZStd::function<void(const AZStd::vector<TestJob>& jobs)>> updateCoverage)
     {
         TestRunData<TestJob> selectedTestRunData, draftedTestRunData;
@@ -486,27 +500,29 @@ namespace TestImpact
         const auto draftedTests = ExtractTestTargetNames(draftedTestTargets);
 
         // Inform the client that the sequence is about to start
-        if (testSequenceStartCallback.has_value())
-        {
-            (*testSequenceStartCallback)(suiteType, selectedTests, discardedTests, draftedTests);
-        }
+        ImpactAnalysisTestSequenceNotificationBus::Broadcast(
+            &ImpactAnalysisTestSequenceNotificationBus::Events::OnTestSequenceStart,
+            suiteSet,
+            suiteLabelExcludeSet,
+            selectedTests,
+            discardedTests,
+            draftedTests);
 
         // We share the test run complete handler between the selected and drafted test runs as to present them together as one
         // continuous test sequence to the client rather than two discrete test runs
         const size_t totalNumTestRuns = includedSelectedTestTargets.size() + draftedTestTargets.size();
-        TestRunCompleteCallbackHandler<TestTarget> testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
 
-        const auto gatherTestRunData = [&sequenceTimer, &testRunner, &testRunCompleteHandler, &globalTimeout](
-                                           const AZStd::vector<const TestTarget*>& testsTargets, TestRunData<TestJob>& testRunData)
+        const auto gatherTestRunData = [&](const AZStd::vector<const TestTarget*>& testsTargets, TestRunData<TestJob>& testRunData)
         {
             const Timer testRunTimer;
             testRunData.m_relativeStartTime = testRunTimer.GetStartTimePointRelative(sequenceTimer);
-            auto [result, jobs] = testRunner(testsTargets, testRunCompleteHandler, globalTimeout);
+            auto [result, jobs] = testRunner(testsTargets, globalTimeout);
             testRunData.m_result = result;
             testRunData.m_jobs = AZStd::move(jobs);
             testRunData.m_duration = testRunTimer.GetElapsedMs();
         };
 
+        TestEngineNotificationHandler<TestTarget> testRunCompleteHandler(totalNumTestRuns);
         if (!includedSelectedTestTargets.empty())
         {
             // Run the selected test targets and collect the test run results
@@ -532,7 +548,8 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout,
             policyState,
-            suiteType,
+            suiteSet,
+            suiteLabelExcludeSet,
             selectedTests,
             discardedTests,
             draftedTests,
@@ -548,10 +565,8 @@ namespace TestImpact
                 draftedTestRunData.m_jobs));
 
         // Inform the client that the sequence has ended
-        if (testSequenceEndCallback.has_value())
-        {
-            (*testSequenceEndCallback)(sequenceReport);
-        }
+        ImpactAnalysisTestSequenceNotificationBus::Broadcast(
+            &ImpactAnalysisTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
 
         // Update the dynamic dependency map with the latest coverage data (if any)
         if (updateCoverage.has_value())

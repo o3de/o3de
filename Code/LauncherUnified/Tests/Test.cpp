@@ -25,6 +25,11 @@ namespace O3DELauncher
         return "@log@/Game.log";
     }
 
+    const char* GetLauncherTypeSpecialization()
+    {
+        return "client";
+    }
+
     AZStd::string_view GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)

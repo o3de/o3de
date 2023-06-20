@@ -39,14 +39,37 @@ namespace AZ
             template<typename Bus>
             using ConnectionPolicy = SceneConnectionPolicy<Bus>;
             //////////////////////////////////////////////////////////////////////////
+
+            enum class RenderPipelineChangeType
+            {
+                Added,              //The render pipeline was added to this scene
+                PassChanged,      //Any passes of this render pipeline are modified before a render tick
+                Removed             //The render pipeline was removed from this scene
+            };
                         
+            //! O3DE_DEPRECATION_NOTICE(GHI-12687)
+            //! @deprecated use OnRenderPipelineChanged(RenderPipeline*, RenderPipelineChangeType::Added)
             //! Notifies when a render pipeline is added to this scene. 
             //! @param pipeline The render pipeline which was added
             virtual void OnRenderPipelineAdded(RenderPipelinePtr pipeline) {};
+                        
+            //! O3DE_DEPRECATION_NOTICE(GHI-12687)
+            //! @deprecated use OnRenderPipelineChanged(RenderPipeline*, RenderPipelineChangeType::PassChanged)
+            //! Notifies when any passes of this render pipeline are modified before a render tick
+            //! This includes adding a pass, removing a pass, or if pass data changed (such as attachments, draw list tags, etc.)
+            //! Feature processors may need to use it to update their cached pipeline states
+            //! @param pipeline The render pipeline which was modified
+            virtual void OnRenderPipelinePassesChanged([[maybe_unused]] RenderPipeline* renderPipeline) {}
 
+            //! O3DE_DEPRECATION_NOTICE(GHI-12687)
+            //! @deprecated use OnRenderPipelineChanged(RenderPipeline*, RenderPipelineChangeType::Removed)
             //! Notifies when a render pipeline is removed from this scene.
             //! @param pipeline The render pipeline which was removed
             virtual void OnRenderPipelineRemoved([[maybe_unused]] RenderPipeline* pipeline) {};
+
+            //! Notifies when a render pipeline was added, removed or changed
+            //! @param pipeline The render pipeline which was added
+            virtual void OnRenderPipelineChanged(RenderPipeline* , RenderPipelineChangeType) {};
             
             //! Notifies when a persistent view is set/changed (for a particular RenderPipeline + ViewTag)
             //! @param pipeline The render pipeline which was modified
@@ -54,12 +77,6 @@ namespace AZ
             //! @param newView The view which was set to the render pipeline's view tag
             //! @param previousView The previous view associates to render pipeline's view tag before the new view was set
             virtual void OnRenderPipelinePersistentViewChanged([[maybe_unused]] RenderPipeline* renderPipeline, PipelineViewTag viewTag, ViewPtr newView, ViewPtr previousView) {}
-
-            //! Notifies when any passes of this render pipeline are modified before a render tick
-            //! This includes adding a pass, removing a pass, or if pass data changed (such as attachments, draw list tags, etc.)
-            //! Feature processors may need to use it to update their cached pipeline states
-            //! @param pipeline The render pipeline which was modified
-            virtual void OnRenderPipelinePassesChanged([[maybe_unused]] RenderPipeline* renderPipeline) {}
 
             //! Notifies when the PrepareRender phase is beginning
             //! This phase is when data is read from the FeatureProcessors and written to the draw lists.
@@ -80,7 +97,7 @@ namespace AZ
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
             using BusIdType = SceneId;
 
-            virtual void OnSceneNotifictaionHandlerConnected(SceneNotification* handler) = 0;
+            virtual void OnSceneNotificationHandlerConnected(SceneNotification* handler) = 0;
 
             //! Causes an update of the PipelineStateLookup during the next render tick,
             //! after queued Pipeline changes are executed.
@@ -94,7 +111,7 @@ namespace AZ
             typename Bus::HandlerNode& handler, typename Bus::Context::ConnectLockGuard& connectLock, const typename Bus::BusIdType& id)
         {
             EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
-            SceneRequestBus::Event(id, &SceneRequestBus::Events::OnSceneNotifictaionHandlerConnected, handler);
+            SceneRequestBus::Event(id, &SceneRequestBus::Events::OnSceneNotificationHandlerConnected, handler);
         }
     } // namespace RPI
 } // namespace AZ

@@ -28,6 +28,11 @@ namespace AZ::SceneGenerationComponents
 
         static void Reflect(AZ::ReflectContext* context);
 
+        // bumps Tangent export to later on in the generation phase, so that it can generate tangents after other rules have
+        // generated things like normals and UVs.
+
+        uint8_t GetPriority() const override;
+
         AZ::SceneAPI::Events::ProcessingResult Register(AZ::SceneAPI::Events::GenerateAdditionEventContext& context);
     };
 } // namespace AZ::SceneGenerationComponents

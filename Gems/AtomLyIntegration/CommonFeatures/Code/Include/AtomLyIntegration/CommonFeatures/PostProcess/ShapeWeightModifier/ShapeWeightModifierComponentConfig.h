@@ -18,6 +18,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(ShapeWeightModifierComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::ShapeWeightModifierComponentConfig, "{2CB13B7C-C532-4DFB-8FF4-79EF9F860868}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

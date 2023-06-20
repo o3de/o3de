@@ -18,7 +18,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(GraphMetaInfoHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(GraphMetaInfoHandler, SystemAllocator);
 
             GraphMetaInfoHandler::GraphMetaInfoHandler()
             {

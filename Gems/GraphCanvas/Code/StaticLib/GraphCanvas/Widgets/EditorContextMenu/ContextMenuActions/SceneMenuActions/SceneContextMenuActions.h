@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public SceneContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveUnusedElementsMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveUnusedElementsMenuAction, AZ::SystemAllocator);
         
         RemoveUnusedElementsMenuAction(QObject* parent);
         virtual ~RemoveUnusedElementsMenuAction() = default;
@@ -33,7 +33,7 @@ namespace GraphCanvas
         : public SceneContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveUnusedNodesMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveUnusedNodesMenuAction, AZ::SystemAllocator);
 
         RemoveUnusedNodesMenuAction(QObject* parent);
         virtual ~RemoveUnusedNodesMenuAction() = default;

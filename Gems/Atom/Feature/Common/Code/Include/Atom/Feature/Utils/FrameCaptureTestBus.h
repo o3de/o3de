@@ -15,6 +15,18 @@ namespace AZ
 {
     namespace Render
     {
+        //! The errors met when calling frame capture test request bus.
+        struct FrameCaptureTestError
+        {
+            AZ_TYPE_INFO(FrameCaptureTestError, "{C96D1649-6B7C-42AE-87C3-3253EA5214E2}");
+            static void Reflect(ReflectContext* context);
+
+            AZStd::string m_errorMessage;
+        };
+
+        using FrameCapturePathOutcome = AZ::Outcome<AZStd::string, FrameCaptureTestError>;
+        using FrameCaptureComparisonOutcome = AZ::Outcome<Utils::ImageDiffResult, FrameCaptureTestError>;
+
         class FrameCaptureTestRequests
             : public EBusTraits
         {
@@ -41,30 +53,29 @@ namespace AZ
             //! Build the screenshot file path: screenshotFolder + envPath + imageName
             //! @imageName the image name of the screenshot; when empty string is passed, returns the folder.
             //! @return the full path of the screenshot.
-            virtual AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
+            virtual FrameCapturePathOutcome BuildScreenshotFilePath(
+                const AZStd::string& imageName, bool useEnvPath) = 0;
 
             //! Build the screenshot file path: officialBaselineImageFolder + imageName
             //! @param imageName the image name of the screenshot; when empty string is passed, returns the folder.
             //! @return the full path of the screenshot.
-            virtual AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
+            virtual FrameCapturePathOutcome BuildOfficialBaselineFilePath(
+                const AZStd::string& imageName, bool useEnvPath) = 0;
 
             //! Build the screenshot file path: localBaselineImageFolder + envPath + imageName
             //! @param imageName the image name of the screenshot; when empty string is passed, returns the folder.
             //! @return the full path of the screenshot.
-            virtual AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) = 0;
+            virtual FrameCapturePathOutcome BuildLocalBaselineFilePath(
+                const AZStd::string& imageName, bool useEnvPath) = 0;
 
             //! Compare 2 screenshots files and give scores (using root mean square RMS) for the difference.
             //! @param filePathA the full path of screenshot A
             //! @param filePathB the full path of screenshot B
-            //! @param diffScore [out] the RMS result
-            //! @param filteredDiff [out] an alternate RMS value calculated after removing any diffs less than @minDiffFilter.
-            //! @param minDiffFilter diff values less than this will be filtered out before calculating @filteredDiff.
-            //! @return if the comparison is successfully performed
-            virtual bool CompareScreenshots(
+            //! @param minDiffFilter diff values less than this will be filtered out before calculating ImageDiffResult::m_filteredDiffScore.
+            //! @return the result code, diff score and filtered diff score.
+            virtual FrameCaptureComparisonOutcome CompareScreenshots(
                 const AZStd::string& filePathA,
                 const AZStd::string& filePathB,
-                float* diffScore,
-                float* filteredDiffScore,
                 float minDiffFilter) = 0;
         };
         using FrameCaptureTestRequestBus = EBus<FrameCaptureTestRequests>;

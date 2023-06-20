@@ -10,8 +10,8 @@
 #define AZ_PLATFORM_ANDROID
 
 // Hardware traits ...
-#define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 1
-#define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 0
+#define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 0
+#define AZ_TRAIT_USE_PLATFORM_SIMD_NEON 1
 #define AZ_TRAIT_USE_PLATFORM_SIMD_SSE 0
 
 // OS traits ...
@@ -101,6 +101,7 @@
 #define AZ_TRAIT_USE_WINDOWS_FILE_API 0
 #define AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION 0
 #define AZ_TRAIT_USE_ERRNO_T_TYPEDEF 1
+#define AZ_TRAIT_USE_JOB_THREADS_CONCURRENCY_RATIO  0.6f
 
 // wchar_t/char formatting
 // Reason: https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions?view=msvc-160

@@ -31,6 +31,8 @@ namespace SceneBuilder
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> LoadScene(
-            const AZStd::string& sceneFilePath, AZ::Uuid sceneSourceGuid) override;
+            const AZStd::string& sceneFilePath,
+            AZ::Uuid sceneSourceGuid,
+            const AZStd::string& watchFolder) override;
     };
 } // namespace SceneBuilder

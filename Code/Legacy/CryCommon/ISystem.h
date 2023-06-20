@@ -1208,7 +1208,10 @@ namespace Detail
         const char* GetHelp() { return NULL; }
         bool IsConstCVar() const { return true; }
         void SetOnChangeCallback(ConsoleVarFunc pChangeFunc) { (void)pChangeFunc; }
-        uint64 AddOnChangeFunctor(const AZStd::function<void()>& pChangeFunctor) { (void)pChangeFunctor; return 0; }
+        bool AddOnChangeFunctor(AZ::Name, const AZStd::function<void()>&)
+        {
+            return false;
+        }
         ConsoleVarFunc GetOnChangeCallback() const { InvalidAccess(); return NULL; }
         int GetRealIVal() const { return GetIVal(); }
         void SetLimits([[maybe_unused]] float min, [[maybe_unused]] float max) { return; }

@@ -27,7 +27,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(SyntaxStyleSettings, "{9C5A2A16-1855-4074-AA06-FC58A6A789D7}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(SyntaxStyleSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SyntaxStyleSettings, AZ::SystemAllocator);
 
         QColor ToQColor(const AZ::Vector3& color) const
         {

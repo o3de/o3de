@@ -37,7 +37,6 @@ class CSelectionGroup;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
-struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
 class CMusicManager;
@@ -46,19 +45,15 @@ class CEAXPresetManager;
 class CErrorReport;
 class ICommandManager;
 class CEditorCommandManager;
-class CHyperGraphManager;
 class CConsoleSynchronization;
 struct ISourceControl;
 struct IEditorClassFactory;
-struct ITransformManipulator;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
 #endif
 class CSettingsManager;
-struct IExportManager;
 class CDisplaySettings;
-struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
 struct SEditorSettings;
@@ -121,10 +116,6 @@ enum EEditorNotifyEvent
     eNotify_OnEditModeChange,          // Sent when editing mode change (move,rotate,scale,....)
     eNotify_OnEditToolChange,          // Sent when edit tool is changed (ObjectMode,TerrainModify,....)
 
-    // Deferred terrain create event.
-    eNotify_OnBeginTerrainCreate,      // Sent when terrain is created later (and not during level creation)
-    eNotify_OnEndTerrainCreate,        // Sent when terrain is created later (and not during level creation)
-
     // Game related events.
     eNotify_OnBeginGameMode,           // Sent when editor goes to game mode.
     eNotify_OnEndGameMode,             // Sent when editor goes out of game mode.
@@ -148,12 +139,6 @@ enum EEditorNotifyEvent
     eNotify_OnStopSequence,            // Sent when editor stop playing animation sequence.
 
     // Task specific events.
-    eNotify_OnTerrainRebuild,          // Sent when terrain was rebuilt (resized,...)
-    eNotify_OnBeginTerrainRebuild,     // Sent when terrain begin rebuilt (resized,...)
-    eNotify_OnEndTerrainRebuild,       // Sent when terrain end rebuilt (resized,...)
-    eNotify_OnVegetationObjectSelection, // When vegetation objects selection change.
-    eNotify_OnVegetationPanelUpdate,   // When vegetation objects selection change.
-
     eNotify_OnDataBaseUpdate,          // DataBase Library was modified.
 
     eNotify_OnLayerImportBegin,         //layer import was started
@@ -469,14 +454,11 @@ struct IEditor
     virtual bool IsInMatEditMode() = 0;
     //! Enable/Disable updates of editor.
     virtual void EnableUpdate(bool enable) = 0;
-    //! Enable/Disable accelerator table, (Enabled by default).
-    virtual void EnableAcceleratos(bool bEnable) = 0;
     virtual SFileVersion GetFileVersion() = 0;
     virtual SFileVersion GetProductVersion() = 0;
     //! Retrieve pointer to game engine instance
     virtual CGameEngine* GetGameEngine() = 0;
     virtual CDisplaySettings* GetDisplaySettings() = 0;
-    virtual const SGizmoParameters& GetGlobalGizmoParameters() = 0;
     //! Create new object
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
@@ -495,8 +477,6 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Returns IconManager.
-    virtual IIconManager* GetIconManager() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
@@ -542,12 +522,6 @@ struct IEditor
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
-    //! Shows/Hides transformation manipulator.
-    //! if bShow is true also returns a valid ITransformManipulator pointer.
-    virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
-    //! Return a pointer to a ITransformManipulator pointer if shown.
-    //! nullptr if manipulator is not shown.
-    virtual ITransformManipulator* GetTransformManipulator() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;
@@ -657,8 +631,6 @@ struct IEditor
 
     virtual void ReduceMemory() = 0;
 
-    //! Export manager for exporting objects and a terrain from the game to DCC tools
-    virtual IExportManager* GetExportManager() = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;

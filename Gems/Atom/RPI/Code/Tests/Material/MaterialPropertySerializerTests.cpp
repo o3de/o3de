@@ -18,18 +18,20 @@
 namespace JsonSerializationTests
 {
     class MaterialPropertySerializerTestDescription :
-        public JsonSerializerConformityTestDescriptor<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>
+        public JsonSerializerConformityTestDescriptor<AZ::RPI::MaterialPropertySourceData>
     {
     public:
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
+            AZ::RPI::MaterialPropertySourceData::Reflect(context.get());
             AZ::RPI::MaterialPropertyDescriptor::Reflect(context.get());
             AZ::RPI::ReflectMaterialDynamicMetadata(context.get());
         }
 
         void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context) override
         {
+            AZ::RPI::MaterialPropertySourceData::Reflect(context.get());
             AZ::RPI::MaterialTypeSourceData::Reflect(context.get());
         }
 
@@ -38,14 +40,14 @@ namespace JsonSerializationTests
             return AZStd::make_shared<AZ::RPI::JsonMaterialPropertySerializer>();
         }
 
-        AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreateDefaultInstance() override
+        AZStd::shared_ptr<AZ::RPI::MaterialPropertySourceData> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>();
+            return AZStd::make_shared<AZ::RPI::MaterialPropertySourceData>();
         }
 
-        AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreatePartialDefaultInstance() override
+        AZStd::shared_ptr<AZ::RPI::MaterialPropertySourceData> CreatePartialDefaultInstance() override
         {
-            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>("testProperty");
+            auto result = AZStd::make_shared<AZ::RPI::MaterialPropertySourceData>("testProperty");
             result->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
             result->m_step = 1.0f;
             result->m_value = 0.0f;
@@ -62,9 +64,9 @@ namespace JsonSerializationTests
             })";
         }
 
-        AZStd::shared_ptr<AZ::RPI::MaterialTypeSourceData::PropertyDefinition> CreateFullySetInstance() override
+        AZStd::shared_ptr<AZ::RPI::MaterialPropertySourceData> CreateFullySetInstance() override
         {
-            auto result = AZStd::make_shared<AZ::RPI::MaterialTypeSourceData::PropertyDefinition>("testProperty");
+            auto result = AZStd::make_shared<AZ::RPI::MaterialPropertySourceData>("testProperty");
             result->m_description = "description";
             result->m_displayName = "display_name";
             result->m_dataType = AZ::RPI::MaterialPropertyDataType::Float;
@@ -76,7 +78,7 @@ namespace JsonSerializationTests
             result->m_softMax = 9.0f;
             result->m_step = 1.5f;
             result->m_visibility = AZ::RPI::MaterialPropertyVisibility::Hidden;
-            result->m_outputConnections.emplace_back(AZ::RPI::MaterialPropertyOutputType::ShaderOption, "o_foo", 2);
+            result->m_outputConnections.emplace_back(AZ::RPI::MaterialPropertyOutputType::ShaderOption, "o_foo");
 
             return result;
         }
@@ -99,8 +101,7 @@ namespace JsonSerializationTests
                 "connection":
                 {
                     "type": "ShaderOption",
-                    "name": "o_foo",
-                    "shaderIndex": 2
+                    "name": "o_foo"
                 },
                 "enumIsUv": true
             })";
@@ -112,8 +113,8 @@ namespace JsonSerializationTests
         }
 
         bool AreEqual(
-            const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& lhs,
-            const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& rhs) override
+            const AZ::RPI::MaterialPropertySourceData& lhs,
+            const AZ::RPI::MaterialPropertySourceData& rhs) override
         {
             if (lhs.GetName() != rhs.GetName()) { return false; }
             if (lhs.m_description != rhs.m_description) { return false; }
@@ -133,8 +134,7 @@ namespace JsonSerializationTests
                 auto& leftConnection = lhs.m_outputConnections[i];
                 auto& rightConnection = rhs.m_outputConnections[i];
                 if (leftConnection.m_type != rightConnection.m_type) { return false; }
-                if (leftConnection.m_fieldName != rightConnection.m_fieldName) { return false; }
-                if (leftConnection.m_shaderIndex != rightConnection.m_shaderIndex) { return false; }
+                if (leftConnection.m_name!= rightConnection.m_name) { return false; }
             }
             return true;
         }
@@ -159,6 +159,7 @@ namespace UnitTest
         void Reflect(ReflectContext* context) override
         {
             RPITestFixture::Reflect(context);
+            MaterialPropertySourceData::Reflect(context);
             MaterialTypeSourceData::Reflect(context);
         }
         
@@ -189,7 +190,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -222,7 +223,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -246,7 +247,7 @@ namespace UnitTest
         []
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -265,7 +266,7 @@ namespace UnitTest
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
         
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -315,7 +316,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -388,7 +389,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -404,7 +405,7 @@ namespace UnitTest
         EXPECT_EQ(MaterialPropertyDataType::UInt, propertyData[2].m_dataType);
         EXPECT_EQ(AZ::RPI::MaterialPropertyValue(0u), propertyData[2].m_value);
 
-        for (const MaterialTypeSourceData::PropertyDefinition& property : propertyData)
+        for (const MaterialPropertySourceData& property : propertyData)
         {
             EXPECT_FALSE(property.m_min.IsValid());
             EXPECT_FALSE(property.m_max.IsValid());
@@ -437,7 +438,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -509,7 +510,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -558,7 +559,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -622,7 +623,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -690,7 +691,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -752,7 +753,7 @@ namespace UnitTest
         ]
         )";
 
-        AZStd::vector<MaterialTypeSourceData::PropertyDefinition> propertyData;
+        AZStd::vector<MaterialPropertySourceData> propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -784,13 +785,12 @@ namespace UnitTest
             "type": "Float",
             "connection": {
                 "type": "ShaderOption",
-                "name": "o_foo",
-                "shaderIndex": 2
+                "name": "o_foo"
             }
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -798,12 +798,10 @@ namespace UnitTest
 
         EXPECT_EQ(1, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[0].m_type);
-        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
-        EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_name);
 
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/type", "Success"));
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/name", "Success"));
-        EXPECT_TRUE(loadResult.ContainsMessage("/connection/shaderIndex", "Success"));
         EXPECT_FALSE(loadResult.ContainsOutcome(JsonSerializationResult::Outcomes::Skipped));
 
         TestStoreToJson(propertyData, inputJson);
@@ -819,13 +817,12 @@ namespace UnitTest
             "type": "Float",
             "connection": {
                 "type": "ShaderOption",
-                "id": "o_foo",
-                "shaderIndex": 2
+                "id": "o_foo"
             }
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -835,12 +832,10 @@ namespace UnitTest
 
         EXPECT_EQ(1, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[0].m_type);
-        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
-        EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_name);
 
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/type", "Success"));
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/id", "Success"));
-        EXPECT_TRUE(loadResult.ContainsMessage("/connection/shaderIndex", "Success"));
         EXPECT_FALSE(loadResult.ContainsOutcome(JsonSerializationResult::Outcomes::Skipped));
     }
 
@@ -853,19 +848,17 @@ namespace UnitTest
             "connection": [
                 {
                     "type": "ShaderInput",
-                    "name": "o_foo",
-                    "shaderIndex": 2
+                    "name": "o_foo"
                 },
                 {
                     "type": "ShaderOption",
-                    "name": "o_bar",
-                    "shaderIndex": 1
+                    "name": "o_bar"
                 }
             ]
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -873,19 +866,15 @@ namespace UnitTest
 
         EXPECT_EQ(2, propertyData.m_outputConnections.size());
         EXPECT_EQ(MaterialPropertyOutputType::ShaderInput, propertyData.m_outputConnections[0].m_type);
-        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_fieldName);
-        EXPECT_EQ(2, propertyData.m_outputConnections[0].m_shaderIndex);
+        EXPECT_EQ("o_foo", propertyData.m_outputConnections[0].m_name);
 
         EXPECT_EQ(MaterialPropertyOutputType::ShaderOption, propertyData.m_outputConnections[1].m_type);
-        EXPECT_EQ("o_bar", propertyData.m_outputConnections[1].m_fieldName);
-        EXPECT_EQ(1, propertyData.m_outputConnections[1].m_shaderIndex);
+        EXPECT_EQ("o_bar", propertyData.m_outputConnections[1].m_name);
 
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/0/type", "Success"));
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/0/name", "Success"));
-        EXPECT_TRUE(loadResult.ContainsMessage("/connection/0/shaderIndex", "Success"));
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/1/type", "Success"));
         EXPECT_TRUE(loadResult.ContainsMessage("/connection/1/name", "Success"));
-        EXPECT_TRUE(loadResult.ContainsMessage("/connection/1/shaderIndex", "Success"));
         EXPECT_FALSE(loadResult.ContainsOutcome(JsonSerializationResult::Outcomes::Skipped));
 
         TestStoreToJson(propertyData, inputJson);
@@ -901,14 +890,13 @@ namespace UnitTest
             "conection": [
                 {
                     "type": "ShaderInput",
-                    "name": "o_foo",
-                    "shaderIndex": 2
+                    "name": "o_foo"
                 }
             ]
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -923,7 +911,7 @@ namespace UnitTest
 
     TEST_F(MaterialPropertySerializerTests, Load_Warning_SkippedConnectionField)
     {
-        // "shadrIndex" is misspelled
+        // "nam" is misspelled
         const AZStd::string inputJson = R"(
         {
             "name": "testProperty",
@@ -931,14 +919,13 @@ namespace UnitTest
             "connection": [
                 {
                     "type": "ShaderInput",
-                    "shadrIndex": 2,
-                    "name": "o_foo"
+                    "nam": "o_foo"
                 }
             ]
         }
         )";
 
-        MaterialTypeSourceData::PropertyDefinition propertyData;
+        MaterialPropertySourceData propertyData;
         JsonTestResult loadResult = LoadTestDataFromJson(propertyData, inputJson);
 
         EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
@@ -947,11 +934,10 @@ namespace UnitTest
         EXPECT_EQ(propertyData.GetName(), "testProperty");
         EXPECT_EQ(propertyData.m_dataType, MaterialPropertyDataType::Float);
         EXPECT_EQ(propertyData.m_outputConnections.size(), 1);
-        EXPECT_EQ(propertyData.m_outputConnections[0].m_fieldName, "o_foo");
+        EXPECT_EQ(propertyData.m_outputConnections[0].m_name, "");
         EXPECT_EQ(propertyData.m_outputConnections[0].m_type, MaterialPropertyOutputType::ShaderInput);
-        EXPECT_EQ(propertyData.m_outputConnections[0].m_shaderIndex, -1);
 
-        EXPECT_TRUE(loadResult.ContainsMessage("/connection/0/shadrIndex", "skip"));
+        EXPECT_TRUE(loadResult.ContainsMessage("/connection/0/nam", "skip"));
     }
 }
 

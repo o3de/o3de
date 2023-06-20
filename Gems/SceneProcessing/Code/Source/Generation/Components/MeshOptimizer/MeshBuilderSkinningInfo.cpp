@@ -19,7 +19,7 @@
 
 namespace AZ::MeshBuilder
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderSkinningInfo, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderSkinningInfo, AZ::SystemAllocator)
 
 
     // constructor

@@ -10,8 +10,6 @@ set(FILES
     SceneCoreConfiguration.h
     DllMain.cpp
     SceneBuilderDependencyBus.h
-    SceneCoreStandaloneAllocator.h
-    SceneCoreStandaloneAllocator.cpp
     DataTypes/IManifestObject.h
     DataTypes/IGraphObject.h
     DataTypes/DataTypeUtilities.h
@@ -46,7 +44,9 @@ set(FILES
     DataTypes/Rules/ISkeletonProxyRule.h
     DataTypes/Rules/ICoordinateSystemRule.h
     DataTypes/Rules/IClothRule.h
+    DataTypes/Rules/IUnmodifiableRule.h
     DataTypes/Rules/ISkinRule.h
+    DataTypes/Rules/ITagRule.h
     Components/BehaviorComponent.h
     Components/BehaviorComponent.cpp
     Components/ExportingComponent.h

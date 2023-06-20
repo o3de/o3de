@@ -169,11 +169,15 @@ namespace AZ
                 //! Utility function to load an asset and manifest from file by using the EBus functions above.
                 //! @param assetFilePath The absolute path to the source file (not the manifest).
                 //! @param sourceGuid The guid assigned to the source file (not the manifest).
-                //! @param requester The application making the request to load the file. This can be used to optimize the type and amount of data
-                //! to load.
+                //! @param requester The application making the request to load the file. This can be used to optimize the type and amount of data to load.
                 //! @param loadingComponentUuid The UUID assigned to the loading component.
-                static AZStd::shared_ptr<Containers::Scene> LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath,
-                    const Uuid& sourceGuid, RequestingApplication requester, const Uuid& loadingComponentUuid);
+                //! @param watchFolder is the scan folder that it was found inside
+                static AZStd::shared_ptr<Containers::Scene> LoadSceneFromVerifiedPath(
+                    const AZStd::string& assetFilePath,
+                    const Uuid& sourceGuid,
+                    RequestingApplication requester,
+                    const Uuid& loadingComponentUuid,
+                    const AZStd::string& watchFolder);
 
                 //! Utility function to determine if a given file path points to a scene manifest file (.assetinfo).
                 //! @param filePath A relative or absolute path to the file to check.

@@ -31,9 +31,6 @@
 
 namespace Multiplayer
 {
-    using namespace testing;
-    using namespace ::UnitTest;
-
     class MultiplayerNetworkEntityTests : public NetworkEntityTests
     {
     public:
@@ -333,18 +330,19 @@ namespace Multiplayer
         EXPECT_EQ(message.GetEstimatedSerializeSize(), 17);
 
         // Test ctors, assignment and comparisons (const and non const versions)
-        message = NetworkEntityUpdateMessage(m_root->m_netId, false);
+        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, true, false);
         EXPECT_EQ(m_root->m_netId, message.GetEntityId());
-        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId);
         EXPECT_EQ(message.GetNetworkRole(), NetEntityRole::Authority);
-        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, prefabId);
+        message = NetworkEntityUpdateMessage(NetEntityRole::Authority, m_root->m_netId, false, false);
         AzNetworking::PacketEncodingBuffer buffer;
+        message.SetPrefabEntityId(prefabId);
         EXPECT_NE(message.GetPrefabEntityId().m_prefabName.GetCStr(), "");
         message.SetData(buffer);
         NetworkEntityUpdateMessage message2(AZStd::move(message));
         EXPECT_EQ(message, message2);
-        EXPECT_TRUE(m_root->m_replicator->GetPropertyPublisher()->PrepareSerialization());
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
         const NetworkEntityUpdateMessage constMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 1 });
         EXPECT_TRUE(message != constMessage);
         message = constMessage;
         EXPECT_EQ(message, constMessage);
@@ -365,6 +363,122 @@ namespace Multiplayer
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         EXPECT_FALSE(m_entityReplicationManager->HandleEntityDeleteMessage(m_root->m_replicator.get(), header, message));
         EXPECT_TRUE(m_entityReplicationManager->HandleEntityUpdateMessage(m_mockConnection.get(), header, constMessage));
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, EntityReplicatorNoDeleteSentIfCreateWasNotSent)
+    {
+        // Don't send an entity delete message if no create messages have been sent yet either.
+        m_root->m_replicator->MarkForRemoval();
+        EXPECT_FALSE(m_root->m_replicator->HasChangesToPublish());
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, EntityReplicationManagerNoDeleteHandledIfNoCreateReceived)
+    {
+        // Don't process an entity delete message if no create message has been received yet.
+        // If the message is processed, the entity will get created then immediately destroyed, which is wasted processing.
+
+        // "Send" a creation message.
+        EXPECT_TRUE(m_root->m_replicator->HasChangesToPublish());
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage createMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 1 });
+
+        // Mark the entity as deleted and "send" a delete message.
+        m_root->m_replicator->MarkForRemoval();
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage deleteMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 2 });
+
+        // When processing the message, nothing should happen, and the message should be marked as handled because it is dropped.
+        // If the message were attempted to be processed, HandleEntityUpdateMessage() would return false from
+        // a deserialize failure due to the wrong network role, which would then cause this test to fail.
+        UdpPacketHeader header(
+            PacketType{ 11111 }, InvalidSequenceId, SequenceId{ 1 }, InvalidSequenceId, 0xF8000FFF, SequenceRolloverCount{ 0 });
+        EXPECT_TRUE(m_entityReplicationManager->HandleEntityUpdateMessage(m_mockConnection.get(), header, deleteMessage));
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, EntityReplicatorDeleteMessageIncludesUpdatedProperties)
+    {
+        // When sending a delete message, the message should also contain any properties that were changed
+        // since the previous replication.
+
+        // Always claim that every packet sent was acknowledged.
+        ON_CALL(*m_mockConnection, WasPacketAcked).WillByDefault(::testing::Return(true));
+
+        // First "send" a creation message.
+        EXPECT_TRUE(m_root->m_replicator->HasChangesToPublish());
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage createMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 1 });
+        EXPECT_FALSE(createMessage.GetIsDelete());
+        
+
+        // It should be seen as sent, so nothing more to publish.
+        EXPECT_FALSE(m_root->m_replicator->HasChangesToPublish());
+
+        // Change the translation on the entity and notify that it has been dirtied.
+        // Make sure the replicator sees it as a new change.
+        AZ::TransformBus::Event(m_root->m_entity->GetId(), &AZ::TransformBus::Events::SetWorldTranslation, AZ::Vector3(1.0f, 2.0f, 3.0f));
+        m_networkEntityManager->NotifyEntitiesDirtied();
+        EXPECT_TRUE(m_root->m_replicator->HasChangesToPublish());
+
+        // Next, mark the entity as deleted.
+        m_root->m_replicator->MarkForRemoval();
+
+        // The delete should be seen as a change that needs to be sent.
+        EXPECT_TRUE(m_root->m_replicator->HasChangesToPublish());
+
+        // Generate the delete packet.
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage deleteMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 2 });
+
+        // The message should be a delete message that has a payload larger than 3 bytes.
+        // A 3-byte payload is just a header, more than 3 bytes includes property data changes.
+        EXPECT_TRUE(deleteMessage.GetIsDelete());
+        EXPECT_GT(deleteMessage.GetData()->GetSize(), 3);
+
+        // The delete should now be seen as sent too.
+        EXPECT_FALSE(m_root->m_replicator->HasChangesToPublish());
+    }
+
+    TEST_F(MultiplayerNetworkEntityTests, EntityReplicatorDeleteMessageResentUntilAcknowledged)
+    {
+        // When sending a delete message, the message should keep getting resent until it has been acknowledged.
+
+        // Start by mocking that no packets were acknowledged.
+        ON_CALL(*m_mockConnection, WasPacketAcked).WillByDefault(::testing::Return(false));
+
+        // First "send" a creation message.
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage createMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 1 });
+
+        // Next, mark the entity as deleted.
+        m_root->m_replicator->MarkForRemoval();
+
+        // Generate the delete packet.
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage deleteMessage = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 2 });
+        EXPECT_TRUE(deleteMessage.GetIsDelete());
+
+        // The delete shouldn't be seen as acknowledged yet, so we should still need to publish changes.
+        EXPECT_FALSE(m_root->m_replicator->IsDeletionAcknowledged());
+        EXPECT_TRUE(m_root->m_replicator->HasChangesToPublish());
+
+        // Generate another delete packet. It should still not be acknowledged, so we should still need to publish changes.
+        EXPECT_TRUE(m_root->m_replicator->PrepareToGenerateUpdatePacket());
+        const NetworkEntityUpdateMessage deleteMessage2 = m_root->m_replicator->GenerateUpdatePacket();
+        m_root->m_replicator->RecordSentPacketId(AzNetworking::PacketId{ 3 });
+        EXPECT_TRUE(deleteMessage2.GetIsDelete());
+        EXPECT_FALSE(m_root->m_replicator->IsDeletionAcknowledged());
+        EXPECT_TRUE(m_root->m_replicator->HasChangesToPublish());
+
+        // Set the messages to acknowledged and make sure there are no longer any changes to publish.
+        ON_CALL(*m_mockConnection, WasPacketAcked).WillByDefault(::testing::Return(true));
+        EXPECT_TRUE(m_root->m_replicator->IsDeletionAcknowledged());
+        EXPECT_FALSE(m_root->m_replicator->HasChangesToPublish());
     }
 
     TEST_F(MultiplayerNetworkEntityTests, TestNetworkEntityManagerRelevancy)

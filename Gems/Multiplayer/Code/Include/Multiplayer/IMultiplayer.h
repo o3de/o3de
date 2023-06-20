@@ -69,6 +69,8 @@ namespace Multiplayer
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using LevelLoadBlockedEvent = AZ::Event<>;
+    using NoServerLevelLoadedEvent = AZ::Event<>;
+    using VersionMismatchEvent = AZ::Event<>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -102,10 +104,11 @@ namespace Multiplayer
         virtual void InitializeMultiplayer(MultiplayerAgentType state) = 0;
 
         //! Starts hosting a server.
-        //! @param port The port to listen for connection on
+        //! @param port The port to listen for connection on, 0 means use the currently configured port value of sv_port
         //! @param isDedicated Whether the server is dedicated or client hosted
         //! @return if the application successfully started hosting
-        virtual bool StartHosting(uint16_t port, bool isDedicated = true) = 0;
+        static const uint16_t UseDefaultHostPort = 0;
+        virtual bool StartHosting(uint16_t port = UseDefaultHostPort, bool isDedicated = true) = 0;
 
         //! Connects to the specified IP as a Client.
         //! @param remoteAddress The domain or IP to connect to
@@ -145,18 +148,25 @@ namespace Multiplayer
         //! @param handler The ServerAcceptanceReceived Handler to add
         virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
 
-        //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
-        //! @param handler The SessionInitEvent Handler to add
+        //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or SessionNotificationBus::OnCreateSessionEnd
         virtual void AddSessionInitHandler(SessionInitEvent::Handler& handler) = 0;
 
-        //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
-        //! @param handler The SessionShutdownEvent handler to add
+        //! @deprecated If looking for an event when a multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or SessionNotificationBus::OnDestroySessionEnd.
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
 
         //! Adds a LevelLoadBlockedEvent Handler which is invoked whenever the multiplayer system blocks a level load.
         //! @param handler The LevelLoadBlockedEvent handler to add
         virtual void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) = 0;
 
+        //! Adds a NoServerLevelLoadedEvent Handler which is invoked whenever a client connects to a server that doesn't have any level loaded.
+        //! @param handler The NoServerLevelLoadedEvent handler to add
+        virtual void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) = 0;
+
+        //! Adds a VersionMismatchEvent Handler which is invoked whenever two multiplayer endpoints have a version mismatch.
+        //! For example, the provided handler will be triggered if a client tries connecting to a server that's using a different multiplayer version.
+        //! @param handler The VersionMismatchEvent handler to add
+        virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
+        
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating
         //! @param hostId             the host id of the host the client is migrating to

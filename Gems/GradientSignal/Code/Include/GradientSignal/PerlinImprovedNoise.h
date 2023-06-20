@@ -20,7 +20,7 @@ namespace GradientSignal
     class PerlinImprovedNoise final
     {
     public:
-        AZ_CLASS_ALLOCATOR(PerlinImprovedNoise, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PerlinImprovedNoise, AZ::SystemAllocator);
 
         /**
         * Prepares the permutation table with a given random seed

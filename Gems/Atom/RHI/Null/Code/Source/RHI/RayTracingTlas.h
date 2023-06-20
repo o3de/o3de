@@ -21,7 +21,7 @@ namespace AZ
             : public RHI::RayTracingTlas
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingTlas> Create();
             

@@ -26,6 +26,8 @@ namespace AZ
             AZ_RTTI(ImageView, "{F2BDEE1F-DEFD-4443-9012-A28AED028D7B}", ResourceView);
             virtual ~ImageView() = default;
 
+            static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+
             //! Initializes the image view.
             ResultCode Init(const Image& image, const ImageViewDescriptor& viewDescriptor);
 
@@ -40,6 +42,16 @@ namespace AZ
 
             //! Returns the hash of the view.
             HashValue64 GetHash() const;
+
+            virtual uint32_t GetBindlessReadIndex() const
+            {
+                return InvalidBindlessIndex;
+            }
+
+            virtual uint32_t GetBindlessReadWriteIndex() const
+            {
+                return InvalidBindlessIndex;
+            }
 
         protected:
             HashValue64 m_hash = HashValue64{ 0 };

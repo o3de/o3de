@@ -7,6 +7,7 @@
  */
 #include <RHI/WSISurface.h>
 #include <RHI/Instance.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -28,7 +29,7 @@ namespace AZ
             if (m_nativeSurface != VK_NULL_HANDLE)
             {
                 Instance& instance = Instance::GetInstance();
-                instance.GetContext().DestroySurfaceKHR(instance.GetNativeInstance(), m_nativeSurface, nullptr);
+                instance.GetContext().DestroySurfaceKHR(instance.GetNativeInstance(), m_nativeSurface, VkSystemAllocator::Get());
                 m_nativeSurface = VK_NULL_HANDLE;
             }
         }

@@ -43,27 +43,28 @@ namespace AZ
 
         void DrawListContext::AddDrawPacket(const DrawPacket* drawPacket, float depth)
         {
-            if (Validation::IsEnabled())
+            if (drawPacket)
             {
-                if (!drawPacket)
+                DrawListsByTag& threadListsByTag = m_threadListsByTag.GetStorage();
+
+                for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
                 {
-                    AZ_Error("DrawListContext", false, "Null draw packet was added to a draw list context. This is not permitted and will crash if validation is disabled.");
-                    return;
+                    const DrawListTag drawListTag = drawPacket->GetDrawListTag(i);
+
+                    if (m_drawListMask[drawListTag.GetIndex()])
+                    {
+                        DrawItemProperties drawItem = drawPacket->GetDrawItem(i);
+                        drawItem.m_depth = depth;
+                        threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
+                    }
                 }
             }
-
-            DrawListsByTag& threadListsByTag = m_threadListsByTag.GetStorage();
-
-            for (size_t i = 0; i < drawPacket->GetDrawItemCount(); ++i)
+            else
             {
-                const DrawListTag drawListTag = drawPacket->GetDrawListTag(i);
-
-                if (m_drawListMask[drawListTag.GetIndex()])
-                {
-                    DrawItemProperties drawItem = drawPacket->GetDrawItem(i);
-                    drawItem.m_depth = depth;
-                    threadListsByTag[drawListTag.GetIndex()].push_back(drawItem);
-                }
+                AZ_Error(
+                    "DrawListContext",
+                    false,
+                    "Null draw packet was added to a draw list context. Visible object will be ignored.");
             }
         }
 

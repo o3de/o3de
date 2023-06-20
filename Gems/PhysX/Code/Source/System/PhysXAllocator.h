@@ -9,23 +9,12 @@
 
 #include <PxPhysicsAPI.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 
 namespace PhysX
 {
     //! System allocator to be used for all PhysX gem persistent allocations.
-    class PhysXAllocator
-        : public AZ::SystemAllocator
-    {
-        friend class AZ::AllocatorInstance<PhysXAllocator>;
-
-    public:
-
-        AZ_TYPE_INFO(PhysXAllocator, "{C07BA28C-F6AF-4AFA-A45C-6747476DE07F}");
-
-        const char* GetName() const override { return "PhysX System Allocator"; }
-        const char* GetDescription() const override { return "PhysX general memory allocator"; }
-    };
+    AZ_ALLOCATOR_DEFAULT_GLOBAL_WRAPPER(PhysXAllocator, AZ::SystemAllocator, "{C07BA28C-F6AF-4AFA-A45C-6747476DE07F}");
 
     //! Implementation of the PhysX memory allocation callback interface using Open 3D Engine allocator.
     class PxAzAllocatorCallback

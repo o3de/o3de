@@ -62,31 +62,33 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
     )
 
-    ly_add_target(
-        NAME DccScriptingInterface.Editor GEM_MODULE
-        NAMESPACE Gem
-        AUTOMOC
-        FILES_CMAKE
-            dccscriptinginterface_editor_shared_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-            PUBLIC
-                Include
-        BUILD_DEPENDENCIES
-            PUBLIC
-                Gem::DccScriptingInterface.Editor.API
-            PRIVATE
-                Gem::DccScriptingInterface.Editor.Private.Object
-        RUNTIME_DEPENDENCIES
-            Gem::QtForPython.Editor
-    )
+    if (PAL_TRAIT_HAS_QTFORPYTHON)
+        ly_add_target(
+            NAME DccScriptingInterface.Editor GEM_MODULE
+            NAMESPACE Gem
+            AUTOMOC
+            FILES_CMAKE
+                dccscriptinginterface_editor_shared_files.cmake
+            INCLUDE_DIRECTORIES
+                PRIVATE
+                    Source
+                PUBLIC
+                    Include
+            BUILD_DEPENDENCIES
+                PUBLIC
+                    Gem::DccScriptingInterface.Editor.API
+                PRIVATE
+                    Gem::DccScriptingInterface.Editor.Private.Object
+            RUNTIME_DEPENDENCIES
+                Gem::QtForPython.Editor
+        )
 
-    # By default, we will specify that the above target DccScriptingInterface would be used by
-    # Tool and Builder type targets when this gem is enabled.  If you don't want it
-    # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME DccScriptingInterface.Tools    NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
-    ly_create_alias(NAME DccScriptingInterface.Builders NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
+        # By default, we will specify that the above target DccScriptingInterface would be used by
+        # Tool and Builder type targets when this gem is enabled.  If you don't want it
+        # active in Tools or Builders by default, delete one of both of the following lines:
+        ly_create_alias(NAME DccScriptingInterface.Tools    NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
+        ly_create_alias(NAME DccScriptingInterface.Builders NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor)
+        endif()
 
     # For the Tools and Builders variants of DccScriptingInterface Gem, an alias to the DccScriptingInterface.Editor API target will be made
     ly_create_alias(NAME DccScriptingInterface.Tools.API NAMESPACE Gem TARGETS Gem::DccScriptingInterface.Editor.API)

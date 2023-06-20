@@ -43,6 +43,8 @@ set(FILES
     Source/Render/DiffuseProbeGridPreparePass.h
     Source/Render/DiffuseProbeGridQueryPass.cpp
     Source/Render/DiffuseProbeGridQueryPass.h
+    Source/Render/DiffuseProbeGridQueryFullscreenPass.cpp
+    Source/Render/DiffuseProbeGridQueryFullscreenPass.h
     Source/Render/DiffuseProbeGridRayTracingPass.cpp
     Source/Render/DiffuseProbeGridRayTracingPass.h
     Source/Render/DiffuseProbeGridRelocationPass.cpp

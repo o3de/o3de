@@ -97,16 +97,6 @@ def tests():
     return
 
 
-# -------------------------------------------------------------------------
-if DCCSI_DEV_MODE:
-    # If in dev mode this will test imports of __all__
-    from DccScriptingInterface.azpy.shared.utils.init import test_imports
-    _LOGGER.debug('Testing Imports from {0}'.format(_PACKAGENAME))
-    test_imports(__all__,
-                 _pkg=_PACKAGENAME,
-                 _logger=_LOGGER)
-
-
 ###########################################################################
 # --call block-------------------------------------------------------------
 if __name__ == "__main__":

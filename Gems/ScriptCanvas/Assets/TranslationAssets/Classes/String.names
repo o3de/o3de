@@ -11,7 +11,6 @@
             "methods": [
                 {
                     "base": "ReplaceString",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Replace String"
@@ -57,7 +56,6 @@
                 },
                 {
                     "base": "Join",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Join"
@@ -89,7 +87,6 @@
                 },
                 {
                     "base": "StartsWith",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Starts With"
@@ -128,7 +125,6 @@
                 },
                 {
                     "base": "ContainsString",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Contains String"
@@ -174,7 +170,6 @@
                 },
                 {
                     "base": "Split",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Split"
@@ -206,7 +201,6 @@
                 },
                 {
                     "base": "IsValidFindPosition",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Is Valid Find Position"
@@ -229,7 +223,6 @@
                 },
                 {
                     "base": "EndsWith",
-                    "context": "String",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Ends With"

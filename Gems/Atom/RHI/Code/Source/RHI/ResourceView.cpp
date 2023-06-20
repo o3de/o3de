@@ -36,7 +36,7 @@ namespace AZ
             {
                 ResourceInvalidateBus::Handler::BusDisconnect(m_resource.get());
                 ShutdownInternal();
-                
+
                 m_resource->EraseResourceView(this);
                 m_resource = nullptr;
                 DeviceObject::Shutdown();

@@ -25,7 +25,6 @@
 namespace EMotionFX
 {
     using CanAddSimpleMotionComponentFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

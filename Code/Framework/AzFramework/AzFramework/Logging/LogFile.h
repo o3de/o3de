@@ -25,7 +25,7 @@ namespace AzFramework
     class LogFile
     {
     public:
-        AZ_CLASS_ALLOCATOR(LogFile, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(LogFile, AZ::SystemAllocator)
 
         enum SeverityLevel
         {

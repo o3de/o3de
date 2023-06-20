@@ -24,7 +24,7 @@ namespace AzToolsFramework
             : public PrefabPublicRequestBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicRequestHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicRequestHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicRequestHandler, "{83FBDDF9-10BE-4373-B1DC-44B47EE4805C}");
 
             static void Reflect(AZ::ReflectContext* context);

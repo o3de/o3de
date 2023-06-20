@@ -17,29 +17,44 @@
 #include <AzCore/std/parallel/binary_semaphore.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzCore/std/typetraits/conditional.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzQtComponents/Utilities/QtPluginPaths.h>
 #include <AzTest/AzTest.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
+#include <QMainWindow>
 #endif // !defined(Q_MOC_RUN)
 
 #include <ostream>
 
-AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option") // warning suppressed: constant used in conditional expression
+// MSVC: warning suppressed: constant used in conditional expression
+// CLANG: warning suppressed: implicit conversion loses integer precision
+AZ_PUSH_DISABLE_WARNING(4127, "-Wshorten-64-to-32")
 #include <QtTest/QtTest>
 AZ_POP_DISABLE_WARNING
 
@@ -57,6 +72,35 @@ AZ_POP_DISABLE_WARNING
             return;                                         \
         }                                                   \
     }
+
+// Helper unit test hook for any tools unit tests that rely on a QApplication being created (e.g. any tests that need to create a QWidget)
+#define AZ_TOOLS_UNIT_TEST_HOOK_ENV(TEST_ENV)                                                           \
+    AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)                                     \
+    {                                                                                                   \
+        ::testing::InitGoogleMock(&argc, argv);                                                         \
+        AzQtComponents::PrepareQtPaths();                                                               \
+        QApplication app(argc, argv);                                                                   \
+        if (AZ_TRAIT_AZTEST_ATTACH_RESULT_LISTENER)                                                     \
+        {                                                                                               \
+            ::testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();   \
+            listeners.Append(new AZ::Test::OutputEventListener);                                        \
+        }                                                                                               \
+        AZ::Test::ApplyGlobalParameters(&argc, argv);                                                   \
+        AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
+        AZ::Test::addTestEnvironments({TEST_ENV});                                                      \
+        int result = RUN_ALL_TESTS();                                                                   \
+        if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)                               \
+        {                                                                                               \
+            std::cerr << "No tests were found for last suite ran!" << std::endl;                        \
+            result = 1;                                                                                 \
+        }                                                                                               \
+        return result;                                                                                  \
+    }
+
+#define AZ_TOOLS_UNIT_TEST_HOOK(TEST_ENV) \
+    AZ_TOOLS_UNIT_TEST_HOOK_ENV(TEST_ENV) \
+    AZ_BENCHMARK_HOOK() \
+    IMPLEMENT_TEST_EXECUTABLE_MAIN()
 
 namespace UnitTest
 {
@@ -119,6 +163,7 @@ namespace UnitTest
         AZ::Vector2 DefaultEditorCameraOrientation() const override;
         bool IconsVisible() const override;
         bool HelpersVisible() const override;
+        bool OnlyShowHelpersForSelectedEntities() const override;
 
         float m_gridSize = 1.0f;
         float m_angularStep = 0.0f;
@@ -127,6 +172,7 @@ namespace UnitTest
         bool m_stickySelect = true;
         bool m_iconsVisible = true;
         bool m_helpersVisible = true;
+        bool m_onlyShowForSelectedEntities = false;
     };
 
     /// Test widget to store QActions generated by EditorTransformComponentSelection.
@@ -215,16 +261,18 @@ namespace UnitTest
     };
 
     /// Base fixture for ToolsApplication editor tests.
+    template<bool CheckForLeaksOnDestruction = true>
     class ToolsApplicationFixture
-        : public AllocatorsTestFixture
+        : public AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>
     {
+        using Base = AZStd::conditional_t<CheckForLeaksOnDestruction, LeakDetectionFixture, testing::Test>;
     public:
         void SetUp() override final
         {
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
 
-            AllocatorsTestFixture::SetUp();
+            Base::SetUp();
 
             if (!GetApplication())
             {
@@ -232,7 +280,7 @@ namespace UnitTest
                 m_app = CreateTestApplication();
                 AZ::ComponentApplication::StartupParameters startupParameters;
                 startupParameters.m_loadAssetCatalog = false;
-
+                startupParameters.m_loadSettingsRegistry = false;
                 m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
             }
 
@@ -262,6 +310,24 @@ namespace UnitTest
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
                 viewportHandlerBuilder);
 
+            // We need to register the MainWindowActionContextIdentifier action context to a dummy QMainWindow for the Action Manager
+            // so that any actions/shortcuts registered to it from tools will work. This is typically only initialized in the Editor itself,
+            // so it doesn't get registered in the ToolsApplicationFixture, but some tools we are testing rely on it (e.g. viewport interactions).
+            m_defaultMainWindow = new QMainWindow();
+
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+            AzToolsFramework::ActionContextProperties contextProperties;
+            contextProperties.m_name = "O3DE Editor";
+
+            actionManagerInterface->RegisterActionContext(
+                EditorIdentifiers::MainWindowActionContextIdentifier, contextProperties);
+
+            hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+            AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+
             SetUpEditorFixtureImpl();
         }
 
@@ -269,12 +335,42 @@ namespace UnitTest
         {
             using AzToolsFramework::GetEntityContextId;
             using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+            
+            // Reset the Action Manager between test runs.
+            auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
+
+            if (auto actionManagerInternalInterface = AZ::Interface<AzToolsFramework::ActionManagerInternalInterface>::Get())
+            {
+                actionManagerInternalInterface->Reset();
+            }
+            if (auto hotKeyManagerInternalInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInternalInterface>::Get())
+            {
+                hotKeyManagerInternalInterface->Reset();
+            }
+            if (auto menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get())
+            {
+                menuManagerInternalInterface->Reset();
+            }
+            if (auto toolBarManagerInternalInterface = AZ::Interface<AzToolsFramework::ToolBarManagerInternalInterface>::Get())
+            {
+                toolBarManagerInternalInterface->Reset();
+            }
 
             // Reset back to Default Handler to prevent having a handler with dangling "this" pointer
             EditorInteractionSystemViewportSelectionRequestBus::Event(
                 GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
 
             TearDownEditorFixtureImpl();
+
+            if (m_defaultMainWindow)
+            {
+                delete m_defaultMainWindow;
+                m_defaultMainWindow = nullptr;
+            }
+
             m_editorActions.Disconnect();
 
             // Stop & delete the Application created by this fixture, hence not using GetApplication() here
@@ -284,8 +380,10 @@ namespace UnitTest
                 m_app.reset();
             }
 
-            AllocatorsTestFixture::TearDown();
+            Base::TearDown();
         }
+
+        QMainWindow* m_defaultMainWindow = nullptr;
 
         virtual void SetUpEditorFixtureImpl() {}
         virtual void TearDownEditorFixtureImpl() {}
@@ -416,6 +514,18 @@ namespace UnitTest
     /// Optional second parameter of Entity pointer if required.
     AZ::EntityId CreateEditorLayerEntity(const char* name, AZ::Entity** outEntity = nullptr);
 
+    /// Create a component for a given entity if the component is missing.
+    template<class ComponentType>
+    void CreateComponentIfMissing(AZ::Entity* entity)
+    {
+        ASSERT_TRUE(entity != nullptr) << "Cannot create a component for a null entity.";
+
+        if (!(entity->FindComponent<ComponentType>()))
+        {
+            entity->CreateComponent<ComponentType>();
+        }
+    }
+    
     using SliceAssets = AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::Asset<AZ::SliceAsset>>;
 
     /// This function transfers the ownership of all the entity pointers - do not delete or use them afterwards.
@@ -429,5 +539,37 @@ namespace UnitTest
 
     /// Destroy all the created slice assets.
     void DestroySlices(SliceAssets& sliceAssets);
+
+    //! Child class of ViewportUiManager which exposes the protected button group and viewport display
+    class ViewportUiManagerTestable : public AzToolsFramework::ViewportUi::ViewportUiManager
+    {
+    public:
+        using ViewportUiDisplay = AzToolsFramework::ViewportUi::Internal::ViewportUiDisplay;
+        using ButtonGroup = AzToolsFramework::ViewportUi::Internal::ButtonGroup;
+
+        ViewportUiManagerTestable() = default;
+        ~ViewportUiManagerTestable() override = default;
+
+        const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ButtonGroup>>& GetClusterMap();
+
+        ViewportUiDisplay* GetViewportUiDisplay();
+    };
+
+    //! Provides support for ViewportUi request calls.
+    class ViewportManagerWrapper
+    {
+    public:
+        void Create();
+        void Destroy();
+
+        ViewportUiManagerTestable* GetViewportManager();
+
+        QWidget* GetMockRenderOverlay();
+
+    private:
+        AZStd::unique_ptr<ViewportUiManagerTestable> m_viewportManager;
+        AZStd::unique_ptr<QWidget> m_parentWidget;
+        AZStd::unique_ptr<QWidget> m_mockRenderOverlay;
+    };
 
 } // namespace UnitTest

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -77,6 +78,12 @@ namespace AzFramework
 
         //! Remove callback for specific typeId (allows multiple callbacks per id)
         virtual void RemoveMessageHandler(AZ::u32 typeId, TMessageCallbackHandle callbackHandle) = 0;
+
+        //! Get the last socket result code from any socket call 
+        virtual AZ::s32 GetLastResult() const { return 0; }
+
+        //! Get the last socket-related error from any socket call
+        virtual AZStd::string GetLastErrorMessage() const { return AZStd::string(); };        
     };
 
     class EngineConnectionEvents

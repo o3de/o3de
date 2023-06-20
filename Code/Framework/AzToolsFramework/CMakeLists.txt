@@ -88,6 +88,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzManipulatorTestFramework.Static
+                AZ::AzCoreTestCommon
                 AZ::AzTest
                 AZ::AzQtComponents
         RUNTIME_DEPENDENCIES
@@ -95,6 +96,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME AZ::AzToolsFramework.Tests
+        LABELS REQUIRES_tiaf
     )
     ly_add_googlebenchmark(
         NAME AZ::AzToolsFramework.Benchmarks

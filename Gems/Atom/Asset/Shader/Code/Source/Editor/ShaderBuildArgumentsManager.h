@@ -58,7 +58,7 @@ namespace AZ
         class ShaderBuildArgumentsManager final
         {
         public:
-            AZ_CLASS_ALLOCATOR(ShaderBuildArgumentsManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderBuildArgumentsManager, AZ::SystemAllocator);
 
             static constexpr char LogName[] = "ShaderBuildArgumentsManager";
 

@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
+#include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderInputContract.h>
@@ -60,6 +61,7 @@ namespace AZ
             friend class ShaderAssetTester;
             friend class Shader;
         public:
+            AZ_CLASS_ALLOCATOR(ShaderAsset , SystemAllocator)
             AZ_RTTI(ShaderAsset, "{823395A3-D570-49F4-99A9-D820CD1DEF98}", Data::AssetData);
             static void Reflect(ReflectContext* context);
 
@@ -94,16 +96,18 @@ namespace AZ
             //! ShaderAsset.
             const Name& GetDrawListName() const;
 
-            //! Return the timestamp when the shader asset was built.
-            //! This is used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t GetBuildTimestamp() const;
-
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
+
+            //! Returns the default shader option values.
+            ShaderOptionGroup GetDefaultShaderOptions() const;
 
             //! Returns the supervariant index from the specified name.
             //! Note that this will append the system supervariant name from RPI::ShaderSystem when searching.
             SupervariantIndex GetSupervariantIndex(const AZ::Name& supervariantName) const;
+
+            //! If a Supervariant with such index doesn't exist, returns the default supervariant name "".
+            const AZ::Name& GetSupervariantName(SupervariantIndex supervariantIndex) const;
 
             //! This function should be your one stop shop to get a ShaderVariantAsset.
             //! Finds and returns the best matching ShaderVariantAsset given a ShaderVariantId.
@@ -219,12 +223,6 @@ namespace AZ
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset> /*shaderVariantAsset*/, bool /*isError*/) override {};
             ///////////////////////////////////////////////////////////////////
 
-            // Only Shader::OnAssetReloaded() should call this function, because it is pointless for an Asset to
-            // to refresh its own "serialized references" to other assets during  OnAssetReloaded().
-            // The problem is that OnAssetReloaded() doesn't do a good job at updating "serialized references" to other assets,
-            // So some other class must update the reference and that's why Shader() is the best class to do it.
-            void UpdateRootShaderVariantAsset(SupervariantIndex SupervariantIndex, Data::Asset<ShaderVariantAsset> newRootVariant);
-
             //! A Supervariant represents a set of static shader compilation parameters.
             //! Those parameters can be predefined c-preprocessor macros or specific arguments
             //! for AZSLc.
@@ -288,14 +286,13 @@ namespace AZ
             //! Defines the layout of the shader options in the asset.
             Ptr<ShaderOptionGroupLayout> m_shaderOptionGroupLayout;
 
+            //! Any values set here will override the default values that come from the m_shaderOptionGroupLayout.
+            ShaderVariantId m_defaultShaderOptionValueOverrides;
+
             //! List with shader data per RHI backend.
             AZStd::vector<ShaderApiDataContainer> m_perAPIShaderData;
 
             Name m_drawListName;
-
-            //! Use to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZ::u64 m_buildTimestamp = 0; 
-
 
             ///////////////////////////////////////////////////////////////////
             //! Do Not Serialize!

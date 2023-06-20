@@ -50,7 +50,7 @@ void ViewportAlign::AlignSelectedElements(EditorWindow* editorWindow, AlignType 
     {
         AZ::EntityId entityId = elementsToAlign[i];
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(entityId, UiTransformBus, GetCanvasSpacePoints, points);
+        UiTransformBus::Event(entityId, &UiTransformBus::Events::GetCanvasSpacePoints, points);
 
         // setup the AABB for this element
         AZ::Vector2 topLeft = points.GetAxisAlignedTopLeft();
@@ -118,7 +118,7 @@ void ViewportAlign::AlignSelectedElements(EditorWindow* editorWindow, AlignType 
             }
 
             // Let listeners know that the properties on this element have changed
-            EBUS_EVENT_ID(entityId, UiElementChangeNotificationBus, UiElementPropertyChanged);
+            UiElementChangeNotificationBus::Event(entityId, &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
         }
     }
 

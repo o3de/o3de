@@ -29,7 +29,7 @@ namespace EMotionFX
         : public MotionData
     {
     public:
-        AZ_CLASS_ALLOCATOR(UniformMotionData, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(UniformMotionData, MotionAllocator)
         AZ_RTTI(UniformMotionData, "{822B1269-FF6F-4406-A3A5-E1E39C289941}", MotionData)
 
         struct EMFX_API InitSettings

@@ -67,6 +67,14 @@ namespace AzToolsFramework
             }
         }
 
+        EditorLayer::~EditorLayer()
+        {
+            for (AZ::Entity* entity : m_layerEntities)
+            {
+                delete entity;
+            }
+        }
+
         void EditorLayer::Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

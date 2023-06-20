@@ -19,7 +19,7 @@ namespace AZ
             using Base = Pipeline;
 
         public:
-            AZ_CLASS_ALLOCATOR(ComputePipeline, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComputePipeline, AZ::ThreadPoolAllocator);
             AZ_RTTI(ComputePipeline, "1D7640F2-3798-4174-AE81-0232C9F745FC", Base);
 
             static RHI::Ptr<ComputePipeline> Create();

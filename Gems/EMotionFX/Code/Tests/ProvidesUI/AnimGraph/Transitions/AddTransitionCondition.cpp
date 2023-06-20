@@ -34,11 +34,7 @@ namespace QTest
 
 namespace EMotionFX
 {
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(AnimGraphUIFixture, DISABLED_CanAddTransitionCondition)
-#else
     TEST_F(AnimGraphUIFixture, CanAddTransitionCondition)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         // This test checks that you can edit a transition between nodes of an animgraph
         RecordProperty("test_case_id", "C21948785");

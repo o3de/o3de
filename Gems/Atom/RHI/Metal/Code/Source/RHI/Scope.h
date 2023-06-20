@@ -30,7 +30,7 @@ namespace AZ
             using Base = RHI::Scope;
         public:
             AZ_RTTI(Scope, "{FDACECE6-322E-480C-9331-DC639C320882}", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             //Used for aliased memory
             enum class ResourceFenceAction : uint32_t
@@ -63,7 +63,16 @@ namespace AZ
             uint64_t GetWaitFenceValueByQueue(RHI::HardwareQueueClass hardwareQueueClass) const;
             const FenceValueSet& GetWaitFences() const;
 
+            //!Queue a fence related to the transient resource for this scope
             void QueueResourceFence(ResourceFenceAction fenceAction, Fence& fence);
+            
+            //! Signal all the transient resource fences associated with this scope
+            void SignalAllResourceFences(CommandList& commandList) const;
+            void SignalAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
+            
+            //! Wait on all the transient resource fences associated with this scope
+            void WaitOnAllResourceFences(CommandList& commandList) const;
+            void WaitOnAllResourceFences(id <MTLCommandBuffer> mtlCommandBuffer) const;
         private:
             
             struct QueryPoolAttachment
@@ -77,6 +86,7 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Scope
+            void InitInternal() override;
             void DeactivateInternal() override;
             void CompileInternal(RHI::Device& device) override;
             void AddQueryPoolUse(RHI::Ptr<RHI::QueryPool> queryPool, const RHI::Interval& interval, RHI::ScopeAttachmentAccess access) override;
@@ -84,9 +94,6 @@ namespace AZ
             
             //! Cache the multisample state and at the same time hook up the custom sample msaa positions for the render pass.
             void ApplyMSAACustomPositions(const ImageView* imageView);
-            
-            /// Depth stencil attachment access.
-            RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
 
             /// Render pass descriptor needed for RenderCommandEncoder or ParallelCommandEncoder
             MTLRenderPassDescriptor*    m_renderPassDescriptor = nil;
@@ -132,7 +139,8 @@ namespace AZ
             /// Track all the heaps that will need too be made resident for this scope
             AZStd::set<id<MTLHeap>> m_residentHeaps;
 
-            
+            /// Cache marker name which will be used for labelling.
+            Name m_markerName;
         };
     }
 }

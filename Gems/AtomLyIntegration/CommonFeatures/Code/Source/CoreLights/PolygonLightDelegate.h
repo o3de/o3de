@@ -13,37 +13,41 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/PolygonPrismShapeComponentBus.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <Atom/Feature/CoreLights/PolygonLightFeatureProcessorInterface.h>
 
-namespace AZ
+namespace AZ::Render
 {
-    namespace Render
+    //! Manages rendering a Polygon light through the Polygon light feature processor and communication with a Polygon shape bus for the
+    //! area light component.
+    class PolygonLightDelegate final : public LightDelegateBase<PolygonLightFeatureProcessorInterface>
     {
-        //! Manages rendering a Polygon light through the Polygon light feature processor and communication with a Polygon shape bus for the area light component.
-        class PolygonLightDelegate final
-            : public LightDelegateBase<PolygonLightFeatureProcessorInterface>
-        {
-        public:
-            PolygonLightDelegate(LmbrCentral::PolygonPrismShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible);
+    public:
+        PolygonLightDelegate(LmbrCentral::PolygonPrismShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible);
 
-            // LightDelegateBase overrides...
-            void SetLightEmitsBothDirections(bool lightEmitsBothDirections) override;
-            float GetSurfaceArea() const override;
-            float GetEffectiveSolidAngle() const override { return PhotometricValue::DirectionalEffectiveSteradians; }
-            float CalculateAttenuationRadius(float lightThreshold) const override;
-            void DrawDebugDisplay(const Transform& transform, const Color& color, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const override;
+        // LightDelegateBase overrides...
+        void SetLightEmitsBothDirections(bool lightEmitsBothDirections) override;
+        float GetSurfaceArea() const override;
+        float GetEffectiveSolidAngle() const override;
+        float CalculateAttenuationRadius(float lightThreshold) const override;
+        void DrawDebugDisplay(
+            const Transform& transform,
+            const Color& color,
+            AzFramework::DebugDisplayRequests& debugDisplay,
+            bool isSelected) const override;
+        Aabb GetLocalVisualizationBounds() const override;
 
-        private:
+    private:
+        // LightDelegateBase overrides...
+        void HandleShapeChanged() override;
 
-            // LightDelegateBase overrides...
-            void HandleShapeChanged() override;
+        LmbrCentral::PolygonPrismShapeComponentRequests* m_shapeBus = nullptr;
+    };
 
-            LmbrCentral::PolygonPrismShapeComponentRequests* m_shapeBus = nullptr;
-        };
-
-    } // namespace Render
-} // namespace AZ
-
+    inline float PolygonLightDelegate::GetEffectiveSolidAngle() const
+    {
+        return PhotometricValue::DirectionalEffectiveSteradians;
+    }
+} // namespace AZ::Render

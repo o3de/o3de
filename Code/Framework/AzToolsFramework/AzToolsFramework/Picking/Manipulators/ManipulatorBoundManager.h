@@ -22,7 +22,7 @@ namespace AzToolsFramework
         class ManipulatorBoundManager
         {
         public:
-            AZ_CLASS_ALLOCATOR(ManipulatorBoundManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ManipulatorBoundManager, AZ::SystemAllocator);
 
             ManipulatorBoundManager() = default;
             ManipulatorBoundManager(const ManipulatorBoundManager&) = delete;

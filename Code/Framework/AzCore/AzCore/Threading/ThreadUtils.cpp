@@ -18,7 +18,7 @@ namespace AZ::Threading
         const uint32_t numReservedThreads = AZ::GetMin<uint32_t>(reservedNumThreads, maxHardwareThreads); // protect against num reserved being bigger than the number of hw threads
         const uint32_t maxWorkerThreads = maxNumWorkerThreads > 0 ? maxNumWorkerThreads : maxHardwareThreads - numReservedThreads;
         const float requestedWorkerThreads = AZ::GetClamp<float>(workerThreadsRatio, 0.0f, 1.0f) * static_cast<float>(maxWorkerThreads);
-        const uint32_t requestedWorkerThreadsRounded = AZStd::lround(requestedWorkerThreads);
+        const uint32_t requestedWorkerThreadsRounded = static_cast<uint32_t>(AZStd::lround(requestedWorkerThreads));
         const uint32_t numWorkerThreads = AZ::GetMax<uint32_t>(minNumWorkerThreads, requestedWorkerThreadsRounded);
         return numWorkerThreads;
     }

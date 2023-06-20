@@ -55,7 +55,7 @@ namespace UnitTest
      * Tests AZSTD::list container.
      */
     class ListContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         // ListContainerTest-Begin
@@ -419,8 +419,8 @@ namespace UnitTest
         static_buffer_16KB_type myMemoryManager1;
         static_buffer_16KB_type myMemoryManager2;
         using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB_type>;
-        static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
-        static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
+        static_allocator_ref_type allocator1(myMemoryManager1);
+        static_allocator_ref_type allocator2(myMemoryManager2);
 
         using stack_myclass_list_type = AZStd::list<UnitTestInternal::MyClass, static_allocator_ref_type>;
         stack_myclass_list_type int_list10(allocator1);
@@ -439,7 +439,7 @@ namespace UnitTest
         int_list20.set_allocator(allocator1);
         AZ_TEST_VALIDATE_LIST(int_list20, 20);
         EXPECT_GE(myMemoryManager1.get_allocated_size(), 20 * sizeof(stack_myclass_list_type::node_type));
-        EXPECT_GE(myMemoryManager2.get_allocated_size(), 20 * sizeof(stack_myclass_list_type::node_type));
+        EXPECT_LE(myMemoryManager2.get_allocated_size(), 20 * sizeof(stack_myclass_list_type::node_type));
         int_list20.leak_and_reset();
         int_list20.set_allocator(allocator2);
         myMemoryManager1.reset();
@@ -452,7 +452,7 @@ namespace UnitTest
         AZ_TEST_VALIDATE_EMPTY_LIST(int_list20);
         AZ_TEST_VALIDATE_LIST(int_list10, 10);
         EXPECT_GE(myMemoryManager1.get_allocated_size(), 10 * sizeof(stack_myclass_list_type::node_type));
-        EXPECT_GE(myMemoryManager2.get_allocated_size(), 10 * sizeof(stack_myclass_list_type::node_type));
+        EXPECT_LE(myMemoryManager2.get_allocated_size(), 10 * sizeof(stack_myclass_list_type::node_type));
 
         int_list10.swap(int_list20);
         AZ_TEST_VALIDATE_EMPTY_LIST(int_list10);
@@ -797,25 +797,37 @@ namespace UnitTest
         static_buffer_16KB_type myMemoryManager1;
         static_buffer_16KB_type myMemoryManager2;
         using static_allocator_ref_type = AZStd::allocator_ref<static_buffer_16KB_type>;
-        static_allocator_ref_type allocator1(myMemoryManager1, "Mystack allocator 1");
-        static_allocator_ref_type allocator2(myMemoryManager2, "Mystack allocator 2");
+        static_allocator_ref_type allocator1(myMemoryManager1);
+        static_allocator_ref_type allocator2(myMemoryManager2);
 
-        using stack_myclass_slist_type = AZStd::forward_list<UnitTestInternal::MyClass, static_buffer_16KB_type>;
-        stack_myclass_slist_type   int_slist10(myMemoryManager1);
-        stack_myclass_slist_type   int_slist20(myMemoryManager2);
+        using stack_myclass_slist_type = AZStd::forward_list<UnitTestInternal::MyClass, static_allocator_ref_type>;
+        stack_myclass_slist_type   int_slist10(allocator1);
+        stack_myclass_slist_type   int_slist20(allocator2);
+
+        constexpr size_t sizeofNode = sizeof(stack_myclass_slist_type::iterator::node_type);
+        constexpr size_t alignofNode = alignof(stack_myclass_slist_type::iterator::node_type);
+        // This assumes that the static buffer is the first field of the allocator. The first allocation will have to be
+        // offset by the alignment of the list's node type
+        const size_t offset1 = AZ::SizeAlignUp(reinterpret_cast<size_t>(&myMemoryManager1), alignofNode) - reinterpret_cast<size_t>(&myMemoryManager1);
+        const size_t offset2 = AZ::SizeAlignUp(reinterpret_cast<size_t>(&myMemoryManager2), alignofNode) - reinterpret_cast<size_t>(&myMemoryManager2);
 
         int_slist20.assign(10, UnitTestInternal::MyClass(33));
-        EXPECT_GE(int_slist20.get_allocator().get_allocated_size(), 10 * sizeof(stack_myclass_slist_type::value_type));
+        EXPECT_EQ(int_slist20.get_allocator().get_allocated_size(), offset2 + 10 * sizeofNode);
 
-        int_slist20 = {};
+        int_slist20.clear();
         myMemoryManager2.reset();  // free all memory
+        EXPECT_EQ(int_slist20.get_allocator().get_allocated_size(), 0);
 
         int_slist20.assign(10, UnitTestInternal::MyClass(11));
+        EXPECT_EQ(int_slist20.get_allocator().get_allocated_size(), offset2 + 10 * sizeofNode);
 
         // swap
+        EXPECT_EQ(int_slist10.get_allocator().get_allocated_size(), 0);
         int_slist10.swap(int_slist20);
-        EXPECT_GE(int_slist10.get_allocator().get_allocated_size(), 10 * sizeof(stack_myclass_slist_type::value_type));
-        EXPECT_GE(int_slist20.get_allocator().get_allocated_size(), 10 * sizeof(stack_myclass_slist_type::value_type));
+        EXPECT_EQ(int_slist10.get_allocator().get_allocated_size(), offset1 + 10 * sizeofNode);
+        // int_slist20's allocator only decreases by 1 object's worth of space, because the static buffer allocator can
+        // only free from the end of its buffer
+        EXPECT_EQ(int_slist20.get_allocator().get_allocated_size(), offset2 + 9 * sizeofNode);
 
         int_slist10.swap(int_slist20);
 
@@ -840,8 +852,8 @@ namespace UnitTest
         int_slist10.splice_after(FindLastValidElementBefore(int_slist10, int_slist10.end()), int_slist20, int_slist20.begin(), int_slist20.end());
         EXPECT_EQ(UnitTestInternal::MyClass(201), *FindLastValidElementBefore(int_slist10, int_slist10.end()));
 
-        int_slist10 = {};
-        int_slist20 = {};
+        int_slist10.clear();
+        int_slist20.clear();
         myMemoryManager1.reset();
         myMemoryManager2.reset();
 

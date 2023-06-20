@@ -32,83 +32,7 @@
 using namespace Audio;
 using ::testing::NiceMock;
 
-void CreateAudioAllocators()
-{
-    if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::SystemAllocator::Descriptor systemAllocDesc;
-        systemAllocDesc.m_allocationRecords = false;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create(systemAllocDesc);
-    }
-
-    if (!AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-    {
-        Audio::AudioSystemAllocator::Descriptor allocDesc;
-        allocDesc.m_allocationRecords = false;
-        allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 0;
-        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Create(allocDesc);
-    }
-}
-
-void DestroyAudioAllocators()
-{
-    if (AZ::AllocatorInstance<Audio::AudioSystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<Audio::AudioSystemAllocator>::Destroy();
-    }
-
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-}
-
-
-// This is the global test environment (global to the module under test).
-// Use it to stub out an environment with mocks.
-class AudioSystemTestEnvironment
-    : public AZ::Test::ITestEnvironment
-{
-public:
-    AZ_TEST_CLASS_ALLOCATOR(AudioSystemTestEnvironment)
-
-    ~AudioSystemTestEnvironment() override = default;
-
-protected:
-    struct MockHolder
-    {
-        AZ_TEST_CLASS_ALLOCATOR(MockHolder)
-
-        NiceMock<ConsoleMock> m_console;
-        NiceMock<SystemMock> m_system;
-    };
-
-    void SetupEnvironment() override
-    {
-        CreateAudioAllocators();
-
-        m_mocks = new MockHolder;
-
-        // setup mocks
-        m_stubEnv.pConsole = &m_mocks->m_console;
-        m_stubEnv.pSystem = &m_mocks->m_system;
-        gEnv = &m_stubEnv;
-
-    }
-
-    void TeardownEnvironment() override
-    {
-        delete m_mocks;
-        DestroyAudioAllocators();
-    }
-
-private:
-    SSystemGlobalEnvironment m_stubEnv;
-    MockHolder* m_mocks = nullptr;
-};
-
-
-AZ_UNIT_TEST_HOOK(new AudioSystemTestEnvironment);
+AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
 /*
 // This is an example of a test fixture:
@@ -892,8 +816,6 @@ class ATLPreloadXmlParsingTestFixture
     : public ::testing::Test
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(ATLPreloadXmlParsingTestFixture)
-
     ATLPreloadXmlParsingTestFixture()
         : m_triggers()
         , m_rtpcs()

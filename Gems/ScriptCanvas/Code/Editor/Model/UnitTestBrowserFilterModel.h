@@ -35,7 +35,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(UnitTestBrowserFilterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnitTestBrowserFilterModel, AZ::SystemAllocator);
         explicit UnitTestBrowserFilterModel(QObject* parent = nullptr);
         ~UnitTestBrowserFilterModel();
 

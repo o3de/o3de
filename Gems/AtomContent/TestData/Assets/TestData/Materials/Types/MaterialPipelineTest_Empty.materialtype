@@ -1,0 +1,10 @@
+{
+    "description": "This material type demonstrates the minimal amount of boilerplate needed to set up a material type.",
+    "version": 3,
+    "propertyLayout": {
+    },
+    "lightingModel": "Base",
+    "materialShaderCode": "./MaterialPipelineTest_Empty.azsli",
+    "functors": [
+    ]
+}

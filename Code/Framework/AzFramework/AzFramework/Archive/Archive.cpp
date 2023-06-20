@@ -42,13 +42,13 @@
 
 namespace AZ::IO
 {
-    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(int, sys_PakPriority, aznumeric_cast<int>(ArchiveVars{}.m_fileSearchPriority), nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "If set to 0, tells Archive to try to open the file on the file system first othewise check mounted paks.\n"
         "If set to 1, tells Archive to try to open the file in pak first, then go to file system.\n"
         "If set to 2, tells the Archive to only open files from the pak");
-    AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(int, sys_report_files_not_found_in_paks, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Reports when files are searched for in paks and not found. 1 = log, 2 = warning, 3 = error");
-    AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::Null,
+    AZ_CVAR(int32_t, az_archive_verbosity, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Sets the verbosity level for logging Archive operations\n"
         ">=1 - Turns on verbose logging of all operations");
 }
@@ -84,7 +84,7 @@ namespace AZ::IO::ArchiveInternal
     // an (inside zip) emulated open file
     struct CZipPseudoFile
     {
-        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CZipPseudoFile, AZ::SystemAllocator);
         CZipPseudoFile()
         {
             Construct();
@@ -236,7 +236,7 @@ namespace AZ::IO
         : public IResourceList
     {
     public:
-        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CResourceList, AZ::SystemAllocator);
         CResourceList() { m_iter = m_set.end(); }
         ~CResourceList() override {}
 
@@ -2115,10 +2115,19 @@ namespace AZ::IO
 
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-        AZ_Assert(serializeContext, "Failed to retrieve serialize context.");
-        auto manifestInfo = AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
 
-        return manifestInfo;
+        if (serializeContext)
+        {
+            auto manifestInfo =
+                AZStd::shared_ptr<AzFramework::AssetBundleManifest>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetBundleManifest>(
+                    fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
+
+            return manifestInfo;
+        }
+
+        // If the serialize context doesn't exist yet, just silently return for now. The bundle manifest will still get
+        // successfully loaded at a later point.
+        return {};
     }
 
     AZStd::vector<AZ::IO::Path> Archive::ScanForLevels(ZipDir::CachePtr pZip)
@@ -2183,13 +2192,13 @@ namespace AZ::IO
 
     void Archive::OnSystemEntityActivated()
     {
-        for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
+        auto LoadArchives = [this](const AZ::IO::Archive::ArchivesWithCatalogsToLoad& archiveInfo)
         {
             AZStd::intrusive_ptr<INestedArchive> archive =
                 OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
             if (!archive)
             {
-                continue;
+                return false;
             }
 
             ZipDir::CachePtr pZip = static_cast<NestedArchive*>(archive.get())->GetCache();
@@ -2209,7 +2218,9 @@ namespace AZ::IO
                     archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
                 },
                 archiveInfo.m_strFileName.c_str(), bundleManifest, archiveInfo.m_nextBundle, bundleCatalog);
-        }
-        m_archivesWithCatalogsToLoad.clear();
+
+            return true;
+        };
+        AZStd::erase_if(m_archivesWithCatalogsToLoad, LoadArchives);
     }
 }

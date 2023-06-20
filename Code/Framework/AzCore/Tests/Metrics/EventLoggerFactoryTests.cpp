@@ -7,7 +7,6 @@
  */
 
 
-#include <AzCore/Debug/LocalFileEventLogger.h>
 #include <AzCore/Metrics/IEventLogger.h>
 #include <AzCore/Metrics/EventLoggerFactoryImpl.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -15,7 +14,7 @@
 namespace UnitTest
 {
     class EventLoggerFactoryFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         EventLoggerFactoryFixture()
@@ -31,11 +30,17 @@ namespace UnitTest
         : public AZ::Metrics::IEventLogger
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestEventLogger, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestEventLogger, AZ::SystemAllocator);
         void Flush() override {}
-        void* RecordEventBegin(AZ::Metrics::EventNameHash, uint16_t, uint16_t) override { return {}; }
-        void RecordEventEnd() override {}
-        void RecordStringEvent(AZ::Metrics::EventNameHash, AZStd::string_view, uint16_t) override {}
+
+        ResultOutcome RecordDurationEventBegin(const AZ::Metrics::DurationArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordDurationEventEnd(const AZ::Metrics::DurationArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordCompleteEvent(const AZ::Metrics::CompleteArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordInstantEvent(const AZ::Metrics::InstantArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordCounterEvent(const AZ::Metrics::CounterArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordAsyncEventStart(const AZ::Metrics::AsyncArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordAsyncEventInstant(const AZ::Metrics::AsyncArgs&) override { return AZ::Success(); }
+        ResultOutcome RecordAsyncEventEnd(const AZ::Metrics::AsyncArgs&) override { return AZ::Success(); }
     };
 
     TEST_F(EventLoggerFactoryFixture, Factory_CanRegisterEventLogger_Successfully)

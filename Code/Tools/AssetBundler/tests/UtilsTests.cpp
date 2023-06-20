@@ -18,13 +18,13 @@
 namespace AssetBundler
 {
     class MockUtilsTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public AzFramework::ApplicationRequests::Bus::Handler
     {
     public:
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
             m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -59,7 +59,7 @@ namespace AssetBundler
             delete m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             AzFramework::ApplicationRequests::Bus::Handler::BusDisconnect();
-            ScopedAllocatorSetupFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         // AzFramework::ApplicationRequests::Bus::Handler interface

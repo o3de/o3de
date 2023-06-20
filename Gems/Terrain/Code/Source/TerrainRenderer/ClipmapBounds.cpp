@@ -284,8 +284,8 @@ namespace Terrain
         {
         case RoundMode::Average:
             returnValue = Vector2i(
-                AZStd::lround(clipSpaceCoord.GetX()),
-                AZStd::lround(clipSpaceCoord.GetY())
+                aznumeric_cast<int32_t>(AZStd::lround(clipSpaceCoord.GetX())),
+                aznumeric_cast<int32_t>(AZStd::lround(clipSpaceCoord.GetY()))
             );
             break;
         case RoundMode::Floor:

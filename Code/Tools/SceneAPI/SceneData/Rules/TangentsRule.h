@@ -40,7 +40,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(TangentsRule, "{4BD1CE13-D2EB-4CCF-AB21-4877EF69DE7D}", DataTypes::IRule);
-                AZ_CLASS_ALLOCATOR(TangentsRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(TangentsRule, AZ::SystemAllocator)
 
                 SCENE_DATA_API TangentsRule();
                 SCENE_DATA_API ~TangentsRule() override = default;

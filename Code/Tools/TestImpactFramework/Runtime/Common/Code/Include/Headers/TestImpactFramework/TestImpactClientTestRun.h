@@ -40,6 +40,8 @@ namespace TestImpact
                 const AZStd::string& testNamespace,
                 const AZStd::string& name,
                 const AZStd::string& commandString,
+                const AZStd::string& stdOutput,
+                const AZStd::string& stdError,
                 AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result);
@@ -54,6 +56,12 @@ namespace TestImpact
 
             //! Returns the test run result.
             TestRunResult GetResult() const;
+
+            //! Returns the standard output produced by this test run.
+            const AZStd::string& GetStdOutput() const;
+
+            //! Returns the standard error produced by this test run.
+            const AZStd::string& GetStdError() const;
 
             //! Returns the test run start time.
             AZStd::chrono::steady_clock::time_point GetStartTime() const;
@@ -72,6 +80,8 @@ namespace TestImpact
             AZStd::string m_commandString;
             AZStd::string m_testNamespace;
             TestRunResult m_result;
+            AZStd::string m_stdOutput;
+            AZStd::string m_stdError;
             AZStd::chrono::steady_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration;
         };
@@ -144,6 +154,8 @@ namespace TestImpact
             CompletedTestRun(
                 const AZStd::string& name,
                 const AZStd::string& commandString,
+                const AZStd::string& stdOutput,
+                const AZStd::string& stdError,
                 AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result,

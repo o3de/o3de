@@ -38,7 +38,7 @@ namespace EMotionFX
     class EMFX_API MotionLinkData
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionLinkData, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionLinkData, MotionAllocator)
         AZ_RTTI(MotionLinkData, "{4FE3628A-9F8D-4C55-9E9B-DF77405DC4F0}")
 
         MotionLinkData() = default;
@@ -61,7 +61,7 @@ namespace EMotionFX
         : public EventHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionLinkCache, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionLinkCache, MotionAllocator)
 
         MotionLinkCache();
         MotionLinkCache(const MotionLinkCache&) = delete;
@@ -93,7 +93,7 @@ namespace EMotionFX
     class EMFX_API MotionData
     {
     public:
-        AZ_CLASS_ALLOCATOR(MotionData, MotionAllocator, 0)
+        AZ_CLASS_ALLOCATOR(MotionData, MotionAllocator)
         AZ_RTTI(MotionData, "{3785996B-A523-475A-ADEF-58DDBB5E144B}")
 
         friend class MotionDataFactory;
@@ -318,6 +318,7 @@ namespace EMotionFX
         float m_duration = 0.0f;
         float m_sampleRate = 30.0f;
         bool m_additive = false;
+        bool m_rootMotionExtracted = false;
 
     private:
         void ClearBaseData();

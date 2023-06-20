@@ -31,8 +31,13 @@ namespace AZ
             AZ_Assert(srgLayout != nullptr, "Failed to find SRG with name %s, using supervariantIndex %u from shaderAsset %s", srgName.GetCStr(),
                 supervariantIndex.GetIndex(), shaderAsset.GetHint().c_str());
 
-            AZStd::string idString = AZStd::string::format("%s_%u_%s", srgLayout->GetUniqueId().c_str(), supervariantIndex.GetIndex(), srgName.GetCStr());
-            return Data::InstanceId::CreateData(idString.data(), idString.size());
+            // Create a uuid that combines string data for both the srgLayout and the srgName
+            AZ::Uuid instanceUuid =
+                AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgLayout->GetUniqueId().data()), srgLayout->GetUniqueId().size())
+                + AZ::Uuid::CreateData(reinterpret_cast<const AZStd::byte*>(srgName.GetStringView().data()), srgName.GetStringView().size());
+
+            // Use the supervariantIndex as the subId for the InstanceId, since it is already an integer
+            return Data::InstanceId(instanceUuid, supervariantIndex.GetIndex());
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
@@ -44,8 +49,7 @@ namespace AZ
 
             SrgInitParams initParams{ supervariantIndex, srgName };
             auto anyInitParams = AZStd::any(initParams);
-            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
-                Data::InstanceId::CreateRandom(), shaderAsset, &anyInitParams);
+            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().Create(shaderAsset, &anyInitParams);
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::Create(
@@ -53,8 +57,7 @@ namespace AZ
         {
             SrgInitParams initParams{ supervariantIndex, srgName };
             auto anyInitParams = AZStd::any(initParams);
-            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().FindOrCreate(
-                Data::InstanceId::CreateRandom(), shaderAsset, &anyInitParams);
+            return Data::InstanceDatabase<ShaderResourceGroup>::Instance().Create(shaderAsset, &anyInitParams);
         }
 
         Data::Instance<ShaderResourceGroup> ShaderResourceGroup::CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* anySrgInitParams)
@@ -85,6 +88,8 @@ namespace AZ
 
             m_pool = ShaderResourceGroupPool::FindOrCreate(
                 AZ::Data::Asset<ShaderAsset>(&shaderAsset, AZ::Data::AssetLoadBehavior::PreLoad), supervariantIndex, srgName);
+            AZ_Assert(m_layout->GetHash() == m_pool->GetRHIPool()->GetLayout()->GetHash(), "This can happen if two shaders are including the same partial srg from different .azsl shader files and adding more custom entries to the srg. Recommendation is to just make a bigger SRG that can be shared between the two shaders.");
+            
             if (!m_pool)
             {
                 return RHI::ResultCode::Fail;
@@ -150,11 +155,6 @@ namespace AZ
         {
             return m_layout->FindShaderInputImageUnboundedArrayIndex(name);
         }
-
-        //const Data::Asset<ShaderAsset>& ShaderResourceGroup::GetAsset() const
-        //{
-        //    return m_asset;
-        //}
 
         const RHI::ShaderResourceGroupLayout* ShaderResourceGroup::GetLayout() const
         {
@@ -616,6 +616,30 @@ namespace AZ
         AZStd::span<const uint8_t> ShaderResourceGroup::GetConstantRaw(RHI::ShaderInputConstantIndex inputIndex) const
         {
             return m_data.GetConstantRaw(inputIndex);
+        }
+    
+        void ShaderResourceGroup::SetBindlessViews(
+            RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::BufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::ImageView* const> imageViews,
+            uint32_t* outIndices,
+            AZStd::span<bool> isViewReadOnly,
+            uint32_t arrayIndex)
+        {
+            m_data.SetBindlessViews(indirectResourceBufferIndex, indirectResourceBuffer,
+                                    imageViews, outIndices, isViewReadOnly, arrayIndex);
+        }
+    
+        void ShaderResourceGroup::SetBindlessViews(
+            RHI::ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::BufferView* indirectResourceBuffer,
+            AZStd::span<const RHI::BufferView* const> bufferViews,
+            uint32_t* outIndices,
+            AZStd::span<bool> isViewReadOnly,
+            uint32_t arrayIndex)
+        {
+            m_data.SetBindlessViews(indirectResourceBufferIndex, indirectResourceBuffer,
+                                    bufferViews, outIndices, isViewReadOnly, arrayIndex);
         }
 
     } // namespace RPI

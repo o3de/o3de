@@ -20,7 +20,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphFollowerParameterAction, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphFollowerParameterAction, AnimGraphAllocator)
 
     AnimGraphFollowerParameterAction::AnimGraphFollowerParameterAction()
         : AnimGraphTriggerAction()

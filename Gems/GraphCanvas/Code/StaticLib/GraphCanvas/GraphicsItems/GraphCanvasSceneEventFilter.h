@@ -20,7 +20,7 @@ namespace GraphCanvas
         : public QGraphicsItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(SceneEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SceneEventFilter, AZ::SystemAllocator);
 
         SceneEventFilter(QGraphicsItem* parent)
             : QGraphicsItem(parent)

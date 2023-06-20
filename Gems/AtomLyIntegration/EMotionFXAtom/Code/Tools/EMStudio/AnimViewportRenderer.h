@@ -44,7 +44,7 @@ namespace EMStudio
     class AnimViewportRenderer
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator);
 
         AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext, const RenderOptions* renderOptions);
         ~AnimViewportRenderer();
@@ -65,6 +65,11 @@ namespace EMStudio
         //! Apply the identity transform to the actor entities.
         void MoveActorEntitiesToOrigin();
 
+        //! Get the ID for the render scene.
+        AZ::RPI::SceneId GetRenderSceneId() const;
+
+        //! Get a list of actor entities in the animation viewport.
+        const AZStd::vector<AZ::Entity*>& GetActorEntities() const;
     private:
 
         // This function resets the light, camera and other environment settings.

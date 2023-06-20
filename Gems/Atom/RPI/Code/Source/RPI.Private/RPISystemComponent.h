@@ -14,10 +14,14 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Debug/PerformanceCollector.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/GpuQuery/GpuPassProfiler.h>
 #include <Atom/RPI.Public/XR/XRRenderingInterface.h>
+
+#include "PerformanceCVarManager.h"
 
 namespace AZ
 {
@@ -37,6 +41,7 @@ namespace AZ
             , public AZ::SystemTickBus::Handler
             , public AZ::RHI::RHISystemNotificationBus::Handler
             , public XRRegisterInterface::Registrar
+            , public PerformanceCollectorOwner::Registrar
         {
         public:
             AZ_COMPONENT(RPISystemComponent, "{83E301F3-7A0C-4099-B530-9342B91B1BC0}");
@@ -66,6 +71,31 @@ namespace AZ
                         
             // RHISystemNotificationBus::Handler
             void OnDeviceRemoved(RHI::Device* device) override;
+
+            ///////////////////////////////////////////////////////////////////
+            // IPerformanceCollectorOwner overrides
+            AZ::Debug::PerformanceCollector* GetPerformanceCollector() override { return m_performanceCollector.get(); }
+            GpuPassProfiler* GetGpuPassProfiler() override { return m_gpuPassProfiler.get(); }
+            ///////////////////////////////////////////////////////////////////
+
+            ///////////////////////////////////////////////////////////////////
+            // Performance Collection
+
+            //! Returns "Graphics-<OS>-<RHI>" string, which will be part of the output filename.
+            //! It will make it easy to keep vulkan and dx12 results side by side.
+            AZStd::string GetLogCategory();
+
+            void InitializePerformanceCollector();
+
+            static constexpr AZStd::string_view PerformanceLogCategory = "Graphics";
+            static constexpr AZStd::string_view PerformanceSpecGraphicsSimulationTime = "Graphics Simulation Time";
+            static constexpr AZStd::string_view PerformanceSpecGraphicsRenderTime = "Graphics Render Time";
+            static constexpr AZStd::string_view PerformanceSpecEngineCpuTime = "Engine Cpu Time";
+            static constexpr AZStd::string_view PerformanceSpecGpuTime = "Frame Gpu Time";
+
+            AZStd::unique_ptr<AZ::Debug::PerformanceCollector> m_performanceCollector;
+            AZStd::unique_ptr<GpuPassProfiler> m_gpuPassProfiler; // Used to measure "Render Pipeline Gpu Time".
+            ///////////////////////////////////////////////////////////////////
 
             RPISystem m_rpiSystem;
 

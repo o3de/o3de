@@ -56,4 +56,9 @@ namespace LmbrCentral
         AZ::Transform worldNoRotation(world.GetTranslation(), AZ::Quaternion::CreateIdentity(), world.GetUniformScale());
         BoxShape::OnTransformChanged(local, worldNoRotation);
     }
+
+    bool AxisAlignedBoxShape::IsTypeAxisAligned()
+    {
+        return true;
+    }
 } // namespace LmbrCentral

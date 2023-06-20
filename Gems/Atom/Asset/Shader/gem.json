@@ -1,5 +1,6 @@
 {
     "gem_name": "AtomShader",
+    "version": "0.0.0",
     "display_name": "Atom Shader Builder",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",

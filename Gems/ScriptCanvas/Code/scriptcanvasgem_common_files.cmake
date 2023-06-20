@@ -15,6 +15,8 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAsset.cpp
     Include/ScriptCanvas/Asset/RuntimeAsset.cpp
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.cpp
+    Include/ScriptCanvas/Asset/RuntimeInputs.cpp
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAsset.cpp
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.cpp
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.cpp
     Include/ScriptCanvas/Core/Connection.cpp
@@ -40,13 +42,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotMetadata.cpp
     Include/ScriptCanvas/Core/SubgraphInterface.cpp
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.cpp
-    Include/ScriptCanvas/Translation/GraphToLua.cpp
-    Include/ScriptCanvas/Translation/GraphToLuaUtility.cpp
-    Include/ScriptCanvas/Translation/GraphToX.cpp
-    Include/ScriptCanvas/Translation/Translation.cpp
-    Include/ScriptCanvas/Translation/TranslationContext.cpp
-    Include/ScriptCanvas/Translation/TranslationResult.cpp
-    Include/ScriptCanvas/Translation/TranslationUtilities.cpp
     Include/ScriptCanvas/Core/Contracts/ConnectionLimitContract.cpp
     Include/ScriptCanvas/Core/Contracts/ContractRTTI.cpp
     Include/ScriptCanvas/Core/Contracts/DisallowReentrantExecutionContract.cpp
@@ -61,6 +56,8 @@ set(FILES
     Include/ScriptCanvas/Data/BehaviorContextObjectPtr.cpp
     Include/ScriptCanvas/Data/Data.cpp
     Include/ScriptCanvas/Data/DataRegistry.cpp
+    Include/ScriptCanvas/Data/DataTrait.cpp
+    Include/ScriptCanvas/Data/PropertyTraits.cpp
     Include/ScriptCanvas/Deprecated/VariableDatumBase.cpp
     Include/ScriptCanvas/Deprecated/VariableDatum.cpp
     Include/ScriptCanvas/Deprecated/VariableHelpers.cpp
@@ -119,39 +116,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/SetVariable.cpp
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.cpp
     Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Entity/RotateMethod.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Sequencer.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/Operator.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorAt.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorBack.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorClear.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorEmpty.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorErase.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorFront.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorInsert.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorPushBack.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorSize.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorDivideByNumber.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLength.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLerp.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/Contains.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/Replace.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/StringMethods.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/String/Utilities.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Countdown.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Duration.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/HeartBeat.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Repeater.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Timer.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectFalse.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThan.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThanEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThan.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThanEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectNotEqual.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectTrue.cpp
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/UnitTesting.cpp
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.cpp
     Include/ScriptCanvas/Libraries/Logic/Any.cpp
     Include/ScriptCanvas/Libraries/Logic/Break.cpp
@@ -204,8 +168,13 @@ set(FILES
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
-    Include/ScriptCanvas/Data/DataTrait.cpp
-    Include/ScriptCanvas/Data/PropertyTraits.cpp
+    Include/ScriptCanvas/Translation/GraphToLua.cpp
+    Include/ScriptCanvas/Translation/GraphToLuaUtility.cpp
+    Include/ScriptCanvas/Translation/GraphToX.cpp
+    Include/ScriptCanvas/Translation/Translation.cpp
+    Include/ScriptCanvas/Translation/TranslationContext.cpp
+    Include/ScriptCanvas/Translation/TranslationResult.cpp
+    Include/ScriptCanvas/Translation/TranslationUtilities.cpp
     Include/ScriptCanvas/Variable/GraphVariable.cpp
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.cpp
     Include/ScriptCanvas/Variable/VariableCore.cpp
@@ -215,5 +184,4 @@ set(FILES
     Include/ScriptCanvas/Utils/VersionConverters.cpp
     Include/ScriptCanvas/Utils/VersioningUtils.cpp
     Include/ScriptCanvas/Utils/BehaviorContextUtils.cpp
-    Include/ScriptCanvas/Utils/ReplacementUtils.cpp
 )

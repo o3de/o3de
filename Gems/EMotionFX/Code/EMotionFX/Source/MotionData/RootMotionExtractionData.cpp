@@ -9,6 +9,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
+#include <EMotionFX/Source/Actor.h>
+#include <EMotionFX/Source/Node.h>
 
 namespace EMotionFX
 {
@@ -38,7 +40,7 @@ namespace EMotionFX
             editContext->Class<RootMotionExtractionData>("Root motion extraction data", "Root motion extraction data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                ->DataElement("NodeListSelection", &RootMotionExtractionData::m_sampleJoint, "Sample joint", "Sample joint to extract motion data from. Usually the hip joint.")
+                ->DataElement("ActorNode", &RootMotionExtractionData::m_sampleJoint, "Sample joint", "Sample joint to extract motion data from. Usually the hip joint.")
                 ->DataElement(AZ::Edit::UIHandlers::Default, &RootMotionExtractionData::m_extractRotation, "Rotation extraction", "Extract the rotation value from sample joint.")
                 ->DataElement(AZ::Edit::UIHandlers::ComboBox, &RootMotionExtractionData::m_smoothingMethod, "Smoothing method", "Select the smoothing method for the motion data.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
@@ -62,4 +64,18 @@ namespace EMotionFX
     {
         return m_smoothingMethod == SmoothingMethod::None ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
     }
-}
+
+    void RootMotionExtractionData::FindBestMatchedJoints(const Actor* actor)
+    {
+        const Skeleton* skeleton = actor->GetSkeleton();
+        for (size_t boneIndex = 0; boneIndex < skeleton->GetNumNodes(); ++boneIndex)
+        {
+            const AZStd::string_view boneName = skeleton->GetNode(boneIndex)->GetNameString();
+            if (AzFramework::StringFunc::Find(boneName, m_sampleJoint) != AZStd::string::npos)
+            {
+                m_sampleJoint = boneName;
+                break;
+            }
+        }
+    }
+} // namespace EMotionFX

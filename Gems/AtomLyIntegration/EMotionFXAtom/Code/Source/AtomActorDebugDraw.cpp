@@ -412,6 +412,7 @@ namespace AZ::Render
         {
             AZ::Aabb aabb;
             instance->CalcNodeBasedAabb(&aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, nodeAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -423,6 +424,7 @@ namespace AZ::Render
             AZ::Aabb aabb;
             const size_t lodLevel = instance->GetLODLevel();
             instance->CalcMeshBasedAabb(lodLevel, &aabb);
+            EMotionFX::ActorInstance::ExpandBounds(aabb, instance->GetExpandBoundsBy());
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, meshAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -431,8 +433,7 @@ namespace AZ::Render
 
         if (enableStaticAabb)
         {
-            AZ::Aabb aabb;
-            instance->CalcStaticBasedAabb(&aabb);
+            auto& aabb = instance->GetAabb();
             if (aabb.IsValid())
             {
                 auxGeom->DrawAabb(aabb, staticAabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
@@ -542,17 +543,18 @@ namespace AZ::Render
             const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
             const AZ::Vector3 boneDirection = bone.GetNormalizedEstimate();
             const AZ::Vector3 centerWorldPos = bone / 2 + nodeWorldPos;
+            const float maxBoneScale = 0.05f;
             const float boneLength = bone.GetLengthEstimate();
-            const float boneScale = CalculateBoneScale(instance, joint);
-            const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
+            const float boneScale = AZStd::min(CalculateBoneScale(instance, joint), maxBoneScale);
+            const float parentBoneScale = AZStd::min(CalculateBoneScale(instance, skeleton->GetNode(parentIndex)), maxBoneScale);
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
             renderColor = GetModifiedColor(color, parentIndex, cachedSelectedJointIndices, cachedHoveredJointIndex);
-            renderColor.SetA(0.75f);
+            renderColor.SetA(0.5f);
             debugDisplay->SetColor(renderColor);
 
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            debugDisplay->DrawSolidCylinder(centerWorldPos, boneDirection, boneScale * 0.75f, cylinderSize);
+            debugDisplay->DrawSolidCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize);
             debugDisplay->DrawBall(nodeWorldPos, boneScale);
         }
 
@@ -960,7 +962,7 @@ namespace AZ::Render
     void AtomActorDebugDraw::UpdateActorInstance(EMotionFX::ActorInstance* actorInstance, float deltaTime)
     {
         // Find the corresponding trajectory trace path for the given actor instance
-        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        auto trajectoryPath = FindTrajectoryPath(actorInstance);
         if (!trajectoryPath)
         {
             return;
@@ -1083,22 +1085,21 @@ namespace AZ::Render
     // Find the trajectory path for a given actor instance
     AtomActorDebugDraw::TrajectoryTracePath* AtomActorDebugDraw::FindTrajectoryPath(const EMotionFX::ActorInstance* actorInstance)
     {
-        for (TrajectoryTracePath* trajectoryPath : m_trajectoryTracePaths)
+        for (const auto& trajectoryPath : m_trajectoryTracePaths)
         {
             if (trajectoryPath->m_actorInstance == actorInstance)
             {
-                return trajectoryPath;
+                return trajectoryPath.get();
             }
         }
 
         // We haven't created a path for the given actor instance yet, do so
-        TrajectoryTracePath* tracePath = new TrajectoryTracePath();
+        auto tracePath = AZStd::make_unique<TrajectoryTracePath>();
 
         tracePath->m_actorInstance = actorInstance;
         tracePath->m_traceParticles.reserve(512);
 
-        m_trajectoryTracePaths.emplace_back(tracePath);
-        return tracePath;
+        return m_trajectoryTracePaths.emplace_back(AZStd::move(tracePath)).get();
     }
 
     void AtomActorDebugDraw::RenderTrajectoryPath(AzFramework::DebugDisplayRequests* debugDisplay,
@@ -1106,7 +1107,7 @@ namespace AZ::Render
         const AZ::Color& headColor,
         const AZ::Color& pathColor)
     {
-        TrajectoryTracePath* trajectoryPath = FindTrajectoryPath(actorInstance);
+        auto trajectoryPath = FindTrajectoryPath(actorInstance);
         if (!trajectoryPath)
         {
             return;

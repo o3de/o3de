@@ -16,6 +16,8 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAssetBus.h
     Include/ScriptCanvas/Asset/RuntimeAsset.h
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
+    Include/ScriptCanvas/Asset/RuntimeInputs.h
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAsset.h
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h
@@ -57,17 +59,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotNames.h
     Include/ScriptCanvas/Core/SubgraphInterface.h
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.h
-    Include/ScriptCanvas/Translation/Configuration.h
-    Include/ScriptCanvas/Translation/GraphToLua.h
-    Include/ScriptCanvas/Translation/GraphToLuaUtility.h
-    Include/ScriptCanvas/Translation/GraphToX.h
-    Include/ScriptCanvas/Translation/Translation.h
-    Include/ScriptCanvas/Translation/TranslationContext.h
-    Include/ScriptCanvas/Translation/TranslationResult.h
-    Include/ScriptCanvas/Translation/TranslationUtilities.h
-    Include/ScriptCanvas/PerformanceStatistician.h
-    Include/ScriptCanvas/PerformanceStatisticsBus.h
-    Include/ScriptCanvas/PerformanceTracker.h
     Include/ScriptCanvas/CodeGen/NodeableCodegen.h
     Include/ScriptCanvas/Core/Contracts/ConnectionLimitContract.h
     Include/ScriptCanvas/Core/Contracts/ContractRTTI.h
@@ -81,10 +72,13 @@ set(FILES
     Include/ScriptCanvas/Core/Contracts/TypeContract.h
     Include/ScriptCanvas/Data/BehaviorContextObject.h
     Include/ScriptCanvas/Data/BehaviorContextObjectPtr.h
+    Include/ScriptCanvas/Data/Constants.h
     Include/ScriptCanvas/Data/Data.h
-    Include/ScriptCanvas/Data/DataMacros.h
     Include/ScriptCanvas/Data/DataRegistry.h
+    Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/NumericData.h
+    Include/ScriptCanvas/Data/PropertyTraits.h
+    Include/ScriptCanvas/Data/Traits.h
     Include/ScriptCanvas/Deprecated/VariableDatumBase.h
     Include/ScriptCanvas/Deprecated/VariableDatum.h
     Include/ScriptCanvas/Deprecated/VariableHelpers.h
@@ -123,10 +117,6 @@ set(FILES
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.h
     Include/ScriptCanvas/Grammar/PrimitivesExecution.h
     Include/ScriptCanvas/Grammar/SymbolNames.h
-    Include/ScriptCanvas/Execution/ErrorBus.h
-    Include/ScriptCanvas/Execution/ExecutionContext.h
-    Include/ScriptCanvas/Execution/ExecutionBus.h
-    Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.h
@@ -135,13 +125,11 @@ set(FILES
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.h
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Grammar/AbstractCodeModel.h
     Include/ScriptCanvas/Libraries/Libraries.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
     Include/ScriptCanvas/Libraries/Core/CoreLibrary.h
-    Include/ScriptCanvas/Libraries/Core/ContainerTypeReflection.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.h
@@ -172,102 +160,6 @@ set(FILES
     Include/ScriptCanvas/Libraries/Core/Start.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/UnaryOperator.h
     Include/ScriptCanvas/Libraries/Deprecated/DeprecatedNodeLibrary.h
-    Include/ScriptCanvas/Libraries/Deprecated/Entity/EntityNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Entity/RotateMethod.h
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Indexer.h
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Indexer.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Multiplexer.h
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Multiplexer.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Sequencer.h
-    Include/ScriptCanvas/Libraries/Deprecated/Logic/Sequencer.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Math/AABBNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/ColorNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/CRCNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Divide.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/MathGenerics.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/MathRandom.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Matrix3x3Nodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Matrix4x4Nodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Multiply.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/OBBNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/PlaneNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/RotationNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Subtract.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Sum.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/TransformNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Vector2Nodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Vector3Nodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Math/Vector4Nodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/Operator.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/Operator.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorAt.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorAt.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorBack.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorBack.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorClear.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorClear.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorEmpty.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorEmpty.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorErase.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorErase.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorFront.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorFront.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorInsert.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorInsert.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorPushBack.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorPushBack.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorSize.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Containers/OperatorSize.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorDivideByNumber.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorDivideByNumber.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLength.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLength.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLerp.h
-    Include/ScriptCanvas/Libraries/Deprecated/Operators/Math/OperatorLerp.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/PhysX/WorldNodes.h
-    Include/ScriptCanvas/Libraries/Deprecated/String/Contains.h
-    Include/ScriptCanvas/Libraries/Deprecated/String/Contains.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/String/Replace.h
-    Include/ScriptCanvas/Libraries/Deprecated/String/Replace.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/String/StringGenerics.h
-    Include/ScriptCanvas/Libraries/Deprecated/String/StringMethods.h
-    Include/ScriptCanvas/Libraries/Deprecated/String/Utilities.h
-    Include/ScriptCanvas/Libraries/Deprecated/String/Utilities.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Countdown.h
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Countdown.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Duration.h
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Duration.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Time/HeartBeat.h
-    Include/ScriptCanvas/Libraries/Deprecated/Time/HeartBeat.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Repeater.h
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Repeater.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Timer.h
-    Include/ScriptCanvas/Libraries/Deprecated/Time/Timer.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/AddFailure.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/AddFailure.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/AddSuccess.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/AddSuccess.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/Checkpoint.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/Checkpoint.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectEqual.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectEqual.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectFalse.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectFalse.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThan.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThan.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThanEqual.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectGreaterThanEqual.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThan.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThan.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThanEqual.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectLessThanEqual.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectNotEqual.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectNotEqual.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectTrue.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/ExpectTrue.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/MarkComplete.h
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/MarkComplete.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Deprecated/UnitTesting/UnitTesting.h
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.h
     Include/ScriptCanvas/Libraries/Entity/EntityFunctions.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Logic/And.h
@@ -373,13 +265,21 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.h
+    Include/ScriptCanvas/PerformanceStatistician.h
+    Include/ScriptCanvas/PerformanceStatisticsBus.h
+    Include/ScriptCanvas/PerformanceTracker.h
     Include/ScriptCanvas/Results/ErrorText.h
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
-    Include/ScriptCanvas/Data/DataTrait.h
-    Include/ScriptCanvas/Data/PropertyTraits.h
-    Include/ScriptCanvas/Data/Traits.h
+    Include/ScriptCanvas/Translation/Configuration.h
+    Include/ScriptCanvas/Translation/GraphToLua.h
+    Include/ScriptCanvas/Translation/GraphToLuaUtility.h
+    Include/ScriptCanvas/Translation/GraphToX.h
+    Include/ScriptCanvas/Translation/Translation.h
+    Include/ScriptCanvas/Translation/TranslationContext.h
+    Include/ScriptCanvas/Translation/TranslationResult.h
+    Include/ScriptCanvas/Translation/TranslationUtilities.h
     Include/ScriptCanvas/Variable/VariableBus.h
     Include/ScriptCanvas/Variable/GraphVariable.h
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.h
@@ -389,8 +289,8 @@ set(FILES
     Include/ScriptCanvas/Utils/NodeUtils.h
     Include/ScriptCanvas/Utils/SerializationUtils.h
     Include/ScriptCanvas/Utils/VersionConverters.h
+    Include/ScriptCanvas/Utils/VersioningUtils.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
-    Include/ScriptCanvas/Utils/ReplacementUtils.h
     Include/ScriptCanvas/Utils/ScriptCanvasConstants.h
 )
 

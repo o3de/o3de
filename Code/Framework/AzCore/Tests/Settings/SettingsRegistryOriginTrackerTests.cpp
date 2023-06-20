@@ -41,17 +41,10 @@ namespace SettingsRegistryOriginTrackerTests
     const AZStd::string ARRAY_VALUE = "<array>";
 
     class SettingsRegistryOriginTrackerFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
-        static AZ::SystemAllocator::Descriptor CreateAllocatorDescriptorForFixture()
-        {
-            AZ::SystemAllocator::Descriptor desc;
-            desc.m_stackRecordLevels = 30;
-            return desc;
-        }
     public:
         SettingsRegistryOriginTrackerFixture()
-            : ScopedAllocatorSetupFixture(CreateAllocatorDescriptorForFixture())
         {
             if (!AZ::NameDictionary::IsReady())
             {

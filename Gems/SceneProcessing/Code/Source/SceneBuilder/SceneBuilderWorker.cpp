@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Utils.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -30,6 +31,7 @@
 #include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneCore/SceneBuilderDependencyBus.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
@@ -37,7 +39,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <rapidjson/pointer.h>
+#include <AzCore/JSON/pointer.h>
 #include <SceneBuilder/SceneBuilderWorker.h>
 #include <SceneBuilder/TraceMessageHook.h>
 
@@ -101,8 +103,8 @@ namespace SceneBuilder
             {
                 m_cachedFingerprint.append(element);
             }
-            // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 4");
+            // A general catch all version fingerprint. Update this to force all source scene (FBX, GLTF, STL) files to recompile.
+            m_cachedFingerprint.append("Version 5");
         }
 
         return m_cachedFingerprint.c_str();
@@ -242,6 +244,8 @@ namespace SceneBuilder
             return;
         }
 
+        DefaultSriptDependencyCheck(request, response);
+
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
@@ -348,7 +352,7 @@ namespace SceneBuilder
 
         AZ_TracePrintf(Utilities::LogWindow, "Loading scene.\n");
 
-        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID);
+        SceneSerializationBus::BroadcastResult(result, &SceneSerializationBus::Events::LoadScene, request.m_fullPath, request.m_sourceFileUUID, request.m_watchFolder);
         if (!result)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load scene file.\n");
@@ -387,7 +391,7 @@ namespace SceneBuilder
         result += Process<GenerateLODEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Generating additions...\n");
         result += Process<GenerateAdditionEventContext>(*scene, platformIdentifier);
-        AZ_TracePrintf(Utilities::LogWindow, "Simplifing scene...\n");
+        AZ_TracePrintf(Utilities::LogWindow, "Simplifying scene...\n");
         result += Process<GenerateSimplificationEventContext>(*scene, platformIdentifier);
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing generation process.\n");
         result += Process<PostGenerateEventContext>(*scene, platformIdentifier);
@@ -432,6 +436,29 @@ namespace SceneBuilder
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing export process.\n");
         result += Process<PostExportEventContext>(productList, outputFolder, platformIdentifier);
 
+        if (scene->HasDimension())
+        {
+            AZStd::string folder;
+            AZStd::string jsonName;
+            AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), jsonName);
+            folder = AZStd::string::format("%s/%s.abdata.json", outputFolder.c_str(), jsonName.c_str());
+
+            AssetBuilderSDK::CreateABDataFile(folder, [scene](rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+            {
+                writer.Key("dimension");
+                writer.StartArray();
+                AZ::Vector3& dimension = scene->GetSceneDimension();
+                writer.Double(dimension.GetX());
+                writer.Double(dimension.GetY());
+                writer.Double(dimension.GetZ());
+                writer.EndArray();
+                writer.Key("vertices");
+                writer.Uint(scene->GetSceneVertices());
+            });
+
+            AssetBuilderSDK::JobProduct jsonProduct(folder);
+            response.m_outputProducts.emplace_back(jsonProduct);
+        }
         if (isDebug)
         {
             AZStd::string productName;
@@ -502,4 +529,22 @@ namespace SceneBuilder
 
         return id;
     }
+
+    void SceneBuilderWorker::DefaultSriptDependencyCheck(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+    {
+        AZStd::optional<AZ::SceneAPI::Events::ScriptConfig> scriptConfig;
+        AZ::SceneAPI::Events::ScriptConfigEventBus::BroadcastResult(
+            scriptConfig,
+            &AZ::SceneAPI::Events::ScriptConfigEventBus::Events::MatchesScriptConfig,
+            request.m_sourceFile);
+
+        if (scriptConfig)
+        {
+            AssetBuilderSDK::SourceFileDependency sourceFileDependencyInfo;
+            sourceFileDependencyInfo.m_sourceFileDependencyPath = scriptConfig.value().m_scriptPath.c_str();
+            sourceFileDependencyInfo.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+            response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
+        }
+    }
+
 } // namespace SceneBuilder

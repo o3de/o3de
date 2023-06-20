@@ -121,7 +121,8 @@ namespace AZ::Render
         inline AZStd::string GetShaderVariantIdJson(const AZ::RPI::ShaderOptionGroupLayout* layout, AZ::RPI::ShaderVariantId variantId)
         {
             AZStd::string json;
-            AZStd::unordered_map<AZStd::string/*optionName*/, AZStd::string/*valueName*/> options;
+            // This map happens to be the same definition as ShaderOptionValuesSourceData, so Atom Utils doesn't have to depend on the RPI.Edit library.
+            AZStd::unordered_map<Name/*optionName*/, Name/*valueName*/> options;
 
             AZ::RPI::ShaderOptionGroup shaderOptionGroup{layout, variantId};
 
@@ -136,7 +137,7 @@ namespace AZ::Render
                 }
 
                 const auto& valueName = shaderOptionDescriptor.GetValueName(optionValue);
-                options[optionName.GetStringView()] = valueName.GetStringView();
+                options[optionName] = valueName;
             }
 
             rapidjson::Document document;

@@ -77,7 +77,11 @@ namespace AZ
         void FrameGraphExecuteGroupHandler::EndInternal()
         {
             RHI::Ptr<CommandList> commandList = m_device->AcquireCommandList(m_hardwareQueueClass);
+            const Scope* scope = static_cast<const FrameGraphExecuteGroup*>(m_executeGroups[0])->GetScopes()[0];
+
             commandList->BeginCommandBuffer();
+            commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
+
             // First emit all scope barriers outside of the renderpass.
             EmitScopeBarriers(*commandList, Scope::BarrierSlot::Aliasing);
             ProcessClearRequests(*commandList);
@@ -104,6 +108,8 @@ namespace AZ
             commandList->EndRenderPass();
             // Emit epilogue barriers outside the renderpass.
             EmitScopeBarriers(*commandList, Scope::BarrierSlot::Epilogue);
+
+            commandList->EndDebugLabel();
             commandList->EndCommandBuffer();
 
             m_workRequest.m_commandList = commandList;

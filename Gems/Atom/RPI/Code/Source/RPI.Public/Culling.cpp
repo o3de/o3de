@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
@@ -40,8 +41,21 @@ namespace AZ
 {
     namespace RPI
     {
-        AZ_CVAR(bool, r_CullInParallel, true, nullptr, ConsoleFunctorFlags::Null, "");
-        AZ_CVAR(uint32_t, r_CullWorkPerBatch, 500, nullptr, ConsoleFunctorFlags::Null, "");
+        // Entry work lists
+        AZ_CVAR(bool, r_useEntryWorkListsForCulling, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use entity work lists instead of node work lists for job distribution");
+        AZ_CVAR(uint32_t, r_numEntriesPerCullingJob, 750, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of entries to collect for jobs when using entry work lists");
+
+        // Node work lists using entry count
+        AZ_CVAR(bool, r_useEntryCountForNodeJobs, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use entity count instead of node count when checking whether to spawn job for node work list");
+        AZ_CVAR(uint32_t, r_maxNodesWhenUsingEntryCount, 100, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls max amount of nodes to collect when using entry count");
+
+        // Node work lists using node count
+        AZ_CVAR(uint32_t, r_numNodesPerCullingJob, 25, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of nodes to collect for jobs when not using the entry count");
+
+        // This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls for shadow cascade passes.
+        // Default is set to -1 as this is optimization needs to be triggered by the content developer by setting a reasonable non-negative value applicable for their content. 
+        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, -1, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount of meters to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
+
 
 #ifdef AZ_CULL_DEBUG_ENABLED
         void DebugDrawWorldCoordinateAxes(AuxGeomDraw* auxGeom)
@@ -145,8 +159,25 @@ namespace AZ
             const Scene* m_scene = nullptr;
             View* m_view = nullptr;
             Frustum m_frustum;
+            Frustum m_cameraFrustum;
+            Frustum m_excludeFrustum;
+            AZ::Job* m_parentJob = nullptr;
+            AZ::TaskGraphEvent* m_taskGraphEvent = nullptr;
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+#endif
+            bool m_hasExcludeFrustum = false;
+            bool m_applyCameraFrustumIntersectionTest = false;
+#ifdef AZ_CULL_DEBUG_ENABLED
+
+            AuxGeomDrawPtr GetAuxGeomPtr()
+            {
+                if (m_debugCtx->m_debugDraw && (m_view->GetName() == m_debugCtx->m_currentViewSelectionName))
+                {
+                    return AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_scene);
+                }
+                return nullptr;
+            }
 #endif
         };
 
@@ -155,21 +186,42 @@ namespace AZ
             const Scene& scene,
             View& view,
             Frustum& frustum,
-            [[maybe_unused]] void* maskedOcclusionCulling)
+            [[maybe_unused]] void* maskedOcclusionCulling,
+            AZ::Job* parentJob,
+            AZ::TaskGraphEvent* taskGraphEvent)
         {
             AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
             worklistData->m_debugCtx = &debugCtx;
             worklistData->m_scene = &scene;
             worklistData->m_view = &view;
             worklistData->m_frustum = frustum;
+            worklistData->m_parentJob = parentJob;
+            worklistData->m_taskGraphEvent = taskGraphEvent;
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             worklistData->m_maskedOcclusionCulling = static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling);
 #endif
             return worklistData;
         }
 
-        constexpr size_t WorkListCapacity = 5;
-        using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
+        // Used to accumulate NodeData into lists to be handed off to jobs for processing
+        struct WorkListType
+        {
+            void Init()
+            {
+                m_entryCount = 0;
+                u32 reserveCount = r_useEntryCountForNodeJobs ? r_maxNodesWhenUsingEntryCount : r_numNodesPerCullingJob;
+                m_nodes.reserve(reserveCount);
+            }
+
+            u32 m_entryCount = 0;
+            AZStd::vector<AzFramework::IVisibilityScene::NodeData> m_nodes;
+        };
+
+        // Used to accumulate VisibilityEntry into lists to be handed off to jobs for processing
+        struct EntryListType
+        {
+            AZStd::vector<AzFramework::VisibilityEntry*> m_entries;
+        };
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
         static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
@@ -177,168 +229,103 @@ namespace AZ
                     AzFramework::VisibilityEntry* visibleEntry);
 #endif
 
-        static void ProcessWorklist(const AZStd::shared_ptr<WorklistData>& worklistData, const WorkListType& worklist)
+        static void ProcessEntrylist(const AZStd::shared_ptr<WorklistData>& worklistData, const AZStd::vector<AzFramework::VisibilityEntry*>& entries, bool parentNodeContainedInFrustum = false, s32 startIdx = 0, s32 endIdx = -1)
         {
-            AZ_PROFILE_SCOPE(RPI, "AddObjectsToViewJob: Process");
-
-            const View::UsageFlags viewFlags = worklistData->m_view->GetUsageFlags();
-            const RHI::DrawListMask drawListMask = worklistData->m_view->GetDrawListMask();
-            #ifdef AZ_CULL_DEBUG_ENABLED
-                // These variable are only used for the gathering of debug information.
-                uint32_t numDrawPackets = 0;
-                uint32_t numVisibleCullables = 0;
-            #endif
-
-            AZ_Assert(worklist.size() > 0, "Received empty worklist in ProcessWorklist");
-
-            for (const AzFramework::IVisibilityScene::NodeData& nodeData : worklist)
-            {
-                //If a node is entirely contained within the frustum, then we can skip the fine grained culling.
-                bool nodeIsContainedInFrustum =
-                    !worklistData->m_debugCtx->m_enableFrustumCulling ||
-                    ShapeIntersection::Contains(worklistData->m_frustum, nodeData.m_bounds);
-
-#ifdef AZ_CULL_PROFILE_VERBOSE
-                AZ_PROFILE_SCOPE(RPI, "process node (view: %s, skip fine cull: %ds",
-                    worklistData->m_view->GetName().GetCStr(), nodeIsContainedInFrustum ? "true" : "false");
-#endif
-
-                if (nodeIsContainedInFrustum)
-                {
-                    //Add all objects within this node to the view, without any extra culling
-                    for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
-                    {
-                        {
-                            if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
-                            {
-                                Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
-
-                                if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
-                                    c->m_cullData.m_hideFlags & viewFlags ||
-                                    c->m_cullData.m_scene != worklistData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
-                                    c->m_isHidden)
-                                {
-                                    continue;
-                                }
-
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                                if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
-#endif
-                                {
-                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
-                                    // For example, using #else could cause a bug where the function's parameter
-                                    // is changed in #ifdef but not in #else.
-                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    #ifdef AZ_CULL_DEBUG_ENABLED
-                                        ++numVisibleCullables;
-                                        numDrawPackets += drawPacketCount;
-                                    #endif
-
-                                    c->m_isVisible = true;
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    //Do fine-grained culling before adding objects to the view
-                    for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
-                    {
-                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
-                        {
-                            Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
-
-                            if ((c->m_cullData.m_drawListMask & drawListMask).none() ||
-                                c->m_cullData.m_hideFlags & viewFlags ||
-                                c->m_cullData.m_scene != worklistData->m_scene ||       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
-                                c->m_isHidden)
-                            {
-                                continue;
-                            }
-
-                            IntersectResult res = ShapeIntersection::Classify(worklistData->m_frustum, c->m_cullData.m_boundingSphere);
-                            if (res == IntersectResult::Exterior)
-                            {
-                                continue;
-                            }
-                            else if (res == IntersectResult::Interior || ShapeIntersection::Overlaps(worklistData->m_frustum, c->m_cullData.m_boundingObb))
-                            {
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                                if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
-#endif
-                                {
-                                    // There are ways to write this without [[maybe_unused]], but they are brittle.
-                                    // For example, using #else could cause a bug where the function's parameter
-                                    // is changed in #ifdef but not in #else.
-                                    [[maybe_unused]] const uint32_t drawPacketCount=AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
-                                    #ifdef AZ_CULL_DEBUG_ENABLED
-                                        ++numVisibleCullables;
-                                        numDrawPackets += drawPacketCount;
-                                    #endif
-
-                                    c->m_isVisible = true;
-                                }
-                            }
-                        }
-                    }
-                }
 #ifdef AZ_CULL_DEBUG_ENABLED
-                if (worklistData->m_debugCtx->m_debugDraw && (worklistData->m_view->GetName() == worklistData->m_debugCtx->m_currentViewSelectionName))
+            // These variable are only used for the gathering of debug information.
+            uint32_t numDrawPackets = 0;
+            uint32_t numVisibleCullables = 0;
+#endif
+            endIdx = (endIdx == -1) ? s32(entries.size()) : endIdx;
+
+            for (s32 i = startIdx; i < endIdx; ++i)
+            {
+                AzFramework::VisibilityEntry* visibleEntry = entries[i];
+
+                if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                    visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                 {
-                    AZ_PROFILE_SCOPE(RPI, "debug draw culling");
+                    Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
 
-                    AuxGeomDrawPtr auxGeomPtr = AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(worklistData->m_scene);
-                    if (auxGeomPtr)
+                    if ((c->m_cullData.m_drawListMask & worklistData->m_view->GetDrawListMask()).none() ||
+                        c->m_cullData.m_hideFlags & worklistData->m_view->GetUsageFlags() ||
+                        c->m_isHidden)
                     {
-                        //Draw the node bounds
-                        // "Fully visible" nodes are nodes that are fully inside the frustum. "Partially visible" nodes intersect the edges of the frustum.
-                        // Since the nodes of an octree have lots of overlapping boxes with coplanar edges, it's easier to view these separately, so
-                        // we have a few debug booleans to toggle which ones to draw.
-                        if (nodeIsContainedInFrustum && worklistData->m_debugCtx->m_drawFullyVisibleNodes)
-                        {
-                            auxGeomPtr->DrawAabb(nodeData.m_bounds, Colors::Lime, RPI::AuxGeomDraw::DrawStyle::Line, RPI::AuxGeomDraw::DepthTest::Off);
-                        }
-                        else if (!nodeIsContainedInFrustum && worklistData->m_debugCtx->m_drawPartiallyVisibleNodes)
-                        {
-                            auxGeomPtr->DrawAabb(nodeData.m_bounds, Colors::Yellow, RPI::AuxGeomDraw::DrawStyle::Line, RPI::AuxGeomDraw::DepthTest::Off);
-                        }
+                        continue;
+                    }
 
-                        //Draw bounds on individual objects
-                        if (worklistData->m_debugCtx->m_drawBoundingBoxes || worklistData->m_debugCtx->m_drawBoundingSpheres || worklistData->m_debugCtx->m_drawLodRadii)
+                    if (!parentNodeContainedInFrustum)
+                    {
+                        IntersectResult res = ShapeIntersection::Classify(worklistData->m_frustum, c->m_cullData.m_boundingSphere);
+                        bool entryInFrustum = (res != IntersectResult::Exterior) && (res == IntersectResult::Interior || ShapeIntersection::Overlaps(worklistData->m_frustum, c->m_cullData.m_boundingObb));
+                        if (!entryInFrustum)
                         {
-                            for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
-                            {
-                                if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
-                                {
-                                    Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
-                                    if (worklistData->m_debugCtx->m_drawBoundingBoxes)
-                                    {
-                                        auxGeomPtr->DrawObb(c->m_cullData.m_boundingObb, Matrix3x4::Identity(),
-                                            nodeIsContainedInFrustum ? Colors::Lime : Colors::Yellow, AuxGeomDraw::DrawStyle::Line);
-                                    }
-
-                                    if (worklistData->m_debugCtx->m_drawBoundingSpheres)
-                                    {
-                                        auxGeomPtr->DrawSphere(c->m_cullData.m_boundingSphere.GetCenter(), c->m_cullData.m_boundingSphere.GetRadius(),
-                                            Color(0.5f, 0.5f, 0.5f, 0.3f), AuxGeomDraw::DrawStyle::Shaded);
-                                    }
-
-                                    if (worklistData->m_debugCtx->m_drawLodRadii)
-                                    {
-                                        auxGeomPtr->DrawSphere(c->m_cullData.m_boundingSphere.GetCenter(),
-                                            c->m_lodData.m_lodSelectionRadius,
-                                            Color(1.0f, 0.5f, 0.0f, 0.3f), RPI::AuxGeomDraw::DrawStyle::Shaded);
-                                    }
-                                }
-                            }
+                            continue;
                         }
                     }
-                }
+
+                    if (worklistData->m_hasExcludeFrustum &&
+                        ShapeIntersection::Classify(worklistData->m_excludeFrustum, c->m_cullData.m_boundingSphere) == IntersectResult::Interior)
+                    {
+                        // Skip item contained in exclude frustum.
+                        continue;
+                    }
+
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+                    if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
+                    {
+                        // There are ways to write this without [[maybe_unused]], but they are brittle.
+                        // For example, using #else could cause a bug where the function's parameter
+                        // is changed in #ifdef but not in #else.
+                        [[maybe_unused]] const uint32_t drawPacketCount = AddLodDataToView(
+                            c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view, visibleEntry->m_typeFlags);
+                        c->m_isVisible = true;
+                        worklistData->m_view->ApplyFlags(c->m_flags);
+
+#ifdef AZ_CULL_DEBUG_ENABLED
+                        ++numVisibleCullables;
+                        numDrawPackets += drawPacketCount;
+#endif
+                    }
+                }
             }
 
 #ifdef AZ_CULL_DEBUG_ENABLED
+            AuxGeomDrawPtr auxGeomPtr = worklistData->GetAuxGeomPtr();
+            if (auxGeomPtr)
+            {
+                //Draw bounds on individual objects
+                if (worklistData->m_debugCtx->m_drawBoundingBoxes || worklistData->m_debugCtx->m_drawBoundingSpheres || worklistData->m_debugCtx->m_drawLodRadii)
+                {
+                    for (AzFramework::VisibilityEntry* visibleEntry : entries)
+                    {
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
+                        {
+                            Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
+                            if (worklistData->m_debugCtx->m_drawBoundingBoxes)
+                            {
+                                auxGeomPtr->DrawObb(c->m_cullData.m_boundingObb, Matrix3x4::Identity(),
+                                    parentNodeContainedInFrustum ? Colors::Lime : Colors::Yellow, AuxGeomDraw::DrawStyle::Line);
+                            }
+
+                            if (worklistData->m_debugCtx->m_drawBoundingSpheres)
+                            {
+                                auxGeomPtr->DrawSphere(c->m_cullData.m_boundingSphere.GetCenter(), c->m_cullData.m_boundingSphere.GetRadius(),
+                                    Color(0.5f, 0.5f, 0.5f, 0.3f), AuxGeomDraw::DrawStyle::Shaded);
+                            }
+
+                            if (worklistData->m_debugCtx->m_drawLodRadii)
+                            {
+                                auxGeomPtr->DrawSphere(c->m_cullData.m_boundingSphere.GetCenter(),
+                                    c->m_lodData.m_lodSelectionRadius,
+                                    Color(1.0f, 0.5f, 0.0f, 0.3f), RPI::AuxGeomDraw::DrawStyle::Shaded);
+                            }
+                        }
+                    }
+                }
+            }
             if (worklistData->m_debugCtx->m_enableStats)
             {
                 CullingDebugContext::CullStats& cullStats = worklistData->m_debugCtx->GetCullStatsForView(worklistData->m_view);
@@ -348,7 +335,91 @@ namespace AZ
                 cullStats.m_numVisibleCullables += numVisibleCullables;
                 ++cullStats.m_numJobs;
             }
-#endif //AZ_CULL_DEBUG_ENABLED
+#endif
+        }
+
+        static void ProcessVisibilityNode(const AZStd::shared_ptr<WorklistData>& worklistData, const AzFramework::IVisibilityScene::NodeData& nodeData)
+        {
+            bool nodeIsContainedInFrustum = !worklistData->m_debugCtx->m_enableFrustumCulling || ShapeIntersection::Contains(worklistData->m_frustum, nodeData.m_bounds);
+
+            s32 startIdx = 0, size = s32(nodeData.m_entries.size());
+            const AZStd::vector<AzFramework::VisibilityEntry*>& entries = nodeData.m_entries;
+
+            if (worklistData->m_taskGraphEvent)
+            {
+                static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
+
+                AZ::TaskGraph taskGraph{ "ProcessCullableEntries" };
+                AZ::TaskGraphEvent taskGraphEvent{ "ProcessCullableEntries Wait" };
+
+                while (r_useEntryCountForNodeJobs && (size - startIdx) > s32(r_numEntriesPerCullingJob))
+                {
+                    taskGraph.AddTask(descriptor, [=, &entries]() -> void
+                        {
+                            ProcessEntrylist(worklistData, entries, nodeIsContainedInFrustum, startIdx, startIdx + r_numEntriesPerCullingJob);
+                        });
+                    startIdx += s32(r_numEntriesPerCullingJob);
+                }
+
+                if (!taskGraph.IsEmpty())
+                {
+                    taskGraph.Detach();
+                    taskGraph.Submit(worklistData->m_taskGraphEvent);
+                }
+
+                ProcessEntrylist(worklistData, nodeData.m_entries, nodeIsContainedInFrustum, startIdx, size);
+            }
+            else    // Use job system
+            {
+                while (r_useEntryCountForNodeJobs && (size - startIdx) > s32(r_numEntriesPerCullingJob))
+                {
+                    auto processEntries = [=, &entries]() -> void
+                    {
+                        ProcessEntrylist(worklistData, entries, nodeIsContainedInFrustum, startIdx, startIdx + r_numEntriesPerCullingJob);
+                    };
+
+                    AZ::Job* job = AZ::CreateJobFunction(AZStd::move(processEntries), true);
+                    worklistData->m_parentJob->SetContinuation(job);
+                    job->Start();
+
+                    startIdx += s32(r_numEntriesPerCullingJob);
+                }
+
+                ProcessEntrylist(worklistData, nodeData.m_entries, nodeIsContainedInFrustum, startIdx, size);
+            }
+
+#ifdef AZ_CULL_DEBUG_ENABLED
+
+            //Draw the node bounds
+            // "Fully visible" nodes are nodes that are fully inside the frustum. "Partially visible" nodes intersect the edges of the frustum.
+            // Since the nodes of an octree have lots of overlapping boxes with coplanar edges, it's easier to view these separately, so
+            // we have a few debug booleans to toggle which ones to draw.
+
+            AuxGeomDrawPtr auxGeomPtr = worklistData->GetAuxGeomPtr();
+            if (auxGeomPtr)
+            {
+                if (nodeIsContainedInFrustum && worklistData->m_debugCtx->m_drawFullyVisibleNodes)
+                {
+                    auxGeomPtr->DrawAabb(nodeData.m_bounds, Colors::Lime, RPI::AuxGeomDraw::DrawStyle::Line, RPI::AuxGeomDraw::DepthTest::Off);
+                }
+                else if (!nodeIsContainedInFrustum && worklistData->m_debugCtx->m_drawPartiallyVisibleNodes)
+                {
+                    auxGeomPtr->DrawAabb(nodeData.m_bounds, Colors::Yellow, RPI::AuxGeomDraw::DrawStyle::Line, RPI::AuxGeomDraw::DepthTest::Off);
+                }
+            }
+#endif
+        }
+
+        static void ProcessWorklist(const AZStd::shared_ptr<WorklistData>& worklistData, const WorkListType& worklist)
+        {
+            AZ_PROFILE_SCOPE(RPI, "Culling: ProcessWorklist");
+
+            AZ_Assert(worklist.m_nodes.size() > 0, "Received empty worklist in ProcessWorklist");
+
+            for (const AzFramework::IVisibilityScene::NodeData& nodeData : worklist.m_nodes)
+            {
+                ProcessVisibilityNode(worklistData, nodeData);
+            }
         }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -498,9 +569,11 @@ namespace AZ
 #endif
         }
 
-        void CullingScene::ProcessCullablesJobs(const Scene& scene, View& view, AZ::Job& parentJob)
+        void CullingScene::ProcessCullables(const Scene& scene, View& view, AZ::Job* parentJob, AZ::TaskGraph* taskGraph, AZ::TaskGraphEvent* taskGraphEvent)
         {
-            AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesJobs() - %s", view.GetName().GetCStr());
+            AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullables() - %s", view.GetName().GetCStr());
+
+            AZ_Assert(parentJob != nullptr || taskGraph != nullptr, "ProcessCullables must have either a valid parent job or a valid task graph");
 
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             AZ::Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
@@ -508,61 +581,142 @@ namespace AZ
             void* maskedOcclusionCulling = nullptr;
             ProcessCullablesCommon(scene, view, frustum, maskedOcclusionCulling);
 
-            WorkListType worklist;
+            AZStd::shared_ptr<WorkListType> worklist = AZStd::make_shared<WorkListType>();
+            worklist->Init();
+            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, taskGraphEvent);
+            static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
 
-            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling);
-
-            auto nodeVisitorLambda = [worklistData, &parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
+            if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
             {
-                AZ_PROFILE_SCOPE(RPI, "nodeVisitorLambda()");
-                AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
-                AZ_Assert(worklist.size() < worklist.capacity(), "we should always have room to push a node on the queue");
+                worklistData->m_hasExcludeFrustum = true;
+                worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
 
-                //Queue up a small list of work items (NodeData*) which will be pushed to a worker job (AddObjectsToViewJob) once the queue is full.
-                //This reduces the number of jobs in flight, reducing job-system overhead.
-                worklist.emplace_back(AZStd::move(nodeData));
+                // Get the render pipeline associated with the shadow pass of the given view
+                RenderPipelinePtr renderPipeline = scene.GetRenderPipeline(view.GetShadowPassRenderPipelineId());             
+                //Only apply this optimization if you only have one view available.
+                if (renderPipeline && renderPipeline->GetViews(renderPipeline->GetMainViewTag()).size() == 1)
+                {
+                    RPI::ViewPtr cameraView = renderPipeline->GetDefaultView();
+                    const Matrix4x4& cameraWorldToClip = cameraView->GetWorldToClipMatrix();
+                    worklistData->m_cameraFrustum = Frustum::CreateFromMatrixColumnMajor(cameraWorldToClip);
+                    worklistData->m_applyCameraFrustumIntersectionTest = true;
+                }
+            }
+            
+            auto nodeVisitorLambda = [worklistData, taskGraph, parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
+            {
+                // For shadow cascades that are greater than index 0 we can do another check to see if we can reject any Octree node that do not
+                // intersect with the camera frustum. We do this by checking for an overlap between the camera frustum and the Obb created
+                // from the node's AABB but rotated and extended towards light direction. This optimization is only activated when someone sets
+                // a non-negative extrusion value (i.e r_shadowCascadeExtrusionAmount) for their given content.
+                if (r_shadowCascadeExtrusionAmount >= 0 && worklistData->m_applyCameraFrustumIntersectionTest && worklistData->m_hasExcludeFrustum)
+                {
+                    // Build an Obb from the Octree node's aabb
+                    AZ::Obb extrudedBounds = AZ::Obb::CreateFromAabb(nodeData.m_bounds);
 
-                if (worklist.size() == worklist.capacity())
+                    // Rotate the Obb in the direction of the light
+                    AZ::Quaternion directionalLightRot = worklistData->m_view->GetCameraTransform().GetRotation();
+                    extrudedBounds.SetRotation(directionalLightRot);
+                    
+                    AZ::Vector3 halfLength = 0.5f * nodeData.m_bounds.GetExtents();
+                    // After converting AABB to OBB we apply a rotation and this can incorrectly fail intersection test. If you have an OBB cube built from an octree node,
+                    // rotating it can cause it to not encapsulate meshes it encapsulated beforehand. The type of shape we want here is essentially a capsule that starts from the
+                    // light and wraps the aabb of the octree node cube and extends towards light direction. This capsule's diameter needs to the size of the body diagonal
+                    // of the cube. Since using capsule shape will make intersection test expensive we simply expand the Obb to have each side be at least the size of the body diagonal
+                    // which is sqrt(3) * side size. Hence we expand the Obb by 73%. Since this is half length, we expand it by 73% / 2, or 36.5%.
+                    halfLength *= Vector3(1.365f);
+                    
+                    // Next we extrude the Obb in the direction of the light in order to ensure we capture meshes that are behind the camera but cast a shadow within it's frustum
+                    halfLength.SetY(halfLength.GetY() + r_shadowCascadeExtrusionAmount);
+                    extrudedBounds.SetHalfLengths(halfLength);
+                    if (!AZ::ShapeIntersection::Overlaps(worklistData->m_cameraFrustum, extrudedBounds))
+                    {
+                        return;
+                    }
+                }
+
+                auto entriesInNode = nodeData.m_entries.size();
+                AZ_Assert(entriesInNode > 0, "should not get called with 0 entries");
+
+                // Check job spawn condition for entries
+                bool spawnJob = r_useEntryCountForNodeJobs && (worklist->m_entryCount > 0) &&
+                    ((worklist->m_entryCount + entriesInNode) > r_numEntriesPerCullingJob);
+
+                // Check job spawn condition for nodes
+                spawnJob = spawnJob || (worklist->m_nodes.size() == worklist->m_nodes.capacity());
+
+                if (spawnJob)
                 {
                     // capture worklistData & worklist by value
                     auto processWorklist = [worklistData, worklist]()
                     {
-                        ProcessWorklist(worklistData, worklist);
+                        ProcessWorklist(worklistData, *worklist);
                     };
-                    //Kick off a job to process the (full) worklist
-                    AZ::Job* job = AZ::CreateJobFunction(processWorklist, true);
-                    worklist.clear();
-                    parentJob.SetContinuation(job);
-                    job->Start();
+
+                    if (taskGraph != nullptr)
+                    {
+                        taskGraph->AddTask(descriptor, [worklistData, worklist]()
+                            {
+                                ProcessWorklist(worklistData, *worklist);
+                            });
+                    }
+                    else
+                    {
+                        //Kick off a job to process the (full) worklist
+                        AZ::Job* job = AZ::CreateJobFunction(processWorklist, true);
+                        parentJob->SetContinuation(job);
+                        job->Start();
+                    }
+                    worklist = AZStd::make_shared<WorkListType>();
+                    worklist->Init();
                 }
+
+                worklist->m_nodes.emplace_back(AZStd::move(nodeData));
+                worklist->m_entryCount += u32(entriesInNode);
             };
 
             if (m_debugCtx.m_enableFrustumCulling)
             {
-                m_visScene->Enumerate(frustum, nodeVisitorLambda);
+                if (worklistData->m_hasExcludeFrustum)
+                {
+                    m_visScene->Enumerate(frustum, worklistData->m_excludeFrustum, nodeVisitorLambda);
+                }
+                else
+                {
+                    m_visScene->Enumerate(frustum, nodeVisitorLambda);
+                }
             }
             else
             {
                 m_visScene->EnumerateNoCull(nodeVisitorLambda);
             }
 
-            if (worklist.size() > 0)
+            if (worklist->m_nodes.size() > 0)
             {
                 // capture worklistData & worklist by value
                 auto processWorklist = [worklistData, worklist]()
                 {
-                    ProcessWorklist(worklistData, worklist);
+                    ProcessWorklist(worklistData, *worklist);
                 };
-                //Kick off a job to process the (full) worklist
-                AZ::Job* job = AZ::CreateJobFunction(processWorklist, true);
-                parentJob.SetContinuation(job);
-                job->Start();
+
+                if (taskGraph != nullptr)
+                {
+                    taskGraph->AddTask(descriptor, AZStd::move(processWorklist));
+                }
+                else
+                {
+                    //Kick off a job to process the (full) worklist
+                    AZ::Job* job = AZ::CreateJobFunction(AZStd::move(processWorklist), true);
+                    parentJob->SetContinuation(job);
+                    job->Start();
+                }
             }
         }
 
-        void CullingScene::ProcessCullablesTG(const Scene& scene, View& view, AZ::TaskGraph& taskGraph)
+        // Fastest of the three functions: ProcessCullablesJobsEntries, ProcessCullablesJobsNodes, ProcessCullablesTG
+        void CullingScene::ProcessCullablesJobsEntries(const Scene& scene, View& view, AZ::Job* parentJob)
         {
-            AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesTG() - %s", view.GetName().GetCStr());
+            AZ_PROFILE_SCOPE(RPI, "CullingScene::ProcessCullablesJobsEntries() - %s", view.GetName().GetCStr());
 
             const Matrix4x4& worldToClip = view.GetWorldToClipMatrix();
             AZ::Frustum frustum = Frustum::CreateFromMatrixColumnMajor(worldToClip);
@@ -570,70 +724,101 @@ namespace AZ
             void* maskedOcclusionCulling = nullptr;
             ProcessCullablesCommon(scene, view, frustum, maskedOcclusionCulling);
 
-            AZStd::unique_ptr<WorkListType> worklist = AZStd::make_unique<WorkListType>();
+            // Note 1: Cannot do unique_ptr here because compilation error (auto-deletes function from lambda which the job code complains about) 
+            // Note 2: Having this be a pointer (even a shared pointer) is faster than just having this live on the stack like:
+            // EntryListType entryList;
+            // Why isn't immediately clear (did profile several times and noticed the difference of ~0.2-0.3ms, seems making it a stack variable
+            // increases the runtime for this function, which runs on a single thread and spawns other jobs).
+            AZStd::shared_ptr<EntryListType> entryList = AZStd::make_shared<EntryListType>();
+            entryList->m_entries.reserve(r_numEntriesPerCullingJob);
+            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, nullptr);
 
-            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling);
-            static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
+            if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
+            {
+                worklistData->m_hasExcludeFrustum = true;
+                worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
+            }
 
-            auto nodeVisitorLambda = [worklistData, &taskGraph, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
+            auto nodeVisitorLambda = [worklistData, parentJob, &entryList](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
-                AZ_Assert(worklist->size() < worklist->capacity(), "we should always have room to push a node on the queue");
+                AZ_Assert(entryList->m_entries.size() < entryList->m_entries.capacity(), "we should always have room to push a node on the queue");
 
-                //Queue up a small list of work items (NodeData*) which will be pushed to a worker task once the queue is full.
-                //This reduces the number of tasks in flight, reducing task-system overhead.
-                worklist->emplace_back(AZStd::move(nodeData));
-
-                if (worklist->size() == worklist->capacity())
+                u32 remainingCount = u32(nodeData.m_entries.size());
+                u32 current = 0;
+                while (remainingCount > 0)
                 {
-                    //Task takes ownership of the worklist unique ptr
-                    taskGraph.AddTask( descriptor, [worklistData, worklist = AZStd::move(worklist)]()
+                    u32 availableCount = u32(entryList->m_entries.capacity() - entryList->m_entries.size());
+                    u32 addCount = AZStd::min(availableCount, remainingCount);
+
+                    for (u32 i = 0; i < addCount; ++i)
                     {
-                        ProcessWorklist(worklistData, *worklist.get());
-                        // allow worklist to go out of scope and be deleted
-                    });
-                    worklist = AZStd::make_unique<WorkListType>();
+                        entryList->m_entries.push_back(nodeData.m_entries[current++]);
+                    }
+                    remainingCount -= addCount;
+
+                    if (entryList->m_entries.size() == entryList->m_entries.capacity())
+                    {
+                        auto processWorklist = [worklistData, entryList = AZStd::move(entryList)]()
+                        {
+                            ProcessEntrylist(worklistData, entryList->m_entries);
+                        };
+
+                        AZ::Job* job = AZ::CreateJobFunction(processWorklist, true);
+                        entryList = AZStd::make_shared<EntryListType>();
+                        entryList->m_entries.reserve(r_numEntriesPerCullingJob);
+
+                        parentJob->SetContinuation(job);
+                        job->Start();
+                    }
                 }
             };
 
             if (m_debugCtx.m_enableFrustumCulling)
             {
-                AZ_PROFILE_SCOPE(RPI, "Enumerate");
                 m_visScene->Enumerate(frustum, nodeVisitorLambda);
             }
             else
             {
-                AZ_PROFILE_SCOPE(RPI, "EnumerateNoCull");
                 m_visScene->EnumerateNoCull(nodeVisitorLambda);
             }
 
-            if (worklist->size() > 0)
+            if (entryList->m_entries.size() > 0)
             {
-                //Task takes ownership of the worklist unique ptr
-                taskGraph.AddTask( descriptor, [worklistData, worklist = AZStd::move(worklist)]()
+                auto processWorklist = [worklistData, entryList = AZStd::move(entryList)]()
                 {
-                    ProcessWorklist(worklistData, *worklist.get());
-                    // allow worklist to go out of scope and be deleted
-                });
+                    ProcessEntrylist(worklistData, entryList->m_entries);
+                };
+
+                AZ::Job* job = AZ::CreateJobFunction(processWorklist, true);
+                parentJob->SetContinuation(job);
+                job->Start();
             }
         }
 
+        void CullingScene::ProcessCullablesJobs(const Scene& scene, View& view, AZ::Job& parentJob)
+        {
+            if (r_useEntryWorkListsForCulling)
+            {
+                ProcessCullablesJobsEntries(scene, view, &parentJob);
+            }
+            else
+            {
+                ProcessCullables(scene, view, &parentJob, nullptr);
+            }
+        }
 
-        uint32_t AddLodDataToView(const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view)
+        void CullingScene::ProcessCullablesTG(const Scene& scene, View& view, AZ::TaskGraph& taskGraph, AZ::TaskGraphEvent& taskGraphEvent)
+        {
+            ProcessCullables(scene, view, nullptr, &taskGraph, &taskGraphEvent);
+        }
+
+        uint32_t AddLodDataToView(
+            const Vector3& pos, const Cullable::LodData& lodData, RPI::View& view, AzFramework::VisibilityEntry::TypeFlags typeFlags)
         {
 #ifdef AZ_CULL_PROFILE_DETAILED
             AZ_PROFILE_SCOPE(RPI, "AddLodDataToView");
 #endif
-
-            const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
-            //the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to 2*nearPlaneDistance/nearPlaneHeight),
-            //which is used to determine the (vertical) projected size in screen space
-            const float yScale = viewToClip.GetElement(1, 1);
-            const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
-            const Vector3 cameraPos = view.GetViewToWorldMatrix().GetTranslation();
-
-            const float approxScreenPercentage = ModelLodUtils::ApproxScreenPercentage(
-                pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
 
             uint32_t numVisibleDrawPackets = 0;
 
@@ -643,9 +828,20 @@ namespace AZ
                 AZ_PROFILE_SCOPE(RPI, "add draw packets: %zu", lod.m_drawPackets.size());
 #endif
                 numVisibleDrawPackets += static_cast<uint32_t>(lod.m_drawPackets.size());   //don't want to pay the cost of aznumeric_cast<> here so using static_cast<> instead
-                for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
+                if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                 {
-                    view.AddDrawPacket(drawPacket, pos);
+                    view.AddVisibleObject(lod.m_visibleObjectUserData, pos);
+                }
+                else if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                {
+                    for (const RHI::DrawPacket* drawPacket : lod.m_drawPackets)
+                    {
+                        view.AddDrawPacket(drawPacket, pos);
+                    }
+                }
+                else
+                {
+                    AZ_Assert(false, "Invalid cullable type flags.")
                 }
             };
 
@@ -654,20 +850,34 @@ namespace AZ
                 case Cullable::LodType::SpecificLod:
                     if (lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
                     {
-                        addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
+                    addLodToDrawPacket(
+                        lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
                     }
                     break;
                 case Cullable::LodType::ScreenCoverage:
                 default:
-                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
+                {
+                    const Matrix4x4& viewToClip = view.GetViewToClipMatrix();
+                    // the [1][1] element of a perspective projection matrix stores cot(FovY/2) (equal to
+                    // 2*nearPlaneDistance/nearPlaneHeight), which is used to determine the (vertical) projected size in screen space
+                    const float yScale = viewToClip.GetElement(1, 1);
+                    const bool isPerspective = viewToClip.GetElement(3, 3) == 0.f;
+                    const Vector3 cameraPos = view.GetViewToWorldMatrix().GetTranslation();
+
+                    const float approxScreenPercentage =
+                        ModelLodUtils::ApproxScreenPercentage(pos, lodData.m_lodSelectionRadius, cameraPos, yScale, isPerspective);
+
+                    for (uint32_t lodIndex = 0; lodIndex < static_cast<uint32_t>(lodData.m_lods.size()); ++lodIndex)
                     {
-                        // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
+                        const Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
+                        // Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
                             addLodToDrawPacket(lod);
                         }
                     }
                     break;
+                }
             }
 
             return numVisibleDrawPackets;
@@ -676,12 +886,20 @@ namespace AZ
         void CullingScene::Activate(const Scene* parentScene)
         {
             m_parentScene = parentScene;
-
-            AZ_Assert(m_visScene == nullptr, "IVisibilityScene already created for this RPI::Scene");
-            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", m_parentScene->GetName().GetCStr()));
-            m_visScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
+            m_visScene = parentScene->GetVisibilityScene();
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                // Start with default value
+                int shadowCascadeExtrusionAmount = r_shadowCascadeExtrusionAmount;
+                // Get the cvar value from settings registry
+                console->GetCvarValue("r_shadowCascadeExtrusionAmount", shadowCascadeExtrusionAmount);
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(
+                    AZStd::string::format("r_shadowCascadeExtrusionAmount %i", shadowCascadeExtrusionAmount).c_str());
+            }
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "The culling system should start with 0 entries in this scene.");
@@ -693,11 +911,7 @@ namespace AZ
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "All culling entries must be removed from the scene before shutdown.");
 #endif
-            if (m_visScene)
-            {
-                AZ::Interface<AzFramework::IVisibilitySystem>::Get()->DestroyVisibilityScene(m_visScene);
-                m_visScene = nullptr;
-            }
+            m_visScene = nullptr;
         }
 
         void CullingScene::BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views)
@@ -811,17 +1025,14 @@ namespace AZ
         {
             size_t numObjects = 0;
             m_visScene->EnumerateNoCull(
-                [this, &numObjects](const AzFramework::IVisibilityScene::NodeData& nodeData)
+                [&numObjects](const AzFramework::IVisibilityScene::NodeData& nodeData)
                 {
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                     {
-                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable)
+                        if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
+                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                         {
-                            Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
-                            if (c->m_cullData.m_scene == m_parentScene)       //[GFX_TODO][ATOM-13796] once the IVisibilitySystem supports multiple octree scenes, remove this
-                            {
-                                ++numObjects;
-                            }
+                            ++numObjects;
                         }
                     }
                 }

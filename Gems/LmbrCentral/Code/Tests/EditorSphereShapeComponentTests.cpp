@@ -5,8 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "LmbrCentralReflectionTest.h"
-#include "Shape/EditorSphereShapeComponent.h"
+
+#include <EditorShapeTestUtils.h>
+#include <LmbrCentralReflectionTest.h>
+#include <Shape/EditorSphereShapeComponent.h>
 
 namespace LmbrCentral
 {
@@ -56,4 +58,81 @@ namespace LmbrCentral
 
         EXPECT_FLOAT_EQ(radius, 0.57f);
     }
-}
+
+    class EditorSphereShapeComponentFixture
+        : public UnitTest::ToolsApplicationFixture<>
+    {
+    public:
+        void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
+
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorCapsuleShapeComponentDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorSphereShapeComponentDescriptor;
+
+        AZ::Entity* m_entity = nullptr;
+        AZ::EntityId m_entityId;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
+    };
+
+    void EditorSphereShapeComponentFixture::SetUpEditorFixtureImpl()
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        m_editorSphereShapeComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorSphereShapeComponent::CreateDescriptor());
+
+        ShapeComponentConfig::Reflect(serializeContext);
+        SphereShape::Reflect(serializeContext);
+        m_editorSphereShapeComponentDescriptor->Reflect(serializeContext);
+
+        UnitTest::CreateDefaultEditorEntity("CapsuleShapeComponentEntity", &m_entity);
+        m_entityId = m_entity->GetId();
+        m_entity->Deactivate();
+        m_entityComponentIdPair =
+            AZ::EntityComponentIdPair(m_entityId, m_entity->CreateComponent(EditorSphereShapeComponentTypeId)->GetId());
+        m_entity->Activate();
+    }
+
+    void EditorSphereShapeComponentFixture::TearDownEditorFixtureImpl()
+    {
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entityId);
+        m_entity = nullptr;
+        m_entityId.SetInvalid();
+
+        m_editorSphereShapeComponentDescriptor.reset();
+    }
+
+    using EditorSphereShapeComponentManipulatorFixture =
+        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorSphereShapeComponentFixture>;
+
+    void SetUpSphereShapeComponent(
+        AZ::EntityId entityId,
+        const AZ::Transform& transform,
+        const AZ::Vector3& translationOffset,
+        float radius)
+    {
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetWorldTM, transform);
+        ShapeComponentRequestsBus::Event(entityId, &ShapeComponentRequests::SetTranslationOffset, translationOffset);
+        SphereShapeComponentRequestsBus::Event(entityId, &SphereShapeComponentRequests::SetRadius, radius);
+    }
+
+    TEST_F(EditorSphereShapeComponentManipulatorFixture, SphereShapeRadiusManipulatorScalesCorrectly)
+    {
+        AZ::Transform sphereTransform(AZ::Vector3(6.0f, -3.0f, 2.0f), AZ::Quaternion::CreateIdentity(), 0.5f);
+        const float radius = 3.0f;
+        const AZ::Vector3 translationOffset(-3.0f, -5.0f, 2.0f);
+        SetUpSphereShapeComponent(m_entity->GetId(), sphereTransform, translationOffset, radius);
+        EnterComponentMode(m_entityId, EditorSphereShapeComponentTypeId);
+
+        // position the camera so it is looking at the sphere
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateTranslation(AZ::Vector3(5.0f, -15.0f, 2.5f)));
+
+        const AZ::Vector3 worldStart(6.0f, -5.5f, 3.0f);
+        const AZ::Vector3 worldEnd(6.5f, -5.5f, 3.0f);
+
+        DragMouse(m_cameraState, m_actionDispatcher.get(), worldStart, worldEnd);
+
+        ExpectSphereRadius(m_entity->GetId(), 4.0f);
+    }
+} // namespace LmbrCentral

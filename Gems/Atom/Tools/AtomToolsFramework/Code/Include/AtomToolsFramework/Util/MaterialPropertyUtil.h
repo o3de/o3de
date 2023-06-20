@@ -21,11 +21,8 @@ namespace AtomToolsFramework
     //! Convert a material property value into a AZStd::any that can be used as a dynamic property
     AZStd::any ConvertToEditableType(const AZ::RPI::MaterialPropertyValue& value);
 
-    //! Convert from a material system property type enumeration into the corresponding dynamic property type 
-    AtomToolsFramework::DynamicPropertyType ConvertToEditableType(const AZ::RPI::MaterialPropertyDataType dataType);
-
     //! Convert and assign material type source data property definition fields to editor dynamic property configuration 
-    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition);
+    void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertySourceData& propertyDefinition);
 
     //! Convert and assign material property meta data fields to editor dynamic property configuration 
     void ConvertToPropertyConfig(AtomToolsFramework::DynamicPropertyConfig& propertyConfig, const AZ::RPI::MaterialPropertyDynamicMetadata& propertyMetaData);
@@ -44,7 +41,7 @@ namespace AtomToolsFramework
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
         [[maybe_unused]] const AZ::Name& propertyId,
-        const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
+        const AZ::RPI::MaterialPropertySourceData& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue);
 
     AZ::RPI::MaterialPropertyDataType GetMaterialPropertyDataTypeFromValue(

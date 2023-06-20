@@ -36,8 +36,6 @@ namespace MCore
     // static main init method
     bool Initializer::Init(InitSettings* settings)
     {
-        AZ::AllocatorInstance<AttributeAllocator>::Create();
-
         // use the defaults if a nullptr is specified
         InitSettings defaultSettings;
         InitSettings* realSettings = (settings) ? settings : &defaultSettings;
@@ -73,8 +71,6 @@ namespace MCore
         freeFunction(gMCore.Get());
 
         gMCore.Reset();
-
-        AZ::AllocatorInstance<AttributeAllocator>::Destroy();
     }
 
     //-----------------------------------------------------------------

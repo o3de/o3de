@@ -56,6 +56,12 @@ namespace AZ
     void EventSchedulerSystemComponent::Deactivate()
     {
         TickBus::Handler::BusDisconnect();
+
+        // Clear all of these on Deactivate() so that they're properly deallocated before reaching the destructor.
+        m_ownedEvents.clear();
+        m_freeEvents.clear();
+        m_handles.clear();
+        m_freeHandles.clear();
     }
 
     void EventSchedulerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -109,7 +115,7 @@ namespace AZ
             timedEvent->m_handle = AllocateHandle();
         }
         const bool ownsScheduledEvent = false;
-        *(timedEvent->m_handle) = ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
+        timedEvent->m_handle = new (timedEvent->m_handle) ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
         return timedEvent->m_handle;
@@ -125,7 +131,7 @@ namespace AZ
         TimeMs currentMilliseconds = AZ::GetElapsedTimeMs();
         ScheduledEvent* timedEvent = AllocateManagedEvent(callback, eventName);
         const bool ownsScheduledEvent = true;
-        *(timedEvent->m_handle) = ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
+        timedEvent->m_handle = new (timedEvent->m_handle) ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
     }

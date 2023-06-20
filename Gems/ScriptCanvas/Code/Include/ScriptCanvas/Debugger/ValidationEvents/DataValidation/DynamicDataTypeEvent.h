@@ -27,7 +27,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(UnspecifiedDynamicDataTypeEvent, "{429702EE-E08A-47C3-A489-1029A7F27DD9}", ValidationEvent, HighlightEntityEffect, FocusOnEntityEffect);
-        AZ_CLASS_ALLOCATOR(UnspecifiedDynamicDataTypeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnspecifiedDynamicDataTypeEvent, AZ::SystemAllocator);
 
         UnspecifiedDynamicDataTypeEvent(const AZ::EntityId& nodeId, const AZStd::vector<SlotId>& slots)
             : ValidationEvent(ValidationSeverity::Error)

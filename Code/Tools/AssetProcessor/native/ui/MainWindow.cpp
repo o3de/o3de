@@ -19,6 +19,7 @@
 #include <native/ui/BuilderDataItem.h>
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
+#include <native/ui/EnabledRelocationTypesModel.h>
 #include <native/ui/SourceAssetTreeFilterModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -30,6 +31,7 @@
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -190,6 +192,7 @@ MainWindow::MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* pa
     , m_builderList(new BuilderListModel(this))
     , m_builderListSortFilterProxy(new BuilderListSortFilterProxy(this))
     , m_builderInfoPatterns(new AssetProcessor::BuilderInfoPatternsModel(this))
+    , m_enabledRelocationTypesModel(new AssetProcessor::EnabledRelocationTypesModel(this))
 {
     ui->setupUi(this);
 
@@ -234,16 +237,18 @@ void MainWindow::Activate()
 
     connect(ui->supportButton, &QPushButton::clicked, this, &MainWindow::OnSupportClicked);
 
+    ui->buttonList->addTab(QStringLiteral("Welcome"));
     ui->buttonList->addTab(QStringLiteral("Jobs"));
     ui->buttonList->addTab(QStringLiteral("Assets"));
     ui->buttonList->addTab(QStringLiteral("Logs"));
     ui->buttonList->addTab(QStringLiteral("Connections"));
     ui->buttonList->addTab(QStringLiteral("Builders"));
-    ui->buttonList->addTab(QStringLiteral("Tools"));
+    ui->buttonList->addTab(QStringLiteral("Settings"));
     ui->buttonList->addTab(QStringLiteral("Shared Cache"));
+    ui->buttonList->addTab(QStringLiteral("Asset Relocation"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
-    const int startIndex = static_cast<int>(DialogStackIndex::Jobs);
+    const int startIndex = static_cast<int>(DialogStackIndex::Welcome);
     ui->dialogStack->setCurrentIndex(startIndex);
     ui->buttonList->setCurrentIndex(startIndex);
 
@@ -388,7 +393,6 @@ void MainWindow::Activate()
     // Asset view
     m_sourceAssetTreeFilterModel = new AssetProcessor::SourceAssetTreeFilterModel(this);
     m_sourceModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
-    m_sourceModel->Reset();
     m_sourceAssetTreeFilterModel->setSourceModel(m_sourceModel);
     ui->SourceAssetsTreeView->setModel(m_sourceAssetTreeFilterModel);
     ui->SourceAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -399,7 +403,6 @@ void MainWindow::Activate()
     m_intermediateAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_intermediateModel = new AssetProcessor::SourceAssetTreeModel(m_sharedDbConnection, this);
     m_intermediateModel->SetOnlyShowIntermediateAssets();
-    m_intermediateModel->Reset();
     m_intermediateAssetTreeFilterModel->setSourceModel(m_intermediateModel);
     ui->IntermediateAssetsTreeView->setModel(m_intermediateAssetTreeFilterModel);
     connect(
@@ -411,7 +414,6 @@ void MainWindow::Activate()
 
     m_productAssetTreeFilterModel = new AssetProcessor::AssetTreeFilterModel(this);
     m_productModel = new AssetProcessor::ProductAssetTreeModel(m_sharedDbConnection, this);
-    m_productModel->Reset();
     m_productAssetTreeFilterModel->setSourceModel(m_productModel);
     ui->ProductAssetsTreeView->setModel(m_productAssetTreeFilterModel);
     ui->ProductAssetsTreeView->setColumnWidth(aznumeric_cast<int>(AssetTreeColumns::Extension), 80);
@@ -424,8 +426,6 @@ void MainWindow::Activate()
     ui->productAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
     ui->sourceAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
     ui->intermediateAssetDetailsPanel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
-    m_intermediateModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
-    m_sourceModel->SetIntermediateAssetFolderId(intermediateAssetFolderId);
 
     AzQtComponents::StyleManager::setStyleSheet(ui->sourceAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
     AzQtComponents::StyleManager::setStyleSheet(ui->intermediateAssetDetailsPanel, QStringLiteral("style:AssetProcessor.qss"));
@@ -493,6 +493,23 @@ void MainWindow::Activate()
         &MainWindow::ShowIncomingProductDependenciesContextMenu);
 
     SetupAssetSelectionCaching();
+    // the first time we open that panel we can refresh it.
+    m_connectionForResettingAssetsView = connect(
+        ui->dialogStack,
+        &QStackedWidget::currentChanged,
+        this,
+        [&](int index)
+        {
+            if (index == static_cast<int>(DialogStackIndex::Assets))
+            {
+                // the first time we show the asset window, reset the model since its so expensive to do on every startup
+                // and many times, the user does not even go to that panel.
+                m_sourceModel->Reset();
+                m_intermediateModel->Reset();
+                m_productModel->Reset();
+                QObject::disconnect(m_connectionForResettingAssetsView);
+            }
+        });
 
     //Log View
     m_loggingPanel = ui->LoggingPanel;
@@ -576,19 +593,31 @@ void MainWindow::Activate()
         &BuilderData::OnCreateJobsDurationChanged);
     connect(m_builderData, &BuilderData::DurationChanged, m_builderInfoMetrics, &BuilderInfoMetricsModel::OnDurationChanged);
 
-    // Tools tab:
+    // Settings tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
+
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->modtimeSkippingCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->disableStartupScanCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->debugOutputCheckBox);
+
+    const auto apm = m_guiApplicationManager->GetAssetProcessorManager();
 
     // Note: the settings can't be used in ::MainWindow(), because the application name
     // hasn't been set up and therefore the settings will load from somewhere different than later
     // on.
+    // Read the current settings to give command line options a chance to override the default
     QSettings settings;
     settings.beginGroup("Options");
-    bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
-    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool();
+    bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool() || apm->GetModtimeSkippingFeatureEnabled();
+    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool() || apm->GetBuilderDebugFlag();
+    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool() || apm->GetInitialScanSkippingFeatureEnabled();
     settings.endGroup();
 
     // zero analysis flag
+    apm->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
+    ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
+
+    // Connect after updating settings to avoid saving a command line override
     QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
     {
@@ -600,10 +629,10 @@ void MainWindow::Activate()
         settingsInCallback.endGroup();
     });
 
-    m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
-    ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
-
     // output debug flag
+    apm->SetBuilderDebugFlag(enableBuilderDebugFlag);
+    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+
     QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
         {
@@ -615,11 +644,29 @@ void MainWindow::Activate()
             settingsInCallback.endGroup();
         });
 
-    m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
-    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+    apm->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
+    ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
+
+    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
+        [](int newCheckState)
+    {
+        bool newOption = newCheckState == Qt::Checked ? true : false;
+        // don't change initial scan skipping feature value, as it's only relevant on the first scan
+        // save the value for the next run
+        QSettings settingsInCallback;
+        settingsInCallback.beginGroup("Options");
+        settingsInCallback.setValue("SkipInitialScan", QVariant(newOption));
+        settingsInCallback.endGroup();
+    });
 
     // Shared Cache tab:
     SetupAssetServerTab();
+
+    m_enabledRelocationTypesModel->Reset();
+    ui->AssetRelocationExtensionListView->setModel(m_enabledRelocationTypesModel);
+
+    ui->MetaCreationDelayValue->setText(tr("%1 milliseconds").arg(m_guiApplicationManager->GetAssetProcessorManager()->GetMetaCreationDelay()));
+
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
@@ -644,11 +691,11 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             m_builderInfoMetricsSort->mapFromSource(m_builderInfoMetrics->index(m_builderData->m_builderGuidToIndex[builder.m_busId], 0)));
         ui->builderInfoMetricsTreeView->expandToDepth(0);
         ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
-        ui->builderInfoHeaderValueType->setText(
+        ui->builderInfoDetailsValueType->setText(
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
-        ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
-        ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());
+        ui->builderInfoDetailsValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
+        ui->builderInfoDetailsValueVersionNumber->setText(QString::number(builder.m_version));
+        ui->builderInfoDetailsValueBusId->setText(builder.m_busId.ToFixedString().c_str());
     }
 }
 
@@ -802,10 +849,12 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     QObject::connect(enableChackmark, &QCheckBox::stateChanged, ui->sharedCacheTable, updateStatus);
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Enabled), enableChackmark);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Enabled), 8);
+    enableChackmark->setToolTip(tr("Temporarily disable the pattern by unchecking this box"));
 
     // Name
     auto* nameWidgetItem = new QTableWidgetItem(name.data());
     ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Name), nameWidgetItem);
+    nameWidgetItem->setToolTip(tr("Name of the pattern or title name of an asset builder"));
 
     // Type combo
     auto* combo = new QComboBox();
@@ -814,10 +863,12 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     combo->addItem("Regex", QVariant(AssetBuilderPattern::PatternType::Regex));
     combo->setCurrentIndex(aznumeric_cast<int>(type));
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Type), combo);
+    combo->setToolTip(tr("Wildcard is a file wild card pattern; Regex is a regular expression pattern"));
 
     // Pattern
     auto* patternWidgetItem = new QTableWidgetItem(pattern.data());
     ui->sharedCacheTable->setItem(row, aznumeric_cast<int>(PatternColumns::Pattern), patternWidgetItem);
+    patternWidgetItem->setToolTip(tr("String pattern to match source assets"));
 
     // Remove button
     auto* button = new QPushButton();
@@ -827,6 +878,7 @@ void MainWindow::AddPatternRow(AZStd::string_view name, AssetBuilderSDK::AssetBu
     button->setStyleSheet("QPushButton { background-color: transparent; border: 0px }");
     ui->sharedCacheTable->setCellWidget(row, aznumeric_cast<int>(PatternColumns::Remove), button);
     ui->sharedCacheTable->setColumnWidth(aznumeric_cast<int>(PatternColumns::Remove), 16);
+    button->setToolTip(tr("Removes the pattern to be considered for caching"));
     QObject::connect(button, &QPushButton::clicked, this,
         [this]()
         {
@@ -999,20 +1051,23 @@ void MainWindow::SetupAssetSelectionCaching()
         }
         QModelIndex sourceModelIndex = sourceSelection.indexes()[0];
         AssetProcessor::AssetTreeItem* childItem = static_cast<AssetProcessor::AssetTreeItem*>(sourceModelIndex.internalPointer());
-        m_cachedSourceAssetSelection = childItem->GetData()->m_assetDbName;
+            m_cachedSourceAssetSelection =
+                AssetProcessor::SourceAndScanID(childItem->GetData()->m_assetDbName, childItem->GetData()->m_scanFolderID);
     });
 
     connect(m_sourceModel, &QAbstractItemModel::modelReset, [&]()
     {
-        if (m_cachedSourceAssetSelection.empty())
+            if (m_cachedSourceAssetSelection.first.empty() ||
+                m_cachedSourceAssetSelection.second == AzToolsFramework::AssetDatabase::InvalidEntryId)
         {
             return;
         }
-        QModelIndex goToIndex = m_sourceModel->GetIndexForSource(m_cachedSourceAssetSelection);
+        QModelIndex goToIndex = m_sourceModel->GetIndexForSource(m_cachedSourceAssetSelection.first, m_cachedSourceAssetSelection.second);
         // If the cached selection was deleted or is no longer available, clear the selection.
         if (!goToIndex.isValid())
         {
-            m_cachedSourceAssetSelection.clear();
+            m_cachedSourceAssetSelection.first.clear();
+            m_cachedSourceAssetSelection.second = AzToolsFramework::AssetDatabase::InvalidEntryId;
             ui->ProductAssetsTreeView->selectionModel()->clearSelection();
             // ClearSelection says in the Qt docs that the selectionChange signal will be sent, but that wasn't happening,
             // so force the details panel to refresh.
@@ -1746,7 +1801,7 @@ void MainWindow::JobStatusChanged([[maybe_unused]] AssetProcessor::JobEntry entr
     }
 
     // ignore the notification if it's not for the selected entry
-    if (cachedJobInfo->m_elementId.GetInputAssetName() != entry.m_databaseSourceName)
+    if (cachedJobInfo->m_elementId.GetSourceAssetReference() != entry.m_sourceAssetReference)
     {
         return;
     }
@@ -1836,21 +1891,7 @@ void MainWindow::ShowJobLogContextMenu(const QPoint& pos)
 
 static QString FindAbsoluteFilePath(const AssetProcessor::CachedJobInfo* cachedJobInfo)
 {
-    using namespace AzToolsFramework;
-
-    bool result = false;
-    AZ::Data::AssetInfo info;
-    AZStd::string watchFolder;
-    QByteArray assetNameUtf8 = cachedJobInfo->m_elementId.GetInputAssetName().toUtf8();
-    AssetSystemRequestBus::BroadcastResult(result, &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, assetNameUtf8.constData(), info, watchFolder);
-    if (!result)
-    {
-        AZ_Error("AssetProvider", false, "Failed to locate asset info for '%s'.", assetNameUtf8.constData());
-    }
-
-    return result
-        ? QDir(watchFolder.c_str()).absoluteFilePath(info.m_relativePath.c_str())
-        : QString();
+    return cachedJobInfo ? cachedJobInfo->m_elementId.GetSourceAssetReference().AbsolutePath().c_str() : QString{};
 };
 
 static void SendShowInAssetBrowserResponse(const QString& filePath, ConnectionManager* connectionManager, unsigned int connectionId, QByteArray data)
@@ -1899,34 +1940,56 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     QMenu menu;
     menu.setToolTipsVisible(true);
 
-    menu.addAction("Show in Asset Browser", this, [&]()
+    // Find a connection to an Editor, if it exists. This is used for showing this asset in the Asset Browser, if the Editor is available.
+    ConnectionManager* connectionManager = m_guiApplicationManager->GetConnectionManager();
+    Connection* editorConnection = nullptr;
+    auto& connectionMap = connectionManager->getConnectionMap();
+    auto connections = connectionMap.values();
+    for (auto connection : connections)
     {
-        ConnectionManager* connectionManager = m_guiApplicationManager->GetConnectionManager();
+        using namespace AzFramework::AssetSystem;
+        // If there is more than one Editor connected, this will only show this asset in the first connected Editor's asset browser.
+        if (connection->Identifier() == ConnectionIdentifiers::Editor)
+        {
+            editorConnection = connection;
+            break;
+        }
+    }
+
+    QAction* showInAssetBrowserAction = menu.addAction("Show in Asset Browser", this, [&]()
+    {
+        if (!editorConnection)
+        {
+            return;
+        }
 
         QString filePath = FindAbsoluteFilePath(item);
 
         AzToolsFramework::AssetSystem::WantAssetBrowserShowRequest requestMessage;
 
-        auto& connectionMap = connectionManager->getConnectionMap();
-        auto connections = connectionMap.values();
-        for (auto connection : connections)
-        {
-            using namespace AzFramework::AssetSystem;
-
-            // Ask the Editor, and only the Editor, if it wants to receive
-            // the message for showing an asset in the AssetBrowser.
-            // This also allows the Editor to send back it's Process ID, which
-            // allows the Windows platform to call AllowSetForegroundWindow()
-            // which is required to bring the Editor window to the foreground
-            if (connection->Identifier() == ConnectionIdentifiers::Editor)
+        // Ask the Editor, and only the Editor, if it wants to receive
+        // the message for showing an asset in the AssetBrowser.
+        // This also allows the Editor to send back it's Process ID, which
+        // allows the Windows platform to call AllowSetForegroundWindow()
+        // which is required to bring the Editor window to the foreground
+        unsigned int connectionId = editorConnection->ConnectionId();
+        editorConnection->SendRequest(
+            requestMessage,
+            [connectionManager, connectionId, filePath](AZ::u32 /*type*/, QByteArray callbackData)
             {
-                unsigned int connectionId = connection->ConnectionId();
-                connection->SendRequest(requestMessage, [connectionManager, connectionId, filePath](AZ::u32 /*type*/, QByteArray callbackData) {
                     SendShowInAssetBrowserResponse(filePath, connectionManager, connectionId, callbackData);
                 });
-            }
-        }
-    });
+        });
+    // Disable the menu option if there is no Editor connection.
+    showInAssetBrowserAction->setEnabled(editorConnection != nullptr);
+    if (!editorConnection)
+    {
+        showInAssetBrowserAction->setToolTip(tr("Showing in the Asset Browser requires an active connection to the Editor."));
+    }
+    else
+    {
+        showInAssetBrowserAction->setToolTip(tr("Sends a request to the Editor to display this asset in the Asset Browser."));
+    }
 
     menu.addAction("Reprocess Source Asset", this, [this, &item]()
     {
@@ -1939,8 +2002,31 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     {
         ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
         ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-        ui->sourceAssetDetailsPanel->GoToSource(AZStd::string(item->m_elementId.GetInputAssetName().toUtf8().constData()));
+        ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetSourceAssetReference().AbsolutePath().c_str());
     });
+
+    // Get the builder index outside the action, so the action can be disabled if it is not available.
+    QModelIndex builderIndex = m_builderList->GetIndexForBuilder(item->m_builderGuid);
+
+    QAction* assetTabBuilderAction = menu.addAction(tr("View builder"), this, [&]()
+    {
+        ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Builders));
+        ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Builders));
+
+        QModelIndex filterIndex = m_builderListSortFilterProxy->mapFromSource(builderIndex);
+        ui->builderList->scrollTo(filterIndex);
+        ui->builderList->selectionModel()->setCurrentIndex(filterIndex, QItemSelectionModel::ClearAndSelect);
+    });
+    assetTabBuilderAction->setEnabled(builderIndex.isValid());
+    if (builderIndex.isValid())
+    {
+        assetTabBuilderAction->setToolTip(tr("Show the builder for this job in the Builder tab."));
+    }
+    else
+    {
+        assetTabBuilderAction->setToolTip(tr("The builder is unavailable for this asset."));
+    }
+    
 
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
     {
@@ -1979,8 +2065,9 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
             {
                 ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
                 ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
-                AZStd::string assetFromQString(item->text().toUtf8().data());
-                ui->sourceAssetDetailsPanel->GoToSource(assetFromQString);
+
+                QVariant data = item->data(Qt::UserRole);
+                ui->sourceAssetDetailsPanel->GoToSource(data.toString().toUtf8().constData());
                 menu.close();
             }
         };
@@ -2001,15 +2088,20 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
                     return true;
                 }
 
+                auto productPath = AssetUtilities::ProductPath::FromDatabasePath(productEntry.m_productName);
+
                 if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
                 {
                     ++intermediateCount;
-                    intermediateAssetMenu.m_listWidget->addItem(AssetUtilities::StripAssetPlatform(productEntry.m_productName));
+                    auto productItem = new QListWidgetItem { AssetUtilities::StripAssetPlatform(productEntry.m_productName), intermediateAssetMenu.m_listWidget };
+                    productItem->setData(Qt::UserRole, productPath.GetIntermediatePath().c_str());
+                    intermediateAssetMenu.m_listWidget->addItem(productItem);
                 }
                 else
                 {
                     ++productCount;
-                    productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
+                    auto productItem = new QListWidgetItem{ productEntry.m_productName.c_str(), productAssetMenu.m_listWidget };
+                    productAssetMenu.m_listWidget->addItem(productItem);
                 }
                 return true; // Keep iterating, add all products.
             });
@@ -2146,7 +2238,7 @@ void MainWindow::ShowIntermediateAssetContextMenu(const QPoint& pos)
                     productEntry.m_productID,
                     [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
                 {
-                    ui->sourceAssetDetailsPanel->GoToSource(sourceEntry.m_sourceName);
+                    ui->sourceAssetDetailsPanel->GoToSource(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()).AbsolutePath().c_str());
                     return false; // Don't keep iterating
                 });
                 return false;
@@ -2211,8 +2303,8 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
     {
         if (item)
         {
-            AZStd::string assetFromQString(item->text().toUtf8().data());
-            ui->sourceAssetDetailsPanel->GoToSource(assetFromQString);
+            QVariant data = item->data(Qt::UserRole);
+            ui->sourceAssetDetailsPanel->GoToSource(data.toString().toUtf8().constData());
             menu.close();
         }
     };
@@ -2220,37 +2312,44 @@ void MainWindow::BuildSourceAssetTreeContextMenu(QMenu& menu, const AssetProcess
 
     int intermediateCount = 0;
     int productCount = 0;
-    AZStd::string sourceName(sourceItemData->m_assetDbName);
+    SourceAssetReference sourceAsset(sourceItemData->m_scanFolderInfo.m_scanFolder.c_str(), sourceItemData->m_sourceInfo.m_sourceName.c_str());
     m_sharedDbConnection->QueryJobBySourceID(sourceItemData->m_sourceInfo.m_sourceID,
-        [&,sourceName](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
+        [this, &jobMenu, &productAssetMenu, &intermediateAssetMenu, &intermediateCount, &productCount, sourceAsset](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
     {
-        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [&, jobEntry, sourceName]()
+        QAction* jobAction = jobMenu->addAction(tr("with key %1 for platform %2").arg(jobEntry.m_jobKey.c_str(), jobEntry.m_platform.c_str()), this, [this, jobEntry, sourceAsset]()
         {
-            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceName, jobEntry.m_platform, jobEntry.m_jobKey);
+            QModelIndex jobIndex = m_jobsModel->GetJobFromSourceAndJobInfo(sourceAsset, jobEntry.m_platform, jobEntry.m_jobKey);
             SelectJobAndMakeVisible(jobIndex);
         });
         jobAction->setToolTip(tr("Show this job in the Jobs tab."));
 
-            m_sharedDbConnection->QueryProductByJobID(
-                jobEntry.m_jobID,
-                [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
+        m_sharedDbConnection->QueryProductByJobID(
+        jobEntry.m_jobID,
+        [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& productEntry)
+        {
+            if (productEntry.m_productName.empty())
             {
-                if (productEntry.m_productName.empty())
-                {
-                    return true;
-                }
-                if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
-                {
-                    ++intermediateCount;
-                    intermediateAssetMenu.m_listWidget->addItem(AZStd::string(AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName)).c_str());
-                }
-                else
-                {
-                    ++productCount;
-                    productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
-                }
-                return true; // Keep iterating, add all products.
-            });
+                return true;
+            }
+
+            auto productPath = AssetUtilities::ProductPath::FromDatabasePath(productEntry.m_productName);
+
+            if (IsProductOutputFlagSet(productEntry, AssetBuilderSDK::ProductOutputFlags::IntermediateAsset))
+            {
+                ++intermediateCount;
+                auto* productItem =
+                    new QListWidgetItem{ AZStd::string(AssetUtilities::StripAssetPlatformNoCopy(productEntry.m_productName)).c_str(),
+                                            intermediateAssetMenu.m_listWidget };
+                productItem->setData(Qt::UserRole, productPath.GetIntermediatePath().c_str());
+                intermediateAssetMenu.m_listWidget->addItem(productItem);
+            }
+            else
+            {
+                ++productCount;
+                productAssetMenu.m_listWidget->addItem(productEntry.m_productName.c_str());
+            }
+            return true; // Keep iterating, add all products.
+        });
         return true;
     });
 
@@ -2353,7 +2452,7 @@ void MainWindow::ShowProductAssetContextMenu(const QPoint& pos)
             productItemData->m_databaseInfo.m_productID,
             [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
         {
-            ui->sourceAssetDetailsPanel->GoToSource(sourceEntry.m_sourceName);
+            ui->sourceAssetDetailsPanel->GoToSource(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()).AbsolutePath().c_str());
             return false; // Don't keep iterating
         });
     });

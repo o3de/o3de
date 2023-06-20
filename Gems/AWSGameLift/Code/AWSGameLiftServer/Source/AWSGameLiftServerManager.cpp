@@ -23,6 +23,60 @@
 #include <AzCore/std/bind/bind.h>
 #include <Multiplayer/Session/SessionNotifications.h>
 
+AZ_CVAR(
+    bool,
+    sv_gameliftAnywhereEnabled,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Enable GameLift Anywhere support for server testing."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereWebSocketUrl,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "WebSocketUrl to the Anywhere fleet. Required if GameLift Anywhere support is enabled."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereAuthToken,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "AuthToken of the Compute the server is running on. Required if GameLift Anywhere support is enabled."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereFleetId,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "FleetId setting for GameLift Anywhere."
+    "FleetId of the Anywhere fleet. Required if GameLift Anywhere support is enabled."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereHostId,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "HostId (ComputeId) of the Compute the server is running on. Required if GameLift Anywhere support is enabled.");
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereProcessId,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Unique string to indentify the process. Defaults to a string generated from the current timestamp."
+);
+
 namespace AWSGameLift
 {
     AWSGameLiftServerManager::AWSGameLiftServerManager()
@@ -404,44 +458,32 @@ namespace AWSGameLift
         }
     }
 
-    AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
-    {
-        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
-        if (certificateOutcome.IsSuccess())
-        {
-            return AZ::IO::Path(certificateOutcome.GetResult().GetCertificatePath().c_str());
-        }
-        else
-        {
-            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstanceCertificateErrorMessage);
-            return AZ::IO::Path();
-        }
-    }
-
-    AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionPrivateKey()
-    {
-        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
-        if (certificateOutcome.IsSuccess())
-        {
-            return AZ::IO::Path(certificateOutcome.GetResult().GetPrivateKeyPath().c_str());
-        }
-        else
-        {
-            AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstancePrivateKeyErrorMessage);
-            return AZ::IO::Path();
-        }
-    }
-
     AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionCertificate()
     {
         // GameLift doesn't support it, return empty path
         return AZ::IO::Path();
     }
 
-    AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionPrivateKey()
+    AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
     {
-        // GameLift doesn't support it, return empty path
-        return AZ::IO::Path();
+        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetComputeCertificate();
+        if (certificateOutcome.IsSuccess())
+        {
+            return AZ::IO::Path(certificateOutcome.GetResult().GetCertificatePath().c_str());
+        }
+        else
+        {
+            AZ_Error(
+                AWSGameLiftServerManagerName,
+                false,
+                AZStd::string::format(
+                    "%s - %s",
+                    AWSGameLiftServerInstanceCertificateErrorMessage, 
+                    certificateOutcome.GetError().GetErrorMessage().c_str()
+                ).c_str()
+            );
+            return AZ::IO::Path();
+        }
     }
 
     void AWSGameLiftServerManager::InitializeGameLiftServerSDK()
@@ -452,9 +494,50 @@ namespace AWSGameLift
             return;
         }
 
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
-        Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK();
-        AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.");
+        Aws::GameLift::Server::Model::ServerParameters serverParameters;
+
+        if (sv_gameliftAnywhereEnabled)
+        {
+            if (auto webSocketUrl = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereWebSocketUrl); !webSocketUrl.empty())
+            {
+                serverParameters.SetWebSocketUrl(webSocketUrl.c_str());
+            }
+            if (auto authToken = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereAuthToken); !authToken.empty())
+            {
+                serverParameters.SetAuthToken(authToken.c_str());
+            }
+            if (auto fleetId = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereFleetId); !fleetId.empty())
+            {
+                serverParameters.SetFleetId(fleetId.c_str());
+            }
+            if (auto hostId = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereHostId); !hostId.empty())
+            {
+                serverParameters.SetHostId(hostId.c_str());
+            }
+            if (auto processId = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereProcessId); !processId.empty())
+            {
+                serverParameters.SetProcessId(processId.c_str());
+            }
+            else
+            {
+                // If ProcessId isn't defined, provide a unique string by default.
+                AZStd::string defaultProcessId = AZStd::string::format("ProcessId_%i", aznumeric_cast<int>(std::time(nullptr)));
+                serverParameters.SetProcessId(defaultProcessId.c_str());
+                AZ_Trace(
+                    AWSGameLiftServerManagerName, "Generated default AWS GameLift ProcessId value: %s\n", defaultProcessId.c_str());
+            }
+        }
+
+        AZ_Trace(AWSGameLiftServerManagerName, "Initiating AWS GameLift Server SDK ...\n");
+        Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK(serverParameters);
+        if (initOutcome.IsSuccess())
+        {
+            AZ_Trace(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.\n");
+        }
+        else
+        {
+            AZ_Trace(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service failed.\n");
+        }
 
         m_serverSDKInitialized = initOutcome.IsSuccess();
 

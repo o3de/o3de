@@ -47,7 +47,7 @@ namespace ScriptCanvas
         struct PerformanceTimingReport
         {
             AZ_TYPE_INFO(PerformanceTimingReport, "{AEBF259D-D51F-40F6-B78E-160C9B9FC5B4}");
-            AZ_CLASS_ALLOCATOR(PerformanceTimingReport, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PerformanceTimingReport, AZ::SystemAllocator);
 
             AZStd::sys_time_t initializationTime = 0;
             AZStd::sys_time_t executionTime = 0;
@@ -61,7 +61,7 @@ namespace ScriptCanvas
         struct PerformanceTrackingReport
         {
             AZ_TYPE_INFO(PerformanceTrackingReport, "{48CD6F7A-CB3D-466A-9291-567DA9E0E961}");
-            AZ_CLASS_ALLOCATOR(PerformanceTrackingReport, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PerformanceTrackingReport, AZ::SystemAllocator);
 
             PerformanceTimingReport timing;
             AZ::u32 activationCount = 0;
@@ -74,7 +74,7 @@ namespace ScriptCanvas
         struct PerformanceReport
         {
             AZ_TYPE_INFO(PerformanceReport, "{D0FFBFFA-6662-44D4-A25E-65C65D4B422A}");
-            AZ_CLASS_ALLOCATOR(PerformanceTrackingReport, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PerformanceTrackingReport, AZ::SystemAllocator);
 
             PerformanceTrackingReport tracking;
             PerformanceReportByAsset byAsset;

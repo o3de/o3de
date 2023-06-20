@@ -115,7 +115,7 @@ namespace EMotionFX
             : public EMotionFX::EventHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(TestProcessEventsEventHandler, Integration::EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TestProcessEventsEventHandler, Integration::EMotionFXAllocator);
 
             TestProcessEventsEventHandler(AnimGraphEventBuffer* buffer)
                 : m_buffer(buffer)

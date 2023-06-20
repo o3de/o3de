@@ -111,7 +111,8 @@ void CAssetBlendKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& 
 
                     // Lookup Filename by assetId and get the filename part of the description
                     AZStd::string assetPath;
-                    EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetBlendKey.m_assetId);
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetBlendKey.m_assetId);
 
                     assetBlendKey.m_description = "";
                     if (!assetPath.empty())

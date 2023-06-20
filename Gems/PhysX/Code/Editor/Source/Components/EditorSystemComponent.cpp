@@ -17,25 +17,30 @@
 
 #include <IEditor.h>
 
+#include <Editor/ColliderComponentMode.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/EditorWindow.h>
 #include <Editor/PropertyTypes.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 #include <Editor/Source/Material/PhysXEditorMaterialAsset.h>
-#include <Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h>
+#include <Pipeline/PhysicsPrefabProcessor.h>
 #include <System/PhysXSystem.h>
 
 namespace PhysX
 {
     void EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ColliderComponentMode::Reflect(context);
         EditorJointLimitConfig::Reflect(context);
         EditorJointLimitPairConfig::Reflect(context);
         EditorJointLimitLinearPairConfig::Reflect(context);
         EditorJointLimitConeConfig::Reflect(context);
         EditorJointConfig::Reflect(context);
+        JointsComponentMode::Reflect(context);
 
         EditorMaterialAsset::Reflect(context);
-        ReflectLegacyMaterialClasses(context);
+
+        PhysicsPrefabProcessor::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -59,13 +64,13 @@ namespace PhysX
     void EditorSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("PhysicsService"));
-        required.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void EditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
         dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
         dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
+        dependent.push_back(AZ_CRC_CE("PhysicsMaterialService"));
     }
 
     void EditorSystemComponent::Activate()
@@ -106,10 +111,12 @@ namespace PhysX
 
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void EditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
@@ -123,12 +130,38 @@ namespace PhysX
 
         m_materialAssetBuilder.BusDisconnect();
 
+        for (auto& assetHandler : m_assetHandlers)
+        {
+            if (auto editorMaterialAssetHandler = azrtti_cast<AzFramework::GenericAssetHandler<PhysX::EditorMaterialAsset>*>(assetHandler.get());
+                editorMaterialAssetHandler != nullptr)
+            {
+                editorMaterialAssetHandler->Unregister();
+            }
+        }
         m_assetHandlers.clear();
     }
 
     AzPhysics::SceneHandle EditorSystemComponent::GetEditorSceneHandle() const
     {
         return m_editorWorldSceneHandle;
+    }
+
+    void EditorSystemComponent::OnActionRegistrationHook()
+    {
+        ColliderComponentMode::RegisterActions();
+        JointsComponentMode::RegisterActions();
+    }
+
+    void EditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        ColliderComponentMode::BindActionsToModes();
+        JointsComponentMode::BindActionsToModes();
+    }
+
+    void EditorSystemComponent::OnMenuBindingHook()
+    {
+        ColliderComponentMode::BindActionsToMenus();
+        JointsComponentMode::BindActionsToMenus();
     }
 
     void EditorSystemComponent::OnStartPlayInEditorBegin()

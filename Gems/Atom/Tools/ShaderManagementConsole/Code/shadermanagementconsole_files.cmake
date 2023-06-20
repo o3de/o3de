@@ -7,12 +7,17 @@
 #
 
 set(FILES
+    Source/Data/ShaderVariantStatisticData.cpp
+    Source/Data/ShaderVariantStatisticData.h
+    
     Source/Document/ShaderManagementConsoleDocumentRequestBus.h
     Source/Document/ShaderManagementConsoleDocument.cpp
     Source/Document/ShaderManagementConsoleDocument.h
 
     Source/Window/ShaderManagementConsoleTableView.h
     Source/Window/ShaderManagementConsoleTableView.cpp
+    Source/Window/ShaderManagementConsoleStatisticView.h
+    Source/Window/ShaderManagementConsoleStatisticView.cpp
     Source/Window/ShaderManagementConsoleWindow.h
     Source/Window/ShaderManagementConsoleWindow.cpp
     Source/Window/ShaderManagementConsole.qrc

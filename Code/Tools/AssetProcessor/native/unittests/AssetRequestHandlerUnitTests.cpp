@@ -5,21 +5,31 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetRequestHandlerUnitTests.h"
 
-#include "native/unittests/MockConnectionHandler.h"
+#include <native/AssetManager/AssetRequestHandler.h>
 
-#include "native/AssetManager/AssetRequestHandler.h"
+#include <native/unittests/AssetRequestHandlerUnitTests.h>
+#include <native/unittests/MockConnectionHandler.h>
+
 #include <QCoreApplication>
 
 using namespace AssetProcessor;
 using namespace AzFramework::AssetSystem;
 using namespace UnitTestUtils;
 
-namespace
+namespace AssetProcessor
 {
+    namespace
+    {
+        constexpr const char* Platform = "pc";
+        constexpr const char* AssetName = "test.dds";
+        constexpr const char* FenceFileName = "foo.fence";
+        constexpr const NetworkRequestID RequestId = NetworkRequestID(1, 1234);
+    }
+
     //! Internal class to unit test AssetRequestHandler
-    class AssetRequestHandletUnitTest : public AssetRequestHandler 
+    class MockAssetRequestHandler
+        : public AssetRequestHandler
     {
     public:
         void Reset()
@@ -29,6 +39,7 @@ namespace
             m_requestReadyCount = 0;
             m_fencingFailed = false;
             m_fenceId = 0;
+            m_fenceFileName = FenceFileName;
             m_deleteFenceFileResult = true;
         }
 
@@ -45,8 +56,8 @@ namespace
         int  m_requestReadyCount = 0;
         bool m_fencingFailed = false;
         unsigned int m_fenceId = 0;
-        QString m_fenceFileName = QString();
-        bool m_deleteFenceFileResult = false;
+        QString m_fenceFileName = FenceFileName;
+        bool m_deleteFenceFileResult = true;
 
     protected:
         QString CreateFenceFile(unsigned int fenceId) override
@@ -63,257 +74,279 @@ namespace
     };
 }
 
-REGISTER_UNIT_TEST(AssetRequestHandlerUnitTests)
-
-AssetRequestHandlerUnitTests::AssetRequestHandlerUnitTests()
+AssetRequestHandlerUnitTests::~AssetRequestHandlerUnitTests()
 {
 }
 
-void AssetRequestHandlerUnitTests::StartTest()
+void AssetRequestHandlerUnitTests::SetUp()
 {
-    AssetRequestHandletUnitTest requestHandler;
+    UnitTest::AssetProcessorUnitTestBase::SetUp();
 
-    bool requestedCompileGroup = false;
-    bool requestedAssetExists = false;
+    m_requestHandler = AZStd::make_unique<MockAssetRequestHandler>();
+    m_connection = AZStd::make_unique<MockConnectionHandler>();
 
-    QString platformSet;
-    NetworkRequestID requestIdSet;
-    QString searchTermSet;
-
-    QObject::connect(&requestHandler, &AssetRequestHandler::RequestCompileGroup, this, [&](NetworkRequestID groupID, QString platform, QString searchTerm)
+    QObject::connect(m_requestHandler.get(), &AssetRequestHandler::RequestCompileGroup, this, [&](NetworkRequestID groupID, QString platform, QString searchTerm)
         {
-            requestedCompileGroup = true;
-            platformSet = platform;
-            requestIdSet = groupID;
-            searchTermSet = searchTerm;
+            m_requestedCompileGroup = true;
+            m_platformSet = platform;
+            m_requestIdSet = groupID;
+            m_searchTermSet = searchTerm;
         });
 
-    QObject::connect(&requestHandler, &AssetRequestHandler::RequestAssetExists, this, [&](NetworkRequestID groupID, QString platform, QString searchTerm)
+    QObject::connect(m_requestHandler.get(), &AssetRequestHandler::RequestAssetExists, this, [&](NetworkRequestID groupID, QString platform, QString searchTerm)
         {
-            requestedAssetExists = true;
-            platformSet = platform;
-            requestIdSet = groupID;
-            searchTermSet = searchTerm;
+            m_requestedAssetExists = true;
+            m_platformSet = platform;
+            m_requestIdSet = groupID;
+            m_searchTermSet = searchTerm;
         });
 
-    AssetProcessor::MockConnectionHandler connection;
-    connection.BusConnect(1);
+    m_connection->BusConnect(1);
+}
 
-    // ------- FIRST TEST ----------------- create a request to process an asset that does not exist in db and also does not exist in queue:
+void AssetRequestHandlerUnitTests::TearDown()
+{
+    m_connection->BusDisconnect(1);
+
+    m_requestHandler.reset();
+
+    UnitTest::AssetProcessorUnitTestBase::TearDown();
+}
+
+TEST_F(AssetRequestHandlerUnitTests, RequestToProcessAssetNotExistInDatabaseOrQueue_RequestSent_RequestHandled)
+{
     QByteArray buffer;
-    NetworkRequestID requestId(1, 1234);
-    AzFramework::AssetSystem::RequestAssetStatus request("test.dds", true, true);
+    AzFramework::AssetSystem::RequestAssetStatus request(AssetName, true, true);
     AssetProcessor::PackMessage(request, buffer);
-    requestHandler.m_fenceFileName = QString();
-    requestHandler.OnNewIncomingRequest(requestId.first, requestId.second, buffer, "pc");
-    QCoreApplication::processEvents(QEventLoop::AllEvents);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_requestReadyCount == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_fencingFailed);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesCreateFenceFileCalled == g_RetriesForFenceFile);
-    UNIT_TEST_EXPECT_FALSE(requestHandler.m_numTimesDeleteFenceFileCalled);
 
-    requestHandler.Reset();
-    requestHandler.m_fenceFileName = "foo.fence";
-    requestHandler.m_deleteFenceFileResult = false;
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
+    m_requestHandler->m_fenceFileName = QString();
+    m_requestHandler->m_deleteFenceFileResult = false;
+    m_requestHandler->OnNewIncomingRequest(RequestId.first, RequestId.second, buffer, Platform);
+    QCoreApplication::processEvents(QEventLoop::AllEvents);
+    EXPECT_EQ(m_requestHandler->m_requestReadyCount, 1);
+    EXPECT_TRUE(m_requestHandler->m_fencingFailed);
+    EXPECT_EQ(m_requestHandler->m_numTimesCreateFenceFileCalled, g_RetriesForFenceFile);
+    EXPECT_FALSE(m_requestHandler->m_numTimesDeleteFenceFileCalled);
+
+    m_requestHandler->Reset();
+    m_requestHandler->m_deleteFenceFileResult = false;
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, RequestId.first), Q_ARG(unsigned int, RequestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
     // we will have to call processEvents here equal to the number of retries, because only after that will the requestReady event be added to the event queue  
-    while (requestHandler.m_numTimesDeleteFenceFileCalled <= g_RetriesForFenceFile && !requestHandler.m_requestReadyCount)
+    while (m_requestHandler->m_numTimesDeleteFenceFileCalled <= g_RetriesForFenceFile && !m_requestHandler->m_requestReadyCount)
     {
         QCoreApplication::processEvents(QEventLoop::AllEvents);
     }
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_requestReadyCount == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_fencingFailed);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesCreateFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesDeleteFenceFileCalled == g_RetriesForFenceFile);
+    EXPECT_EQ(m_requestHandler->m_requestReadyCount, 1);
+    EXPECT_TRUE(m_requestHandler->m_fencingFailed);
+    EXPECT_EQ(m_requestHandler->m_numTimesCreateFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesDeleteFenceFileCalled, g_RetriesForFenceFile);
 
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+    m_requestHandler->Reset();
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, RequestId.first), Q_ARG(unsigned int, RequestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
-    UNIT_TEST_EXPECT_TRUE(requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(!requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(!connection.m_sent);
-    UNIT_TEST_EXPECT_TRUE(platformSet == "pc");
-    UNIT_TEST_EXPECT_TRUE(requestIdSet == NetworkRequestID(1, 1234));
-    UNIT_TEST_EXPECT_TRUE(searchTermSet == "test.dds");
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesCreateFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesDeleteFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_requestReadyCount == 1);
-    UNIT_TEST_EXPECT_FALSE(requestHandler.m_fencingFailed);
+    EXPECT_TRUE(m_requestedCompileGroup);
+    EXPECT_FALSE(m_requestedAssetExists);
+    EXPECT_FALSE(m_connection->m_sent);
+    EXPECT_EQ(m_platformSet, Platform);
+    EXPECT_EQ(m_requestIdSet, RequestId);
+    EXPECT_EQ(m_searchTermSet, AssetName);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesCreateFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesDeleteFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_requestReadyCount, 1);
+    EXPECT_FALSE(m_requestHandler->m_fencingFailed);
 
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
-
-    // it worked so far, now synthesize a response:
-    // it should result in it asking for asset exists
-    requestHandler.OnCompileGroupCreated(requestIdSet, AssetStatus_Unknown);
-
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(!connection.m_sent);
-    UNIT_TEST_EXPECT_TRUE(platformSet == "pc");
-    UNIT_TEST_EXPECT_TRUE(requestIdSet == NetworkRequestID(1, 1234));
-    UNIT_TEST_EXPECT_TRUE(searchTermSet == "test.dds");
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1); // it should still be alive!
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
 
     // it worked so far, now synthesize a response:
     // it should result in it asking for asset exists
-    requestHandler.OnRequestAssetExistsResponse(requestIdSet,  false);
+    m_requestHandler->OnCompileGroupCreated(m_requestIdSet, AssetStatus_Unknown);
+
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_TRUE(m_requestedAssetExists);
+    EXPECT_FALSE(m_connection->m_sent);
+    EXPECT_EQ(m_platformSet, Platform);
+    EXPECT_EQ(m_requestIdSet, RequestId);
+    EXPECT_EQ(m_searchTermSet, AssetName);
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1); // it should still be alive!
+
+    // it worked so far, now synthesize a response:
+    // it should result in it asking for asset exists
+    m_requestHandler->OnRequestAssetExistsResponse(m_requestIdSet, false);
 
     // this should result in it sending:
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(!requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(connection.m_sent);
-    UNIT_TEST_EXPECT_TRUE(NetworkRequestID(1, connection.m_serial) == NetworkRequestID(1, 1234));
-    UNIT_TEST_EXPECT_TRUE(connection.m_type == RequestAssetStatus::MessageType);
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 0); // it should be gone now
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_FALSE(m_requestedAssetExists);
+    EXPECT_TRUE(m_connection->m_sent);
+    EXPECT_EQ(NetworkRequestID(1, m_connection->m_serial), RequestId);
+    EXPECT_EQ(m_connection->m_type, RequestAssetStatus::MessageType);
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0); // it should be gone now
 
     // decode the buffer.
     ResponseAssetStatus resp;
+    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection->m_payload.data(), m_connection->m_payload.size(), resp));
+    EXPECT_EQ(resp.m_assetStatus, AssetStatus_Missing);
+}
 
-    UNIT_TEST_EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(connection.m_payload.data(), connection.m_payload.size(), resp));
-    UNIT_TEST_EXPECT_TRUE(resp.m_assetStatus == AssetStatus_Missing);
+TEST_F(AssetRequestHandlerUnitTests, RequestToCreateCompileGroup_RequestSent_RequestHandled)
+{
+    // Test creating a request for a real compile group.
+    // We will mock the response as saying 'yes, I made a compile group':
+    QByteArray buffer;
+    AzFramework::AssetSystem::RequestAssetStatus request(AssetName, true, true);
+    AssetProcessor::PackMessage(request, buffer);
 
-    // ------ TEST ---------- Create a request for a real compile group.
-    // we will mock the response as saying 'yes, I made a compile group':
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, RequestId.first), Q_ARG(unsigned int, RequestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
-    UNIT_TEST_EXPECT_TRUE(requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesCreateFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesDeleteFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_requestReadyCount == 1);
-    UNIT_TEST_EXPECT_FALSE(requestHandler.m_fencingFailed);
+    EXPECT_TRUE(m_requestedCompileGroup);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesCreateFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesDeleteFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_requestReadyCount, 1);
+    EXPECT_FALSE(m_requestHandler->m_fencingFailed);
     // it worked so far, now synthesize a response:
     // it should result in it asking for asset exists
-    requestHandler.OnCompileGroupCreated(requestIdSet, AssetStatus_Queued);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 0); // for a STATUS request, its enough to know that its queued
+    m_requestHandler->OnCompileGroupCreated(m_requestIdSet, AssetStatus_Queued);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0); // for a STATUS request, its enough to know that its queued
 
     // no callbacks should be set:
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
 
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(!requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(!connection.m_sent);
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_FALSE(m_requestedAssetExists);
+    EXPECT_FALSE(m_connection->m_sent);
 
     // test invalid group:
-    requestHandler.OnCompileGroupFinished(NetworkRequestID(0, 0), AssetStatus_Queued);
+    m_requestHandler->OnCompileGroupFinished(NetworkRequestID(0, 0), AssetStatus_Queued);
 
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(!requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(!connection.m_sent);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 0);
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_FALSE(m_requestedAssetExists);
+    EXPECT_FALSE(m_connection->m_sent);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
 
-    requestHandler.OnCompileGroupFinished(requestIdSet, AssetStatus_Failed);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 0);
-    UNIT_TEST_EXPECT_TRUE(!connection.m_sent);
+    m_requestHandler->OnCompileGroupFinished(m_requestIdSet, AssetStatus_Failed);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
+    EXPECT_FALSE(m_connection->m_sent);
+}
 
-    // ------------ Test the success case, where its waiting for the actual compilation to be done. ---
-
-    request.m_isStatusRequest = false;
-    buffer.clear();
+TEST_F(AssetRequestHandlerUnitTests, RequestToCompileAsset_RequestSent_RequestHandled)
+{
+    // Test the success case, where its waiting for the actual compilation to be done.
+    QByteArray buffer;
+    AzFramework::AssetSystem::RequestAssetStatus request(AssetName, false, true);
     AssetProcessor::PackMessage(request, buffer);
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, RequestId.first), Q_ARG(unsigned int, RequestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesCreateFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_numTimesDeleteFenceFileCalled == 1);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.m_requestReadyCount == 1);
-    UNIT_TEST_EXPECT_FALSE(requestHandler.m_fencingFailed);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
-    requestHandler.OnCompileGroupCreated(requestIdSet, AssetStatus_Queued);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesCreateFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_numTimesDeleteFenceFileCalled, 1);
+    EXPECT_EQ(m_requestHandler->m_requestReadyCount, 1);
+    EXPECT_FALSE(m_requestHandler->m_fencingFailed);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
+    m_requestHandler->OnCompileGroupCreated(m_requestIdSet, AssetStatus_Queued);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
     // no callbacks should be set:
 
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
 
-    requestHandler.OnCompileGroupFinished(requestIdSet, AssetStatus_Compiled);
+    m_requestHandler->OnCompileGroupFinished(m_requestIdSet, AssetStatus_Compiled);
+
+    // decode the buffer.
+    ResponseAssetStatus resp;
     // no callbacks should be set:
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(!requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 0);
-    UNIT_TEST_EXPECT_TRUE(connection.m_sent);
-    UNIT_TEST_EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(connection.m_payload.data(), connection.m_payload.size(), resp));
-    UNIT_TEST_EXPECT_TRUE(resp.m_assetStatus == AssetStatus_Compiled);
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_FALSE(m_requestedAssetExists);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
+    EXPECT_TRUE(m_connection->m_sent);
+    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection->m_payload.data(), m_connection->m_payload.size(), resp));
+    EXPECT_EQ(resp.m_assetStatus, AssetStatus_Compiled);
+}
 
-    // -------------- Test the case where the file reports as being on disk just not in the queue ------------
-    request.m_isStatusRequest = true;
-    buffer.clear();
+TEST_F(AssetRequestHandlerUnitTests, RequestToProcessFileOnDiskButNotInQueue_RequestSent_RequestHandled)
+{
+    // Test the case where the file reports as being on disk just not in the queue
+    QByteArray buffer;
+    AzFramework::AssetSystem::RequestAssetStatus request(AssetName, true, true);
     AssetProcessor::PackMessage(request, buffer);
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, RequestId.first), Q_ARG(unsigned int, RequestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
 
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
 
-    requestHandler.OnCompileGroupCreated(requestIdSet, AssetStatus_Unknown);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(!connection.m_sent);
+    m_requestHandler->OnCompileGroupCreated(m_requestIdSet, AssetStatus_Unknown);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_TRUE(m_requestedAssetExists);
+    EXPECT_FALSE(m_connection->m_sent);
 
-    requestedCompileGroup = false;
-    requestedAssetExists = false;
-    connection.m_sent = false;
-    requestHandler.OnRequestAssetExistsResponse(requestIdSet, true);
-    UNIT_TEST_EXPECT_TRUE(!requestedCompileGroup);
-    UNIT_TEST_EXPECT_TRUE(!requestedAssetExists);
-    UNIT_TEST_EXPECT_TRUE(connection.m_sent);
-    UNIT_TEST_EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(connection.m_payload.data(), connection.m_payload.size(), resp));
-    UNIT_TEST_EXPECT_TRUE(resp.m_assetStatus == AssetStatus_Compiled);
+    m_requestedCompileGroup = false;
+    m_requestedAssetExists = false;
+    m_connection->m_sent = false;
+    m_requestHandler->OnRequestAssetExistsResponse(m_requestIdSet, true);
+    EXPECT_FALSE(m_requestedCompileGroup);
+    EXPECT_FALSE(m_requestedAssetExists);
+    EXPECT_TRUE(m_connection->m_sent);
 
-    // ------------------ TEST MULTIPLE IN-FLIGHT REQUESTS ------------------
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+    // decode the buffer.
+    ResponseAssetStatus resp;
+    EXPECT_TRUE(AZ::Utils::LoadObjectFromBufferInPlace(m_connection->m_payload.data(), m_connection->m_payload.size(), resp));
+    EXPECT_EQ(resp.m_assetStatus, AssetStatus_Compiled);
+}
+
+TEST_F(AssetRequestHandlerUnitTests, TestMultipleInFlightRequests_RequestsSent_RequestsHandled)
+{
+    QByteArray buffer;
+    NetworkRequestID requestId = RequestId;
+    AzFramework::AssetSystem::RequestAssetStatus request(AssetName, true, true);
+    AssetProcessor::PackMessage(request, buffer);
+
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     requestId = NetworkRequestID(1, 1235);
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
+    m_requestHandler->Reset();
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
     // note, this last one is for a compile.
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
     request.m_isStatusRequest = false;
     buffer.clear();
     AssetProcessor::PackMessage(request, buffer);
     requestId = NetworkRequestID(1, 1236);
-    requestHandler.Reset();
-    QMetaObject::invokeMethod(&requestHandler, "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, "pc"));
-    requestHandler.OnFenceFileDetected(requestHandler.m_fenceId);
+    m_requestHandler->Reset();
+    QMetaObject::invokeMethod(m_requestHandler.get(), "OnNewIncomingRequest", Qt::DirectConnection, Q_ARG(unsigned int, requestId.first), Q_ARG(unsigned int, requestId.second), Q_ARG(QByteArray, buffer), Q_ARG(QString, Platform));
+    m_requestHandler->OnFenceFileDetected(m_requestHandler->m_fenceId);
     QCoreApplication::processEvents(QEventLoop::AllEvents);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 3);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 3);
 
-    requestHandler.OnCompileGroupCreated(NetworkRequestID(1, 1234), AssetStatus_Queued);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 2);
-    requestHandler.OnCompileGroupCreated(NetworkRequestID(1, 1235), AssetStatus_Queued);
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
-    requestHandler.OnCompileGroupCreated(NetworkRequestID(1, 1236), AssetStatus_Queued); // this one doesn't go away yet
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 1);
+    m_requestHandler->OnCompileGroupCreated(RequestId, AssetStatus_Queued);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 2);
+    m_requestHandler->OnCompileGroupCreated(NetworkRequestID(1, 1235), AssetStatus_Queued);
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
+    m_requestHandler->OnCompileGroupCreated(NetworkRequestID(1, 1236), AssetStatus_Queued); // this one doesn't go away yet
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 1);
 
-    requestHandler.OnCompileGroupFinished(NetworkRequestID(1, 1236), AssetStatus_Compiled); // this one doesn't go away yet
-    UNIT_TEST_EXPECT_TRUE(requestHandler.GetNumOutstandingAssetRequests() == 0);
-
-    connection.BusDisconnect(1);
-
-    Q_EMIT UnitTestPassed();
+    m_requestHandler->OnCompileGroupFinished(NetworkRequestID(1, 1236), AssetStatus_Compiled); // this one doesn't go away yet
+    EXPECT_EQ(m_requestHandler->GetNumOutstandingAssetRequests(), 0);
 }
 

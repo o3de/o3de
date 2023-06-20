@@ -10,7 +10,7 @@
 #include <AZTestShared/Utils/Utils.h>
 
 class GenericStreamTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
@@ -19,7 +19,7 @@ public:
         using ::testing::NiceMock;
         using ::testing::Return;
 
-        UnitTest::ScopedAllocatorSetupFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
 
         // Route our mocked WriteFromStream back to the base class implementation for test validation
         ON_CALL(m_mockGenericStream, WriteFromStream(_, _))
@@ -31,7 +31,7 @@ public:
 
     void TearDown() override
     {
-        UnitTest::ScopedAllocatorSetupFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
     void CreateTestData(AZStd::vector<AZ::u8>& inBuffer, size_t numBytes)
@@ -132,4 +132,126 @@ TEST_F(GenericStreamTest, MemoryStreamWriteFromStream_MoreBytesThanTempBuffer_Co
     // Test WriteFromStream with a buffer size that's larger than the GenericStream copy buffer and not a power of two
     // just to help catch any possible errors.
     TestMemoryStreamWriteFromStream(aznumeric_cast<size_t>(AZ::IO::GenericStream::StreamToStreamCopyBufferSize * 2.6f));
+}
+
+namespace AZ::IO::Test
+{
+    class ByteContainerStreamTest
+        : public UnitTest::LeakDetectionFixture
+    {
+    };
+
+    TEST_F(ByteContainerStreamTest, IsDefaultConstructible)
+    {
+        using ContainerType = AZStd::vector<AZStd::byte>;
+        AZ::IO::ByteContainerStream<ContainerType> byteContainerStream;
+        EXPECT_FALSE(byteContainerStream.IsOpen());
+    }
+
+    TEST_F(ByteContainerStreamTest, CanBeOpened_PostConstruction)
+    {
+        using ContainerType = AZStd::vector<AZStd::byte>;
+        AZ::IO::ByteContainerStream<ContainerType> byteContainerStream;
+        EXPECT_FALSE(byteContainerStream.IsOpen());
+
+        ContainerType byteBuffer;
+        EXPECT_TRUE(byteContainerStream.Open(byteBuffer));
+        ASSERT_TRUE(byteContainerStream.IsOpen());
+        EXPECT_EQ(0, byteContainerStream.GetCurPos());
+    }
+
+    TEST_F(ByteContainerStreamTest, Open_OnAlreadyOpenStream_Fails)
+    {
+        using ContainerType = AZStd::vector<AZStd::byte>;
+        ContainerType byteBuffer;
+        AZ::IO::ByteContainerStream byteContainerStream(&byteBuffer);
+        ASSERT_TRUE(byteContainerStream.IsOpen());
+
+        ContainerType secondBuffer;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        EXPECT_FALSE(byteContainerStream.Open(secondBuffer));
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+    }
+
+    TEST_F(ByteContainerStreamTest, Cannot_PerformStreamModificationOperations_OnClosedStream)
+    {
+        using ContainerType = AZStd::vector<AZStd::byte>;
+        ContainerType byteBuffer;
+        AZ::IO::ByteContainerStream byteContainerStream(&byteBuffer);
+        EXPECT_TRUE(byteContainerStream.IsOpen());
+
+        constexpr AZStd::string_view testString("Hello World");
+        EXPECT_EQ(testString.size(), byteContainerStream.Write(testString.size(), testString.data()));
+        EXPECT_EQ(testString.size(), byteContainerStream.GetCurPos());
+        EXPECT_EQ(testString.size(), byteContainerStream.GetLength());
+
+        // Seek back to the beginning of the stream
+        byteContainerStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+
+        AZStd::string outputString;
+        auto ReadByteContainerStream = [expectedSize = testString.size(),
+            &byteContainerStream](char* buffer, size_t size)
+        {
+            AZ::IO::SizeType readSize = byteContainerStream.Read(size, buffer);
+            EXPECT_EQ(expectedSize, readSize);
+            return readSize;
+        };
+        outputString.resize_and_overwrite(testString.size(), ReadByteContainerStream);
+
+        // Close the stream and retry the above operations
+        byteContainerStream.Close();
+        ASSERT_FALSE(byteContainerStream.IsOpen());
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        EXPECT_EQ(0, byteContainerStream.Write(testString.size(), testString.data()));
+        EXPECT_EQ(0, byteContainerStream.GetCurPos());
+        EXPECT_EQ(0, byteContainerStream.GetLength());
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        // This seek should do nothing, but output an AZ_Error
+        byteContainerStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        auto ReadByteContainerStreamOnClosed = [&byteContainerStream](char* buffer, size_t size)
+        {
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            AZ::IO::SizeType readSize = byteContainerStream.Read(size, buffer);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+            EXPECT_EQ(0, readSize);
+            return readSize;
+        };
+        outputString.clear();
+        outputString.resize_and_overwrite(testString.size(), ReadByteContainerStreamOnClosed);
+
+        // Now re-open the stream and validate that seeking/reading and writing works again
+        EXPECT_TRUE(byteContainerStream.ReOpen());
+        ASSERT_TRUE(byteContainerStream.IsOpen());
+
+        AZ::IO::SizeType seekPos = byteContainerStream.GetLength();
+        EXPECT_EQ(seekPos, byteContainerStream.GetLength());
+        // Seek to the end of the stream
+        byteContainerStream.Seek(seekPos, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        EXPECT_EQ(seekPos, byteContainerStream.GetCurPos());
+
+        // Yes, "byte" was on purpose
+        constexpr AZStd::string_view secondString("Goodbyte World");
+        EXPECT_EQ(secondString.size(), byteContainerStream.Write(secondString.size(), secondString.data()));
+        EXPECT_EQ(testString.size() + secondString.size(), byteContainerStream.GetCurPos());
+        EXPECT_EQ(testString.size() + secondString.size(), byteContainerStream.GetLength());
+
+        // Seek to beginning of the second string
+        byteContainerStream.Seek(testString.size(), AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+
+        auto ReadByteContainerStreamOnReopened = [expectedSize = secondString.size(),
+            &byteContainerStream](char* buffer, size_t size)
+        {
+            AZ::IO::SizeType readSize = byteContainerStream.Read(size, buffer);
+            EXPECT_EQ(expectedSize, readSize);
+            return readSize;
+        };
+
+        outputString.clear();
+        outputString.resize_and_overwrite(secondString.size(), ReadByteContainerStreamOnReopened);
+    }
 }

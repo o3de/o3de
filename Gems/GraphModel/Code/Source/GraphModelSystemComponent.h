@@ -15,8 +15,7 @@
 
 namespace GraphModel
 {
-    class GraphModelSystemComponent
-        : public AZ::Component
+    class GraphModelSystemComponent : public AZ::Component
     {
     public:
         AZ_COMPONENT(GraphModelSystemComponent, "{58CE2D43-2DDC-4CEB-BB9F-61B77C50C35D}");
@@ -37,6 +36,6 @@ namespace GraphModel
         ////////////////////////////////////////////////////////////////////////
 
     private:
-        GraphModelIntegration::GraphControllerManager m_graphControllerManager;
+        AZStd::unique_ptr<GraphModelIntegration::GraphControllerManager> m_graphControllerManager;
     };
-}
+} // namespace GraphModel

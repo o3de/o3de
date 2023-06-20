@@ -83,8 +83,7 @@ namespace UnitTest
     {
         // Create a single entity wheel instance and create a template out of it.
         AZ::Entity* wheelEntity = CreateEntity("WheelEntity1");
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{wheelEntity});
+        AddRequiredEditorComponents({ wheelEntity->GetId() });
         AZStd::unique_ptr<Instance> wheelIsolatedInstance = m_prefabSystemComponent->CreatePrefab({ wheelEntity },
             {}, WheelPrefabMockFilePath);
         const TemplateId wheelTemplateId = wheelIsolatedInstance->GetTemplateId();
@@ -179,7 +178,8 @@ namespace UnitTest
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, expectedComponentId);
+        PrefabTestDomUtils::ValidateComponentsDomHasId(
+            *wheelEntityComponents, prefabTestComponent->RTTI_GetTypeName(), expectedComponentId);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);
@@ -242,8 +242,7 @@ namespace UnitTest
     {
         // Create a single entity wheel instance and create a template out of it.
         AZ::Entity* wheelEntity = CreateEntity("WheelEntity1");
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{wheelEntity});
+        AddRequiredEditorComponents({ wheelEntity->GetId() });
         AZStd::unique_ptr<Instance> wheelIsolatedInstance = m_prefabSystemComponent->CreatePrefab({ wheelEntity },
             {}, WheelPrefabMockFilePath);
         const TemplateId wheelTemplateId = wheelIsolatedInstance->GetTemplateId();
@@ -315,7 +314,8 @@ namespace UnitTest
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, prefabTestComponent->GetId());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(
+            *wheelEntityComponents, prefabTestComponent->RTTI_GetTypeName(), prefabTestComponent->GetId());
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
@@ -376,7 +376,8 @@ namespace UnitTest
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, prefabTestComponent->GetId());
+        PrefabTestDomUtils::ValidateComponentsDomHasId(
+            *wheelEntityComponents, prefabTestComponent->RTTI_GetTypeName(), prefabTestComponent->GetId());
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);

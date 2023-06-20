@@ -39,9 +39,12 @@ namespace AZ::Render
         float m_sunShadowsFarClip;
         float m_nearClip;
         float m_nearFadeDistance;
+        float m_aerialDepthFactor;
         bool m_shadowsEnabled;
         bool m_sunEnabled;
         bool m_fastSkyEnabled;
+        bool m_fastAerialPerspectiveEnabled;
+        bool m_aerialPerspectiveEnabled;
     };
 
     class SkyAtmosphereFeatureProcessorInterface
@@ -55,5 +58,7 @@ namespace AZ::Render
         virtual AtmosphereId CreateAtmosphere() = 0;
         virtual void ReleaseAtmosphere(AtmosphereId id) = 0;
         virtual void SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params) = 0;
+        virtual void SetAtmosphereEnabled(AtmosphereId id, bool enabled) = 0;
+        virtual bool GetAtmosphereEnabled(AtmosphereId id) = 0;
     };
 } // namespace AZ::Render

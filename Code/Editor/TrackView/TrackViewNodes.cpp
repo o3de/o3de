@@ -16,19 +16,22 @@
 
 // Qt
 #include <QAction>
-#include <QMenu>
-#include <QMimeData>
 #include <QCompleter>
-#include <QScrollBar>
-#include <QMessageBox>
-#include <QStyledItemDelegate>
 #include <QDropEvent>
 #include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMessageBox>
+#include <QMimeData>
+#include <QScrollBar>
+#include <QStyledItemDelegate>
 
 // AzToolsFramework
+#include <AzToolsFramework/Entity/EditorEntitySearchBus.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 
 // AzQtComponents
+#include <AzQtComponents/Components/InputDialog.h>
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
 
@@ -40,7 +43,6 @@
 #include <CryCommon/Maestro/Types/SequenceType.h>
 
 // Editor
-#include "StringDlg.h"
 #include "TrackView/TVEventsDialog.h"
 #include "TrackView/TrackViewDialog.h"
 #include "Objects/SelectionGroup.h"
@@ -311,8 +313,6 @@ enum EMenuItem
     eMI_CollapseEntities = 652,
     eMI_ExpandCameras = 653,
     eMI_CollapseCameras = 654,
-    eMI_ExpandMaterials = 655,
-    eMI_CollapseMaterials = 656,
     eMI_ExpandEvents = 657,
     eMI_CollapseEvents = 658,
     eMI_Rename = 11,
@@ -321,7 +321,6 @@ enum EMenuItem
     eMI_AddDirectorNode = 501,
     eMI_AddConsoleVariable = 502,
     eMI_AddScriptVariable = 503,
-    eMI_AddMaterial = 504,
     eMI_AddEvent = 505,
     eMI_AddCurrentLayer = 506,
     eMI_AddCommentNode = 507,
@@ -402,7 +401,7 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     ///////////////////////////////////////////////////////////////
     // Populate m_componentTypeToIconMap with all component icons
     AZ::SerializeContext* serializeContext = nullptr;
-    EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(serializeContext, "Failed to acquire serialize context.");
 
     serializeContext->EnumerateDerived<AZ::Component>([this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid&) -> bool
@@ -579,10 +578,6 @@ int CTrackViewNodesCtrl::GetIconIndexForNode(AnimNodeType type) const
     else if (type == AnimNodeType::ScriptVar)
     {
         nImage = 14;
-    }
-    else if (type == AnimNodeType::Material)
-    {
-        nImage = 16;
     }
     else if (type == AnimNodeType::Event)
     {
@@ -767,7 +762,6 @@ void CTrackViewNodesCtrl::UpdateTrackRecord(CRecord* record, CTrackViewTrack* pT
 void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNode* animNode)
 {
     const QColor TextColorForMissingEntity(226, 52, 43);        // LY palette for 'Error/Failure'
-    const QColor TextColorForInvalidMaterial(226, 52, 43);      // LY palette for 'Error/Failure'
     const QColor BackColorForActiveDirector(243, 81, 29);       // LY palette for 'Primary'
     const QColor BackColorForInactiveDirector(22, 23, 27);      // LY palette for 'Background (In Focus)'
     const QColor BackColorForGroupNodes(42, 84, 244);           // LY palette for 'Secondary'
@@ -826,10 +820,6 @@ void CTrackViewNodesCtrl::UpdateAnimNodeRecord(CRecord* record, CTrackViewAnimNo
             // In case of a missing entity, color it red.
             record->setForeground(0, TextColorForMissingEntity);
         }
-    }
-    else if (nodeType == AnimNodeType::Material)
-    {
-        record->setForeground(0, TextColorForInvalidMaterial);
     }
 
     // Mark the active director and other directors properly.
@@ -1014,54 +1004,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 
     float scrollPos = SaveVerticalScrollPos();
 
-    if (cmd == eMI_SaveToFBX)
-    {
-        CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
-
-        if (pExportManager)
-        {
-            CTrackViewSequence* sequence2 = GetIEditor()->GetAnimation()->GetSequence();
-            if (!sequence2)
-            {
-                return;
-            }
-
-            CTrackViewAnimNodeBundle selectedNodes = sequence2->GetSelectedAnimNodes();
-            const unsigned int numSelectedNodes = selectedNodes.GetCount();
-            if (numSelectedNodes == 0)
-            {
-                return;
-            }
-
-            QString file = QString::fromUtf8(sequence2->GetName().c_str()) + QString(".fbx");
-            QString selectedSequenceFBXStr = QString::fromUtf8(sequence2->GetName().c_str()) + ".fbx";
-
-            if (numSelectedNodes > 1)
-            {
-                file = selectedSequenceFBXStr;
-            }
-            else
-            {
-                file = QString::fromUtf8(selectedNodes.GetNode(0)->GetName().c_str()) + QString(".fbx");
-            }
-
-            QString path = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), QString(), tr("FBX Files (*.fbx)"));
-
-            if (!path.isEmpty())
-            {
-                pExportManager->SetBakedKeysSequenceExport(false);
-                pExportManager->Export(path.toUtf8().data(), "", "", false, false, false, true);
-            }
-        }
-    }
-    else if (cmd == eMI_ImportFromFBX)
-    {
-        if (animNode)
-        {
-            ImportFromFBX();
-        }
-    }
-    else if (cmd == eMI_SetAsViewCamera)
+    if (cmd == eMI_SetAsViewCamera)
     {
         if (animNode && animNode->GetType() == AnimNodeType::Camera)
         {
@@ -1212,10 +1155,10 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddConsoleVariable)
             {
-                StringDlg dlg(tr("Console Variable Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
+                QString stringValue = QInputDialog::getText(this, tr("Console Variable Name"), QString());
+                if (!stringValue.isEmpty())
                 {
-                    QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
+                    QString name = groupNode->GetAvailableNodeNameStartingWith(stringValue);
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Console (CVar) Node");
                     groupNode->CreateSubNode(name, AnimNodeType::CVar);
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
@@ -1223,35 +1166,22 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else if (cmd == eMI_AddScriptVariable)
             {
-                StringDlg dlg(tr("Script Variable Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
+                QString stringValue = QInputDialog::getText(this, tr("Script Variable Name"), QString());
+                if (!stringValue.isEmpty())
                 {
-                    QString name = groupNode->GetAvailableNodeNameStartingWith(dlg.GetString());
+                    QString name = groupNode->GetAvailableNodeNameStartingWith(stringValue);
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Script Variable Node");
                     groupNode->CreateSubNode(name, AnimNodeType::ScriptVar);
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
                 }
             }
-            else if (cmd == eMI_AddMaterial)
-            {
-                StringDlg dlg(tr("Material Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
-                {
-                    if (groupNode->GetAnimNodesByName(dlg.GetString().toUtf8().data()).GetCount() == 0)
-                    {
-                        AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Material Node");
-                        groupNode->CreateSubNode(dlg.GetString(), AnimNodeType::Material);
-                        undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-                    }
-                }
-            }
             else if (cmd == eMI_AddEvent)
             {
-                StringDlg dlg(tr("Track Event Name"));
-                if (dlg.exec() == QDialog::Accepted && !dlg.GetString().isEmpty())
+                QString stringValue = QInputDialog::getText(this, tr("Track Event Name"), QString());
+                if (!stringValue.isEmpty())
                 {
                     AzToolsFramework::ScopedUndoBatch undoBatch("Add Track View Event Node");
-                    groupNode->CreateSubNode(dlg.GetString(), AnimNodeType::Event);
+                    groupNode->CreateSubNode(stringValue, AnimNodeType::Event);
                     undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
                 }
             }
@@ -1303,18 +1233,6 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 groupNode->GetAnimNodesByType(AnimNodeType::Camera).CollapseAll();
                 undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
             }
-            else if (cmd == eMI_ExpandMaterials)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View materials");
-                groupNode->GetAnimNodesByType(AnimNodeType::Material).ExpandAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
-            else if (cmd == eMI_CollapseMaterials)
-            {
-                AzToolsFramework::ScopedUndoBatch undoBatch("Collapse Track View materials");
-                groupNode->GetAnimNodesByType(AnimNodeType::Material).CollapseAll();
-                undoBatch.MarkEntityDirty(groupNode->GetSequence()->GetSequenceComponentEntityId());
-            }
             else if (cmd == eMI_ExpandEvents)
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Expand Track View events");
@@ -1341,69 +1259,72 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             CTrackViewAnimNode* animNode2 = static_cast<CTrackViewAnimNode*>(pNode);
             QString oldName = QString::fromUtf8(animNode2->GetName().c_str());
 
-            StringDlg dlg(tr("Rename Node"));
-            dlg.SetString(oldName);
+            AzQtComponents::InputDialog inputDialog(this);
+            inputDialog.setWindowTitle(tr("Rename Node"));
+            inputDialog.setTextValue(oldName);
+            inputDialog.setLabelText("");
+            inputDialog.SetRegularExpressionValidator("[a-zA-Z0-9_\\-\\_]*");
+
+            // Max name length is 512 for a sequence
+            constexpr int MaxNameLength = 512;
+            inputDialog.SetMaxLength(MaxNameLength);
 
             // add check for duplicate entity names if this is bound to an Object node
-            if (animNode2->IsBoundToEditorObjects())
+            bool checkForDuplicateName = animNode2->IsBoundToEditorObjects();
+
+            bool retryRename = false;
+            QString newName;
+            do
             {
-                dlg.SetCheckCallback([this](QString newName) -> bool
+                const auto ret = inputDialog.exec();
+
+                if (ret == QDialog::Accepted)
                 {
-                    bool nameExists = false;
-                    const auto nameUtf8 = newName.toUtf8();
-                    const AZStd::string name(nameUtf8.constData(), nameUtf8.length());
-                    AZ::ComponentApplicationBus::Broadcast(
-                        &AZ::ComponentApplicationRequests::EnumerateEntities,
-                        [&name, nameExists] (const AZ::Entity* entity) mutable
+                    QString name = inputDialog.textValue();
+
+                    // Bail out early if user is trying to rename to the same name, can treat as a no-op
+                    if (name == oldName)
                     {
-                        const auto entityId = entity->GetId();
-
-                        bool editorEntity = false;
-                        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                            editorEntity, &AzToolsFramework::EditorEntityContextRequests::IsEditorEntity, entityId);
-
-                        if (!editorEntity)
-                        {
-                            return;
-                        }
-
-                        AZStd::string entityName;
-                        AZ::ComponentApplicationBus::BroadcastResult(
-                            entityName, &AZ::ComponentApplicationBus::Events::GetEntityName, entityId);
-
-                        if (entityName == name)
-                        {
-                            nameExists = true;
-                        }
-                    });
-
-                    if (nameExists)
-                    {
-                        QMessageBox::warning(this, tr("Entity already exists"), QString(tr("Entity named '%1' already exists.\n\nPlease choose another unique name.")).arg(newName));
-                        return false;
+                        return;
                     }
-                    // Max name length is 512 when creating a new sequence, match that here for rename.
-                    // It would be nice to make this a restriction at input but I didnt see a way to do that with StringDlg and this is
-                    // very unlikely to happen in normal usage.
-                    const int maxLenth = 512;
-                    if (newName.length() > maxLenth)
-                    {
-                        QMessageBox::warning(
-                            this,
-                            tr("New entity name is too long"), 
-                            QString(tr("New entity name is over the maximum of %1.\n\nPlease reduce the length.")).arg(maxLenth)
-                        );
-                        return false;
-                    }
-                    return true;
-                });
-            }
 
-            if (dlg.exec() == QDialog::Accepted)
+                    if (checkForDuplicateName)
+                    {
+                        AzToolsFramework::EntitySearchFilter filter;
+                        const auto nameUtf8 = name.toUtf8();
+                        const AZStd::string searchName(nameUtf8.constData(), nameUtf8.length());
+                        filter.m_names.push_back(searchName);
+
+                        AzToolsFramework::EntityIdList matchingEntities;
+                        AzToolsFramework::EditorEntitySearchBus::BroadcastResult(matchingEntities, &AzToolsFramework::EditorEntitySearchRequests::SearchEntities, filter);
+
+                        if (!matchingEntities.empty())
+                        {
+                            QMessageBox::warning(this, tr("Entity already exists"), QString(tr("Entity named '%1' already exists.\n\nPlease choose another unique name.")).arg(name));
+
+                            retryRename = true;
+                        }
+                        else
+                        {
+                            newName = name;
+                            retryRename = false;
+                        }
+                    }
+                    else
+                    {
+                        newName = name;
+                    }
+                }
+                else
+                {
+                    retryRename = false;
+                }
+            } while (retryRename);
+
+            if (!newName.isEmpty())
             {
                 const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
-                QString name = dlg.GetString();
-                sequenceManager->RenameNode(animNode2, name.toUtf8().data());
+                sequenceManager->RenameNode(animNode2, newName.toUtf8().data());
                 UpdateNodeRecord(record);
             }
         }
@@ -1572,219 +1493,6 @@ void CTrackViewNodesCtrl::OnItemDblClick(QTreeWidgetItem* item, int)
     }
 }
 
-CTrackViewTrack* CTrackViewNodesCtrl::GetTrackViewTrack(const Export::EntityAnimData* pAnimData, CTrackViewTrackBundle trackBundle, const QString& nodeName)
-{
-    for (unsigned int trackID = 0; trackID < trackBundle.GetCount(); ++trackID)
-    {
-        CTrackViewTrack* pTrack = trackBundle.GetTrack(trackID);
-        const QString bundleTrackName = QString::fromUtf8(pTrack->GetAnimNode()->GetName().c_str());
-
-        if (bundleTrackName.compare(nodeName, Qt::CaseInsensitive) != 0)
-        {
-            continue;
-        }
-
-        // Position, Rotation
-        if (pTrack->IsCompoundTrack())
-        {
-            for (unsigned int childTrackID = 0; childTrackID < pTrack->GetChildCount(); ++childTrackID)
-            {
-                CTrackViewTrack* childTrack = static_cast<CTrackViewTrack*>(pTrack->GetChild(childTrackID));
-                // Have to cast GetType to int since the enum it returns is not the same enum that pAnimData->dataType is
-                if (static_cast<int>(childTrack->GetParameterType().GetType()) == pAnimData->dataType)
-                {
-                    return childTrack;
-                }
-            }
-        }
-
-        // FOV
-        // Have to cast GetType to int since the enum it returns is not the same enum that pAnimData->dataType is
-        if (static_cast<int>(pTrack->GetParameterType().GetType()) == pAnimData->dataType)
-        {
-            return pTrack;
-        }
-    }
-
-    return nullptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CTrackViewNodesCtrl::ImportFromFBX()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
-
-    CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptOpen, QFileDialog::AnyFile, {}, {}, "FBX Files (*.fbx)", {}, {}, this);
-
-    if (dlg.exec())
-    {
-        bool bImportResult = pExportManager->ImportFromFile(dlg.selectedFiles().first().toStdString().c_str());
-
-        if (!bImportResult)
-        {
-            return;
-        }
-    }
-    else
-    {
-        return;
-    }
-
-    CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
-
-    if (sequence)
-    {
-        AzToolsFramework::ScopedUndoBatch undoBatch("Replace Keys");
-        CTrackViewTrackBundle tracks = sequence->GetAllTracks();
-        const unsigned int numTracks = tracks.GetCount();
-
-        for (unsigned int trackID = 0; trackID < numTracks; ++trackID)
-        {
-            undoBatch.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
-        }
-
-        CTrackViewTrackBundle trackBundle = sequence->GetAllTracks();
-
-        const Export::CData pData = pExportManager->GetData();
-        const int objectsCount = pData.GetObjectCount();
-
-        CTrackViewFBXImportPreviewDialog importSelectionDialog;
-
-        for (int objectID = 0; objectID < objectsCount; ++objectID)
-        {
-            importSelectionDialog.AddTreeItem(pData.GetObject(objectID)->name);
-        }
-
-        if (importSelectionDialog.exec() != QDialog::Accepted)
-        {
-            return;
-        }
-
-        // Remove all keys from the affected tracks
-        for (int objectID = 0; objectID < objectsCount; ++objectID)
-        {
-            Export::Object* pObject = pData.GetObject(objectID);
-
-            if (pObject)
-            {
-                // Clear only the selected tracks for which we have AnimNodes
-                if (!importSelectionDialog.IsObjectSelected(pObject->name))
-                {
-                    continue;
-                }
-                const char* updatedNodeName = pObject->name;
-                if (sequence->GetAnimNodesByName(updatedNodeName).GetCount() == 0)
-                {
-                    continue;
-                }
-
-                int animatonDataCount = pObject->GetEntityAnimationDataCount();
-                for (int animDataID = 0; animDataID < animatonDataCount; ++animDataID)
-                {
-                    const Export::EntityAnimData* pAnimData = pObject->GetEntityAnimationData(animDataID);
-
-                    CTrackViewTrack* pTrack = GetTrackViewTrack(pAnimData, trackBundle, (QString)updatedNodeName);
-
-                    if (pTrack)
-                    {
-                        CTrackViewKeyBundle keys = pTrack->GetAllKeys();
-
-                        for (int deleteKeyID = (int)keys.GetKeyCount() - 1; deleteKeyID >= 0; --deleteKeyID)
-                        {
-                            CTrackViewKeyHandle key = keys.GetKey(deleteKeyID);
-                            key.Delete();
-                        }
-                    }
-                }
-            }
-        }
-        // Add keys from FBX file
-        for (int objectID = 0; objectID < objectsCount; ++objectID)
-        {
-            const Export::Object* pObject = pData.GetObject(objectID);
-
-            if (pObject)
-            {
-                // only process selected nodes from file for which we have AnimNodes
-                if (!importSelectionDialog.IsObjectSelected(pObject->name))
-                {
-                    continue;
-                }
-                const char* updatedNodeName = pObject->name;
-                if (sequence->GetAnimNodesByName(updatedNodeName).GetCount() == 0)
-                {
-                    continue;
-                }
-
-                const int animatonDataCount = pObject->GetEntityAnimationDataCount();
-
-                // Add keys from the imported file to the selected tracks
-                for (int animDataID = 0; animDataID < animatonDataCount; ++animDataID)
-                {
-                    const Export::EntityAnimData* pAnimData = pObject->GetEntityAnimationData(animDataID);
-                    CTrackViewTrack* pTrack = GetTrackViewTrack(pAnimData, trackBundle, (QString)updatedNodeName);
-
-                    if (pTrack)
-                    {
-                        CTrackViewKeyHandle key = pTrack->CreateKey(pAnimData->keyTime);
-                        I2DBezierKey bezierKey;
-                        key.GetKey(&bezierKey);
-                        bezierKey.value = Vec2(pAnimData->keyTime, pAnimData->keyValue);
-                        key.SetKey(&bezierKey);
-                    }
-                }
-
-                // After all keys are added, we are able to add the left and right tangents to the imported keys
-                for (int animDataID = 0; animDataID < animatonDataCount; ++animDataID)
-                {
-                    const Export::EntityAnimData* pAnimData = pObject->GetEntityAnimationData(animDataID);
-
-                    CTrackViewTrack* pTrack = GetTrackViewTrack(pAnimData, trackBundle, (QString)updatedNodeName);
-
-                    if (pTrack)
-                    {
-                        CTrackViewKeyHandle key = pTrack->GetKeyByTime(pAnimData->keyTime);
-                        ISplineInterpolator* pSpline = pTrack->GetSpline();
-
-                        if (pSpline)
-                        {
-                            const int keyIndex = key.GetIndex();
-
-                            ISplineInterpolator::ValueType inTangent;
-                            ISplineInterpolator::ValueType outTangent;
-                            ZeroStruct(inTangent);
-                            ZeroStruct(outTangent);
-
-                            float currentKeyTime = 0.0f;
-                            pSpline->SetKeyFlags(keyIndex, SPLINE_KEY_TANGENT_BROKEN);
-
-                            if (keyIndex > 0)
-                            {
-                                currentKeyTime = key.GetTime() - key.GetPrevKey().GetTime();
-                                inTangent[0] = pAnimData->leftTangentWeight * currentKeyTime;
-                                inTangent[1] = inTangent[0] * pAnimData->leftTangent;
-                                pSpline->SetKeyInTangent(keyIndex, inTangent);
-                            }
-
-                            if (keyIndex < static_cast<int>(pTrack->GetKeyCount() - 1))
-                            {
-                                CTrackViewKeyHandle nextKey = key.GetNextKey();
-                                if (nextKey.IsValid())
-                                {
-                                    currentKeyTime = nextKey.GetTime() - key.GetTime();
-                                    outTangent[0] = pAnimData->rightTangentWeight * currentKeyTime;
-                                    outTangent[1] = outTangent[0] * pAnimData->rightTangent;
-                                    pSpline->SetKeyOutTangent(keyIndex, outTangent);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::EditEvents()
 {
@@ -1796,15 +1504,9 @@ void CTrackViewNodesCtrl::EditEvents()
 void CTrackViewNodesCtrl::CreateFolder(CTrackViewAnimNode* groupNode)
 {
     // Change Group of the node.
-    StringDlg dlg(tr("Enter Folder Name"));
-    if (dlg.exec() == QDialog::Accepted)
+    QString name = QInputDialog::getText(this, tr("Enter Folder Name"), QString());
+    if (!name.isEmpty())
     {
-        QString name = dlg.GetString();
-        if (name.isEmpty())
-        {
-            return;
-        }
-
         CUndo undo("Create folder");
         if (!groupNode->CreateSubNode(name, AnimNodeType::Group))
         {
@@ -1889,7 +1591,6 @@ void CTrackViewNodesCtrl::AddGroupNodeAddItems(SContextMenu& contextMenu, CTrack
     contextMenu.main.addAction("Add Comment Node")->setData(eMI_AddCommentNode);
     contextMenu.main.addAction("Add Console Variable Node")->setData(eMI_AddConsoleVariable);
     contextMenu.main.addAction("Add Script Variable Node")->setData(eMI_AddScriptVariable);
-    contextMenu.main.addAction("Add Material Node")->setData(eMI_AddMaterial);
     contextMenu.main.addAction("Add Event Node")->setData(eMI_AddEvent);
 }
 
@@ -2074,8 +1775,6 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
             contextMenu.collapseSub.addAction("Collapse Entities")->setData(eMI_CollapseEntities);
             contextMenu.expandSub.addAction("Expand Cameras")->setData(eMI_ExpandCameras);
             contextMenu.collapseSub.addAction("Collapse Cameras")->setData(eMI_CollapseCameras);
-            contextMenu.expandSub.addAction("Expand Materials")->setData(eMI_ExpandMaterials);
-            contextMenu.collapseSub.addAction("Collapse Materials")->setData(eMI_CollapseMaterials);
             contextMenu.expandSub.addAction("Expand Events")->setData(eMI_ExpandEvents);
             contextMenu.collapseSub.addAction("Collapse Events")->setData(eMI_CollapseEvents);
         }

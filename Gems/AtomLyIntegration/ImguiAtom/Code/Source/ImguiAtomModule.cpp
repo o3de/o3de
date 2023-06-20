@@ -18,7 +18,7 @@ namespace ImguiAtom
     {
     public:
         AZ_RTTI(ImguiAtomModule, "{E3CE5991-30B5-4B04-BF79-516DDBD4D233}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ImguiAtomModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImguiAtomModule, AZ::SystemAllocator);
 
         ImguiAtomModule()
             : AZ::Module()

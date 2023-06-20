@@ -57,6 +57,9 @@ namespace AZ
             // reserved resource in this copy queue
             void QueueTileMapping(const CommandList::TileMapRequest& request);
 
+            // Queue a wait command
+            void QueueWaitFence(const Fence& fence, uint64_t fenceValue);
+
             bool IsUploadFinished(uint64_t fenceValue);
             void WaitForUpload(uint64_t fenceValue);
 
@@ -98,12 +101,6 @@ namespace AZ
             // pending upload callbacks and their corresponding fence values
             AZStd::queue<AZStd::pair<AZStd::function<void()>, uint64_t>> m_callbacks;
             AZStd::mutex m_callbackMutex;
-
-            // commands which need to be cached before they were finished
-            // Note: the BufferStreamRequest doesn't need to be cached since the queued command doesn't use the its reference
-            AZStd::queue<CommandList::TileMapRequest> m_tileMapRequests;
-            AZStd::queue<RHI::StreamingImageExpandRequest> m_imageExpandRequests;
-            AZStd::mutex m_copyQueueMutex;
         };
     }
 }

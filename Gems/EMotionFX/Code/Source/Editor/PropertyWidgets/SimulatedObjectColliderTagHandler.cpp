@@ -15,17 +15,18 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagSelector, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagHandler, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagSelector, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagSelector, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedObjectColliderTagHandler, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagSelector, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedJointColliderExclusionTagHandler, AZ::SystemAllocator)
 
     SimulatedObjectColliderTagSelector::SimulatedObjectColliderTagSelector(QWidget* parent)
         : TagSelector(parent)
     {
         connect(this, &SimulatedObjectColliderTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }
@@ -123,7 +124,8 @@ namespace EMotionFX
     {
         connect(this, &SimulatedJointColliderExclusionTagSelector::TagsChanged, this, [this]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
             });
     }

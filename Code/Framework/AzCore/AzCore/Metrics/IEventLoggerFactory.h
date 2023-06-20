@@ -65,5 +65,4 @@ namespace AZ::Metrics
 
     using EventLoggerFactory = AZ::Interface<IEventLoggerFactory>;
 
-} // namespace AZ::Event::Metrics
-
+} // namespace AZ::Metrics

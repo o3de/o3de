@@ -39,12 +39,29 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="m_updateButton">
+      <widget class="QLabel" name="m_timeStampTitle">
+       <property name="text">
+        <string>Last save:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="m_timeStamp">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="m_saveButton">
        <property name="toolTip">
         <string>Saves any changes to the scene settings to disk.</string>
        </property>
        <property name="text">
-        <string>Update</string>
+        <string>Save</string>
        </property>
       </widget>
      </item>
@@ -126,16 +143,16 @@
             </property>
            </spacer>
           </item>
-           <item>
-             <widget class="QLabel" name="locationLabel">
-               <property name="text">
-                 <string>Location:</string>
-               </property>
-               <property name="alignment">
-                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-               </property>
-             </widget>
-           </item>
+          <item>
+           <widget class="QLabel" name="locationLabel">
+            <property name="text">
+             <string>Location:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="AzQtComponents::ElidingLabel" name="m_fullPathText">
             <property name="sizePolicy">
@@ -210,47 +227,47 @@
         </item>
         <item>
           <widget class="QWidget" name="HeaderPythonBuilderLayoutWidget">
-            <layout class="QHBoxLayout" name="HeaderPythonBuilderLayout">
-              <item>
-                <widget class="QLabel" name="PythonBuilderScriptTitle">
-                  <property name="text">
-                    <string>Assigned Python Builder Script:</string>
-                  </property>
-                </widget>
-              </item>
-              <item>
-                <widget class="AzQtComponents::ElidingLabel" name="m_pythonBuilderScript">
-                  <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                      <horstretch>0</horstretch>
-                      <verstretch>0</verstretch>
-                    </sizepolicy>
-                  </property>
-                  <property name="text">
-                    <string/>
-                  </property>
-                  <property name="alignment">
+         <layout class="QHBoxLayout" name="HeaderPythonBuilderLayout">
+          <item>
+           <widget class="QLabel" name="PythonBuilderScriptTitle">
+            <property name="text">
+             <string>Assigned Python Builder Script:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="AzQtComponents::ElidingLabel" name="m_pythonBuilderScript">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="alignment">
                     <set>Qt::AlignLeft|Qt::AlignVCenter</set>
-                  </property>
-                  <property name="margin">
-                    <number>-4</number>
-                  </property>
-                </widget>
-              </item>
-              <item>
-                <spacer name="HeaderPythonBuilderLayoutSpacer">
-                  <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                    <size>
-                      <width>0</width>
-                      <height>0</height>
-                    </size>
-                  </property>
-                </spacer>
-              </item>
-            </layout>
+            </property>
+            <property name="margin">
+             <number>-4</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="HeaderPythonBuilderLayoutSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
           </widget>
         </item>
        </layout>

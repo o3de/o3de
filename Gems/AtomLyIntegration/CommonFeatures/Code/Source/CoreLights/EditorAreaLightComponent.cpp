@@ -42,7 +42,7 @@ namespace AZ
                 if (EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<EditorAreaLightComponent>(
-                        "Light", "A light which emits from a point or goemetric shape.")
+                        "Light", "A light which emits from a point or geometric shape.")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                             ->Attribute(Edit::Attributes::Category, "Graphics/Lighting")
                             ->Attribute(Edit::Attributes::Icon, "Icons/Components/AreaLight.svg")
@@ -75,7 +75,7 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::Color, &AreaLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                            ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", RPI::ColorUtils::GetLinearRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying which photometric unit to work in.")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, &AreaLightComponentConfig::GetValidPhotometricUnits)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
@@ -93,7 +93,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::Group, "Attenuation radius")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::LightTypeIsSelected)
-                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode, "Mode", "Controls whether the attenation radius is calculated automatically or set explicitly.")
+                        ->DataElement(Edit::UIHandlers::ComboBox, &AreaLightComponentConfig::m_attenuationRadiusMode, "Mode", "Controls whether the attenuation radius is calculated automatically or set explicitly.")
                             ->EnumAttribute(LightAttenuationRadiusMode::Automatic, "Automatic")
                             ->EnumAttribute(LightAttenuationRadiusMode::Explicit, "Explicit")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
@@ -172,7 +172,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(
-                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias",
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal shadow bias",
                             "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
                             "If this is 0, no biasing is applied.")
                             ->Attribute(Edit::Attributes::Min, 0.f)
@@ -180,8 +180,16 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+                        ->DataElement(
+                            Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_cacheShadows, "Cache shadows",
+                            "When turned on, shadows will only render when something in their field of view changes. This takes more memory "
+                            "because the shadow map texture needs to persist, but can be a performance improvement for largely static scenes.")
 
-                        ->ClassElement(Edit::ClassElements::Group, "Global Illumination")
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+
+                        ->ClassElement(Edit::ClassElements::Group, "Global illumination (GI)")
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsAffectsGI)
                          ->DataElement(Edit::UIHandlers::CheckBox, &AreaLightComponentConfig::m_affectsGI, "Affects GI", "Controls whether this light affects diffuse global illumination.")
@@ -214,10 +222,14 @@ namespace AZ
             // Override the shape component so that this component controls the color.
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColorIsEditable, false);
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColor, m_controller.m_configuration.m_color);
+
+            AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         }
 
         void EditorAreaLightComponent::Deactivate()
         {
+            AzFramework::BoundsRequestBus::Handler::BusDisconnect();
+
             LmbrCentral::EditorShapeComponentRequestsBus::Event(GetEntityId(), &LmbrCentral::EditorShapeComponentRequests::SetShapeColorIsEditable, true);
             AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
@@ -284,7 +296,7 @@ namespace AZ
                 m_controller.ConvertToIntensityMode(PhotometricUnit::Lumen);
             }
             
-            // componets may be removed or added here, so deactivate now and reactivate the entity when everything is done shifting around.
+            // components may be removed or added here, so deactivate now and reactivate the entity when everything is done shifting around.
             GetEntity()->Deactivate();
 
             // Check if there is already a shape components and remove it.
@@ -292,7 +304,8 @@ namespace AZ
             {
                 ComponentDescriptor::DependencyArrayType provided;
                 ComponentDescriptor* componentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    componentDescriptor, component->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(componentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", component->RTTI_GetTypeName());
                 componentDescriptor->GetProvidedServices(provided, component);
                 auto providedItr = AZStd::find(provided.begin(), provided.end(), AZ_CRC_CE("ShapeService"));
@@ -397,5 +410,16 @@ namespace AZ
             return true;
         }
 
+        AZ::Aabb EditorAreaLightComponent::GetWorldBounds()
+        {
+            Transform transform = Transform::CreateIdentity();
+            TransformBus::EventResult(transform, GetEntityId(), &TransformBus::Events::GetWorldTM);
+            return GetLocalBounds().GetTransformedAabb(transform);
+        }
+
+        AZ::Aabb EditorAreaLightComponent::GetLocalBounds()
+        {
+            return m_controller.GetLocalVisualizationBounds();
+        }
     } // namespace Render
 } // namespace AZ

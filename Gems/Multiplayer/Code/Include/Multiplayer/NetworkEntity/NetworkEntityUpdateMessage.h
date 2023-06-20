@@ -26,21 +26,15 @@ namespace Multiplayer
         NetworkEntityUpdateMessage(NetworkEntityUpdateMessage&& rhs);
         NetworkEntityUpdateMessage(const NetworkEntityUpdateMessage& rhs);
 
-        //! Constructor for update without a slice name (remote replicator established).
+        //! Constructor for add/update/delete message.
+        //! The prefab id isn't required by the constructor because it doesn't change for an entity,
+        //! so resending it after the remote replicator is established would be redundant and wasted bandwidth.
+        //! It should only get set on messages until the remote replicator is established.
         //! @param entityRole the role of the entity being replicated
         //! @param entityId   the networkId of the entity being replicated
-        explicit NetworkEntityUpdateMessage(NetEntityRole entityRole, NetEntityId entityId);
-
-        //! Constructor for update with a slice name (no remote replicator established).
-        //! @param entityRole     the role of the entity being replicated
-        //! @param entityId       the networkId of the entity being replicated
-        //! @param prefabEntityId the prefab entityId to clone this replicated entity from
-        explicit NetworkEntityUpdateMessage(NetEntityRole entityRole, NetEntityId entityId, const PrefabEntityId& prefabEntityId);
-
-        //! Constructor for an entity delete message.
-        //! @param entityId      the networkId of the entity being deleted
-        //! @param isMigrated    whether or not the entity is being migrated or deleted
-        explicit NetworkEntityUpdateMessage(NetEntityId entityId, bool isMigrated);
+        //! @param isDeleted  true if deleted as a part of the update
+        //! @param isMigrated true if migrated, false if not.
+        explicit NetworkEntityUpdateMessage(NetEntityRole entityRole, NetEntityId entityId, bool isDeleted, bool isMigrated);
 
         NetworkEntityUpdateMessage& operator =(NetworkEntityUpdateMessage&& rhs);
         NetworkEntityUpdateMessage& operator =(const NetworkEntityUpdateMessage& rhs);

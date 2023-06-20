@@ -10,13 +10,13 @@
 
 namespace AZ::Render
 {
-    EditorStateMaskRenderer::EditorStateMaskRenderer(const Name& name, Data::Instance<RPI::Material> maskMaterial)
+    EditorStateMaskRenderer::EditorStateMaskRenderer(const Name& name)
         : m_drawTag(name)
-        , m_maskMaterial(maskMaterial)
     {
     }
 
-    void EditorStateMaskRenderer::RenderMaskEntities(const AzToolsFramework::EntityIdSet& entityIds)
+    void EditorStateMaskRenderer::RenderMaskEntities(
+        Data::Instance<RPI::Material> maskMaterial, const AzToolsFramework::EntityIdSet& entityIds)
     {
         if (entityIds.empty())
         {
@@ -34,7 +34,7 @@ namespace AZ::Render
             {
                 m_drawableEntities.emplace(
                     AZStd::piecewise_construct, AZStd::forward_as_tuple(entityId),
-                    AZStd::forward_as_tuple(entityId, m_maskMaterial, m_drawTag));
+                    AZStd::forward_as_tuple(entityId, maskMaterial, m_drawTag));
             }
         }
 

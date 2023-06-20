@@ -32,6 +32,16 @@ namespace ShaderManagementConsole
 
         //! Returns a list of shader items contained within an instantiated material source's shader collection.
         virtual AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& assetId) = 0;
+
+        //! Return the id of all built material assets
+        virtual AZStd::vector<AZ::Data::AssetId> GetAllMaterialAssetIds() = 0;
+
+        //! A wrapper to call GetFullSourcePathFromRelativeProductPath from python
+        virtual AZStd::string GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath) = 0;
+
+        //! A wrapper to call GenerateRelativeSourcePath from python
+        virtual AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) = 0;
+
     };
     using ShaderManagementConsoleRequestBus = AZ::EBus<ShaderManagementConsoleRequests>;
 } // namespace ShaderManagementConsole

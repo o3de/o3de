@@ -57,7 +57,7 @@ namespace AZ
                         const char * cbLabel = [ buffer.label UTF8String ];
                         AZ_Printf("RHI", "Command Buffer %s failed to execute\n", cbLabel);
                         
-                        int eCode = buffer.error.code;
+                        int eCode = static_cast<int>(buffer.error.code);
                         switch (eCode)
                         {
                         case MTLCommandBufferErrorNone:
@@ -71,7 +71,7 @@ namespace AZ
                         case MTLCommandBufferErrorPageFault:
                             AZ_Printf("RHI","Execution of this command generated an unserviceable GPU page fault. This error maybe caused by buffer read/write attribute mismatch or out of boundary access.\n");
                             break;
-                        case MTLCommandBufferErrorBlacklisted:
+                        case MTLCommandBufferErrorAccessRevoked:
                             AZ_Printf("RHI","Access to this device has been revoked because this client has been responsible for too many timeouts or hangs.\n");
                             break;
                         case MTLCommandBufferErrorNotPermitted:
@@ -117,7 +117,10 @@ namespace AZ
             
             //Each context will get a sub render encoder.
             id <MTLRenderCommandEncoder> renderCommandEncoder = [m_mtlParallelEncoder renderCommandEncoder];
-            renderCommandEncoder.label = [NSString stringWithCString:scopeName encoding:NSUTF8StringEncoding];
+            if (RHI::Validation::IsEnabled())
+            {
+                renderCommandEncoder.label = [NSString stringWithCString:scopeName encoding:NSUTF8StringEncoding];
+            }
             AZ_Assert(renderCommandEncoder != nil, "Could not create the RenderCommandEncoder");
             return renderCommandEncoder;
         }

@@ -35,7 +35,7 @@ namespace AZ
         }
     
         void Image::GetSubresourceLayoutsInternal(const RHI::ImageSubresourceRange& subresourceRange,
-                    RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+                    RHI::ImageSubresourceLayout* subresourceLayouts,
                     size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -53,10 +53,10 @@ namespace AZ
                     if (subresourceLayouts)
                     {
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        RHI::ImageSubresourceLayoutPlaced& layout = subresourceLayouts[subresourceIndex];
+                        RHI::ImageSubresourceLayout& layout = subresourceLayouts[subresourceIndex];
                         layout.m_bytesPerRow = subresourceLayout.m_bytesPerRow;
                         layout.m_bytesPerImage = subresourceLayout.m_rowCount * subresourceLayout.m_bytesPerRow;
-                        layout.m_offset = subresourceByteCount;
+                        layout.m_offset = static_cast<uint32_t>(subresourceByteCount);
                         layout.m_rowCount = subresourceLayout.m_rowCount;
                         layout.m_size = subresourceLayout.m_size;
                     }

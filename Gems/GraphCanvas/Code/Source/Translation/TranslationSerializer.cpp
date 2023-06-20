@@ -11,7 +11,7 @@
 
 namespace GraphCanvas
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(TranslationFormatSerializer, AZ::SystemAllocator);
 
     void AddEntryToDatabase(const AZStd::string& baseKey, const AZStd::string& name, const rapidjson::Value& it, TranslationFormat* translationFormat)
     {

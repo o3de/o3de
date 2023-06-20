@@ -154,8 +154,8 @@ namespace AZ
             RayTracingTlasDescriptor* Transform(const AZ::Transform& transform);
             RayTracingTlasDescriptor* NonUniformScale(const AZ::Vector3& nonUniformScale);
             RayTracingTlasDescriptor* Transparent(bool transparent);
-            RayTracingTlasDescriptor* Blas(RHI::Ptr<RHI::RayTracingBlas>& blas);
-            RayTracingTlasDescriptor* InstancesBuffer(RHI::Ptr<RHI::Buffer>& tlasInstances);
+            RayTracingTlasDescriptor* Blas(const RHI::Ptr<RHI::RayTracingBlas>& blas);
+            RayTracingTlasDescriptor* InstancesBuffer(const RHI::Ptr<RHI::Buffer>& tlasInstances);
             RayTracingTlasDescriptor* NumInstances(uint32_t numInstancesInBuffer);
 
         private:

@@ -16,6 +16,10 @@ namespace AZ
 {
     namespace
     {
+        // Any arguments seen after matching the double dash separator
+        // will be parsed as positional arguments
+        static constexpr AZStd::string_view PositionalArgSeparator = "--";
+
         static const AZStd::string m_emptyValue;
         // helper utility to return a lower version of the string without altering the original.
         // regular to_lower operates directly on the input.
@@ -42,6 +46,19 @@ namespace AZ
             return !arg.empty() ? AZStd::string::format(R"("%.*s")", aznumeric_cast<int>(arg.size()), arg.data()) : AZStd::string{ arg };
         }
     }
+
+    struct CommandLine::ArgumentParserState
+    {
+        //! Set to true if the psuedo argument '--' has been parsed
+        //! This indicates to the argument parser that the remaining
+        //! arguments should be treated as positional arguments only
+        bool m_parseRemainAsPositional{};
+        //! Stores the current option being parsed
+        //! This is used for maintaining state for space separated options
+        //! Ex. --foo bar
+        //! When the "bar" argument is parsed the current switch would be set to "foo"
+        AZStd::string m_currentOption;
+    };
 
     CommandLine::CommandLine()
         : m_commandLineOptionPrefix(AZ_TRAIT_COMMAND_LINE_OPTION_PREFIX)
@@ -100,50 +117,67 @@ namespace AZ
         }
     }
 
-    void CommandLine::AddArgument(AZStd::string_view currentArg, AZStd::string& currentSwitch)
+    void CommandLine::AddArgument(AZStd::string_view currentArg,
+        ArgumentParserState& argumentParserState)
     {
         currentArg = AZ::StringFunc::StripEnds(currentArg);
         if (!currentArg.empty())
         {
-            if (m_commandLineOptionPrefix.contains(currentArg.front()))
+            if (!argumentParserState.m_parseRemainAsPositional)
             {
-                // its possible that its a key-value-pair like -blah=whatever
-                // we support this too, for compatibility.
+                // Parse option arguments
 
-                currentArg = currentArg.substr(1);
-                if (currentArg[0] == '-') // for -- extra
+                // If the `--` argument is seen, update the
+                // the parser to force parsing remaining arguments as positional
+                if (currentArg == PositionalArgSeparator)
                 {
+                    argumentParserState.m_parseRemainAsPositional = true;
+                    argumentParserState.m_currentOption.clear();
+                    return;
+                }
+
+                // If the `--` argument has been parsed, treat all remaining arguments positional
+                if (m_commandLineOptionPrefix.contains(currentArg.front()))
+                {
+                    // its possible that its a key-value-pair like -blah=whatever
+                    // we support this too, for compatibility.
+
                     currentArg = currentArg.substr(1);
-                }
+                    if (currentArg[0] == '-') // for -- extra
+                    {
+                        currentArg = currentArg.substr(1);
+                    }
 
-                AZStd::size_t foundPos = AZ::StringFunc::Find(currentArg, "=");
-                if (foundPos != AZStd::string::npos)
-                {
-                    AZStd::string_view argumentView{ currentArg };
-                    AZStd::string_view option = AZ::StringFunc::StripEnds(argumentView.substr(0, foundPos));
-                    AZStd::string_view value = AZ::StringFunc::StripEnds(argumentView.substr(foundPos + 1));
-                    ParseOptionArgument(ToLower(option), value, nullptr);
-                    currentSwitch.clear();
+                    AZStd::size_t foundPos = AZ::StringFunc::Find(currentArg, "=");
+                    if (foundPos != AZStd::string::npos)
+                    {
+                        AZStd::string_view argumentView{ currentArg };
+                        AZStd::string_view option = AZ::StringFunc::StripEnds(argumentView.substr(0, foundPos));
+                        AZStd::string_view value = AZ::StringFunc::StripEnds(argumentView.substr(foundPos + 1));
+                        ParseOptionArgument(ToLower(option), value, nullptr);
+                        argumentParserState.m_currentOption.clear();
+                    }
+                    else
+                    {
+                        // its in this format -switchName switchvalue
+                        // (no equals)
+                        argumentParserState.m_currentOption = ToLower(currentArg);
+                        m_allValues.push_back({ argumentParserState.m_currentOption, "" });
+                    }
+                    return;
                 }
-                else
-                {
-                    // its in this format -switchName switchvalue
-                    // (no equals)
-                    currentSwitch = ToLower(currentArg);
-                    m_allValues.push_back({ currentSwitch, "" });
-                }
+            }
+
+            if (argumentParserState.m_currentOption.empty())
+            {
+                // Parse positional argument
+                m_allValues.push_back({ "", UnquoteArgument(currentArg) });
             }
             else
             {
-                if (currentSwitch.empty())
-                {
-                    m_allValues.push_back({ "", UnquoteArgument(currentArg) });
-                }
-                else
-                {
-                    ParseOptionArgument(currentSwitch, currentArg, &m_allValues.back());
-                    currentSwitch.clear();
-                }
+                // Finish parsing of values for option argument
+                ParseOptionArgument(argumentParserState.m_currentOption, currentArg, &m_allValues.back());
+                argumentParserState.m_currentOption.clear();
             }
         }
     }
@@ -152,14 +186,17 @@ namespace AZ
     {
         m_allValues.clear();
 
-        AZStd::string currentSwitch;
+        // Stores the state of arguments being parsed
+        // Allows the AddArgument function to update the state
+        ArgumentParserState parseState;
+
         // Start on 1 because 0 is the executable name
         for (int i = 1; i < argc; ++i)
         {
             if (argv[i])
             {
                 AZStd::string_view currentArg = argv[i]; // this eats the / or -
-                AddArgument(currentArg, currentSwitch);
+                AddArgument(currentArg, parseState);
             }
         }
     }
@@ -168,11 +205,13 @@ namespace AZ
     {
         m_allValues.clear();
 
+        // Stores the state of arguments being parsed
+        ArgumentParserState parseState;
+
         // This version of Parse does not skip over 0th index
-        AZStd::string currentSwitch;
         for (int i = 0; i < commandLine.size(); ++i)
         {
-            AddArgument(commandLine[i], currentSwitch);
+            AddArgument(commandLine[i], parseState);
         }
     }
 
@@ -180,11 +219,13 @@ namespace AZ
     {
         m_allValues.clear();
 
+        // Stores the state of arguments being parsed
+        ArgumentParserState parseState;
+
         // This version of Parse does not skip over 0th index
-        AZStd::string currentSwitch;
         for (int i = 0; i < commandLine.size(); ++i)
         {
-            AddArgument(commandLine[i], currentSwitch);
+            AddArgument(commandLine[i], parseState);
         }
     }
 

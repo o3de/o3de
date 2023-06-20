@@ -21,7 +21,7 @@ namespace EMotionFX
     >;
 
     class CommandLineFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<CommandLineFixtureParameter>
     {
     };

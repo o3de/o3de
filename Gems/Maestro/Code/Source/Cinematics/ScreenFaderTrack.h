@@ -19,7 +19,7 @@ class CScreenFaderTrack
     : public TAnimTrack<IScreenFaderKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CScreenFaderTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CScreenFaderTrack, AZ::SystemAllocator);
     AZ_RTTI(CScreenFaderTrack, "{3279BB19-D32D-482E-BD6E-C2DCD8858328}", IAnimTrack);
 
     //-----------------------------------------------------------------------------

@@ -8,14 +8,17 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
+
+#include <Artifact/Static/TestImpactPythonTestTargetMeta.h>
 
 namespace TestImpact
 {
     //! Constructs a list of test target meta-data artifacts of the specified suite type from the specified master test list data.
     //! @param testListData The raw test list data in JSON format.
-    //! @param suiteType The suite type to select the target meta-data artifacts from.
+    //! @param suiteSet The suites to select the target meta-data artifacts from.
+    //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
     //! @return The constructed list of test target meta-data artifacts.
-    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(const AZStd::string& testListData, SuiteType suiteType);
+    PythonTestTargetMetaMap PythonTestTargetMetaMapFactory(
+        const AZStd::string& testListData, const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet);
 } // namespace TestImpact

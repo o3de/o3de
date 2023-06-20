@@ -75,7 +75,7 @@ namespace CrashHandler
         else
         {
             AZStd::string enginePath;
-            EBUS_EVENT_RESULT(enginePath, AZ::ComponentApplicationBus, GetExecutableFolder);
+            AZ::ComponentApplicationBus::BroadcastResult(enginePath, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
 
             if (enginePath.length())
             {

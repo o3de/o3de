@@ -22,7 +22,7 @@ namespace AZ
 
         public:
             AZ_RTTI(Query, "{E27876FA-D96D-407A-926A-C480F4EDCBD0}", Base);
-            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
             ~Query() = default;
             static RHI::Ptr<Query> Create();
 

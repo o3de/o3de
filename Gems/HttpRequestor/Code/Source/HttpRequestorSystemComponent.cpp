@@ -72,7 +72,6 @@ namespace HttpRequestor
                 ec->Class<HttpRequestorSystemComponent>("HttpRequestor", "Will make HTTP Rest calls")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }

@@ -39,7 +39,6 @@ namespace AZ
                 {
                     ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "Atom Renderer")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &FactoryManagerSystemComponent::m_factoriesPriority, "RHI Priority list", "Priorities for RHI Implementations")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FactoryManagerSystemComponent::m_validationMode, "Validation Layer Mode", "Set the validation mode for the RHI. It only applies for non release builds")
@@ -95,6 +94,8 @@ namespace AZ
                 if (Factory::IsReady() && factory == &Factory::Get())
                 {
                     Factory::Unregister(factory);
+
+                    FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryUnregistered);
                 }
             }
             else
@@ -119,6 +120,8 @@ namespace AZ
             AZ_Assert(factory, "Could not select factory");
 
             Factory::Register(factory);
+
+            FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryRegistered);
         }
 
         Factory* FactoryManagerSystemComponent::GetFactoryFromCommandLine()
@@ -201,14 +204,18 @@ namespace AZ
 
         void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
         {
-#if defined(_RELEASE)
-            m_validationMode = ValidationMode::Disabled;
-#else
-            if (auto commandLineValidation = AZ::RHI::ReadValidationModeFromCommandArgs())
+            m_validationMode = AZ::RHI::ReadValidationMode();
+        }
+
+        void FactoryManagerSystemComponent::EnumerateFactories(AZStd::function<bool(Factory* factory)> callback)
+        {
+            for (auto& factory : m_registeredFactories)
             {
-                m_validationMode = *commandLineValidation;
+                if (!callback(factory))
+                {
+                    break;
+                }
             }
-#endif        
         }
 
     } // namespace RHI

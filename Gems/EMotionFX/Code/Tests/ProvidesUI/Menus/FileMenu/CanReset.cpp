@@ -57,7 +57,7 @@ namespace EMotionFX
         ASSERT_EQ(oldNumMotionSets, 1) << "Expected only the default motion set";
         ASSERT_EQ(GetMotionManager().GetNumMotions(), 0) << "Expected exactly zero motions";
 
-        // Create Actor, AnimGraph, Motionset and Motion
+        // Create Actor, AnimGraph, MotionSet and Motion
         AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
         AZ::Data::Asset<Integration::ActorAsset> actorAsset =
             TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 2, "SampleActor");

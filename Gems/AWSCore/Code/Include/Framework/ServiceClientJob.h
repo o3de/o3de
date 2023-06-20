@@ -24,7 +24,7 @@ namespace AWSCore
     public:
 
         // To use a different allocator, extend this class and use this macro.
-        AZ_CLASS_ALLOCATOR(ServiceClientJob, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ServiceClientJob, AZ::SystemAllocator);
 
         using IConfig = IServiceClientJobConfig;
         using Config = ServiceClientJobConfig<ServiceTraitsType>;

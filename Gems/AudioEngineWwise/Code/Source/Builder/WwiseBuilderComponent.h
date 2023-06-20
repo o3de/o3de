@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <Builder/WwiseBuilderWorker.h>
+#include <WwiseBuilderWorker.h>
 
 namespace WwiseBuilder
 {

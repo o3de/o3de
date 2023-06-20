@@ -14,7 +14,7 @@
 using namespace AWSCore;
 
 class AWSCVarCredentialHandlerTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     AWSCVarCredentialHandlerTest() = default;

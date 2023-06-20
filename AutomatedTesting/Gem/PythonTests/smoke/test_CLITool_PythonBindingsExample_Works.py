@@ -14,7 +14,7 @@ import pytest
 import subprocess
 
 
-@pytest.mark.SUITE_smoke
+@pytest.mark.skip(reason="GHI #13693: Test Periodically Fails")
 class TestCLIToolPythonBindingsExampleWorks(object):
     def test_CLITool_PythonBindingsExample_Works(self, build_directory):
         file_path = os.path.join(build_directory, "PythonBindingsExample")

@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
         instructionLayout->setMargin(0);
 
         QLabel* instructionIconLabel = new QLabel();
-        instructionIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
+        instructionIconLabel->setPixmap(QIcon(":/Info.svg").pixmap(32, 32));
         instructionLayout->addWidget(instructionIconLabel);
 
         instructionLayout->addSpacing(10);
@@ -64,6 +64,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* continueButton = dialogButtons->addButton(tr("Continue"), QDialogButtonBox::AcceptRole);
+        continueButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(continueButton, &QPushButton::clicked, this, &QDialog::accept);

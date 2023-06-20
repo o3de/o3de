@@ -20,8 +20,7 @@
                 "Id": 14126657869720434043,
                 "Child Entity Order": [
                     "Entity_[1176639161715]",
-                    "Entity_[704828390021]",
-                    ""
+                    "Entity_[704828390021]"
                 ]
             },
             "Component_[15230859088967841193]": {
@@ -37,13 +36,14 @@
                 "$type": "EditorEntityIconComponent",
                 "Id": 5688118765544765547
             },
-            "Component_[6545738857812235305]": {
-                "$type": "SelectionComponent",
-                "Id": 6545738857812235305
-            },
             "Component_[7247035804068349658]": {
                 "$type": "EditorPrefabComponent",
                 "Id": 7247035804068349658
+            },
+            "Component_[7391669843529928707]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 7391669843529928707,
+                "LocalBookmarkFileName": "SC_Spawnables_MultipleSpawnsFromSingleTicket_16684438658026104.setreg"
             },
             "Component_[9307224322037797205]": {
                 "$type": "EditorLockComponent",
@@ -60,10 +60,6 @@
             "Id": "Entity_[1155164325235]",
             "Name": "Sun",
             "Components": {
-                "Component_[10440557478882592717]": {
-                    "$type": "SelectionComponent",
-                    "Id": 10440557478882592717
-                },
                 "Component_[13620450453324765907]": {
                     "$type": "EditorLockComponent",
                     "Id": 13620450453324765907
@@ -140,7 +136,7 @@
                     "Controller": {
                         "Configuration": {
                             "Field of View": 55.0,
-                            "EditorEntityId": 7227535073012202800
+                            "EditorEntityId": 5735295310260646130
                         }
                     }
                 },
@@ -168,10 +164,6 @@
                             -43.623355865478516
                         ]
                     }
-                },
-                "Component_[18387556550380114975]": {
-                    "$type": "SelectionComponent",
-                    "Id": 18387556550380114975
                 },
                 "Component_[2654521436129313160]": {
                     "$type": "EditorVisibilityComponent",
@@ -224,10 +216,6 @@
                     "$type": "EditorLockComponent",
                     "Id": 14988041764659020032
                 },
-                "Component_[15808690248755038124]": {
-                    "$type": "SelectionComponent",
-                    "Id": 15808690248755038124
-                },
                 "Component_[15900837685796817138]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 15900837685796817138
@@ -278,10 +266,6 @@
                         }
                     }
                 },
-                "Component_[11980494120202836095]": {
-                    "$type": "SelectionComponent",
-                    "Id": 11980494120202836095
-                },
                 "Component_[1428633914413949476]": {
                     "$type": "EditorLockComponent",
                     "Id": 1428633914413949476
@@ -306,6 +290,20 @@
                                 "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
                             }
                         }
+                    },
+                    "diffuseImageAsset": {
+                        "assetId": {
+                            "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
+                            "subId": 3000
+                        },
+                        "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_ibldiffuse.exr.streamingimage"
+                    },
+                    "specularImageAsset": {
+                        "assetId": {
+                            "guid": "{3FD09945-D0F2-55C8-B9AF-B2FD421FE3BE}",
+                            "subId": 2000
+                        },
+                        "assetHint": "lightingpresets/highcontrast/goegap_4k_iblglobalcm_iblspecular.exr.streamingimage"
                     }
                 },
                 "Component_[14994774102579326069]": {
@@ -374,13 +372,13 @@
                     "configuration": {
                         "sourceHandle": {
                             "id": "{A3F94F50-FD9F-5F3F-A17F-D0FE5681FEC5}",
-                            "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/MultipleSpawnsFromSingleTicket.scriptcanvas"
+                            "path": "ScriptCanvas/Spawnables/MultipleSpawnsFromSingleTicket.scriptcanvas"
                         },
                         "sourceName": "MultipleSpawnsFromSingleTicket.scriptcanvas",
                         "propertyOverrides": {
                             "source": {
                                 "id": "{A3F94F50-FD9F-5F3F-A17F-D0FE5681FEC5}",
-                                "path": "GitHub/o3de/AutomatedTesting/ScriptCanvas/Spawnables/MultipleSpawnsFromSingleTicket.scriptcanvas"
+                                "path": "ScriptCanvas/Spawnables/MultipleSpawnsFromSingleTicket.scriptcanvas"
                             }
                         }
                     }
@@ -396,10 +394,6 @@
                 "Component_[6725293197224110972]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 6725293197224110972
-                },
-                "Component_[6974260037781999503]": {
-                    "$type": "SelectionComponent",
-                    "Id": 6974260037781999503
                 },
                 "Component_[8311803811942838815]": {
                     "$type": "EditorLockComponent",

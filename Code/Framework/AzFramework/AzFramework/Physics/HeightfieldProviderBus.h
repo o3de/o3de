@@ -71,11 +71,11 @@ namespace Physics
 
         //! Returns the height field gridsize columns.
         //! @return the size of the grid in the x direction.
-        virtual size_t GetHeightfieldGridColumns() const = 0;
+        virtual AZ::u64 GetHeightfieldGridColumns() const = 0;
 
         //! Returns the height field gridsize rows.
         //! @return the size of the grid in the y direction.
-        virtual size_t GetHeightfieldGridRows() const = 0;
+        virtual AZ::u64 GetHeightfieldGridRows() const = 0;
 
         //! Returns the height field min and max height bounds.
         //! @param minHeightBounds contains the minimum height that the heightfield can contain.

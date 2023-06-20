@@ -76,7 +76,11 @@ export AWS_SESSION_TOKEN=$(echo $credentials | cut -d' ' -f2)
 export AWS_ACCESS_KEY_ID=$(echo $credentials | cut -d' ' -f3)
 
 if [[ -z "$O3DE_AWS_PROJECT_NAME" ]]; then
-   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$PIPELINE_NAME-Linux
+   # To avoid resource name length issues, potentially verbose pipeline names are capped at 25 chars.
+   # TODO: consolidate project name formulation for tests and deploy/destroy scripts to same place.
+   pipeline_short=${PIPELINE_NAME:0:25}
+   echo Truncated pipeline name is: $pipeline_short
+   export O3DE_AWS_PROJECT_NAME=$BRANCH_NAME-$pipeline_short-Linux
    export O3DE_AWS_PROJECT_NAME=${O3DE_AWS_PROJECT_NAME///} # remove occurances of "/" b/c not allowed in AWS CFN stack names
 fi
 

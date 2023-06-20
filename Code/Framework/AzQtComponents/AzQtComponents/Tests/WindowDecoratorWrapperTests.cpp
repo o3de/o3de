@@ -17,7 +17,7 @@
 namespace AzQtComponents
 {
     class WindowDecorationWrapperTests
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         WindowDecorationWrapperTests()

@@ -12,6 +12,7 @@
 #include <AzCore/std/parallel/atomic.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 
 namespace AZ
 {
@@ -29,26 +30,28 @@ namespace AZ
             ~ViewportContextManager();
             void Shutdown();
 
-            // IViewportContextManagerRequests interface
+            // ViewportContextRequestsInterface overrides...
             ViewportContextPtr CreateViewportContext(const Name& contextName, const CreationParameters& params) override;
             ViewportContextPtr GetViewportContextByName(const Name& contextName) const override;
             ViewportContextPtr GetViewportContextById(AzFramework::ViewportId id) const override;
             void RenameViewportContext(ViewportContextPtr viewportContext, const Name& newContextName) override;
             void EnumerateViewportContexts(AZStd::function<void(ViewportContextPtr)> visitorFunction) override;
-
             AZ::Name GetDefaultViewportContextName() const override;
-            void PushView(const Name& contextName, ViewPtr view) override;
-            bool PopView(const Name& contextName, ViewPtr view) override;
-            ViewPtr GetCurrentView(const Name& contextName) const override;
+            void PushViewGroup(const Name& contextName, ViewGroupPtr viewGroup) override;
+            bool PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup) override;
+            ViewGroupPtr GetCurrentViewGroup(const Name& contextName) override;
             ViewportContextPtr GetDefaultViewportContext() const override;
             ViewportContextPtr GetViewportContextByScene(const Scene* scene) const override;
 
+            ViewPtr GetCurrentView(const Name& context);
+            ViewPtr GetCurrentStereoscopicView(const Name& context, ViewType viewType);
+            
         private:
             void RegisterViewportContext(const Name& contextName, ViewportContextPtr viewportContext);
             void UnregisterViewportContext(AzFramework::ViewportId id);
             AzFramework::ViewportId GetViewportIdFromName(const Name& contextName) const;
 
-            using ViewPtrStack = AZStd::deque<ViewPtr>;
+            using ViewPtrStack = AZStd::deque<ViewGroupPtr>;
             struct ViewportContextData
             {
                 AZStd::weak_ptr<ViewportContext> context;

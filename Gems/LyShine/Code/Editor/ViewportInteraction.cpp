@@ -16,6 +16,7 @@
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/Bus/UiEditorCanvasBus.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 
 #include <QKeyEvent>
@@ -380,7 +381,7 @@ void ViewportInteraction::BeginReversibleAction(const QTreeWidgetItemRawPtrQList
 
     // Snapping.
     bool isSnapping = false;
-    EBUS_EVENT_ID_RESULT(isSnapping, m_editorWindow->GetCanvas(), UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(isSnapping, m_editorWindow->GetCanvas(), &UiEditorCanvasBus::Events::GetIsSnapEnabled);
     if (isSnapping)
     {
         // Set all initial non-snapped values.
@@ -390,11 +391,11 @@ void ViewportInteraction::BeginReversibleAction(const QTreeWidgetItemRawPtrQList
         for (auto i : items)
         {
             UiTransform2dInterface::Offsets offsets;
-            EBUS_EVENT_ID_RESULT(offsets, i->GetEntityId(), UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(offsets, i->GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
             i->SetNonSnappedOffsets(offsets);
 
             float rotation;
-            EBUS_EVENT_ID_RESULT(rotation, i->GetEntityId(), UiTransformBus, GetZRotation);
+            UiTransformBus::EventResult(rotation, i->GetEntityId(), &UiTransformBus::Events::GetZRotation);
             i->SetNonSnappedZRotation(rotation);
         }
     }
@@ -449,7 +450,7 @@ void ViewportInteraction::MousePressEvent(QMouseEvent* ev)
             if (m_grabbedAnchors.Any())
             {
                 // Prepare to move anchors
-                EBUS_EVENT_ID_RESULT(m_startAnchors, m_activeElementId, UiTransform2dBus, GetAnchors);
+                UiTransform2dBus::EventResult(m_startAnchors, m_activeElementId, &UiTransform2dBus::Events::GetAnchors);
             }
             else if (m_interactionMode == InteractionMode::MOVE || m_interactionMode == InteractionMode::ANCHOR)
             {
@@ -474,7 +475,7 @@ void ViewportInteraction::MousePressEvent(QMouseEvent* ev)
         if (m_editorWindow->GetViewport()->IsInObjectPickMode())
         {
             AZ::Entity* element = nullptr;
-            EBUS_EVENT_ID_RESULT(element, m_editorWindow->GetCanvas(), UiCanvasBus, PickElement, mousePosition);
+            UiCanvasBus::EventResult(element, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElement, mousePosition);
 
             m_editorWindow->GetViewport()->PickItem(element ? element->GetId() : AZ::EntityId());
             m_entityPickedOnMousePress = true;
@@ -499,7 +500,8 @@ void ViewportInteraction::MousePressEvent(QMouseEvent* ev)
                     {
                         // Hovering over anchors, if the click is outside the element with the anchors then ignore
                         bool isElementUnderCursor = false;
-                        EBUS_EVENT_ID_RESULT(isElementUnderCursor, elementWithAnchors->GetId(), UiTransformBus, IsPointInRect, mousePosition);
+                        UiTransformBus::EventResult(
+                            isElementUnderCursor, elementWithAnchors->GetId(), &UiTransformBus::Events::IsPointInRect, mousePosition);
                         if (!isElementUnderCursor)
                         {
                             ignoreClickForSelection = true;
@@ -512,7 +514,7 @@ void ViewportInteraction::MousePressEvent(QMouseEvent* ev)
             if (!ignoreClickForSelection)
             {
                 AZ::Entity* element = nullptr;
-                EBUS_EVENT_ID_RESULT(element, m_editorWindow->GetCanvas(), UiCanvasBus, PickElement, mousePosition);
+                UiCanvasBus::EventResult(element, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElement, mousePosition);
 
                 HierarchyWidget* hierarchyWidget = m_editorWindow->GetHierarchy();
                 QTreeWidgetItem* widgetItem = nullptr;
@@ -649,7 +651,8 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
                 if (m_activeElementId.IsValid())
                 {
                     bool isActiveElementUnderCursor = false;
-                    EBUS_EVENT_ID_RESULT(isActiveElementUnderCursor, m_activeElementId, UiTransformBus, IsPointInRect, mousePosition);
+                    UiTransformBus::EventResult(
+                        isActiveElementUnderCursor, m_activeElementId, &UiTransformBus::Events::IsPointInRect, mousePosition);
                     if (!isActiveElementUnderCursor)
                     {
                         ignoreClick = true;
@@ -660,7 +663,7 @@ void ViewportInteraction::MouseReleaseEvent(QMouseEvent* ev,
             if (!ignoreClick)
             {
                 AZ::Entity* element = nullptr;
-                EBUS_EVENT_ID_RESULT(element, m_editorWindow->GetCanvas(), UiCanvasBus, PickElement, mousePosition);
+                UiCanvasBus::EventResult(element, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElement, mousePosition);
 
                 HierarchyWidget* hierarchyWidget = m_editorWindow->GetHierarchy();
                 if (element)
@@ -724,16 +727,12 @@ bool ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
         // Angle delta returns distance rotated by mouse wheel in eigths of a
         // degree.
         static const int numStepsPerDegree = 8;
-        const float numScrollDegress = aznumeric_cast<float>(numDegrees.y() / numStepsPerDegree);
+        const float numScrollDegrees = aznumeric_cast<float>(numDegrees.y() / numStepsPerDegree);
 
         static const float zoomMultiplier = 1 / 100.0f;
-        Vec2i pivotPoint(
-            static_cast<int>(ev->position().x()),
-            static_cast<int>(ev->position().y()));
-
-        float newScale = m_canvasViewportMatrixProps.scale + numScrollDegress * zoomMultiplier;
-
-        SetCanvasToViewportScale(QuantizeZoomScale(newScale), &pivotPoint);
+        
+        float newScale = m_canvasViewportMatrixProps.scale + numScrollDegrees * zoomMultiplier;
+        SetCanvasToViewportScale(QuantizeZoomScale(newScale), AZ::Vector2(ev->position().x(), ev->position().y()));
     }
 
     return true;
@@ -849,7 +848,7 @@ void ViewportInteraction::InitializeToolbars()
     m_editorWindow->GetEnterPreviewToolbar()->setEnabled(canvasLoaded);
 
     AZ::Vector2 canvasSize(1280.0f, 720.0f);
-    EBUS_EVENT_ID_RESULT(canvasSize, m_editorWindow->GetCanvas(), UiCanvasBus, GetCanvasSize);
+    UiCanvasBus::EventResult(canvasSize, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::GetCanvasSize);
     m_editorWindow->GetCanvasSizeToolbarSection()->SetInitialResolution(canvasSize);
 
     if (!m_editorWindow->GetCanvas().IsValid())
@@ -859,7 +858,7 @@ void ViewportInteraction::InitializeToolbars()
 
     {
         bool isSnapping = false;
-        EBUS_EVENT_ID_RESULT(isSnapping, m_editorWindow->GetCanvas(), UiEditorCanvasBus, GetIsSnapEnabled);
+        UiEditorCanvasBus::EventResult(isSnapping, m_editorWindow->GetCanvas(), &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
         m_editorWindow->GetCoordinateSystemToolbarSection()->SetSnapToGridIsChecked(isSnapping);
     }
@@ -920,7 +919,7 @@ void ViewportInteraction::GetScaleToFitTransformProps(const AZ::Vector2* newCanv
     }
     else
     {
-        EBUS_EVENT_ID_RESULT(canvasSize, m_editorWindow->GetCanvas(), UiCanvasBus, GetCanvasSize);
+        UiCanvasBus::EventResult(canvasSize, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::GetCanvasSize);
     }
 
     AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
@@ -983,8 +982,15 @@ void ViewportInteraction::SetCanvasZoomPercent(float percent)
     SetCanvasToViewportScale(percent / 100.0f);
 }
 
-void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* optionalPivotPoint)
+void ViewportInteraction::SetCanvasToViewportScale(float newScale,  const AZStd::optional<AZ::Vector2>& pivotPoint)
 {
+    // only allow setting the viewport scale if current window is active
+    // OnTick for ViewportWidget is needed to reevaluate the layout, but does not happen when the window loses focus
+    if (!m_editorWindow->isActiveWindow())
+    {
+        return;
+    }
+
     static const float minZoom = 0.1f;
     static const float maxZoom = 10.0f;
     const float currentScale = m_canvasViewportMatrixProps.scale;
@@ -997,35 +1003,19 @@ void ViewportInteraction::SetCanvasToViewportScale(float newScale, Vec2i* option
         // Calculate diff between the number of viewport pixels occupied by the current
         // scaled canvas view and the new one
         AZ::Vector2 canvasSize;
-        EBUS_EVENT_ID_RESULT(canvasSize, m_editorWindow->GetCanvas(), UiCanvasBus, GetCanvasSize);
+        UiCanvasBus::EventResult(canvasSize, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::GetCanvasSize);
         const AZ::Vector2 scaledCanvasSize(canvasSize * currentScale);
         const AZ::Vector2 newScaledCanvasSize(canvasSize * m_canvasViewportMatrixProps.scale);
         const AZ::Vector2 scaledCanvasSizeDiff(newScaledCanvasSize - scaledCanvasSize);
 
-        // Use the center of our viewport as the pivot point
-        Vec2i pivotPoint;
-        if (optionalPivotPoint)
-        {
-            pivotPoint = *optionalPivotPoint;
-        }
-        else
-        {
-            AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
-            const float viewportWidth = viewportSize.GetX();
-            const float viewportHeight = viewportSize.GetY();
-            pivotPoint = Vec2i(
-                    static_cast<int>(viewportWidth * 0.5f),
-                    static_cast<int>(viewportHeight * 0.5f));
-        }
-
         // Get the distance between our pivot point and the upper-left corner of the
         // canvas (in viewport space)
-        const Vec2i canvasUpperLeft(
-            static_cast<int32_t>(m_canvasViewportMatrixProps.translation.GetX()),
-            static_cast<int32_t>(m_canvasViewportMatrixProps.translation.GetY()));
-        Vec2i delta = canvasUpperLeft - pivotPoint;
-        const AZ::Vector2 pivotDiff(aznumeric_cast<float>(delta.x), aznumeric_cast<float>(delta.y));
-
+        const AZ::Vector2 canvasUpperLeft(m_canvasViewportMatrixProps.translation);
+        // Use the center of our viewport as the pivot point if a pivot is not provided
+        const AZ::Vector2 pivotDiff = canvasUpperLeft - pivotPoint.value_or(([&]{
+            const AZ::Vector2 viewportSize = m_editorWindow->GetViewport()->GetRenderViewportSize();
+            return viewportSize * AZ::Vector2(0.5f,  0.5f);
+        })());
         // Calculate the pivot position relative to the current scaled canvas size. For
         // example, if the pivot position is the upper-left corner of the canvas, this
         // will be (0, 0), whereas if the pivot position is the bottom-right corner of
@@ -1132,7 +1122,7 @@ void ViewportInteraction::UpdateInteractionType(const AZ::Vector2& mousePosition
         for (auto element : selectedElements)
         {
             bool isElementUnderCursor = false;
-            EBUS_EVENT_ID_RESULT(isElementUnderCursor, element->GetId(), UiTransformBus, IsPointInRect, mousePosition);
+            UiTransformBus::EventResult(isElementUnderCursor, element->GetId(), &UiTransformBus::Events::IsPointInRect, mousePosition);
 
             if (isElementUnderCursor)
             {
@@ -1250,7 +1240,7 @@ void ViewportInteraction::UpdateCursor()
                  m_interactionType == InteractionType::DIRECT)
         {
             UiTransformInterface::RectPoints rect;
-            EBUS_EVENT_ID(m_activeElementId, UiTransformBus, GetViewportSpacePoints, rect);
+            UiTransformBus::Event(m_activeElementId, &UiTransformBus::Events::GetViewportSpacePoints, rect);
 
             float topAngle = RAD2DEG(atan2f(rect.TopRight().GetY() - rect.TopLeft().GetY(), rect.TopRight().GetX() - rect.TopLeft().GetX()));
             float leftAngle = RAD2DEG(atan2f(rect.TopLeft().GetY() - rect.BottomLeft().GetY(), rect.TopLeft().GetX() - rect.BottomLeft().GetX()));
@@ -1287,7 +1277,7 @@ void ViewportInteraction::UpdateHoverElement(const AZ::Vector2 mousePosition)
 {
     m_hoverElement.SetInvalid();
     AZ::Entity* element = nullptr;
-    EBUS_EVENT_ID_RESULT(element, m_editorWindow->GetCanvas(), UiCanvasBus, PickElement, mousePosition);
+    UiCanvasBus::EventResult(element, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElement, mousePosition);
     if (element)
     {
         m_hoverElement = element->GetId();
@@ -1316,7 +1306,7 @@ void ViewportInteraction::UpdateCanvasToViewportMatrix()
     AZ::Matrix4x4 updatedMatrix = AZ::Matrix4x4::CreateScale(scaleVec3);
     updatedMatrix.SetTranslation(m_canvasViewportMatrixProps.translation);
 
-    EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiCanvasBus, SetCanvasToViewportMatrix, updatedMatrix);
+    UiCanvasBus::Event(m_editorWindow->GetCanvas(), &UiCanvasBus::Events::SetCanvasToViewportMatrix, updatedMatrix);
 
     UpdateZoomFactorLabel();
 
@@ -1356,7 +1346,8 @@ void ViewportInteraction::ProcessInteraction(const AZ::Vector2& mousePosition,
                 AZ::Vector2 rectMax(max(m_startMouseDragPos.GetX(), mousePosition.GetX()), max(m_startMouseDragPos.GetY(), mousePosition.GetY()));
 
                 LyShine::EntityArray elementsToSelect;
-                EBUS_EVENT_ID_RESULT(elementsToSelect, m_editorWindow->GetCanvas(), UiCanvasBus, PickElements, rectMin, rectMax);
+                UiCanvasBus::EventResult(
+                    elementsToSelect, m_editorWindow->GetCanvas(), &UiCanvasBus::Events::PickElements, rectMin, rectMax);
 
                 if (ctrlIsPressed)
                 {
@@ -1488,16 +1479,16 @@ void ViewportInteraction::DrawAxisGizmo(Draw2dHelper& draw2d, const AZ::Entity* 
 
         if (coordinateSystem == CoordinateSystem::LOCAL)
         {
-            EBUS_EVENT_ID_RESULT(pivotPosition, element->GetId(), UiTransformBus, GetCanvasSpacePivotNoScaleRotate);
+            UiTransformBus::EventResult(pivotPosition, element->GetId(), &UiTransformBus::Events::GetCanvasSpacePivotNoScaleRotate);
 
             // LOCAL MOVE in the parent element's LOCAL space.
             AZ::EntityId elementId(isMoveOrAnchorMode ? EntityHelpers::GetParentElement(element)->GetId() : element->GetId());
-            EBUS_EVENT_ID(elementId, UiTransformBus, GetTransformToViewport, transform);
+            UiTransformBus::Event(elementId, &UiTransformBus::Events::GetTransformToViewport, transform);
         }
         else
         {
             // View coordinate system: do everything in viewport space
-            EBUS_EVENT_ID_RESULT(pivotPosition, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+            UiTransformBus::EventResult(pivotPosition, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
             transform = AZ::Matrix4x4::CreateIdentity();
         }
 
@@ -1529,7 +1520,7 @@ void ViewportInteraction::DrawCircleGizmo(Draw2dHelper& draw2d, const AZ::Entity
     if (UiTransformBus::FindFirstHandler(element->GetId()))
     {
         AZ::Vector2 pivotPosition;
-        EBUS_EVENT_ID_RESULT(pivotPosition, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+        UiTransformBus::EventResult(pivotPosition, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
 
         // Draw circle
         AZ::Color color = ((m_activeElementId == element->GetId()) && m_interactionType == InteractionType::TRANSFORM_GIZMO) ? ViewportHelpers::highlightColor : ViewportHelpers::zColor;

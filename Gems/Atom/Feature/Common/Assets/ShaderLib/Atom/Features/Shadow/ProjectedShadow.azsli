@@ -8,6 +8,12 @@
 
 #pragma once
 
+#ifndef ENABLE_SHADOWS
+#define ENABLE_SHADOWS              1
+#endif
+
+#if ENABLE_SHADOWS
+
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
@@ -270,7 +276,7 @@ float ProjectedShadow::GetThickness()
     {
         const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);
 
-        const float depthValue = shadowmap.SampleLevel(PassSrg::LinearSampler,
+        const float depthValue = shadowmap.SampleLevel(PassSrg::PointSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z),
             /*LOD=*/0
             ).r;
@@ -301,7 +307,7 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
     {
         float3 atlasPosition = GetAtlasPosition(shadowPosition.xy);
         const float depthInShadowmap = shadowmap.SampleLevel(
-            PassSrg::LinearSampler,
+            PassSrg::PointSampler,
             float3(atlasPosition.xy * invAtlasSize, atlasPosition.z), /*LOD=*/0).r;
         const float depthDiff = depthInShadowmap - shadowPosition.z;
 
@@ -338,3 +344,5 @@ float3 ProjectedShadow::GetAtlasPosition(float2 texturePosition)
 
     return float3(coordInTexture, slice);
 }
+
+#endif // ENABLE_SHADOWS

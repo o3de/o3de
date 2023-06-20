@@ -40,6 +40,7 @@ namespace AWSCore
     protected:
         void SetEnvironmentCredentialsProvider(std::shared_ptr<Aws::Auth::EnvironmentAWSCredentialsProvider> credentialsProvider);
         void SetProfileCredentialsProvider(std::shared_ptr<Aws::Auth::ProfileConfigFileAWSCredentialsProvider> credentialsProvider);
+        void SetInstanceProfileCredentialProvider(std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> credentialsProvider);
 
     private:
         void InitCredentialsProviders();
@@ -49,5 +50,6 @@ namespace AWSCore
         std::shared_ptr<Aws::Auth::EnvironmentAWSCredentialsProvider> m_environmentCredentialsProvider;
         AZStd::string m_profileName;
         std::shared_ptr<Aws::Auth::ProfileConfigFileAWSCredentialsProvider> m_profileCredentialsProvider;
+        std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> m_instanceProfileCredentialsProvider;
     };
 } // namespace AWSCore

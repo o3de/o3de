@@ -40,7 +40,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_TYPE_INFO(ScriptCanvasAsset, "{FA10C3DA-0717-4B72-8944-CD67D13DFA2B}");
-            AZ_CLASS_ALLOCATOR(ScriptCanvasAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasAsset, AZ::SystemAllocator);
 
             ScriptCanvasAsset() = default;
         };
@@ -50,7 +50,7 @@ namespace ScriptCanvasEditor
         {
         public:
             AZ_TYPE_INFO(ScriptCanvasAssetHolder, "{3E80CEE3-2932-4DC1-AADF-398FDDC6DEFE}");
-            AZ_CLASS_ALLOCATOR(ScriptCanvasAssetHolder, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasAssetHolder, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

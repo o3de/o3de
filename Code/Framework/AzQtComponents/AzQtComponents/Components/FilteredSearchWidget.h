@@ -174,6 +174,8 @@ namespace AzQtComponents
 
         void showEvent(QShowEvent* e) override;
 
+        bool eventFilter(QObject* obj, QEvent* event) override;
+
         void RepopulateDataModel(const SearchTypeFilterList& unfilteredData);
         void maximizeGeometryToFitScreen();
 

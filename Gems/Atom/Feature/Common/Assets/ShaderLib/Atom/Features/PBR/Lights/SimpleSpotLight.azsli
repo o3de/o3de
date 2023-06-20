@@ -12,36 +12,37 @@
 
 void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout LightingData lightingData)
 {
-    float3 posToLight = light.m_position - surface.position;
+    real3 posToLight = real3(light.m_position - surface.position);
     
-    float3 dirToLight = normalize(posToLight);
-    float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
+    real3 dirToLight = normalize(posToLight);
+    real dotWithDirection = dot(dirToLight, -normalize(real3(light.m_direction)));
 
     // If outside the outer cone angle return.
-    if (dotWithDirection < light.m_cosOuterConeAngle)
+    if (dotWithDirection < real(light.m_cosOuterConeAngle))
     {
         return;
     }
 
-    float d2 = dot(posToLight, posToLight); // light distance squared
-    float falloff = d2 * light.m_invAttenuationRadiusSquared;
+    real d2 = dot(posToLight, posToLight); // light distance squared
+    real falloff = d2 * real(light.m_invAttenuationRadiusSquared);
+    real cosInnerConeAngle = real(light.m_cosInnerConeAngle);
 
     // Only calculate shading if light is in range
-    if (falloff < 1.0f)
+    if (falloff < 1.0)
     {
         // Smoothly adjusts the light intensity so it reaches 0 at light.m_attenuationRadius distance
-        float radiusAttenuation = 1.0 - (falloff * falloff);
+        real radiusAttenuation = 1.0 - (falloff * falloff);
         radiusAttenuation = radiusAttenuation * radiusAttenuation;
         
         // Standard quadratic falloff
         d2 = max(0.001 * 0.001, d2); // clamp the light to at least 1mm away to avoid extreme values.
-        float3 lightIntensity = (light.m_rgbIntensityCandelas / d2) * radiusAttenuation;
-        float3 posToLightDir = normalize(posToLight);
+        real3 lightIntensity = (real3(light.m_rgbIntensityCandelas) / d2) * radiusAttenuation;
+        real3 posToLightDir = normalize(posToLight);
 
-        if (dotWithDirection < light.m_cosInnerConeAngle) // in penumbra
+        if (dotWithDirection < cosInnerConeAngle) // in penumbra
         {   
             // Normalize into 0.0 - 1.0 space.
-            float penumbraMask = (dotWithDirection - light.m_cosOuterConeAngle) / (light.m_cosInnerConeAngle - light.m_cosOuterConeAngle);
+            real penumbraMask = (dotWithDirection - real(light.m_cosOuterConeAngle)) / (cosInnerConeAngle - real(light.m_cosOuterConeAngle));
             
             // Apply smoothstep
             penumbraMask = penumbraMask * penumbraMask * (3.0 - 2.0 * penumbraMask);
@@ -59,6 +60,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
 
 void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
 {
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
                 
     while( !lightingData.tileIterator.IsDone() ) 
@@ -69,4 +71,11 @@ void ApplySimpleSpotLights(Surface surface, inout LightingData lightingData)
         ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[currLightIndex];
         ApplySimpleSpotLight(light, surface, lightingData);
     }
+#else
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_simpleSpotLightCount; lightIndex++)
+    {
+        ViewSrg::SimpleSpotLight light = ViewSrg::m_simpleSpotLights[lightIndex];
+        ApplySimpleSpotLight(light, surface, lightingData);
+    }
+#endif
 }

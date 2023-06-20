@@ -31,7 +31,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::LightCullingTilePreparePass, "{3D8AEEF2-F679-4C0C-ADF0-2F7E347D8BF1}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(LightCullingTilePreparePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LightCullingTilePreparePass, SystemAllocator);
             virtual ~LightCullingTilePreparePass() = default;
 
             static RPI::Ptr<LightCullingTilePreparePass> Create(const RPI::PassDescriptor& descriptor);

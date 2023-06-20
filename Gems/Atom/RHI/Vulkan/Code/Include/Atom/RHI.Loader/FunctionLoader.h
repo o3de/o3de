@@ -21,7 +21,7 @@ namespace AZ
         class FunctionLoader
         {
         public:
-            AZ_CLASS_ALLOCATOR(FunctionLoader, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FunctionLoader, AZ::SystemAllocator);
 
             static AZStd::unique_ptr<FunctionLoader> Create();
 

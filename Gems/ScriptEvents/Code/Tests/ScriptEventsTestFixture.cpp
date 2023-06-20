@@ -12,7 +12,6 @@
 namespace ScriptEventsTests
 {
     ScriptEventsTests::Application* ScriptEventsTestFixture::s_application = nullptr;
-    UnitTest::AllocatorsBase ScriptEventsTestFixture::s_allocatorSetup = {};
 
     ScriptEventsTests::Application* ScriptEventsTestFixture::GetApplication()
     {

@@ -29,6 +29,7 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>
+#include <QMessageBox>
 #include <QMimeData>
 #include <QTimer>
 #include <QWindow>
@@ -50,8 +51,9 @@ namespace AtomToolsFramework
             {
                 if (documentType.IsSupportedExtensionToOpen(absolutePath))
                 {
-                    AtomToolsDocumentSystemRequestBus::Event(
-                        m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    AZ::SystemTickBus::QueueFunction([toolId = m_toolId, absolutePath]() {
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, absolutePath);
+                    });
                     return;
                 }
             }
@@ -81,55 +83,28 @@ namespace AtomToolsFramework
         BuildCreateMenu(insertPostion);
         BuildOpenMenu(insertPostion);
 
-        m_menuOpenRecent = new QMenu("Open Recent", this);
-        connect(m_menuOpenRecent, &QMenu::aboutToShow, this, [this]() {
+        m_menuOpenRecent = new QMenu("Open Recent", menuBar);
+        connect(m_menuOpenRecent, &QMenu::aboutToShow, menuBar, [this]() {
             UpdateRecentFileMenu();
         });
         m_menuFile->insertMenu(insertPostion, m_menuOpenRecent);
         m_menuFile->insertSeparator(insertPostion);
 
         m_actionSave = CreateActionAtPosition(m_menuFile, insertPostion, "&Save", [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            const QString documentPath = GetDocumentPath(documentId);
-
-            // If the file already has a path then it can be saved without user selecting a new one.
-            if (!documentPath.isEmpty())
-            {
-                bool result = false;
-                AtomToolsDocumentSystemRequestBus::EventResult(
-                    result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
-                if (!result)
-                {
-                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
-                }
-                return;
-            }
-
-            // If the file does not have a path, meaning it was not previously saved, then we have to do a save as operation.
-            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData()); !savePath.empty())
-            {
-                bool result = false;
-                AtomToolsDocumentSystemRequestBus::EventResult(
-                    result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
-                if (!result)
-                {
-                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
-                }
-                return;
-            }
+            SaveDocument(GetCurrentDocumentId());
         }, QKeySequence::Save);
 
         m_actionSaveAsCopy = CreateActionAtPosition(m_menuFile, insertPostion, "Save &As...", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
-            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData()); !savePath.empty())
+            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
             {
                 bool result = false;
                 AtomToolsDocumentSystemRequestBus::EventResult(
                     result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
                 if (!result)
                 {
-                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath).toUtf8().constData());
                 }
             }
         }, QKeySequence::SaveAs);
@@ -137,42 +112,43 @@ namespace AtomToolsFramework
         m_actionSaveAsChild = CreateActionAtPosition(m_menuFile, insertPostion, "Save As &Child...", [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
             const QString documentPath = GetDocumentPath(documentId);
-            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData()); !savePath.empty())
+            if (const auto& savePath = GetSaveDocumentParams(documentPath.toUtf8().constData(), documentId); !savePath.empty())
             {
                 bool result = false;
                 AtomToolsDocumentSystemRequestBus::EventResult(
                     result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild, documentId, savePath);
                 if (!result)
                 {
-                    SetStatusError(tr("Document save failed: %1").arg(documentPath));
+                    SetStatusError(tr("Document save failed: %1").arg(documentPath).toUtf8().constData());
                 }
             }
         });
 
         m_actionSaveAll = CreateActionAtPosition(m_menuFile, insertPostion, "Save A&ll", [this]() {
-            bool result = false;
-            AtomToolsDocumentSystemRequestBus::EventResult(
-                result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments);
-            if (!result)
+
+            for (const auto& documentId : GetOpenDocumentIds())
             {
-                SetStatusError(tr("Document save all failed"));
+                if (!SaveDocument(documentId))
+                {
+                    // Stop if there is any save failed or cancel
+                    break;
+                }
             }
         });
         m_menuFile->insertSeparator(insertPostion);
 
         m_actionClose = CreateActionAtPosition(m_menuFile, insertPostion, "&Close", [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
+            CloseDocuments({GetCurrentDocumentId()});
         }, QKeySequence::Close);
 
         m_actionCloseAll = CreateActionAtPosition(m_menuFile, insertPostion, "Close All", [this]() {
-            AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
+            CloseDocuments(GetOpenDocumentIds());
         });
 
         m_actionCloseOthers = CreateActionAtPosition(m_menuFile, insertPostion, "Close Others", [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            AtomToolsDocumentSystemRequestBus::Event(
-                m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
+            auto documentIds = GetOpenDocumentIds();
+            AZStd::erase(documentIds, GetCurrentDocumentId());
+            CloseDocuments(documentIds);
         });
         m_menuFile->insertSeparator(insertPostion);
 
@@ -184,7 +160,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Undo);
             if (!result)
             {
-                SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)));
+                SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
             }
         }, QKeySequence::Undo);
 
@@ -194,7 +170,7 @@ namespace AtomToolsFramework
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Redo);
             if (!result)
             {
-                SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)));
+                SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
             }
         }, QKeySequence::Redo);
         m_menuEdit->insertSeparator(insertPostion);
@@ -211,6 +187,113 @@ namespace AtomToolsFramework
         m_menuView->insertSeparator(insertPostion);
     }
 
+    bool AtomToolsDocumentMainWindow::SaveDocument(const AZ::Uuid& documentId)
+    {
+        AZStd::string documentPath;
+        AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+        DocumentTypeInfo documentInfo;
+        AtomToolsDocumentRequestBus::EventResult(documentInfo, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+
+        // Attempt to save using the current path if it is not empty and has a supported save extension.
+        if (documentInfo.IsSupportedExtensionToSave(documentPath))
+        {
+            bool result = false;
+            AtomToolsDocumentSystemRequestBus::EventResult(
+                result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
+            if (!result)
+            {
+                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()).toUtf8().constData());
+                return false;
+            }
+            return true;
+        }
+
+        // If the path is empty or the extension is not valid for saving, do a save as operation, which prompts the user for a path.
+        if (const auto& savePath = GetSaveDocumentParams(documentPath, documentId); !savePath.empty())
+        {
+            bool result = false;
+            AtomToolsDocumentSystemRequestBus::EventResult(
+                result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId, savePath);
+            if (!result)
+            {
+                SetStatusError(tr("Document save failed: %1").arg(documentPath.c_str()).toUtf8().constData());
+                return false;
+            }
+            return true;
+        }
+
+        // Cancel the save if no valid path was selected by this point.
+        return false;
+    }
+
+    bool AtomToolsDocumentMainWindow::CloseDocumentCheck(const AZ::Uuid& documentId)
+    {
+        AZStd::string documentPath;
+        AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
+
+        bool isModified = false;
+        AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsDocumentRequestBus::Events::IsModified);
+
+        if (isModified)
+        {
+            auto selection = QMessageBox::question(
+                GetToolMainWindow(),
+                QObject::tr("Document has unsaved changes"),
+                QObject::tr("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            if (selection == QMessageBox::Cancel)
+            {
+                AZ_TracePrintf("AtomToolsDocument", "Close document canceled: %s\n", documentPath.c_str());
+                return false;
+            }
+            if (selection == QMessageBox::Yes)
+            {
+                if (!SaveDocument(documentId))
+                {
+                    const QString title = QObject::tr("Document could not be closed");
+                    const QString text = QObject::tr("Close document failed because document was not saved: \n%1").arg(documentPath.c_str());
+                    AZ_Error("AtomToolsDocumentMainWindow", false, "%s: %s", title.toUtf8().constData(), text.toUtf8().constData());
+                    QMessageBox::critical(
+                        GetToolMainWindow(), title, QObject::tr("%1").arg(text));
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    bool AtomToolsDocumentMainWindow::CloseDocuments(const AZStd::vector<AZ::Uuid>& documentIds)
+    {
+        for (const auto& documentId : documentIds)
+        {
+            if (!CloseDocumentCheck(documentId))
+            {
+                return false;
+            }
+
+            bool result = false;
+            AtomToolsDocumentSystemRequestBus::EventResult(result, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
+
+            if (!result)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    const AZStd::vector<AZ::Uuid> AtomToolsDocumentMainWindow::GetOpenDocumentIds() const
+    {
+        AZStd::vector<AZ::Uuid> documentIds;
+        documentIds.reserve(m_tabWidget->count());
+        for (int index = 0; index < m_tabWidget->count(); ++index)
+        {
+            documentIds.push_back(GetDocumentTabId(index));
+        }
+        return documentIds;
+    }
+
     void AtomToolsDocumentMainWindow::UpdateMenus(QMenuBar* menuBar)
     {
         Base::UpdateMenus(menuBar);
@@ -219,8 +302,8 @@ namespace AtomToolsFramework
 
         bool isOpen = false;
         AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsDocumentRequestBus::Events::IsOpen);
-        bool canSave = false;
-        AtomToolsDocumentRequestBus::EventResult(canSave, documentId, &AtomToolsDocumentRequestBus::Events::CanSave);
+        bool canSaveAsChild = false;
+        AtomToolsDocumentRequestBus::EventResult(canSaveAsChild, documentId, &AtomToolsDocumentRequestBus::Events::CanSaveAsChild);
         bool canUndo = false;
         AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
@@ -233,9 +316,10 @@ namespace AtomToolsFramework
         m_actionCloseAll->setEnabled(hasTabs);
         m_actionCloseOthers->setEnabled(hasTabs);
 
-        m_actionSave->setEnabled(canSave);
-        m_actionSaveAsCopy->setEnabled(canSave);
-        m_actionSaveAsChild->setEnabled(isOpen);
+        m_actionSave->setEnabled(isOpen);
+        m_actionSaveAsCopy->setEnabled(isOpen);
+        m_actionSaveAsChild->setEnabled(canSaveAsChild);
+        m_actionSaveAsChild->setVisible(canSaveAsChild);
         m_actionSaveAll->setEnabled(hasTabs);
 
         m_actionUndo->setEnabled(canUndo);
@@ -245,45 +329,52 @@ namespace AtomToolsFramework
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
     }
 
-    AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> AtomToolsDocumentMainWindow::GetSettingsDialogGroups() const
+    void AtomToolsDocumentMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
     {
-        AZStd::vector<AZStd::shared_ptr<DynamicPropertyGroup>> groups = Base::GetSettingsDialogGroups();
-        groups.push_back(CreateSettingsGroup(
+        Base::PopulateSettingsInspector(inspector);
+
+        m_documentSystemSettingsGroup = CreateSettingsPropertyGroup(
             "Document System Settings",
             "Document System Settings",
-            {
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
-                    "Display Warning Message Dialogs",
-                    "Display message boxes for warnings opening documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
-                    "Display Error Message Dialogs",
-                    "Display message boxes for errors opening documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
-                    "Enable Automatic Reload",
-                    "Automatically reload documents after external modifications",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
-                    "Enable Automatic Reload Prompts",
-                    "Confirm before automatically reloading modified documents",
-                    true),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
-                    "Enable Auto Save",
-                    "Automatically save documents after they are modified",
-                    false),
-                CreatePropertyFromSetting(
-                    "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
-                    "Auto Save Interval",
-                    "How often (in milliseconds) auto save occurs",
-                    aznumeric_cast<AZ::s64>(250)),
-            }));
-        return groups;
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayWarningMessageDialogs",
+                  "Display Warning Message Dialogs",
+                  "Display message boxes for warnings opening documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/DisplayErrorMessageDialogs",
+                  "Display Error Message Dialogs",
+                  "Display message boxes for errors opening documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReload",
+                  "Enable Automatic Reload",
+                  "Automatically reload documents after external modifications",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/EnableAutomaticReloadPrompts",
+                  "Enable Automatic Reload Prompts",
+                  "Confirm before automatically reloading modified documents",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveEnabled",
+                  "Enable Auto Save",
+                  "Automatically save documents after they are modified",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AtomToolsDocumentSystem/AutoSaveInterval",
+                  "Auto Save Interval",
+                  "How often (in milliseconds) auto save occurs",
+                  aznumeric_cast<AZ::s64>(250),
+                  aznumeric_cast<AZ::s64>(0),
+                  aznumeric_cast<AZ::s64>(1000)) });
+
+        inspector->AddGroup(
+            m_documentSystemSettingsGroup->m_name,
+            m_documentSystemSettingsGroup->m_displayName,
+            m_documentSystemSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_documentSystemSettingsGroup.get(), m_documentSystemSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
     }
 
     void AtomToolsDocumentMainWindow::BuildCreateMenu(QAction* insertPostion)
@@ -306,9 +397,9 @@ namespace AtomToolsFramework
             const QString name = tr("New %1 Document...").arg(documentType.m_documentTypeName.c_str());
             CreateActionAtPosition(parentMenu, insertPostion, name, [documentType, toolId = m_toolId, this]() {
                 // Open the create document dialog with labels and filters configured from the document type info.
-                    CreateDocumentDialog dialog(
-                        documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
-                    dialog.adjustSize();
+                CreateDocumentDialog dialog(
+                    documentType, AZStd::string::format("%s/Assets", AZ::Utils::GetProjectPath().c_str()).c_str(), this);
+                dialog.adjustSize();
 
                 if (dialog.exec() == QDialog::Accepted)
                 {
@@ -340,29 +431,25 @@ namespace AtomToolsFramework
         bool isFirstDocumentTypeAdded = true;
         for (const auto& documentType : documentTypes)
         {
-            // Build a list of all extensions supported by this document type so they can be combined into a file dialog filter
-            QStringList extensionList;
-            for (const auto& extensionInfo : documentType.m_supportedExtensionsToOpen)
+            if (!documentType.m_supportedExtensionsToOpen.empty())
             {
-                extensionList.append(extensionInfo.second.c_str());
-            }
-
-            if (!extensionList.empty())
-            {
-                // Generate a regular expression that combines all of the supported extensions to use as a filter for the asset picker
-                const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-
                 // Create a menu action for each document type instead of one action for all document types to reduce the number of
-                // extensions displayed in the get open file path dialog
+                // extensions displayed in the dialog
                 const QString name = tr("Open %1 Document...").arg(documentType.m_documentTypeName.c_str());
-                const QString title = tr("%1 Document").arg(documentType.m_documentTypeName.c_str());
-                CreateActionAtPosition(parentMenu, insertPostion, name, [expression, title, toolId = m_toolId]() {
-                    // Open all files selected in the get open file path dialog
-                    for (const auto& path : GetOpenFilePaths(QRegExp(expression, Qt::CaseInsensitive), title.toUtf8().constData()))
-                    {
-                        AtomToolsDocumentSystemRequestBus::Event(
-                            toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
-                    }
+                CreateActionAtPosition(parentMenu, insertPostion, name, [documentType, toolId = m_toolId]() {
+                    // Visual Studio 2022 flags toolId as unused even though it is passed to the QueueFunction lambda below.
+                    // Use AZ_UNUSED to prevent the compiler error.
+                    AZ_UNUSED(toolId);
+
+                    // Open all files selected in the dialog
+                    const auto& paths =
+                        GetOpenFilePathsFromDialog({}, documentType.m_supportedExtensionsToOpen, documentType.m_documentTypeName, true);
+                    AZ::SystemTickBus::QueueFunction([toolId, paths]() {
+                        for (const auto& path : paths)
+                        {
+                            AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                        }
+                    });
                 }, isFirstDocumentTypeAdded ? QKeySequence::Open : QKeySequence());
                 isFirstDocumentTypeAdded = false;
             }
@@ -383,17 +470,23 @@ namespace AtomToolsFramework
         m_tabWidget->setTabsClosable(true);
         m_tabWidget->setUsesScrollButtons(true);
 
+        // Update document tab styling to fix the close button and be conformant with similar windows
+        AzQtComponents::TabWidget::applySecondaryStyle(m_tabWidget);
+
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
         // This should automatically clear the active document
         connect(m_tabWidget, &QTabWidget::currentChanged, this, [this]() {
             const AZ::Uuid documentId = GetCurrentDocumentId();
-            AtomToolsDocumentNotificationBus::Event(m_toolId,&AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+            AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+            if (auto viewWidget = m_tabWidget->currentWidget())
+            {
+                viewWidget->setFocus();
+            }
         });
 
-        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this]() {
-            const AZ::Uuid documentId = GetCurrentDocumentId();
-            AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
+        connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
+            CloseDocuments({ GetDocumentTabId(index) });
         });
 
         // Add context menu for right-clicking on tabs
@@ -417,15 +510,17 @@ namespace AtomToolsFramework
             if (QFile::exists(path.c_str()))
             {
                 m_menuOpenRecent->addAction(tr("&%1: %2").arg(m_menuOpenRecent->actions().size()).arg(path.c_str()), [this, path]() {
-                    AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                    // Deferring execution with timer to not corrupt menu after document is opened.
+                    AZ::SystemTickBus::QueueFunction([toolId = m_toolId, path]() {
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                    });
                 });
             }
         }
 
         m_menuOpenRecent->addAction(tr("Clear Recent Files"), [this]() {
-            QTimer::singleShot(0, this, [this]() {
-                AtomToolsDocumentSystemRequestBus::Event(
-                    m_toolId, &AtomToolsDocumentSystemRequestBus::Handler::ClearRecentFilePaths);
+            AZ::SystemTickBus::QueueFunction([toolId = m_toolId]() {
+                AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Handler::ClearRecentFilePaths);
             });
         });
     }
@@ -494,7 +589,7 @@ namespace AtomToolsFramework
             // The user can manually reorder tabs which will invalidate any association by index.
             // We need to store the document ID with the tab using the tab instead of a separate mapping.
             const int tabIndex = m_tabWidget->addTab(viewWidget, QString());
-            m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
+            m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(QString::fromUtf8(documentId.ToFixedString().c_str())));
             m_tabWidget->setVisible(true);
             m_tabWidget->setCurrentIndex(tabIndex);
             UpdateDocumentTab(documentId);
@@ -511,9 +606,13 @@ namespace AtomToolsFramework
         // We are not blocking signals here because we want closing tabs to close the document and automatically select the next document.
         if (const int tabIndex = GetDocumentTabIndex(documentId); tabIndex >= 0)
         {
+            // removeTab does not destroy the widget contained in a tab. It must be manually deleted.
+            auto viewWidget = m_tabWidget->widget(tabIndex);
             m_tabWidget->removeTab(tabIndex);
             m_tabWidget->setVisible(m_tabWidget->count() > 0);
             m_tabWidget->repaint();
+            delete viewWidget;
+
             QueueUpdateMenus(true);
         }
     }
@@ -579,16 +678,21 @@ namespace AtomToolsFramework
             AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
         menu.addAction("Close", [this, documentId]() {
-            AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
+            CloseDocuments({documentId});
         });
         menu.addAction("Close Others", [this, documentId]() {
-            AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
+            auto documentIds = GetOpenDocumentIds();
+            AZStd::erase(documentIds, documentId);
+            CloseDocuments(documentIds);
         })->setEnabled(m_tabWidget->tabBar()->count() > 1);
     }
 
-    AZStd::string AtomToolsDocumentMainWindow::GetSaveDocumentParams(const AZStd::string& initialPath) const
+    AZStd::string AtomToolsDocumentMainWindow::GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const
     {
-        return GetSaveFilePath(initialPath);
+        DocumentTypeInfo documentType;
+        AtomToolsDocumentRequestBus::EventResult(
+            documentType, documentId, &AtomToolsDocumentRequestBus::Events::GetDocumentTypeInfo);
+        return GetSaveFilePathFromDialog(initialPath, documentType.m_supportedExtensionsToSave, documentType.m_documentTypeName);
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -608,28 +712,28 @@ namespace AtomToolsFramework
             // Find and select the file path in the asset browser
             m_assetBrowser->SelectEntries(absolutePath);
 
-            SetStatusMessage(tr("Document opened: %1").arg(absolutePath.c_str()));
+            SetStatusMessage(tr("Document opened: %1").arg(absolutePath.c_str()).toUtf8().constData());
         }
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentClosed(const AZ::Uuid& documentId)
     {
         RemoveDocumentTab(documentId);
-        SetStatusMessage(tr("Document closed: %1").arg(GetDocumentPath(documentId)));
+        SetStatusMessage(tr("Document closed: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentCleared(const AZ::Uuid& documentId)
     {
         UpdateDocumentTab(documentId);
         QueueUpdateMenus(true);
-        SetStatusMessage(tr("Document cleared: %1").arg(GetDocumentPath(documentId)));
+        SetStatusMessage(tr("Document cleared: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentError(const AZ::Uuid& documentId)
     {
         UpdateDocumentTab(documentId);
         QueueUpdateMenus(true);
-        SetStatusError(tr("Document error: %1").arg(GetDocumentPath(documentId)));
+        SetStatusError(tr("Document error: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentDestroyed(const AZ::Uuid& documentId)
@@ -653,14 +757,18 @@ namespace AtomToolsFramework
     void AtomToolsDocumentMainWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
         UpdateDocumentTab(documentId);
-        SetStatusMessage(tr("Document saved: %1").arg(GetDocumentPath(documentId)));
+        SetStatusMessage(tr("Document saved: %1").arg(GetDocumentPath(documentId)).toUtf8().constData());
     }
 
     void AtomToolsDocumentMainWindow::closeEvent(QCloseEvent* closeEvent)
     {
-        bool canClose = true;
-        AtomToolsDocumentSystemRequestBus::EventResult(canClose, m_toolId, &AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
-        closeEvent->setAccepted(canClose);
+        if (!CloseDocuments(GetOpenDocumentIds()))
+        {
+            closeEvent->ignore();
+            return;
+        }
+
+        closeEvent->accept();
         Base::closeEvent(closeEvent);
     }
 
@@ -705,6 +813,7 @@ namespace AtomToolsFramework
         // If supported document files are dragged into the main window client area attempt to open them
         if (centralWidget() && centralWidget()->geometry().contains(event->pos()))
         {
+            AZStd::vector<AZStd::string> acceptedPaths;
             for (const AZStd::string& path : GetPathsFromMimeData(event->mimeData()))
             {
                 DocumentTypeInfoVector documentTypes;
@@ -714,10 +823,20 @@ namespace AtomToolsFramework
                 {
                     if (documentType.IsSupportedExtensionToOpen(path))
                     {
-                        AtomToolsDocumentSystemRequestBus::Event(m_toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
-                        event->acceptProposedAction();
+                        acceptedPaths.push_back(path);
                     }
                 }
+            }
+
+            if (!acceptedPaths.empty())
+            {
+                AZ::SystemTickBus::QueueFunction([toolId = m_toolId, acceptedPaths]() {
+                    for (const AZStd::string& path : acceptedPaths)
+                    {
+                        AtomToolsDocumentSystemRequestBus::Event(toolId, &AtomToolsDocumentSystemRequestBus::Events::OpenDocument, path);
+                    }
+                });
+                event->acceptProposedAction();
             }
         }
 
@@ -726,12 +845,13 @@ namespace AtomToolsFramework
 
     template<typename Functor>
     QAction* AtomToolsDocumentMainWindow::CreateActionAtPosition(
-        QMenu* parent, QAction* position, const QString& text, Functor functor, const QKeySequence& shortcut)
+        QMenu* menu, QAction* position, const QString& name, Functor fn, const QKeySequence& shortcut)
     {
-        QAction* action = new QAction(text, parent);
+        QAction* action = new QAction(name, menu);
         action->setShortcut(shortcut);
-        connect(action, &QAction::triggered, parent, functor);
-        parent->insertAction(position, action);
+        action->setShortcutContext(Qt::WindowShortcut);
+        QObject::connect(action, &QAction::triggered, menu, fn);
+        menu->insertAction(position, action);
         return action;
     }
 } // namespace AtomToolsFramework

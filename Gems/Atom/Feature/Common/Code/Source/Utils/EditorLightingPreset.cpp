@@ -72,7 +72,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightConfig::m_direction, "Direction", "")
                         ->DataElement(Edit::UIHandlers::Color, &LightConfig::m_color, "Color", "Color of the light")
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::Default, &LightConfig::m_intensity, "Intensity", "Intensity of the light in the set photometric unit.")
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Shadow")
@@ -126,6 +126,9 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Max, 1.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_exposure, "Exposure", "Exposure")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &LightingPreset::m_lights, "Lights", "Lights")
+                            ->Attribute(AZ::Edit::Attributes::ClearNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::AddNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::RemoveNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ;
                 }
             }

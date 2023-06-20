@@ -8,16 +8,23 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/string/fixed_string.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Utils/TypeHash.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/Utilities/IpAddress.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/ConnectionLayer/ConnectionEnums.h>
 #include <AzNetworking/DataStructures/ByteBuffer.h>
+#include <Multiplayer/MultiplayerConstants.h>
 
 namespace Multiplayer
 {
@@ -45,6 +52,8 @@ namespace Multiplayer
     using NetEntityIdSet = AZStd::set<NetEntityId>;
 
     using NetEntityIdsForReset = AZStd::fixed_vector<NetEntityId, MaxAggregateEntityResets>;
+
+    using ComponentVersionMap = AZStd::unordered_map<AZ::Name, AZ::HashValue64>;
 
     AZ_TYPE_SAFE_INTEGRAL(NetComponentId, uint16_t);
     static constexpr NetComponentId InvalidNetComponentId = static_cast<NetComponentId>(-1);
@@ -125,6 +134,19 @@ namespace Multiplayer
         bool operator!=(const PrefabEntityId& rhs) const;
         bool Serialize(AzNetworking::ISerializer& serializer);
     };
+    
+    //! Structure for edit context to select network spawnables and cull out spawnables aren't networked.
+    struct NetworkSpawnable
+    {
+        AZ_TYPE_INFO(NetworkSpawnable, "{780FC028-25D7-4F70-A93F-D697820B76F8}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::Data::Asset<AzFramework::Spawnable> m_spawnableAsset;
+
+        NetworkSpawnable() = default;
+        explicit NetworkSpawnable(const AZ::Data::Asset<AzFramework::Spawnable>& spawnableAsset);
+        AZ::Outcome<void, AZStd::string> ValidatePotentialSpawnableAsset(void* newValue, const AZ::Uuid& valueType) const;
+    };
 
     struct EntityMigrationMessage
     {
@@ -189,6 +211,58 @@ namespace Multiplayer
         }
     }
 
+    inline NetworkSpawnable::NetworkSpawnable(const AZ::Data::Asset<AzFramework::Spawnable>& spawnableAsset)
+        : m_spawnableAsset(spawnableAsset)
+    {
+        ;
+    }
+
+    inline void NetworkSpawnable::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<NetworkSpawnable>()
+                ->Version(1)
+                ->Field("Spawnable", &NetworkSpawnable::m_spawnableAsset)
+            ;
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<NetworkSpawnable>("Network Spawnable", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Multiplayer")
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &NetworkSpawnable::m_spawnableAsset, "Network Spawnable Asset", "")
+                        ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Network Spawnable Asset")
+                        ->Attribute(AZ::Edit::Attributes::ChangeValidate, &NetworkSpawnable::ValidatePotentialSpawnableAsset)
+                    ;
+            }
+        }
+    }
+
+    inline AZ::Outcome<void, AZStd::string> NetworkSpawnable::ValidatePotentialSpawnableAsset(void* newValue, const AZ::Uuid& valueType) const
+    {
+        if (azrtti_typeid<AZ::Data::Asset<AzFramework::Spawnable>>() != valueType)
+        {
+            AZ_Assert(false, "Unexpected value type");
+            return AZ::Failure(AZStd::string("Trying to set a network spawnable to something that isn't a spawnable!"));
+        }
+
+        const auto potentialNetworkSpawnable = reinterpret_cast<AZ::Data::Asset<AzFramework::Spawnable>*>(newValue);
+        const auto& hint = potentialNetworkSpawnable->GetHint();
+
+        if (hint.empty() || hint.ends_with(NetworkSpawnableFileExtension))
+        {
+            return AZ::Success();
+        }
+
+        return AZ::Failure(AZStd::string::format(
+            "Non-network spawnable (%s) was selected! Please select a network spawnable with a %s file extension.",
+            hint.c_str(),
+            NetworkSpawnableFileExtension.data()));
+    }
+
     inline bool EntityMigrationMessage::operator!=(const EntityMigrationMessage& rhs) const
     {
         return m_netEntityId        != rhs.m_netEntityId
@@ -211,6 +285,13 @@ AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::PropertyIndex);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::RpcIndex);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::ClientInputId);
 AZ_TYPE_SAFE_INTEGRAL_SERIALIZEBINDING(Multiplayer::HostFrameId);
+
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::NetEntityId);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::NetComponentId);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::PropertyIndex);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::RpcIndex);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::ClientInputId);
+AZ_TYPE_SAFE_INTEGRAL_TOSTRING(Multiplayer::HostFrameId);
 
 namespace AZ
 {

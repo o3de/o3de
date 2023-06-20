@@ -227,7 +227,7 @@ namespace JsonSerializationTests
         struct PointerWrapper
         {
             AZ_TYPE_INFO(PointerWrapper, "{32FA6645-074A-458A-B79C-B173D0BD4B42}");
-            AZ_CLASS_ALLOCATOR(PointerWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PointerWrapper, AZ::SystemAllocator);
 
             Type* m_value{ nullptr };
 

@@ -58,7 +58,7 @@ public:
     //! Initialize game.
     //! @return true if initialization succeeded, false otherwise
     bool InitGame(const char* sGameDLL);
-    //! Load new terrain level into 3d engine.
+    //! Load new level into 3d engine.
     //! Also load AI triangulation for this level.
     bool LoadLevel(
         bool bDeleteAIGraph,
@@ -105,7 +105,6 @@ public:
     //! Called every frame.
     void Update();
     virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
-    void OnTerrainModified(const Vec2& modPosition, float modAreaRadius, bool fullTerrain);
     void OnAreaModified(const AABB& modifiedArea);
 
     void ExecuteQueuedEvents();

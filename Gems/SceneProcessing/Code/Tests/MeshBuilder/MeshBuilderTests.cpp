@@ -21,7 +21,7 @@ namespace AZ::MeshBuilder
     };
 
     class MeshBuilderFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public ::testing::WithParamInterface<MeshBuilderFixtureParameter>
     {
     public:

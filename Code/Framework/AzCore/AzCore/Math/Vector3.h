@@ -233,8 +233,6 @@ namespace AZ
         float GetMaxElement() const;
         float GetMinElement() const;
 
-        Vector3& operator=(const Vector3& rhs);
-
         Vector3 operator-() const;
         Vector3 operator+(const Vector3& rhs) const;
         Vector3 operator-(const Vector3& rhs) const;

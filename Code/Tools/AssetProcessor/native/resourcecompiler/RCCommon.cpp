@@ -7,20 +7,22 @@
  */
 #include "RCCommon.h"
 #include <QHash>
+#include <AzCore/StringFunc/StringFunc.h>
 
 namespace AssetProcessor
 {
-    QueueElementID::QueueElementID(QString inputAssetName, QString platform, QString jobDescriptor)
-        : m_inputAssetName(inputAssetName)
+    QueueElementID::QueueElementID(SourceAssetReference sourceAssetReference, QString platform, QString jobDescriptor)
+        : m_sourceAssetReference(AZStd::move(sourceAssetReference))
         , m_platform(platform)
         , m_jobDescriptor(jobDescriptor)
     {
     }
 
-    QString QueueElementID::GetInputAssetName() const
+    SourceAssetReference QueueElementID::GetSourceAssetReference() const
     {
-        return m_inputAssetName;
+        return m_sourceAssetReference;
     }
+
     QString QueueElementID::GetPlatform() const
     {
         return m_platform;
@@ -31,9 +33,9 @@ namespace AssetProcessor
         return m_jobDescriptor;
     }
 
-    void QueueElementID::SetInputAssetName(QString inputAssetName)
+    void QueueElementID::SetSourceAssetReference(SourceAssetReference sourceAssetReference)
     {
-        m_inputAssetName = inputAssetName;
+        m_sourceAssetReference = AZStd::move(sourceAssetReference);
     }
 
     void QueueElementID::SetPlatform(QString platform)
@@ -51,7 +53,7 @@ namespace AssetProcessor
         // if this becomes a hotspot in profile, we could use CRCs or other boost to comparison here.  These classes are constructed rarely
         // compared to how commonly they are compared with each other.
         return (
-            (QString::compare(m_inputAssetName, other.m_inputAssetName, Qt::CaseSensitive) == 0) &&
+            m_sourceAssetReference == other.m_sourceAssetReference &&
             (QString::compare(m_platform, other.m_platform, Qt::CaseInsensitive) == 0) &&
             (QString::compare(m_jobDescriptor, other.m_jobDescriptor, Qt::CaseInsensitive) == 0)
             );
@@ -59,7 +61,7 @@ namespace AssetProcessor
 
     bool QueueElementID::operator<(const QueueElementID& other) const
     {
-        int compare = QString::compare(m_inputAssetName, other.m_inputAssetName, Qt::CaseSensitive);
+        int compare = m_sourceAssetReference.AbsolutePath().Compare(other.m_sourceAssetReference.AbsolutePath());
         if (compare != 0)
         {
             return (compare < 0);
@@ -84,7 +86,7 @@ namespace AssetProcessor
 
     uint qHash(const AssetProcessor::QueueElementID& key, uint seed)
     {
-        return qHash(key.GetInputAssetName().toLower() + key.GetPlatform().toLower() + key.GetJobDescriptor().toLower(), seed);
+        return qHash(QString(key.GetSourceAssetReference().AbsolutePath().c_str()).toLower() + key.GetPlatform().toLower() + key.GetJobDescriptor().toLower(), seed);
     }
 } // end namespace AssetProcessor
 

@@ -28,6 +28,45 @@ class QMenu;
 class QMimeData;
 class QWidget;
 
+// Macros for printing information to the console if a condition is met.
+#if defined(AZ_ENABLE_TRACING)
+#define AZ_TracePrintf_IfTrue(window, expression, ...)\
+    AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")\
+    if (expression)\
+    {\
+        AZ_TraceFmtCompileTimeCheck(\
+            expression,\
+            AZ_VA_HAS_ARGS(__VA_ARGS__),\
+            "String used in place of boolean expression for AZ_TracePrintf_IfTrue.",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintf_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
+    }\
+    AZ_POP_DISABLE_WARNING
+
+#define AZ_TracePrintfOnce_IfTrue(window, expression, ...)\
+    AZ_PUSH_DISABLE_WARNING(4127, "-Wunknown-warning-option")\
+    if (expression)\
+    {\
+        AZ_TraceFmtCompileTimeCheck(\
+            expression,\
+            AZ_VA_HAS_ARGS(__VA_ARGS__),\
+            "String used in place of boolean expression for AZ_TracePrintfOnce_IfTrue.",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, \"%s\", " #expression "); ?",\
+            "Did you mean AZ_TracePrintfOnce_IfTrue(" #window ", true, " #expression ", " #__VA_ARGS__ "); ?");\
+        static bool AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = false;\
+        if (!AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__))\
+        {\
+            AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);\
+            AZ_CONCAT_VAR_NAME(azTraceDisplayed, __LINE__) = true;\
+        }\
+    }\
+    AZ_POP_DISABLE_WARNING
+#else // !AZ_ENABLE_TRACING
+#define AZ_TracePrintf_IfTrue(...)
+#define AZ_TracePrintfOnce_IfTrue(...)
+#endif
+
 namespace AtomToolsFramework
 {
     using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
@@ -40,6 +79,19 @@ namespace AtomToolsFramework
     //! Get a pointer to the application main window
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
+
+    //! Searches a vector of string values for the first non empty string.
+    //! @param values Container of strings to be searched.
+    //! @param defaultValue Value returned if no valid string was found.
+    //! @returns The first nonempty string or the default value
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue = {});
+
+    // Find and replace a whole word or symbol using regular expressions.
+    void ReplaceSymbolsInContainer(
+        const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container);
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container);
 
     //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
     //! @param text Input text that will be converted into a symbol name
@@ -56,17 +108,56 @@ namespace AtomToolsFramework
     //! @returns the display name generated from the file path
     AZStd::string GetDisplayNameFromPath(const AZStd::string& path);
 
+    //! Prompts the user to select one more strings from a dialog with a list widget.
+    //! @param selectedStrings Input for the currently selected set of strings. Output for the newly selected strings.
+    //! @param availableStrings List of strings that will populate the dialog with available choices.
+    //! @param title Text that will be displayed at the top of the dialog.
+    //! @param multiSelect Flag that determines whether the user will be able to select one or multiple strings.
+    //! @returns True if the user accepted the selected strings. Otherwise false.
+    bool GetStringListFromDialog(
+        AZStd::vector<AZStd::string>& selectedStrings,
+        const AZStd::vector<AZStd::string>& availableStrings,
+        const AZStd::string& title = "Select Values",
+        const bool multiSelect = false);
+
+    //! Build a file dialog filter string by combining all of the entries in the supported extensions table. .
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
+    //! @returns The generated string that can be fed directly into a file dialog filter.
+    AZStd::string GetFileFilterFromSupportedExtensions(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions);
+
+    //! Returns the first non empty string found in a container of supported extensions.
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
+    //! @returns The first non empty extension founded in container
+    AZStd::string GetFirstValidSupportedExtension(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions);
+
+    //! Returns the first extension matching a path.
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
+    //! @param path Path or file name that will be compared against supported extensions.
+    //! @returns The first occurrence of an extension matching the path.
+    AZStd::string GetFirstMatchingSupportedExtension(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions, const AZStd::string& path);
+
     //! Opens a dialog to prompt the user to select a save file path
     //! @param initialPath File path initially selected in the dialog
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
     //! @returns Absolute path of the selected file, or an empty string if nothing was selected
-    AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title = "Document");
+    AZStd::string GetSaveFilePathFromDialog(
+        const AZStd::string& initialPath,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions,
+        const AZStd::string& title);
 
     //! Opens a dialog to prompt the user to select one or more files to open 
-    //! @param filter A regular expression filter to determine which files are selectable and displayed in the dialog 
+    //! @param selectedFilePaths A list of file paths that will be selected in the dialog
+    //! @param supportedExtensions Table of descriptions and extensions use to configure file filters.
     //! @param title Description of the filetype being opened that's displayed at the top of the dialog
+    //! @param multiSelect If true, the file picker will allow selecting multiple files
     //! @returns Container of selected files matching the filter 
-    AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title = "Document");
+    AZStd::vector<AZStd::string> GetOpenFilePathsFromDialog(
+        const AZStd::vector<AZStd::string>& selectedFilePaths,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions,
+        const AZStd::string& title,
+        const bool multiSelect);
 
     //! Converts an input file path to a unique file path by appending a unique number
     //! @param initialPath The starting path that will be compared to other existing files and modified until it is unique
@@ -76,12 +167,7 @@ namespace AtomToolsFramework
     //! Generates a unique, untitled file path in the project asset folder
     //! @param Extension Extension of the file path to be generated
     //! @returns Absolute file path with a unique filename
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension);
-
-    //! Opens a dialog to prompt the user to select a file path where the initial file will be duplicated 
-    //! @param initialPath File path to be duplicated, will be used to generate a unique filename for the new file 
-    //! @returns Absolute path of the selected file, or an empty string if nothing was selected
-    AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath);
+    AZStd::string GetUniqueUntitledFilePath(const AZStd::string& extension);
 
     //! Verifies that an input file path is not empty, is not relative, can be normalized, and is a valid source file path accessible by the project
     //! @param path File path to be validated and normalized
@@ -195,8 +281,20 @@ namespace AtomToolsFramework
     //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
-    //! Collect a set of file paths from all project safe folders matching a wild card
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+    //! Invokes a visitor function on every file contained in the initial folder, optionally recursing through subfolders and visiting those files as well.
+    void VisitFilesInFolder(const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse);
+
+    //! Invokes a visitor function on all files contained in asset scan folders.
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn);
+
+    // Visits all scan folders asynchronously, gathering all of the paths matching the filter. 
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn);
+
+    //! Collect a set of file paths from all project safe folders matching an extension
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension);
+
+    //! Return a list of all asset safe folders except for those underneath the cache folder, usually intermediate asset folders.
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders();
 
     //! Add menu actions for scripts specified in the settings registry
     //! @param menu The menu where the actions will be inserted
@@ -208,3 +306,4 @@ namespace AtomToolsFramework
     void ReflectUtilFunctions(AZ::ReflectContext* context);
 
 } // namespace AtomToolsFramework
+

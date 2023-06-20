@@ -9,12 +9,19 @@
 #pragma once
 
 #include "AzCore/Component/Component.h"
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
+
 namespace PhysX
 {
+    // transform for a floor centred at x = 0, y = 0, with top at level z = 0
+    inline const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
+
     //! CollisionCallbacksListener listens to collision events for a particular sceneHandle and simulatedBodyHandle
     class CollisionCallbacksListener
     {

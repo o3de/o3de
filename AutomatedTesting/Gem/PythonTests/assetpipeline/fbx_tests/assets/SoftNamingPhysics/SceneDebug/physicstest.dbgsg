@@ -54,9 +54,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Cone.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -120,9 +120,9 @@ Node Type: TransformData
 Node Name: custom_properties
 Node Path: RootNode.Cube_phys.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -174,6 +174,14 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 24. Hash: 17515781720544086759
 	GenerationMethod: 1
 
+Node Name: custom_properties
+Node Path: RootNode.Cone_physicstest_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
 Node Name: UVMap
 Node Path: RootNode.Cone_physicstest_optimized.UVMap
 Node Type: MeshVertexUVData
@@ -201,14 +209,6 @@ Node Type: TransformData
 		BasisY: < 0.000000, -0.000016,  100.000000>
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.Cone_physicstest_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
 
 Node Name: DefaultMaterial
 Node Path: RootNode.Cone_physicstest_optimized.DefaultMaterial
@@ -240,6 +240,14 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: 
 
+Node Name: custom_properties
+Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
+
 Node Name: UVMap
 Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.UVMap
 Node Type: MeshVertexUVData
@@ -267,14 +275,6 @@ Node Type: TransformData
 		BasisY: < 0.000000, -0.000016,  100.000000>
 		BasisZ: < 0.000000, -100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
 
 Node Name: DefaultMaterial
 Node Path: RootNode.Cube_phys_default_physicstest_2F546FB6_1953_511C_975F_FD56DA950528__optimized.DefaultMaterial

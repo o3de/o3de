@@ -10,6 +10,7 @@
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
@@ -21,29 +22,29 @@ namespace AzToolsFramework::Prefab
 {
     class PrefabFocusPublicInterface;
 
-    class PrefabViewportFocusPathHandler
-        : public PrefabFocusNotificationBus::Handler
-        , private QObject
+    // Displays the Prefab Path to the currently focused prefab file.
+    class PrefabFocusPathWidget
+        : public AzQtComponents::BreadCrumbs
+        , private PrefabFocusNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
     {
     public:
-        PrefabViewportFocusPathHandler();
-        ~PrefabViewportFocusPathHandler();
-
-        void Initialize(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton);
+        PrefabFocusPathWidget();
+        ~PrefabFocusPathWidget();
 
         // PrefabFocusNotificationBus overrides ...
-        void OnPrefabFocusChanged(
-            [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId) override;
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
         void OnPrefabFocusRefreshed() override;
 
     private:
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(const ViewportEditorModesInterface& editorModeState, ViewportEditorMode mode) override;
+
         void Refresh();
 
-        AzQtComponents::BreadCrumbs* m_breadcrumbsWidget = nullptr;
-        QToolButton* m_backButton = nullptr;
-
         AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-
         PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
     };
+
 } // namespace AzToolsFramework::Prefab

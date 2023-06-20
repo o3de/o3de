@@ -509,7 +509,7 @@ namespace GraphCanvas
 
     void EditorConstructPresets::SetDefaultPreset(ConstructType constructType, int presetIndex)
     {
-        ConstructTypePresetBucket* typeBucket = ModPresetBuckket(constructType);
+        ConstructTypePresetBucket* typeBucket = ModPresetBucket(constructType);
 
         if (typeBucket)
         {
@@ -517,7 +517,7 @@ namespace GraphCanvas
         }
     }
 
-    ConstructTypePresetBucket* EditorConstructPresets::ModPresetBuckket(ConstructType constructType)
+    ConstructTypePresetBucket* EditorConstructPresets::ModPresetBucket(ConstructType constructType)
     {
         auto mapIter = m_presetMapping.find(constructType);
 

@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "AssetProcessorServerUnitTests.h"
-#include "UnitTestRunner.h"
+#include <native/unittests/AssetProcessorServerUnitTests.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
@@ -42,40 +42,8 @@
 
 namespace UnitTest
 {
-    class AssetProcessorServerUnitTestAppManager : public BatchApplicationManager
-    {
-    public:
-        explicit AssetProcessorServerUnitTestAppManager(int* argc, char*** argv)
-            : BatchApplicationManager(argc, argv)
-        {
-        }
-
-        bool PrepareForTests()
-        {
-            if (!ApplicationManager::Activate())
-            {
-                return false;
-            }
-
-            // Not needed for this test, so disconnect
-            AssetProcessor::AssetBuilderInfoBus::Handler::BusDisconnect();
-
-            // Disable saving global user settings to prevent failure due to detecting file updates
-            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
-
-            m_platformConfig.reset(new AssetProcessor::PlatformConfiguration);
-            m_connectionManager.reset(new ConnectionManager(m_platformConfig.get()));
-            RegisterObjectForQuit(m_connectionManager.get());
-
-            return true;
-        }
-        AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_platformConfig;
-        AZStd::unique_ptr<ConnectionManager> m_connectionManager;
-    };
-
-
     AssetProcessorServerUnitTest::AssetProcessorServerUnitTest()
-        : ScopedAllocatorSetupFixture()
+        : AssetProcessorUnitTestBase()
     {
     }
 
@@ -85,43 +53,11 @@ namespace UnitTest
 
     void AssetProcessorServerUnitTest::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
-        m_application = AZStd::make_unique<AzFramework::Application>();
-
-        static int numParams = 1;
-        static char processName[] = { "AssetProcessorBatch" };
-        static char* namePtr = &processName[0];
-        static char** paramStringArray = { &namePtr };
-
-        auto registry = AZ::SettingsRegistry::Get();
-        auto bootstrapKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-        auto projectPathKey = bootstrapKey + "/project_path";
-        AZ::IO::FixedMaxPath enginePath;
-        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
-        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-
-        // Forcing the branch token into settings registry before starting the application manager.
-        // This avoids writing the asset_processor.setreg file which can cause fileIO errors.
-        auto branchTokenKey = bootstrapKey + "/assetProcessor_branch_token";
-        AZStd::string token;
-        AzFramework::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);
-        registry->Set(branchTokenKey, token.c_str());
-
-        m_batchApplicationManager.reset(new AssetProcessorServerUnitTestAppManager(&numParams, &paramStringArray));
-        ASSERT_EQ(m_batchApplicationManager->BeforeRun(), ApplicationManager::Status_Success);
-        ASSERT_TRUE(m_batchApplicationManager->PrepareForTests());
+        AssetProcessorUnitTestBase::SetUp();
 
         m_applicationServer = AZStd::make_unique<BatchApplicationServer>();
         m_applicationServer->startListening(FEATURE_TEST_LISTEN_PORT); // a port that is not the normal port
         connect(m_applicationServer.get(), SIGNAL(newIncomingConnection(qintptr)), ConnectionManager::Get(), SLOT(NewConnection(qintptr)));
-    }
-
-    void AssetProcessorServerUnitTest::TearDown()
-    {
-        m_batchApplicationManager.reset();
-        m_application.reset();
-        ScopedAllocatorSetupFixture::TearDown();
     }
 
     void AssetProcessorServerUnitTest::RunAssetProcessorConnectionStressTest(bool failNegotiation)

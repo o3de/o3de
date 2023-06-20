@@ -290,14 +290,16 @@ namespace AZ
             }
         }
 
+        void EditorMaterialComponentSlot::OpenMaterialCanvas() const
+        {
+            EditorMaterialSystemComponentRequestBus::Broadcast(&EditorMaterialSystemComponentRequestBus::Events::OpenMaterialCanvas, "");
+        }
+
         void EditorMaterialComponentSlot::OpenMaterialEditor() const
         {
-            const AZStd::string& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetActiveAssetId());
-            if (!sourcePath.empty() && AZ::StringFunc::Path::IsExtension(sourcePath.c_str(), AZ::RPI::MaterialSourceData::Extension))
-            {
-                EditorMaterialSystemComponentRequestBus::Broadcast(
-                    &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor, sourcePath);
-            }
+            EditorMaterialSystemComponentRequestBus::Broadcast(
+                &EditorMaterialSystemComponentRequestBus::Events::OpenMaterialEditor,
+                AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetActiveAssetId()));
         }
 
         void EditorMaterialComponentSlot::OpenMaterialInspector(const AzToolsFramework::EntityIdSet& entityIdsToEdit)
@@ -349,13 +351,13 @@ namespace AZ
 
             menu.addSeparator();
 
-            action = menu.addAction("Edit Source Material...", [this]() { OpenMaterialEditor(); });
-            action->setEnabled(HasSourceData());
+            action = menu.addAction("Open Material Editor...", [this]() { OpenMaterialEditor(); });
+            action = menu.addAction("Open Material Canvas...", [this]() { OpenMaterialCanvas(); });
 
-            action = menu.addAction("Edit Material Instance...", [this, entityIdsToEdit]() { OpenMaterialInspector(entityIdsToEdit); });
+            action = menu.addAction("Open Material Instance Editor...", [this, entityIdsToEdit]() { OpenMaterialInspector(entityIdsToEdit); });
             action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterialTypes);
 
-            action = menu.addAction("Edit Material Instance UV Map...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
+            action = menu.addAction("Open Material Instance UV Map Editor...", [this, entityIdsToEdit]() { OpenUvNameMapInspector(entityIdsToEdit); });
             action->setEnabled(GetActiveAssetId().IsValid() && hasMatchingMaterialTypes);
 
             menu.addSeparator();

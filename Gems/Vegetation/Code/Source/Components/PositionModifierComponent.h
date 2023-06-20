@@ -28,7 +28,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(PositionModifierConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PositionModifierConfig, AZ::SystemAllocator);
         AZ_RTTI(PositionModifierConfig, "{B7A0A88D-4FDF-487F-A0E6-5BE04C82862A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;

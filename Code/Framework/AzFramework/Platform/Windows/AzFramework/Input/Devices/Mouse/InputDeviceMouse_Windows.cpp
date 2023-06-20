@@ -49,7 +49,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseWindows, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseWindows, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -96,6 +96,9 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Refresh system cursor viibility
         void RefreshSystemCursorVisibility();
+
+        //! Return the size of the client window constrained to the desktop work area.
+        RECT GetConstrainedClientRect(HWND focusWindow) const;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The current system cursor state
@@ -241,9 +244,8 @@ namespace AzFramework
             return;
         }
 
-        // Get the content (client) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
+        // Get the content (client) rect of the focus window in screen coordinates, excluding the system taskbar
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
         const float clientWidth = static_cast<float>(clientRect.right - clientRect.left);
         const float clientHeight = static_cast<float>(clientRect.bottom - clientRect.top);
 
@@ -270,16 +272,22 @@ namespace AzFramework
         ::ScreenToClient(focusWindow, &cursorPos);
 
         // Get the content (client) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
 
-        // Normalize the cursor position relative to the content (client rect) fo the focus window
+        // If the window is 0-sized in at least one dimension, just return a cursor position of (0, 0).
+        // This can happen when a window gets hidden by pressing Windows-D to go to the desktop.
+        if ((clientRect.left == clientRect.right) || (clientRect.top == clientRect.bottom))
+        {
+            return AZ::Vector2(0.0f, 0.0f);
+        }
+
+        // Normalize the cursor position relative to the content (client rect) of the focus window
         const float clientRectWidth = static_cast<float>(clientRect.right - clientRect.left);
         const float clientRectHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-        const float normalizedCursorPostionX = static_cast<float>(cursorPos.x) / clientRectWidth;
-        const float normalizedCursorPostionY = static_cast<float>(cursorPos.y) / clientRectHeight;
+        const float normalizedCursorPositionX = static_cast<float>(cursorPos.x) / clientRectWidth;
+        const float normalizedCursorPositionY = static_cast<float>(cursorPos.y) / clientRectHeight;
 
-        return AZ::Vector2(normalizedCursorPostionX, normalizedCursorPostionY);
+        return AZ::Vector2(normalizedCursorPositionX, normalizedCursorPositionY);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -440,10 +448,7 @@ namespace AzFramework
         }
 
         // Constrain the cursor to the client (content) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
-        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.left);  // Converts the top-left point
-        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.right); // Converts the bottom-right point
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
         ::ClipCursor(&clientRect);
     }
 
@@ -465,4 +470,23 @@ namespace AzFramework
             while (::ShowCursor(true) < 0) {}
         }
     }
+
+    RECT InputDeviceMouseWindows::GetConstrainedClientRect(HWND focusWindow) const
+    {
+        // Get the client rect of the focus window in screen coordinates
+        RECT clientRect;
+        ::GetClientRect(focusWindow, &clientRect);
+        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.left); // Converts the top-left point
+        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.right); // Converts the bottom-right point
+
+        // Note that this returns a rectangle that could overlap other things like the system taskbar.
+        // We're making the assumption that the implementation of NativeWindow is drawing the window above everything,
+        // including the taskbar, so that any mouse movements and clicks within the window won't be able to change focus
+        // to the taskbar, popup email notifications, etc. If NativeWindow *doesn't* draw the window above everything,
+        // then the way we handle hidden contrained mouse inputs will need to change to ensure that it doesn't accidentally
+        // send clicks and movements to overlapping windows of higher priority.
+
+        return clientRect;
+    }
+
 } // namespace AzFramework

@@ -463,7 +463,7 @@ namespace ScriptCanvasTests
     class ConvertibleToString
     {
     public:
-        AZ_TYPE_INFO(StringView, "{DBF947E7-4097-4C5D-AF0D-E2DB311E8958}");
+        AZ_TYPE_INFO(ConvertibleToString, "{DBF947E7-4097-4C5D-AF0D-E2DB311E8958}");
 
         static AZStd::string ConstCharPtrToString(const char* inputStr)
         {
@@ -501,7 +501,7 @@ namespace ScriptCanvasTests
         , public AzFramework::SliceEntityOwnershipServiceRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(UnitTestEntityContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnitTestEntityContext, AZ::SystemAllocator);
 
         UnitTestEntityContext() { AzFramework::EntityContextRequestBus::Handler::BusConnect(GetOwningContextId()); }
         //// EntityIdContextQueryBus::MultiHandler
@@ -683,7 +683,7 @@ namespace ScriptCanvasTests
         : private ScriptCanvas::NodeNotificationsBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptUnitTestNodeNotificationHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptUnitTestNodeNotificationHandler, AZ::SystemAllocator);
 
         ScriptUnitTestNodeNotificationHandler(AZ::EntityId nodeId)
         {
@@ -726,7 +726,7 @@ namespace ScriptCanvasTests
     public:
 
         AZ_RTTI(TestNodeableObject, "{5FA6967F-AB4D-4077-91C9-1C2CE36733AF}", Nodeable);
-        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Nodeable, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext)
         {
@@ -768,5 +768,62 @@ namespace ScriptCanvasTests
         }
     };
 
+    // Test class that's used to test inheritance with Script Canvas slots
+    class TestBaseClass
+    {
+    public:
+        AZ_RTTI(TestBaseClass, "{C1F80F17-BE3C-49B5-862D-3C41F04208E0}");
 
-} // ScriptCanvasTests
+        TestBaseClass() = default;
+        virtual ~TestBaseClass() = default;
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+            {
+                serializeContext->Class<TestBaseClass>();
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<TestBaseClass>("TestBaseClass", "");
+                }
+            }
+
+            // reflect API for the node
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+            {
+                behaviorContext->Class<TestBaseClass>("TestBaseClass");
+            }
+        }
+    };
+
+    // Test class that's used to test inheritance with Script Canvas slots
+    class TestSubClass : public TestBaseClass
+    {
+    public:
+        AZ_RTTI(TestSubClass, "{2ED5B680-F097-4044-B1C8-0977A0E3F027}", TestBaseClass);
+
+        TestSubClass() = default;
+        ~TestSubClass() override = default;
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+            {
+                serializeContext->Class<TestSubClass, TestBaseClass>();
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<TestSubClass>("TestSubClass", "");
+                }
+            }
+
+            // reflect API for the node
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+            {
+                behaviorContext->Class<TestSubClass>("TestSubClass");
+            }
+        }
+    };
+
+} // namespace ScriptCanvasTests

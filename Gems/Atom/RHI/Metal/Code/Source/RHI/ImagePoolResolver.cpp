@@ -64,7 +64,7 @@ namespace AZ
                 }
             }
             
-            Platform::SynchronizeBufferOnCPU(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingSize);
+            Platform::PublishBufferCpuChangeOnGpu(stagingBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>(), stagingBuffer->GetMemoryView().GetOffset(), stagingSize);
             image->m_pendingResolves++;
             bytesTransferred = stagingSize;
             return RHI::ResultCode::Success;

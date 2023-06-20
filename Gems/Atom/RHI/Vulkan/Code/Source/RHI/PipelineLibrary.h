@@ -23,7 +23,7 @@ namespace AZ
             using Base = RHI::PipelineLibrary;
 
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
             AZ_RTTI(PipelineLibrary, "EB865D8F-7753-4E06-8401-310CC1CF2378", Base);
 
             static RHI::Ptr<PipelineLibrary> Create();

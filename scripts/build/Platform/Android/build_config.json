@@ -88,7 +88,7 @@
         "CMAKE_TARGET":"AssetProcessorBatch",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
         "ASSET_PROCESSOR_BINARY": "bin\\profile\\AssetProcessorBatch.exe",
-        "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AssetProcessor/Settings/Exclude Android/pattern=.*/DiffuseGlobalIllumination/.*precompiledshader\"",
+        "ASSET_PROCESSOR_OPTIONS": "--zeroAnalysisMode --ignoreFutureAssetDatabaseVersionError --regset=\"/Amazon/AssetProcessor/Settings/Exclude Android/pattern=.*/DiffuseGlobalIllumination/.*precompiledshader\"",
         "ASSET_PROCESSOR_PLATFORMS":"android"
     }
   },

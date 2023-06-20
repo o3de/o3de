@@ -15,6 +15,8 @@ set(FILES
     Source/RHI/BufferPoolResolver.h
     Source/RHI/BufferView.cpp
     Source/RHI/BufferView.h
+    Source/RHI/BindlessDescriptorPool.cpp
+    Source/RHI/BindlessDescriptorPool.h
     Source/RHI/CommandList.cpp
     Source/RHI/CommandList.h
     Source/RHI/CommandPool.cpp
@@ -83,14 +85,10 @@ set(FILES
     Source/RHI/RenderPassBuilder.cpp
     Source/RHI/RenderPassBuilder.h
     Source/RHI/ResourcePoolResolver.h
-    Source/RHI/MemoryTypeView.h
     Source/RHI/MemoryView.h
-    Source/RHI/Memory.cpp
-    Source/RHI/Memory.h
-    Source/RHI/MemoryTypeAllocator.h
-    Source/RHI/MemoryAllocator.h
-    Source/RHI/MemoryPageAllocator.cpp
-    Source/RHI/MemoryPageAllocator.h
+    Source/RHI/MemoryTypeView.h
+    Source/RHI/VulkanMemoryAllocation.cpp
+    Source/RHI/VulkanMemoryAllocation.h
     Source/RHI/Instance.cpp
     Source/RHI/Instance.h
     Source/RHI/PhysicalDevice.cpp
@@ -148,10 +146,7 @@ set(FILES
     Source/RHI/ReleaseContainer.h
     Source/RHI/BufferMemory.cpp
     Source/RHI/BufferMemory.h
-    Source/RHI/BufferMemoryPageAllocator.cpp
-    Source/RHI/BufferMemoryPageAllocator.h
     Source/RHI/BufferMemoryView.h
-    Source/RHI/BufferMemoryAllocator.h
     Source/RHI/RayTracingBufferPools.h
     Source/RHI/RayTracingBlas.cpp
     Source/RHI/RayTracingBlas.h
@@ -161,4 +156,6 @@ set(FILES
     Source/RHI/RayTracingPipelineState.h
     Source/RHI/RayTracingShaderTable.cpp
     Source/RHI/RayTracingShaderTable.h
+    Source/RHI/Conversion.h
+    Source/RHI/Conversion.cpp
 )

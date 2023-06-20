@@ -14,11 +14,13 @@
 #include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsRequestBus.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace AtomToolsFramework
 {
@@ -89,6 +91,15 @@ namespace AtomToolsFramework
                 viewportRequests->GetLightingPreset().ApplyLightingPreset(
                     imageBasedLightFP, skyboxFP, exposureControlSettingInterface, directionalLightFP, cameraConfig, m_lightHandles,
                     enableAlternateSkybox);
+
+                const bool pipelineActivated = m_viewportScene->ActivateRenderPipeline(viewportRequests->GetLastRenderPipelineAssetId());
+                if (!pipelineActivated)
+                {
+                    // Since it failed to switch to the requested pipeline, tell the settings system to switch
+                    // back to the previous active pipeline. This should trigger UI updates to correctly show
+                    // which pipeline is active.
+                    viewportRequests->LoadRenderPipelineByAssetId(m_viewportScene->GetPipelineAssetId());
+                }
             });
     }
 

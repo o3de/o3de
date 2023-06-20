@@ -50,11 +50,11 @@ option bool o_detail_baseColor_useTexture;   \
 option bool o_detail_normal_useTexture;
 
 
-float GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLayerBlendMaskSampler, float2 detailLayerBlendMaskUv, bool useDetailLayerBlendMask, float detailLayerBlendFactor)
+real GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLayerBlendMaskSampler, float2 detailLayerBlendMaskUv, bool useDetailLayerBlendMask, real detailLayerBlendFactor)
 {
     if (useDetailLayerBlendMask)
     {
-        detailLayerBlendFactor *= detailLayerBlendMask.Sample(detailLayerBlendMaskSampler, detailLayerBlendMaskUv).r;
+        detailLayerBlendFactor *= real(detailLayerBlendMask.Sample(detailLayerBlendMaskSampler, detailLayerBlendMaskUv).r);
     }
 
     return detailLayerBlendFactor;
@@ -62,23 +62,23 @@ float GetDetailLayerBlendFactor(Texture2D detailLayerBlendMask, sampler detailLa
 
 //! Sample a normal map and apply it as an overlay on top of another normal map.
 //! @return a new normal vector in the same tangent space as mainNormalTS.
-float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 vertexNormalWS, float3 mainNormalTS, float3 mainTangent, float3 mainBitangent, 
-    Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, float overlayFactor, 
-    float3 overlayTangent, float3 overlayBitangen, float3x3 overlayNormalUvMatrix)
+real3 ApplyNormalMapOverlayTS(bool applyOverlay, real3 vertexNormalWS, real3 mainNormalTS, real3 mainTangent, real3 mainBitangent, 
+    Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, real overlayFactor, 
+    real3 overlayTangent, real3 overlayBitangent, real3x3 overlayNormalUvMatrix)
 {
     if(applyOverlay && AreDetailNormalMapsEnabled())
     {
         // Get overlay normal in its local tangent space
-        float3 overlayNormalTS = GetNormalInputTS(overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayNormalUvMatrix, true, overlayFactor);
+        real3 overlayNormalTS = GetNormalInputTS(overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayNormalUvMatrix, true, overlayFactor);
         
         // [GFX TODO][ATOM-15111]: Find a more efficient way to do this.
 
         // Convert the overlay normal from its local tangent space into the main normal's tangent space.
-        float3 overlayNormalWS = TangentSpaceToWorld(overlayNormalTS, vertexNormalWS, overlayTangent, overlayBitangen);
-        float3 overlayNormalInMainTS = WorldSpaceToTangent(overlayNormalWS, vertexNormalWS, mainTangent, mainBitangent);
+        real3 overlayNormalWS = TangentSpaceToWorld(overlayNormalTS, vertexNormalWS, overlayTangent, overlayBitangent);
+        real3 overlayNormalInMainTS = WorldSpaceToTangent(overlayNormalWS, vertexNormalWS, mainTangent, mainBitangent);
 
         // Combine normals in tangent space
-        float3 normalInMainTS = ReorientTangentSpaceNormal(mainNormalTS, overlayNormalInMainTS);
+        real3 normalInMainTS = ReorientTangentSpaceNormal(mainNormalTS, overlayNormalInMainTS);
 
         return normalInMainTS;
     }
@@ -90,14 +90,14 @@ float3 ApplyNormalMapOverlayTS(bool applyOverlay, float3 vertexNormalWS, float3 
 
 //! Sample a normal map and apply it as an overlay on top of another normal map.
 //! @return a new normal vector in world space.
-float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormalWS, float3 mainNormalTS, float3 mainTangent, float3 mainBitangent, 
-    Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, float overlayFactor, 
-    float3 overlayTangent, float3 overlayBitangen, float3x3 overlayNormalUvMatrix)
+real3 ApplyNormalMapOverlayWS(bool applyOverlay, real3 vertexNormalWS, real3 mainNormalTS, real3 mainTangent, real3 mainBitangent, 
+    Texture2D overlayNormalMap, sampler overlayMapSampler, float2 overlayUv, bool flipOverlayNormalX, bool flipOverlayNormalY, real overlayFactor, 
+    real3 overlayTangent, real3 overlayBitangent, real3x3 overlayNormalUvMatrix)
 {
     if(applyOverlay && AreDetailNormalMapsEnabled())
     {
-        float3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent, overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayFactor, overlayTangent, overlayBitangen, overlayNormalUvMatrix);
-        float3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormalWS, mainTangent, mainBitangent) );
+        real3 normalTS = ApplyNormalMapOverlayTS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent, overlayNormalMap, overlayMapSampler, overlayUv, flipOverlayNormalX, flipOverlayNormalY, overlayFactor, overlayTangent, overlayBitangent, overlayNormalUvMatrix);
+        real3 normalWS = normalize( TangentSpaceToWorld(normalTS, vertexNormalWS, mainTangent, mainBitangent) );
         return normalWS;
     }
     else
@@ -106,11 +106,11 @@ float3 ApplyNormalMapOverlayWS(bool applyOverlay, float3 vertexNormalWS, float3 
     }
 }
 
-float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
-                                float3 mainTangent,   float3 mainBitangent,   Texture2D mainNormalMap,   sampler mainSampler,   float2 mainUv,   float mainNormalFactor,   bool flipMainNormalX,   bool flipMainNormalY,   float3x3 mainNormalUvMatrix,   bool useMainNormalMap,
-                                float3 detailTangent, float3 detailBitangent, Texture2D detailNormalMap, sampler detailSampler, float2 detailUv, float detailNormalFactor, bool flipDetailNormalX, bool flipDetailNormalY, float3x3 detailNormalUvMatrix, bool useDetailNormalMap)
+real3 GetDetailedNormalInputWS(bool isFrontFace, real3 vertexNormalWS,
+                                real3 mainTangent,   real3 mainBitangent,   Texture2D mainNormalMap,   sampler mainSampler,   float2 mainUv,   real mainNormalFactor,   bool flipMainNormalX,   bool flipMainNormalY,   real3x3 mainNormalUvMatrix,   bool useMainNormalMap,
+                                real3 detailTangent, real3 detailBitangent, Texture2D detailNormalMap, sampler detailSampler, float2 detailUv, real detailNormalFactor, bool flipDetailNormalX, bool flipDetailNormalY, real3x3 detailNormalUvMatrix, bool useDetailNormalMap)
 {
-    float3 normal;
+    real3 normal;
     
     useDetailNormalMap = useDetailNormalMap && AreDetailNormalMapsEnabled();
     useMainNormalMap = useMainNormalMap && AreNormalMapsEnabled();
@@ -118,14 +118,14 @@ float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
     if(useDetailNormalMap)
     {
         // Get normal in tangent space
-        float3 mainNormalTS = GetNormalInputTS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, 
+        real3 mainNormalTS = GetNormalInputTS(mainNormalMap, mainSampler, mainUv, flipMainNormalX, flipMainNormalY, 
                                             mainNormalUvMatrix, useMainNormalMap, mainNormalFactor);
         
         bool applyOverlay = true;
         normal = ApplyNormalMapOverlayWS(applyOverlay, vertexNormalWS, mainNormalTS, mainTangent, mainBitangent,
             detailNormalMap, detailSampler, detailUv, flipDetailNormalX, flipDetailNormalY, detailNormalFactor, detailTangent, detailBitangent, detailNormalUvMatrix);
 
-        AdjustBackFaceNormal(normal, isFrontFace);
+        normal = AdjustBackFaceNormal(normal, isFrontFace);
     }
     else
     {
@@ -137,11 +137,11 @@ float3 GetDetailedNormalInputWS(bool isFrontFace, float3 vertexNormalWS,
     return normal;
 }
 
-float3 ApplyTextureOverlay(bool applyOverlay, float3 baseColor, Texture2D map, sampler mapSampler, float2 uv, float factor)
+real3 ApplyTextureOverlay(bool applyOverlay, real3 baseColor, Texture2D map, sampler mapSampler, float2 uv, real factor)
 {
     if (applyOverlay)
     {
-        float3 sampledColor = map.Sample(mapSampler, uv).rgb;
+        real3 sampledColor = real3(map.Sample(mapSampler, uv).rgb);
         sampledColor = TransformColor(sampledColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         return ApplyTextureBlend(baseColor, sampledColor, factor, TextureBlendMode::Overlay);
     }
@@ -151,10 +151,10 @@ float3 ApplyTextureOverlay(bool applyOverlay, float3 baseColor, Texture2D map, s
     }
 }
 
-float3 GetDetailedBaseColorInput(Texture2D mainBaseColorMap,     sampler mainBaseColorMapSampler,     float2 mainBaseColorUv,        bool useMainBaseColorMap,     float3 mainBaseColor, float mainBaseColorFactor, TextureBlendMode mainBaseColorBlendMode,
-                                 Texture2D detailBaseColorMap,   sampler detailBaseColorMapSampler,   float2 detailBaseColorUv,      bool useDetailBaseColorMap,   float detailBaseColorBlendFactor)
+real3 GetDetailedBaseColorInput(Texture2D mainBaseColorMap,     sampler mainBaseColorMapSampler,     float2 mainBaseColorUv,        bool useMainBaseColorMap,     real3 mainBaseColor, real mainBaseColorFactor, TextureBlendMode mainBaseColorBlendMode,
+                                Texture2D detailBaseColorMap,   sampler detailBaseColorMapSampler,   float2 detailBaseColorUv,      bool useDetailBaseColorMap,   real detailBaseColorBlendFactor)
 {
-    float3 color = GetBaseColorInput(mainBaseColorMap, mainBaseColorMapSampler, mainBaseColorUv, mainBaseColor, useMainBaseColorMap);
+    real3 color = GetBaseColorInput(mainBaseColorMap, mainBaseColorMapSampler, mainBaseColorUv, mainBaseColor, useMainBaseColorMap);
     color = BlendBaseColor(color, mainBaseColor, mainBaseColorFactor, mainBaseColorBlendMode, useMainBaseColorMap);
     color = ApplyTextureOverlay(useDetailBaseColorMap, color, detailBaseColorMap, detailBaseColorMapSampler, detailBaseColorUv, detailBaseColorBlendFactor);
     return color;

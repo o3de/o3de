@@ -19,12 +19,12 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 #include <AzCore/Console/IConsole.h>
+#include <ScriptCanvas/Data/Constants.h>
 
 #define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
 
@@ -45,19 +45,6 @@ namespace ScriptCanvas
 {
     AZ_CVAR_EXTERNED(bool, g_saveRuntimeAssetsAsPlainTextForDebug);
     AZ_CVAR_EXTERNED(bool, g_saveEditorAssetsAsPlainTextForDebug);
-
-    // #scriptcanvas_component_extension
-    // A place holder identifier for the AZ::Entity that owns the graph.
-    // The actual value in each location initialized to GraphOwnerId is populated with the owning entity at editor-time, Asset Processor-time, or runtime, as soon as the owning entity is known.
-    using GraphOwnerIdType = AZ::EntityId;
-    static const GraphOwnerIdType GraphOwnerId = AZ::EntityId(0xacedc0de);
-
-    // \note Deprecated
-    // A place holder identifier for unique runtime graph on Entity that is running more than one instance of the same graph.
-    // This allows multiple instances of the same graph to be addressed individually on the same entity.
-    // The actual value in each location initialized to UniqueId is populated at run-time.
-    using RuntimeIdType = AZ::EntityId;
-    static const RuntimeIdType UniqueId = AZ::EntityId(0xfee1baad);
 
     constexpr const char* k_EventOutPrefix = "ExecutionSlot:";
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
@@ -203,7 +190,7 @@ namespace ScriptCanvas
 
     struct GraphIdentifier final
     {
-        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphIdentifier, AZ::SystemAllocator);
         AZ_TYPE_INFO(GraphIdentifier, "{0DAFC7EF-D23A-4353-8DA5-7D0CC186D8E3}");
 
         AZ::ComponentId m_componentId = 0;
@@ -236,7 +223,7 @@ namespace ScriptCanvas
     struct RuntimeVariable
     {
         AZ_TYPE_INFO(RuntimeVariable, "{6E969359-5AF5-4ECA-BE89-A96AB30A624E}");
-        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RuntimeVariable, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -345,7 +332,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_TYPE_INFO(SourceHandle, "{65855A98-AE2F-427F-BFC8-69D45265E312}");
-        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -357,7 +344,7 @@ namespace ScriptCanvas
 
         static SourceHandle FromRelativePath(ScriptCanvas::DataPtr graph, const AZ::IO::Path& path);
 
-        static SourceHandle FromRelativePathAndScenFolder
+        static SourceHandle FromRelativePathAndScanFolder
             ( AZStd::string_view relativePath
             , AZStd::string_view scanFolder
             , const AZ::Uuid& sourceId);
@@ -429,7 +416,7 @@ namespace ScriptCanvas
     public:
 
         AZ_RTTI(ScriptCanvasData, "{1072E894-0C67-4091-8B64-F7DB324AD13C}");
-        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator);
         ScriptCanvasData() = default;
         virtual ~ScriptCanvasData() = default;
         ScriptCanvasData(ScriptCanvasData&& other);

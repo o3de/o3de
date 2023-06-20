@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 #include <Prefab/PrefabTestComponent.h>
@@ -16,110 +17,159 @@ namespace UnitTest
 {
     using PrefabDuplicateTest = PrefabTestFixture;
 
-    TEST_F(PrefabDuplicateTest, PrefabDuplicate_DuplicateSingleEntitySucceeds)
+    TEST_F(PrefabDuplicateTest, DuplicateSingleEntitySucceeds)
     {
-        AZStd::string entityName("Same Name");
-        AZ::Entity* entity1 = CreateEntity(entityName.c_str());
-        entity1->Deactivate();
-        entity1->CreateComponent<PrefabTestComponent>();
-        entity1->Activate();
+        const AZStd::string entityName = "EntityToDuplicate";
+        AZ::EntityId entityToDuplicateId = CreateEditorEntityUnderRoot(entityName);
 
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{ entity1 });
-        AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab(
-            { entity1 },
-            {},
-            PrefabMockFilePath);
+        // Add PrefabTestComponent to the entity and make the change to template.
+        AZ::Entity* entityToDuplicate = AzToolsFramework::GetEntityById(entityToDuplicateId);
+        entityToDuplicate->Deactivate();
+        entityToDuplicate->AddComponent(aznew PrefabTestComponent());
+        entityToDuplicate->Activate();
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(entityToDuplicateId, m_undoStack->GetTop());
+        PropagateAllTemplateChanges();
 
-        // We've created a prefab with a single Entity, so there should only be one EntityAlias in our instance
-        EXPECT_EQ(newInstance->GetEntityAliases().size(), 1);
+        InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
+        EXPECT_TRUE(levelInstance.has_value());
 
-        // Duplicate the Entity and trigger the UpdateTemplateInstancesInQueue so the changes get propagated
-        m_prefabPublicInterface->DuplicateEntitiesInInstance(AzToolsFramework::EntityIdList{ entity1->GetId() });
-        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
+        // Validate there is one entity before duplicating.
+        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 1);
 
-        // We duplicated a single Entity, so there should now be two EntityAliases
-        EXPECT_EQ(newInstance->GetEntityAliases().size(), 2);
+        // Duplicate the entity.
+        DuplicatePrefabResult result = m_prefabPublicInterface->DuplicateEntitiesInInstance({ entityToDuplicateId });
+        ASSERT_TRUE(result.IsSuccess());
 
-        newInstance->GetConstEntities([&](const AZ::Entity& entity)
-        {
-            // Both of the entities should have the same name
-            EXPECT_EQ(entity.GetName(), entityName);
+        PropagateAllTemplateChanges();
 
-            // Both of the entities should have the PrefabTestComponent we added
-            auto testComponent = entity.FindComponent<PrefabTestComponent>();
-            EXPECT_NE(nullptr, testComponent);
-
-            return true;
-        });
+        // Validate there are two entities with the same name and PrefabTestComponent.
+        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 2);
+        levelInstance->get().GetConstEntities(
+            [&](const AZ::Entity& entity)
+            {
+                EXPECT_EQ(entity.GetName(), entityName);
+                EXPECT_TRUE(entity.FindComponent<PrefabTestComponent>());
+                return true;
+            });
     }
 
-    TEST_F(PrefabDuplicateTest, PrefabDuplicate_DuplicateMultipleEntitiesAndFixesReferences)
+    TEST_F(PrefabDuplicateTest, DuplicateSingleInstanceSucceeds)
     {
-        AZ::Entity* parentEntity = CreateEntity("Parent Entity");
+        const AZStd::string prefabName = "PrefabToDuplicate";
 
-        AZ::Entity* childEntity = CreateEntity("Child Entity");
-        childEntity->Deactivate();
-        auto newComponent = childEntity->CreateComponent<PrefabTestComponent>();
-        childEntity->Activate();
+        AZ::IO::Path engineRootPath;
+        m_settingsRegistryInterface->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
 
-        // Set the EntityId reference property on our PrefabTestComponent so we can
-        // verify that arbitrary EntityId's are fixed up properly
-        newComponent->m_entityIdProperty = parentEntity->GetId();
+        AZ::IO::Path prefabFilepath = engineRootPath / prefabName;
+        AZ::EntityId entityUnderPrefabId = CreateEditorEntityUnderRoot("Entity");
+        AZ::EntityId containerId = CreateEditorPrefab(prefabFilepath, { entityUnderPrefabId });
 
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{ parentEntity, childEntity });
+        InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
+        EXPECT_TRUE(levelInstance.has_value());
 
-        AZStd::unique_ptr<Instance> newInstance = m_prefabSystemComponent->CreatePrefab(
-            { parentEntity, childEntity },
-            {},
-            PrefabMockFilePath);
-
-        // We've created a prefab with two entities, so there should be two EntityAliases in our instance
-        EXPECT_EQ(newInstance->GetEntityAliases().size(), 2);
-
-        // Duplicate the entities and trigger the UpdateTemplateInstancesInQueue so the changes get propagated
-        m_prefabPublicInterface->DuplicateEntitiesInInstance(AzToolsFramework::EntityIdList{ parentEntity->GetId(), childEntity->GetId() });
-        m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
-
-        // We duplicated two entities, so there should now be four EntityAliases
-        EXPECT_EQ(newInstance->GetEntityAliases().size(), 4);
-
-        AzToolsFramework::EntityIdList parentEntityIds;
-        newInstance->GetConstEntities([&](const AZ::Entity& entity)
-        {
-            // Gather the parent EntityIds by tracking which entities don't have a PrefabTestComponent
-            auto testComponent = entity.FindComponent<PrefabTestComponent>();
-            if (!testComponent)
+        AZStd::vector<InstanceOptionalReference> nestedInstances;
+        levelInstance->get().GetNestedInstances(
+            [&nestedInstances](AZStd::unique_ptr<Instance>& nestedInstance)
             {
-                parentEntityIds.push_back(entity.GetId());
-            }
+                nestedInstances.push_back(*(nestedInstance.get()));
+            });
 
-            return true;
-        });
+        // Validate there is one instance before duplicating.
+        EXPECT_EQ(nestedInstances.size(), 1);
 
-        // There should only be two parents
+        // Duplicate the instance.
+        DuplicatePrefabResult result = m_prefabPublicInterface->DuplicateEntitiesInInstance({ containerId });
+        ASSERT_TRUE(result.IsSuccess());
+
+        PropagateAllTemplateChanges();
+
+        // Validate there are two prefab instances with the same name.
+        nestedInstances.clear();
+        levelInstance->get().GetNestedInstances(
+            [&nestedInstances](AZStd::unique_ptr<Instance>& nestedInstance)
+            {
+                nestedInstances.push_back(*(nestedInstance.get()));
+            });
+        EXPECT_EQ(nestedInstances.size(), 2);
+
+        for (InstanceOptionalReference nestedInstance : nestedInstances)
+        {
+            EntityOptionalReference nestedContainerEntity = nestedInstance->get().GetContainerEntity();
+            EXPECT_TRUE(nestedContainerEntity.has_value());
+            EXPECT_EQ(nestedContainerEntity->get().GetName(), prefabName);
+        }
+    }
+
+    TEST_F(PrefabDuplicateTest, DuplicateMultipleEntitiesAndFixesReferences)
+    {
+        const AZStd::string parentEntityName = "Parent Entity";
+        const AZStd::string childEntityName = "Child Entity";
+
+        AZ::EntityId parentEntityId = CreateEditorEntityUnderRoot(parentEntityName);
+        AZ::EntityId childEntityId = CreateEditorEntity(childEntityName, parentEntityId);
+
+        // Add PrefabTestComponent to the child entity and make the change to template.
+        AZ::Entity* childEntity = AzToolsFramework::GetEntityById(childEntityId);
+        childEntity->Deactivate();
+        PrefabTestComponent* testComponentInChild = aznew PrefabTestComponent();
+        testComponentInChild->m_entityIdProperty = parentEntityId; // set the entity id reference to parent
+        childEntity->AddComponent(testComponentInChild);
+        childEntity->Activate();
+        m_prefabPublicInterface->GenerateUndoNodesForEntityChangeAndUpdateCache(childEntityId, m_undoStack->GetTop());
+        PropagateAllTemplateChanges();
+
+        InstanceOptionalReference levelInstance = m_instanceEntityMapperInterface->FindOwningInstance(GetRootContainerEntityId());
+        EXPECT_TRUE(levelInstance.has_value());
+
+        // Validate there are two entities before duplicating.
+        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 2);
+
+        // Duplicate the parent entity.
+        DuplicatePrefabResult result = m_prefabPublicInterface->DuplicateEntitiesInInstance({ parentEntityId });
+        ASSERT_TRUE(result.IsSuccess());
+
+        PropagateAllTemplateChanges();
+
+        // Validate there are four entities in total.
+        EXPECT_EQ(levelInstance->get().GetEntityAliasCount(), 4);
+
+        // Validate there are two parent entities.
+        AzToolsFramework::EntityIdList parentEntityIds;
+        levelInstance->get().GetConstEntities(
+            [&](const AZ::Entity& entity)
+            {
+                if (entity.GetName() == parentEntityName)
+                {
+                    parentEntityIds.push_back(entity.GetId());
+                }
+                return true;
+            });
         EXPECT_EQ(parentEntityIds.size(), 2);
 
-        // Verify that the EntityId reference on the PrefabTestComponent on the children correspond
-        // to unique entities, which will verify that the EntityIds are fixed up on duplicate
-        newInstance->GetConstEntities([&](const AZ::Entity& entity)
-        {
-            // Only the child entities have a PrefabTestComponent
-            auto testComponent = entity.FindComponent<PrefabTestComponent>();
-            if (testComponent)
+        // Validate there are two child entities and they have correct parent reference in PrefabTestComponent.
+        AzToolsFramework::EntityIdList childEntityIds;
+        levelInstance->get().GetConstEntities(
+            [&](const AZ::Entity& entity)
             {
-                auto it = AZStd::find(parentEntityIds.begin(), parentEntityIds.end(), testComponent->m_entityIdProperty);
-                EXPECT_NE(it, parentEntityIds.end());
+                if (entity.GetName() == childEntityName)
+                {
+                    childEntityIds.push_back(entity.GetId());
 
-                // Erase when we find it so that the matches will be unique
-                parentEntityIds.erase(it);
-            }
+                    PrefabTestComponent* testComponent = entity.FindComponent<PrefabTestComponent>();
+                    if (testComponent)
+                    {
+                        auto it = AZStd::find(parentEntityIds.begin(), parentEntityIds.end(), testComponent->m_entityIdProperty);
+                        EXPECT_NE(it, parentEntityIds.end());
 
-            return true;
-        });
+                        // Erase when we find it so that the matches will be unique.
+                        parentEntityIds.erase(it);
+                    }
+                }
+                return true;
+            });
+        EXPECT_EQ(childEntityIds.size(), 2);
 
-        // Verify we matched each of the parent EntityIds
+        // Verify we matched each of the parent entity ids.
         EXPECT_EQ(parentEntityIds.size(), 0);
     }
 }

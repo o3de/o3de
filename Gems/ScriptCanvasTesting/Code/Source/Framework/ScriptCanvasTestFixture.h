@@ -11,9 +11,6 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/vector.h>
@@ -28,6 +25,7 @@
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
 #include <ScriptCanvas/SystemComponent.h>
+#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 
 #include "EntityRefTests.h"
 #include "ScriptCanvasTestApplication.h"
@@ -57,8 +55,6 @@ namespace ScriptCanvasTests
 
         static void SetUpTestCase()
         {
-            s_allocatorSetup.SetupAllocator();
-
             s_asyncOperationActive = false;
 
             if (s_application == nullptr)
@@ -82,7 +78,7 @@ namespace ScriptCanvasTests
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     s_application->Start(descriptor, appStartup);
                     // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
                     // in the unit tests.
                     AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, false);
@@ -103,22 +99,22 @@ namespace ScriptCanvasTests
                 AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
                 AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
             }
-            
+
             AZ::TickBus::AllowFunctionQueuing(true);
 
             auto m_serializeContext = s_application->GetSerializeContext();
             auto m_behaviorContext = s_application->GetBehaviorContext();
 
-            ScriptCanvasTesting::Reflect(m_serializeContext);
-            ScriptCanvasTesting::Reflect(m_behaviorContext);
-
-            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
-            ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
-
-            TestNodeableObject::Reflect(m_serializeContext);
-            TestNodeableObject::Reflect(m_behaviorContext);
-            ScriptUnitTestEventHandler::Reflect(m_serializeContext);
-            ScriptUnitTestEventHandler::Reflect(m_behaviorContext);
+            for (AZ::ReflectContext* context :
+                {static_cast<AZ::ReflectContext*>(m_serializeContext), static_cast<AZ::ReflectContext*>(m_behaviorContext)})
+            {
+                ScriptCanvasTesting::Reflect(context);
+                ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(context);
+                TestNodeableObject::Reflect(context);
+                TestBaseClass::Reflect(context);
+                TestSubClass::Reflect(context);
+                ScriptUnitTestEventHandler::Reflect(context);
+            }
         }
 
         static void TearDownTestCase()
@@ -135,8 +131,8 @@ namespace ScriptCanvasTests
                 delete s_application;
                 s_application = nullptr;
             }
-            
-            s_allocatorSetup.TeardownAllocator();
+
+            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         template<class T>
@@ -166,6 +162,9 @@ namespace ScriptCanvasTests
             m_stringToNumberMapType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<AZStd::unordered_map<ScriptCanvas::Data::StringType, ScriptCanvas::Data::NumberType>>());
 
             m_dataSlotConfigurationType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<ScriptCanvas::DataSlotConfiguration>());
+
+            m_baseClassType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<TestBaseClass>());
+            m_subClassType = ScriptCanvas::Data::Type::BehaviorContextObject(azrtti_typeid<TestSubClass>());
         }
 
         void TearDown() override
@@ -204,7 +203,12 @@ namespace ScriptCanvasTests
                 CreateGraph();
             }
 
+            ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
+            configurableNodeEntity->CreateComponent<ScriptCanvas::GraphVariableManagerComponent>(scriptCanvasId);
+
             configurableNodeEntity->Init();
+
+            m_graph->Activate();
 
             m_graph->AddNode(configurableNodeEntity->GetId());
 
@@ -398,6 +402,9 @@ namespace ScriptCanvasTests
 
         ScriptCanvas::Data::Type m_dataSlotConfigurationType;
 
+        ScriptCanvas::Data::Type m_baseClassType;
+        ScriptCanvas::Data::Type m_subClassType;
+
         ScriptCanvas::Graph* m_graph = nullptr;
 
         int m_slotCounter = 0;
@@ -406,13 +413,13 @@ namespace ScriptCanvasTests
 
     protected:
         static ScriptCanvasTests::Application* GetApplication() { return s_application; }
-        
+
     private:
 
-        static UnitTest::AllocatorsBase s_allocatorSetup;
         static bool s_setupSucceeded;
+        static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         AZStd::unordered_set< AZ::ComponentDescriptor* > m_descriptors;
-        
+
     };
 }

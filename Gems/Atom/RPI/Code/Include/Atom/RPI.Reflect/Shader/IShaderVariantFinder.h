@@ -61,7 +61,7 @@ namespace AZ
             //! Returns true if the request was queued successfully.
             virtual bool QueueLoadShaderVariantAsset(
                 const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId,
-                SupervariantIndex supervariantIndex) = 0;
+                const AZ::Name& supervariantName) = 0;
 
             //! This is a quick blocking call that will return a valid asset only if it's been fully loaded already,
             //! Otherwise it returns an invalid asset and the caller is supposed to call QueueLoadShaderVariantAssetByVariantId().
@@ -107,3 +107,5 @@ namespace AZ
 
     } // namespace RPI
 }// namespace AZ
+
+DECLARE_EBUS_EXTERN(RPI::ShaderVariantFinderNotification);

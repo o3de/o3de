@@ -83,7 +83,7 @@ namespace GraphCanvas
     {
         if (signalAdd)
         {
-            beginInsertRows(QModelIndex(), aznumeric_cast<int>(m_availableItems.size() - 1), aznumeric_cast<int>(m_availableItems.size() - 1));
+            beginInsertRows(QModelIndex(), aznumeric_cast<int>(m_availableItems.size()), aznumeric_cast<int>(m_availableItems.size()));
         }
 
         m_availableItems.push_back(treeItem);

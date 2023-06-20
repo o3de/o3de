@@ -20,6 +20,25 @@ if(PAL_TRAIT_PROF_PIX_SUPPORTED)
     endif()
 endif()
 
+# By default, the Settings Registry will apply user and project registry files as overrides in development (non-release) builds,
+# and will ignore all overrides in release builds.
+# This behavior can be overridden by passing -DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0, 1, 2 or 3 when generating the build files.
+# The override can be removed by passing -UALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES when generating the build files.
+set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES "" CACHE STRING 
+"Forces the Settings Registry development overrides to be used or ignored.
+  If unset, development overrides are used in development builds and ignored in release builds.
+  0 disables the development overrides in all builds.
+  1 = registry overrides are allowed from the command line.
+  2 = registry overrides are allowed from the command line, engine, gem, and project files.
+  3 = registry overrides are allowed from the command line, engine, gem, project, and user files.")
+
+# If there's a value in ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES, the compiler flag will get set to it.
+# Otherwise, the variable will be empty and no compiler flag will be set, leaving it to the code to decide
+# whether or not to allow the Settings Registry development overrides.
+set(ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG $<$<NOT:$<STREQUAL:"${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES}","">>:ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES}>)
+
+
+
 ly_add_target(
     NAME O3DEKernel ${PAL_TRAIT_MONOLITHIC_DRIVEN_LIBRARY_TYPE}
     NAMESPACE AZ
@@ -65,6 +84,25 @@ ly_add_source_properties(
         AzCore/PlatformId/PlatformId.cpp
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${LY_PAL_TOOLS_DEFINES}
+)
+
+ly_add_source_properties(
+    SOURCES
+        AzCore/Component/ComponentApplication.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${ALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES_FLAG}
+)
+
+# Add the O3DE_STACK_CAPTURE_DEPTH define only to the cpp files for the following allocators
+# This reduces re-compile time when the cache variable value changes.
+set(O3DE_STACK_CAPTURE_DEPTH_DEFINE $<$<NOT:$<STREQUAL:"${O3DE_STACK_CAPTURE_DEPTH}","">>:O3DE_STACK_CAPTURE_DEPTH=${O3DE_STACK_CAPTURE_DEPTH}>)
+ly_add_source_properties(
+    SOURCES
+        AzCore/Memory/OSAllocator.cpp
+        AzCore/Memory/PoolAllocator.cpp
+        AzCore/Memory/SystemAllocator.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${O3DE_STACK_CAPTURE_DEPTH_DEFINE}
 )
 
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
@@ -122,7 +160,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
-                AZ::AzTest
     )
 
     o3de_pal_dir(pal_tests_dir ${CMAKE_CURRENT_LIST_DIR}/Tests/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
@@ -151,6 +188,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME AZ::AzCore.Tests
+        LABELS REQUIRES_tiaf
     )
     ly_add_googletest(
         NAME AZ::AzCore.Tests

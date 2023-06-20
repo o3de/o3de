@@ -13,6 +13,7 @@
 #include <Metal/Metal.h>
 #include <RHI/Fence.h>
 #include <RHI/Metal.h>
+#include <RHI/ArgumentBuffer.h>
 
 namespace AZ
 {
@@ -38,7 +39,8 @@ namespace AZ
             void Open(id <MTLCommandBuffer> mtlCommandBuffer);
             
             //! @param subEncoder - Since subRenderEncoders are created by higher level code (in order to maintain correct ordering) they can be directly provided to the commandlist to order to be used for encoding. SubEncoders only apply to Graphics related work.
-            void Open(id <MTLCommandEncoder> subEncoder);
+            //! @param mtlCommandBuffer - The command buffer that is assigned to this command list to be used for fencing related commands
+            void Open(id <MTLCommandEncoder> subEncoder, id <MTLCommandBuffer> mtlCommandBuffer);
             
             //! This function returns true if the commandlist is going to encode something.
             bool IsEncoded();
@@ -76,7 +78,10 @@ namespace AZ
             
             void Init(RHI::HardwareQueueClass hardwareQueueClass, Device* device);
             void Shutdown();
-                        
+                
+            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
+            void MakeHeapsResident(MTLRenderStages renderStages);
+
             template <typename T>
             T GetEncoder() const
             {
@@ -89,8 +94,15 @@ namespace AZ
             /// Cache multisample state. Used mainly to validate the MSAA image descriptor against the one passed into the pipelinestate
             RHI::MultisampleState       m_renderPassMultiSampleState;
             
-            //! Go through all the heaps and call UseHeap on them to make them resident for the upcoming pass.
-            void MakeHeapsResident(MTLRenderStages renderStages);
+            // Data structures to cache untracked resources for Graphics and Compute Passes.
+            // At the end of the pass we call UseResource on them in a batch to tell the
+            // driver to ensure they are resident when needed.
+            ArgumentBuffer::ResourcesPerStageForGraphics m_untrackedResourcesGfxRead;
+            ArgumentBuffer::ResourcesPerStageForGraphics m_untrackedResourcesGfxReadWrite;
+            ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeRead;
+            ArgumentBuffer::ResourcesForCompute m_untrackedResourcesComputeReadWrite;
+
+            Device* m_device = nullptr;
         private:
             
             bool m_isEncoded                                    = false;

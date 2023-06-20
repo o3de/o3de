@@ -15,7 +15,6 @@ struct z_stream_s;
 namespace AZ
 {
     class IAllocator;
-    class IAllocatorSchema;
 
     /**
      * The most well known and used compression algorithm. It gives the best compression ratios even on level 1,
@@ -90,7 +89,7 @@ namespace AZ
 
         z_stream_s* m_strDeflate;
         z_stream_s* m_strInflate;
-        IAllocatorSchema* m_workMemoryAllocator;
+        IAllocator* m_workMemoryAllocator;
     };
 }
 

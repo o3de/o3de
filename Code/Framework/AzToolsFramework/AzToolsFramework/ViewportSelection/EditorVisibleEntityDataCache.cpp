@@ -315,6 +315,11 @@ namespace AzToolsFramework
             m_impl->m_visibleEntityDatas[index].m_inFocus && !m_impl->m_visibleEntityDatas[index].m_descendantOfClosedContainer;
     }
 
+    bool EditorVisibleEntityDataCache::IsVisibleEntityInFocusSubTree(size_t index) const
+    {
+        return m_impl->m_visibleEntityDatas[index].m_inFocus;
+    }
+
     AZStd::optional<size_t> EditorVisibleEntityDataCache::GetVisibleEntityIndexFromId(const AZ::EntityId entityId) const
     {
         const auto entityIdIt =

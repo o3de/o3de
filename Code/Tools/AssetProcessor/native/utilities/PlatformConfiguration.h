@@ -26,6 +26,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
 #endif
+#include "IPathConversion.h"
 
 
 namespace AZ
@@ -54,7 +55,7 @@ namespace AssetProcessor
     //! essentially a plain data holder, but with helper funcs
     struct AssetRecognizer
     {
-        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRecognizer, AZ::SystemAllocator);
         AZ_TYPE_INFO(AssetRecognizer, "{29B7A73A-4D7F-4C19-AEAC-6D6750FB1156}");
 
         AssetRecognizer() = default;
@@ -65,7 +66,7 @@ namespace AssetProcessor
             int priority,
             bool critical,
             bool supportsCreateJobs,
-            AssetBuilderSDK::FilePatternMatcher patternMatcher, 
+            AssetBuilderSDK::FilePatternMatcher patternMatcher,
             const AZStd::string& version,
             const AZ::Data::AssetType& productAssetType,
             bool outputProductDependencies,
@@ -130,9 +131,12 @@ namespace AssetProcessor
     class PlatformConfiguration
         : public QObject
         , public RecognizerConfiguration
+        , public AZ::Interface<IPathConversion>::Registrar
     {
         Q_OBJECT
     public:
+        AZ_RTTI(PlatformConfiguration, "{9F0C465D-A3A6-417E-B69C-62CBD22FD950}", RecognizerConfiguration, IPathConversion);
+
         typedef QPair<QRegExp, QString> RCSpec;
         typedef QVector<RCSpec> RCSpecList;
 
@@ -192,6 +196,10 @@ namespace AssetProcessor
 
         //! Retrieve the scan folder at a given index.
         const AssetProcessor::ScanFolderInfo& GetScanFolderAt(int index) const;
+        //! Retrieve the scan folder found by a boolean predicate function, when the predicate returns true, the current scan folder info is returned.
+        const AssetProcessor::ScanFolderInfo* FindScanFolder(AZStd::function<bool(const AssetProcessor::ScanFolderInfo&)> predicate) const;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
+        const AZ::s64 GetIntermediateAssetScanFolderId() const;
 
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);
@@ -216,8 +224,10 @@ namespace AssetProcessor
         void AddMetaDataType(const QString& type, const QString& originalExtension);
 
         // ------------------- utility functions --------------------
-        ///! Checks to see whether the input file is an excluded file
+        //! Checks to see whether the input file is an excluded file, assumes input is absolute path.
         bool IsFileExcluded(QString fileName) const;
+        //! If you already have a relative path, this is a cheaper function to call:
+        bool IsFileExcludedRelPath(QString relPath) const;
 
         //! Given a file name, return a container that contains all matching recognizers
         //!
@@ -232,7 +242,7 @@ namespace AssetProcessor
         QString GetOverridingFile(QString relativeName, QString scanFolderName) const;
 
         //! given a relative name, loop over folders and resolve it to a full path with the first existing match.
-        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false) const;
+        QString FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder = false, const AssetProcessor::ScanFolderInfo** scanFolderInfo = nullptr) const;
 
         //! given a relative name with wildcard characters (* allowed) find a set of matching files or optionally folders
         QStringList FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders = false,
@@ -254,11 +264,11 @@ namespace AssetProcessor
         //! c:/dev/engine/models/box01.mdl
         //! ----> [models/box01.mdl] found under[c:/dev/engine]
         //! note that this does return a database source path by default
-        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const;
+        bool ConvertToRelativePath(QString fullFileName, QString& databaseSourceName, QString& scanFolderName) const override;
         static bool ConvertToRelativePath(const QString& fullFileName, const ScanFolderInfo* scanFolderInfo, QString& databaseSourceName);
 
         //! given a full file name (assumed already fed through the normalization funciton), return the first matching scan folder
-        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const;
+        const AssetProcessor::ScanFolderInfo* GetScanFolderForFile(const QString& fullFileName) const override;
 
         //! Given a scan folder path, get its complete info
         const AssetProcessor::ScanFolderInfo* GetScanFolderByPath(const QString& scanFolderPath) const;
@@ -289,8 +299,10 @@ namespace AssetProcessor
 
         void PopulatePlatformsForScanFolder(AZStd::vector<AssetBuilderSDK::PlatformInfo>& platformsList, QStringList includeTagsList = QStringList(), QStringList excludeTagsList = QStringList());
 
-        void CacheIntermediateAssetsScanFolderId();
+        // uses const + mutability since its a cache.
+        void CacheIntermediateAssetsScanFolderId() const;
         AZStd::optional<AZ::s64> GetIntermediateAssetsScanFolderId() const;
+        void ReadMetaDataFromSettingsRegistry();
 
     protected:
 
@@ -306,7 +318,8 @@ namespace AssetProcessor
 
         void ReadEnabledPlatformsFromSettingsRegistry();
         bool ReadRecognizersFromSettingsRegistry(const QString& assetRoot, bool skipScanFolders = false, QStringList scanFolderPatterns = QStringList() );
-        void ReadMetaDataFromSettingsRegistry();
+
+        int GetProjectScanFolderOrder() const;
 
     private:
         AZStd::vector<AssetBuilderSDK::PlatformInfo> m_enabledPlatforms;
@@ -317,7 +330,7 @@ namespace AssetProcessor
         QList<QPair<QString, QString> > m_metaDataFileTypes;
         QSet<QString> m_metaDataRealFiles;
         AZStd::vector<AzFramework::GemInfo> m_gemInfoList;
-        AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
+        mutable AZ::s64 m_intermediateAssetScanFolderId = -1; // Cached ID for intermediate scanfolder, for quick lookups
 
         int m_minJobs = 1;
         int m_maxJobs = 3;

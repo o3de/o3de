@@ -13,6 +13,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_Linux.h
     AzFramework/Application/Application_Linux.cpp
     AzFramework/Asset/AssetSystemComponentHelper_Linux.cpp
+    AzFramework/Process/ProcessUtils_Linux.cpp
     AzFramework/Process/ProcessWatcher_Linux.cpp
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Linux.cpp

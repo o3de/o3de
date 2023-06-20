@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -141,18 +142,27 @@ namespace AzToolsFramework
         return allIncompatibleComponents;
     }
 
-    ComponentEditor::ComponentEditor(AZ::SerializeContext* context, IPropertyEditorNotify* notifyTarget /* = nullptr */, QWidget* parent /* = nullptr */)
+    ComponentEditor::ComponentEditor(
+        AZ::SerializeContext* context,
+        IPropertyEditorNotify* notifyTarget /* = nullptr */,
+        QWidget* parent /* = nullptr */,
+        ComponentAdapterFactory adapterFactory /* nullptr factory */)
         : AzQtComponents::Card(new ComponentEditorHeader(), parent)
         , m_serializeContext(context)
+        , m_adapterFactory(adapterFactory)
     {
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
-        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        m_adapter = m_adapterFactory();
+        if (m_adapter)
         {
-            // Instantiate the DPE without the RPE
-            m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>();
+            m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
-            m_dpe->SetAdapter(m_adapter);
+
+            // this DPE is going into a scroll area, don't allow it to provide its own scrollbar
+            m_dpe->SetAllowVerticalScroll(false);
+            m_filterAdapter->SetSourceAdapter(m_adapter);
+            m_dpe->SetAdapter(m_filterAdapter);
             setContentWidget(m_dpe);
         }
         else
@@ -172,6 +182,7 @@ namespace AzToolsFramework
         m_savedKeySeed = AZ_CRC("WorldEditorEntityEditor_Component", 0x926c865f);
         connect(this, &AzQtComponents::Card::expandStateChanged, this, &ComponentEditor::OnExpanderChanged);
         connect(GetHeader(), &ComponentEditorHeader::OnContextMenuClicked, this, &ComponentEditor::OnContextMenuClicked);
+        connect(GetHeader(), &ComponentEditorHeader::iconLabelClicked, this, &ComponentEditor::OnIconLabelClicked);
 
         SetExpanded(true);
         SetSelected(false);
@@ -196,9 +207,43 @@ namespace AzToolsFramework
 
         m_components.push_back(componentInstance);
 
-        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        if (m_adapter)
         {
-            m_adapter->SetValue(componentInstance, instanceTypeId);
+            // aggregateInstance will be null unless we're adding to multi-edit
+            if (!aggregateInstance)
+            {
+                // not in multi-edit, just set the adapter component to this instance.
+                m_adapter->SetComponent(componentInstance);
+
+                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter
+                if (m_aggregateAdapter)
+                {
+                    m_filterAdapter->SetSourceAdapter(m_adapter);
+                    m_aggregateAdapter.reset();
+                }
+            }
+            else
+            {
+                // there's an aggregateInstance, so we're in multi-edit. Create the AggregateAdapter if it doesn't exist yet
+                if (!m_aggregateAdapter)
+                {
+                    m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+
+                    // for now, disable "values differ rows", since there are so many pointer and opaque types in the Inspector
+                    // and the output is noisy and unpleasant.
+                    m_aggregateAdapter->SetGenerateDiffRows(false);
+
+                    // add the original adapter which was already set in a prior AddInstance with a null aggregateInstance
+                    m_aggregateAdapter->AddAdapter(m_adapter);
+                    m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
+                }
+
+                // create the new ComponentAdapter for the componentInstance using the factory from our constructor
+                auto newAdapter = m_adapterFactory();
+                AZ_Assert(newAdapter, "m_adapterFactory should always return a valid ComponentAdapter in DPE mode!");
+                newAdapter->SetComponent(componentInstance);
+                m_aggregateAdapter->AddAdapter(newAdapter);
+            }
         }
         else
         {
@@ -520,6 +565,31 @@ namespace AzToolsFramework
         return combinedPendingComponentInfo;
     }
 
+    bool ComponentEditor::HasContents()
+    {
+        if (m_dpe)
+        {
+            return !m_filterAdapter->FilterIsActive() || !m_filterAdapter->IsEmpty() || GetHeader()->TitleMatchesFilter();
+        }
+        else
+        {
+            return (!GetPropertyEditor()->HasFilteredOutNodes() || GetPropertyEditor()->HasVisibleNodes());
+        }
+    }
+
+    void ComponentEditor::SetFilterString(AZStd::string filterString)
+    {
+        if (m_dpe)
+        {
+            m_filterAdapter->SetFilterString(filterString);
+        }
+        else
+        {
+            GetPropertyEditor()->SetFilterString(filterString);
+        }
+        GetHeader()->SetFilterString(filterString);
+    }
+
     void ComponentEditor::InvalidateAll(const char* filter)
     {
         GetPropertyEditor()->InvalidateAll(filter);
@@ -583,7 +653,7 @@ namespace AzToolsFramework
 
         m_componentType = componentType;
 
-        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()));
+        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()), "componenteditor");
 
         GetHeader()->SetTitle(GetFriendlyComponentName(&componentInstance).c_str());
 
@@ -617,10 +687,7 @@ namespace AzToolsFramework
         m_componentType = AZ::Uuid::CreateNull();
 
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
-
-        AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetDefaultComponentEditorIcon);
-        GetHeader()->SetIcon(QIcon(iconPath.c_str()));
+        GetHeader()->SetIcon(QIcon());
     }
 
     QString ComponentEditor::BuildHeaderTooltip()
@@ -642,7 +709,8 @@ namespace AzToolsFramework
         }
 
         AZ::ComponentDescriptor* componentDescriptor = nullptr;
-        EBUS_EVENT_ID_RESULT(componentDescriptor, thisComponent->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+        AZ::ComponentDescriptorBus::EventResult(
+            componentDescriptor, thisComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
         if (!componentDescriptor)
         {
@@ -677,7 +745,8 @@ namespace AzToolsFramework
                 }
 
                 AZ::ComponentDescriptor* otherDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(otherDescriptor, otherComponent->RTTI_GetType(), AZ::ComponentDescriptorBus, GetDescriptor);
+                AZ::ComponentDescriptorBus::EventResult(
+                    otherDescriptor, otherComponent->RTTI_GetType(), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
 
                 if (otherDescriptor)
                 {
@@ -727,6 +796,11 @@ namespace AzToolsFramework
     {
         OnContextMenuClicked(event->globalPos());
         event->accept();
+    }
+
+    void ComponentEditor::OnIconLabelClicked(const QPoint& position)
+    {
+        emit OnComponentIconClicked(position);
     }
 
     void ComponentEditor::UpdateExpandability()
@@ -882,6 +956,11 @@ namespace AzToolsFramework
         return m_components;
     }
 
+    void ComponentEditor::VisitComponentAdapterContents(const VisitComponentAdapterContentsCallback& callback) const
+    {
+        callback(m_adapter->GetContents());
+    }
+
     bool ComponentEditor::HasComponentWithId(AZ::ComponentId componentId)
     {
         for (AZ::Component* component : m_components)
@@ -897,21 +976,15 @@ namespace AzToolsFramework
 
     void ComponentEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
     {
-        // disable all component cards not matching the ComponentMode type
-        if (AZStd::find(
-            componentModeTypes.begin(),
-            componentModeTypes.end(), m_componentType) == componentModeTypes.end())
+        if (AZStd::find(componentModeTypes.begin(), componentModeTypes.end(), m_componentType) == componentModeTypes.end())
         {
+            // disable all component cards that aren't in the active component mode.
             SetWidgetInteractEnabled(this, false);
         }
-        else
-        {
-            if (!componentModeTypes.empty())
-            {
-                // only set the first item to be selected/highlighted
-                SetSelected(componentModeTypes.front() == m_componentType);
-            }
-        }
+
+        // for components that *are* in the active component mode, try to set the first one
+        // to selected, and the rest to unselected.
+        SetSelected(componentModeTypes.front() == m_componentType);
     }
 
     void ComponentEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
@@ -931,6 +1004,13 @@ namespace AzToolsFramework
     {
         // refresh which Component Editor/Card looks selected in the Entity Outliner
         SetSelected(componentType == m_componentType);
+    }
+
+    void ComponentEditor::ConnectPropertyChangeHandler(
+        const AZStd::function<void(const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)>& callback)
+    {
+        m_propertyChangeHandler = AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeEvent::Handler(callback);
+        m_adapter->ConnectPropertyChangeHandler(m_propertyChangeHandler);
     }
 }
 

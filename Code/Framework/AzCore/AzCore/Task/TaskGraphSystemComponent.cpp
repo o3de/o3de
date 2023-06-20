@@ -15,8 +15,14 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Threading/ThreadUtils.h>
 
+ // PERFORMANCE NOTE & TODO
+ // Profiling Ros Con demo, Task Graph was 2-3ms slower than Jobs
+ // Time for Jobs was ~5.5ms, maxing out at ~6.3ms
+ // Task Graph took ~7.7ms, maxing out at ~8.7ms
+ // Disabling cl_activateTaskGraph for performance reasons for the time being
+
 // Create a cvar as a central location for experimentation with switching from the Job system to TaskGraph system.
-AZ_CVAR(bool, cl_activateTaskGraph, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
+AZ_CVAR(bool, cl_activateTaskGraph, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Flag clients of TaskGraph to switch between jobs/taskgraph (Note does not disable task graph system)");
 AZ_CVAR(float, cl_taskGraphThreadsConcurrencyRatio, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph calculate the number of worker threads to spawn by scaling the number of hw threads, value is clamped between 0.0f and 1.0f");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph number of hardware threads that are reserved for O3DE system threads. Value is clamped between 0 and the number of logical cores in the system");
 AZ_CVAR(uint32_t, cl_taskGraphThreadsMinNumber, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "TaskGraph minimum number of worker threads to create after scaling the number of hw threads");
@@ -99,7 +105,6 @@ namespace AZ
                     ("TaskGraph", "System component to create the default executor")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ;
             }
         }

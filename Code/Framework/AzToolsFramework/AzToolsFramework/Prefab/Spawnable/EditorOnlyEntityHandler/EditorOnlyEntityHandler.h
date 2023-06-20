@@ -19,7 +19,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     class EditorOnlyEntityHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorOnlyEntityHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorOnlyEntityHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::EditorOnlyEntityHandler, "{C420F65D-18AE-4CAF-BB18-70FA4FE73243}");
 
         virtual ~EditorOnlyEntityHandler() = default;

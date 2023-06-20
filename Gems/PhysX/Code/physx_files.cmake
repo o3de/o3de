@@ -29,6 +29,15 @@ set(FILES
     Include/PhysX/CharacterGameplayBus.h
     Include/PhysX/Material/PhysXMaterial.h
     Include/PhysX/Material/PhysXMaterialConfiguration.h
+    Include/PhysX/ArticulationTypes.h
+    Include/PhysX/ArticulationJointBus.h
+    Include/PhysX/ArticulationSensorBus.h
+    Source/Articulation/ArticulationLinkConfiguration.h
+    Source/Articulation/ArticulationLinkConfiguration.cpp
+    Source/ArticulationLinkComponent.cpp
+    Source/ArticulationLinkComponent.h
+    Source/ArticulationUtils.cpp
+    Source/ArticulationUtils.h
     Source/RigidBodyComponent.cpp
     Source/RigidBodyComponent.h
     Source/BaseColliderComponent.cpp
@@ -73,6 +82,8 @@ set(FILES
     Source/RigidBody.h
     Source/RigidBodyStatic.cpp
     Source/RigidBodyStatic.h
+    Source/Articulation.cpp
+    Source/Articulation.h
     Source/Collision.cpp
     Source/Collision.h
     Source/Shape.h
@@ -104,6 +115,7 @@ set(FILES
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h
+    Include/PhysX/Joint/PhysXJointRequestsBus.h
     Include/PhysX/Joint/Configuration/PhysXJointConfiguration.h
     Source/Common/PhysXSceneQueryHelpers.h
     Source/Common/PhysXSceneQueryHelpers.cpp

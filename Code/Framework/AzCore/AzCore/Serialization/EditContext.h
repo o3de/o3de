@@ -115,6 +115,21 @@ namespace AZ
         };
     }
 
+    namespace SerializeInternal
+    {
+        template<class T>
+        struct ElementInfo;
+
+        template<class T, class C>
+        struct ElementInfo<T C::*>
+        {
+            using ElementType = AZStd::RemoveEnumT<T>;
+            using ClassType = C;
+            using Type = T;
+            using ValueType = AZStd::remove_pointer_t<ElementType>;
+        };
+    }
+
     /**
      * EditContext is bound to serialize context. It uses it for data manipulation.
      * It's role is to be an abstract way to generate and describe how a class should
@@ -132,7 +147,7 @@ namespace AZ
         using EnumInfo = EnumBuilder; ///< @deprecated Use EditContext::EnumBuilder
         /// @endcond
 
-        AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditContext, SystemAllocator);
 
         /**
          * EditContext uses serialize context to interact with data, so serialize context is
@@ -530,21 +545,22 @@ namespace AZ
         if (m_serializeContext.IsRemovingReflection())
         {
             // If the serialize context is unreflecting, then the enum needs to be removed
-            m_enumData.erase(enumId);
-            return EditContext::EnumBuilder();
+            auto enumDataIt = m_enumData.find(enumId);
+            AZ_Assert(enumDataIt != m_enumData.end(), "Enum %s is being unreflected but was never reflected", displayName);
+            enumDataIt->second.ClearAttributes();
+            m_enumData.erase(enumDataIt);
+            return {};
         }
-        else
-        {
-            AZ_Assert(m_enumData.find(enumId) == m_enumData.end(), "Enum %s has already been reflected to EditContext", displayName);
-            Edit::ElementData& enumData = m_enumData[enumId];
 
-            // Set the elementId to the Crc of the typeId, this indicates that it's globally reflected
-            const Crc32 typeCrc = AZ::Internal::UuidToCrc32(enumId);
-            enumData.m_elementId = typeCrc;
-            enumData.m_name = displayName;
-            enumData.m_description = description;
-            return EditContext::EnumBuilder(this, &enumData);
-        }
+        AZ_Assert(m_enumData.find(enumId) == m_enumData.end(), "Enum %s has already been reflected to EditContext", displayName);
+        Edit::ElementData& enumData = m_enumData[enumId];
+
+        // Set the elementId to the Crc of the typeId, this indicates that it's globally reflected
+        const Crc32 typeCrc = AZ::Internal::UuidToCrc32(enumId);
+        enumData.m_elementId = typeCrc;
+        enumData.m_name = displayName;
+        enumData.m_description = description;
+        return {this, &enumData};
     }
 
     //=========================================================================
@@ -673,7 +689,7 @@ namespace AZ
         AZ_Assert(classElement, "Class element for editor data element reflection '%s' was NOT found in the serialize context! This member MUST be serializable to be editable!", name);
 
         Edit::ElementData* ed = &m_classElement->m_elements.emplace_back();
-        
+
         classElement->m_editData = ed;
         m_editElement = ed;
         ed->m_elementId = uiIdCrc;
@@ -696,7 +712,7 @@ namespace AZ
         }
 
         using ElementTypeInfo = typename SerializeInternal::ElementInfo<T>;
-        using ElementType = typename AZStd::Utils::if_c<AZStd::is_enum<typename ElementTypeInfo::Type>::value, typename ElementTypeInfo::Type, typename ElementTypeInfo::ElementType>::type;
+        using ElementType = AZStd::conditional_t<AZStd::is_enum_v<typename ElementTypeInfo::Type>, typename ElementTypeInfo::Type, typename ElementTypeInfo::ElementType>;
         AZ_Assert(m_classData->m_typeId == AzTypeInfo<typename ElementTypeInfo::ClassType>::Uuid(), "Data element (%s) belongs to a different class!", AzTypeInfo<typename ElementTypeInfo::ValueType>::Name());
 
         const SerializeContext::ClassData* classData = m_context->m_serializeContext.FindClassData(AzTypeInfo<typename ElementTypeInfo::ValueType>::Uuid());
@@ -718,7 +734,7 @@ namespace AZ
                 }
             }
         }
-        
+
         const char* typeName = AzTypeInfo<typename ElementTypeInfo::ValueType>::Name();
         return DataElement<T>(uiId, memberVariable, typeName, typeName);
     }
@@ -736,14 +752,14 @@ namespace AZ
 
         typedef typename SerializeInternal::ElementInfo<T>  ElementTypeInfo;
         AZ_Assert(m_classData->m_typeId == AzTypeInfo<typename ElementTypeInfo::ClassType>::Uuid(), "Data element (%s) belongs to a different class!", AzTypeInfo<typename ElementTypeInfo::ValueType>::Name());
-        using ElementType = typename AZStd::Utils::if_c<AZStd::is_enum<typename ElementTypeInfo::Type>::value, typename ElementTypeInfo::Type, typename ElementTypeInfo::ElementType>::type;
+        using ElementType = AZStd::conditional_t<AZStd::is_enum_v<typename ElementTypeInfo::Type>, typename ElementTypeInfo::Type, typename ElementTypeInfo::ElementType>;
 
         const SerializeContext::ClassData* classData = m_context->m_serializeContext.FindClassData(AzTypeInfo<typename ElementTypeInfo::ValueType>::Uuid());
         if (classData && classData->m_editData)
         {
             return DataElement<T>(uiIdCrc, memberVariable, classData->m_editData->m_name, classData->m_editData->m_description);
         }
-        else if constexpr (AZStd::is_enum<ElementType>::value) 
+        else if constexpr (AZStd::is_enum<ElementType>::value)
         {
             if (AzTypeInfo<ElementType>::Name() != nullptr)
             {
@@ -787,48 +803,29 @@ namespace AZ
     //=========================================================================
     // Attribute
     //=========================================================================
-    template<class T>
-    EditContext::ClassBuilder*
-    EditContext::ClassBuilder::Attribute(Crc32 idCrc, T value)
-    {
-        if (!IsValid())
-        {
-            return this;
-        }
-
-        AZ_Assert(AZ::Internal::AttributeValueTypeClassChecker<T>::Check(m_classData->m_typeId, m_classData->m_azRtti), "Attribute (0x%08x) doesn't belong to '%s' class! You can't reference other classes!", idCrc, m_classData->m_name);
-        using ContainerType = AttributeContainerType<T>;
-        AZ_Assert(m_editElement, "You can attach attributes only to UiElements!");
-        if (m_editElement)
-        {
-            // Detect adding an EnumValue attribute to an enum which is reflected globally
-            const bool modifyingGlobalEnum = AZ::Internal::IsModifyingGlobalEnum(idCrc, *m_editElement);
-            AZ_Error("EditContext", !modifyingGlobalEnum, "You cannot add enum values to an enum which is globally reflected");
-            if (!modifyingGlobalEnum)
-            {
-                m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
-            }
-        }
-        return this;
-    }
-
     namespace Edit
     {
-        template<class EnumType>
+        template <class EnumType>
         struct EnumConstant
         {
             AZ_TYPE_INFO(EnumConstant, "{4CDFEE70-7271-4B27-833B-F8F72AA64C40}");
 
-            typedef typename AZStd::RemoveEnum<EnumType>::type UnderlyingType;
+            using UnderlyingType = AZStd::RemoveEnumT<EnumType>;
 
             EnumConstant() {}
-            EnumConstant(EnumType first, const char* description)
+            EnumConstant(EnumType first, AZStd::string_view description)
+                : m_value(static_cast<AZ::u64>(first))
+                , m_description(description)
             {
-                m_value = static_cast<UnderlyingType>(first);
-                m_description = description;
             }
 
-            UnderlyingType m_value;
+            AZStd::pair<UnderlyingType, AZStd::string> operator()() const
+            {
+                return { static_cast<UnderlyingType>(m_value), m_description };
+            }
+
+            // Store using a u64 under the hood so this can be safely cast to any valid enum-range value
+            AZ::u64 m_value;
             AZStd::string m_description;
         };
 
@@ -844,6 +841,141 @@ namespace AZ
             return enumValues;
         }
     } // namespace Edit
+
+    template <class T>
+    constexpr bool IsVectorOfEnumConstants_v = false;
+
+    template <class EnumType>
+    constexpr bool IsVectorOfEnumConstants_v<AZStd::vector<Edit::EnumConstant<EnumType>>> = true;
+
+    template <class T>
+    using InvocableReturnType = AZStd::conditional_t<AZStd::function_traits<T>::value, typename AZStd::function_traits<T>::return_type, T>;
+
+    template <class T>
+    constexpr bool IsInvocableThatReturnsVectorOfEnumConstants_v = IsVectorOfEnumConstants_v<InvocableReturnType<T>>;
+
+    template<class T>
+    constexpr bool IsVectorOfPairTypeToString_v = false;
+
+    template<class T>
+    constexpr bool IsVectorOfPairTypeToString_v<AZStd::vector<AZStd::pair<T, AZStd::string>>> = true;
+
+    template<class T>
+    constexpr bool IsInvocableThatReturnsVectorOfPairs_v = IsVectorOfPairTypeToString_v<InvocableReturnType<T>>;
+
+    template <class T>
+    struct EnumTypeFromVectorOfEnumConstants
+    {
+        using type = T;
+    };
+
+    template <class EnumType>
+    struct EnumTypeFromVectorOfEnumConstants<AZStd::vector<Edit::EnumConstant<EnumType>>>
+    {
+        using type = EnumType;
+    };
+
+    template <class T>
+    using EnumTypeFromVectorOfEnumConstants_t = typename EnumTypeFromVectorOfEnumConstants<T>::type;
+
+    // Calls invocable and replaces return type
+    template <class NewReturnType, class InvocableType>
+    struct ReplaceInvocableReturnType;
+
+    template <class NewReturnType, class OldReturnType, class... Args>
+    struct ReplaceInvocableReturnType<NewReturnType, OldReturnType(Args...)>
+    {
+        using type = NewReturnType(Args...);
+    };
+
+    template <class NewReturnType, class InvocableType>
+    using ReplaceInvocableReturnType_t = typename ReplaceInvocableReturnType<NewReturnType, InvocableType>::type;
+
+    template<class T>
+    EditContext::ClassBuilder*
+    EditContext::ClassBuilder::Attribute(Crc32 idCrc, T value)
+    {
+        if (!IsValid())
+        {
+            return this;
+        }
+
+        AZ_Assert(AZ::Internal::AttributeValueTypeClassChecker<T>::Check(m_classData->m_typeId, m_classData->m_azRtti), "Attribute (0x%08x) doesn't belong to '%s' class! You can't reference other classes!", idCrc, m_classData->m_name);
+        using ContainerType = AttributeContainerType<T>;
+
+        AZ_Assert(m_editElement, "You can attach attributes only to UiElements!");
+        if (m_editElement)
+        {
+            // Detect adding an EnumValue attribute to an enum which is reflected globally
+            const bool modifyingGlobalEnum = AZ::Internal::IsModifyingGlobalEnum(idCrc, *m_editElement);
+            AZ_Error("EditContext", !modifyingGlobalEnum, "You cannot add enum values to an enum which is globally reflected");
+            if (!modifyingGlobalEnum)
+            {
+                m_editElement->m_attributes.push_back(Edit::AttributePair(idCrc, aznew ContainerType(value)));
+
+                if (idCrc == AZ::Edit::Attributes::EnumValues)
+                {
+                    if constexpr (IsInvocableThatReturnsVectorOfEnumConstants_v<T>)
+                    {
+                        using EnumVectorType = AZStd::conditional_t<
+                            AZStd::function_traits<T>::value,
+                            typename AZStd::function_traits<T>::return_type,
+                            T>;
+                        using EnumType = EnumTypeFromVectorOfEnumConstants_t<EnumVectorType>;
+
+                        if constexpr (AZStd::function_traits<T>::value)
+                        {
+                            using FuncType = typename AZStd::function_traits<T>::function_type;
+                            using EnumValueWrapperFuncType = AZStd::function<ReplaceInvocableReturnType_t<
+                                AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>,
+                                FuncType>>;
+
+                            EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args)
+                            {
+                                AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>> genericValueVector;
+                                EnumVectorType enumConstantVector = AZStd::invoke(value, AZStd::forward<decltype(args)>(args)...);
+
+                                for (const Edit::EnumConstant<EnumType>& enumConstant : enumConstantVector)
+                                {
+                                    genericValueVector.emplace_back(enumConstant());
+                                }
+
+                                return genericValueVector;
+                            };
+
+                            m_editElement->m_attributes.push_back(
+                                Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                        }
+                        else
+                        {
+                            using GenericValueVector = AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>>;
+                            using EnumValueWrapperFuncType = AZStd::function<GenericValueVector()>;
+                            EnumValueWrapperFuncType EnumValuesWrapper = [value]([[maybe_unused]] auto&&... args)
+                            {
+                                AZStd::vector<AZStd::pair<AZStd::RemoveEnumT<EnumType>, AZStd::string>> genericValueVector;
+
+                                for (const Edit::EnumConstant<EnumType>& enumConstant : value)
+                                {
+                                    genericValueVector.emplace_back(enumConstant());
+                                }
+
+                                return genericValueVector;
+                            };
+
+                            m_editElement->m_attributes.push_back(
+                                Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew AttributeInvocable(EnumValuesWrapper)));
+                        }
+                    }
+                    else if constexpr (IsInvocableThatReturnsVectorOfPairs_v<T>)
+                    {
+                        m_editElement->m_attributes.push_back(
+                            Edit::AttributePair(AZ::Edit::Attributes::GenericValueList, aznew ContainerType(value)));
+                    }
+                }
+            }
+        }
+        return this;
+    }
 
     //=========================================================================
     // EnumAttribute
@@ -864,11 +996,18 @@ namespace AZ
         if (!isReflectedGlobally)
         {
             const Edit::EnumConstant<T> internalValue(value, description);
-            using ContainerType = Edit::AttributeData<Edit::EnumConstant<T>>;
+            using EnumConstantAttritbuteDataType = Edit::AttributeData<Edit::EnumConstant<T>>;
+            using GenericValueAttributeDataType = Edit::AttributeData<AZStd::pair<AZStd::RemoveEnumT<T>, AZStd::string>>;
             AZ_Assert(m_editElement, "You can attach attributes only to UiElements!");
             if (m_editElement)
             {
-                m_editElement->m_attributes.push_back(Edit::AttributePair(AZ::Edit::InternalAttributes::EnumValue, aznew ContainerType(internalValue)));
+                m_editElement->m_attributes.push_back(
+                    Edit::AttributePair(AZ::Edit::InternalAttributes::EnumValue, aznew EnumConstantAttritbuteDataType(internalValue)));
+
+                m_editElement->m_attributes.push_back(Edit::AttributePair(
+                    AZ::Edit::Attributes::GenericValue,
+                    aznew GenericValueAttributeDataType(AZStd::pair<AZStd::RemoveEnumT<T>, AZStd::string>{
+                        static_cast<AZStd::RemoveEnumT<T>>(internalValue.m_value), internalValue.m_description })));
             }
         }
         return this;
@@ -929,13 +1068,13 @@ namespace AZ
 
         AZ_Assert(belongsToContainerType || belongsToTemplatedType, "ElementAttribute (0x%08u) doesn't belong to '%s' or any contained templated classes! You can't reference other classes!", idCrc, m_classData->m_name);
 
-        typedef typename AZStd::Utils::if_c<AZStd::is_member_pointer<T>::value,
-            typename AZStd::Utils::if_c<AZStd::is_member_function_pointer<T>::value, Edit::AttributeMemberFunction<T>, Edit::AttributeMemberData<T> >::type,
-            typename AZStd::Utils::if_c<AZStd::is_function<typename AZStd::remove_pointer<T>::type>::value, Edit::AttributeFunction<typename AZStd::remove_pointer<T>::type>, Edit::AttributeData<T> >::type
-        >::type ContainerType;
+        typedef AZStd::conditional_t<AZStd::is_member_pointer_v<T>,
+            AZStd::conditional_t<AZStd::is_member_function_pointer_v<T>, Edit::AttributeMemberFunction<T>, Edit::AttributeMemberData<T> >,
+            AZStd::conditional_t<AZStd::is_function_v<AZStd::remove_pointer_t<T>>, Edit::AttributeFunction<AZStd::remove_pointer_t<T>>, Edit::AttributeData<T> >
+        > ContainerType;
 
         AZ_Assert(m_editElement, "You can attach ElementAttributes only to UiElements!");
-        
+
         if (m_editElement)
         {
             // Detect adding an EnumValue attribute to an enum which is reflected globally
@@ -975,7 +1114,9 @@ namespace AZ
         }
         return this;
     }
-
 }   // namespace AZ
 
 #include <AzCore/Serialization/EditContext.inl>
+
+extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(const char *, AZ::Crc32);
+extern template AZ::EditContext::ClassBuilder* AZ::EditContext::ClassBuilder::Attribute<AZ::Crc32>(AZ::Crc32, AZ::Crc32);

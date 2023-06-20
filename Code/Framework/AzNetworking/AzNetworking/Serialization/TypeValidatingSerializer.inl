@@ -78,13 +78,6 @@ namespace AzNetworking
     }
 
     template <typename BASE_TYPE>
-    bool TypeValidatingSerializer<BASE_TYPE>::Serialize(char& value, const char* name, char minValue, char maxValue)
-    {
-        bool result = Validate(name, ValidateSerializeType::Char);
-        return BASE_TYPE::Serialize(value, name, minValue, maxValue) && result;
-    }
-
-    template <typename BASE_TYPE>
     bool TypeValidatingSerializer<BASE_TYPE>::Serialize(int8_t& value, const char* name, int8_t minValue, int8_t maxValue)
     {
         bool result = Validate(name, ValidateSerializeType::Int8);

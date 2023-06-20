@@ -8,8 +8,6 @@
 
 #include "CharacterPhysicsAssetTypeInfo.h"
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-
 namespace LmbrCentral
 {
     static AZ::Data::AssetType characterPhysicsType("{29D64D95-E46D-4D66-9BD4-552C139A73DC}");

@@ -31,9 +31,6 @@ namespace AZ
             //! Assigns the descriptor used to initialize the RHI streaming image pool.
             void SetPoolDescriptor(AZStd::unique_ptr<RHI::StreamingImagePoolDescriptor>&& descriptor);
 
-            //! Assigns the controller asset which will perform streaming priority management on the pool.
-            void SetControllerAsset(const Data::Asset<StreamingImageControllerAsset>& controllerAsset);
-
             //! Assigns the name of the pool
             void SetPoolName(AZStd::string_view poolName);
             

@@ -33,7 +33,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(AddScanFolderChange, "{CA1C5AC8-127B-4422-9431-030209A07614}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(AddScanFolderChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AddScanFolderChange, AZ::SystemAllocator);
 
             AddScanFolderChange(const AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
                 : m_scanFolder(scanFolder) {}
@@ -52,7 +52,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(AddFileChange, "{65D8CFBB-4CD9-4E4F-9A08-0F4D25CA1326}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(AddFileChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AddFileChange, AZ::SystemAllocator);
 
             AddFileChange(const AssetDatabase::FileDatabaseEntry& file)
                 : m_file(file) {}
@@ -71,7 +71,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(RemoveFileChange, "{83758FA6-65F2-493E-8D27-C73D0AF0FB94}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(RemoveFileChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoveFileChange, AZ::SystemAllocator);
 
             RemoveFileChange(const AZ::s64& fileId)
                 : m_fileId(fileId) {}
@@ -89,7 +89,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(AddSourceChange, "{E9BE4E9B-85DE-4217-96F2-4098A88F1FDE}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(AddSourceChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AddSourceChange, AZ::SystemAllocator);
 
             AddSourceChange(const SourceWithFileID& source)
                 : m_source(source) {}
@@ -107,7 +107,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(RemoveSourceChange, "{D87AB1B8-6F72-4E2F-B7C1-A01BD62D8F1D}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(RemoveSourceChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoveSourceChange, AZ::SystemAllocator);
 
             RemoveSourceChange(const AZ::Uuid& sourceUuid)
                 : m_sourceUuid(sourceUuid) {}
@@ -126,7 +126,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(AddProductChange, "{7127E694-4CD4-480F-A88E-B5C726B65DFE}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(AddProductChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AddProductChange, AZ::SystemAllocator);
 
             AddProductChange(const ProductWithUuid& product)
                 : m_product(product) {}
@@ -147,7 +147,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(RemoveProductChange, "{7DDC4900-8842-4221-8CB7-C167DEB82BE8}", AssetEntryChange);
-            AZ_CLASS_ALLOCATOR(RemoveProductChange, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoveProductChange, AZ::SystemAllocator);
 
             RemoveProductChange(const AZ::Data::AssetId& assetId)
                 : m_assetId(assetId) {}

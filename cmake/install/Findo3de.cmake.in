@@ -34,6 +34,19 @@ o3de_current_file_path(find_o3de_path)
 cmake_path(SET engine_root_folder NORMALIZE ${find_o3de_path}/..)
 set_property(GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER "${engine_root_folder}")
 
+# If the generation of the SDK layout had LY_DISABLE_TEST_MODULES cache variable set, 
+# then the PAL_TRAIT_BUILD_TESTS_SUPPORTED value needs to be propagated as FALSE
+set(disable_test_modules @LY_DISABLE_TEST_MODULES@)
+if (disable_test_modules)
+    set(PAL_TRAIT_BUILD_TESTS_SUPPORTED FALSE)
+endif()
+
+if ($ENV{O3DE_SNAP})
+    list(APPEND CMAKE_REQUIRED_INCLUDES "$ENV{SNAP}/usr/include;$ENV{SNAP}/usr/include/x86_64-linux-gnu")
+    list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "Wl,-L$ENV{SNAP}/usr/lib/x86_64-linux-gnu")
+    list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-print-target-triple")
+endif()
+
 # Inject the CompilerSettings.cmake to be included before the project command
 set(CMAKE_PROJECT_INCLUDE_BEFORE "${engine_root_folder}cmake/CompilerSettings.cmake")
 

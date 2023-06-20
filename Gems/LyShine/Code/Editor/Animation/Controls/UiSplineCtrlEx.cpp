@@ -869,16 +869,12 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 
         painter->setPen(pen);
 
-        int linesDrawn = 0;
-        int pixels = 0;
-
         float gradient = 0.0f;
         int pointsInLine = -1;
         QPoint lineStart;
         QPainterPath path;
         for (int x = left; x <= right; x++)
         {
-            ++pixels;
 
             float time = XOfsToTime(x);
             ISplineInterpolator::ValueType value;
@@ -905,7 +901,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
                 path.lineTo(lineStart);
                 gradient = float(pt.y() - lineStart.y()) / (pt.x() - lineStart.x());
                 pointsInLine = 1;
-                ++linesDrawn;
             }
             else if ((x == right && pointsInLine >= 0) || (pointsInLine > 0 && fabs(lineStart.y() + gradient * (pt.x() - lineStart.x()) - pt.y()) == 1.0f))
             {
@@ -913,7 +908,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
                 path.lineTo(lineStart);
                 gradient = 0.0f;
                 pointsInLine = 0;
-                ++linesDrawn;
             }
             else if (pointsInLine > 0)
             {
@@ -1280,6 +1274,13 @@ void SplineWidget::mouseDoubleClickEvent(QMouseEvent* event)
     break;
     case HIT_KEY:
     {
+        // End recording that was started at the beginning of the double click sequence
+        if (UiAnimUndo::IsRecording())
+        {
+            UiAnimUndoManager::Get()->Cancel();
+            m_pCurrentUndo = nullptr;
+        }
+
         RemoveKey(m_pHitSpline, m_nHitKeyIndex);
     }
     break;

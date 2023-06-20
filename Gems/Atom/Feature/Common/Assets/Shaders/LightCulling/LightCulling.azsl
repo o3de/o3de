@@ -244,7 +244,7 @@ float4 ComputeScreenRays(uint2 tileId, out float2 tileCenterUv)
 uint NextPowerTwo(uint x)
 {
     // https://wickedengine.net/2018/01/05/next-power-of-two-in-hlsl/
-    return 2 << firstbithigh(max(1, x) - 1);
+    return 2u << firstbithigh(max(1, x) - 1);
 }
 
 uint GetSortKey(PassSrg::Decal decal)
@@ -473,7 +473,7 @@ void CullDiskLights(uint groupIndex, TileLightData tileLightData, float3 aabb_ce
         float3 lightDirection = WorldToView_Vector(light.m_direction);
 
         bool potentiallyIntersects;
-        if (light.m_flags & DiskLightFlag::UseConeAngle > 0)
+        if ((light.m_flags & DiskLightFlag::UseConeAngle) > 0)
         {
             potentiallyIntersects = TestSphereVsCone(aabb_center, length(aabb_extents), lightPosition, lightDirection, light.m_cosOuterConeAngle, rsqrt(light.m_invAttenuationRadiusSquared) + light.m_bulbPositionOffset);
         }

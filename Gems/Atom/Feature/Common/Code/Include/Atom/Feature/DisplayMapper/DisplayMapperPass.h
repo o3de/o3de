@@ -56,14 +56,13 @@ namespace AZ
          */
         class DisplayMapperPass
             : public RPI::ParentPass
-            , public AzFramework::WindowNotificationBus::Handler
         {
             AZ_RPI_PASS(DisplayMapperPass);
 
         public:
             AZ_RTTI(DisplayMapperPass, "{B022D9D6-BDFA-4435-B27C-466DC4C91D18}", RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(DisplayMapperPass, SystemAllocator, 0);
-            virtual ~DisplayMapperPass();
+            AZ_CLASS_ALLOCATOR(DisplayMapperPass, SystemAllocator);
+            virtual ~DisplayMapperPass() = default;
 
             //! Creates a DisplayMapperPass
             static RPI::Ptr<DisplayMapperPass> Create(const RPI::PassDescriptor& descriptor);
@@ -77,9 +76,6 @@ namespace AZ
             void FrameBeginInternal(FramePrepareParams params) final;
             void FrameEndInternal() final;
             void CreateChildPassesInternal() final;
-
-            // WindowNotificationBus::Handler overrides ...
-            void OnWindowResized(uint32_t width, uint32_t height) override;
 
         private:
             void ConfigureDisplayParameters();

@@ -19,6 +19,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(SsaoComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::SsaoComponentConfig, "{C1ACBBE7-C3BD-4245-B571-3B5FDCAC0B0B}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

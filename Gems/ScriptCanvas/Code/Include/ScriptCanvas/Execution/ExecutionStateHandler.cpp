@@ -11,10 +11,10 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/Utils.h>
+#include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-
 #include <ScriptCanvas/Execution/ExecutionStateHandler.h>
 
 namespace ScriptCanvas

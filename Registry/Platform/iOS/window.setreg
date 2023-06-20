@@ -1,0 +1,10 @@
+{
+    "O3DE": {
+        "Autoexec": {
+            "ConsoleCommands": {
+                "r_fullscreen": 1,
+                "sys_PakLogInvalidFileAccess" : 1
+            }
+        }
+    }
+}

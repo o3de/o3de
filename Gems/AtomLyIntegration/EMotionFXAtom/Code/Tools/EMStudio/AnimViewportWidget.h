@@ -9,6 +9,8 @@
 
 #include <QSettings>
 #include <QMouseEvent>
+
+#include <Atom/RPI.Public/SceneBus.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
@@ -27,6 +29,7 @@ namespace EMStudio
         : public AtomToolsFramework::RenderViewportWidget
         , private AnimViewportRequestBus::Handler
         , private ViewportPluginRequestBus::Handler
+        , private AZ::RPI::SceneNotificationBus::Handler
     {
     public:
         AnimViewportWidget(AtomRenderPlugin* parentPlugin);
@@ -54,6 +57,9 @@ namespace EMStudio
 
         // ViewportPluginRequestBus::Handler overrides
         AZ::s32 GetViewportId() const;
+
+        // SceneNotificationBus overrides ...
+        void OnBeginPrepareRender() override;
 
         // MouseEvent
         void mousePressEvent(QMouseEvent* event) override;
@@ -93,5 +99,7 @@ namespace EMStudio
 
         AzToolsFramework::ViewportUi::ViewportUiManager m_viewportUiManager;
         QWidget m_renderOverlay;
+
+        AzFramework::DebugDisplayRequests* m_debugDisplay = nullptr;
     };
 }

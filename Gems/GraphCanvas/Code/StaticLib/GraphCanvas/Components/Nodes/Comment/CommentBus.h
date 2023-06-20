@@ -128,7 +128,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(CommentNodeTextSaveData, "{524D8380-AC09-444E-870E-9CEF2535B4A2}", ComponentSaveData);
-        AZ_CLASS_ALLOCATOR(CommentNodeTextSaveData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentNodeTextSaveData, AZ::SystemAllocator);
 
         CommentNodeTextSaveData()
             : m_saveDataInterface(nullptr)

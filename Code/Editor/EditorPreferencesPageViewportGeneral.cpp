@@ -11,6 +11,8 @@
 #include "EditorPreferencesPageViewportGeneral.h"
 #include "EditorViewportSettings.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 #include <AzQtComponents/Components/StyleManager.h>
 
 // Editor
@@ -31,7 +33,6 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
 
     serialize.Class<Display>()
         ->Version(1)
-        ->Field("ShowSafeFrame", &Display::m_showSafeFrame)
         ->Field("HighlightSelGeom", &Display::m_highlightSelGeom)
         ->Field("HighlightSelVegetation", &Display::m_highlightSelVegetation)
         ->Field("HighlightOnMouseOver", &Display::m_highlightOnMouseOver)
@@ -97,8 +98,6 @@ void CEditorPreferencesPage_ViewportGeneral::Reflect(AZ::SerializeContext& seria
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &General::m_stickySelectEnabled, "Enable Sticky Select", "Enable Sticky Select");
 
         editContext->Class<Display>("Viewport Display Settings", "")
-            ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &Display::m_showSafeFrame, "Show 4:3 Aspect Ratio Frame", "Show 4:3 Aspect Ratio Frame")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &Display::m_highlightSelGeom, "Highlight Selected Geometry", "Highlight Selected Geometry")
             ->DataElement(
@@ -225,7 +224,6 @@ void CEditorPreferencesPage_ViewportGeneral::OnApply()
     SandboxEditor::SetCameraDefaultNearPlaneDistance(m_general.m_defaultNearPlane);
     SandboxEditor::SetCameraDefaultFarPlaneDistance(m_general.m_defaultFarPlane);
 
-    gSettings.viewports.bShowSafeFrame = m_display.m_showSafeFrame;
     gSettings.viewports.bHighlightSelectedGeometry = m_display.m_highlightSelGeom;
     gSettings.viewports.bHighlightSelectedVegetation = m_display.m_highlightSelVegetation;
     gSettings.viewports.bHighlightMouseOverGeometry = m_display.m_highlightOnMouseOver;
@@ -284,12 +282,11 @@ void CEditorPreferencesPage_ViewportGeneral::InitializeSettings()
     m_general.m_defaultNearPlane = SandboxEditor::CameraDefaultNearPlaneDistance();
     m_general.m_defaultFarPlane = SandboxEditor::CameraDefaultFarPlaneDistance();
     m_general.m_defaultFOV = SandboxEditor::CameraDefaultFovDegrees();
-    
+
     m_general.m_contextMenuEnabled = gSettings.viewports.bEnableContextMenu;
     m_general.m_sync2DViews = gSettings.viewports.bSync2DViews;
     m_general.m_stickySelectEnabled = SandboxEditor::StickySelectEnabled();
 
-    m_display.m_showSafeFrame = gSettings.viewports.bShowSafeFrame;
     m_display.m_highlightSelGeom = gSettings.viewports.bHighlightSelectedGeometry;
     m_display.m_highlightSelVegetation = gSettings.viewports.bHighlightSelectedVegetation;
     m_display.m_highlightOnMouseOver = gSettings.viewports.bHighlightMouseOverGeometry;

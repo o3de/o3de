@@ -19,7 +19,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         enum class State
         {
             Selected,
-            Deselected
+            Deselected,
+            Disabled
         };
 
         Button(AZStd::string icon, ButtonId buttonId);

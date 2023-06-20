@@ -100,7 +100,7 @@ namespace AssetValidation
                     {
                         message.m_dependencies = result.TakeValue();
                     }
-                    auto somePair = AZStd::make_pair<AZ::Data::AssetId, AzFramework::AssetSystem::AssetNotificationMessage>(id, message);
+                    auto somePair = AZStd::make_pair(id, message);
                     assetList.push_back(somePair);
                 }
             };
@@ -150,7 +150,7 @@ namespace AssetValidation
                         if (randomizer.GetRandom() % 100 < changePercent)
                         {
                             ++thisChangeCount;
-                            notificationInterface->AssetChanged(thisElement.second);
+                            notificationInterface->AssetChanged({ thisElement.second });
                         }
                     }
 
@@ -178,7 +178,7 @@ void TestCreateContainers([[maybe_unused]] const AZ::ConsoleCommandContainer& so
         {
             if (AZ::Data::AssetManager::Instance().GetHandler(info.m_assetType))
             {
-                auto somePair = AZStd::make_pair<AZ::Data::AssetId, AZ::Data::AssetInfo>(id, info);
+                auto somePair = AZStd::make_pair(id, info);
                 assetList.push_back(somePair);
             }
         };

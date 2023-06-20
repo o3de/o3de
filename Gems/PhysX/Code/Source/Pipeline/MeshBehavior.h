@@ -23,15 +23,23 @@ namespace PhysX
         {
         public:
             AZ_COMPONENT(MeshBehavior, "{B6AFB216-2A49-402F-A2B1-C3A17812D53F}", AZ::SceneAPI::SceneCore::BehaviorComponent);
+            static void Reflect(AZ::ReflectContext* context);
 
             ~MeshBehavior() override = default;
 
+            // BehaviorComponent overrides ...
             void Activate() override;
             void Deactivate() override;
-            static void Reflect(AZ::ReflectContext* context);
 
+            // ManifestMetaInfoBus overrides ...
             void GetCategoryAssignments(CategoryRegistrationList& categories, const AZ::SceneAPI::Containers::Scene& scene) override;
+            void GetAvailableModifiers(
+                AZ::SceneAPI::Events::ManifestMetaInfo::ModifiersList& modifiers,
+                const AZ::SceneAPI::Containers::Scene& scene,
+                const AZ::SceneAPI::DataTypes::IManifestObject& target) override;
             void InitializeObject(const AZ::SceneAPI::Containers::Scene& scene, AZ::SceneAPI::DataTypes::IManifestObject& target) override;
+
+            // AssetImportRequestBus overrides ...
             AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
                 RequestingApplication requester) override;
             void GetPolicyName(AZStd::string& result) const override

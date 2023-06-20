@@ -11,13 +11,13 @@ namespace PhysX
 {
     static const float s_forceRegionZeroValue = 0.0f;
     static const float s_forceRegionMaxDamping = 100.0f; // Large values create an oscillation that sends the body too far out. Legacy renderer's Octree may throw errors.
-    static const float s_forceRegionMaxDensity = 400.0f; // Large values create an oscillation that sends the body too far out. Legacy renderer's Octree may throw errors. Maximum density is defined as a value capable of slowing down a radius 1 ball weighing 1 ton.
     static const float s_forceRegionMaxValue = 1000000.0f;
     static const float s_forceRegionMinValue = -s_forceRegionMaxValue;
     static const float s_forceRegionMaxDampingRatio = 1.5f;
     static const float s_forceRegionMinFrequency = 0.1f;
     static const float s_forceRegionMaxFrequency = 10.0f;
-
+    static const float s_forceRegionMinSpeed = 1e-3f; // Don't apply a simple drag force if the entity is going slower than this.
+    static const float s_minStoppingTime = 0.2f; // For stability, don't allow drag force to stop an entity in under this time in seconds.
 
     ForceWorldSpace::ForceWorldSpace(const AZ::Vector3& direction, const float magnitude)
         : m_direction(direction)
@@ -403,7 +403,6 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ForceSimpleDrag::m_volumeDensity, "Region Density", "Density of the region.")
                       ->Attribute(AZ::Edit::Attributes::Min, s_forceRegionZeroValue)
-                      ->Attribute(AZ::Edit::Attributes::Max, s_forceRegionMaxDensity)
                     ;
             }
         }
@@ -422,23 +421,33 @@ namespace PhysX
 
     AZ::Vector3 ForceSimpleDrag::CalculateForce(const EntityParams& entity, [[maybe_unused]] const RegionParams& region) const
     {
+        const float speed = entity.m_velocity.GetLength();
+
+        if (speed < s_forceRegionMinSpeed)
+        {
+            return AZ::Vector3::CreateZero();
+        }
+
         // Approximate shape as a sphere
         AZ::Vector3 center;
         float radius;
         entity.m_aabb.GetAsSphere(center, radius);
-
         const float crossSectionalArea = AZ::Constants::Pi * radius * radius;
-        const AZ::Vector3 velocitySquared = entity.m_velocity * entity.m_velocity;
+
+        // Clamp the force to an upper limit which would correspond to stopping the entity in the minimum stopping time.
+        const float momentum = entity.m_mass * speed;
+        const float maxForceMagnitude = momentum / s_minStoppingTime;
 
         // Wikipedia: https://en.wikipedia.org/wiki/Drag_coefficient
         // Fd = 1/2 * p * u^2 * cd * A
-        const AZ::Vector3 dragForce = 0.5f * m_volumeDensity * velocitySquared * m_dragCoefficient * crossSectionalArea;
+        float dragForceMagnitude =
+            AZ::GetMin(maxForceMagnitude, 0.5f * m_volumeDensity * speed * speed * m_dragCoefficient * crossSectionalArea);
 
         // The drag force is defined as being in the same direction as the flow velocity. Since the entity is moving and the
         // volume flow is stationary, this just becomes opposite to the entity's velocity. Causing the object to slow down.
-        const AZ::Vector3 direction(-AZ::GetSign(entity.m_velocity.GetX()), -AZ::GetSign(entity.m_velocity.GetY()), -AZ::GetSign(entity.m_velocity.GetZ()));
+        const AZ::Vector3 direction = -entity.m_velocity.GetNormalized();
 
-        return dragForce * direction.GetNormalized();
+        return dragForceMagnitude * direction;
     }
 
     void ForceSimpleDrag::SetDensity(float density)

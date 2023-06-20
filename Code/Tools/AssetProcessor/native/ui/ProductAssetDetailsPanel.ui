@@ -1,1009 +1,1016 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ProductAssetDetailsPanel</class>
- <widget class="QFrame" name="ProductAssetDetailsPanel">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>743</width>
-    <height>860</height>
-   </rect>
-  </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: rgb(87, 87, 87);</string>
-  </property>
-  <property name="frameShape">
-   <enum>QFrame::StyledPanel</enum>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <property name="sizeConstraint">
-    <enum>QLayout::SetDefaultConstraint</enum>
-   </property>
-   <item>
-    <widget class="QLabel" name="assetNameLabel">
-     <property name="font">
-      <font>
-       <family>16pt</family>
-       <pointsize>12</pointsize>
-       <weight>50</weight>
-       <italic>false</italic>
-       <bold>false</bold>
-      </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">font: 12pt;</string>
-     </property>
-     <property name="text">
-      <string>Model1.obj</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading</set>
-     </property>
-     <property name="class" stdset="0">
-      <string>Title</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <layout class="QVBoxLayout" name="productPanelLayout">
-     <item>
-      <widget class="Line" name="AssetDetailsSeparator">
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Button">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Window">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>255</red>
-             <green>255</green>
-             <blue>255</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Button">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Window">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>120</red>
-             <green>120</green>
-             <blue>120</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Button">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Base">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-          <colorrole role="Window">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>87</red>
-             <green>87</green>
-             <blue>87</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="folderSelectedDescription">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>This folder has no additional info, select a file for details.</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLabel" name="MissingProductDependenciesFolderTitleLabel">
-       <property name="font">
-        <font>
-         <family>12pt</family>
-         <pointsize>8</pointsize>
-         <weight>75</weight>
-         <italic>false</italic>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true">font: bold, 12pt;</string>
-       </property>
-       <property name="text">
-        <string>Missing Product Dependencies</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="MissingDependenciesFolderButtonsLayout">
-       <item>
-        <widget class="QPushButton" name="ScanFolderButton">
-         <property name="toolTip">
-          <string>Scans all files in this folder and subfolders for missing dependencies. This may take some time.</string>
-         </property>
-         <property name="text">
-          <string>Scan folder</string>
-         </property>
+  <class>ProductAssetDetailsPanel</class>
+  <widget class="QFrame" name="ProductAssetDetailsPanel">
+    <property name="geometry">
+      <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>743</width>
+        <height>860</height>
+      </rect>
+    </property>
+    <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+      </sizepolicy>
+    </property>
+    <property name="styleSheet">
+      <string notr="true">background-color: rgb(87, 87, 87);</string>
+    </property>
+    <property name="frameShape">
+      <enum>QFrame::StyledPanel</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+      <property name="sizeConstraint">
+        <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <item>
+        <widget class="QLabel" name="assetNameLabel">
+          <property name="font">
+            <font>
+              <family>16pt</family>
+              <pointsize>12</pointsize>
+              <weight>50</weight>
+              <italic>false</italic>
+              <bold>false</bold>
+            </font>
+          </property>
+          <property name="styleSheet">
+            <string notr="true">font: 12pt;</string>
+          </property>
+          <property name="text">
+            <string>Model1.obj</string>
+          </property>
+          <property name="alignment">
+            <set>Qt::AlignLeading</set>
+          </property>
+          <property name="class" stdset="0">
+            <string>Title</string>
+          </property>
         </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ClearScanFolderButton">
-         <property name="toolTip">
-          <string>Clears all dependency scan results for files in this folder and subfolders.</string>
-         </property>
-         <property name="text">
-          <string>Clear results</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QScrollArea" name="scrollArea">
-       <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
-       </property>
-       <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustToContents</enum>
-       </property>
-       <property name="widgetResizable">
-        <bool>true</bool>
-       </property>
-       <widget class="QWidget" name="scrollAreaWidgetContents" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <layout class="QVBoxLayout" name="scrollableVerticalLayout">
-         <item>
-          <layout class="QGridLayout" name="headerGrid" columnstretch="1,4">
-           <item row="2" column="1">
-            <widget class="QLabel" name="jobKeyValueLabel">
-             <property name="text">
-              <string>jobKey Here</string>
-             </property>
-             <property name="textInteractionFlags">
-              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-             </property>
+      </item>
+      <item>
+        <layout class="QVBoxLayout" name="productPanelLayout">
+          <item>
+            <widget class="Line" name="AssetDetailsSeparator">
+              <property name="palette">
+                <palette>
+                  <active>
+                    <colorrole role="WindowText">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>255</red>
+                          <green>255</green>
+                          <blue>255</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Button">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Base">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Window">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                  </active>
+                  <inactive>
+                    <colorrole role="WindowText">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>255</red>
+                          <green>255</green>
+                          <blue>255</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Button">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Base">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Window">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                  </inactive>
+                  <disabled>
+                    <colorrole role="WindowText">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>120</red>
+                          <green>120</green>
+                          <blue>120</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Button">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Base">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                    <colorrole role="Window">
+                      <brush brushstyle="SolidPattern">
+                        <color alpha="255">
+                          <red>87</red>
+                          <green>87</green>
+                          <blue>87</blue>
+                        </color>
+                      </brush>
+                    </colorrole>
+                  </disabled>
+                </palette>
+              </property>
+              <property name="styleSheet">
+                <string notr="true"/>
+              </property>
+              <property name="frameShadow">
+                <enum>QFrame::Plain</enum>
+              </property>
+              <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+              </property>
             </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="platformTitleLabel">
-             <property name="styleSheet">
-              <string notr="true">font: bold;</string>
-             </property>
-             <property name="text">
-              <string>Platform</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="productAssetIdTitleLabel">
-             <property name="styleSheet">
-              <string notr="true">font: bold;</string>
-             </property>
-             <property name="text">
-              <string>Product Asset ID</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLabel" name="productAssetIdValueLabel">
-             <property name="text">
-              <string>Product asset ID here</string>
-             </property>
-             <property name="textInteractionFlags">
-              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="sourceAssetTitleLabel">
-             <property name="styleSheet">
-              <string notr="true">font: bold;</string>
-             </property>
-             <property name="text">
-              <string>Source Asset</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="lastTimeProcessedValueLabel">
-             <property name="text">
-              <string>lastTimeProcessed Here</string>
-             </property>
-             <property name="textInteractionFlags">
-              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="lastTimeProcessedTitleLabel">
-             <property name="styleSheet">
-              <string notr="true">font: bold;</string>
-             </property>
-             <property name="text">
-              <string>Last Time Processed</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QLabel" name="platformValueLabel">
-             <property name="text">
-              <string>platform Here</string>
-             </property>
-             <property name="textInteractionFlags">
-              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="jobKeyTitleLabel">
-             <property name="styleSheet">
-              <string notr="true">font: bold;</string>
-             </property>
-             <property name="text">
-              <string>Job Key</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <layout class="QHBoxLayout" name="sourceAsset">
-             <item>
-              <widget class="AssetProcessor::GoToButton" name="gotoAssetButton">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
+          </item>
+          <item>
+            <widget class="QLabel" name="folderSelectedDescription">
+              <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
                 </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>24</width>
-                 <height>24</height>
-                </size>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QLabel" name="sourceAssetValueLabel">
-               <property name="text">
-                <string>sourceAsset Here</string>
-               </property>
-               <property name="textInteractionFlags">
-                <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-               </property>
-              </widget>
-             </item>
+              </property>
+              <property name="text">
+                <string>This folder has no additional info, select a file for details.</string>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <widget class="QLabel" name="MissingProductDependenciesFolderTitleLabel">
+              <property name="font">
+                <font>
+                  <family>12pt</family>
+                  <pointsize>8</pointsize>
+                  <weight>75</weight>
+                  <italic>false</italic>
+                  <bold>true</bold>
+                </font>
+              </property>
+              <property name="styleSheet">
+                <string notr="true">font: bold, 12pt;</string>
+              </property>
+              <property name="text">
+                <string>Missing Product Dependencies</string>
+              </property>
+              <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+            </widget>
+          </item>
+          <item>
+            <layout class="QHBoxLayout" name="MissingDependenciesFolderButtonsLayout">
+              <item>
+                <widget class="QPushButton" name="ScanFolderButton">
+                  <property name="toolTip">
+                    <string>Scans all files in this folder and subfolders for missing dependencies. This may take some time.</string>
+                  </property>
+                  <property name="text">
+                    <string>Scan folder</string>
+                  </property>
+                </widget>
+              </item>
+              <item>
+                <widget class="QPushButton" name="ClearScanFolderButton">
+                  <property name="toolTip">
+                    <string>Clears all dependency scan results for files in this folder and subfolders.</string>
+                  </property>
+                  <property name="text">
+                    <string>Clear results</string>
+                  </property>
+                </widget>
+              </item>
             </layout>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="Line" name="DependencySeparatorLine">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QSplitter" name="dependenciesSplitter">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <widget class="QWidget" name="layoutWidget">
-            <layout class="QVBoxLayout" name="OutgoingDependencies">
-             <item>
-              <layout class="QHBoxLayout" name="OutgoingDependenciesTitleLayout">
-               <item>
-                <widget class="QLabel" name="outgoingProductDependenciesTitleLabel">
-                 <property name="font">
-                  <font>
-                   <family>12pt</family>
-                   <pointsize>8</pointsize>
-                   <weight>75</weight>
-                   <italic>false</italic>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">font: bold, 12pt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Outgoing Product Dependencies:</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                 <property name="margin">
-                  <number>0</number>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="outgoingProductDependenciesValueLabel">
-                 <property name="styleSheet">
-                  <string notr="true">font: 12pt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Number of outgoing product dependencies here</string>
-                 </property>
-                 <property name="textInteractionFlags">
-                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="outgoingDependenciesSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QTreeView" name="OutgoingProductDependenciesTreeView">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="rootIsDecorated">
-                <bool>false</bool>
-               </property>
-               <property name="uniformRowHeights">
-                <bool>true</bool>
-               </property>
-               <property name="sortingEnabled">
-                <bool>false</bool>
-               </property>
-               <attribute name="headerVisible">
-                <bool>false</bool>
-               </attribute>
-               <attribute name="headerDefaultSectionSize">
-                <number>42</number>
-               </attribute>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>0</width>
-                 <height>8</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <layout class="QHBoxLayout" name="OutgoingUnmetUnmetPathDependenciesLayout">
-               <item>
-                <widget class="QLabel" name="outgoingUnmetPathProductDependenciesTitleLabel">
-                 <property name="font">
-                  <font>
-                   <family>12pt</family>
-                   <pointsize>8</pointsize>
-                   <weight>75</weight>
-                   <italic>false</italic>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">font: bold, 12pt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Outgoing Unmet Path Product Dependencies:</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="outgoingUnmetPathProductDependenciesValueLabel">
-                 <property name="styleSheet">
-                  <string notr="true">font: 12pt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Number of dependencies here</string>
-                 </property>
-                 <property name="textInteractionFlags">
-                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="outgoingUnmetPathProductDependenciesSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QListWidget" name="outgoingUnmetPathProductDependenciesList">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>0</width>
-                 <height>32</height>
-                </size>
-               </property>
-               <property name="verticalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="horizontalScrollBarPolicy">
-                <enum>Qt::ScrollBarAlwaysOff</enum>
-               </property>
-               <property name="sizeAdjustPolicy">
+          </item>
+          <item>
+            <widget class="QScrollArea" name="scrollArea">
+              <property name="frameShape">
+                <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="sizeAdjustPolicy">
                 <enum>QAbstractScrollArea::AdjustToContents</enum>
-               </property>
-               <property name="editTriggers">
-                <set>QAbstractItemView::NoEditTriggers</set>
-               </property>
-               <property name="tabKeyNavigation">
+              </property>
+              <property name="widgetResizable">
                 <bool>true</bool>
-               </property>
-               <property name="showDropIndicator" stdset="0">
-                <bool>false</bool>
-               </property>
-               <property name="defaultDropAction">
-                <enum>Qt::IgnoreAction</enum>
-               </property>
-               <property name="alternatingRowColors">
-                <bool>true</bool>
-               </property>
+              </property>
+              <widget class="QWidget" name="scrollAreaWidgetContents" native="true">
+                <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                  </sizepolicy>
+                </property>
+                <layout class="QVBoxLayout" name="scrollableVerticalLayout">
+                  <item>
+                    <widget class="QTabWidget" name="ProductAssetDetailTabs">
+                      <property name="currentIndex">
+                        <number>0</number>
+                      </property>
+                      <widget class="QWidget" name="OutputTab">
+                        <property name="sizePolicy">
+                          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                            <horstretch>0</horstretch>
+                            <verstretch>0</verstretch>
+                          </sizepolicy>
+                        </property>
+                        <attribute name="title">
+                          <string>Details</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="ProductTabVerticalLayout" stretch="0,0">
+                          <item>
+                            <layout class="QGridLayout" name="headerGrid" columnstretch="1,4">
+                              <item row="2" column="1">
+                                <widget class="QLabel" name="jobKeyValueLabel">
+                                  <property name="text">
+                                    <string>jobKey Here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="3" column="0">
+                                <widget class="QLabel" name="platformTitleLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Platform</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="0" column="0">
+                                <widget class="QLabel" name="productAssetIdTitleLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Product Asset ID</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="0" column="1">
+                                <widget class="QLabel" name="productAssetIdValueLabel">
+                                  <property name="text">
+                                    <string>Product asset ID here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="4" column="0">
+                                <widget class="QLabel" name="sourceAssetTitleLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Source Asset</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="1" column="1">
+                                <widget class="QLabel" name="lastTimeProcessedValueLabel">
+                                  <property name="text">
+                                    <string>lastTimeProcessed Here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="1" column="0">
+                                <widget class="QLabel" name="lastTimeProcessedTitleLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Last Time Processed</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="3" column="1">
+                                <widget class="QLabel" name="platformValueLabel">
+                                  <property name="text">
+                                    <string>platform Here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="2" column="0">
+                                <widget class="QLabel" name="jobKeyTitleLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Job Key</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item row="4" column="1">
+                                <layout class="QHBoxLayout" name="sourceAsset">
+                                  <item>
+                                    <widget class="AssetProcessor::GoToButton" name="gotoAssetButton">
+                                      <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                          <horstretch>0</horstretch>
+                                          <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                      </property>
+                                      <property name="minimumSize">
+                                        <size>
+                                          <width>24</width>
+                                          <height>24</height>
+                                        </size>
+                                      </property>
+                                    </widget>
+                                  </item>
+                                  <item>
+                                    <widget class="QLabel" name="sourceAssetValueLabel">
+                                      <property name="text">
+                                        <string>sourceAsset Here</string>
+                                      </property>
+                                      <property name="textInteractionFlags">
+                                        <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                      </property>
+                                    </widget>
+                                  </item>
+                                </layout>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <spacer name="ProductAssetDetailsSpacer">
+                              <property name="orientation">
+                                <enum>Qt::Vertical</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                                <size>
+                                  <width>20</width>
+                                  <height>40</height>
+                                </size>
+                              </property>
+                            </spacer>
+                          </item>
+                        </layout>
+                      </widget>
+                      <widget class="QWidget" name="OutgoingProductDependenciesTab">
+                        <attribute name="title">
+                          <string>Outgoing Dependencies</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="OutgoingProductDependenciesLayout" stretch="0,0,0,0,0">
+                          <item>
+                            <layout class="QHBoxLayout" name="OutgoingDependenciesTitleLayout">
+                              <item>
+                                <widget class="QLabel" name="outgoingProductDependenciesTitleLabel">
+                                  <property name="font">
+                                    <font>
+                                      <family>12pt</family>
+                                      <pointsize>8</pointsize>
+                                      <weight>75</weight>
+                                      <italic>false</italic>
+                                      <bold>true</bold>
+                                    </font>
+                                  </property>
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold, 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Outgoing Product Dependencies:</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                                  </property>
+                                  <property name="margin">
+                                    <number>0</number>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="QLabel" name="outgoingProductDependenciesValueLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Number of outgoing product dependencies here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <spacer name="outgoingDependenciesSpacer">
+                                  <property name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                  </property>
+                                  <property name="sizeHint" stdset="0">
+                                    <size>
+                                      <width>40</width>
+                                      <height>20</height>
+                                    </size>
+                                  </property>
+                                </spacer>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <widget class="QTreeView" name="OutgoingProductDependenciesTreeView">
+                              <property name="sizePolicy">
+                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                                  <horstretch>0</horstretch>
+                                  <verstretch>0</verstretch>
+                                </sizepolicy>
+                              </property>
+                              <property name="rootIsDecorated">
+                                <bool>false</bool>
+                              </property>
+                              <property name="uniformRowHeights">
+                                <bool>true</bool>
+                              </property>
+                              <property name="sortingEnabled">
+                                <bool>false</bool>
+                              </property>
+                              <attribute name="headerVisible">
+                                <bool>false</bool>
+                              </attribute>
+                              <attribute name="headerDefaultSectionSize">
+                                <number>42</number>
+                              </attribute>
+                            </widget>
+                          </item>
+                          <item>
+                            <spacer name="verticalSpacer_3">
+                              <property name="orientation">
+                                <enum>Qt::Vertical</enum>
+                              </property>
+                              <property name="sizeType">
+                                <enum>QSizePolicy::Fixed</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                                <size>
+                                  <width>0</width>
+                                  <height>8</height>
+                                </size>
+                              </property>
+                            </spacer>
+                          </item>
+                          <item>
+                            <layout class="QHBoxLayout" name="OutgoingUnmetUnmetPathDependenciesLayout">
+                              <item>
+                                <widget class="QLabel" name="outgoingUnmetPathProductDependenciesTitleLabel">
+                                  <property name="font">
+                                    <font>
+                                      <family>12pt</family>
+                                      <pointsize>8</pointsize>
+                                      <weight>75</weight>
+                                      <italic>false</italic>
+                                      <bold>true</bold>
+                                    </font>
+                                  </property>
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold, 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Outgoing Unmet Path Product Dependencies:</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="QLabel" name="outgoingUnmetPathProductDependenciesValueLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Number of dependencies here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <spacer name="outgoingUnmetPathProductDependenciesSpacer">
+                                  <property name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                  </property>
+                                  <property name="sizeHint" stdset="0">
+                                    <size>
+                                      <width>40</width>
+                                      <height>20</height>
+                                    </size>
+                                  </property>
+                                </spacer>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <widget class="QListWidget" name="outgoingUnmetPathProductDependenciesList">
+                              <property name="sizePolicy">
+                                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                                  <horstretch>0</horstretch>
+                                  <verstretch>0</verstretch>
+                                </sizepolicy>
+                              </property>
+                              <property name="minimumSize">
+                                <size>
+                                  <width>0</width>
+                                  <height>32</height>
+                                </size>
+                              </property>
+                              <property name="verticalScrollBarPolicy">
+                                <enum>Qt::ScrollBarAlwaysOff</enum>
+                              </property>
+                              <property name="horizontalScrollBarPolicy">
+                                <enum>Qt::ScrollBarAlwaysOff</enum>
+                              </property>
+                              <property name="sizeAdjustPolicy">
+                                <enum>QAbstractScrollArea::AdjustToContents</enum>
+                              </property>
+                              <property name="editTriggers">
+                                <set>QAbstractItemView::NoEditTriggers</set>
+                              </property>
+                              <property name="tabKeyNavigation">
+                                <bool>true</bool>
+                              </property>
+                              <property name="showDropIndicator" stdset="0">
+                                <bool>false</bool>
+                              </property>
+                              <property name="defaultDropAction">
+                                <enum>Qt::IgnoreAction</enum>
+                              </property>
+                              <property name="alternatingRowColors">
+                                <bool>true</bool>
+                              </property>
+                            </widget>
+                          </item>
+                        </layout>
+                      </widget>
+                      <widget class="QWidget" name="IncomingProductDependenciesTab">
+                        <attribute name="title">
+                          <string>Incoming Dependencies</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="IncomingDependencies">
+                          <item>
+                            <layout class="QHBoxLayout" name="IncomingDependenciesLayout">
+                              <item>
+                                <widget class="QLabel" name="incomingProductDependenciesTitleLabel">
+                                  <property name="font">
+                                    <font>
+                                      <family>12pt</family>
+                                      <pointsize>8</pointsize>
+                                      <weight>75</weight>
+                                      <italic>false</italic>
+                                      <bold>true</bold>
+                                    </font>
+                                  </property>
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold, 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Incoming Product Dependencies:</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="QLabel" name="incomingProductDependenciesValueLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Number of incoming product dependencies here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <spacer name="incomingDependenciesSpacer">
+                                  <property name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                  </property>
+                                  <property name="sizeHint" stdset="0">
+                                    <size>
+                                      <width>40</width>
+                                      <height>20</height>
+                                    </size>
+                                  </property>
+                                </spacer>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <widget class="QTreeView" name="IncomingProductDependenciesTreeView">
+                              <property name="rootIsDecorated">
+                                <bool>false</bool>
+                              </property>
+                              <property name="uniformRowHeights">
+                                <bool>true</bool>
+                              </property>
+                              <property name="sortingEnabled">
+                                <bool>false</bool>
+                              </property>
+                              <property name="headerHidden">
+                                <bool>true</bool>
+                              </property>
+                              <attribute name="headerDefaultSectionSize">
+                                <number>42</number>
+                              </attribute>
+                            </widget>
+                          </item>
+                        </layout>
+                      </widget>
+                      <widget class="QWidget" name="MissingDependenciesTab">
+                        <attribute name="title">
+                          <string>Missing Dependencies</string>
+                        </attribute>
+                        <layout class="QVBoxLayout" name="MissingDependenciesTabLayout">
+                          <item>
+                            <layout class="QHBoxLayout" name="MissingDependenciesLayout">
+                              <item>
+                                <layout class="QVBoxLayout" name="supportContainer">
+                                  <property name="spacing">
+                                    <number>0</number>
+                                  </property>
+                                  <item>
+                                    <spacer name="verticalSpacer_5">
+                                      <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                      </property>
+                                      <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                      </property>
+                                      <property name="sizeHint" stdset="0">
+                                        <size>
+                                          <width>1</width>
+                                          <height>2</height>
+                                        </size>
+                                      </property>
+                                    </spacer>
+                                  </item>
+                                  <item>
+                                    <widget class="QLabel" name="missingDependencyErrorIcon">
+                                      <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                          <horstretch>0</horstretch>
+                                          <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                      </property>
+                                      <property name="minimumSize">
+                                        <size>
+                                          <width>15</width>
+                                          <height>19</height>
+                                        </size>
+                                      </property>
+                                      <property name="maximumSize">
+                                        <size>
+                                          <width>15</width>
+                                          <height>19</height>
+                                        </size>
+                                      </property>
+                                      <property name="toolTip">
+                                        <string>This asset has one or more missing product dependencies. Click the help button for info on how to resolve this.</string>
+                                      </property>
+                                      <property name="styleSheet">
+                                        <string notr="true">padding:0px</string>
+                                      </property>
+                                      <property name="text">
+                                        <string/>
+                                      </property>
+                                      <property name="pixmap">
+                                        <pixmap>:/stylesheet/img/logging/error.svg</pixmap>
+                                      </property>
+                                      <property name="scaledContents">
+                                        <bool>true</bool>
+                                      </property>
+                                    </widget>
+                                  </item>
+                                </layout>
+                              </item>
+                              <item>
+                                <widget class="QLabel" name="MissingProductDependenciesTitleLabel">
+                                  <property name="font">
+                                    <font>
+                                      <family>12pt</family>
+                                      <pointsize>8</pointsize>
+                                      <weight>75</weight>
+                                      <italic>false</italic>
+                                      <bold>true</bold>
+                                    </font>
+                                  </property>
+                                  <property name="styleSheet">
+                                    <string notr="true">font: bold, 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Missing Product Dependencies:</string>
+                                  </property>
+                                  <property name="alignment">
+                                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="QLabel" name="MissingProductDependenciesValueLabel">
+                                  <property name="styleSheet">
+                                    <string notr="true">font: 12pt;</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Number of missing product dependencies here</string>
+                                  </property>
+                                  <property name="textInteractionFlags">
+                                    <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <layout class="QVBoxLayout" name="MissingProductDependenciesSupportContainer">
+                                  <property name="spacing">
+                                    <number>0</number>
+                                  </property>
+                                  <item>
+                                    <widget class="QPushButton" name="MissingProductDependenciesSupport">
+                                      <property name="sizePolicy">
+                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                          <horstretch>0</horstretch>
+                                          <verstretch>0</verstretch>
+                                        </sizepolicy>
+                                      </property>
+                                      <property name="minimumSize">
+                                        <size>
+                                          <width>36</width>
+                                          <height>12</height>
+                                        </size>
+                                      </property>
+                                      <property name="maximumSize">
+                                        <size>
+                                          <width>36</width>
+                                          <height>12</height>
+                                        </size>
+                                      </property>
+                                      <property name="toolTip">
+                                        <string>Opens the documentation for missing dependencies in your web browser.</string>
+                                      </property>
+                                      <property name="flat">
+                                        <bool>true</bool>
+                                      </property>
+                                    </widget>
+                                  </item>
+                                  <item>
+                                    <spacer name="verticalSpacer_6">
+                                      <property name="orientation">
+                                        <enum>Qt::Vertical</enum>
+                                      </property>
+                                      <property name="sizeType">
+                                        <enum>QSizePolicy::Fixed</enum>
+                                      </property>
+                                      <property name="sizeHint" stdset="0">
+                                        <size>
+                                          <width>1</width>
+                                          <height>8</height>
+                                        </size>
+                                      </property>
+                                    </spacer>
+                                  </item>
+                                </layout>
+                              </item>
+                              <item>
+                                <spacer name="MissingDependenciesSpacer">
+                                  <property name="orientation">
+                                    <enum>Qt::Horizontal</enum>
+                                  </property>
+                                  <property name="sizeHint" stdset="0">
+                                    <size>
+                                      <width>40</width>
+                                      <height>20</height>
+                                    </size>
+                                  </property>
+                                </spacer>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <layout class="QHBoxLayout" name="MissingDependenciesButtonsLayout">
+                              <item>
+                                <widget class="QPushButton" name="ScanMissingDependenciesButton">
+                                  <property name="toolTip">
+                                    <string>Scans this file for missing dependencies. This may take some time.</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Scan file</string>
+                                  </property>
+                                </widget>
+                              </item>
+                              <item>
+                                <widget class="QPushButton" name="ClearMissingDependenciesButton">
+                                  <property name="toolTip">
+                                    <string>Clears previous scan results for this file.</string>
+                                  </property>
+                                  <property name="text">
+                                    <string>Clear results</string>
+                                  </property>
+                                </widget>
+                              </item>
+                            </layout>
+                          </item>
+                          <item>
+                            <layout class="QHBoxLayout" name="MissingDependenciesTableLayout">
+                              <item>
+                                <widget class="QTableWidget" name="MissingProductDependenciesTable">
+                                  <property name="sizePolicy">
+                                    <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                                      <horstretch>0</horstretch>
+                                      <verstretch>0</verstretch>
+                                    </sizepolicy>
+                                  </property>
+                                  <property name="minimumSize">
+                                    <size>
+                                      <width>0</width>
+                                      <height>32</height>
+                                    </size>
+                                  </property>
+                                  <property name="maximumSize">
+                                    <size>
+                                      <width>16777215</width>
+                                      <height>16777215</height>
+                                    </size>
+                                  </property>
+                                  <property name="verticalScrollBarPolicy">
+                                    <enum>Qt::ScrollBarAsNeeded</enum>
+                                  </property>
+                                  <property name="horizontalScrollBarPolicy">
+                                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                                  </property>
+                                  <property name="sizeAdjustPolicy">
+                                    <enum>QAbstractScrollArea::AdjustIgnored</enum>
+                                  </property>
+                                  <property name="editTriggers">
+                                    <set>QAbstractItemView::NoEditTriggers</set>
+                                  </property>
+                                  <property name="showDropIndicator" stdset="0">
+                                    <bool>false</bool>
+                                  </property>
+                                  <property name="dragDropOverwriteMode">
+                                    <bool>false</bool>
+                                  </property>
+                                  <property name="alternatingRowColors">
+                                    <bool>true</bool>
+                                  </property>
+                                  <property name="selectionMode">
+                                    <enum>QAbstractItemView::SingleSelection</enum>
+                                  </property>
+                                  <property name="showGrid">
+                                    <bool>false</bool>
+                                  </property>
+                                  <property name="columnCount">
+                                    <number>3</number>
+                                  </property>
+                                  <attribute name="horizontalHeaderVisible">
+                                    <bool>false</bool>
+                                  </attribute>
+                                  <attribute name="horizontalHeaderCascadingSectionResizes">
+                                    <bool>true</bool>
+                                  </attribute>
+                                  <attribute name="horizontalHeaderMinimumSectionSize">
+                                    <number>24</number>
+                                  </attribute>
+                                  <attribute name="horizontalHeaderDefaultSectionSize">
+                                    <number>24</number>
+                                  </attribute>
+                                  <attribute name="horizontalHeaderStretchLastSection">
+                                    <bool>true</bool>
+                                  </attribute>
+                                  <attribute name="verticalHeaderVisible">
+                                    <bool>false</bool>
+                                  </attribute>
+                                  <attribute name="verticalHeaderStretchLastSection">
+                                    <bool>false</bool>
+                                  </attribute>
+                                  <column>
+                                    <property name="text">
+                                      <string>View</string>
+                                    </property>
+                                  </column>
+                                  <column>
+                                    <property name="text">
+                                      <string>Scan Time</string>
+                                    </property>
+                                  </column>
+                                  <column>
+                                    <property name="text">
+                                      <string>Asset</string>
+                                    </property>
+                                  </column>
+                                </widget>
+                              </item>
+                            </layout>
+                          </item>
+                        </layout>
+                      </widget>
+                    </widget>
+                  </item>
+                </layout>
               </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_4">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>0</width>
-                 <height>8</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </widget>
-           <widget class="QWidget" name="layoutWidget">
-            <layout class="QVBoxLayout" name="IncomingDependencies">
-             <item>
-              <layout class="QHBoxLayout" name="IncomingDependenciesLayout">
-               <item>
-                <widget class="QLabel" name="incomingProductDependenciesTitleLabel">
-                 <property name="font">
-                  <font>
-                   <family>12pt</family>
-                   <pointsize>8</pointsize>
-                   <weight>75</weight>
-                   <italic>false</italic>
-                   <bold>true</bold>
-                  </font>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">font: bold, 12pt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Incoming Product Dependencies:</string>
-                 </property>
-                 <property name="alignment">
-                  <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QLabel" name="incomingProductDependenciesValueLabel">
-                 <property name="styleSheet">
-                  <string notr="true">font: 12pt;</string>
-                 </property>
-                 <property name="text">
-                  <string>Number of incoming product dependencies here</string>
-                 </property>
-                 <property name="textInteractionFlags">
-                  <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <spacer name="incomingDependenciesSpacer">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
-                 <property name="sizeHint" stdset="0">
-                  <size>
-                   <width>40</width>
-                   <height>20</height>
-                  </size>
-                 </property>
-                </spacer>
-               </item>
-              </layout>
-             </item>
-             <item>
-              <widget class="QTreeView" name="IncomingProductDependenciesTreeView">
-               <property name="rootIsDecorated">
-                <bool>false</bool>
-               </property>
-               <property name="uniformRowHeights">
-                <bool>true</bool>
-               </property>
-               <property name="sortingEnabled">
-                <bool>false</bool>
-               </property>
-               <property name="headerHidden">
-                <bool>true</bool>
-               </property>
-               <attribute name="headerDefaultSectionSize">
-                <number>42</number>
-               </attribute>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="MissingDependenciesLayout">
-           <item>
-            <layout class="QVBoxLayout" name="supportContainer">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <spacer name="verticalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>2</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QLabel" name="missingDependencyErrorIcon">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>15</width>
-                 <height>19</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>15</width>
-                 <height>19</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>This asset has one or more missing product dependencies. Click the help button for info on how to resolve this.</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">padding:0px</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-               <property name="pixmap">
-                <pixmap>:/stylesheet/img/logging/error.svg</pixmap>
-               </property>
-               <property name="scaledContents">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <widget class="QLabel" name="MissingProductDependenciesTitleLabel">
-             <property name="font">
-              <font>
-               <family>12pt</family>
-               <pointsize>8</pointsize>
-               <weight>75</weight>
-               <italic>false</italic>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">font: bold, 12pt;</string>
-             </property>
-             <property name="text">
-              <string>Missing Product Dependencies:</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
             </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="MissingProductDependenciesValueLabel">
-             <property name="styleSheet">
-              <string notr="true">font: 12pt;</string>
-             </property>
-             <property name="text">
-              <string>Number of missing product dependencies here</string>
-             </property>
-             <property name="textInteractionFlags">
-              <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QVBoxLayout" name="MissingProductDependenciesSupportContainer">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <widget class="QPushButton" name="MissingProductDependenciesSupport">
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="minimumSize">
-                <size>
-                 <width>36</width>
-                 <height>12</height>
-                </size>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>36</width>
-                 <height>12</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Opens the documentation for missing dependencies in your web browser.</string>
-               </property>
-               <property name="flat">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_6">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>1</width>
-                 <height>8</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-            </layout>
-           </item>
-           <item>
-            <spacer name="MissingDependenciesSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="MissingDependenciesButtonsLayout">
-           <item>
-            <widget class="QPushButton" name="ScanMissingDependenciesButton">
-             <property name="toolTip">
-              <string>Scans this file for missing dependencies. This may take some time.</string>
-             </property>
-             <property name="text">
-              <string>Scan file</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="ClearMissingDependenciesButton">
-             <property name="toolTip">
-              <string>Clears previous scan results for this file.</string>
-             </property>
-             <property name="text">
-              <string>Clear results</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="MissingProductDependenciesTable">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>128</height>
-            </size>
-           </property>
-           <property name="verticalScrollBarPolicy">
-            <enum>Qt::ScrollBarAsNeeded</enum>
-           </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOff</enum>
-           </property>
-           <property name="sizeAdjustPolicy">
-            <enum>QAbstractScrollArea::AdjustIgnored</enum>
-           </property>
-           <property name="editTriggers">
-            <set>QAbstractItemView::NoEditTriggers</set>
-           </property>
-           <property name="showDropIndicator" stdset="0">
-            <bool>false</bool>
-           </property>
-           <property name="dragDropOverwriteMode">
-            <bool>false</bool>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::SingleSelection</enum>
-           </property>
-           <property name="showGrid">
-            <bool>false</bool>
-           </property>
-           <property name="columnCount">
-            <number>3</number>
-           </property>
-           <attribute name="horizontalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="horizontalHeaderCascadingSectionResizes">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="horizontalHeaderMinimumSectionSize">
-            <number>24</number>
-           </attribute>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>24</number>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderStretchLastSection">
-            <bool>false</bool>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>View</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Scan Time</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Asset</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-         <item>
-          <spacer name="verticalSpacer_7">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>13</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
+          </item>
         </layout>
-       </widget>
-      </widget>
-     </item>
+      </item>
     </layout>
-   </item>
-  </layout>
- </widget>
- <customwidgets>
-  <customwidget>
-   <class>AssetProcessor::GoToButton</class>
-   <extends>QPushButton</extends>
-   <header>native/ui/GoToButton.h</header>
-   <container>1</container>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="style/AssetProcessor.qrc"/>
- </resources>
- <connections/>
+  </widget>
+  <customwidgets>
+    <customwidget>
+      <class>AssetProcessor::GoToButton</class>
+      <extends>QPushButton</extends>
+      <header>native/ui/GoToButton.h</header>
+      <container>1</container>
+    </customwidget>
+  </customwidgets>
+  <resources>
+    <include location="style/AssetProcessor.qrc"/>
+  </resources>
+  <connections/>
 </ui>

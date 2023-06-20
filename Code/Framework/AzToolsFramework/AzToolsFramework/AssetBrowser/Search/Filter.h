@@ -58,6 +58,10 @@ namespace AzToolsFramework
             //! Check if entry matches filter
             bool Match(const AssetBrowserEntry* entry) const;
 
+            //! Check if the entry matches filter without propagation (i.e. it's an exact match and it doesn't match only
+            //  beause a descendant or an ancestor matches)
+            bool MatchWithoutPropagation(const AssetBrowserEntry* entry) const;
+
             //! Retrieve all matching entries that are either entry itself or its parents or children
             void Filter(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const;
 
@@ -117,15 +121,33 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // RegExpFilter
+        // CustomFilter
         //////////////////////////////////////////////////////////////////////////
-        //! RegExpFilter filters assets based on a regular expression pattern
-        class RegExpFilter
-            : public AssetBrowserEntryFilter
+        //! CustomFilter filters assets based on a custom filter function 
+        class CustomFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
-            RegExpFilter();
+            CustomFilter(const AZStd::function<bool(const AssetBrowserEntry*)>& filterFn);
+            ~CustomFilter() override = default;
+
+        protected:
+            QString GetNameInternal() const override;
+            bool MatchInternal(const AssetBrowserEntry* entry) const override;
+
+        private:
+            AZStd::function<bool(const AssetBrowserEntry*)> m_filterFn;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
+        // CustomFilter
+        //////////////////////////////////////////////////////////////////////////
+        //! RegExpFilter filters assets based on a regular expression pattern
+        class RegExpFilter : public AssetBrowserEntryFilter
+        {
+            Q_OBJECT
+        public:
+            RegExpFilter() = default;
             ~RegExpFilter() override = default;
 
             void SetFilterPattern(const QRegExp& filterPattern);
@@ -205,6 +227,28 @@ namespace AzToolsFramework
 
         private:
             AssetBrowserEntry::AssetEntryType m_entryType;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
+        // EngineFilter
+        //////////////////////////////////////////////////////////////////////////
+        //! EngineFilter filters assets in the engine directory, excluding project directory
+        class EngineFilter : public AssetBrowserEntryFilter
+        {
+            Q_OBJECT
+        public:
+            EngineFilter();
+            ~EngineFilter() override = default;
+
+            void SetEngineAndProject(AZ::IO::Path enginePath, AZ::IO::Path projectPath);
+
+        protected:
+            QString GetNameInternal() const override;
+            bool MatchInternal(const AssetBrowserEntry* entry) const override;
+
+        private:
+            AZ::IO::Path m_enginePath;
+            AZ::IO::Path m_projectPath;
         };
 
         //////////////////////////////////////////////////////////////////////////

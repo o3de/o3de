@@ -10,8 +10,9 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 
 // Graph Model
-#include <GraphModel/Integration/StringDataInterface.h>
+#include <GraphModel/GraphModelBus.h>
 #include <GraphModel/Integration/IntegrationBus.h>
+#include <GraphModel/Integration/StringDataInterface.h>
 
 namespace GraphModelIntegration
 {
@@ -22,15 +23,10 @@ namespace GraphModelIntegration
 
     AZStd::string StringDataInterface::GetString() const
     {
-        if (GraphModel::SlotPtr slot = m_slot.lock())
-        {
-            return slot->GetValue<AZStd::string>();
-        }
-        else
-        {
-            return "";
-        }
+        GraphModel::SlotPtr slot = m_slot.lock();
+        return slot ? slot->GetValue<AZStd::string>() : AZStd::string();
     }
+
     void StringDataInterface::SetString(const AZStd::string& value)
     {
         if (GraphModel::SlotPtr slot = m_slot.lock())
@@ -40,12 +36,13 @@ namespace GraphModelIntegration
 
             if (trimValue != slot->GetValue<AZStd::string>())
             {
-                GraphCanvas::GraphId graphCanvasSceneId;
-                IntegrationBus::BroadcastResult(graphCanvasSceneId, &IntegrationBusInterface::GetActiveGraphCanvasSceneId);
+                const GraphCanvas::GraphId graphCanvasSceneId = GetDisplay()->GetSceneId();
                 GraphCanvas::ScopedGraphUndoBatch undoBatch(graphCanvasSceneId);
 
                 slot->SetValue(trimValue);
+                GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelSlotModified, slot);
+                GraphControllerNotificationBus::Event(graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelGraphModified, slot->GetParentNode());
             }
         }
     }
-}
+} // namespace GraphModelIntegration

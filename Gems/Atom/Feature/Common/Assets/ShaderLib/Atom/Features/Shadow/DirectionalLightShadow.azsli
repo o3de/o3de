@@ -8,6 +8,12 @@
 
 #pragma once
 
+#ifndef ENABLE_SHADOWS
+#define ENABLE_SHADOWS              1
+#endif
+
+#if ENABLE_SHADOWS
+
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/RPI/Math.azsli>
@@ -36,16 +42,16 @@ class DirectionalLightShadow
 
     static float2 GetVisibilityThinTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv, float shrinkFactor);
 
-    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
+    static DirectionalShadowCalculator MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector);
 
     //! This alters the input color to visualize which cascade is being used
     //! and whether PCF is used as a fallback in ESM+PCF mode or not.
-    static float3 AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv);
+    static float3 AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector);
 };
 
 bool DirectionalLightShadow::UseFullscreenShadows()
 {
-#ifdef FORCE_OPAQUE
+#if FORCE_OPAQUE
     return true;
 #else
     bool useFullscreenShadows = o_opacity_mode == OpacityMode::Opaque || o_opacity_mode == OpacityMode::Cutout;
@@ -53,7 +59,7 @@ bool DirectionalLightShadow::UseFullscreenShadows()
 #endif
 }
 
-DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint lightIndex, float3 worldPos, float3 normalVector)
 {
     DirectionalShadowCalculator calc;
     calc.SetBlendBetweenCascadesEnable(o_blend_between_cascades_enable);
@@ -69,7 +75,7 @@ DirectionalShadowCalculator DirectionalLightShadow::MakeShadowCalculator(uint li
 float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
 {
     float visibility;
-    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
     
     if (UseFullscreenShadows())
     {
@@ -91,7 +97,7 @@ float2 DirectionalLightShadow::GetVisibilityThickTransmission(uint lightIndex, f
 float2 DirectionalLightShadow::GetVisibilityThinTransmission(uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv, float shrinkFactor)
 {
     float visibility;
-    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
 
     if (UseFullscreenShadows())
     {
@@ -120,12 +126,12 @@ float DirectionalLightShadow::GetVisibility(uint lightIndex, float3 worldPos, fl
     }
     else
     {
-        DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+        DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
         return calc.GetVisibility();
     }
 }
 
-float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector, float4 screenUv)
+float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, float3 worldPos, float3 normalVector)
 {
     if ((ViewSrg::m_directionalLightShadows[lightIndex].m_debugFlags &
         ViewSrg::DirectionalLightShadowDebugColoringBitMask) == 0)
@@ -135,19 +141,28 @@ float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, f
 
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
 
-    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector, screenUv);
+    DirectionalShadowCalculator calc = MakeShadowCalculator(lightIndex, worldPos, normalVector);
     calc.ComputeShadowCoords();
 
-    if (calc.m_cascadeIndex < cascadeCount)
+    if (calc.m_maxCascade < cascadeCount)
     {
+        // Each cascade has an assigned color. Pixels that are a blend of cascades will blend the colors.
         static const float3 debuggingColors[ViewSrg::MaxCascadeCount] = 
         {
             float3(1., 0., 0.), 
             float3(0., 1., 0.), 
             float3(0., 0., 1.), 
-            float3(1., 1., 0.)};
-        color = color * 0.75 + debuggingColors[calc.m_cascadeIndex] * 0.25;
+            float3(1., 1., 0.)
+        };
+        float3 debugColor = float3(0.0, 0.0, 0.0);
+        for (int i = calc.m_minCascade; i <= calc.m_maxCascade; ++i)
+        {
+            debugColor += debuggingColors[i];
+        }
+        debugColor *= rcp(calc.m_maxCascade - calc.m_minCascade + 1.0);
+        color = color * 0.75 + debugColor * 0.25;
     }
     return color;
 }
 
+#endif // ENABLE_SHADOWS

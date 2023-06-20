@@ -9,9 +9,6 @@ import datetime
 import os
 import zipfile
 
-from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
-
-
 class ImageComparisonTestFailure(Exception):
     """Custom test failure for failed image comparisons."""
     pass
@@ -63,52 +60,18 @@ def golden_images_directory():
     return golden_images_dir
 
 
-def compare_screenshot_similarity(
-        test_screenshot, golden_image, similarity_threshold, create_zip_archive=False, screenshot_directory=""):
+def compare_screenshot_to_golden_image(screenshot_directory, test_screenshot, golden_image):
     """
-    Compares the similarity between a test screenshot and a golden image.
-    It returns a "Screenshots match" string if the comparison mean value is higher than the similarity threshold.
-    Otherwise, it returns an error string.
-    :param test_screenshot: path to the test screenshot to compare.
-    :param golden_image: path to the golden image to compare.
-    :param similarity_threshold: value for the comparison mean value to be asserted against.
-    :param create_zip_archive: toggle to create a zip archive containing the screenshots if the assert check fails.
-    :param screenshot_directory: directory containing screenshots to create zip archive from.
-    :return: Error string if compared mean value < similarity threshold or screenshot_directory is missing for .zip,
-        otherwise it returns a "Screenshots match" string.
+    Compares the test_screenshot to the golden_images and return the comparison result.
+    :param screenshot_directory: path to the directory containing screenshots.
+    :param test_screenshot: the screenshot file name.
+    :param golden_image: the golden image file name.
     """
-    result = "Screenshots match"
-    if create_zip_archive and not screenshot_directory:
-        result = 'You must specify a screenshot_directory in order to create a zip archive.\n'
+    from Atom.atom_utils.screenshot_utils import compare_screenshots
 
-    mean_similarity = compare_screenshots(test_screenshot, golden_image)
-    if not mean_similarity > similarity_threshold:
-        if create_zip_archive:
-            create_screenshots_archive(screenshot_directory)
-        result = (
-            f"When comparing the test_screenshot: '{test_screenshot}' to golden_image: '{golden_image}'.\n"
-            f"The mean similarity ({mean_similarity}) was lower than the similarity threshold ({similarity_threshold})")
+    golden_images_dir = golden_images_directory()
 
-    return result
-
-
-def compare_screenshot_to_golden_image(
-        screenshot_directory, test_screenshots, golden_images, similarity_threshold=0.99):
-    """
-    Compares a list of test_screenshots to a list of golden_images and return True if they match within the
-    similarity threshold set. Otherwise, it will raise ImageComparisonTestFailure with a failure message.
-    :param screenshot_directory: path to the directory containing screenshots for creating .zip archives.
-    :param test_screenshots: list of test screenshot path strings.
-    :param golden_images: list of golden image path strings.
-    :param similarity_threshold: float threshold tolerance to set when comparing screenshots to golden images.
-    """
-    for test_screenshot, golden_image in zip(test_screenshots, golden_images):
-        screenshot_comparison_result = compare_screenshot_similarity(
-            test_screenshot, golden_image, similarity_threshold, True, screenshot_directory)
-        if screenshot_comparison_result != "Screenshots match":
-            raise ImageComparisonTestFailure(f"Screenshot test failed: {screenshot_comparison_result}")
-
-    return True
+    return compare_screenshots(f"{screenshot_directory}/{test_screenshot}", f"{golden_images_dir}/{golden_image}")
 
 
 def initial_viewport_setup(screen_width=1280, screen_height=720):

@@ -13,6 +13,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/MultiViewportController.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace AtomToolsFramework
 {
@@ -103,6 +104,7 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ModularViewportCameraController>
         , public ModularViewportCameraControllerRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportInteractionNotificationBus::Handler
     {
     public:
         explicit ModularViewportCameraControllerInstance(AzFramework::ViewportId viewportId, ModularViewportCameraController* controller);
@@ -113,7 +115,7 @@ namespace AtomToolsFramework
         void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
         // ModularViewportCameraControllerRequestBus overrides ...
-        bool InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
+        bool InterpolateToTransform(const AZ::Transform& worldFromLocal, float duration) override;
         bool IsInterpolating() const override;
         void StartTrackingTransform(const AZ::Transform& worldFromLocal) override;
         void StopTrackingTransform() override;
@@ -124,13 +126,22 @@ namespace AtomToolsFramework
         void SetCameraPivotDetachedImmediate(const AZ::Vector3& pivot) override;
         void SetCameraOffset(const AZ::Vector3& offset) override;
         void SetCameraOffsetImmediate(const AZ::Vector3& offset) override;
+        void LookFromOrbit() override;
         bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
         bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) override;
+        void ResetCameras() override;
 
     private:
+        // ViewportInteractionNotificationBus overrides ...
+        void OnViewportFocusOut() override;
+
         //! Combine the current camera transform with any potential roll from the tracked
         //! transform (this is usually zero).
         AZ::Transform CombinedCameraTransform() const;
+
+        //! Reconnect the current view matrix change handler after the viewport context view group has changed.
+        //! @note: This happens after switching to track a different camera/viewport transform.
+        void ReconnectViewMatrixChangeHandler();
 
         //! The current mode the camera controller is in.
         enum class CameraMode
@@ -143,20 +154,20 @@ namespace AtomToolsFramework
         struct CameraAnimation
         {
             //! The transform of the camera at the start of the animation.
-            AZ::Transform m_transformStart = AZ::Transform::CreateIdentity();
-            AZ::Transform m_transformEnd = AZ::Transform::CreateIdentity(); //!< The transform of the camera at the end of the animation.
+            AZ::Transform m_transformStart;
+            AZ::Transform m_transformEnd; //!< The transform of the camera at the end of the animation.
             float m_time = 0.0f; //!< The interpolation amount between the start and end transforms (in the range 0.0 - 1.0).
+            float m_duration = 1.0f; //!< The length of the animation (how long it takes to complete) in seconds.
         };
 
         AzFramework::Camera m_camera; //!< The current camera state (pitch/yaw/position/look-distance).
         AzFramework::Camera m_targetCamera; //!< The target (next) camera state that m_camera is catching up to.
-        AzFramework::Camera m_previousCamera; //!< The state of the camera from the previous frame.
         AZStd::optional<AzFramework::Camera> m_storedCamera; //!< A potentially stored camera for when a transform is being tracked.
         AzFramework::CameraSystem m_cameraSystem; //!< The camera system responsible for managing all CameraInputs.
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.
         CameraControllerPriorityFn m_priorityFn; //!< Controls at what priority the camera controller should respond to events.
 
-        CameraAnimation m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
+        AZStd::optional<CameraAnimation> m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
         CameraMode m_cameraMode = CameraMode::Control; //!< The current mode the camera is operating in.
         float m_roll = 0.0f; //!< The current amount of roll to be applied to the camera.
         float m_targetRoll = 0.0f; //!< The target amount of roll to be applied to the camera (current will move towards this).

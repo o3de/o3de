@@ -10,11 +10,13 @@
 #include <AzCore/std/algorithm.h>
 #include <RHI/ArgumentBuffer.h>
 #include <RHI/Buffer.h>
+#include <RHI/BufferView.h>
 #include <RHI/BufferMemoryView.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
+#include <RHI/ImageView.h>
 #include <RHI/MemoryView.h>
 #include <RHI/PipelineState.h>
 #include <RHI/ShaderResourceGroup.h>
@@ -35,11 +37,8 @@ namespace AZ
         }
         void CommandList::Reset()
         {
-            //We are deliberately not doing m_state = State(); because on ios build server machines we were getting this issue
-            //Undefined symbols for architecture arm64:
-            //   "_objc_memmove_collectable", referenced from:
-            //We can come back and revisit this after upgrading the build server machines to Mojave.
-
+            m_state = State();
+            
             m_state.m_pipelineState = nullptr;
             m_state.m_pipelineLayout = nullptr;
             m_state.m_streamsHash = AZ::HashValue64{0};
@@ -80,7 +79,7 @@ namespace AZ
                               destinationOffset: descriptor.m_destinationOffset
                                            size: descriptor.m_size];
 
-                    Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
+                    Platform::PublishBufferGpuChangeOnCpu(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
                 }
                 case RHI::CopyItemType::Image:
@@ -111,7 +110,7 @@ namespace AZ
                                 destinationLevel: descriptor.m_destinationSubresource.m_mipSlice
                                destinationOrigin: destinationOrigin];
 
-                    Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
+                    Platform::PublishTextureGpuChangeOnCpu(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
                 }
                 case RHI::CopyItemType::BufferToImage:
@@ -140,7 +139,7 @@ namespace AZ
                               destinationOrigin: destinationOrigin
                                         options: mtlBlitOption];
 
-                    Platform::SynchronizeTextureOnGPU(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
+                    Platform::PublishTextureGpuChangeOnCpu(blitEncoder, destinationImage->GetMemoryView().GetGpuAddress<id<MTLTexture>>());
                     break;
                 }
                 case RHI::CopyItemType::ImageToBuffer:
@@ -169,7 +168,7 @@ namespace AZ
                         destinationBytesPerImage: descriptor.m_destinationBytesPerImage
                                          options: mtlBlitOption];
 
-                    Platform::SynchronizeBufferOnGPU(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
+                    Platform::PublishBufferGpuChangeOnCpu(blitEncoder, destinationBuffer->GetMemoryView().GetGpuAddress<id<MTLBuffer>>());
                     break;
                 }
                 default:
@@ -223,28 +222,30 @@ namespace AZ
         template <typename Item>
         void CommandList::SetRootConstants(const Item& item, const PipelineState* pipelineState)
         {
-            const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
-            if (item.m_rootConstantSize  && pipelineLayout.GetRootConstantsSize() > 0)
+            const PipelineLayout* pipelineLayout = pipelineState->GetPipelineLayout();
+            uint32_t rootConstantsSize = pipelineLayout->GetRootConstantsSize();
+            uint32_t rootConstantsSlotIndex = pipelineLayout->GetRootConstantsSlotIndex();
+            if (item.m_rootConstantSize  && rootConstantsSize > 0)
             {
                 if(m_commandEncoderType == CommandEncoderType::Render)
                 {
                     id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
 
                     [renderEncoder setVertexBytes: item.m_rootConstants
-                                           length: pipelineLayout.GetRootConstantsSize()
-                                          atIndex: pipelineLayout.GetRootConstantsSlotIndex()];
+                                           length: rootConstantsSize
+                                          atIndex: rootConstantsSlotIndex];
 
                     [renderEncoder setFragmentBytes: item.m_rootConstants
-                                             length: pipelineLayout.GetRootConstantsSize()
-                                            atIndex: pipelineLayout.GetRootConstantsSlotIndex()];
+                                             length: rootConstantsSize
+                                            atIndex: rootConstantsSlotIndex];
 
                 }
                 else if(m_commandEncoderType == CommandEncoderType::Compute)
                 {
                     id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
                     [computeEncoder setBytes: item.m_rootConstants
-                                      length: pipelineLayout.GetRootConstantsSize()
-                                     atIndex: pipelineLayout.GetRootConstantsSlotIndex()];
+                                      length: rootConstantsSize
+                                     atIndex: rootConstantsSlotIndex];
 
                 }
             }
@@ -255,41 +256,58 @@ namespace AZ
             bool bindNullDescriptorHeap = false;
             MTLRenderStages mtlRenderStagesForNullDescHeap = 0;
             ShaderResourceBindings& bindings = GetShaderResourceBindingsByPipelineType(stateType);
-            const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
+            const PipelineLayout* pipelineLayout = pipelineState->GetPipelineLayout();
 
             uint32_t bufferVertexRegisterIdMin = RHI::Limits::Pipeline::ShaderResourceGroupCountMax;
             uint32_t bufferFragmentOrComputeRegisterIdMin = RHI::Limits::Pipeline::ShaderResourceGroupCountMax;
             uint32_t bufferVertexRegisterIdMax = 0;
             uint32_t bufferFragmentOrComputeRegisterIdMax = 0;
 
-            //Arrays to cache all the buffers and offsets in order to make batch calls
-            MetalArgumentBufferArray mtlVertexArgBuffers;
-            MetalArgumentBufferArrayOffsets mtlVertexArgBufferOffsets;
-            MetalArgumentBufferArray mtlFragmentOrComputeArgBuffers;
-            MetalArgumentBufferArrayOffsets mtlFragmentOrComputeArgBufferOffsets;
-
-            mtlVertexArgBuffers.fill(nil);
-            mtlFragmentOrComputeArgBuffers.fill(nil);
-            mtlVertexArgBufferOffsets.fill(0);
-            mtlFragmentOrComputeArgBufferOffsets.fill(0);
-
-            //Map to cache all the resources based on the usage as we can batch all the resources for a given usage
-            ArgumentBuffer::ComputeResourcesToMakeResidentMap resourcesToMakeResidentCompute;
-            //Map to cache all the resources based on the usage and shader stage as we can batch all the resources for a given usage/shader usage
-            ArgumentBuffer::GraphicsResourcesToMakeResidentMap resourcesToMakeResidentGraphics;
+            m_mtlVertexArgBuffers.fill(nil);
+            m_mtlFragmentOrComputeArgBuffers.fill(nil);
+            m_mtlVertexArgBufferOffsets.fill(0);
+            m_mtlFragmentOrComputeArgBufferOffsets.fill(0);
 
             for (uint32_t slot = 0; slot < RHI::Limits::Pipeline::ShaderResourceGroupCountMax; ++slot)
             {
                 const ShaderResourceGroup* shaderResourceGroup = bindings.m_srgsBySlot[slot];
-                uint32_t slotIndex = pipelineLayout.GetIndexBySlot(slot);
+                uint32_t slotIndex = static_cast<uint32_t>(pipelineLayout->GetIndexBySlot(slot));
+ 
+                //Check explicitly for Bindless SRG.
+                if (slot == m_device->GetBindlessArgumentBuffer().GetBindlessSrgBindingSlot() &&
+                    slotIndex != RHI::Limits::Pipeline::ShaderResourceGroupCountMax &&
+                    shaderResourceGroup == nullptr)
+                {
+                    //Skip if the global static bindless heap is already bound
+                    if (m_state.m_bindBindlessHeap)
+                    {
+                        continue;
+                    }
+                    
+                    //Add the bindless AB info to the arrays in order to bind it to the appropriate encoder
+                    m_device->GetBindlessArgumentBuffer().BindBindlessArgumentBuffer(slotIndex, m_commandEncoderType,
+                                                                        m_mtlVertexArgBuffers, m_mtlVertexArgBufferOffsets,
+                                                                        m_mtlFragmentOrComputeArgBuffers, m_mtlFragmentOrComputeArgBufferOffsets,
+                                                                        bufferVertexRegisterIdMin, bufferVertexRegisterIdMax,
+                                                                        bufferFragmentOrComputeRegisterIdMin, bufferFragmentOrComputeRegisterIdMax);
+                    
+                    //Make all the relevant ABs resident. This only applies to ABs related to unbounded array support
+                    m_device->GetBindlessArgumentBuffer().MakeBindlessArgumentBuffersResident(m_commandEncoderType,
+                                                                                              m_untrackedResourcesGfxRead,
+                                                                                              m_untrackedResourcesComputeRead);
+                     
+                    m_state.m_bindBindlessHeap = true;
+                    continue;
+                }
+                
                 if(!shaderResourceGroup || slotIndex == RHI::Limits::Pipeline::ShaderResourceGroupCountMax)
                 {
                     continue;
                 }
 
-                uint32_t srgVisIndex = pipelineLayout.GetIndexBySlot(shaderResourceGroup->GetBindingSlot());
-                const RHI::ShaderStageMask& srgVisInfo = pipelineLayout.GetSrgVisibility(srgVisIndex);
-                const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout.GetSrgResourcesVisibility(srgVisIndex);
+                uint32_t srgVisIndex = static_cast<uint32_t>(pipelineLayout->GetIndexBySlot(shaderResourceGroup->GetBindingSlot()));
+                const RHI::ShaderStageMask& srgVisInfo = pipelineLayout->GetSrgVisibility(srgVisIndex);
+                const ShaderResourceGroupVisibility& srgResourcesVisInfo = pipelineLayout->GetSrgResourcesVisibility(srgVisIndex);
 
                 bool isSrgUpdatd = bindings.m_srgsByIndex[slot] != shaderResourceGroup;
                 if(isSrgUpdatd)
@@ -307,11 +325,11 @@ namespace AZ
                         //For graphics and compute shader stages, cache all the argument buffers, offsets and track the min/max indices
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint64_t>(srgVisInfo));
+                            uint8_t numBitsSet = RHI::CountBitsSet(static_cast<uint32_t>(srgVisInfo));
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Vertex)
                             {
-                                mtlVertexArgBuffers[slotIndex] = argBuffer;
-                                mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
+                                m_mtlVertexArgBuffers[slotIndex] = argBuffer;
+                                m_mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
                                 bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);
                                 mtlRenderStagesForNullDescHeap = shaderResourceGroup->IsNullHeapNeededForVertexStage(srgResourcesVisInfo) ?
@@ -320,8 +338,8 @@ namespace AZ
 
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)
                             {
-                                mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
-                                mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
+                                m_mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
+                                m_mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
                                 bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
                                 mtlRenderStagesForNullDescHeap = isNullDescHeapNeeded ? mtlRenderStagesForNullDescHeap | MTLRenderStageFragment : mtlRenderStagesForNullDescHeap;
@@ -329,8 +347,8 @@ namespace AZ
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
-                            mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
+                            m_mtlFragmentOrComputeArgBuffers[slotIndex] = argBuffer;
+                            m_mtlFragmentOrComputeArgBufferOffsets[slotIndex] = argBufferOffset;
                             bufferFragmentOrComputeRegisterIdMin = AZStd::min(slotIndex, bufferFragmentOrComputeRegisterIdMin);
                             bufferFragmentOrComputeRegisterIdMax = AZStd::max(slotIndex, bufferFragmentOrComputeRegisterIdMax);
                         }
@@ -339,24 +357,39 @@ namespace AZ
 
                 //Check if the srg has been updated or if the srg resources visibility hash has been updated
                 //as it is possible for draw items to have different PSOs in the same pass.
-                const AZ::HashValue64 srgResourcesVisHash = pipelineLayout.GetSrgResourcesVisibilityHash(srgVisIndex);
+                const AZ::HashValue64 srgResourcesVisHash = pipelineLayout->GetSrgResourcesVisibilityHash(srgVisIndex);
                 if(bindings.m_srgVisHashByIndex[slot] != srgResourcesVisHash || isSrgUpdatd)
                 {
                     bindings.m_srgVisHashByIndex[slot] = srgResourcesVisHash;
                     if(srgVisInfo != RHI::ShaderStageMask::None)
                     {
-
-
-                        //For graphics and compute encoder make the resource resident (call UseResource) for the duration
+                        //For graphics and compute encoder cache all the resources used by the pass in order
+                        //to eventually make them resident (call UseResource) for the duration
                         //of the work associated with the current scope and ensure that it's in a
                         //format compatible with the appropriate metal function.
                         if(m_commandEncoderType == CommandEncoderType::Render)
                         {
-                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+                            //Collect resources bound via Bindless SRG
+                            CollectBindlessGfxUntrackedResources(shaderResourceGroup,
+                                                                 m_untrackedResourcesGfxRead,
+                                                                 m_untrackedResourcesGfxReadWrite);
+                            
+                            //Collect resources bound via shaderResourceGroup
+                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo,
+                                                                           m_untrackedResourcesGfxRead,
+                                                                           m_untrackedResourcesGfxReadWrite);
                         }
                         else if(m_commandEncoderType == CommandEncoderType::Compute)
                         {
-                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo, resourcesToMakeResidentCompute, resourcesToMakeResidentGraphics);
+                            //Collect resources bound via Bindless SRG
+                            CollectBindlessComputeUntrackedResources(shaderResourceGroup,
+                                                                     m_untrackedResourcesComputeRead,
+                                                                     m_untrackedResourcesComputeReadWrite);
+                            
+                            //Collect resources bound via shaderResourceGroup
+                            shaderResourceGroup->CollectUntrackedResources(srgResourcesVisInfo,
+                                                                           m_untrackedResourcesComputeRead,
+                                                                           m_untrackedResourcesComputeReadWrite);
                         }
                     }
                 }
@@ -368,48 +401,22 @@ namespace AZ
                 BindArgumentBuffers(RHI::ShaderStage::Vertex,
                                     bufferVertexRegisterIdMin,
                                     bufferVertexRegisterIdMax,
-                                    mtlVertexArgBuffers,
-                                    mtlVertexArgBufferOffsets);
+                                    m_mtlVertexArgBuffers,
+                                    m_mtlVertexArgBufferOffsets);
 
                 BindArgumentBuffers(RHI::ShaderStage::Fragment,
                                     bufferFragmentOrComputeRegisterIdMin,
                                     bufferFragmentOrComputeRegisterIdMax,
-                                    mtlFragmentOrComputeArgBuffers,
-                                    mtlFragmentOrComputeArgBufferOffsets);
+                                    m_mtlFragmentOrComputeArgBuffers,
+                                    m_mtlFragmentOrComputeArgBufferOffsets);
             }
             else if(m_commandEncoderType == CommandEncoderType::Compute)
             {
                 BindArgumentBuffers(RHI::ShaderStage::Compute,
                                     bufferFragmentOrComputeRegisterIdMin,
                                     bufferFragmentOrComputeRegisterIdMax,
-                                    mtlFragmentOrComputeArgBuffers,
-                                    mtlFragmentOrComputeArgBufferOffsets);
-            }
-
-            id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
-            id<MTLComputeCommandEncoder> computeEncoder = GetEncoder<id<MTLComputeCommandEncoder>>();
-
-            //Call UseResource on all resources for Compute stage
-            for (const auto& key : resourcesToMakeResidentCompute)
-            {
-                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
-
-                [computeEncoder useResources: &resourcesToProcessVec[0]
-                                       count: resourcesToProcessVec.size()
-                                       usage: key.first];
-
-            }
-
-            //Call UseResource on all resources for Vertex and Fragment stages
-            for (const auto& key : resourcesToMakeResidentGraphics)
-            {
-
-                AZStd::vector<id <MTLResource>> resourcesToProcessVec(key.second.begin(), key.second.end());
-
-                [renderEncoder useResources: &resourcesToProcessVec[0]
-                                      count: resourcesToProcessVec.size()
-                                      usage: key.first.first
-                                     stages: key.first.second];
+                                    m_mtlFragmentOrComputeArgBuffers,
+                                    m_mtlFragmentOrComputeArgBufferOffsets);
             }
 
             if(bindNullDescriptorHeap)
@@ -419,6 +426,97 @@ namespace AZ
             return true;
         }
 
+        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
+                                                                    const RHI::ResourceView* resourceView)
+        {
+            id<MTLResource> mtlResourceView = nil;
+            bool isReadOnlyResource = false;
+            switch(resourceType)
+            {
+                case RHI::BindlessResourceType::m_Texture2D:
+                case RHI::BindlessResourceType::m_TextureCube:
+                {
+                    isReadOnlyResource = true;
+                }
+                case RHI::BindlessResourceType::m_RWTexture2D:
+                {
+                    const ImageView* imageView = static_cast<const ImageView*>(resourceView);
+                    mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
+                    break;
+                }
+                case RHI::BindlessResourceType::m_ByteAddressBuffer:
+                {
+                    isReadOnlyResource = true;
+                }
+                case RHI::BindlessResourceType::m_RWByteAddressBuffer:
+                {
+                    const BufferView* bufferView = static_cast<const BufferView*>(resourceView);
+                    mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
+                    break;
+                }
+            }
+            return CommandList::ResourceProperties(isReadOnlyResource, mtlResourceView);
+        }
+    
+        void CommandList::CollectBindlessComputeUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
+                                                ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead,
+                                                ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeReadWrite)
+        {
+            if(shaderResourceGroup->GetData().GetBindlessViewsSize()==0)
+            {
+                return;
+            }
+            
+            for (const auto& it : shaderResourceGroup->GetData().GetBindlessResourceViews())
+            {
+                for(const auto& resourceViewsIt : it.second.m_bindlessResources)
+                {
+                    CommandList::ResourceProperties resourceInfo = GetResourceInfo(it.second.m_bindlessResourceType,
+                                                                                    resourceViewsIt.get());
+                    //Check if the resource is read only
+                    if(resourceInfo.first)
+                    {
+                        m_untrackedResourcesComputeRead.insert(resourceInfo.second);
+                    }
+                    else
+                    {
+                        m_untrackedResourcesComputeReadWrite.insert(resourceInfo.second);
+                    }
+                }
+            }
+        }
+    
+        void CommandList::CollectBindlessGfxUntrackedResources(const ShaderResourceGroup* shaderResourceGroup,
+                                            ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
+                                            ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxReadWrite)
+        {
+            if(shaderResourceGroup->GetData().GetBindlessViewsSize()==0)
+            {
+                return;
+            }
+            
+            for (const auto& it : shaderResourceGroup->GetData().GetBindlessResourceViews())
+            {
+                // Iterate through all the ResourceViews
+                for(const auto& resourceViewsIt : it.second.m_bindlessResources)
+                {
+                    CommandList::ResourceProperties resourceInfo = GetResourceInfo(it.second.m_bindlessResourceType,
+                                                                     resourceViewsIt.get());
+                    //Check if the resource is read only
+                    if(resourceInfo.first)
+                    {
+                        untrackedResourcesGfxRead[RHI::ShaderStageVertex].insert(resourceInfo.second);
+                        untrackedResourcesGfxRead[RHI::ShaderStageFragment].insert(resourceInfo.second);
+                    }
+                    else
+                    {
+                        //For RW resources we do not call UseResouce for vertex shader as that causes a gpu crash
+                        untrackedResourcesGfxReadWrite[RHI::ShaderStageFragment].insert(resourceInfo.second);
+                    }
+                }
+            }
+        }
+    
         void CommandList::BindArgumentBuffers(RHI::ShaderStage shaderStage,
                                               uint16_t registerIdMin,
                                               uint16_t registerIdMax,
@@ -544,7 +642,7 @@ namespace AZ
                     uint32_t indexTypeSize = 0;
                     GetIndexTypeSizeInBytes(mtlIndexType, indexTypeSize);
 
-                    uint32_t indexOffset = indexBuffDescriptor.GetByteOffset() + (indexed.m_indexOffset * indexTypeSize) + buff->GetMemoryView().GetOffset();
+                    uint32_t indexOffset = static_cast<uint32_t>(indexBuffDescriptor.GetByteOffset() + (indexed.m_indexOffset * indexTypeSize) + buff->GetMemoryView().GetOffset());
                     [renderEncoder drawIndexedPrimitives: mtlPrimType
                                               indexCount: indexed.m_indexCount
                                                indexType: mtlIndexType
@@ -625,10 +723,10 @@ namespace AZ
                     bindings.m_srgVisHashByIndex[i] = AZ::HashValue64{0};
                 }
 
-                const PipelineLayout& pipelineLayout = pipelineState->GetPipelineLayout();
-                if (m_state.m_pipelineLayout != &pipelineLayout)
+                const PipelineLayout* pipelineLayout = pipelineState->GetPipelineLayout();
+                if (m_state.m_pipelineLayout != pipelineLayout)
                 {
-                    m_state.m_pipelineLayout = &pipelineLayout;
+                    m_state.m_pipelineLayout = pipelineLayout;
                 }
             }
         }
@@ -668,7 +766,7 @@ namespace AZ
                     {
                         const Buffer * buff = static_cast<const Buffer*>(streams[i].GetBuffer());
                         id<MTLBuffer> mtlBuff = buff->GetMemoryView().GetGpuAddress<id<MTLBuffer>>();
-                        uint32_t offset = streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset();
+                        uint32_t offset = static_cast<uint32_t>(streams[i].GetByteOffset() + buff->GetMemoryView().GetOffset());
                         mtlStreamBuffers[bufferArrayLen] = mtlBuff;
                         mtlStreamBufferOffsets[bufferArrayLen] = offset;
                         bufferArrayLen++;
@@ -716,7 +814,7 @@ namespace AZ
                 return false;
             }
             
-            const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
+            const PipelineLayout* pipelineLayout = pipelineState->GetPipelineLayout();
             if(!pipelineLayout)
             {
                 AZ_Error("CommandList", false, "Pipeline layout not provided");

@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class CommandLineTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -426,6 +426,27 @@ namespace UnitTest
         EXPECT_STREQ("2", commandLine.GetSwitchValue("foo").c_str());
         EXPECT_STREQ("2", commandLine.GetSwitchValue("foo", 1).c_str());
         EXPECT_STREQ("1", commandLine.GetSwitchValue("foo", 0).c_str());
+    }
 
+    TEST_F(CommandLineTests, ArgumentsParsed_AfterDoubleDash_ArePositionalArgumentsOnly)
+    {
+        AZ::CommandLine commandLine{ "-" };
+
+        constexpr AZStd::string_view argValues[] =
+        {
+            "programname.exe", "--foo=1", "--", "--foo=2", "bar", "--", "baz"
+        };
+
+        commandLine.Parse(argValues);
+
+        EXPECT_EQ(commandLine.GetNumSwitchValues("foo"), 1);
+        EXPECT_EQ("1", commandLine.GetSwitchValue("foo"));
+        ASSERT_EQ(5, commandLine.GetNumMiscValues());
+        // The first Misc entry is the executable name "programname.exe"
+        // ignore checking that entry since it is not relevant to this test
+        EXPECT_EQ("--foo=2",commandLine.GetMiscValue(1));
+        EXPECT_EQ("bar", commandLine.GetMiscValue(2));
+        EXPECT_EQ("--", commandLine.GetMiscValue(3));
+        EXPECT_EQ("baz", commandLine.GetMiscValue(4));
     }
 }   // namespace UnitTest

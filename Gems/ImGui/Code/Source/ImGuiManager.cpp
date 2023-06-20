@@ -9,11 +9,14 @@
 #include "ImGuiManager.h"
 #include <ImGuiContextScope.h>
 #include <AzCore/PlatformIncl.h>
-#include <OtherActiveImGuiBus.h>
+#include <AzCore/Debug/Profiler.h>
 
 #ifdef IMGUI_ENABLED
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Jobs/Algorithms.h>
+#include <AzCore/Jobs/JobCompletion.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzCore/Time/ITime.h>
@@ -24,8 +27,10 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Viewport/ViewportBus.h>
+#include <CrySystem/System.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
+#include <ISystem.h>
 #include <sstream>
 #include <string>
 
@@ -39,6 +44,8 @@ static const constexpr uint32_t IMGUI_WHEEL_DELTA = 120; // From WinUser.h, for 
 using LyButtonImGuiNavIndexPair = AZStd::pair<AzFramework::InputChannelId, ImGuiNavInput_>;
 using LyButtonImGuiNavIndexMap = AZStd::fixed_unordered_map<AzFramework::InputChannelId, ImGuiNavInput_, 11, 32>;
 static LyButtonImGuiNavIndexMap s_lyInputToImGuiNavIndexMap;
+
+AZ_DEFINE_BUDGET(ImGui);
 
 /**
     An anonymous namespace containing helper functions for interoperating with AzFrameworkInput.
@@ -243,9 +250,11 @@ float ImGui::ImGuiManager::GetDpiScalingFactor() const
     return io.FontGlobalScale;
 }
 
-void ImGuiManager::Render()
+ImDrawData* ImGui::ImGuiManager::GetImguiDrawData()
 {
-    if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
+    AZ_PROFILE_FUNCTION(ImGui);
+
+    if (m_clientMenuBarState == DisplayState::Hidden)
     {
         // the first frame that this is true means that it has been deactivated, the following condtional is to avoid
         // continuous bus notifications
@@ -258,7 +267,7 @@ void ImGuiManager::Render()
             // it sends the activation bus notification
             m_imGuiBroadcastState.m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
         } 
-        return;
+        return nullptr;
     }
 
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
@@ -267,7 +276,7 @@ void ImGuiManager::Render()
     ImGuiIO& io = ImGui::GetIO();
     io.DisplaySize = m_lastRenderResolution;
 
-    if ((m_clientMenuBarState == DisplayState::Visible) || (m_editorWindowState != DisplayState::Hidden))
+    if (m_clientMenuBarState == DisplayState::Visible)
     {
         if (IsControllerSupportModeEnabled(ImGuiControllerModeFlags::Mouse))
         {
@@ -344,7 +353,6 @@ void ImGuiManager::Render()
     if (consoleDisabled && consoleDisabled->GetIVal() != 0)
     {
         m_clientMenuBarState = DisplayState::Hidden;
-        m_editorWindowState = DisplayState::Hidden;
     }
 
     // Advance ImGui by Elapsed Frame Time
@@ -393,8 +401,17 @@ void ImGuiManager::Render()
     m_lastRenderResolution.x = static_cast<float>(renderRes[0]);
     m_lastRenderResolution.y = static_cast<float>(renderRes[1]);
 
-    // Render!
-    RenderImGuiBuffers(scaleRects);
+    // Trigger all listeners to run their updates
+    ImGuiUpdateListenerBus::Broadcast(&ImGuiUpdateListenerBus::Events::OnImGuiUpdate);
+
+    // Run imgui's internal render and retrieve resulting draw data
+    ImGui::Render();
+    ImDrawData* drawData = ImGui::GetDrawData();
+    if (drawData != nullptr)
+    {
+        // Supply Scale Rects
+        drawData->ScaleClipRects(scaleRects);
+    }
 
     if (m_imGuiBroadcastState.m_activationBroadcastStatus == ImGuiStateBroadcast::NotBroadcast)
     {
@@ -409,6 +426,8 @@ void ImGuiManager::Render()
         io.KeysDown[GetAzKeyIndex(InputDeviceKeyboard::Key::EditBackspace)] = false;
         m_simulateBackspaceKeyPressed = false;
     }
+
+    return drawData;
 }
 
 /**
@@ -430,24 +449,24 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         // Handle Keyboard Hotkeys
         if (inputChannel.IsStateBegan())
         {
-            // Cycle through ImGui Menu Bar States on Home button press
-            if (inputChannelId == InputDeviceKeyboard::Key::NavigationHome)
+            // Cycle through ImGui Menu Bar States on ~ button press
+            if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
             {
                 ToggleThroughImGuiVisibleState();
             }
 
-            // Cycle through Standalone Editor Window States
-            if (inputChannel.GetInputChannelId() == InputDeviceKeyboard::Key::NavigationEnd)
+            if (inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::Escape)
             {
-                if (gEnv->IsEditor() && m_editorWindowState == DisplayState::Hidden)
+                CSystem* cSys = static_cast<CSystem*>(GetISystem());
+                if (cSys)
                 {
-                    ImGuiUpdateListenerBus::Broadcast(&IImGuiUpdateListener::OnOpenEditorWindow);
-                }
-                else
-                {
-                    m_editorWindowState = m_editorWindowState == DisplayState::Visible
-                                              ? DisplayState::VisibleNoMouse
-                                              : DisplayState::Visible;
+                    ISystemUserCallback* pCallback = cSys->GetUserCallback();
+                    {
+                        if (pCallback)
+                        {
+                            pCallback->OnProcessSwitch();
+                        }
+                    }
                 }
             }
         }
@@ -573,8 +592,7 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
         }
     }
 
-    if (m_clientMenuBarState == DisplayState::Visible
-        || m_editorWindowState == DisplayState::Visible)
+    if (m_clientMenuBarState == DisplayState::Visible)
     {
         // If we have the Discrete Input Mode Enabled.. then consume the input here.
         if (m_enableDiscreteInputMode)
@@ -694,32 +712,29 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
                 m_enableDiscreteInputMode = true;
             }
 
-            // get window size if it wasn't initialized
+            // Fetch old cursor state
+            AzFramework::InputSystemCursorRequestBus::EventResult(m_previousSystemCursorState,
+                AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
+            // Set new cursor state
+            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                AzFramework::SystemCursorState::UnconstrainedAndVisible);
+
+            // Get window size if it wasn't initialized
             InitWindowSize();
             break;
 
-        case DisplayState::Visible:
-            m_clientMenuBarState = DisplayState::VisibleNoMouse;
-            ImGui::GetIO().MouseDrawCursor = false;
-
-            if (m_enableDiscreteInputMode)
-            {
-                // if we ARE Enabling the Discrete Input Mode, then we want to bail here, if not, we want to just fall below to the default case. 
-                //    no worries on setting m_clientMenuBarState twice..
-                break;
-            }
-
         default:
+        case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
 
-            // Enable system cursor if it's in editor and it's not editor game mode
-            if (gEnv->IsEditor() && !gEnv->IsEditorGameMode())
-            {
-                // unconstrain and show the system cursor, because there's an ImGui menu item that allows the user to change the cursor state
-                AzFramework::InputSystemCursorRequestBus::Event(
-                    AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                    AzFramework::SystemCursorState::UnconstrainedAndVisible);
-            }
+            // Restore old cursor state
+            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                m_previousSystemCursorState);
+            m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
+
             break;
     }
 
@@ -727,32 +742,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
     m_setEnabledEvent.Signal(m_clientMenuBarState == DisplayState::Hidden);
 }
 
-void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
-{
-    ImGui::ImGuiContextScope contextScope(m_imguiContext);
-
-    // Trigger all listeners to run their updates
-    EBUS_EVENT(ImGuiUpdateListenerBus, OnImGuiUpdate);
-
-    // Run imgui's internal render and retrieve resulting draw data
-    ImGui::Render();
-    ImDrawData* drawData = ImGui::GetDrawData();
-    if (!drawData)
-    {
-        return;
-    }
-
-    // Supply Scale Rects
-    drawData->ScaleClipRects(scaleRects);
-
-    //@rky: Only render the main ImGui if it is visible
-    if (m_clientMenuBarState != DisplayState::Hidden)
-    {
-        OtherActiveImGuiRequestBus::Broadcast(&OtherActiveImGuiRequestBus::Events::RenderImGuiBuffers, *drawData);
-    }
-}
-
-void ImGuiManager::OnWindowResized(uint32_t width, uint32_t height)
+void ImGuiManager::OnResolutionChanged(uint32_t width, uint32_t height)
 {
     m_windowSize.m_width = width;
     m_windowSize.m_height = height;
@@ -769,7 +759,7 @@ void ImGuiManager::InitWindowSize()
 
         if (windowHandle)
         {
-            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(m_windowSize, windowHandle, &AzFramework::WindowRequestBus::Events::GetRenderResolution);
             AzFramework::WindowNotificationBus::Handler::BusConnect(windowHandle);
         }
     }
@@ -819,7 +809,7 @@ void OnEnableCameraMonitorCBFunc(ICVar* pArgs)
 
 void OnShowImGuiCBFunc(ICVar* pArgs)
 {
-    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetClientMenuBarState, pArgs->GetIVal() != 0 ? ImGui::DisplayState::Visible : ImGui::DisplayState::Hidden);
+    ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::SetDisplayState, pArgs->GetIVal() != 0 ? ImGui::DisplayState::Visible : ImGui::DisplayState::Hidden);
 }
 
 void OnDiscreteInputModeCBFunc(ICVar* pArgs)

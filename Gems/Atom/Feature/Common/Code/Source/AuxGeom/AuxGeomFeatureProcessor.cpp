@@ -114,6 +114,12 @@ namespace AZ
             }
         }
 
+        void AuxGeomFeatureProcessor::OnRenderEnd()
+        {
+            m_dynamicPrimitiveProcessor->FrameEnd();
+            m_fixedShapeProcessor->FrameEnd();
+        }
+
         RPI::AuxGeomDrawPtr AuxGeomFeatureProcessor::GetDrawQueueForView(const RPI::View* view)
         {
             if (view)
@@ -157,15 +163,10 @@ namespace AZ
             m_fixedShapeProcessor->SetUpdatePipelineStates();
         }
 
-        void AuxGeomFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        void AuxGeomFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             OnSceneRenderPipelinesChanged();
         }
-
-        void AuxGeomFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
-            OnSceneRenderPipelinesChanged();
-        }
-
     } // namespace Render
 } // namespace AZ

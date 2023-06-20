@@ -49,7 +49,7 @@ namespace AzToolsFramework
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(SearchAssetTypeSelectorWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SearchAssetTypeSelectorWidget, AZ::SystemAllocator);
 
             explicit SearchAssetTypeSelectorWidget(QWidget* parent = nullptr);
             ~SearchAssetTypeSelectorWidget() override;

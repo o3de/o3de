@@ -7,24 +7,23 @@
  */
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
-
 #include <AWSCoreBus.h>
-
-#include <QMenu>
 
 namespace AzFramework
 {
     class ProcessWatcher;
 }
 
+namespace AzToolsFramework
+{
+    class ActionManagerInterface;
+    class MenuManagerInterface;
+    class MenuManagerInternalInterface;
+}
+
 namespace AWSCore
 {
     class AWSCoreEditorMenu
-        : public QMenu
-        , AWSCoreEditorRequestBus::Handler
     {
     public:
         static constexpr const char AWSResourceMappingToolReadMeWarningText[] =
@@ -33,26 +32,23 @@ namespace AWSCore
         static constexpr const char AWSResourceMappingToolLogWarningText[] =
             "Failed to launch Resource Mapping Tool, please check <a href=\"file:///%s\">logs</a> for details.";
 
-        AWSCoreEditorMenu(const QString& text);
-        ~AWSCoreEditorMenu() override;
+        AWSCoreEditorMenu();
+        ~AWSCoreEditorMenu();
+
+        void UpdateMenuBinding();
 
     private:
-        QAction* AddExternalLinkAction(const AZStd::string& name, const AZStd::string& url, const AZStd::string& icon = "");
 
         void InitializeResourceMappingToolAction();
         void InitializeAWSDocActions();
         void InitializeAWSGlobalDocsSubMenu();
-        void InitializeAWSFeatureGemActions();
-        void AddSpaceForIcon(QMenu* menu);
-
-        // AWSCoreEditorRequestBus interface implementation
-        void SetAWSClientAuthEnabled() override;
-        void SetAWSMetricsEnabled() override;
-        void SetAWSGameLiftEnabled() override;
-
-        QMenu* SetAWSFeatureSubMenu(const AZStd::string& menuText);
 
         // To improve experience, use process watcher to keep track of ongoing tool process
         AZStd::unique_ptr<AzFramework::ProcessWatcher> m_resourceMappingToolWatcher;
+
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInterface* m_menuManagerInterface = nullptr;
+        AzToolsFramework::MenuManagerInternalInterface* m_menuManagerInternalInterface = nullptr;
+
     };
 } // namespace AWSCore

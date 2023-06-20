@@ -43,6 +43,7 @@ namespace AZ
         public:
             virtual ~SwapChainDescriptor() = default;
             AZ_RTTI(SwapChainDescriptor, "{214C7DD0-C380-45B6-8021-FD0C43CF5C05}", ResourcePoolDescriptor);
+            AZ_CLASS_ALLOCATOR(SwapChainDescriptor, SystemAllocator)
             static void Reflect(AZ::ReflectContext* context);
 
             // The dimensions and format of the swap chain images.
@@ -63,6 +64,11 @@ namespace AZ
             // Return the index of a XR swapchain
             // as you can have multiple XR swapchains (one per view).
             uint32_t m_xrSwapChainIndex = 0;
+
+            // The scaling mode to use when presenting the swapchain's back buffer to the target
+            // Note: not all platforms support stretch or stretch with aspect ratio.
+            // Use DeviceFeature::m_swapChainScalingFlags to find out supported stretch modes
+            Scaling m_scalingMode = RHI::Scaling::None;
         };
     }
 }

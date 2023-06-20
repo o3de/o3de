@@ -109,24 +109,9 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "Shaders/Materials/Eye/Eye_ForwardPass.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }
-    ],
+    // Skin lighting model works well because it supports subsurface scattering, and Eye doesn't need all the other stuff in the Enhanced lighting model.
+    "lightingModel": "Skin", 
+    "materialShaderCode": "Eye.azsli",
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"

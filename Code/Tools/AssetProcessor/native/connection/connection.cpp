@@ -319,7 +319,7 @@ void Connection::OnConnectionDisconnect()
     // For user created connections, the id is user generated (either because they've manually entered some text
     // this session, or because the id was loaded from a session previously saved where the user entered it).
     // As such, when a connection disconnects, we only want to clear the id when the connection was triggered
-    // from something other than the user (i.e. like when an automatic connection from Editor or a job worker 
+    // from something other than the user (i.e. like when an automatic connection from Editor or a job worker
     // disconnects).
     if (!m_userCreatedConnection)
     {
@@ -363,6 +363,8 @@ void Connection::OnConnectionEstablished(QString ipAddress, quint16 port)
     SetIpAddress(ipAddress);
     SetPort(port);
     SetStatus(Connected);
+
+    Q_EMIT ConnectionReady(ConnectionId(), AssetPlatforms());
 }
 
 void Connection::ReceiveMessage(unsigned int type, unsigned int serial, QByteArray payload)
@@ -849,7 +851,7 @@ AZ::u32 Connection::GetNextSerial()
     static AZStd::atomic_uint serial(AzFramework::AssetSystem::DEFAULT_SERIAL);
 
     AZ::u32 nextSerial = ++serial;
-    
+
     // Avoid special-case serials
     return (nextSerial & AzFramework::AssetSystem::RESPONSE_SERIAL_FLAG
         || nextSerial == AzFramework::AssetSystem::DEFAULT_SERIAL

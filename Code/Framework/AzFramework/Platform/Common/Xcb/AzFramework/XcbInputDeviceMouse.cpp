@@ -548,7 +548,13 @@ namespace AzFramework
                     }
 
                     m_focusWindow = focusInEvent->event;
-                    HandleCursorState(m_focusWindow, m_systemCursorState);
+
+                    // If the cursor state is Unknown, then calling HandleCursorState would hide the cursor, 
+                    // but we should only hide the cursor if m_systemCursorState is explicitly hidden.
+                    if(SystemCursorState::Unknown != m_systemCursorState) 
+                    {
+                        HandleCursorState(m_focusWindow, m_systemCursorState);
+                    }
                 }
 
                 auto* interface = AzFramework::XcbConnectionManagerInterface::Get();

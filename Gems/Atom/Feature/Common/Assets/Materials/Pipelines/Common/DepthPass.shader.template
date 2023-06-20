@@ -1,0 +1,20 @@
+{
+    "Source" : "TEMPLATE_AZSL_PATH",
+
+    "DepthStencilState" : { 
+        "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
+    },
+
+    "ProgramSettings" : 
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "VertexShader",
+                "type" : "Vertex"
+            }
+        ] 
+    },
+
+    "DrawList" : "depth"
+}

@@ -14,7 +14,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonEditorMaterialComponentSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonEditorMaterialComponentSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result JsonEditorMaterialComponentSerializer::Load(
             void* outputValue,

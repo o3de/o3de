@@ -22,7 +22,7 @@ namespace AZ
     {
     public:
         AZ_TYPE_INFO(ScriptDebug, "{FBAFA9F8-9861-41F9-A9EF-3B943B91FF4E}");
-        AZ_CLASS_ALLOCATOR(ScriptDebug, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptDebug, SystemAllocator);
 
         ScriptDebug() = default;
         ~ScriptDebug() = default;

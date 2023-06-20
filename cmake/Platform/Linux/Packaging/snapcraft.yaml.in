@@ -1,0 +1,74 @@
+name: o3de
+version: '${CPACK_PACKAGE_VERSION}'
+summary: O3DE Engine
+description: |
+  Open 3D Engine (O3DE) is an Apache 2.0-licensed multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations. 
+license: Apache-2.0
+confinement: classic
+base: core20
+
+parts:
+  o3de:
+    plugin: dump
+    source: ./${CPACK_PACKAGE_NAME}
+    source-type: local
+    build-attributes:
+      - enable-patchelf
+    stage-packages:
+      - clang-12
+      - cmake
+      - libc-dev
+      - libclang-cpp12-dev
+      - libcurl4-openssl-dev
+      - libdbus-1-3
+      - libffi7
+      - libfontconfig1-dev
+      - libglu1-mesa-dev
+      - libpng16-16
+      - libsdl2-dev
+      - libsm6
+      - libssl-dev
+      - libstdc++-9-dev
+      - libtcl8.6
+      - libtk8.6
+      - libunwind-dev
+      - libxcb-icccm4
+      - libxcb-image0
+      - libxcb-keysyms1
+      - libxcb-randr0
+      - libxcb-render-util0
+      - libxcb-xfixes0-dev
+      - libxcb-xinerama0
+      - libxcb-xinput-dev
+      - libxcb-xinput0
+      - libxcb-xkb-dev
+      - libxkbcommon-dev
+      - libxkbcommon-x11-dev
+      - libzstd-dev
+      - llvm-12-dev
+      - mesa-common-dev
+      - ninja-build
+      - pkg-config
+      - zlib1g-dev
+
+apps:
+  o3de:
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/o3de
+    environment:
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      PKG_CONFIG: $SNAP/usr/bin/pkg-config --define-variable=libdir=$SNAP/usr/lib/x86_64-linux-gnu
+      DISABLE_WAYLAND: 1
+  editor:
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/Editor
+    environment:
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      DISABLE_WAYLAND: 1
+  assetprocessor:
+    command: ${CPACK_PACKAGE_VERSION}/bin/Linux/profile/Default/AssetProcessor
+    environment:
+      O3DE_SNAP: 1
+      SNAP_BUILD: ${CPACK_PACKAGE_VERSION}
+      DISABLE_WAYLAND: 1
+    

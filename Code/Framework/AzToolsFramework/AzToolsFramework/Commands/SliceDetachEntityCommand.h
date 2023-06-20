@@ -24,7 +24,7 @@ namespace AzToolsFramework
         : public BaseSliceCommand
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceDetachEntityCommand, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceDetachEntityCommand, AZ::SystemAllocator);
         AZ_RTTI(SliceDetachEntityCommand, "{FD26D09E-FD95-4D8C-8575-E01DA7100240}");
 
         SliceDetachEntityCommand(const AzToolsFramework::EntityIdList& entityIds, const AZStd::string& friendlyName);

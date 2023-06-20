@@ -9,6 +9,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
 #include <Configuration/PhysXSettingsRegistryManager.h>
@@ -33,7 +34,7 @@ namespace PhysX
     {
     public:
         AZ_RTTI(PhysX::Module, "{160C59B1-FA68-4CDC-8562-D1204AB78FC1}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(PhysX::Module, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(PhysX::Module, AZ::SystemAllocator)
 
         Module()
             : AZ::Module()
@@ -65,6 +66,8 @@ namespace PhysX
             m_physXSystem.Shutdown();
 
             UnloadModules();
+
+            AZ::GetCurrentSerializeContextModule().Cleanup();
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override

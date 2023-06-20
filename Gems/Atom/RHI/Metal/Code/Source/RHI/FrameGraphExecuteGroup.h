@@ -19,7 +19,7 @@ namespace AZ
         {
             using Base = FrameGraphExecuteGroupBase;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::PoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::PoolAllocator);
 
             FrameGraphExecuteGroup() = default;
             ~FrameGraphExecuteGroup();
@@ -52,6 +52,9 @@ namespace AZ
             
             const Scope* m_scope = nullptr;
             NSString* m_cbLabel = nullptr;
+            
+            //Metal command buffer associated with this group
+            id <MTLCommandBuffer> m_groupCommandBuffer = nil;
         };
     }
 }

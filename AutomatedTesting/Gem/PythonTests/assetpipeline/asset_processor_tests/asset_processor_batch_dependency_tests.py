@@ -49,20 +49,10 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
     AssetProcessorBatch Dependency tests
     """
     schemas = [
-        ("C16877167", ".ent"),
-        ("C16877168", "Environment.xml"),
-        ("C16877169", "flares%.xml"),
         ("C16877170", "fonts%.xml"),
-        ("C16877171", "game.xml"),
-        ("C16877172", "particles%.xml"),
     ]
 
-    @pytest.mark.test_case_id("C16877167")
-    @pytest.mark.test_case_id("C16877168")
-    @pytest.mark.test_case_id("C16877169")
     @pytest.mark.test_case_id("C16877170")
-    @pytest.mark.test_case_id("C16877171")
-    @pytest.mark.test_case_id("C16877172")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.parametrize("folder, schema", schemas)

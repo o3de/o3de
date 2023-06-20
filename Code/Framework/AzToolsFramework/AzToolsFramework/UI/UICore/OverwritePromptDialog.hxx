@@ -30,7 +30,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(OverwritePromptDialog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(OverwritePromptDialog, AZ::SystemAllocator);
         OverwritePromptDialog(QWidget* pParent);
         virtual ~OverwritePromptDialog();
 

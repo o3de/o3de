@@ -22,3 +22,16 @@ AzQtComponents--BreadCrumbs #MenuButton
     qproperty-icon: url(:/Breadcrumb/img/UI20/Breadcrumb/dot-dot-dot_with_arrow.svg);
     qproperty-iconSize: 22px 11px;
 }
+
+AzQtComponents--BreadCrumbs QLineEdit
+{
+    border: 0px;
+    background: white;
+    color: black;
+}
+
+AzQtComponents--BreadCrumbs[editable="true"]
+{
+    border: 1px solid #2f2f2f;
+    border-radius: 2px;
+}

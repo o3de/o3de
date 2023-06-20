@@ -1,0 +1,126 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{0CEDEE3B-0A53-438D-9876-38F867C55483}",
+        "category": "Material Inputs",
+        "title": "Float3x3 Input",
+        "titlePaletteName": "MaterialInputNodeTitlePalette",
+        "description": "Create a shader variable with the type and default value defined by this node. It will be exposed and customizable as a material property.",
+        "slotDataTypeGroups": [
+            "inRow1|inRow2|inRow3",
+            "outValue"
+        ],
+        "propertySlots": [
+            {
+                "name": "inGroup",
+                "displayName": "Group",
+                "description": "Material type group name that will contain the property corresponding to this input.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inName",
+                "displayName": "Name",
+                "description": "Property name that will be added to the material type for this input. The shader variable name and display name will be derived from this.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string"
+            },
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Description about what this material input does and how it should be used.",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            },
+            {
+                "name": "inRow1",
+                "displayName": "Row1",
+                "description": "Row1",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        1.0,
+                        0.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inRow2",
+                "displayName": "Row2",
+                "description": "Row2",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        1.0,
+                        0.0
+                    ]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            },
+            {
+                "name": "inRow3",
+                "displayName": "Row3",
+                "description": "Row3",
+                "supportedDataTypeRegex": "float3",
+                "defaultDataType": "float3",
+                "defaultValue": {
+                    "$type": "Vector3",
+                    "Value": [
+                        0.0,
+                        0.0,
+                        1.0
+                    ]
+                },
+                "settings": {
+                    "materialPropertyConnectionType": [
+                        "ShaderInput"
+                    ],
+                    "materialPropertySrgMember": [
+                        "STANDARD_SRG_MEMBER"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Configured value of the material property.",
+                "supportedDataTypeRegex": "float3x3",
+                "defaultDataType": "float3x3",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = float3x3(MaterialSrg::inRow1, MaterialSrg::inRow2, MaterialSrg::inRow3);"
+                    ]
+                }
+            }
+        ]
+    }
+}

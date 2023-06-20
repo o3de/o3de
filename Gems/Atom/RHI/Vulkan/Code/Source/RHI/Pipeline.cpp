@@ -9,6 +9,7 @@
 #include <RHI/Device.h>
 #include <RHI/PipelineLayout.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -76,7 +77,7 @@ namespace AZ
             if (m_nativePipeline != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_nativePipeline, nullptr);
+                device.GetContext().DestroyPipeline(device.GetNativeDevice(), m_nativePipeline, VkSystemAllocator::Get());
                 m_nativePipeline = VK_NULL_HANDLE;
             }
             Base::Shutdown();

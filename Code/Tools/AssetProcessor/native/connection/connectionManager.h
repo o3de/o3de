@@ -71,11 +71,11 @@ public:
     // Singleton pattern:
     static ConnectionManager* Get();
     Q_INVOKABLE int getCount() const;
-    Q_INVOKABLE Connection* getConnection(unsigned int connectionId);    
-    Q_INVOKABLE ConnectionMap& getConnectionMap();    
-    Q_INVOKABLE unsigned int addConnection(qintptr socketDescriptor = -1);    
+    Q_INVOKABLE Connection* getConnection(unsigned int connectionId);
+    Q_INVOKABLE ConnectionMap& getConnectionMap();
+    Q_INVOKABLE unsigned int addConnection(qintptr socketDescriptor = -1);
     Q_INVOKABLE unsigned int addUserConnection();
-    Q_INVOKABLE void removeConnection(unsigned int connectionId);    
+    Q_INVOKABLE void removeConnection(unsigned int connectionId);
     unsigned int GetConnectionId(QString ipaddress, int port);
     void SaveConnections(QString settingPrefix = ""); // settingPrefix allowed for testing purposes.
     void LoadConnections(QString settingPrefix = ""); // settingPrefix allowed for testing purposes.
@@ -95,13 +95,15 @@ public:
     void removeConnection(const QModelIndex& index);
 
 Q_SIGNALS:
-    void connectionAdded(unsigned int connectionId, Connection* connection);    
-    void beforeConnectionRemoved(unsigned int connectionId);    
+    void connectionAdded(unsigned int connectionId, Connection* connection);
+    void beforeConnectionRemoved(unsigned int connectionId);
 
     void ConnectionDisconnected(unsigned int connectionId);
     void ConnectionRemoved(unsigned int connectionId);
 
     void ConnectionError(unsigned int connId, QString error);
+
+    void ConnectionReady(unsigned int connectionId, QStringList platforms);
 
     void ReadyToQuit(QObject* source);
 
@@ -118,7 +120,7 @@ public Q_SLOTS:
     void RemoveConnectionFromMap(unsigned int connectionId);
     void MakeSureConnectionMapEmpty();
     void NewConnection(qintptr socketDescriptor);
-    
+
     void AllowedListingEnabled(bool enabled);
     void IsAddressInAllowedList(QHostAddress hostAddress, void* token);
     void AddAddressToAllowedList(QString address);
@@ -180,7 +182,7 @@ public Q_SLOTS:
     void UpdateConnectionMetrics();
 
     void OnStatusChanged(unsigned int connId);
-    
+
     void UpdateAllowedListFromBootStrap();
 
 private:
@@ -204,7 +206,7 @@ private:
     //allowed listing
     bool m_allowedListingEnabled = true;
 
-    //these lists are just caches, only used for updating    
+    //these lists are just caches, only used for updating
     QStringList m_allowedListAddresses;
     QStringList m_rejectedAddresses;
 };

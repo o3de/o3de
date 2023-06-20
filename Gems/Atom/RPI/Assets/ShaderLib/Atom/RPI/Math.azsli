@@ -8,21 +8,23 @@
 
 #pragma once
 
-#define PI      3.14159265f
-#define TWO_PI  6.28318530f
-#define INV_PI  0.31830988f
-#define EPSILON 10e-5f
+#define PI      3.14159265
+#define TWO_PI  6.28318530
+#define INV_PI  0.31830988
+#define EPSILON 10e-5
 
 // Max values (largest positive values)
 
 static const float FLOAT_32_MAX = 3.402823466e+38f;
-static const float FLOAT_16_MAX = 65504.0f;
+static const real FLOAT_16_MAX = 65504.0;
 
 
 // Min values (smallest positive values)
 
 static const float FLOAT_32_MIN = 1.175494351e-38f;
 static const float FLOAT_16_MIN = 0.000000059605f;
+
+
 
 void swap(inout float a, inout float b)
 {
@@ -33,22 +35,47 @@ void swap(inout float a, inout float b)
 
 // ---------- Power -----------
 
-float Pow2(float x)
+float Pow2(float x)         // 1 multiplication
 {
     return x * x;
 }
-float Pow3(float x)
+float Pow3(float x)         // 2 multiplications
 {
     return x * x * x;
 }
-float Pow4(float x)
+float Pow4(float x)         // 2 multiplications
 {
     x *= x;
     return x * x;
 }
-float Pow5(float x)
+float Pow5(float x)         // 3 multiplications
 {
     return x * Pow4(x);
+}
+float Pow6(float x)         // 3 multiplications
+{
+    x *= x;
+    return x * x * x;
+}
+float Pow7(float x)         // 4 multiplications
+{
+    return x * Pow6(x);
+}
+float Pow8(float x)         // 3 multiplications
+{
+    x *= x;
+    x *= x;
+    return x * x;
+}
+float Pow9(float x)         // 4 multiplications
+{
+    x = x * x * x;
+    return x * x * x;
+}
+float Pow10(float x)        // 4 multiplications
+{
+    x = Pow5(x);
+    return x * x;
 }
 
 // ---------- Min & Max -----------
@@ -89,14 +116,14 @@ float max4(float4 abcd)
 
 // ---------- Matrix ----------
 
-float3x3 ExtractFloat3x3(float3x4 input)
+real3x3 ExtractFloat3x3(real3x4 input)
 {
-    return float3x3(input[0].xyz, input[1].xyz, input[2].xyz);
+    return real3x3(input[0].xyz, input[1].xyz, input[2].xyz);
 }
 
-float3x3 ExtractFloat3x3(float4x4 input)
+real3x3 ExtractFloat3x3(float4x4 input)
 {
-    return float3x3(input[0].xyz, input[1].xyz, input[2].xyz);
+    return real3x3(input[0].xyz, input[1].xyz, input[2].xyz);
 }
 
 // ---------- Intersection -----------
@@ -134,16 +161,16 @@ float RaySphereClosestHitWS(in float3 sphereOrigin, in float sphereRadius,
 }
 
 // returns true if the Aabb contains the specified point
-bool AabbContainsPoint(float3 aabbMin, float3 aabbMax, float3 testPoint)
+bool AabbContainsPoint(real3 aabbMin, real3 aabbMax, real3 testPoint)
 {
-    float3 d = step(aabbMin, testPoint) - step(aabbMax, testPoint);
-    return (d.x * d.y * d.z) > 0.0f;
+    real3 d = step(aabbMin, testPoint) - step(aabbMax, testPoint);
+    return (d.x * d.y * d.z) > 0.0;
 }
 
 // returns the closest point on the Aabb to the specified point
-float3 AabbClosestPoint(float3 aabbMin, float3 aabbMax, float3 testPoint)
+real3 AabbClosestPoint(real3 aabbMin, real3 aabbMax, real3 testPoint)
 {
-    float3 closestPos = float3(0.0f, 0.0f, 0.0f);
+    real3 closestPos = real3(0.0, 0.0, 0.0);
     for (uint i = 0; i < 3; ++i)
     {
         closestPos[i] = max(testPoint[i], aabbMin[i]);
@@ -153,9 +180,9 @@ float3 AabbClosestPoint(float3 aabbMin, float3 aabbMax, float3 testPoint)
 }
 
 // computes [0..1] percentage of a point that's in between the inner and outer AABBs
-float ComputeLerpBetweenInnerOuterAABBs(float3 innerAabbMin, float3 innerAabbMax, float3 outerAabbMax, float3 aabbPos, float3 position)
+real ComputeLerpBetweenInnerOuterAABBs(real3 innerAabbMin, real3 innerAabbMax, real3 outerAabbMax, real3 aabbPos, real3 position)
 {
-    float3 closestPointOnInnerAabb = AabbClosestPoint(innerAabbMin, innerAabbMax, position);
+    real3 closestPointOnInnerAabb = AabbClosestPoint(innerAabbMin, innerAabbMax, position);
 
     // find the distance to the outer AABB by intersecting the ray from the closestPointOnInnerAabb through the position
     // to each plane of the AABB, and take the shortest hit - this is the closest AABB plane to our point
@@ -165,39 +192,39 @@ float ComputeLerpBetweenInnerOuterAABBs(float3 innerAabbMin, float3 innerAabbMax
     outerAabbMax -= aabbPos;
     position = abs(position - aabbPos);
     closestPointOnInnerAabb = abs(closestPointOnInnerAabb - aabbPos);
-    float3 dirToPoint = normalize(position - closestPointOnInnerAabb);
+    real3 dirToPoint = normalize(position - closestPointOnInnerAabb);
 
     // intersect the ray from the closest point through the position with all three planes of the AABB
     // using outerAabbMax as the plane point and the plane normal defined in the array above (n.p = d)
     // Note: this is an optimized form of the following equation, performed simultaneously in all three planes:
     //       abs(dot(planeNormal, (outerAabbMax - position)) / dot(planeNormal, dirToPoint));
-    float3 distance = abs(outerAabbMax - position) / dirToPoint;
-    float shortestDistance = min(min(distance.x, distance.y), distance.z);
+    real3 distance = abs(outerAabbMax - position) / dirToPoint;
+    real shortestDistance = min(min(distance.x, distance.y), distance.z);
 
     // divide the distance by the total distance between the two intersect points
     // if (shortest distance == total distance) the blend is 1 since it's on the inner AABB
     // if (shortest distance == 0) the blend is 0 since it's on the outer AABB
     // if in between then it's the [0..1] percentage of the distance between inner and outer
     // if the inner and outer AABBs are identical then it's on both and the blend is 1
-    float3 outerAabbIntersect = position + (dirToPoint * shortestDistance);
-    float totalDistance = length(outerAabbIntersect - closestPointOnInnerAabb);
-    return totalDistance > 0.0f ? saturate(shortestDistance / totalDistance) : 1.0f;
+    real3 outerAabbIntersect = position + (dirToPoint * shortestDistance);
+    real totalDistance = length(outerAabbIntersect - closestPointOnInnerAabb);
+    return totalDistance > 0.0 ? saturate(shortestDistance / totalDistance) : 1.0;
 }
 
 // returns true if the Obb contains the specified point
-bool ObbContainsPoint(float4x4 obbTransformInverse, float3 obbHalfExtents, float3 testPoint)
+bool ObbContainsPoint(real4x4 obbTransformInverse, real3 obbHalfExtents, real3 testPoint)
 {
     // get the position in Obb local space, force to positive quadrant with abs()
-    float3 p = abs(mul(obbTransformInverse, float4(testPoint, 1.0f)).xyz);
+    real3 p = abs(mul(obbTransformInverse, real4(testPoint, 1.0)).xyz);
     return AabbContainsPoint(-obbHalfExtents, obbHalfExtents, p);
 }
 
 // computes [0..1] percentage of a point that's in between the inner and outer OBBs
-float ComputeLerpBetweenInnerOuterOBBs(float3x4 obbTransformInverse, float3 innerObbHalfExtents, float3 outerObbHalfExtents, float3 position)
+real ComputeLerpBetweenInnerOuterOBBs(real3x4 obbTransformInverse, real3 innerObbHalfExtents, real3 outerObbHalfExtents, float3 position)
 {
     // get the position in Obb local space, force to positive quadrant with abs()
-    float3 p = abs(mul(obbTransformInverse, float4(position, 1.0f)));
-    return ComputeLerpBetweenInnerOuterAABBs(-innerObbHalfExtents, innerObbHalfExtents, outerObbHalfExtents, float3(0.0f, 0.0f, 0.0f), p);
+    real3 p = abs(mul(obbTransformInverse, real4(position, 1.0)));
+    return ComputeLerpBetweenInnerOuterAABBs(-innerObbHalfExtents, innerObbHalfExtents, outerObbHalfExtents, real3(0.0, 0.0, 0.0), p);
 }
 
 // ---------- Normal Encoding -----------
@@ -278,7 +305,12 @@ bool DecodeUnorm2BitFlag2(float value)
 
 float3 MultiplyVectorQuaternion(float3 v, float4 q)
 {
-    return v + 2.0f * cross(cross(v, q.xyz) + q.w * v, q.xyz);
+    return v + 2.0 * cross(cross(v, q.xyz) + q.w * v, q.xyz);
+}
+
+half3 MultiplyVectorQuaternion(half3 v, half4 q)
+{
+    return v + 2.0 * cross(cross(v, q.xyz) + q.w * v, q.xyz);
 }
 
 // Rotates a vector using a rotation from a quaternion

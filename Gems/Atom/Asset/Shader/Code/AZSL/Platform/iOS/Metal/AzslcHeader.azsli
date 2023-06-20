@@ -14,4 +14,19 @@
 //Used for normal map sampling
 #define AZ_TRAIT_ASTC_COMPRESSION 1
 
+//size for unbounded arrays
+#define UNBOUNDED_SIZE 100000
+
+//Unbounded array direct binding not supported on metal
+#define UB_DIRECTBINDING_NOTSUPPPORTED
+
 static const float4 s_AzslDebugColor = float4(85.0 / 255.0, 85.0 / 255.0, 85.0 / 255.0, 1);
+
+// use half float for ios
+#define real half
+#define real2 half2
+#define real3 half3
+#define real4 half4
+#define real3x3 half3x3
+#define real3x4 half3x4
+#define real4x4 half4x4

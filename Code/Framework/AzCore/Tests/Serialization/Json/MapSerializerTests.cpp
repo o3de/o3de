@@ -173,9 +173,29 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<Map> CreatePartialDefaultInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass(188, 188.0)));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(242, 242.0), aznew SimpleClass()));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(342, 342.0), aznew SimpleClass(388, 388.0)));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            size_t i = 0;
+            for (auto& entry : *instance)
+            {
+                if (i == 0)
+                {
+                    *entry.first = {};
+                    *entry.second = {188, 188.0};
+                }
+                else if (i == 1)
+                {
+                    *entry.first = {242, 242.0};
+                    *entry.second = {};
+                }
+                else if (i == 2)
+                {
+                    *entry.first = {342, 342.0};
+                    *entry.second = {388, 388.0};
+                }
+                ++i;
+            }
             return instance;
         }
 
@@ -212,9 +232,29 @@ namespace JsonSerializationTests
         AZStd::shared_ptr<Map> CreateFullySetInstance() override
         {
             auto instance = AZStd::shared_ptr<Map>(new Map{}, &Delete);
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(142, 142.0), aznew SimpleClass(188, 188.0)));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(242, 242.0), aznew SimpleClass(288, 288.0)));
-            instance->emplace(AZStd::make_pair(aznew SimpleClass(342, 342.0), aznew SimpleClass(388, 388.0)));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            instance->emplace(AZStd::make_pair(aznew SimpleClass(), aznew SimpleClass()));
+            size_t i = 0;
+            for (auto& entry : *instance)
+            {
+                if (i == 0)
+                {
+                    *entry.first = {142, 142.0};
+                    *entry.second = {188, 188.0};
+                }
+                else if (i == 1)
+                {
+                    *entry.first = {242, 242.0};
+                    *entry.second = {288, 288.0};
+                }
+                else if (i == 2)
+                {
+                    *entry.first = {342, 342.0};
+                    *entry.second = {388, 388.0};
+                }
+                ++i;
+            }
             return instance;
         }
 
@@ -315,7 +355,7 @@ namespace JsonSerializationTests
     {
     public:
         AZ_RTTI(TestStringSerializer, "{05012877-0A5C-4514-8AC2-695E753C77A2}", BaseJsonSerializer);
-        AZ_CLASS_ALLOCATOR(TestStringSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestStringSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result Load(void* outputValue, const AZ::Uuid&, const rapidjson::Value& inputValue,
             AZ::JsonDeserializerContext& context) override

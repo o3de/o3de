@@ -9,7 +9,14 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+#if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
+
+#if ENABLE_SPHERE_LIGHTS
+
+#if ENABLE_SHADOWS
 
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
@@ -64,6 +71,8 @@ uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
     return UnpackPointLightShadowIndex(light, shadowCubemapFace);
 }
 
+#endif // ENABLE_SHADOWS
+
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
     float3 posToLight = light.m_position - surface.position;
@@ -90,7 +99,8 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         // - If transmission mode is thin object -> ignore back lighting
         float transmissionDistance = -1.0f;
 
-        if (o_enableShadows)
+#if ENABLE_SHADOWS
+        if (o_enableShadows && o_enableSphereLightShadows)
         {
             const float3 lightDir = normalize(light.m_position - surface.position);
             const uint shadowIndex = ComputeShadowIndex(light, surface);
@@ -111,8 +121,9 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
             {
                 transmissionDistance = ProjectedShadow::GetThickness(shadowIndex, surface.position - surface.transmission.GetShrinkFactor() * surface.vertexNormal);
             }
-#endif
+#endif // ENABLE_TRANSMISSION
         }
+#endif // ENABLE_SHADOWS
 
         // Diffuse contribution
         lightingData.diffuseLighting += GetDiffuseLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
@@ -180,8 +191,28 @@ void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout Lighti
 #endif
 }
 
+void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
+{
+    if (o_enableSphereLights)
+    {
+        ViewSrg::PointLight light = ViewSrg::m_pointLights[lightIndex];
+            
+#if ENABLE_AREA_LIGHT_VALIDATION
+        if (o_area_light_validation)
+        {
+            ValidatePointLight(light, surface, lightingData);
+        }
+        else
+#endif // ENABLE_AREA_LIGHT_VALIDATION
+        {
+            ApplyPointLight(light, surface, lightingData);
+        }
+    }
+}
+
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
 {
+#if ENABLE_LIGHT_CULLING
     lightingData.tileIterator.LoadAdvance();
     
     while( !lightingData.tileIterator.IsDone() ) 
@@ -189,21 +220,20 @@ void ApplyPointLights(Surface surface, inout LightingData lightingData)
         uint currLightIndex = lightingData.tileIterator.GetValue(); 
         lightingData.tileIterator.LoadAdvance();
     
-#if ENABLE_SPHERE_LIGHTS
-        
-        ViewSrg::PointLight light = ViewSrg::m_pointLights[currLightIndex];
-        
-    #if ENABLE_AREA_LIGHT_VALIDATION
-        if (o_area_light_validation)
-        {
-            ValidatePointLight(light, surface, lightingData);
-        }
-        else
-    #endif
-        {
-            ApplyPointLight(light, surface, lightingData);
-        }
-
-#endif
+        ApplyPointLightInternal(currLightIndex, surface, lightingData);
     }
+#else
+    for(uint lightIndex = 0; lightIndex < ViewSrg::m_pointLightCount; lightIndex++)
+    {
+        ApplyPointLightInternal(lightIndex, surface, lightingData);
+    }
+#endif
 }
+
+#else
+
+void ApplyPointLights(Surface surface, inout LightingData lightingData)
+{
+    //Not Enabled
+}
+#endif

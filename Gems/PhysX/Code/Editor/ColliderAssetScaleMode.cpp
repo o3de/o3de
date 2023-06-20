@@ -17,7 +17,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderAssetScaleMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderAssetScaleMode, AZ::SystemAllocator);
 
     namespace 
     {
@@ -94,17 +94,17 @@ namespace PhysX
     void ColliderAssetScaleMode::OnManipulatorDown(const AZ::EntityComponentIdPair& idPair)
     {
         // Remember the initial asset scale here.
-        PhysX::EditorColliderComponentRequestBus::EventResult(m_initialScale, idPair, &PhysX::EditorColliderComponentRequests::GetAssetScale);
+        PhysX::EditorMeshColliderComponentRequestBus::EventResult(m_initialScale, idPair, &PhysX::EditorMeshColliderComponentRequests::GetAssetScale);
     }
 
     void ColliderAssetScaleMode::OnManipulatorMoved(const AZ::Vector3& scale, const AZ::EntityComponentIdPair& idPair)
     {
         AZ::Vector3 clampedScale = scale.GetMax(AZ::Vector3(MinAssetScale));
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetAssetScale, clampedScale);
+        PhysX::EditorMeshColliderComponentRequestBus::Event(idPair, &PhysX::EditorMeshColliderComponentRequests::SetAssetScale, clampedScale);
     }
 
     void ColliderAssetScaleMode::ResetValues(const AZ::EntityComponentIdPair& idPair)
     {
-        PhysX::EditorColliderComponentRequestBus::Event(idPair, &PhysX::EditorColliderComponentRequests::SetAssetScale, ResetScale);
+        PhysX::EditorMeshColliderComponentRequestBus::Event(idPair, &PhysX::EditorMeshColliderComponentRequests::SetAssetScale, ResetScale);
     }
 } // namespace PhysX

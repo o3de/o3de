@@ -8,17 +8,15 @@
 #
 #
 # -------------------------------------------------------------------------
-"""! @brief
-DCCsi/Tools/DCC/Maya/__init__.py
+"""! TThis init allows us to treat Maya as a DCCsi tools python package
 
-This init allows us to treat Maya setup as a DCCsi tools python package
+:file: DccScriptingInterface\\Tools\\DCC\\Maya\\__init__.py
+:Status: Prototype
+:Version: 0.0.1
+:Notice:
 """
 # -------------------------------------------------------------------------
 # standard imports
-import os
-import site
-import inspect
-import traceback
 from pathlib import Path
 import logging as _logging
 # -------------------------------------------------------------------------
@@ -36,21 +34,35 @@ __all__ = ['config',
            'Scripts']
 
 _LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+# -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
 # set up access to this DCC folder as a pkg
-_MODULE_PATH = Path(__file__)  # To Do: what if frozen?
+_MODULE_PATH = Path(__file__)
+_LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
+
+from DccScriptingInterface import add_site_dir
 
 from DccScriptingInterface import STR_CROSSBAR
-from DccScriptingInterface import PATH_O3DE_TECHART_GEMS
-from DccScriptingInterface import PATH_DCCSIG
+from DccScriptingInterface import SETTINGS_FILE_SLUG
+from DccScriptingInterface import LOCAL_SETTINGS_FILE_SLUG
+
+# last two parents
 from DccScriptingInterface.Tools import PATH_DCCSI_TOOLS
+from DccScriptingInterface.Tools.DCC import PATH_DCCSI_TOOLS_DCC
+
 from DccScriptingInterface.globals import *
 
+# our dccsi location for <DCCsi>\Tools\DCC\Maya
+ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA = "PATH_DCCSI_TOOLS_DCC_MAYA"
 
-# dev mode will enable nested import tests
-if DCCSI_DEV_MODE:
-    from DccScriptingInterface.azpy.shared.utils.init import test_imports
-    # If in dev mode this will test imports of __all__
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(_all=__all__, _pkg=_PACKAGENAME, _logger=_LOGGER)
+# the path to this < dccsi >/Tools/DCC pkg
+PATH_DCCSI_TOOLS_DCC_MAYA = Path(_MODULE_PATH.parent)
+PATH_DCCSI_TOOLS_DCC_MAYA = Path(os.getenv(ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA,
+                                           PATH_DCCSI_TOOLS_DCC_MAYA.as_posix()))
+add_site_dir(PATH_DCCSI_TOOLS_DCC_MAYA.as_posix())
+_LOGGER.debug(f'{ENVAR_PATH_DCCSI_TOOLS_DCC_MAYA}: {PATH_DCCSI_TOOLS_DCC_MAYA}')
+_LOGGER.debug(STR_CROSSBAR)
+# -------------------------------------------------------------------------

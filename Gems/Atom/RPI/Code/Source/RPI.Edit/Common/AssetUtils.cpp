@@ -124,22 +124,25 @@ namespace AZ
                 return referencedPath.LexicallyNormal().String();
             }
 
-            AZStd::vector<AZStd::string> GetPossibleDepenencyPaths(
+            AZStd::vector<AZStd::string> GetPossibleDependencyPaths(
                 const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
                 AZStd::vector<AZStd::string> results;
 
                 // Convert incoming paths containing aliases into absolute paths
-                AZ::IO::FixedMaxPath originatingPath;
-                AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
                 AZ::IO::FixedMaxPath referencedPath;
                 AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(referencedPath, AZ::IO::PathView{ referencedSourceFilePath });
 
-                // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
-                AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
-                combinedPath /= referencedPath;
+                if (referencedPath.IsRelative())
+                {
+                    AZ::IO::FixedMaxPath originatingPath;
+                    AZ::IO::FileIOBase::GetInstance()->ReplaceAlias(originatingPath, AZ::IO::PathView{ originatingSourceFilePath });
+                    // Use the referencedSourceFilePath as a relative path starting at originatingSourceFilePath
+                    AZ::IO::FixedMaxPath combinedPath = originatingPath.ParentPath();
+                    combinedPath /= referencedPath;
 
-                results.push_back(combinedPath.LexicallyNormal().String());
+                    results.push_back(combinedPath.LexicallyNormal().String());
+                }
 
                 // Use the referencedSourceFilePath as a standard asset path
                 results.push_back(referencedPath.LexicallyNormal().String());
@@ -165,7 +168,7 @@ namespace AZ
                 if (!assetFound)
                 {
                     AssetUtilsInternal::ReportIssue(
-                        reporting, AZStd::string::format("Could not find asset [%s]", sourcePath.c_str()).c_str());
+                        reporting, AZStd::string::format("Could not find asset for source file [%s]", sourcePath.c_str()).c_str());
                     return AZ::Failure();
                 }
 

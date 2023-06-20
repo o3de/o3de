@@ -126,7 +126,6 @@ namespace GraphCanvas
         : QWidget(parent)        
         , m_ui(new Ui::NodePaletteWidget())
         , m_itemDelegate(nullptr)        
-        , m_contextMenuCreateEvent(nullptr)
         , m_model(nullptr)
         , m_isInContextMenu(false)
         , m_searchFieldSelectionChange(false)
@@ -136,7 +135,6 @@ namespace GraphCanvas
     NodePaletteWidget::~NodePaletteWidget()
     {
         GraphCanvasTreeModelRequestBus::Handler::BusDisconnect();
-        delete m_contextMenuCreateEvent;
     }
 
     void NodePaletteWidget::SetupNodePalette(const NodePaletteConfig& paletteConfig)
@@ -228,7 +226,6 @@ namespace GraphCanvas
 
     void NodePaletteWidget::ResetDisplay()
     {
-        delete m_contextMenuCreateEvent;
         m_contextMenuCreateEvent = nullptr;
 
         {
@@ -254,7 +251,7 @@ namespace GraphCanvas
 
     GraphCanvasMimeEvent* NodePaletteWidget::GetContextMenuEvent() const
     {
-        return m_contextMenuCreateEvent;
+        return m_contextMenuCreateEvent.get();
     }
 
     void NodePaletteWidget::ResetSourceSlotFilter()
@@ -745,7 +742,7 @@ namespace GraphCanvas
     {
         if (m_isInContextMenu && !m_searchFieldSelectionChange)
         {
-            m_contextMenuCreateEvent = treeItem->CreateMimeEvent();
+            m_contextMenuCreateEvent.reset(treeItem->CreateMimeEvent());
 
             if (m_contextMenuCreateEvent)
             {

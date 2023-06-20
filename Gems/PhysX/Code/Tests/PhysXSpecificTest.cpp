@@ -34,6 +34,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/SystemComponentBus.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
+#include <Scene/PhysXScene.h>
 #include <Tests/PhysXTestCommon.h>
 
 namespace PhysX
@@ -611,6 +612,8 @@ namespace PhysX
                 testBox.reset();
             }
         }
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
+
 
         ASSERT_EQ(testBox, nullptr);
         ASSERT_EQ(enteredEvents.size(), 1);
@@ -651,6 +654,7 @@ namespace PhysX
                 staticBox.reset();
             }
         }
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
 
         ASSERT_EQ(staticBox, nullptr);
         ASSERT_EQ(enteredEvents.size(), 1);
@@ -1291,7 +1295,7 @@ namespace PhysX
         const float expectedMass = boxMaterial->GetDensity() * GetShapeVolume(boxShapeConfig) +
             sphereMaterial->GetDensity() * GetShapeVolume(sphereShapeConfig);
 
-        EXPECT_TRUE(AZ::IsClose(expectedMass, mass, 0.001f));
+        EXPECT_TRUE(AZ::IsCloseMag(expectedMass, mass, AZ::Constants::Tolerance));
     }
 
     // Valid material density values: [0.01f, 1e5f]

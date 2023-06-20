@@ -113,7 +113,7 @@ namespace AZ::Dom
 
     size_t PathEntry::GetIndex() const
     {
-        AZ_Assert(IsIndex(), "GetIndex called on PathEntry that is not an index");
+        AZ_Assert(!IsEndOfArray() && IsIndex(), "GetIndex called on PathEntry that is not an index");
         return AZStd::get<size_t>(m_value);
     }
 
@@ -269,6 +269,11 @@ namespace AZ::Dom
             return m_entries[index];
         }
         return {};
+    }
+
+    PathEntry Path::Back() const
+    {
+        return m_entries.back();
     }
 
     size_t Path::Size() const

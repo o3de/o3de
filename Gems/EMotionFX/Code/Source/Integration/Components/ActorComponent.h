@@ -15,6 +15,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Interface/Interface.h>
 
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <AzFramework/Physics/CharacterPhysicsDataBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
@@ -40,6 +41,7 @@ namespace EMotionFX
             , private LmbrCentral::AttachmentComponentNotificationBus::Handler
             , private AzFramework::CharacterPhysicsDataRequestBus::Handler
             , private AzFramework::RagdollPhysicsNotificationBus::Handler
+            , private AzFramework::EntityDebugDisplayEventBus::Handler
         {
         public:
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
@@ -78,7 +80,6 @@ namespace EMotionFX
                 AZ_TYPE_INFO(Configuration, "{053BFBC0-ABAA-4F4E-911F-5320F941E1A8}")
 
                 AZ::Data::Asset<ActorAsset> m_actorAsset{AZ::Data::AssetLoadBehavior::NoLoad}; ///< Selected actor asset.
-                ActorAsset::MaterialList m_materialPerLOD{}; ///< Material assignment per LOD.
                 AZ::EntityId m_attachmentTarget{}; ///< Target entity this actor should attach to.
                 size_t m_attachmentJointIndex = InvalidIndex; ///< Index of joint on target skeleton for actor attachments.
                 AttachmentType m_attachmentType = AttachmentType::None; ///< Type of attachment.
@@ -91,6 +92,8 @@ namespace EMotionFX
                 // actor are disabled when the actor is out of view. 
                 bool m_forceUpdateJointsOOV = false;
                 BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
+
+                bool m_excludeFromReflectionCubeMaps = true;
 
                 static void Reflect(AZ::ReflectContext* context);
             };
@@ -119,6 +122,7 @@ namespace EMotionFX
             bool GetRenderActorVisible() const override;
             SkinningMethod GetSkinningMethod() const override;
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
+            void EnableInstanceUpdate(bool enable) override;
 
             //////////////////////////////////////////////////////////////////////////
             // ActorComponentNotificationBus::Handler
@@ -183,6 +187,11 @@ namespace EMotionFX
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
 
+            // AzFramework::EntityDebugDisplayEventBus overrides ...
+            void DisplayEntityViewport(
+                const AzFramework::ViewportInfo& viewportInfo,
+                AzFramework::DebugDisplayRequests& debugDisplay) override;
+
             void CheckActorCreation();
             void DestroyActor();
             void CheckAttachToEntity();
@@ -196,6 +205,7 @@ namespace EMotionFX
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
 
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
+            bool m_processLoadedAsset = false;
         };
     } //namespace Integration
 } // namespace EMotionFX

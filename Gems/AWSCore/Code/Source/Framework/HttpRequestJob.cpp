@@ -418,7 +418,7 @@ namespace AWSCore
                 {
                     auto callback = AZStd::make_shared<SuccessFn>(AZStd::move(m_successCallback));
                     auto fn = AZStd::function<void()>([callbackResponse, callback]() { (*callback)(callbackResponse); });
-                    EBUS_QUEUE_FUNCTION(AZ::TickBus, fn);
+                    AZ::TickBus::QueueFunction(fn);
                 }
             }
         }
@@ -427,7 +427,7 @@ namespace AWSCore
         {
             auto callback = AZStd::make_shared<SuccessFn>(AZStd::move(m_failureCallback));
             auto fn = AZStd::function<void()>([callbackResponse, callback]() { (*callback)(callbackResponse); });
-            EBUS_QUEUE_FUNCTION(AZ::TickBus, fn);
+            AZ::TickBus::QueueFunction(fn);
         }
     }
 

@@ -59,7 +59,7 @@ namespace AZ
 }
 
 class AssetImporterDocument;
-class ImporterRootDisplay;
+class ImporterRootDisplayWidget;
 class QCloseEvent;
 class QMenu;
 class QAction;
@@ -90,6 +90,7 @@ public:
     void closeEvent(QCloseEvent* ev) override;
 
 public slots:
+    void OnClearUnsavedChangesRequested();
     void OnSceneResetRequested();
     void OnAssignScript();
     void OnOpenDocumentation();
@@ -118,8 +119,12 @@ private:
         SceneSettingsCard::Layout layout,
         SceneSettingsCard::State state);
 
+    /// Reloads the currently loaded scene.
+    /// warnUser: if true, always warns the user this operation is occuring. If false, only warn if there's a problem.
+    void ReloadCurrentScene(bool warnUser);
+
 private slots:
-    void UpdateClicked();
+    void SaveClicked();
     
     void OverlayLayerAdded();
     void OverlayLayerRemoved();
@@ -128,6 +133,7 @@ private slots:
     void FileChanged(QString path);
 
 private:
+
     static const AZ::Uuid s_browseTag;
     static const char* s_documentationWebAddress;
 
@@ -143,7 +149,7 @@ private:
     AZ::SerializeContext* m_serializeContext;
     AZStd::string m_fullSourcePath;
 
-    QScopedPointer<ImporterRootDisplay> m_rootDisplay;
+    QScopedPointer<ImporterRootDisplayWidget> m_rootDisplay;
     bool m_isClosed;
     bool m_isSaving = false;
 

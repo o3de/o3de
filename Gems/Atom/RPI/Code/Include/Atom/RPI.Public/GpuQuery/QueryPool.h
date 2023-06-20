@@ -37,7 +37,7 @@ namespace AZ
 
         public:
             AZ_RTTI(QueryPool, "{9BE78927-35F3-4BFB-9A4C-5B93F570C675}");
-            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
 
             //! Only use this function to create a new QueryPool object. And force using smart pointer to manage pool's life time.
             static QueryPoolPtr CreateQueryPool(uint32_t queryCount, uint32_t rhiQueriesPerResult, RHI::QueryType queryType, RHI::PipelineStatisticsFlags pipelineStatisticsFlags);

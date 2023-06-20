@@ -11,11 +11,11 @@
 #include <native/FileWatcher/FileWatcher.h>
 #include <native/FileWatcher/FileWatcher_platform.h>
 #include <QDir>
+#include <QSet>
+#include <QString>
 
 bool FileWatcher::PlatformStart()
 {
-    m_shutdownThreadSignal = false;
-
     bool allSucceeded = true;
     for (const auto& [directory, recursive] : m_folderWatchRoots)
     {
@@ -81,8 +81,6 @@ bool FileWatcher::PlatformImplementation::FolderRootWatch::ReadChanges()
 
 void FileWatcher::PlatformStop()
 {
-    m_shutdownThreadSignal = true;
-
     // Send a special signal to the child thread, that is blocked in a GetQueuedCompletionStatus call, with a completion
     // key set to Shutdown. The child thread will stop its processing when it receives this value for the completion key
     PostQueuedCompletionStatus(m_platformImpl->m_ioHandle.get(), 0, /*CompletionKey =*/ static_cast<ULONG_PTR>(PlatformImplementation::EventType::Shutdown), nullptr);
@@ -96,6 +94,8 @@ void FileWatcher::WatchFolderLoop()
 {
     LPOVERLAPPED directoryId = nullptr;
     ULONG_PTR completionKey = 0;
+
+    m_startedSignal = true; // signal that we are no longer going to drop any events.
 
     while (!m_shutdownThreadSignal)
     {
@@ -118,7 +118,6 @@ void FileWatcher::WatchFolderLoop()
             }
 
             PlatformImplementation::FolderRootWatch& folderRoot = foundFolderRoot->second;
-
             // Initialize offset to 1 to ensure that the first iteration is always processed
             DWORD offset = 1;
             for (
@@ -140,6 +139,8 @@ void FileWatcher::WatchFolderLoop()
                     rawFileRemoved(file, {});
                     break;
                 case FILE_ACTION_MODIFIED:
+                    // note that changing a files size, attributes, data, modified time, create time, all count as individual modifies
+                    // and may send multiple events asynchronously.
                     rawFileModified(file, {});
                     break;
                 }

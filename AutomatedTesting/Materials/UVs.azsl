@@ -8,7 +8,7 @@
  */
 
 #include <viewsrg.srgi>
-#include <Atom/RPI/ShaderResourceGroups/DefaultObjectSrg.azsli>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 

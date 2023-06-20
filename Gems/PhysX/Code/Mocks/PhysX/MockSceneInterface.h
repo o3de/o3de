@@ -31,18 +31,20 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle));
         MOCK_METHOD2(GetJointFromHandle, AzPhysics::Joint* (AzPhysics::SceneHandle, AzPhysics::JointHandle));
         MOCK_METHOD1(GetSceneHandle, AzPhysics::SceneHandle(const AZStd::string&));
+        MOCK_METHOD1(GetScene, AzPhysics::Scene*(AzPhysics::SceneHandle));
         MOCK_METHOD2(GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle, const AzPhysics::
             SimulatedBodyHandleList&));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle));
         MOCK_CONST_METHOD1(IsEnabled, bool(AzPhysics::SceneHandle));
         MOCK_METHOD2(QueryScene, AzPhysics::SceneQueryHits(AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequest*));
+        MOCK_METHOD3(QueryScene, bool(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits&));
         MOCK_METHOD4(QuerySceneAsync, bool(AzPhysics::SceneHandle, AzPhysics::SceneQuery::AsyncRequestId, const AzPhysics::
             SceneQueryRequest*, AzPhysics::SceneQuery::AsyncCallback));
         MOCK_METHOD4(QuerySceneAsyncBatch, bool(AzPhysics::SceneHandle, AzPhysics::SceneQuery::AsyncRequestId, const AzPhysics::
             SceneQueryRequests&, AzPhysics::SceneQuery::AsyncBatchCallback));
         MOCK_METHOD2(QuerySceneBatch, AzPhysics::SceneQueryHitsList(AzPhysics::SceneHandle, const AzPhysics::SceneQueryRequests&));
         MOCK_METHOD2(RegisterSceneActiveSimulatedBodiesHandler, void(AzPhysics::SceneHandle, AZ::Event<AZStd::tuple<AZ::Crc32, signed char>, const AZStd::vector<
-            AZStd::tuple<AZ::Crc32, int>>&>::Handler&));
+            AZStd::tuple<AZ::Crc32, int>>&, float>::Handler&));
         MOCK_METHOD2(RegisterSceneCollisionEventHandler, void(AzPhysics::SceneHandle, AZ::Event<AZStd::tuple<AZ::Crc32, signed char>, const AZStd::vector<
             AzPhysics::CollisionEvent>&>::Handler&));
         MOCK_METHOD2(RegisterSceneConfigurationChangedEventHandler, void(AzPhysics::SceneHandle, AZ::Event<AZStd::tuple<AZ::Crc32, signed char>, const

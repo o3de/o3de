@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(SlowClearPass, "{31CBAD6C-108F-4F3F-B498-ED968DFCFCE2}", RenderPass);
-            AZ_CLASS_ALLOCATOR(SlowClearPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SlowClearPass, SystemAllocator);
             virtual ~SlowClearPass() = default;
 
             //! Creates a SlowClearPass

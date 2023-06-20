@@ -32,7 +32,7 @@ namespace AzToolsFramework
         class LayerProperties
         {
         public:
-            AZ_CLASS_ALLOCATOR(LayerProperties, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LayerProperties, AZ::SystemAllocator);
             AZ_TYPE_INFO(LayerProperties, "{FA61BD6E-769D-4856-BFB5-B535E0FC57B4}");
 
             enum class SaveFormat 
@@ -67,8 +67,15 @@ namespace AzToolsFramework
         class EditorLayer
         {
         public:
-            AZ_CLASS_ALLOCATOR(EditorLayer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorLayer, AZ::SystemAllocator);
             AZ_TYPE_INFO(EditorLayer, "{82C661FE-617C-471D-98D5-289570137714}");
+
+            EditorLayer() = default;
+            EditorLayer(const EditorLayer&) = delete;
+            EditorLayer(EditorLayer&&) = delete;
+            EditorLayer& operator=(const EditorLayer&) = delete;
+            EditorLayer& operator=(EditorLayer&&) = delete;
+            ~EditorLayer();
 
             static void Reflect(AZ::ReflectContext* context);
 

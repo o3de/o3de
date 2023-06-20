@@ -66,14 +66,14 @@ function(ly_strip_target_namespace)
     set(${ly_strip_target_namespace_OUTPUT_VARIABLE} ${stripped_target} PARENT_SCOPE)
 endfunction()
 
-#! ly_add_test: Adds a new RUN_TEST using for the specified target using the supplied command
+#! ly_add_test: Adds a new RUN_TEST for the specified target using the supplied command
 #
-# \arg:NAME - Name to for the test run target
+# \arg:NAME - Name of the test run target
 # \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
 # \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "benchmark" or "sandbox" or "awsi" - prevents the test from running normally
-#      and instead places it a special suite of tests that only run when requested.
+#      and instead places it in a special suite of tests that only run when requested.
 #      Otherwise, do not specify a TEST_SUITE value and the default ("main") will apply.
 #      "smoke" is tiny, quick tests of fundamental operation (tests with no suite marker will also execute here in CI)
 #      "periodic" is low-priority verification, which should not block code submission
@@ -95,6 +95,10 @@ endfunction()
 #      ly_add_* function below, not by user code
 # sets LY_ADDED_TEST_NAME to the fully qualified name of the test, in parent scope
 function(ly_add_test)
+    if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+        return()
+    endif()
+
     set(options EXCLUDE_TEST_RUN_TARGET_FROM_IDE)
     set(one_value_args NAME PARENT_NAME TEST_LIBRARY TEST_SUITE TIMEOUT)
     set(multi_value_args TEST_REQUIRES TEST_COMMAND NON_IDE_PARAMS RUNTIME_DEPENDENCIES COMPONENT LABELS)
@@ -173,15 +177,18 @@ function(ly_add_test)
         list(APPEND final_labels ${ly_add_test_LABELS})
     endif()
 
+    # Allow TIAF to apply the label of supported test categories from being run by CTest 
+    o3de_test_impact_apply_test_labels(${ly_add_test_TEST_LIBRARY} final_labels)
+
     # labels expects a single param, of concatenated labels
     # this always has a value because ly_add_test_TEST_SUITE is automatically
     # filled in to be "main" if not specified.
-    set_tests_properties(${LY_ADDED_TEST_NAME} 
-        PROPERTIES 
+    set_tests_properties(${LY_ADDED_TEST_NAME}
+        PROPERTIES
             LABELS "${final_labels}"
             TIMEOUT ${ly_add_test_TIMEOUT}
     )
-    
+
     # ly_add_test_NAME could be an alias, we need the actual un-aliased target
     set(unaliased_test_name ${ly_add_test_NAME})
     if(TARGET ${ly_add_test_NAME})
@@ -198,7 +205,7 @@ function(ly_add_test)
         if(TARGET ${unaliased_test_name})
 
             # In this case we already have a target, we inject the debugging parameters for the target directly
-            set_target_properties(${unaliased_test_name} PROPERTIES 
+            set_target_properties(${unaliased_test_name} PROPERTIES
                 VS_DEBUGGER_COMMAND ${test_command}
                 VS_DEBUGGER_COMMAND_ARGUMENTS "${test_arguments_line}"
             )
@@ -217,7 +224,7 @@ function(ly_add_test)
             if (${project_path} MATCHES [[^(\.\./)+(.*)]])
                 set(ide_path "${CMAKE_MATCH_2}")
             endif()
-            set_target_properties(${unaliased_test_name} PROPERTIES 
+            set_target_properties(${unaliased_test_name} PROPERTIES
                 FOLDER "${ide_path}"
                 VS_DEBUGGER_COMMAND ${test_command}
                 VS_DEBUGGER_COMMAND_ARGUMENTS "${test_arguments_line}"
@@ -244,10 +251,15 @@ function(ly_add_test)
         ly_add_dependencies(TEST_SUITE_${ly_add_test_TEST_SUITE} ${unaliased_test_name})
 
     else()
-        
+
         # Include additional dependencies
         if (ly_add_test_RUNTIME_DEPENDENCIES)
             ly_add_dependencies(TEST_SUITE_${ly_add_test_TEST_SUITE} ${ly_add_test_RUNTIME_DEPENDENCIES})
+        endif()
+
+        # Include additional tests
+        if (TARGET ${unaliased_test_name})
+            ly_add_dependencies(TEST_SUITE_${ly_add_test_TEST_SUITE} ${unaliased_test_name})
         endif()
 
     endif()
@@ -269,10 +281,12 @@ function(ly_add_test)
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
         set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
     endif()
-    # Add the test suite and timeout value to the test target params
+    # Add the test suite, timeout value and labels to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
-    # Store the params for this test target
+    string(REPLACE ";" "," flattened_labels "${final_labels}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${flattened_labels}")
+    # Store the params and labels for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
 endfunction()
 
@@ -356,7 +370,7 @@ function(ly_add_googletest)
         message(FATAL_ERROR "Platform does not support test targets")
     endif()
 
-    set(one_value_args NAME TARGET TEST_SUITE) 
+    set(one_value_args NAME TARGET TEST_SUITE)
     set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -367,7 +381,7 @@ function(ly_add_googletest)
     endif()
 
 
-    # AzTestRunner modules only supports google test libraries, regardless of whether or not 
+    # AzTestRunner modules only supports google test libraries, regardless of whether or not
     # google test suites are supported
     set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
 
@@ -380,7 +394,7 @@ function(ly_add_googletest)
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
         set(non_ide_params "--gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
     else()
-        # otherwise, if its the main suite we only runs things that dont have any of the other suites. 
+        # otherwise, if its the main suite we only runs things that dont have any of the other suites.
         # Note: it doesn't do AND, only 'or' - so specifying SUITE_main:REQUIRES_gpu
         # will actually run everything in main OR everything tagged as requiring a GPU
         # instead of only tests tagged with BOTH main and gpu...
@@ -516,7 +530,7 @@ function(ly_add_googlebenchmark)
         LABELS FRAMEWORK_googlebenchmark
         TEST_LIBRARY googlebenchmark
         TIMEOUT ${ly_add_googlebenchmark_TIMEOUT}
-        RUNTIME_DEPENDENCIES 
+        RUNTIME_DEPENDENCIES
             ${build_target}
             AZ::AzTestRunner
         COMPONENT ${ly_add_googlebenchmark_COMPONENT}

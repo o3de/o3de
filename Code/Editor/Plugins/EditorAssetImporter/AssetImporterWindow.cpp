@@ -142,7 +142,7 @@ void AssetImporterWindow::closeEvent(QCloseEvent* ev)
 void AssetImporterWindow::Init()
 {
     // Serialization and reflection framework setup
-    EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "Serialization context not available");
 
     // Load the style sheets
@@ -169,8 +169,8 @@ void AssetImporterWindow::Init()
     // Setup the overlay system, and set the root to be the root display. The root display has the browse,
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
-    m_rootDisplay.reset(aznew ImporterRootDisplay(m_serializeContext));
-    connect(m_rootDisplay.data(), &ImporterRootDisplay::UpdateClicked, this, &AssetImporterWindow::UpdateClicked);
+    m_rootDisplay.reset(aznew ImporterRootDisplayWidget(m_serializeContext));
+    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::SaveClicked, this, &AssetImporterWindow::SaveClicked);
 
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
@@ -180,7 +180,8 @@ void AssetImporterWindow::Init()
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
-    EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+    AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+        &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
     AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, !extensions.empty(), "No file extensions defined for assets.");
     if (!extensions.empty())
     {
@@ -251,6 +252,7 @@ void AssetImporterWindow::OpenFileInternal(const AZStd::string& filePath)
     QFileInfo fileInfo(filePath.c_str());
     SceneSettingsCard* card = CreateSceneSettingsCard(fileInfo.fileName(), SceneSettingsCard::Layout::Loading, SceneSettingsCard::State::Loading);
     card->SetAndStartProcessingHandler(asyncLoadHandler);
+
 }
 
 SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
@@ -356,7 +358,7 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
     return false;
 }
 
-void AssetImporterWindow::UpdateClicked()
+void AssetImporterWindow::SaveClicked()
 {
     using namespace AZ::SceneAPI::SceneUI;
 
@@ -384,6 +386,7 @@ void AssetImporterWindow::UpdateClicked()
     m_assetImporterDocument->SaveScene(output,
         [output, this, isSourceControlActive, card](bool wasSuccessful)
         {
+            m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
             if (output->HasAnyWarnings())
             {
                 AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "%s", output->BuildWarningMessage().c_str());
@@ -413,6 +416,11 @@ void AssetImporterWindow::UpdateClicked()
     );
 }
 
+void AssetImporterWindow::OnClearUnsavedChangesRequested()
+{
+    ReloadCurrentScene(false);
+}
+
 void AssetImporterWindow::OnSceneResetRequested()
 {
     using namespace AZ::SceneAPI::Events;
@@ -426,8 +434,12 @@ void AssetImporterWindow::OnSceneResetRequested()
             m_assetImporterDocument->GetScene()->GetManifest().Clear();
 
             AZ::SceneAPI::Events::ProcessingResultCombiner result;
-            EBUS_EVENT_RESULT(result, AssetImportRequestBus, UpdateManifest, *m_assetImporterDocument->GetScene(),
-                AssetImportRequest::ManifestAction::ConstructDefault, AssetImportRequest::RequestingApplication::Editor);
+            AssetImportRequestBus::BroadcastResult(
+                result,
+                &AssetImportRequestBus::Events::UpdateManifest,
+                *m_assetImporterDocument->GetScene(),
+                AssetImportRequest::ManifestAction::ConstructDefault,
+                AssetImportRequest::RequestingApplication::Editor);
 
             // Specifically using success, because ignore would be an invalid case.
             // Whenever we do construct default, it should always be done
@@ -598,6 +610,7 @@ void AssetImporterWindow::SetTitle(const char* filePath)
             AZStd::string fileName;
             AzFramework::StringFunc::Path::GetFileName(filePath, fileName);
             converted->setWindowTitle(QString("%1 Settings - %2").arg(extension.c_str(), fileName.c_str()));
+            m_rootDisplay->AppendUnsaveChangesToTitle(*converted);
             break;
         }
         else
@@ -625,6 +638,9 @@ void AssetImporterWindow::UpdateSceneDisplay(const AZStd::shared_ptr<AZ::SceneAP
     }
     
     m_rootDisplay->SetPythonBuilderText(m_scriptProcessorRuleFilename.c_str());
+
+    // UpdateSceneDisplay gets called both when the file is saved from this tool, as well as when it's modified externally.
+    m_rootDisplay->UpdateTimeStamp(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
 }
 
 void AssetImporterWindow::HandleAssetLoadingCompleted()
@@ -667,22 +683,25 @@ void AssetImporterWindow::HandleAssetLoadingCompleted()
     m_qtFileWatcher.addPath(m_assetImporterDocument->GetScene()->GetManifestFilename().c_str());
 }
 
-void AssetImporterWindow::FileChanged(QString path)
+void AssetImporterWindow::ReloadCurrentScene(bool warnUser)
 {
     if (m_isSaving)
     {
         return;
     }
 
-    QString promptMessage([this]()
-    {
-        if(m_rootDisplay->HasUnsavedChanges()) 
+    QString promptMessage(
+        [this]()
         {
-            return tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded and any unsaved changes will be lost. \n\n"
-                        "To prevent this from occuring in the future, do not modify the scene file or scene manifest outside of this tool while this tool has unsaved work.");
-        }
-        return  tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded.");
-    }());
+            if (m_rootDisplay->HasUnsavedChanges())
+            {
+                return tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded and any unsaved "
+                          "changes will be lost. \n\n"
+                          "To prevent this from occuring in the future, do not modify the scene file or scene manifest outside of this "
+                          "tool while this tool has unsaved work.");
+            }
+            return tr("The file %1 has been changed outside of the scene settings tool. This tool will be reloaded.");
+        }());
 
     // The scene system holds weak pointers to any previously loaded scenes,
     // and will return a previously cached scene on a requested load.
@@ -694,21 +713,35 @@ void AssetImporterWindow::FileChanged(QString path)
     // Verify nothing is left holding a shared pointer to the scene.
     namespace SceneEvents = AZ::SceneAPI::Events;
     bool foundSharedScene = true; // If the ebus fails, default to true to assume there's something sharing the scene still.
-    SceneEvents::SceneSerializationBus::BroadcastResult(foundSharedScene, &SceneEvents::SceneSerializationBus::Events::IsSceneCached, m_fullSourcePath);
+    SceneEvents::SceneSerializationBus::BroadcastResult(
+        foundSharedScene, &SceneEvents::SceneSerializationBus::Events::IsSceneCached, m_fullSourcePath);
 
     // The scene is still cached, somewhere. Warn the user.
     if (foundSharedScene)
     {
-        promptMessage += tr("\n\nThis scene file is still cached and will not reload correctly. The Editor should be shut down and re-launched to properly load the modified external data.");
+        QString sharedSceneWarningMessage(tr("This scene file is still cached and will not reload correctly. The Editor should be shut down and "
+                            "re-launched to properly load the modified external data."));
+        if (warnUser)
+        {
+            promptMessage = QString("%1\n\n%2").arg(promptMessage).arg(sharedSceneWarningMessage);
+        }
+        else
+        {
+            promptMessage = sharedSceneWarningMessage;
+        }
     }
 
-    QMessageBox::question(
-        this,
-        tr("External Change"),
-        promptMessage.arg(path),
-        QMessageBox::Ok);
+    if (warnUser || foundSharedScene)
+    {
+        QMessageBox::question(this, tr("Reloading Scene Settings"), promptMessage.arg(m_fullSourcePath.c_str()), QMessageBox::Ok);
+    }
 
     OpenFileInternal(m_fullSourcePath);
+}
+
+void AssetImporterWindow::FileChanged([[maybe_unused]] QString path)
+{
+    ReloadCurrentScene(true);
 }
 
 #include <moc_AssetImporterWindow.cpp>

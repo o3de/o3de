@@ -30,7 +30,7 @@ namespace ScriptCanvas
             using Lock = AZStd::lock_guard<Mutex>;
 
         public:
-            AZ_CLASS_ALLOCATOR(Logger, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Logger, AZ::SystemAllocator);
             AZ_RTTI(Logger, "{BBA556C4-973B-4B2F-B2B9-357188086F78}");
             
             Logger();

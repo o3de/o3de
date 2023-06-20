@@ -19,7 +19,7 @@ namespace AZ
             : public RPI::RenderPassData
         {
             AZ_RTTI(RayTracingPassData, "{26C2E2FD-D30A-4142-82A3-0167BC94B3EE}", RPI::RenderPassData);
-            AZ_CLASS_ALLOCATOR(RayTracingPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPassData, SystemAllocator);
 
             RayTracingPassData() = default;
             virtual ~RayTracingPassData() = default;
@@ -43,6 +43,7 @@ namespace AZ
                         ->Field("Thread Count Y", &RayTracingPassData::m_threadCountY)
                         ->Field("Thread Count Z", &RayTracingPassData::m_threadCountZ)
                         ->Field("Make Fullscreen Pass", &RayTracingPassData::m_makeFullscreenPass)
+                        ->Field("Max Ray Length", &RayTracingPassData::m_maxRayLength)
                         ;
                 }
             }
@@ -57,6 +58,7 @@ namespace AZ
             uint32_t m_maxPayloadSize = 64;
             uint32_t m_maxAttributeSize = 32;
             uint32_t m_maxRecursionDepth = 1;
+            float m_maxRayLength = 1e27f;
 
             uint32_t m_threadCountX = 1;
             uint32_t m_threadCountY = 1;

@@ -24,8 +24,6 @@
 #include "Settings.h"
 #include "MainWindow.h"
 #include "LayoutWnd.h"
-#include "2DViewport.h"
-#include "TopRendererWnd.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
 
@@ -70,20 +68,8 @@ CViewManager::CViewManager()
     viewportOptions.paneRect = QRect(0, 0, 400, 400);
     viewportOptions.canHaveMultipleInstances = true;
 
-    viewportOptions.viewportType = ET_ViewportXY;
-    RegisterQtViewPane<C2DViewport_XY>(GetIEditor(), "Top", LyViewPane::CategoryViewport, viewportOptions);
-
-    viewportOptions.viewportType = ET_ViewportXZ;
-    RegisterQtViewPane<C2DViewport_XZ>(GetIEditor(), "Front", LyViewPane::CategoryViewport, viewportOptions);
-
-    viewportOptions.viewportType = ET_ViewportYZ;
-    RegisterQtViewPane<C2DViewport_YZ>(GetIEditor(), "Left", LyViewPane::CategoryViewport, viewportOptions);
-
     viewportOptions.viewportType = ET_ViewportCamera;
     RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-
-    viewportOptions.viewportType = ET_ViewportMap;
-    RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
 
     GetIEditor()->RegisterNotifyListener(this);
 }

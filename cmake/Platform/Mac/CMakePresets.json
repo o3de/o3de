@@ -12,7 +12,7 @@
     {
       "name": "mac-default",
       "displayName": "Mac",
-      "description": "Mac default configuratoin",
+      "description": "Mac default configuration",
       "inherits": [
         "mac-xcode",
         "mac-unity",
@@ -23,8 +23,9 @@
       "name": "mac-mono-default",
       "displayName": "Mac Monolithic with Unity and Xcode",
       "description": "Configures Mac to build the Monolithic permutation using Xcode with Unity builds",
+      "binaryDir": "${sourceDir}/build/mac_mono",
       "inherits": [
-        "mac-ninja",
+        "mac-xcode",
         "mac-unity",
         "mac-monolithic"
       ]

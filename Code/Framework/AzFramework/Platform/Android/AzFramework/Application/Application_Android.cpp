@@ -59,7 +59,7 @@ namespace AzFramework
     {
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
-        AZ_CLASS_ALLOCATOR(ApplicationAndroid, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplicationAndroid, AZ::SystemAllocator);
         ApplicationAndroid();
         ~ApplicationAndroid() override;
 
@@ -184,14 +184,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnLostFocus()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationConstrained, m_lastEvent);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationConstrained, m_lastEvent);
         m_lastEvent = ApplicationLifecycleEvents::Event::Constrain;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnGainedFocus()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationUnconstrained, m_lastEvent);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationUnconstrained, m_lastEvent);
         m_lastEvent = ApplicationLifecycleEvents::Event::Unconstrain;
     }
 
@@ -199,45 +199,45 @@ namespace AzFramework
     void ApplicationAndroid::OnPause()
     {
 
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationSuspended, m_lastEvent);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationSuspended, m_lastEvent);
         m_lastEvent = ApplicationLifecycleEvents::Event::Suspend;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnResume()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationResumed, m_lastEvent);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationResumed, m_lastEvent);
         m_lastEvent = ApplicationLifecycleEvents::Event::Resume;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnDestroy()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnMobileApplicationWillTerminate);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnMobileApplicationWillTerminate);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnLowMemory()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnMobileApplicationLowMemoryWarning);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnMobileApplicationLowMemoryWarning);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnWindowInit()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationWindowCreated);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationWindowCreated);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnWindowDestroy()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationWindowDestroy);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationWindowDestroy);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void ApplicationAndroid::OnWindowRedrawNeeded()
     {
-        EBUS_EVENT(ApplicationLifecycleEvents::Bus, OnApplicationWindowRedrawNeeded);
+        ApplicationLifecycleEvents::Bus::Broadcast(&ApplicationLifecycleEvents::Bus::Events::OnApplicationWindowRedrawNeeded);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

@@ -34,7 +34,7 @@ namespace AZ
             friend class UnitTest::PassBuilderTests;
         public:
             AZ_RTTI(PassAsset, "{FBAF94C2-6617-491E-8269-55DBC9845539}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(PassAsset, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassAsset, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

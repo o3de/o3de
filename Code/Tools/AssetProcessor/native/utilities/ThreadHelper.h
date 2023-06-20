@@ -44,7 +44,7 @@ namespace AssetProcessor
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(ThreadWorker, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ThreadWorker, AZ::SystemAllocator)
         explicit ThreadWorker(QObject* parent = 0)
             : QObject(parent)
         {
@@ -93,7 +93,7 @@ Q_SIGNALS:
         : public ThreadWorker
     {
     public:
-        AZ_CLASS_ALLOCATOR(ThreadController<T>, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ThreadController<T>, AZ::SystemAllocator)
         typedef AZStd::function<T* ()> FactoryFunctionType;
 
         ThreadController()

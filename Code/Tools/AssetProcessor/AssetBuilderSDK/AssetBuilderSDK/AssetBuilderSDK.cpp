@@ -19,15 +19,19 @@
 #include <AzCore/Component/Entity.h> // so we can have the entity UUID type.
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 //////////////////////////////////////////////////////////////////////////
 
-#include <xxhash/xxhash.h>
-
 namespace AssetBuilderSDK
 {
+    // Defined XXH_INLINE_ALL and include <xxhash/xxhash.h> inside the AssetBuilderSDK namespace to prevent any possible
+    // symbol collision outside of this module
+    #define XXH_INLINE_ALL
+    #include <xxhash/xxhash.h>
+
     const char* const ErrorWindow = "Error"; //Use this window name to log error messages.
     const char* const WarningWindow = "Warning"; //Use this window name to log warning messages.
     const char* const InfoWindow = "Info"; //Use this window name to log info messages.
@@ -141,9 +145,27 @@ namespace AssetBuilderSDK
     {
         va_list args;
         va_start(args, message);
-        EBUS_EVENT(AssetBuilderSDK::AssetBuilderBus, BuilderLog, builderId, message, args);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::BuilderLog, builderId, message, args);
         va_end(args);
     }
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body)
+    {
+        rapidjson::StringBuffer s;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        writer.Key("metadata");
+        writer.StartObject();
+        body(writer);
+
+        writer.EndObject();
+        writer.EndObject();
+        rapidjson::Document doc;
+        doc.Parse(s.GetString());
+        AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
+    }
+
+
 
     AssetBuilderPattern::AssetBuilderPattern(const AZStd::string& pattern, PatternType type)
         : m_pattern(pattern)
@@ -874,7 +896,7 @@ namespace AssetBuilderSDK
 
             // this is why new asset types REALLY need to have an extension (or other indicator) on their source or product that are different and can easily determine their
             // intended usage.
-            AZ::rapidxml::xml_document<char>* xmlDoc = azcreate(AZ::rapidxml::xml_document<char>, (), AZ::SystemAllocator, "BuilderSDK Temp XML Reader");
+            AZ::rapidxml::xml_document<char>* xmlDoc = azcreate(AZ::rapidxml::xml_document<char>, (), AZ::SystemAllocator);
             if (xmlDoc->parse<AZ::rapidxml::parse_no_data_nodes>(buffer.data()))
             {
                 // note that PARSE_FASTEST does not null-terminate strings, instead we just PARSE_NO_DATA_NODES so that xdata and other such blobs are ignored since they don't matter
@@ -1143,11 +1165,12 @@ namespace AssetBuilderSDK
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ProcessJobResponse>()->
-                Version(2)->
+                Version(3)->
                 Field("Output Products", &ProcessJobResponse::m_outputProducts)->
                 Field("Result Code", &ProcessJobResponse::m_resultCode)->
                 Field("Requires SubId Generation", &ProcessJobResponse::m_requiresSubIdGeneration)->
-                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess);
+                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess)->
+                Field("Keep Temp Folder", &ProcessJobResponse::m_keepTempFolder);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -1159,6 +1182,7 @@ namespace AssetBuilderSDK
                 ->Property("resultCode", BehaviorValueProperty(&ProcessJobResponse::m_resultCode))
                 ->Property("requiresSubIdGeneration", BehaviorValueProperty(&ProcessJobResponse::m_requiresSubIdGeneration))
                 ->Property("sourcesToReprocess", BehaviorValueProperty(&ProcessJobResponse::m_sourcesToReprocess))
+                ->Property("keepTempFolder", BehaviorValueProperty(&ProcessJobResponse::m_keepTempFolder))
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Success)>("Success")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Failed)>("Failed")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Crashed)>("Crashed")
@@ -1213,7 +1237,7 @@ namespace AssetBuilderSDK
     {
         AZ::SerializeContext* serializeContext = nullptr;
 
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
 
         InitializeReflectContext(serializeContext);
@@ -1223,7 +1247,7 @@ namespace AssetBuilderSDK
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
 
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         AZ_Error("asset", behaviorContext, "Unable to retrieve behavior context.");
         if (behaviorContext)
         {
@@ -1414,7 +1438,8 @@ namespace AssetBuilderSDK
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
-                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce");
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce")
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnly)>("OrderOnly");
         }
     }
 

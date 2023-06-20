@@ -15,6 +15,8 @@
         <file alias="entity.svg">Entity/entity.svg</file>
         <file alias="entity_editoronly.svg">Entity/entity_editoronly.svg</file>
         <file alias="entity_notactive.svg">Entity/entity_notactive.svg</file>
+        <file alias="entity_modified_as_override.svg">Entity/entity_modified_as_override.svg</file>
+        <file alias="entity_added_as_override.svg">Entity/entity_added_as_override.svg</file>
         <file alias="layer.svg">Entity/layer.svg</file>
         <file alias="prefab.svg">Entity/prefab.svg</file>
         <file alias="prefab_edit.svg">Entity/prefab_edit.svg</file>
@@ -65,5 +67,13 @@
         <file alias="lock_on.svg">Outliner/lock_on.svg</file>
         <file alias="lock_on_hover.svg">Outliner/lock_on_hover.svg</file>
         <file alias="lock_on_transparent.svg">Outliner/lock_on_transparent.svg</file>
+    </qresource>
+    <qresource prefix="/Icons">
+        <file alias="Material_80.svg">AssetBrowser/Material_80.svg</file>
+        <file alias="MaterialType_80.svg">AssetBrowser/MaterialType_80.svg</file>
+        <file alias="MaterialGraph_80.svg">AssetBrowser/MaterialGraph_80.svg</file>
+        <file alias="BufferAsset_80.svg">AssetBrowser/BufferAsset_80.svg</file>
+        <file alias="Shader_80.svg">AssetBrowser/Shader_80.svg</file>
+        <file alias="PhysXMaterial_80.svg">AssetBrowser/PhysXMaterial_80.svg</file>
     </qresource>
 </RCC>

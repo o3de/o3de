@@ -21,6 +21,12 @@ namespace AZ::SceneGenerationComponents
         BindToCall(&TangentPreExportComponent::Register);
     }
 
+    uint8_t TangentPreExportComponent::GetPriority() const
+    {
+        return AZ::SceneAPI::Events::CallProcessor::ProcessingPriority::LateProcessing;
+    }
+
+
     void TangentPreExportComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);

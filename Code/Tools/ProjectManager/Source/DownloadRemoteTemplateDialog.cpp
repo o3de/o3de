@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
         m_installPath = new FormFolderBrowseEditWidget(tr("Local template directory"));
         m_installPath->setMinimumSize(QSize(600, 0));
         m_installPath->lineEdit()->setText(
-            QDir::toNativeSeparators(ProjectUtils::GetDefaultProjectPath() + "/" + projectTemplate.m_name));
+            QDir::toNativeSeparators(ProjectUtils::GetDefaultTemplatePath() + "/" + projectTemplate.m_name));
         vLayout->addWidget(m_installPath);
 
         vLayout->addSpacing(20);
@@ -109,6 +109,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = m_dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         m_applyButton = m_dialogButtons->addButton(tr("Download"), QDialogButtonBox::ApplyRole);
+        m_applyButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(m_applyButton, &QPushButton::clicked, this, &QDialog::accept);

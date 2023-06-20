@@ -37,27 +37,10 @@ namespace AZ
             HeapMemoryUsage(const HeapMemoryUsage&);
             HeapMemoryUsage& operator=(const HeapMemoryUsage&);
 
-            //! This helper reserves memory in a thread-safe fashion. If the result exceeds the budget, the reservation is safely
-            //! reverted and false is returned. otherwise, true is returned. Only m_reservedInBytes is affected.
-            //!  @param sizeInBytes The amount of bytes to reserve.
-            //! @return Whether the reservation was successful.
-            bool TryReserveMemory(size_t sizeInBytes)
-            {
-                const size_t reservationInBytes = (m_reservedInBytes += sizeInBytes);
-
-                // Check if we blew the budget. If so, undo the add and set the valid flag to false.
-                if (m_budgetInBytes && reservationInBytes > m_budgetInBytes)
-                {
-                    m_reservedInBytes -= sizeInBytes;
-                    return false;
-                }
-                return true;
-            }
-
             //! This helper function checks whether a new allocation is within the budget
             bool CanAllocate(size_t sizeInBytes) const
             {
-                if (m_budgetInBytes && (m_totalResidentInBytes + sizeInBytes) > m_budgetInBytes)
+                if (m_budgetInBytes && (m_usedResidentInBytes + sizeInBytes) > m_budgetInBytes)
                 {
                     return false;
                 }
@@ -70,21 +53,8 @@ namespace AZ
                 if (Validation::IsEnabled())
                 {
                     AZ_Assert(
-                        m_budgetInBytes >= m_reservedInBytes || m_budgetInBytes == 0,
-                        "Reserved memory is larger than memory budget. Memory budget %zu Reserved %zu", m_budgetInBytes, m_reservedInBytes.load());
-                    AZ_Assert(
-                        m_reservedInBytes >= m_residentInBytes,
-                        "Resident memory is larger than reserved memory. Reserved Memory %zu Resident memory %zu", m_reservedInBytes.load(),
-                        m_residentInBytes.load());
-
-                    
-                    AZ_Assert(
-                        m_budgetInBytes >= m_totalResidentInBytes || m_budgetInBytes == 0,
-                        "Total resident memory is larger than memory budget. Memory budget %zu Total resident %zu", m_budgetInBytes, m_totalResidentInBytes.load());
-                    AZ_Assert(
-                        m_totalResidentInBytes >= m_usedResidentInBytes,
-                        "Used resident memory is larger than total resident memory. Total Resident Memory %zu Used Resident memory %zu", m_totalResidentInBytes.load(),
-                        m_usedResidentInBytes.load());
+                        m_budgetInBytes >= m_usedResidentInBytes || m_budgetInBytes == 0,
+                        "Used resident memory is larger than memory budget. Memory budget %zu resident %zu", m_budgetInBytes, m_usedResidentInBytes.load());
                 }
             }
 
@@ -96,7 +66,7 @@ namespace AZ
 
             // For heaps that suballocate in a manner that results in fragmentation, this quantity is computed as
             // 1 - (largest free block byte size) / (total free memory). When the free memory equals the largest block size, this
-            // measure is 0. As the largest free block size descreases relative to the amount of free memory, this approaches 1.
+            // measure is 0. As the largest free block size decreases relative to the amount of free memory, this approaches 1.
             // Fragmentation may be expensive to compute on demand, so it is currently computed as a side-effect of the ReportMemoryUsage
             // routines. As this is the only quantity that changes during the memory statistics gathering process, we opt to mark it mutable
             // here instead of marking the entire routine mutable.
@@ -105,19 +75,15 @@ namespace AZ
             // Total number of bytes allocated on the physical memory. This may not exceed the budget if it's non zero.
             AZStd::atomic_size_t m_totalResidentInBytes{ 0 };
 
-            // Number of bytes are used for resources or objects. This ususally tracks the sub-allocations out of the total resident.
+            // Number of bytes are used for resources or objects. This usually tracks the sub-allocations out of the total resident.
             // It may not exceed the total resident.
             AZStd::atomic_size_t m_usedResidentInBytes{ 0 };
 
-            // ----------- members to be deprecated. use m_totalResidentInBytes and m_usedResidentInBytes instead -----
-            // Number of bytes reserved on the heap for allocations. This value represents the allocation capacity for
-            // the platform. It is validated against the budget and may not exceed it.
-            AZStd::atomic_size_t m_reservedInBytes{ 0 };
+            // Number of bytes used by Unique Allocations.
+            AZStd::atomic_size_t m_uniqueAllocationBytes{ 0 };
 
-            // Number of bytes physically allocated on the heap. This may not exceed the reservation. Certain platforms
-            // may choose to transfer memory down the heap level hierarchy in response to memory trim events from the driver.
-            AZStd::atomic_size_t m_residentInBytes{ 0 };
-            // ----------- end deprecation ----------- 
+            // Platform specific allocator statistics in a JSON format.
+            AZStd::string m_extraStats;
         };
 
         //!

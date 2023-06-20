@@ -24,7 +24,7 @@ class MotionPropertyWidgetHandler : QObject,
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(MotionPropertyWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(MotionPropertyWidgetHandler, AZ::SystemAllocator);
 
     virtual AZ::u32 GetHandlerName(void) const override
     {

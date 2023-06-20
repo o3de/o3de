@@ -34,7 +34,7 @@ namespace AzQtComponents
     class DragAndDropContextBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(DragAndDropContextBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DragAndDropContextBase, AZ::SystemAllocator);
         // this class is a base class for specific types of drag and drop contexts (such as viewport drag and drop context or others)
         // that have more information about the context of the drag and drop.
 
@@ -111,6 +111,11 @@ namespace AzQtComponents
         
         //! Sent when a drag and drop action completes.
         virtual void Drop(QDropEvent* /*event*/, DragAndDropContextBase& /*context*/) {}
+
+        //! Sent when a drag and drop action completes. Contains a suggested destination path that can be overridden in the dialog.
+        virtual void DropAtLocation(QDropEvent* /*event*/, DragAndDropContextBase& /*context*/, QString& /* path*/)
+        {
+        }
     };
 
     using DragAndDropEventsBus = AZ::EBus<DragAndDropEvents>;

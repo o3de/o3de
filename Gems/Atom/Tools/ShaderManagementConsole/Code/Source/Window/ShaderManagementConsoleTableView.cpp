@@ -124,7 +124,7 @@ namespace ShaderManagementConsole
             for (int column = 0; column < columnCount(); ++column)
             {
                 const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
-                const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName().GetStringView());
+                const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName());
                 const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : AZ::Name();
                 setItem(row, column, new QTableWidgetItem(valueName.GetCStr()));
             }
@@ -152,7 +152,7 @@ namespace ShaderManagementConsole
 
         const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
         const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
-        const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName().GetStringView());
+        const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName());
 
         const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : AZ::Name();
         const AZ::RPI::ShaderOptionValue value = shaderOptionDescriptor.FindValue(valueName);
@@ -203,7 +203,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        // Update the cedar reenlist from the table data
+        // Update the shader variant list from the table data
         auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
 
         const auto optionItem = horizontalHeaderItem(column);
@@ -214,11 +214,11 @@ namespace ShaderManagementConsole
                 // Set or clear the option based on the item text
                 if (variantItem->text().isEmpty())
                 {
-                    shaderVariant.m_options.erase(optionItem->text().toUtf8().constData());
+                    shaderVariant.m_options.erase(AZ::Name{optionItem->text().toUtf8().constData()});
                 }
                 else
                 {
-                    shaderVariant.m_options[optionItem->text().toUtf8().constData()] = variantItem->text().toUtf8().constData();
+                    shaderVariant.m_options[AZ::Name{optionItem->text().toUtf8().constData()}] = variantItem->text().toUtf8().constData();
                 }
             }
         }

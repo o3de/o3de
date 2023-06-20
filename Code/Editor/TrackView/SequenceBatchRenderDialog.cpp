@@ -74,6 +74,8 @@ namespace
 
     const char customResFormat[] = "Custom(%1 x %2)...";
 
+    const char debugInfo[] = "debuginfo";
+
     const int kBatchRenderFileVersion = 2; // This version number should be incremented every time available options like the list of formats,
     // the list of buffers change.
 
@@ -110,6 +112,7 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
     , m_ui(new Ui::SequenceBatchRenderDialog)
     , m_renderListModel(new QStringListModel(this))
     , CV_TrackViewRenderOutputCapturing(0)
+    , m_editorIdleProcessingEnabled(true)
     , m_prefixValidator(new CPrefixValidator(this))
 {
     m_ui->setupUi(this);
@@ -155,6 +158,7 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     void(QComboBox::* activated)(int) = &QComboBox::activated;
     void(QSpinBox::* editingFinished)() = &QSpinBox::editingFinished;
 
+    connect(m_ui->m_shotCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnDirectorChange);
     connect(m_ui->BATCH_RENDER_ADD_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnAddRenderItem);
     connect(m_ui->BATCH_RENDER_REMOVE_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnRemoveRenderItem);
     connect(m_ui->BATCH_RENDER_CLEAR_SEQ, &QPushButton::clicked, this, &CSequenceBatchRenderDialog::OnClearRenderItems);
@@ -173,6 +177,10 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     connect(m_ui->m_startFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnStartFrameChange);
     connect(m_ui->m_endFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnEndFrameChange);
     connect(m_ui->m_imageFormatCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnImageFormatChange);
+    connect(m_ui->m_cvarsEdit,&QTextEdit::textChanged, this, &CSequenceBatchRenderDialog::OnVarsChange);
+    connect(m_ui->BATCH_RENDER_FILE_PREFIX, &QLineEdit::textChanged, this, &CSequenceBatchRenderDialog::OnPrefixChange);
+    connect(m_ui->m_disableDebugInfoCheckBox, &QCheckBox::toggled, this, &CSequenceBatchRenderDialog::OnDisableDebugInfoChange);
+    connect(m_ui->m_createVideoCheckBox, &QCheckBox::toggled, this, &CSequenceBatchRenderDialog::OnCreateVideoChange);
 
     const int bigEnoughNumber = 1000000;
     m_ui->m_startFrame->setRange(0, bigEnoughNumber);
@@ -181,14 +189,17 @@ void CSequenceBatchRenderDialog::OnInitDialog()
 
     // Fill the sequence combo box.
     bool activeSequenceWasSet = false;
-    for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
+    if (GetIEditor()->GetMovieSystem())
     {
-        IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->GetSequence(k);
-        m_ui->m_sequenceCombo->addItem(pSequence->GetName());
-        if (pSequence->IsActivated())
+        for (int k = 0; k < GetIEditor()->GetMovieSystem()->GetNumSequences(); ++k)
         {
-            m_ui->m_sequenceCombo->setCurrentIndex(k);
-            activeSequenceWasSet = true;
+            IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->GetSequence(k);
+            m_ui->m_sequenceCombo->addItem(pSequence->GetName());
+            if (pSequence->IsActivated())
+            {
+                m_ui->m_sequenceCombo->setCurrentIndex(k);
+                activeSequenceWasSet = true;
+            }
         }
     }
     if (!activeSequenceWasSet)
@@ -325,6 +336,8 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         m_customFPS = item.fps;
         m_ui->m_fpsCombo->setCurrentText(QString::number(item.fps));
     }
+    // format
+    m_ui->m_imageFormatCombo->setCurrentText(item.imageFormat);
     // prefix
     m_ui->BATCH_RENDER_FILE_PREFIX->setText(item.prefix);
 
@@ -455,7 +468,10 @@ void CSequenceBatchRenderDialog::OnUpdateRenderItem()
 
     // Set up a new render item.
     SRenderItem item;
-    SetUpNewRenderItem(item);
+    if (!SetUpNewRenderItem(item))
+    {
+        return;
+    }
 
     // Check a duplication before updating.
     for (size_t i = 0; i < m_renderItems.size(); ++i)
@@ -521,7 +537,10 @@ void CSequenceBatchRenderDialog::OnGo()
         m_ui->m_pGoBtn->setText("Cancel");
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_cancel.png"));
         // Inform the movie system that it soon will be in a batch-rendering mode.
-        GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(true);
+        if (GetIEditor()->GetMovieSystem())
+        {
+            GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(true);
+        }
 
         // Initialize the context.
         InitializeContext();
@@ -579,27 +598,30 @@ void CSequenceBatchRenderDialog::OnSequenceSelected()
 {
     // Get the selected sequence.
     const QString seqName = m_ui->m_sequenceCombo->currentText();
-    IAnimSequence* pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
-
-    // Adjust the frame range.
-    float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
-    float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
-    m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
-    m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
-
-    // Set the default start/end frames properly.
-    m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
-    m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
-
-    m_ui->m_shotCombo->clear();
-    // Fill the shot combo box with the names of director nodes.
-    for (int i = 0; i < pSequence->GetNodeCount(); ++i)
+    IAnimSequence* pSequence = GetIEditor()->GetMovieSystem() ? GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data()) : nullptr;
+    if (pSequence)
     {
-        if (pSequence->GetNode(i)->GetType() == AnimNodeType::Director)
+        // Adjust the frame range.
+        float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
+        float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
+        m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
+        m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
+
+        // Set the default start/end frames properly.
+        m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
+        m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
+
+        m_ui->m_shotCombo->clear();
+        // Fill the shot combo box with the names of director nodes.
+        for (int i = 0; i < pSequence->GetNodeCount(); ++i)
         {
-            m_ui->m_shotCombo->addItem(pSequence->GetNode(i)->GetName());
+            if (pSequence->GetNode(i)->GetType() == AnimNodeType::Director)
+            {
+                m_ui->m_shotCombo->addItem(pSequence->GetNode(i)->GetName());
+            }
         }
     }
+
     m_ui->m_shotCombo->setCurrentIndex(0);
 
     CheckForEnableUpdateButton();
@@ -627,6 +649,11 @@ void CSequenceBatchRenderDialog::OnFPSEditChange()
 void CSequenceBatchRenderDialog::OnFPSChange(int itemIndex)
 {
     m_customFPS = fpsOptions[itemIndex].fps;
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnDirectorChange([[maybe_unused]] int itemIndex)
+{
     CheckForEnableUpdateButton();
 }
 
@@ -1124,12 +1151,12 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
             // Use a placeholder for the input file, will expand it with replace.
             QString inputFileDefine = "__input_file__";
 
-            QString command = QStringLiteral("plugin.ffmpeg_encode '%1' '%2' '%3' %4 %5 '-vf crop=%6:%7:0:0'")
+            QString command = QStringLiteral("plugin.ffmpeg_encode '%1' '%2' '%3' %4 %5 'crop=%6:%7:0:0'")
                 .arg(inputFileDefine).arg(outputFile.c_str()).arg("libvpx-vp9")
                 .arg(10240).arg(renderItem.fps).arg(getResWidth(renderItem.resW)).arg(getResHeight(renderItem.resH));
 
             // Create the input file string, leave the %06d unexpanded for the mpeg tool.
-            inputFile += "%06d.";
+            inputFile += "_%06d.";
             inputFile += imageFormat;
 
             // Replace the input file
@@ -1321,7 +1348,7 @@ void CSequenceBatchRenderDialog::OnKickIdle()
 
         if (canBeginFrameCapture())
         {
-            const AZStd::string fileName = AZStd::string::format("Frame_%06d", m_renderContext.frameNumber);
+            const AZStd::string fileName = AZStd::string::format("%s_%06d", m_renderContext.captureOptions.prefix.c_str(), m_renderContext.frameNumber);
 
             AZStd::string filePath;
             AzFramework::StringFunc::Path::Join(
@@ -1392,6 +1419,26 @@ void CSequenceBatchRenderDialog::OnCancelRender()
         m_renderContext.canceled = true;
         EnterCaptureState(CaptureState::End);
     }
+}
+
+void CSequenceBatchRenderDialog::OnVarsChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnPrefixChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnDisableDebugInfoChange()
+{
+    CheckForEnableUpdateButton();
+}
+
+void CSequenceBatchRenderDialog::OnCreateVideoChange()
+{
+    CheckForEnableUpdateButton();
 }
 
 void CSequenceBatchRenderDialog::OnLoadBatch()
@@ -1467,6 +1514,10 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             // folder
             item.folder = itemNode->getAttr("folder");
 
+            itemNode->getAttr(debugInfo, item.disableDebugInfo);
+
+            item.imageFormat = itemNode->getAttr("format");
+
             // cvars
             for (int k = 0; k < itemNode->getChildCount(); ++k)
             {
@@ -1519,6 +1570,10 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
             // folder
             itemNode->setAttr("folder", item.folder.toUtf8().data());
 
+            itemNode->setAttr(debugInfo, item.disableDebugInfo);
+
+            itemNode->setAttr("format", item.imageFormat.toUtf8().data());
+
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)
             {
@@ -1570,6 +1625,9 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
     {
         item.fps = fpsOptions[m_ui->m_fpsCombo->currentIndex()].fps;
     }
+    // format
+    item.imageFormat = m_ui->m_imageFormatCombo->currentText();
+
     // prefix
     item.prefix = m_ui->BATCH_RENDER_FILE_PREFIX->text();
     // disable debug info

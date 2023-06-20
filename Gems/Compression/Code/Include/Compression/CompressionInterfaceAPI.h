@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Compression/CompressionInterfaceStructs.h>
@@ -22,6 +22,31 @@ namespace Compression
         Started,
         Complete,
         Failed,
+    };
+
+    using CompressionResultString = AZStd::fixed_string<256>;
+
+    //! Structure which can be used to supply custom options
+    //! to the compression interface CompressBlock function
+    //! The expected use is that the derived ICompressionInterface class
+    //! implements the CompressionOptions struct and additional fields for specifying compression options
+    //! When the derived compression interface classes in their CompressBlock function
+    //! would use a call to AZ rtti cast to cast the struct to the correct type derived type
+    //! `azrtti_cast<derived-compression-options*>(&compressionOptions);
+    struct CompressionOptions
+    {
+        AZ_TYPE_INFO_WITH_NAME_DECL(CompressionOptions);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        virtual ~CompressionOptions();
+    };
+
+    struct CompressionOutcome
+    {
+        explicit constexpr operator bool() const;
+        //! Stores result code of whether the operation succeeded
+        CompressionResult m_result{ CompressionResult::PendingStart };
+        //! Stores any error messages associated with a failure result
+        CompressionResultString m_resultString;
     };
 
     struct CompressionResultData
@@ -40,8 +65,8 @@ namespace Compression
         //! The size of the span will be set to actual uncompressed size
         AZStd::span<AZStd::byte> m_compressedBuffer;
 
-        //! Stores result code of whether the operation succeeded
-        CompressionResult m_result{ CompressionResult::PendingStart };
+        //! Outcome containing result of the compression operation
+        CompressionOutcome m_compressionOutcome;
     };
 
     struct ICompressionInterface
@@ -50,18 +75,31 @@ namespace Compression
 
         //! Retrieves the 32-bit compression algorithm ID associated with this interface
         virtual CompressionAlgorithmId GetCompressionAlgorithmId() const = 0;
+        //! Human readable name associated with the compression algorithm
+        virtual AZStd::string_view GetCompressionAlgorithmName() const = 0;
+
         //! Compresses the uncompressed data into the compressed buffer
+        //! @param compressedBuffer destination buffer where compressed output will be stored to
+        //! @param uncompressedData source buffer containing uncompressed content
+        //! @param compressOptions that can be provided to the Compressor
         //! @return a CompressionResultData instance to indicate if compression operation has succeeded
         [[nodiscard]] virtual CompressionResultData CompressBlock(
-            AZStd::span<AZStd::byte> compressedBuffer, const AZStd::span<const AZStd::byte>& uncompressedData) = 0;
+            AZStd::span<AZStd::byte> compressionBuffer, const AZStd::span<const AZStd::byte>& uncompressedData,
+            const CompressionOptions& compressionOptions = {}) const = 0;
+
+        //! Returns the upper bound on compressed size given the uncompressed buffer size
+        //! Can be used to allocate a destination buffer that can fit the compressed content
+        //! @param uncompressedBufferSize size of uncompressed data
+        //! @return worst case(upper bound) size that is needed to store compressed data for a given uncompressed size
+        [[nodiscard]] virtual size_t CompressBound(size_t uncompressedBufferSize) const = 0;
     };
 
-    class CompressionFactoryInterface
+    class CompressionRegistrarInterface
     {
     public:
-        AZ_RTTI(CompressionFactoryInterface, "{92251FE8-9D19-4A23-9A2B-F91D99D9491B}");
-        virtual ~CompressionFactoryInterface() = default;
-
+        AZ_TYPE_INFO_WITH_NAME_DECL(CompressionRegistrarInterface);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        virtual ~CompressionRegistrarInterface() = default;
 
         //! Callback function that is invoked for every registered compression interface
         //! return true to indicate that visitation of compression interfaces should continue
@@ -70,28 +108,52 @@ namespace Compression
         //! Invokes the supplied visitor for each register compression interface that is non-nullptr
         virtual void VisitCompressionInterfaces(const VisitCompressionInterfaceCallback&) const = 0;
 
-        //! Registers a compression interface with the compression factory.
+        //! Registers compression interface and takes ownership of it if registration is successful
+        //! @param compressionAlgorithmId Unique id to associate with compression interface
+        //! @param compressionInterface compression interface to register
+        //! @return Success outcome if the compression interface was successfully registered
+        //! Otherwise, a failure outcome with the compression interface is forward back to the caller
+        virtual AZ::Outcome<void, AZStd::unique_ptr<ICompressionInterface>> RegisterCompressionInterface(
+            CompressionAlgorithmId compressionAlgorithmId, AZStd::unique_ptr<ICompressionInterface> compressionInterface) = 0;
+
+
+        //! Registers compression interface, but does not take ownership of it
         //! If a compression interface with a CompressionAlgorithmId is registered that
         //! matches the input compression interface, then registration does not occur
-        //! and the unique_ptr refererence is unmodified and can be re-used by the caller
         //!
-        //! @param compressionInterface unique pointer to compression interface to register
-        //! @return true if the ICompressionInterface was successfully registered, otherwise false
-        virtual bool RegisterCompressionInterface(AZStd::unique_ptr<ICompressionInterface>&&) = 0;
+        //! Registers compression interface, but does not take ownership of it
+        //! @param compressionAlgorithmId Unique id to associate with compression interface
+        //! @param compressionInterface compression interface to register
+        //! @return true if the ICompressionInterface was successfully registered
+        virtual bool RegisterCompressionInterface(CompressionAlgorithmId compressionAlgorithmId, ICompressionInterface& compressionInterface) = 0;
 
-        //! Unregisters the Compression Interface with the specified Id if it is registered with the factory
+        //! Unregisters the compression interface with the specified id
         //!
-        //! @param compressionAlgorithmId unique Id that identifies the Compression Interface
-        //! @return true if the ICompressionInterface was unregistered, otherwise false
-        virtual bool UnregisterCompressionInterface(CompressionAlgorithmId) = 0;
+        //! @param compressionAlgorithmId unique Id that identifies the compression interface
+        //! @return true if the unregistration is successful
+        virtual bool UnregisterCompressionInterface(CompressionAlgorithmId compressionAlgorithmId) = 0;
 
-        //! Queries the Compression Interface with the compression algorithmd Id
-        //! @param compressionAlgorithmId unique Id of Compression Interface to query
-        //! @return pointer to the Compression Interface or nullptr if not found
-        virtual ICompressionInterface* FindCompressionInterface(CompressionAlgorithmId) const = 0;
+        //! Queries the compression interface with the compression algorithm Id
+        //! @param compressionAlgorithmId unique Id of compression interface to query
+        //! @return pointer to the compression interface or nullptr if not found
+        [[nodiscard]] virtual ICompressionInterface* FindCompressionInterface(CompressionAlgorithmId compressionAlgorithmId) const = 0;
+        //! Queries the compression interface using the name of the compression algorithm
+        //! This is slower than the using the compression algorithm ID.
+        //! Furthermore the algorithm name doesn't have to be unique,
+        //! so this will return the first compression interface associated with the algorithm name
+        //! @param algorithmName Name of the compression algorithm.
+        //! NOTE: The compression algorithm name is not checked for uniqueness, unlike the algorithm id
+        //! @return pointer to the compression interface or nullptr if not found
+        [[nodiscard]] virtual ICompressionInterface* FindCompressionInterface(AZStd::string_view algorithmName) const = 0;
+
+
+        //! Return true if there is an compression interface registered with the specified id
+        //! @param compressionAlgorithmId CompressionAlgorithmId to determine if an compression interface is registered
+        //! @return bool indicating if there is an compression interface with the id registered
+        [[nodiscard]] virtual bool IsRegistered(CompressionAlgorithmId compressionAlgorithmId) const = 0;
     };
 
-    using CompressionFactory = AZ::Interface<CompressionFactoryInterface>;
+    using CompressionRegistrar = AZ::Interface<CompressionRegistrarInterface>;
 
 } // namespace Compression
 

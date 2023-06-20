@@ -19,7 +19,7 @@ namespace AZ
 {
     namespace SceneProcessingConfig
     {
-        AZ_CLASS_ALLOCATOR_IMPL(GraphTypeSelector, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(GraphTypeSelector, SystemAllocator);
 
         GraphTypeSelector* GraphTypeSelector::s_instance = nullptr;
 

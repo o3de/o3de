@@ -45,11 +45,10 @@ namespace AZStd
         static constexpr index_type invalid_index = index_type(-1);
 
     public:
-        typedef Node                value_type;
-        typedef Node*               pointer_type;
-        typedef AZStd::size_t       size_type;
-        typedef AZStd::ptrdiff_t    difference_type;
-        typedef AZStd::false_type   allow_memory_leaks;
+        using value_type = Node;
+        using pointer = Node*;
+        using size_type = AZStd::size_t;
+        using difference_type = AZStd::ptrdiff_t;
 
         AZ_FORCE_INLINE static_pool_concurrent_allocator(const char* name = "AZStd::static_pool_concurrent_allocator")
             : m_name(name)
@@ -104,7 +103,7 @@ namespace AZStd
             }
         }
 
-        inline pointer_type allocate(size_type byteSize, size_type alignment, int flags = 0)
+        inline pointer allocate(size_type byteSize, size_type alignment, int flags = 0)
         {
             (void)alignment;
             (void)byteSize;
@@ -134,7 +133,7 @@ namespace AZStd
             --m_numOfAllocatedNodes;
         }
 
-        inline void  deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+        inline void  deallocate(pointer ptr, size_type byteSize, size_type alignment)
         { 
             (void)byteSize;
             (void)alignment;
@@ -143,7 +142,7 @@ namespace AZStd
             deallocate(reinterpret_cast<Node*>(ptr));
         }
 
-        AZ_FORCE_INLINE size_type    resize(pointer_type ptr, size_type newSize)
+        AZ_FORCE_INLINE size_type    resize(pointer ptr, size_type newSize)
         {
             (void)ptr;
             (void)newSize;

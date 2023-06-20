@@ -28,12 +28,14 @@ set(FILES
     AzCore/std/parallel/config_Platform.h
     AzCore/std/string/fixed_string_Platform.inl
     ../Common/Clang/AzCore/std/string/fixed_string_Clang.inl
+    ../Common/UnixLike/AzCore/Process/ProcessInfo_UnixLike.cpp
     ../Common/UnixLike/AzCore/Debug/StackTracer_UnixLike.cpp
     ../Common/UnixLike/AzCore/Debug/Trace_UnixLike.cpp
     AzCore/Debug/Trace_Linux.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
@@ -42,11 +44,8 @@ set(FILES
     AzCore/IO/SystemFile_Linux.cpp
     AzCore/IO/SystemFile_Platform.h
     AzCore/IPC/SharedMemory_Platform.h
-    ../Common/Unimplemented/AzCore/Memory/OverrunDetectionAllocator_Unimplemented.h
     ../Common/UnixLike/AzCore/Memory/OSAllocator_UnixLike.h
-    AzCore/Memory/HeapSchema_Linux.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Module/Internal/ModuleManagerSearchPathTool_Linux.cpp
     AzCore/Math/Internal/MathTypes_Linux.h
     AzCore/Math/Random_Platform.h

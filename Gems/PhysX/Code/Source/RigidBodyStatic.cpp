@@ -22,7 +22,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PhysX::StaticRigidBody, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(PhysX::StaticRigidBody, AZ::SystemAllocator);
 
     StaticRigidBody::StaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration)
     {

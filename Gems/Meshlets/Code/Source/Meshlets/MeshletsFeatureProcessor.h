@@ -63,7 +63,7 @@ namespace AZ
             // FeatureProcessor overrides ...
             void Activate() override;
             void Deactivate() override;
-            void ApplyRenderPipelineChange(RPI::RenderPipeline* renderPipeline) override;
+            void AddRenderPasses(RPI::RenderPipeline* renderPipeline) override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
             void Render(const FeatureProcessor::RenderPacket& packet) override;
 
@@ -73,11 +73,6 @@ namespace AZ
             // AZ::TickBus::Handler overrides
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
             int GetTickOrder() override;
-
-            // RPI::SceneNotificationBus overrides ...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
 
             void SetTransform(
                 const Render::TransformServiceFeatureProcessorInterface::ObjectId objectId,
@@ -90,6 +85,9 @@ namespace AZ
             Data::Instance<RPI::Shader> GetRenderShader() { return m_renderShader; }
 
         protected:
+            // RPI::SceneNotificationBus overrides ...
+            void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
+
             bool BuildDrawPacket(
                 ModelLodDataArray& lodRenderDataArray,
                 Render::TransformServiceFeatureProcessorInterface::ObjectId objectId);

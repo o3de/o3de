@@ -40,6 +40,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         system->RegisterNode<NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
@@ -49,6 +51,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterNode<Label, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<Label>(Label::Value);
+        system->RegisterNodeAttribute<Label>(Label::ValueText);
 
         system->RegisterNode<PropertyEditor, NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::OnChanged);
@@ -57,11 +60,16 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumValue);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
+        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ParentValue);
+
+        system->RegisterNode<Container>();
+        system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::ContainerCanBeModified);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
@@ -82,6 +90,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<Button>();
         system->RegisterNodeAttribute<Button>(Button::ButtonText);
 
+        system->RegisterPropertyEditor<GenericButton>();
+        system->RegisterNodeAttribute<GenericButton>(GenericButton::OnActivate);
+
         system->RegisterPropertyEditor<ContainerActionButton>();
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::OnActivate);
@@ -94,8 +105,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<RadioButton>();
         system->RegisterPropertyEditor<EntityId>();
         system->RegisterPropertyEditor<LayoutPadding>();
+
         system->RegisterPropertyEditor<LineEdit>();
+        system->RegisterNodeAttribute<LineEdit>(LineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<MultiLineEdit>();
+        system->RegisterNodeAttribute<MultiLineEdit>(MultiLineEdit::PlaceholderText);
+
         system->RegisterPropertyEditor<Quaternion>();
         system->RegisterPropertyEditor<Crc>();
         system->RegisterPropertyEditor<Vector2>();

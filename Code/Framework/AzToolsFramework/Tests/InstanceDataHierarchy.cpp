@@ -39,7 +39,7 @@ namespace UnitTest
         struct SubData
         {
             AZ_TYPE_INFO(SubData, "{A0165FCA-A311-4FED-B36A-DC5FD2AF2857}");
-            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator);
 
             SubData() {}
             SubData(int v) : m_int(v) {}
@@ -149,7 +149,7 @@ namespace UnitTest
     * InstanceDataHierarchyBasicTest
     */
     class InstanceDataHierarchyBasicTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyBasicTest()
@@ -473,7 +473,7 @@ namespace UnitTest
     static AZ::u8 s_persistentIdCounter = 0;
 
     class InstanceDataHierarchyCopyContainerChangesTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -513,7 +513,7 @@ namespace UnitTest
         class StructOuter
         {
         public:
-            AZ_TYPE_INFO(StructInner, "{FEDCED26-8D5A-41CB-BA97-AB687CF51FC6}");
+            AZ_TYPE_INFO(StructOuter, "{FEDCED26-8D5A-41CB-BA97-AB687CF51FC6}");
 
             AZStd::vector<StructInner> m_vector;
 
@@ -652,14 +652,14 @@ namespace AZ
 namespace UnitTest
 {
     class InstanceDataHierarchyEnumContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EnumContainer
         {
         public:
             AZ_TYPE_INFO(EnumContainer, "{7F9EED53-7587-4616-B4A7-10B3AF95475E}");
-            AZ_CLASS_ALLOCATOR(EnumContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EnumContainer, AZ::SystemAllocator);
 
             TestEnum m_enum;
             AZStd::vector<TestEnum> m_enumVector;
@@ -738,7 +738,7 @@ namespace UnitTest
         struct SubData
         {
             AZ_TYPE_INFO(SubData, "{983316B5-17C0-476E-9CEB-CA749B3ABE5D}");
-            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubData, AZ::SystemAllocator);
 
             SubData() {}
             explicit SubData(int v) : m_int(v) {}
@@ -814,7 +814,7 @@ namespace UnitTest
         SubData m_subGroupForToggle;
     };
 
-    class InstanceDataHierarchyGroupTestFixture : public AllocatorsFixture
+    class InstanceDataHierarchyGroupTestFixture : public LeakDetectionFixture
     {
     public:
         InstanceDataHierarchyGroupTestFixture() = default;
@@ -826,12 +826,10 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             using AzToolsFramework::InstanceDataHierarchy;
             using AzToolsFramework::InstanceDataNode;
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             m_serializeContext.reset(aznew AZ::SerializeContext());
             m_serializeContext.get()->CreateEditContext();
@@ -870,20 +868,19 @@ namespace UnitTest
             m_serializeContext.reset();
             testEntity1.reset();
             delete instanceDataHierarchy;
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
     class InstanceDataHierarchyKeyedContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class CustomKeyWithoutStringRepresentation
         {
         public:
             AZ_TYPE_INFO(CustomKeyWithoutStringRepresentation, "{54E838DE-1A8D-4BBA-BD3A-D41886C439A9}");
-            AZ_CLASS_ALLOCATOR(CustomKeyWithoutStringRepresentation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomKeyWithoutStringRepresentation, AZ::SystemAllocator);
 
             int m_value = 0;
 
@@ -897,7 +894,7 @@ namespace UnitTest
         {
         public:
             AZ_TYPE_INFO(CustomKeyWithStringRepresentation, "{51F7FB74-2991-4CC9-850A-8D5AA0732282}");
-            AZ_CLASS_ALLOCATOR(CustomKeyWithStringRepresentation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomKeyWithStringRepresentation, AZ::SystemAllocator);
 
             static const char* KeyPrefix() { return "CustomKey"; }
 
@@ -919,7 +916,7 @@ namespace UnitTest
 
         public:
             AZ_TYPE_INFO(KeyedContainer, "{53A7416F-2D84-4256-97B0-BE4B6EF6DBAF}");
-            AZ_CLASS_ALLOCATOR(KeyedContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(KeyedContainer, AZ::SystemAllocator);
 
             AZStd::map<AZStd::string, float> m_map;
             AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
@@ -1132,14 +1129,14 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyCompareAssociativeContainerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class Container
         {
         public:
             AZ_TYPE_INFO(Container, "{9920B5BD-F21C-4353-9449-9C3FD38E50FC}");
-            AZ_CLASS_ALLOCATOR(Container, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Container, AZ::SystemAllocator);
 
             AZStd::unordered_map<AZStd::string, int> m_map;
 
@@ -1153,8 +1150,6 @@ namespace UnitTest
         void run()
         {
             using namespace AzToolsFramework;
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
 
             AZ::SerializeContext serializeContext;
             Container::Reflect(serializeContext);
@@ -1231,14 +1226,12 @@ namespace UnitTest
             testComparison(c1, c3, {"D", "[0]", "[1]"}, {"B", "C"}, {"A"});
             testComparison(c3, c1, {"B", "C", "[0]", "[1]"}, {"D"}, {"A"});
             testComparison(c1, c2, {}, {}, {"A", "B", "C"});
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
     };
 
 
     class InstanceDataHierarchyElementTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class UIElementContainer
@@ -1317,7 +1310,7 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyEndGroupTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class EndGroupContainer
@@ -1414,14 +1407,14 @@ namespace UnitTest
     };
 
     class InstanceDataHierarchyAggregateInstanceTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         class AggregatedContainer
         {
         public:
             AZ_TYPE_INFO(AggregatedContainer, "{42E09F38-2D26-4FED-9901-06003A030ED5}");
-            AZ_CLASS_ALLOCATOR(AggregatedContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AggregatedContainer, AZ::SystemAllocator);
 
             int m_aggregated;
             int m_notAggregated;

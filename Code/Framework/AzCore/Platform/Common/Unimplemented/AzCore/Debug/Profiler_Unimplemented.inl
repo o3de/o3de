@@ -20,4 +20,14 @@ namespace AZ::Debug::Platform
     inline void EndProfileRegion([[maybe_unused]] Budget* budget)
     {
     }
+    
+    template<typename T>
+    inline void ReportCounter(
+        [[maybe_unused]] const Budget* budget, [[maybe_unused]] const wchar_t* counterName, [[maybe_unused]] const T& value)
+    {
+    }
+
+    inline void ReportProfileEvent([[maybe_unused]] const Budget* budget, [[maybe_unused]] const char* eventName)
+    {
+    }
 } // namespace AZ::Debug::Platform

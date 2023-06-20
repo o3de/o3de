@@ -23,7 +23,7 @@ namespace LmbrCentral
     using AzToolsFramework::ViewportInteraction::BuildMouseInteraction;
     using AzToolsFramework::ViewportInteraction::BuildMousePick;
 
-    class EditorIntersectionComponentFixture : public UnitTest::ToolsApplicationFixture
+    class EditorIntersectionComponentFixture : public UnitTest::ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

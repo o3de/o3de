@@ -187,24 +187,8 @@ bool {{ Class.attrib['QualifiedName'] }}::RequiresDynamicSlotOrdering() const
 
 bool {{ Class.attrib['QualifiedName'] }}::IsDeprecated() const
 {
-    return {% if Class.attrib['Deprecated'] is defined or Class.attrib['DeprecationUUID'] is defined %}true{% else %}false{% endif %};
+    return {% if Class.attrib['Deprecated'] is defined %}true{% else %}false{% endif %};
 }
-
-{% set deprecationUuid = Class.attrib['DeprecationUUID'] %}
-{% if deprecationUuid is defined %}
-ScriptCanvas::NodeReplacementConfiguration {{ Class.attrib['QualifiedName'] }}::GetReplacementNodeConfiguration() const
-{
-    ScriptCanvas::NodeReplacementConfiguration nodeConfig{};
-    nodeConfig.m_type = AZ::Uuid("{{ deprecationUuid }}");
-    {% if Class.attrib['ReplacementMethodName'] is defined %}
-    nodeConfig.m_methodName = "{{Class.attrib['ReplacementMethodName']}}";
-    {% endif %}
-    {% if Class.attrib['ReplacementClassName'] is defined %}
-    nodeConfig.m_className = "{{Class.attrib['ReplacementClassName']}}";
-    {% endif %}
-    return nodeConfig;
-}
-{% endif %}
 
 void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 {
@@ -246,7 +230,7 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 {% if Class.attrib['Icon'] is defined %}
                     ->Attribute(AZ::Edit::Attributes::Icon, "{{ Class.attrib['Icon'] }}")
 {% endif %}
-{% if Class.attrib['Deprecated'] is defined or Class.attrib['DeprecationUUID'] is defined %}
+{% if Class.attrib['Deprecated'] is defined %}
                     ->Attribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride, "DeprecatedNodeTitlePalette")
                     ->Attribute(AZ::Script::Attributes::Deprecated, true)
 {% else %}

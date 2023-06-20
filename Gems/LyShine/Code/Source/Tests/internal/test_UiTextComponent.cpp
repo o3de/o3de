@@ -2704,17 +2704,18 @@ namespace
         CreateComponent(testElem, LyShine::UiTextComponentUuid);
         AZ::EntityId testElemId = testElem->GetId();
 
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetText, testString);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetText, testString);
 
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetFont, fontPath);
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetFontSize, fontSize);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetFont, fontPath);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetFontSize, fontSize);
 
         float baseWidth;
-        EBUS_EVENT_ID_RESULT(baseWidth, testElemId, UiLayoutCellDefaultBus, GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(
+            baseWidth, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
 
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetCharacterSpacing, characterSpacing);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetCharacterSpacing, characterSpacing);
         float newWidth;
-        EBUS_EVENT_ID_RESULT(newWidth, testElemId, UiLayoutCellDefaultBus, GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(newWidth, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
 
         const int testStringLength = static_cast<int>(testString.length());
         const int numGapsBetweenCharacters = testStringLength >= 1 ? testStringLength - 1 : 0;
@@ -2743,17 +2744,19 @@ namespace
         CreateComponent(testElem, LyShine::UiTextComponentUuid);
         AZ::EntityId testElemId = testElem->GetId();
 
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetText, testString);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetText, testString);
 
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetFont, fontPath);
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetFontSize, fontSize);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetFont, fontPath);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetFontSize, fontSize);
 
         float baseHeight;
-        EBUS_EVENT_ID_RESULT(baseHeight, testElemId, UiLayoutCellDefaultBus, GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(
+            baseHeight, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
 
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetLineSpacing, lineSpacing);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetLineSpacing, lineSpacing);
         float newHeight;
-        EBUS_EVENT_ID_RESULT(newHeight, testElemId, UiLayoutCellDefaultBus, GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
+        UiLayoutCellDefaultBus::EventResult(
+            newHeight, testElemId, &UiLayoutCellDefaultBus::Events::GetTargetHeight, LyShine::UiLayoutCellUnspecifiedSize);
 
         float expectedHeight = baseHeight + numNewlines * lineSpacing;
 
@@ -2821,12 +2824,12 @@ namespace
             AZ::EntityId testElemId = testElem->GetId();
 
             const AZStd::string testString("Hi");
-            EBUS_EVENT_ID(testElemId, UiTextBus, SetText, testString);
+            UiTextBus::Event(testElemId, &UiTextBus::Events::SetText, testString);
             AZStd::string resultString;
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
             AZ_Assert(testString == resultString, "Test failed");
             resultString.clear();
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
             AZ_Assert(testString == resultString, "Test failed");
 
             lyshine->ReleaseCanvas(canvasEntityId, false);
@@ -2844,12 +2847,12 @@ namespace
             AZ::EntityId testElemId = testElem->GetId();
 
             const AZStd::string testString("Hi");
-            EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, UiTextInterface::SetAsIs);
+            UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, UiTextInterface::SetAsIs);
             AZStd::string resultString;
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
             AZ_Assert(testString == resultString, "Test failed");
             resultString.clear();
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
             AZ_Assert(testString == resultString, "Test failed");
 
             lyshine->ReleaseCanvas(canvasEntityId, false);
@@ -2867,12 +2870,12 @@ namespace
             AZ::EntityId testElemId = testElem->GetId();
 
             const AZStd::string testString("&<>%");
-            EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, UiTextInterface::SetAsIs);
+            UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, UiTextInterface::SetAsIs);
             AZStd::string resultString;
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
             AZ_Assert(testString == resultString, "Test failed");
             resultString.clear();
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
             AZ_Assert(testString == resultString, "Test failed");
 
             lyshine->ReleaseCanvas(canvasEntityId, false);
@@ -2890,12 +2893,12 @@ namespace
             AZ::EntityId testElemId = testElem->GetId();
 
             const AZStd::string testString("&amp;&lt;&gt;&#37;");
-            EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, UiTextInterface::SetAsIs);
+            UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, UiTextInterface::SetAsIs);
             AZStd::string resultString;
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
             AZ_Assert(testString == resultString, "Test failed");
             resultString.clear();
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
             AZ_Assert(testString == resultString, "Test failed");
 
             lyshine->ReleaseCanvas(canvasEntityId, false);
@@ -2913,12 +2916,12 @@ namespace
             AZ::EntityId testElemId = testElem->GetId();
 
             const AZStd::string testString("&<>%");
-            EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, UiTextInterface::SetEscapeMarkup);
+            UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, UiTextInterface::SetEscapeMarkup);
             AZStd::string resultString;
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
             AZ_Assert(testString == resultString, "Test failed");
             resultString.clear();
-            EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+            UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
             AZ_Assert(testString == resultString, "Test failed");
 
             lyshine->ReleaseCanvas(canvasEntityId, false);
@@ -2946,12 +2949,13 @@ namespace
                 // Verify that GetText and GetAsIs returns the unlocalized key "@ui_Hello"
                 {
                     AZStd::string testString("@ui_Hello");
-                    EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, UiTextInterface::SetLocalized);
+                    UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, UiTextInterface::SetLocalized);
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+                    UiTextBus::EventResult(
+                        resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
                 }
@@ -2960,7 +2964,7 @@ namespace
                 {
                     AZStd::string testString = koreanHello;
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetLocalized);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetLocalized);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
                 }
@@ -2985,12 +2989,13 @@ namespace
                 {
                     AZStd::string testString("&<>% @ui_Hello");
                     UiTextInterface::SetTextFlags setTextFlags = static_cast<UiTextInterface::SetTextFlags>(UiTextInterface::SetEscapeMarkup | UiTextInterface::SetLocalized);
-                    EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, setTextFlags);
+                    UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, setTextFlags);
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetText);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetText);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
+                    UiTextBus::EventResult(
+                        resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetTextFlags::GetAsIs);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
                 }
@@ -3000,7 +3005,7 @@ namespace
                 {
                     AZStd::string testString = LyShine::StringType("&<>% ") + koreanHello;
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetLocalized);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetLocalized);
                     AZ_Assert(testString == resultString, "Test failed");
                     resultString.clear();
                 }
@@ -3047,11 +3052,11 @@ namespace
                 {
                     AZStd::string testString("@ui_Hello, @ui_Hello!");
                     UiTextInterface::SetTextFlags setTextFlags = static_cast<UiTextInterface::SetTextFlags>(UiTextInterface::SetLocalized);
-                    EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, setTextFlags);
+                    UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, setTextFlags);
 
                     testString = koreanHello + ", " + koreanHello + "!";
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetLocalized);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetLocalized);
                     AZ_Assert(testString == resultString, "Test failed");
                 }
 
@@ -3060,11 +3065,11 @@ namespace
                 {
                     AZStd::string testString("<font color=\"#FF0000\">@ui_Hello</font>");
                     UiTextInterface::SetTextFlags setTextFlags = static_cast<UiTextInterface::SetTextFlags>(UiTextInterface::SetLocalized);
-                    EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, setTextFlags);
+                    UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, setTextFlags);
 
                     testString = LyShine::StringType("<font color=\"#FF0000\">") + koreanHello + "</font>";
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetLocalized);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetLocalized);
                     AZ_Assert(testString == resultString, "Test failed");
                 }
 
@@ -3073,11 +3078,11 @@ namespace
                 {
                     AZStd::string testString("@ui_Hello@ui_Hello");
                     UiTextInterface::SetTextFlags setTextFlags = static_cast<UiTextInterface::SetTextFlags>(UiTextInterface::SetLocalized);
-                    EBUS_EVENT_ID(testElemId, UiTextBus, SetTextWithFlags, testString, setTextFlags);
+                    UiTextBus::Event(testElemId, &UiTextBus::Events::SetTextWithFlags, testString, setTextFlags);
 
                     testString = koreanHello + koreanHello;
                     AZStd::string resultString;
-                    EBUS_EVENT_ID_RESULT(resultString, testElemId, UiTextBus, GetTextWithFlags, UiTextInterface::GetLocalized);
+                    UiTextBus::EventResult(resultString, testElemId, &UiTextBus::Events::GetTextWithFlags, UiTextInterface::GetLocalized);
                     AZ_Assert(testString == resultString, "Test failed");
                 }
 
@@ -3099,7 +3104,7 @@ namespace
         CreateComponent(testElem, LyShine::UiTransform2dComponentUuid);
         CreateComponent(testElem, LyShine::UiTextComponentUuid);
         AZ::EntityId testElemId = testElem->GetId();
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetText, "<font color=\"red\"> </font>");
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetText, "<font color=\"red\"> </font>");
 
         bool enabled(true);
         AZ::Vector2 NewSize(0, 0);
@@ -3108,43 +3113,43 @@ namespace
         AZ::Vector2 MarkUpDisabledSize(354, 32);
 
         // Test that markup is disabled by default.
-        EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
+        UiTextBus::EventResult(enabled, testElemId, &UiTextBus::Events::GetIsMarkupEnabled);
         AZ_Assert(!enabled, "Test failed");
 
         // Test that setting it to false when it is already false, does not set it to true.
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetIsMarkupEnabled, false);
-        EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetIsMarkupEnabled, false);
+        UiTextBus::EventResult(enabled, testElemId, &UiTextBus::Events::GetIsMarkupEnabled);
         AZ_Assert(!enabled, "Test failed");
 
         // Check that the flag is actually disabled by checking the size of the textbox
-        EBUS_EVENT_ID_RESULT(NewSize, testElemId, UiTextBus, GetTextSize);
+        UiTextBus::EventResult(NewSize, testElemId, &UiTextBus::Events::GetTextSize);
         AZ_Assert(NewSize == MarkUpDisabledSize, "Test failed");
 
         // Test that setting it to true when it is false, sets it to true
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetIsMarkupEnabled, true);
-        EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetIsMarkupEnabled, true);
+        UiTextBus::EventResult(enabled, testElemId, &UiTextBus::Events::GetIsMarkupEnabled);
         AZ_Assert(enabled, "Test failed");
 
         // Check that the flag is actually enabled by checking the size of the textbox
-        EBUS_EVENT_ID_RESULT(NewSize, testElemId, UiTextBus, GetTextSize);
+        UiTextBus::EventResult(NewSize, testElemId, &UiTextBus::Events::GetTextSize);
         AZ_Assert(NewSize == MarkUpEnabledSize, "Test failed");
 
         // Test that setting it to true when it is true, does not set it to false
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetIsMarkupEnabled, true);
-        EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetIsMarkupEnabled, true);
+        UiTextBus::EventResult(enabled, testElemId, &UiTextBus::Events::GetIsMarkupEnabled);
         AZ_Assert(enabled, "Test failed");
 
         // Check that the flag is actually enabled by checking the size of the textbox
-        EBUS_EVENT_ID_RESULT(NewSize, testElemId, UiTextBus, GetTextSize);
+        UiTextBus::EventResult(NewSize, testElemId, &UiTextBus::Events::GetTextSize);
         AZ_Assert(NewSize == MarkUpEnabledSize, "Test failed");
 
         // Test that setting it to false when it is true, properly sets it to false.
-        EBUS_EVENT_ID(testElemId, UiTextBus, SetIsMarkupEnabled, false);
-        EBUS_EVENT_ID_RESULT(enabled, testElemId, UiTextBus, GetIsMarkupEnabled);
+        UiTextBus::Event(testElemId, &UiTextBus::Events::SetIsMarkupEnabled, false);
+        UiTextBus::EventResult(enabled, testElemId, &UiTextBus::Events::GetIsMarkupEnabled);
         AZ_Assert(!enabled, "Test failed");
 
         // Check that the flag is actually disabled by checking the size of the textbox
-        EBUS_EVENT_ID_RESULT(NewSize, testElemId, UiTextBus, GetTextSize);
+        UiTextBus::EventResult(NewSize, testElemId, &UiTextBus::Events::GetTextSize);
         AZ_Assert(NewSize == MarkUpDisabledSize, "Test failed");
 
         lyshine->ReleaseCanvas(canvasEntityId, false);

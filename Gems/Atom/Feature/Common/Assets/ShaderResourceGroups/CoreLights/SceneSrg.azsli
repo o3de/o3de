@@ -41,5 +41,21 @@ partial ShaderResourceGroup SceneSrg
         ComparisonFunc = Less;
         MaxAnisotropy = 16;
         ReductionType = Comparison;
+    };
+
+    Sampler LtcSampler
+    {
+#if AZ_TRAIT_DOWNGRADE_LINEAR_SAMPLE 
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+#else
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+#endif
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
     };    
 }

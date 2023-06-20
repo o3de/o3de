@@ -15,6 +15,8 @@
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
 
+AZ_DECLARE_BUDGET(SurfaceData);
+
 namespace AZ
 {
     namespace RPI
@@ -33,7 +35,7 @@ namespace SurfaceData
         AZ::Vector3& outPosition,
         AZ::Vector3& outNormal)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         const size_t vertexCount = vertices.size();
         if (vertexCount > 0 && vertexCount % 4 == 0)

@@ -23,12 +23,16 @@ namespace AZ
         {
             friend class ConvertEmissiveUnitFunctorSourceData;
         public:
+            AZ_CLASS_ALLOCATOR(ConvertEmissiveUnitFunctor, SystemAllocator)
             AZ_RTTI(ConvertEmissiveUnitFunctor, "{F272CFAB-FD71-4E78-AA47-D0D2E88CE30C}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::ReflectContext* context);
 
-            void Process(RuntimeContext& context) override;
-            void Process(EditorContext& context) override;
+            using RPI::MaterialFunctor::Process;
+            void Process(RPI::MaterialFunctorAPI::RuntimeContext& context) override;
+            void Process(RPI::MaterialFunctorAPI::EditorContext& context) override;
+            float GetProcessedValue(float originalEmissiveIntensity, uint32_t lightUnitIndex) const;
+
         private:
 
             AZ::RPI::MaterialPropertyIndex m_intensityPropertyIndex;

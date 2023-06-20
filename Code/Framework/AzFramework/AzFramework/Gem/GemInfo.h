@@ -22,7 +22,7 @@ namespace AzFramework
     //! This struct stores gem related information
     struct GemInfo
     {
-        AZ_CLASS_ALLOCATOR(GemInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GemInfo, AZ::SystemAllocator);
         GemInfo(AZStd::string name);
         GemInfo() = default;
         AZStd::string m_gemName; //!< The name of the gem as seen in the gem.json

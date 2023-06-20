@@ -37,22 +37,7 @@ namespace Profiler
 
     namespace CpuProfilerImGuiHelper
     {
-        float TicksToMs(double ticks)
-        {
-            // Note: converting to microseconds integer before converting to milliseconds float
-            const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
-            AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
-            return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
-        }
-
-        float TicksToMs(AZStd::sys_time_t ticks)
-        {
-            return TicksToMs(static_cast<double>(ticks));
-        }
-
-        using DeserializedCpuData = AZStd::vector<CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
-
-        AZ::Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const char* capturePath)
+        AZ::Outcome<CpuProfilingStatisticsSerializer, AZStd::string> LoadSavedCpuProfilingStatistics(const char* capturePath)
         {
             auto* base = AZ::IO::FileIOBase::GetInstance();
 
@@ -116,7 +101,7 @@ namespace Profiler
             AZ_TracePrintf("JsonUtils", "Successfully loaded CPU profiling data with %zu profiling entries.\n",
                  serializer.m_cpuProfilingStatisticsSerializerEntries.size());
 
-            return AZ::Success(AZStd::move(serializer.m_cpuProfilingStatisticsSerializerEntries));
+            return AZ::Success(AZStd::move(serializer));
         }
     } // namespace CpuProfilerImGuiHelper
 
@@ -124,6 +109,19 @@ namespace Profiler
     {
         // thread IDs are hashed internally to unify display across platforms
         m_mainThreadId = AZStd::hash<AZStd::thread_id>{}(AZStd::this_thread::get_id());
+    }
+
+    float ImGuiCpuProfiler::TicksToMs(double ticks)
+    {
+        const AZStd::sys_time_t ticksPerSecond = m_ticksPerSecondFromFile > 0 ? m_ticksPerSecondFromFile : AZStd ::GetTimeTicksPerSecond();
+        // Note: converting to microseconds integer before converting to milliseconds float
+        AZ_Assert(ticksPerSecond >= 1000, "Error in converting ticks to ms, expected ticksPerSecond >= 1000");
+        return static_cast<float>((ticks * 1000) / (ticksPerSecond / 1000)) / 1000.0f;
+    }
+
+    float ImGuiCpuProfiler::TicksToMs(AZStd::sys_time_t ticks)
+    {
+        return TicksToMs(static_cast<double>(ticks));
     }
 
     void ImGuiCpuProfiler::Draw(bool& keepDrawing)
@@ -196,6 +194,7 @@ namespace Profiler
         m_paused = !AZ::Debug::ProfilerSystemInterface::Get()->IsActive();
         if (ImGui::Button(m_paused ? "Resume" : "Pause"))
         {
+            m_ticksPerSecondFromFile = 0;
             m_paused = !m_paused;
             AZ::Debug::ProfilerSystemInterface::Get()->SetActive(!m_paused);
         }
@@ -299,16 +298,16 @@ namespace Profiler
                 ImGui::Text("%s", statistics->m_regionName.c_str());
                 ImGui::TableNextColumn();
 
-                ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_runningAverageTicks));
+                ImGui::Text("%.2f", TicksToMs(statistics->m_runningAverageTicks));
                 ImGui::TableNextColumn();
 
-                ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_maxTicks));
+                ImGui::Text("%.2f", TicksToMs(statistics->m_maxTicks));
                 ImGui::TableNextColumn();
 
                 ImGui::Text("%llu", statistics->m_invocationsLastFrame);
                 ImGui::TableNextColumn();
 
-                ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(statistics->m_lastFrameTotalTicks));
+                ImGui::Text("%.2f", TicksToMs(statistics->m_lastFrameTotalTicks));
                 const ImVec2 botRightBound = ImGui::GetItemRectMax();
                 ImGui::TableNextColumn();
 
@@ -364,15 +363,15 @@ namespace Profiler
     {
         DrawCommonHeader();
 
-        const auto ShowRow = [](const char* regionLabel, double duration, double durationAverage)
+        const auto ShowRow = [this](const char* regionLabel, double duration, double durationAverage)
         {
             ImGui::Text("%s", regionLabel);
             ImGui::TableNextColumn();
 
-            ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(duration));
+            ImGui::Text("%.2f", TicksToMs(duration));
             ImGui::TableNextColumn();
             
-            ImGui::Text("%.2f", CpuProfilerImGuiHelper::TicksToMs(durationAverage));
+            ImGui::Text("%.2f", TicksToMs(durationAverage));
             ImGui::TableNextColumn();
         };
         
@@ -465,7 +464,9 @@ namespace Profiler
             return;
         }
 
-        AZStd::vector<CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
+        CpuProfilingStatisticsSerializer serializer = loadResult.TakeValue();
+        AZStd::vector<CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>& deserializedData =
+            serializer.m_cpuProfilingStatisticsSerializerEntries;
 
         // Clear visualizer and statistics view state
         m_savedRegionCount = deserializedData.size();
@@ -478,15 +479,17 @@ namespace Profiler
         m_tableData.clear();
         m_groupRegionMap.clear();
 
-        // Since we don't serialize the frame boundaries, we will use "Component application simulation tick" from
-        // ComponentApplication::Tick as a heuristic.
-        static const AZ::Name::Hash frameBoundaryHash = AZ::Name("Component application simulation tick").GetHash();
+        m_ticksPerSecondFromFile = serializer.m_timeTicksPerSecond;
 
+        // Since we don't serialize the frame boundaries, we will use "Component application tick" from
+        // ComponentApplication::TickSystem as a heuristic.
+        static const AZ::Name::Hash frameBoundaryHash = AZ::Name("Component application tick").GetHash();
+        
         AZStd::sys_time_t frameTime = 0;
         for (const auto& entry : deserializedData)
         {
-            const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
-            const auto [regionNameItr, wasRegionNameInserted] = m_deserializedStringPool.emplace(entry.m_regionName.GetCStr());
+            const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetStringView());
+            const auto [regionNameItr, wasRegionNameInserted] = m_deserializedStringPool.emplace(entry.m_regionName.GetStringView());
             const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
                 m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 
@@ -498,6 +501,10 @@ namespace Profiler
                 if (!m_frameEndTicks.empty())
                 {
                     frameTime = entry.m_endTick - m_frameEndTicks.back();
+                }
+                else
+                {
+                    frameTime = entry.m_endTick - entry.m_startTick;
                 }
                 m_frameEndTicks.push_back(entry.m_endTick);
             }
@@ -552,7 +559,7 @@ namespace Profiler
 
             ImGui::NextColumn();
 
-            ImGui::Text("Viewport width: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(GetViewportTickWidth()));
+            ImGui::Text("Viewport width: %.3f ms", TicksToMs(GetViewportTickWidth()));
             ImGui::Text("Ticks [%lld , %lld]", m_viewportStartTick, m_viewportEndTick);
             ImGui::Text("Recording %zu threads", m_savedData.size());
             ImGui::Text("%llu profiling events saved", m_savedRegionCount);
@@ -596,10 +603,7 @@ namespace Profiler
 
             // Find the start tick of the leftmost frame, which may be offscreen.
             auto startTickItr = AZStd::lower_bound(m_frameEndTicks.begin(), m_frameEndTicks.end(), m_viewportStartTick);
-            if (startTickItr != m_frameEndTicks.begin())
-            {
-                --startTickItr;
-            }
+            const AZStd::sys_time_t prevFrameBoundary = startTickItr != m_frameEndTicks.begin() ? *AZStd::prev(startTickItr) : 0;
 
             // Main draw loop
             AZ::u64 baseRow = 0;
@@ -608,7 +612,7 @@ namespace Profiler
             {
                 // Find the first TimeRegion that we should draw
                 auto regionItr = AZStd::lower_bound(
-                    threadData.begin(), threadData.end(), *startTickItr,
+                    threadData.begin(), threadData.end(), prevFrameBoundary,
                     [](const TimeRegion& wrapper, AZStd::sys_time_t target)
                     {
                         return wrapper.m_startTick < target;
@@ -855,7 +859,7 @@ namespace Profiler
     void ImGuiCpuProfiler::DrawBlock(const TimeRegion& block, AZ::u64 targetRow)
     {
         // Don't draw anything if the user is searching for regions and this block doesn't pass the filter
-        if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName.m_regionName))
+        if (!m_visualizerHighlightFilter.PassFilter(block.m_groupRegionName.m_regionName.GetCStr()))
         {
             return;
         }
@@ -888,7 +892,7 @@ namespace Profiler
         if (regionPixelWidth > maxCharWidth) // We can draw at least one character
         {
             const AZStd::string label =
-                AZStd::string::format("%s/ %s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName);
+                AZStd::string::format("%s/ %s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName.GetCStr());
             const float textWidth = ImGui::CalcTextSize(label.c_str()).x;
 
             if (regionPixelWidth < textWidth) // Not enough space in the block to draw the whole name, draw clipped text.
@@ -918,16 +922,15 @@ namespace Profiler
             if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 m_enableVisualizer = false;
-                const auto newFilter = AZStd::string(block.m_groupRegionName.m_regionName);
-                m_timedRegionFilter = ImGuiTextFilter(newFilter.c_str());
+                m_timedRegionFilter = ImGuiTextFilter(block.m_groupRegionName.m_regionName.GetCStr());
                 m_timedRegionFilter.Build();
             }
             // Hovering outline
             drawList->AddRect(startPoint, endPoint, ImGui::GetColorU32({ 1, 1, 1, 1 }), 0.0, 0, 1.5);
 
             ImGui::BeginTooltip();
-            ImGui::Text("%s::%s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName);
-            ImGui::Text("Execution time: %.3f ms", CpuProfilerImGuiHelper::TicksToMs(block.m_endTick - block.m_startTick));
+            ImGui::Text("%s::%s", block.m_groupRegionName.m_groupName, block.m_groupRegionName.m_regionName.GetCStr());
+            ImGui::Text("Execution time: %.3f ms", TicksToMs(block.m_endTick - block.m_startTick));
             ImGui::Text("Ticks %lld => %lld", block.m_startTick, block.m_endTick);
             ImGui::EndTooltip();
         }
@@ -1018,7 +1021,7 @@ namespace Profiler
             const float nextFrameBoundaryPixel = ConvertTickToPixelSpace(nextFrameBoundaryTick, m_viewportStartTick, m_viewportEndTick);
 
             const AZStd::string label =
-                AZStd::string::format("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(nextFrameBoundaryTick - lastFrameBoundaryTick));
+                AZStd::string::format("%.2f ms", TicksToMs(nextFrameBoundaryTick - lastFrameBoundaryTick));
             const float labelWidth = ImGui::CalcTextSize(label.c_str()).x;
 
             // The label can fit between the two boundaries, center it and draw
@@ -1116,7 +1119,7 @@ namespace Profiler
             const AZStd::sys_time_t frameEndTick = *frameEndTickItr;
 
             const float framePixelPos = ConvertTickToPixelSpace(frameEndTick, leftHistogramBound, rightHistogramBound);
-            const float frameTimeMs = CpuProfilerImGuiHelper::TicksToMs(frameEndTick - lastFrameEndTick);
+            const float frameTimeMs = TicksToMs(frameEndTick - lastFrameEndTick);
 
             const ImVec2 lineBottom = { framePixelPos, ImGui::GetWindowHeight() + wy };
             const ImVec2 lineTop = { framePixelPos, ImGui::GetWindowHeight() + wy - frameTimeMs };

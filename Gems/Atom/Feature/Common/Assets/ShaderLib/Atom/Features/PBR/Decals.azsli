@@ -20,8 +20,10 @@
 
 void ApplyDecal(uint currDecalIndex, inout Surface surface);
 
+#if ENABLE_DECALS
 void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
 {
+#if ENABLE_LIGHT_CULLING
     tileIterator.LoadAdvance();
     
     while( !tileIterator.IsDone() )
@@ -30,7 +32,13 @@ void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surf
         tileIterator.LoadAdvance();
         
         ApplyDecal(currDecalIndex, surface);
-    }    
+    }
+#else
+    for(uint decalIndex = 0; decalIndex < ViewSrg::m_decalCount; decalIndex++)
+    {
+        ApplyDecal(decalIndex, surface);
+    }
+#endif
 }
 
 float GetDecalAttenuation(float3 surfNormal, float3 decalUp, float decalAngleAttenutation)
@@ -104,7 +112,13 @@ void ApplyDecal(uint currDecalIndex, inout Surface surface)
         surface.albedo = lerp(surface.albedo, baseMap.rgb, albedoOpacity);      
 
         const float normalOpacity = baseMap.a * decal.m_normalMapOpacity * decalAttenuation;
-        const float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0f);      
+        const float3 normalMapWS = GetWorldSpaceNormal(normalMap, decalRot[2], decalRot[0], decalRot[1], 1.0);      
         surface.normal = normalize(lerp(surface.normal, normalMapWS, normalOpacity));
     }
 }
+#else
+void ApplyDecals(inout LightCullingTileIterator tileIterator, inout Surface surface)
+{
+    //Not Enabled
+}
+#endif

@@ -31,7 +31,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(BoxShape, AZ::SystemAllocator)
         AZ_RTTI(BoxShape, "{36D1BA94-13CF-433F-B1FE-28BEBBFE20AA}")
 
         BoxShape();
@@ -50,11 +50,14 @@ namespace LmbrCentral
         float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
         AZ::Vector3 GenerateRandomPointInside(AZ::RandomDistributionType randomDistribution) override;
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // BoxShapeComponentRequestBus::Handler
         BoxShapeConfig GetBoxConfiguration() override { return m_boxShapeConfig; }
-        AZ::Vector3 GetBoxDimensions() override { return m_boxShapeConfig.m_dimensions; }
+        AZ::Vector3 GetBoxDimensions() const override { return m_boxShapeConfig.m_dimensions; }
         void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+        bool IsTypeAxisAligned() override;
 
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;

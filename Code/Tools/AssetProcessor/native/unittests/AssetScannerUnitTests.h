@@ -7,14 +7,16 @@
  */
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <QObject>
 
 namespace UnitTest
 {
     class AssetScannerUnitTest
         : public QObject
-        , public AllocatorsFixture
+        , public LeakDetectionFixture
     {
         Q_OBJECT
     public:

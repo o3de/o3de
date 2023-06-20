@@ -1617,7 +1617,12 @@ namespace EMStudio
                     for (size_t i = 0; i < selection.GetNumSelectedMotions(); ++i)
                     {
                         EMotionFX::Motion* motion = selection.GetMotion(i);
-                        AzQtComponents::ShowFileOnDesktop(motion->GetFileName());
+
+                        // The browser action should point to the source file's folder.
+                        AZStd::string fileName = motion->GetFileName();
+                        GetMainWindow()->GetFileManager()->RelocateToAssetSourceFolder(fileName);
+
+                        AzQtComponents::ShowFileOnDesktop(fileName.c_str());
                     }
                 });
         }

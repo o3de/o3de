@@ -36,6 +36,7 @@ namespace {{ Namespace }}
             Multiplayer::MultiplayerComponentRegistry::ComponentData componentData;
             componentData.m_gemName = AZ::Name("{{ Namespace }}");
             componentData.m_componentName = AZ::Name("{{ Component.attrib['Name'] }}");
+            componentData.m_versionHash = {{ Component.attrib['Name'] }}::GetVersionHash();
             componentData.m_componentPropertyNameLookupFunction = {{ ComponentBaseName }}::GetNetworkPropertyName;
             componentData.m_componentRpcNameLookupFunction = {{ ComponentBaseName }}::GetRpcName;
             componentData.m_allocComponentInputFunction = {{ ComponentBaseName }}::AllocateComponentInput;

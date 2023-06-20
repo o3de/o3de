@@ -22,6 +22,8 @@ namespace ScriptCanvas
                 : public Nodeables::Time::BaseTimer
             {
                 SCRIPTCANVAS_NODE(RepeaterNodeable)
+            public:
+                AZ_CLASS_ALLOCATOR(RepeaterNodeable, AZ::SystemAllocator)
 
             protected:
 

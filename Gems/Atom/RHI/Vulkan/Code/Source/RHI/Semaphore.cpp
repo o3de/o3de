@@ -8,6 +8,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Semaphore.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -27,7 +28,8 @@ namespace AZ
             createInfo.pNext = 0;
             createInfo.flags = 0;
 
-            const VkResult result = device.GetContext().CreateSemaphore(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSemaphore);
+            const VkResult result =
+                device.GetContext().CreateSemaphore(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSemaphore);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -79,7 +81,7 @@ namespace AZ
             if (m_nativeSemaphore != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, nullptr);
+                device.GetContext().DestroySemaphore(device.GetNativeDevice(), m_nativeSemaphore, VkSystemAllocator::Get());
                 m_nativeSemaphore = VK_NULL_HANDLE;
             }
             // Signal any pending threads.

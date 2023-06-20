@@ -19,7 +19,7 @@ namespace AZ
         {
             using Base = RPI::PassData;
             AZ_RTTI(EsmShadowmapsPassData, "9B2265DF-2234-4DA9-A79F-7D34F6474160", Base);
-            AZ_CLASS_ALLOCATOR(EsmShadowmapsPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EsmShadowmapsPassData, SystemAllocator);
 
             EsmShadowmapsPassData() = default;
             virtual ~EsmShadowmapsPassData() = default;

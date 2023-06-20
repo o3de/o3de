@@ -7,7 +7,6 @@
  */
 
 #include "InitSceneAPIFixture.h"
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/conversions.h>
@@ -42,7 +41,6 @@ namespace EMotionFX
     // the morph target pipeline tests
 
     using MorphTargetPipelineFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

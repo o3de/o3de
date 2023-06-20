@@ -400,15 +400,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_passOp, "Pass Op", "")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<StencilOp>())
                         ->DataElement(AZ::Edit::UIHandlers::Default, &StencilOpState::m_func, "Func", "")
-                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZStd::vector<AZ::Edit::EnumConstant<ComparisonFunc>>{
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Never, ToString(ComparisonFunc::Never)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Less, ToString(ComparisonFunc::Less)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Equal, ToString(ComparisonFunc::Equal)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::LessEqual, ToString(ComparisonFunc::LessEqual)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Greater, ToString(ComparisonFunc::Greater)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::NotEqual, ToString(ComparisonFunc::NotEqual)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::GreaterEqual, ToString(ComparisonFunc::GreaterEqual)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Always, ToString(ComparisonFunc::Always)) })
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ComparisonFunc>())
                         ;
                 }
             }
@@ -449,15 +441,7 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_writeMask, "Write Mask", "")
                             ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<DepthWriteMask>())
                         ->DataElement(AZ::Edit::UIHandlers::Default, &DepthState::m_func, "Func", "")
-                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZStd::vector<AZ::Edit::EnumConstant<ComparisonFunc>>{
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Never, ToString(ComparisonFunc::Never)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Less, ToString(ComparisonFunc::Less)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Equal, ToString(ComparisonFunc::Equal)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::LessEqual, ToString(ComparisonFunc::LessEqual)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Greater, ToString(ComparisonFunc::Greater)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::NotEqual, ToString(ComparisonFunc::NotEqual)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::GreaterEqual, ToString(ComparisonFunc::GreaterEqual)),
-                                AZ::Edit::EnumConstant<ComparisonFunc>(ComparisonFunc::Always, ToString(ComparisonFunc::Always)) })
+                            ->Attribute(AZ::Edit::Attributes::EnumValues, AZ::Edit::GetEnumConstantsFromTraits<ComparisonFunc>())
                         ;
                 }
             }

@@ -49,7 +49,7 @@ namespace AZ
         using Callback = AZStd::function<void(Params...)>;
         using Handler = EventHandler<Params...>;       
 
-        AZ_CLASS_ALLOCATOR(Event<Params...>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Event<Params...>, AZ::SystemAllocator);
 
         Event() = default;
         Event(Event&& rhs);
@@ -101,7 +101,7 @@ namespace AZ
     public:
         using Callback = AZStd::function<void(Params...)>;
 
-        AZ_CLASS_ALLOCATOR(EventHandler<Params...>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EventHandler<Params...>, AZ::SystemAllocator);
 
         // We support default constructing of event handles (with no callback function being bound) to allow for better usage with container types
         // An unbound event handle cannot be added to an event and we do not support dynamically binding the callback post construction

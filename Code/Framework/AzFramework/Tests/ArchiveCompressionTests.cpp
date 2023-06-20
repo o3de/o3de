@@ -27,16 +27,22 @@ namespace UnitTest
         int, int, int>>;
 
     class ArchiveCompressionTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ArchiveCompressionParamInterface
     {
     public:
         ArchiveCompressionTestFixture()
             : m_application { AZStd::make_unique<AzFramework::Application>() }
-        {}
+        {
+            // Create a unique alias to the user cache directory to avoid race conditions between
+            // concurrent invocations of this test target running these tests
+            AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
+            fileIo->SetAlias("@usercache@", m_tempDirectory.GetDirectory());
+        }
 
     private:
         AZStd::unique_ptr<AzFramework::Application> m_application;
+        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
     };
 
     auto IsPackValid(const char* path)

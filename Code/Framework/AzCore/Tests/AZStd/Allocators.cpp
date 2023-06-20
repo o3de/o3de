@@ -27,19 +27,14 @@ namespace UnitTest
 
     /// Default allocator.
     class AllocatorDefaultTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
         {
-            const char name[] = "My test allocator";
-            AZStd::allocator myalloc(name);
-            AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
-            const char newName[] = "My new test allocator";
-            myalloc.set_name(newName);
-            AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
+            AZStd::allocator myalloc;
 
-            AZStd::allocator::pointer_type data = myalloc.allocate(100, 1);
+            AZStd::allocator::pointer data = myalloc.allocate(100, 1);
             AZ_TEST_ASSERT(data != nullptr);
 
             myalloc.deallocate(data, 100, 1);
@@ -64,17 +59,17 @@ namespace UnitTest
     {
         using AZStdAllocatorTraits = AZStd::allocator_traits<AZStd::allocator>;
         static_assert(AZStd::is_same<AZStdAllocatorTraits::allocator_type, AZStd::allocator>::value, "Allocator trait allocator_type is not the same as AZStd::allocator");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::value_type, uint8_t>::value, "Allocator trait value_type is not the same as uint8_t");
+        static_assert(AZStd::is_same<AZStdAllocatorTraits::value_type, void>::value, "Allocator trait value_type is not the same as void");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::pointer, void*>::value, "Allocator trait pointer is not the same as void*");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::const_pointer, const uint8_t*>::value, "Allocator trait const_pointer is not the same as const uint8_t*");
+        static_assert(AZStd::is_same<AZStdAllocatorTraits::const_pointer, const void*>::value, "Allocator trait const_pointer is not the same as const void*");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::void_pointer, void*>::value, "Allocator trait void_pointer is not the same as void*");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::const_void_pointer, const void*>::value, "Allocator trait const_void_pointer is not the same as void*");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::difference_type, ptrdiff_t>::value, "Allocator trait difference_type is not the same as ptrdiff_t");
         static_assert(AZStd::is_same<AZStdAllocatorTraits::size_type, size_t>::value, "Allocator trait size_type is not the same as size_t");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_copy_assignment, false_type>::value, "Allocator trait propagate_on_container_copy_assignment is not the same as false_type");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_move_assignment, false_type>::value, "Allocator trait propagate_on_container_move_assignment is not the same as false_type");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_swap, false_type>::value, "Allocator trait propagate_on_container_swap is not the same as false_type");
-        static_assert(AZStd::is_same<AZStdAllocatorTraits::is_always_equal, false_type>::value, "Allocator trait is_always_equal is not the same as false_type");
+        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_copy_assignment, true_type>::value, "Allocator trait propagate_on_container_copy_assignment is not the same as true_type");
+        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_move_assignment, true_type>::value, "Allocator trait propagate_on_container_move_assignment is not the same as true_type");
+        static_assert(AZStd::is_same<AZStdAllocatorTraits::propagate_on_container_swap, true_type>::value, "Allocator trait propagate_on_container_swap is not the same as true_type");
+        static_assert(AZStd::is_same<AZStdAllocatorTraits::is_always_equal, true_type>::value, "Allocator trait is_always_equal is not the same as true_type");
         static_assert(AZStd::is_same<typename AZStdAllocatorTraits::template rebind_alloc<int32_t>, AZStd::allocator>::value, "Rebind alloc for AZStd::allocator should return AZStd::allocator");
         static_assert(AZStd::is_same<typename AZStdAllocatorTraits::template rebind_traits<int32_t>::allocator_type, AZStd::allocator>::value, "Rebind traits allocator_type should still be AZStd::allocator");
     }
@@ -82,7 +77,7 @@ namespace UnitTest
     TEST_F(AllocatorDefaultTest, AllocatorTraitsAllocateAndDeallocateSucceeds)
     {
         using AZStdAllocatorTraits = AZStd::allocator_traits<AZStd::allocator>;
-        AZStd::allocator testAllocator("trait allocator");
+        AZStd::allocator testAllocator;
         typename AZStdAllocatorTraits::pointer data = AZStdAllocatorTraits::allocate(testAllocator, 50, 128);
         EXPECT_NE(nullptr, data);
         AZStdAllocatorTraits::deallocate(testAllocator, data, 50, 128);
@@ -148,17 +143,12 @@ namespace UnitTest
         const int bufferSize = 500;
         typedef static_buffer_allocator<bufferSize, 4> buffer_alloc_type;
 
-        const char name[] = "My test allocator";
-        buffer_alloc_type myalloc(name);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
-        const char newName[] = "My new test allocator";
-        myalloc.set_name(newName);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
+        buffer_alloc_type myalloc;
 
         EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
-        buffer_alloc_type::pointer_type data = myalloc.allocate(100, 1);
+        buffer_alloc_type::pointer data = myalloc.allocate(100, 1);
         AZ_TEST_ASSERT(data != nullptr);
         EXPECT_EQ(bufferSize - 100, myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);
@@ -192,13 +182,8 @@ namespace UnitTest
     TEST(Allocator, StaticPool)
     {
         const int numNodes = 100;
-        const char name[] = "My test allocator";
-        const char newName[] = "My new test allocator";
         typedef static_pool_allocator<int, numNodes> int_node_pool_type;
-        int_node_pool_type myalloc(name);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
-        myalloc.set_name(newName);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
+        int_node_pool_type myalloc;
 
         EXPECT_EQ(numNodes * sizeof(int), myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
@@ -251,35 +236,23 @@ namespace UnitTest
     {
         const int bufferSize = 500;
         typedef static_buffer_allocator<bufferSize, 4> buffer_alloc_type;
-        buffer_alloc_type shared_allocator("Shared allocator");
+        buffer_alloc_type shared_allocator;
 
         typedef allocator_ref<buffer_alloc_type> ref_allocator_type;
 
-        const char name1[] = "Ref allocator1";
-        ref_allocator_type ref_allocator1(shared_allocator, name1);
-        const char name2[] = "Ref allocator2";
-        ref_allocator_type ref_allocator2(shared_allocator, name2);
-
-        AZ_TEST_ASSERT(strcmp(ref_allocator1.get_name(), name1) == 0);
-        AZ_TEST_ASSERT(strcmp(ref_allocator2.get_name(), name2) == 0);
-
-        const char newName1[] = "Ref new allocator1";
-        ref_allocator1.set_name(newName1);
-        AZ_TEST_ASSERT(strcmp(ref_allocator1.get_name(), newName1) == 0);
-        const char newName2[] = "Ref new allocator2";
-        ref_allocator2.set_name(newName2);
-        AZ_TEST_ASSERT(strcmp(ref_allocator2.get_name(), newName2) == 0);
+        ref_allocator_type ref_allocator1(shared_allocator);
+        ref_allocator_type ref_allocator2(shared_allocator);
 
         AZ_TEST_ASSERT(ref_allocator2.get_allocator() == ref_allocator1.get_allocator());
 
-        ref_allocator_type::pointer_type data1 = ref_allocator1.allocate(10, 1);
+        ref_allocator_type::pointer data1 = ref_allocator1.allocate(10, 1);
         AZ_TEST_ASSERT(data1 != nullptr);
         EXPECT_EQ(bufferSize - 10, ref_allocator1.max_size() - ref_allocator1.get_allocated_size());
         AZ_TEST_ASSERT(ref_allocator1.get_allocated_size() == 10);
         EXPECT_EQ(bufferSize - 10, shared_allocator.max_size() - shared_allocator.get_allocated_size());
         AZ_TEST_ASSERT(shared_allocator.get_allocated_size() == 10);
 
-        ref_allocator_type::pointer_type data2 = ref_allocator2.allocate(10, 1);
+        ref_allocator_type::pointer data2 = ref_allocator2.allocate(10, 1);
         AZ_TEST_ASSERT(data2 != nullptr);
         EXPECT_LE(ref_allocator2.max_size() - ref_allocator2.get_allocated_size(), bufferSize - 20);
         AZ_TEST_ASSERT(ref_allocator2.get_allocated_size() >= 20);
@@ -311,9 +284,7 @@ namespace UnitTest
     {
         size_t bufferSize = 500;
 
-        const char name[] = "My test allocator";
-        stack_allocator myalloc(alloca(bufferSize), bufferSize, name);
-        AZ_TEST_ASSERT(strcmp(myalloc.get_name(), name) == 0);
+        stack_allocator myalloc(alloca(bufferSize), bufferSize);
         const char newName[] = "My new test allocator";
         myalloc.set_name(newName);
         AZ_TEST_ASSERT(strcmp(myalloc.get_name(), newName) == 0);
@@ -321,7 +292,7 @@ namespace UnitTest
         EXPECT_EQ(bufferSize, myalloc.max_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 0);
 
-        stack_allocator::pointer_type data = myalloc.allocate(100, 1);
+        stack_allocator::pointer data = myalloc.allocate(100, 1);
         AZ_TEST_ASSERT(data != nullptr);
         EXPECT_EQ(bufferSize - 100, myalloc.max_size() - myalloc.get_allocated_size());
         AZ_TEST_ASSERT(myalloc.get_allocated_size() == 100);

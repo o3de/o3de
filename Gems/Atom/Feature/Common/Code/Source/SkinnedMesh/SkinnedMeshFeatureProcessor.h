@@ -35,6 +35,7 @@ namespace AZ
         {
             friend class SkinnedMeshStatsCollector;
         public:
+            AZ_CLASS_ALLOCATOR(SkinnedMeshFeatureProcessor, AZ::SystemAllocator)
 
             AZ_RTTI(AZ::Render::SkinnedMeshFeatureProcessor, "{D1F44963-913F-4210-92E1-945FA306BED4}", AZ::Render::SkinnedMeshFeatureProcessorInterface);
             AZ_FEATURE_PROCESSOR(SkinnedMeshFeatureProcessor);
@@ -51,8 +52,7 @@ namespace AZ
             void OnRenderEnd() override;
 
             // RPI::SceneNotificationBus overrides ...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
+            void OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
             void OnBeginPrepareRender() override;
 
             // SkinnedMeshFeatureProcessorInterface overrides ...
@@ -88,8 +88,6 @@ namespace AZ
             AZStd::concurrency_checker m_renderProxiesChecker;
             StableDynamicArray<SkinnedMeshRenderProxy> m_renderProxies;
             AZStd::unique_ptr<SkinnedMeshStatsCollector> m_statsCollector;
-
-            MeshFeatureProcessor* m_meshFeatureProcessor = nullptr;
 
             AZStd::unordered_set<const RHI::DispatchItem*> m_skinningDispatches;
             bool m_alreadyCreatedSkinningScopeThisFrame = false;

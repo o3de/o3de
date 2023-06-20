@@ -35,6 +35,7 @@ namespace AZ
                     ->Field("Aabb", &ModelAsset::m_aabb)
                     ->Field("MaterialSlots", &ModelAsset::m_materialSlots)
                     ->Field("LodAssets", &ModelAsset::m_lodAssets)
+                    ->Field("Tags", &ModelAsset::m_tags)
                     ;
 
                 // Note: This class needs to have edit context reflection so PropertyAssetCtrl::OnEditButtonClicked
@@ -129,6 +130,11 @@ namespace AZ
             }
 
             return BruteForceRayIntersect(rayStart, rayDir, distanceNormalized, normal);
+        }
+
+        const AZStd::vector<AZ::Name>& ModelAsset::GetTags() const
+        {
+            return m_tags;
         }
 
         void ModelAsset::BuildKdTree() const

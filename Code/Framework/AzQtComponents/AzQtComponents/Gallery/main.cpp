@@ -56,9 +56,6 @@ public:
         AZ::ComponentApplication::Descriptor appDesc;
         m_systemEntity = m_componentApp.Create(appDesc);
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
         m_componentApp.RegisterComponentDescriptor(AZ::AssetManagerComponent::CreateDescriptor());
         m_componentApp.RegisterComponentDescriptor(AZ::JobManagerComponent::CreateDescriptor());
         m_componentApp.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
@@ -107,9 +104,6 @@ public:
         m_componentApp.UnregisterComponentDescriptor(AZ::UserSettingsComponent::CreateDescriptor());
         m_componentApp.UnregisterComponentDescriptor(AzFramework::CustomAssetTypeComponent::CreateDescriptor());
         m_componentApp.UnregisterComponentDescriptor(AzToolsFramework::Components::PropertyManagerComponent::CreateDescriptor());
-
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
         m_componentApp.Destroy();
     }

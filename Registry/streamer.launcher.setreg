@@ -1,0 +1,71 @@
+{
+    "Amazon":
+    {
+        "AzCore":
+        {
+            "Streamer":
+            {
+                "Profiles":
+                {
+                    "Generic":
+                    {
+                        "Stack":
+                        {
+                            "Drive":
+                            {
+                                "$type": "AZ::IO::StorageDriveConfig",
+                                // The maximum number of file handles that the drive will cache.
+                                // The Streamer will not close handles until it has at least this many handles open
+                                "MaxFileHandles": 32 
+                            },
+                            "Splitter":
+                            {
+                                "$type": "AZ::IO::ReadSplitterConfig",
+                                // The size of the internal buffer that's used if reads need to be aligned.
+                                "BufferSizeMib": 6,
+                                // The size at which reads are split. This can either be a fixed value that's explicitly supplied or a
+                                // dynamic value that's retrieved from the provided hardware.
+                                "SplitSize": "MaxTransfer",
+                                // If set to true the read splitter will adjust offsets to align to the required size alignment. This should
+                                // be disabled if the read splitter is front of a cache like the block cache as it would negate the cache's
+                                // ability to cache data.
+                                "AdjustOffset": true,
+                                // Whether or not to split reads even if they meet the alignment requirements. This is recommended for 
+                                // devices that can't cancel their requests.
+                                "SplitAlignedRequests": false
+                            },
+                            "Cache":
+                            {
+                                "$type": "AZ::IO::BlockCacheConfig",
+                                // The overall size of the cache in megabytes.
+                                "CacheSizeMib": 10,
+                                // The size of the individual blocks inside the cache.
+                                "BlockSize": "MaxTransfer"
+                            },
+                            "Dedicated cache":
+                            {
+                                "$type": "AZ::IO::DedicatedCacheConfig",
+                                // The overall size of the cache in megabytes.
+                                "CacheSizeMib": 2,
+                                // The size of the individual blocks inside the cache.
+                                "BlockSize": "MemoryAlignment",
+                                // If true, only the epilog is written otherwise the prolog and epilog are written. In either case both
+                                // prolog and epilog are read. For uses of the cache that read mostly sequentially this flag should be set
+                                // to true. If reads are more random than it's better to set this flag to false.
+                                "WriteOnlyEpilog": true
+                            },
+                            "Decompressor":
+                            {
+                                "$type": "AZ::IO::FullFileDecompressorConfig",
+                                // Maximum number of reads that are kept in flight.
+                                "MaxNumReads": 2,
+                                // Maximum number of decompression jobs that can run simultaneously.
+                                "MaxNumJobs": 2
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

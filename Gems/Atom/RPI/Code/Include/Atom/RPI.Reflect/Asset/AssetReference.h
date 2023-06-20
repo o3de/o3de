@@ -23,7 +23,7 @@ namespace AZ
         struct AssetReference final
         {
             AZ_RTTI(AssetReference, "{33895678-2406-46F5-9303-103C3FB6C40F}");
-            AZ_CLASS_ALLOCATOR(AssetReference, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetReference, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             AssetReference() = default;

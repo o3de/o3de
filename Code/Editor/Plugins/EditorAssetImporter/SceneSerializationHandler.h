@@ -26,7 +26,9 @@ namespace AZ
         void Deactivate();
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> LoadScene(
-            const AZStd::string& sceneFilePath, Uuid sceneSourceGuid) override;
+            const AZStd::string& sceneFilePath,
+            Uuid sceneSourceGuid,
+            const AZStd::string& watchFolder) override;
         bool IsSceneCached(const AZStd::string& sceneFilePath) override;
 
     private:

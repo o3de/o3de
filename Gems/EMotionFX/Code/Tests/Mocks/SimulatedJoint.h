@@ -17,7 +17,7 @@ namespace EMotionFX
     class SimulatedJoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimulatedJoint, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SimulatedJoint, AZ::SystemAllocator)
         AZ_TYPE_INFO(SimulatedJoint, "{4434F175-2A60-4F54-9A7D-243DAAD8C811}");
 
         using AutoExcludeMode = ::EMotionFX::SimulatedJoint::AutoExcludeMode;

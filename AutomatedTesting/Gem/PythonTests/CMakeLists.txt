@@ -41,9 +41,6 @@ add_subdirectory(EditorPythonBindings)
 ## Python Asset Builder ##
 add_subdirectory(PythonAssetBuilder)
 
-## Blast ##
-add_subdirectory(Blast)
-
 ## Large Worlds ##
 add_subdirectory(largeworlds)
 

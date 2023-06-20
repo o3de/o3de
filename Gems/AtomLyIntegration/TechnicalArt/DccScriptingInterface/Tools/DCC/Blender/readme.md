@@ -1,28 +1,26 @@
-# O3DE Blender DCCsi Integration
+# O3DE DCCsi, DCC Blender
 
-This sets up Blender to be integrated with O3DE in a managed way, via the DccScriptingInterface Gem (aka DCCsi). For more information about the DCCis please see the readme.md at the root of the Gem.
+The "DccScriptingInterface" (aka DCCsi) is a Gem for O3DE to extend and interface with dcc tools in the python ecosystem.  This document contains the details of configuration of Maya as a DCC tool to be used with O3DE.  This sets up Blender to be integrated with O3DE in a managed way, via the DCCsi. For more information about the DCCis please see the readme.md at the root of the Gem.
 
-###### Status: Prototype
+### Status: Prototype
 
-###### Version: 0.0.1
+### Version: 0.0.1
 
-###### Support: Blender 3.x, Currently Windows only
+### Support: Blender 3.x, Currently Windows only
 
 This is currently the first working version of a managed integration of Blender, treat it as an Experimental Preview.
 
 ## Brief
 
-This is an experiment Blender integration with O3DE, it's intent is:
+This is an experimental Blender integration with O3DE, it's intent is:
 
-1. Configure and launch Blender (from CLI, or even via O3DE editor)
+1. Configure and launch Blender (from CLI start.py, or even via O3DE editor menus)
 2. Bootstrap O3DE 'Studio Tools', provide shared code access, facilitate AddOns, etc.
 3. Soft extension bootstrapping (non-destructive to Users Blender installation)
 
 ## Setup
 
-Make sure that the DccScriptingInterface Gem is enabled in your project via the Project Manager, then build your project (DCCsi python boostrapping will require the project to be built.) [Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)
-
-The O3DE tools provided with the DCCsi have python package dependencies (via requirements.txt).  You will need to currently manually configure for Blender before running for the first time.
+Make sure that the DccScriptingInterface Gem is enabled in your project via the Project Manager, then build your project (DCCsi python boostrapping will require the project to be built.) [Adding and Removing Gems in a Project - Open 3D Engine](https://www.o3de.org/docs/user-guide/project-config/add-remove-gems/)  The O3DE tools provided with the DCCsi have python package dependencies (via requirements.txt).  You will need to currently manually configure for Blender before running for the first time.
 
 In the root folder of the DCCsi are a few useful utilities and files to make note of:
 
@@ -45,11 +43,54 @@ In the root folder of the DCCsi are a few useful utilities and files to make not
 
 ### If you are an End User...
 
-You should be able to now successfully start Blender from within the O3DE Editor.
+You should be able to now successfully start Blender from within the O3DE Editor 'Studio Tools' menu.
 
-`O3DE MenuBar > StudioTools > DCC > Blender`
+    `O3DE MenuBar > StudioTools > DCC > Blender`
 
-Note: DCCsi is pre-configured fro Blender 3.1
+If you'd like to use Blender with O3DE bootstrapped tools externally, outside of the o3de Editor, you can do that also.
+
+There two ways, a windows environment via .bat file, or a `start.py` script
+
+From .bat file, double-click the following file type to start Maya: `C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface\Tools\DCC\Blender\win_launch_blender.bat`
+
+To start from script:
+
+    1. Open a Windows Command Prompt (CMD)
+
+    2. Change directory to: 
+
+```batch
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+```
+
+    3. Run the Blender `start.py` script:
+
+```batch
+.\python Tools\DCC\Blender\start.py
+```
+
+Note: DCCsi is pre-configured for Blender 3.1
+
+IF you want to alter the version of Belnder, or other settings, such as a customer installation path, you can do this via a file: settings.local.json
+start.py is the same setup that the Editor uses to start the external DCC application.  It makes use of a `settings.json` (default settings), and `settings.local.json` (user settings and overrides) within the o3de DCCsi folder for Blender.  These are utilized along with the addition of a `config.py` and `start.py` in the DCC apps folder. This follows the patterns similar to how Maya (and other tools) can be launched from the O3DE menus, or in a scripted manner rather then legacy windows .bat files.
+
+To generate a `settings.local.json` (which you can then modify with overrides to paths and other settings)::
+
+    1. Open a Windows Command Prompt (CMD)
+
+    2. Change directory to: 
+
+```batch
+cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+```
+
+    3. Run the Blender `config.py` script:
+
+```batch
+python Tools\DCC\Blender\config.py
+```
+
+You can now open `settings.local.json` in a text editor and make modifications and resave before starting Maya.
 
 ### If you are a developer...
 
@@ -72,11 +113,9 @@ https://www.o3de.org/docs/user-guide/< DCC Tools, not stubbed >
 
 ---
 
-LICENSE INFO
+###### LICENSE INFO
 
 Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
----

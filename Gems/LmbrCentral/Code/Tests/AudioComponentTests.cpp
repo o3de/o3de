@@ -20,7 +20,7 @@
 namespace UnitTest
 {
     class AudioMultiPositionComponentTests
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -30,7 +30,7 @@ namespace UnitTest
 
     public:
         AudioMultiPositionComponentTests()
-            : AllocatorsTestFixture()
+            : LeakDetectionFixture()
         {}
 
         AZStd::size_t GetNumEntityRefs(LmbrCentral::AudioMultiPositionComponent* audioComponent)
@@ -41,7 +41,7 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -63,7 +63,7 @@ namespace UnitTest
             m_audioProxyComponentDescriptor.reset();
             m_transformComponentDescriptor.reset();
             m_serializeContext.reset();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void CreateDefaultSetup(AZ::Entity& entity)

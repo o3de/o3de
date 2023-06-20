@@ -38,28 +38,8 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "Shaders/Materials/BasePBR/BasePBR_ForwardPass.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Materials/BasePBR/BasePBR_LowEndForward.shader",
-            "tag": "LowEndForward_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        }
-    ],
+    "lightingModel": "Base",
+    "materialShaderCode": "BasePBR.azsli",
     "functors": [
     ],
     "uvNameMap": {

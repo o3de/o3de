@@ -67,6 +67,7 @@ namespace AZ
                 // Render::Bootstrap::RequestBus::Handler overrides ...
                 AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) override;
                 bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) override;
+                void SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext) override;
 
             protected:
                 // Component overrides ...
@@ -91,7 +92,15 @@ namespace AZ
                 void DestroyDefaultScene();
                 void RemoveRenderPipeline();
 
-                void CreateWindowContext();
+                void CreateViewportContext();
+
+                //! Load a render pipeline from disk and add it to the scene
+                RPI::RenderPipelinePtr LoadPipeline(
+                    const AZ::RPI::ScenePtr scene,
+                    const AZ::RPI::ViewportContextPtr viewportContext,
+                    AZStd::string_view xrPipelineName,
+                    AZ::RPI::ViewType viewType,
+                    AZ::RHI::MultisampleState& multisampleState);
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 
@@ -110,6 +119,9 @@ namespace AZ
                 // Save a reference to the image created by the BRDF pipeline so it doesn't get auto deleted if it's ref count goes to zero
                 // For example, if we delete all the passes, we won't have to recreate the BRDF pipeline to recreate the BRDF texture
                 Data::Instance<RPI::AttachmentImage> m_brdfTexture;
+
+                // Save a reference to the image used for variable rate shading in XR so it doesn't get auto deleted if it's ref count goes to zero
+                Data::Instance<RPI::AttachmentImage> m_xrVrsTexture;
 
                 bool m_createDefaultScene = true;
                 bool m_defaultSceneReady = false;

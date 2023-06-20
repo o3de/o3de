@@ -52,7 +52,7 @@
     </widget>
    </item>
    <item>
-    <widget class="AzToolsFramework::PlainTextEdit" name="m_resultsList">
+    <widget class="LUAEditor::LUAEditorPlainTextEdit" name="m_resultsList">
      <property name="undoRedoEnabled">
       <bool>false</bool>
      </property>
@@ -77,9 +77,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>UIFramework::PlainTextEdit</class>
+   <class>LUAEditor::LUAEditorPlainTextEdit</class>
    <extends>QPlainTextEdit</extends>
-   <header>AzToolsFramework/UI/UICore/PlainTextEdit.hxx</header>
+   <header>Source/LUA/LUAEditorPlainTextEdit.hxx</header>
   </customwidget>
  </customwidgets>
  <resources/>

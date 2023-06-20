@@ -1,0 +1,51 @@
+{
+    "entries": [
+        {
+            "base": "{ECBE9056-5EB3-AA98-AFB8-EC57E6C1BEA6}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "If Multiplayer Agent Type",
+                "category": "Multiplayer",
+                "tooltip": "An execution flow gate that continues to the path based on the agent type of the current multiplayer session."
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Branches on agent type"
+                    }
+                },
+                {
+                    "base": "Output_If Client Type_0",
+                    "details": {
+                        "name": "If Client Type",
+                        "tooltip": "A Client connected to either a server or host."
+                    }
+                },
+                {
+                    "base": "Output_If ClientServer Type_1",
+                    "details": {
+                        "name": "If ClientServer Type",
+                        "tooltip": "A Client that also hosts and is the authority of the session"
+                    }
+                },
+                {
+                    "base": "Output_If DedicatedServer Type_2",
+                    "details": {
+                        "name": "If DedicatedServer Type",
+                        "tooltip": "A Dedicated Server which does not locally host any clients"
+                    }
+                },
+                {
+                    "base": "Output_If Not Multiplayer_3",
+                    "details": {
+                        "name": "If Not Multiplayer",
+                        "tooltip": "Not in any multiplayer mode"
+                    }
+                }
+            ]
+        }
+    ]
+}

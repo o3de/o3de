@@ -30,6 +30,7 @@ import re
 import tempfile
 import threading
 import types
+import typing
 import warnings
 
 import pytest
@@ -37,13 +38,14 @@ import _pytest.python
 import _pytest.outcomes
 from _pytest.skipping import pytest_runtest_setup as skip_pytest_runtest_setup
 
+import ly_test_tools.launchers.platforms.base as Launchers
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 from ly_test_tools._internal.managers.workspace import AbstractWorkspaceManager
 from ly_test_tools._internal.exceptions import EditorToolsFrameworkException, TestResultException
 from ly_test_tools.launchers import launcher_helper
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxMaterialEditor
-from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinMaterialEditor
+from ly_test_tools.launchers.platforms.linux.launcher import LinuxEditor, LinuxAtomToolsLauncher
+from ly_test_tools.launchers.platforms.win.launcher import WinEditor, WinAtomToolsLauncher
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +203,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -242,7 +244,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -276,7 +278,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -309,7 +311,7 @@ class Result(object):
                 "------------\n"
                 f"{self.get_output_str()}\n"
                 "----------------------------------------------------\n"
-                f"| Executable (i.e. Editor or MaterialEditor) log  |\n"
+                f"| Application log  |\n"
                 "----------------------------------------------------\n"
                 f"{self.get_log_output_str()}\n"
             )
@@ -327,7 +329,11 @@ class MultiTestSuite(object):
     # Tests usually run with no renderer, however some tests require a renderer and will disable this
     use_null_renderer = True
     # Maximum time in seconds for a single executable to stay open across the set of shared tests
-    timeout_shared_test = 300
+    timeout_shared_test = 900
+    # Name of the executable's log file.
+    log_name = ""
+    # Executable name to look for if the test is an Atom Tools test, leave blank if not an Atom Tools test.
+    atom_tools_executable_name = ""
     # Maximum time (seconds) for waiting for a crash file to finish being dumped to disk
     _timeout_crash_log = 20
     # Return code for test failure
@@ -336,10 +342,6 @@ class MultiTestSuite(object):
     _single_test_class = SingleTest
     # Test class to use for shared test collection
     _shared_test_class = SharedTest
-    # Name of the executable's log file.
-    _log_name = ""
-    # Executable function to call when launching executable.
-    _executable_function = launcher_helper.create_game_launcher
 
     class TestData:
         __test__ = False  # Avoid pytest collection & warnings since "test" is in the class name.
@@ -361,6 +363,125 @@ class MultiTestSuite(object):
         Custom pytest collector which programmatically adds test functions based on data in the MultiTestSuite class
         """
 
+        # Decorator function to add extra lookup information for the test functions
+        @staticmethod
+        def _set_marks(marks: dict) -> typing.Callable:
+            """
+            Sets pytest marks for a MultiTest test
+
+            :param marks: The pytest marks to set as a dict
+            :return: A function to set the marks
+            """
+            def spec_impl(func):
+                @functools.wraps(func)
+                def inner(*args, **argv):
+                    return func(*args, **argv)
+
+                inner.marks = marks
+                return inner
+
+            return spec_impl
+
+        @staticmethod
+        def _make_single_run(inner_test_spec: AbstractTestBase) -> typing.Callable:
+            """
+            Prepares a test run to be collected as a SingleTest, regardless of its actual test type. Single tests are
+            ran independently of each other, as opposed to a SharedTest. This also includes setup() and teardown()
+            functions if applicable.
+
+            :param inner_test_spec: The test spec class (i.e. SingleTest, SharedTest)
+            :return: The function to run as a single test
+            """
+            @MultiTestSuite.MultiTestCollector._set_marks({"run_type": "run_single"})
+            def single_run(self,
+                           request: pytest.FixtureRequest,
+                           workspace: AbstractWorkspaceManager,
+                           collected_test_data: MultiTestSuite.TestData,
+                           launcher_platform: Launchers) -> typing.Callable:
+                """
+                The actual function to be called by pytest. This wraps around _run_single_test() for a customized
+                handling of setup() and teardown().
+
+                :param request: The pytest request
+                :param workspace: The LyTestTools workspace object
+                :param collected_test_data: The TestData object to store the test results
+                :param launcher_platform: The LyTestTools launcher
+                :return: The function to run the pytest.
+                """
+                # only single tests are allowed to have setup/teardown, however we can have shared tests that
+                # were explicitly set as single, for example via cmdline argument override
+                is_single_test = issubclass(inner_test_spec, SingleTest)
+                if is_single_test:
+                    # Setup step for wrap_run
+                    wrap = inner_test_spec.wrap_run(
+                        self, request, workspace, collected_test_data)
+                    if not isinstance(wrap, types.GeneratorType):
+                        raise EditorToolsFrameworkException("wrap_run must return a generator, did you forget 'yield'?")
+                    next(wrap, None)
+                    # Setup step
+                    inner_test_spec.setup(
+                        self, request, workspace)
+                # Run
+                self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
+                if is_single_test:
+                    # Teardown
+                    inner_test_spec.teardown(
+                        self, request, workspace, collected_test_data)
+                    # Teardown step for wrap_run
+                    next(wrap, None)
+
+            return single_run
+
+        @staticmethod
+        def _create_runner(runner_name: str, function: typing.Callable, tests: list, cls) -> MultiTestSuite.Runner:
+            """
+            Create a test runner for SharedTests. This involves both test running and reporting. Create functions
+            that runs the tests and sets it to attributes based off of the test names.
+
+            :param runner_name: Name of the test runner
+            :param function: The function that will run the tests
+            :param tests: A list of AbstractTestBase objects
+            :param cls: The MultiTestCollector self.obj
+            :return: The MultiTestSuite runner object
+            """
+            target_runner = MultiTestSuite.Runner(runner_name, function, tests)
+
+            def make_shared_run():
+                @MultiTestSuite.MultiTestCollector._set_marks({"runner": target_runner, "run_type": "run_shared"})
+                def shared_run(self, request, workspace, collected_test_data, launcher_platform):
+                    getattr(self, function.__name__)(
+                        request, workspace, collected_test_data, target_runner.tests)
+
+                return shared_run
+
+            setattr(cls, runner_name, make_shared_run())
+
+            # Add the shared tests results, which succeed/fail based what happened on the Runner.
+            for shared_test_spec in tests:
+                def make_results_run(inner_test_spec):
+                    @MultiTestSuite.MultiTestCollector._set_marks(
+                        {"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
+                    def result(self, request, workspace, collected_test_data, launcher_platform):
+                        result_key = inner_test_spec.__name__
+                        # The runner must have filled the collected_test_data.results dict fixture for this test.
+                        # Hitting this assert could mean if there was an error executing the runner
+                        if result_key not in collected_test_data.results:
+                            logger.debug(f"\nTest Result objects - collected_test_data.results:\n"
+                                         f"{collected_test_data.results}\n")
+                            raise TestResultException(f"No results found for {result_key}. "
+                                                      f"Test may not have ran due to the executable "
+                                                      f"shutting down. Check for issues in previous "
+                                                      f"tests.")
+                        cls._report_result(result_key, collected_test_data.results[result_key])
+
+                    return result
+
+                result_func = make_results_run(shared_test_spec)
+                if hasattr(shared_test_spec, "pytestmark"):
+                    result_func.pytestmark = shared_test_spec.pytestmark
+                setattr(cls, shared_test_spec.__name__, result_func)
+            return target_runner
+
         def collect(self):
             """
             This collector does the following:
@@ -373,18 +494,6 @@ class MultiTestSuite(object):
                from the previously executed runner function
             """
             cls = self.obj
-
-            # Decorator function to add extra lookup information for the test functions
-            def set_marks(marks):
-                def spec_impl(func):
-                    @functools.wraps(func)
-                    def inner(*args, **argv):
-                        return func(*args, **argv)
-
-                    inner.marks = marks
-                    return inner
-
-                return spec_impl
 
             # Retrieve the test classes.
             single_tests = self.obj.get_single_tests()
@@ -410,35 +519,7 @@ class MultiTestSuite(object):
             # Add the single tests, these will run separately
             for test_spec in single_tests:
                 name = test_spec.__name__
-
-                def make_single_run(inner_test_spec):
-                    @set_marks({"run_type": "run_single"})
-                    def single_run(self, request, workspace, collected_test_data, launcher_platform):
-                        # only single tests are allowed to have setup/teardown, however we can have shared tests that
-                        # were explicitly set as single, for example via cmdline argument override
-                        is_single_test = issubclass(inner_test_spec, SingleTest)
-                        if is_single_test:
-                            # Setup step for wrap_run
-                            wrap = inner_test_spec.wrap_run(
-                                self, request, workspace, collected_test_data)
-                            if not isinstance(wrap, types.GeneratorType):
-                                raise EditorToolsFrameworkException("wrap_run must return a generator, did you forget 'yield'?")
-                            next(wrap, None)
-                            # Setup step
-                            inner_test_spec.setup(
-                                self, request, workspace)
-                        # Run
-                        self._run_single_test(request, workspace, collected_test_data, inner_test_spec)
-                        if is_single_test:
-                            # Teardown
-                            inner_test_spec.teardown(
-                                self, request, workspace, collected_test_data)
-                            # Teardown step for wrap_run
-                            next(wrap, None)
-
-                    return single_run
-
-                single_run_test = make_single_run(test_spec)
+                single_run_test = MultiTestSuite.MultiTestCollector._make_single_run(test_spec)
                 if hasattr(test_spec, "pytestmark"):
                     single_run_test.pytestmark = test_spec.pytestmark
                 setattr(self.obj, name, single_run_test)
@@ -446,51 +527,14 @@ class MultiTestSuite(object):
             # Add the shared tests, with a runner class for storing information from each shared run
             runners = []
 
-            def create_runner(runner_name, function, tests):
-                target_runner = MultiTestSuite.Runner(runner_name, function, tests)
+            runners.append(self._create_runner("run_batched_tests", cls._run_batched_tests, batched_tests, cls))
+            runners.append(self._create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests, cls))
+            runners.append(self._create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests,
+                                               parallel_batched_tests, cls))
 
-                def make_shared_run():
-                    @set_marks({"runner": target_runner, "run_type": "run_shared"})
-                    def shared_run(self, request, workspace, collected_test_data, launcher_platform):
-                        getattr(self, function.__name__)(
-                            request, workspace, collected_test_data, target_runner.tests)
-
-                    return shared_run
-
-                setattr(self.obj, runner_name, make_shared_run())
-
-                # Add the shared tests results, which succeed/fail based what happened on the Runner.
-                for shared_test_spec in tests:
-                    def make_results_run(inner_test_spec):
-                        @set_marks({"runner": target_runner, "test_spec": inner_test_spec, "run_type": "result"})
-                        def result(self, request, workspace, collected_test_data, launcher_platform):
-                            result_key = inner_test_spec.__name__
-                            # The runner must have filled the collected_test_data.results dict fixture for this test.
-                            # Hitting this assert could mean if there was an error executing the runner
-                            if result_key not in collected_test_data.results:
-                                raise TestResultException(f"No results found for {result_key}. "
-                                                          f"Test may not have ran due to the executable "
-                                                          f"shutting down. Check for issues in previous "
-                                                          f"tests.")
-                            cls._report_result(result_key, collected_test_data.results[result_key])
-
-                        return result
-                    result_func = make_results_run(shared_test_spec)
-                    if hasattr(shared_test_spec, "pytestmark"):
-                        result_func.pytestmark = shared_test_spec.pytestmark
-                    setattr(self.obj, shared_test_spec.__name__, result_func)
-                runners.append(target_runner)
-
-            create_runner("run_batched_tests", cls._run_batched_tests, batched_tests)
-            create_runner("run_parallel_tests", cls._run_parallel_tests, parallel_tests)
-            create_runner("run_parallel_batched_tests", cls._run_parallel_batched_tests, parallel_batched_tests)
-
-            # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
-            pytest_class_instance = super().collect()[0]
-
-            # Override the istestfunction for the object, with this we make sure that the
-            # runners are always collected, even if they don't follow the "test_" naming
-            original_istestfunction = pytest_class_instance.istestfunction
+            # Override istestfunction for our own object, to collect runners even if they don't follow "test_" naming
+            # avoid declaring istestfunction on the class, so it only exists now after initial pytest collect() has run
+            original_istestfunction = self.istestfunction
 
             def istestfunction(self, obj, name):
                 ret = original_istestfunction(obj, name)
@@ -498,14 +542,15 @@ class MultiTestSuite(object):
                     ret = hasattr(obj, "marks")
                 return ret
 
-            pytest_class_instance.istestfunction = types.MethodType(istestfunction, pytest_class_instance)
-            collection = pytest_class_instance.collect()
+            self.istestfunction = types.MethodType(istestfunction, self)
 
-            def get_func_run_type(function):
-                return getattr(function, "marks", {}).setdefault("run_type", None)
-
-            collected_run_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "run_shared"]
-            collected_result_pytestfuncs = [item for item in collection if get_func_run_type(item.obj) == "result"]
+            # Now that we have added the functions to the class, have pytest retrieve all the tests the class contains
+            collection = super().collect()
+            collected_run_pytestfuncs = [item for item in collection if
+                                         # Gets function run type
+                                         getattr(item.obj, "marks", {}).setdefault("run_type", None) == "run_shared"]
+            collected_result_pytestfuncs = [item for item in collection if
+                                            getattr(item.obj, "marks", {}).setdefault("run_type", None) == "result"]
             # We'll remove and store the runner functions for later, this way they won't be deselected by any
             # filtering mechanism. This collection process helps us determine which subset of tests to run.
             collection = [item for item in collection if item not in collected_run_pytestfuncs]
@@ -686,6 +731,79 @@ class MultiTestSuite(object):
                 and
                 getattr(test, "is_parallelizable", None) is is_parallelizable)]
 
+    def _setup_test(self, workspace, collected_test_data):
+        """
+        Sets up for a multi test run. This is responsible for finding executables and
+        handles asset processor.
+        :param workspace: The LyTestTools Workspace object
+        :param collected_test_data: The TestData from calling collected_test_data()
+        :return: None
+        """
+        # Set the self.executable program for Launcher and re-bind our param workspace to it.
+        if self.atom_tools_executable_name:  # Atom Tools test.
+            self.executable = launcher_helper.create_atom_tools_launcher(workspace, self.atom_tools_executable_name)
+        else:  # Editor test.
+            self.executable = launcher_helper.create_editor(workspace)
+        self.executable.workspace = workspace
+
+        # Setup AP, kill processes, and configure the executable.
+        editor_utils.prepare_asset_processor(workspace, collected_test_data)
+        editor_utils.kill_all_ly_processes(include_asset_processor=False)
+        self.executable.configure_settings()
+
+    def _test_reporting(self, collected_test_data, results, workspace, test_spec):
+        """
+        Handles reportings and unknown test results after test runs.
+        :param collected_test_data: The TestData from calling collected_test_data()
+        :param results: A list of dicts of Result objects
+        :param workspace: The LyTestTools Workspace object
+        :param test_spec: The test class that should be a subclass of SingleTest
+        """
+        save_asset_logs = False
+
+        for result in results:
+            if result is None:
+                logger.error("Unexpectedly found no test run in the executable log")
+                logger.debug(f"Debug Results:\n{results}")
+                result = {"Unknown":
+                            Result.Unknown(
+                                test_spec=test_spec,
+                                extra_info="Unexpectedly found no test run information on stdout in the executable log")}
+            collected_test_data.results.update(result)
+            if not isinstance(result, Result.Pass):
+                if isinstance(test_spec, BatchedTest):
+                    editor_utils.save_failed_asset_joblogs(workspace)
+                    return  # exit early on first batch failure
+                save_asset_logs = True
+        # If at least one test did not pass, save assets with errors and warnings
+        if save_asset_logs:
+            editor_utils.save_failed_asset_joblogs(workspace)
+
+    def _setup_cmdline_args(self, cmdline_args, executable, test_spec_list, workspace):
+        """
+        Prepares a list of command line arguments to pass when calling the executable during a test.
+        :param cmdline_args: Any additional command line args
+        :param executable: The program executable under test
+        :param test_spec_list: A list of test classes to run in the same executable
+        :return: A list of additional command line arguments
+        """
+        if cmdline_args is None:
+            cmdline_args = []
+        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
+        if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
+            test_cmdline_args += [
+                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
+                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}",
+                "--log_IncludeTime=1"
+            ]
+        if self.use_null_renderer:
+            test_cmdline_args += ["-rhi=null"]
+        if any([t.attach_debugger for t in test_spec_list]):
+            test_cmdline_args += ["--attach-debugger"]
+        if any([t.wait_for_debugger for t in test_spec_list]):
+            test_cmdline_args += ["--wait-for-debugger"]
+        return test_cmdline_args
+
     ###################
     # SingleTest Code #
     ###################
@@ -704,27 +822,20 @@ class MultiTestSuite(object):
         :param test_spec: The test class that should be a subclass of SingleTest
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
-
+        self._setup_test(workspace, collected_test_data)
+        
         # Handle command line args and launch test.
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
         result = self._exec_single_test(
-            request, workspace, self.executable, 1, self._log_name, test_spec, extra_cmdline_args)
+            request, workspace, self.executable, 1, self.log_name, test_spec, extra_cmdline_args)
         if result is None:
-            logger.error(f"Unexpectedly found no test run in the {self._log_name} during {test_spec}")
+            logger.error(f"Unexpectedly found no test run in the {self.log_name} during {test_spec}")
             result = {"Unknown":
                       Result.Unknown(
                           test_spec=test_spec,
-                          extra_info=f"Unexpectedly found no test run information on stdout in the {self._log_name}")}
+                          extra_info=f"Unexpectedly found no test run information on stdout in the {self.log_name}")}
         collected_test_data.results.update(result)
         test_name, test_result = next(iter(result.items()))
         self._report_result(test_name, test_result)
@@ -752,21 +863,7 @@ class MultiTestSuite(object):
         :param cmdline_args: Any additional command line args
         :return: a dictionary of Result objects (should be only one) with a given Result.ResultType (i.e. Result.Pass).
         """
-        if cmdline_args is None:
-            cmdline_args = []
-        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        if type(executable) in [WinEditor, LinuxEditor]:  # Handle Editor CLI args since we need workspace context to populate them.
-            test_cmdline_args += [
-                "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-                f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-
-        test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
-        if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
-            test_cmdline_args += ["-rhi=null"]
-        if test_spec.attach_debugger:
-            test_cmdline_args += ["--attach-debugger"]
-        if test_spec.wait_for_debugger:
-            test_cmdline_args += ["--wait-for-debugger"]
+        test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, [test_spec], workspace)
 
         # Cycle any old crash report in case it wasn't cycled properly.
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -787,9 +884,9 @@ class MultiTestSuite(object):
                        f"-pythontestcase={test_case_name}",
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-            log_path_function = editor_utils.retrieve_material_editor_log_path
-            log_content_function = editor_utils.retrieve_material_editor_log_content
+        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
+            log_path_function = editor_utils.atom_tools_log_path
+            log_content_function = editor_utils.retrieve_non_editor_log_content
             cmdline = ["-runpythontest", test_filename,
                        "-logfile", os.path.join(log_path_function(run_id, workspace), log_name)] + test_cmdline_args
         executable.args.extend(cmdline)
@@ -801,8 +898,15 @@ class MultiTestSuite(object):
             return_code = executable.get_returncode()
             executable_log_content = log_content_function(run_id, log_name, workspace)
             # Save the executable log.
+            workspace.artifact_manager.set_dest_path(request.node.originalname)
             workspace.artifact_manager.save_artifact(
                 os.path.join(log_path_function(run_id, workspace), log_name), f'({run_id}){log_name}')
+            server_log_name = os.path.join(workspace.paths.project_log(), 'Server.log')
+            game_log_name = os.path.join(workspace.paths.project_log(), 'Game.log')
+            if os.path.exists(server_log_name) and os.path.getsize(server_log_name):
+                workspace.artifact_manager.save_artifact(server_log_name)
+            if os.path.exists(game_log_name) and os.path.getsize(game_log_name):
+                workspace.artifact_manager.save_artifact(game_log_name)
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, executable_log_content)
             else:
@@ -855,32 +959,16 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
+        if not test_spec_list:
+            return        
+        self._setup_test(workspace, collected_test_data)
 
         if extra_cmdline_args is None:
             extra_cmdline_args = []
 
-        if not test_spec_list:
-            return
-
         results = self._exec_multitest(
-            request, workspace, self.executable, 1, self._log_name, test_spec_list, extra_cmdline_args)
-        collected_test_data.results.update(results)
-        # If at least one test did not pass, save assets with errors and warnings
-        for result in results:
-            if result is None:
-                logger.error("Unexpectedly found no test run in the executable log during BatchedTest")
-                logger.debug(f"Results from BatchedTest:\n{results}")
-            if not isinstance(result, Result.Pass):
-                editor_utils.save_failed_asset_joblogs(workspace)
-                return  # exit early on first batch failure
+            request, workspace, self.executable, 1, self.log_name, test_spec_list, extra_cmdline_args)
+        self._test_reporting(collected_test_data, [results], workspace, BatchedTest)
 
     #####################
     # ParallelTest Code #
@@ -902,20 +990,12 @@ class MultiTestSuite(object):
         :param extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
+        if not test_spec_list:
+            return   
+        self._setup_test(workspace, collected_test_data)
 
         if extra_cmdline_args is None:
             extra_cmdline_args = []
-
-        if not test_spec_list:
-            return
 
         parallel_executables = self._get_number_parallel_executables(request)
         if not parallel_executables > 0:
@@ -932,11 +1012,17 @@ class MultiTestSuite(object):
             for i in range(total_threads):
                 def make_parallel_test_func(test_spec, index, current_executable):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_single_test(
-                            request, workspace, current_executable, index + 1, self._log_name, test_spec, extra_cmdline_args)
-                        if results is None:
-                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
-                                                                f"{self._log_name} and test is {str(test_spec)}")
+                        try:
+                            results = self._exec_single_test(
+                                request, workspace, current_executable, index + 1, self.log_name, test_spec,
+                                extra_cmdline_args)
+                        except Exception as e:
+                            logger.warning(f"Found exception trying to run Editor tests. Current log name is "
+                                           f"{self.log_name} and test is {str(test_spec)}")
+                            raise e
+                        if not results:
+                            raise EditorToolsFrameworkException(f"Results not found. Current log name is "
+                                                                f"{self.log_name} and test name is {str(test_spec)}")
                         results_per_thread[index] = results
                     return run
 
@@ -951,22 +1037,7 @@ class MultiTestSuite(object):
             for parallel_test_thread in threads:
                 parallel_test_thread.join()
 
-            save_asset_logs = False
-
-            for result in results_per_thread:
-                if result is None:
-                    logger.error("Unexpectedly found no test run in the executable log during ParallelTest")
-                    logger.debug(f"Results from ParallelTest thread:\n{results_per_thread}")
-                    result = {"Unknown":
-                              Result.Unknown(
-                                  test_spec=ParallelTest,
-                                  extra_info="Unexpectedly found no test run information on stdout in the executable log")}
-                collected_test_data.results.update(result)
-                if not isinstance(result, Result.Pass):
-                    save_asset_logs = True
-            # If at least one test did not pass, save assets with errors and warnings
-            if save_asset_logs:
-                editor_utils.save_failed_asset_joblogs(workspace)
+            self._test_reporting(collected_test_data, results_per_thread, workspace, ParallelTest)
 
     ###################
     # SharedTest Code #
@@ -988,20 +1059,12 @@ class MultiTestSuite(object):
         :extra_cmdline_args: Any extra command line args in a list
         :return: None
         """
-        # Set the self.executable program for Launcher ad re-bind our param workspace to it.
-        self.executable = self._executable_function(workspace)
-        self.executable.workspace = workspace
-
-        # Setup AP, kill processes, and configure the executable.
-        editor_utils.prepare_asset_processor(workspace, collected_test_data)
-        editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        self.executable.configure_settings()
+        if not test_spec_list:
+            return        
+        self._setup_test(workspace, collected_test_data)
 
         if extra_cmdline_args is None:
             extra_cmdline_args = []
-
-        if not test_spec_list:
-            return
 
         total_threads = self._get_number_parallel_executables(request)
         if not total_threads > 0:
@@ -1018,12 +1081,17 @@ class MultiTestSuite(object):
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_executable) > 0:
-                        results = self._exec_multitest(
-                            request, workspace, current_executable, index + 1, self._log_name,
-                            test_spec_list_for_executable, extra_cmdline_args)
-                        if results is None:
-                            raise EditorToolsFrameworkException(f"Results were None. Current log name is "
-                                                                f"{self._log_name} and tests are "
+                        try:
+                            results = self._exec_multitest(
+                                request, workspace, current_executable, index + 1, self.log_name,
+                                test_spec_list_for_executable, extra_cmdline_args)
+                        except Exception as e:
+                            logger.warning(f"Found exception trying to run Editor tests. Current log name is "
+                                           f"{self.log_name} and tests are {str(test_spec_list_for_executable)}")
+                            raise e
+                        if not results:
+                            raise EditorToolsFrameworkException(f"Results not found. Current log name is "
+                                                                f"{self.log_name} and tests are "
                                                                 f"{str(test_spec_list_for_executable)}")
                     else:
                         results = {}
@@ -1041,21 +1109,7 @@ class MultiTestSuite(object):
         for shared_test_thread in threads:
             shared_test_thread.join()
 
-        save_asset_logs = False
-        for result in results_per_thread:
-            if result is None:
-                logger.error("Unexpectedly found no test run in the executable log during SharedTest")
-                logger.debug(f"Results from SharedTest thread:\n{results_per_thread}")
-                result = {"Unknown":
-                          Result.Unknown(
-                              test_spec=SharedTest,
-                              extra_info="Unexpectedly found no test run information on stdout in the executable log")}
-            collected_test_data.results.update(result)
-            if not isinstance(result, Result.Pass):
-                save_asset_logs = True
-        # If at least one test did not pass, save assets with errors and warnings
-        if save_asset_logs:
-            editor_utils.save_failed_asset_joblogs(workspace)
+        self._test_reporting(collected_test_data, results_per_thread, workspace, SharedTest)
 
     def _exec_multitest(self,
                         request: _pytest.fixtures.FixtureRequest,
@@ -1077,19 +1131,7 @@ class MultiTestSuite(object):
         :param cmdline_args: Any additional command line args
         :return: A dict of Result objects
         """
-        if cmdline_args is None:
-            cmdline_args = []
-        test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        test_cmdline_args += [
-            "--regset=/Amazon/Preferences/EnablePrefabSystem=true",
-            f"--regset-file={os.path.join(workspace.paths.engine_root(), 'Registry', 'prefab.test.setreg')}"]
-
-        if self.use_null_renderer:
-            test_cmdline_args += ["-rhi=null"]
-        if any([t.attach_debugger for t in test_spec_list]):
-            test_cmdline_args += ["--attach-debugger"]
-        if any([t.wait_for_debugger for t in test_spec_list]):
-            test_cmdline_args += ["--wait-for-debugger"]
+        test_cmdline_args = self._setup_cmdline_args(cmdline_args, executable, test_spec_list, workspace)
 
         # Cycle any old crash report in case it wasn't cycled properly
         editor_utils.cycle_crash_report(run_id, workspace)
@@ -1138,10 +1180,10 @@ class MultiTestSuite(object):
                        "-pythontestcase", temp_batched_case_file.name,
                        "-logfile", f"@log@/{log_name}",
                        "-project-log-path", log_path_function(run_id, workspace)] + test_cmdline_args
-        # MaterialEditor
-        elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-            log_path_function = editor_utils.retrieve_material_editor_log_path
-            log_content_function = editor_utils.retrieve_material_editor_log_content
+        # Atom Tools application
+        elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
+            log_path_function = editor_utils.atom_tools_log_path
+            log_content_function = editor_utils.retrieve_non_editor_log_content
             test_filenames_str = ";".join(
                 editor_utils.get_testcase_module_filepath(test_spec.test_module) for test_spec in test_spec_list)
             cmdline = ["-runpythontest", test_filenames_str,
@@ -1160,11 +1202,7 @@ class MultiTestSuite(object):
             try:
                 full_log_name = f'({run_id}){log_name}'
                 path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
-                if type(executable) in [WinEditor, LinuxEditor]:
-                    destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
-                    editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
-                elif type(executable) in [WinMaterialEditor, LinuxMaterialEditor]:
-                    workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test
@@ -1179,8 +1217,10 @@ class MultiTestSuite(object):
                 # If it didn't then it will have "Unknown" as the type of result.
                 results = self._get_results_using_output(test_spec_list, output, executable_log_content)
                 if not len(results) == len(test_spec_list):
-                    raise EditorToolsFrameworkException("bug in get_results_using_output(), the number of results "
-                                                        "don't match the tests ran")
+                    logger.debug(f"\nList of Results: {results}\n"
+                                 f"Test Spec List: {test_spec_list}\n")
+                    raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
+                                                        "don't match the number of tests that ran.")
 
                 # If the executable crashed, find out in which test it happened and update the results.
                 has_crashed = return_code != self._test_fail_retcode
@@ -1219,7 +1259,7 @@ class MultiTestSuite(object):
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._timeout_crash_log)
                         editor_utils.cycle_crash_report(run_id, workspace)
                         results[test_spec_name] = Result.Crash(
-                            crashed_result.test_spec, output, return_code, crash_error, crashed_result.log_output)
+                            result.test_spec, output, return_code, crash_error, result.log_output)
         except WaitTimeoutError:
             executable.stop()
             output = executable.get_output()
@@ -1228,8 +1268,10 @@ class MultiTestSuite(object):
             # The executable timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, executable_log_content)
             if not len(results) == len(test_spec_list):
-                raise EditorToolsFrameworkException("bug in _get_results_using_output(), the number of results "
-                                                    "don't match the tests ran")
+                logger.debug(f"\nList of Results: {results}\n"
+                             f"Test Spec List: {test_spec_list}\n")
+                raise EditorToolsFrameworkException("Error when retrieving test results, the number of results "
+                                                    "don't match the number of tests that ran.")
 
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None

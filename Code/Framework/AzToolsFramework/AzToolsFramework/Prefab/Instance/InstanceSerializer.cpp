@@ -21,7 +21,7 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonInstanceSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonInstanceSerializer, AZ::SystemAllocator);
 
         namespace Internal
         {

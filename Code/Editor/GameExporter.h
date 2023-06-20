@@ -83,8 +83,6 @@ private:
     void ExportLevelData(const QString& path, bool bExportMission = true);
     void ExportLevelInfo(const QString& path);
 
-    void ExportOcclusionMesh(const char* pszGamePath);
-
     void ExportLevelResourceList(const QString& path);
     void ExportLevelUsedResourceList(const QString& path);
     void ExportFileList(const QString& path, const QString& levelName);
@@ -101,14 +99,3 @@ private:
 
     static CGameExporter* m_pCurrentExporter;
 };
-
-// Helper to setup terrain info.
-template<typename Func>
-void SetupTerrainInfo(const size_t octreeCompiledDataSize, Func&& setupTerrainFn)
-{
-    // only setup the terrain if we know space has been allocated for the octree
-    if (octreeCompiledDataSize > 0)
-    {
-        setupTerrainFn(octreeCompiledDataSize);
-    }
-}

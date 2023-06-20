@@ -10,7 +10,7 @@ Generated from O3DE PythonToolGem Template"""
 
 import az_qt_helpers
 import azlmbr.editor as editor
-from ${NameLower}_dialog import ${SanitizedCppName}Dialog
+from ${SanitizedNameLower}_dialog import ${SanitizedCppName}Dialog
 
 if __name__ == "__main__":
     print("${SanitizedCppName}.boostrap, Generated from O3DE PythonToolGem Template")

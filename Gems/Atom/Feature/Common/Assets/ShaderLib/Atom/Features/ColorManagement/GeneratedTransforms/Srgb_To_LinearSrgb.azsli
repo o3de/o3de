@@ -8,8 +8,8 @@
 
 #pragma once
 
-float3 Srgb_To_LinearSrgb(float3 color)
+real3 Srgb_To_LinearSrgb(real3 color)
 {
     // Copied from CryFx's ToAccurateLinear()
-    return (color.xyz < 0.04045h) ? color.xyz / 12.92h : pow((color.xyz + float3(0.055h, 0.055h, 0.055h)) / float3(1.055h, 1.055h, 1.055h), 2.4h);
+    return (color.xyz < 0.04045) ? color.xyz / 12.92h : pow((color.xyz + real3(0.055, 0.055, 0.055)) / real3(1.055, 1.055, 1.055), 2.4);
 }

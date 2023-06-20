@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Source/Nodes/Nodeables/IfNetRoleNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Class Name="IfNetRoleNodeable"
+           QualifiedName="ScriptCanvasMultiplayer::IfNetRoleNodeable"
+           PreferredClassName="If Entity Multiplayer Role"
+           Category="Multiplayer"
+           Description="An execution flow gate that continues to the path based on the network role of a given entity.">
+
+        <Input Name="In" Description="In" DisplayGroup="In">
+            <Parameter Name="Multiplayer Entity" Type="AZ::EntityId" Description="An entity with Net Bind component" DisplayGroup="In" />
+
+            <Branch Name="If Client Role" Description="An entity with a client role is not controlled by player and only exists on a client" DisplayGroup="In" />
+            <Branch Name="If Autonomous Role" Description="An entity with an autonomous role is controlled by the local player and exists on a client" DisplayGroup="In" />
+            <Branch Name="If Authority Role" Description="An entity with an authority role is owned by a server and exists on the server" DisplayGroup="In" />
+            <Branch Name="If Server Role" Description="An entity with a server role is a view of an entity that is controlled by another server" DisplayGroup="In" />
+            <Branch Name="If Invalid Role" Description="A non-multiplayer entity, that is either missing NetBindComponent or the application is not in a multiplayer mode" DisplayGroup="In" />
+        </Input>
+    </Class>
+</ScriptCanvas>

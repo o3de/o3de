@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
@@ -13,7 +14,7 @@
 
 namespace AzToolsFramework::Components
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonEditorEntitySortComponentSerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonEditorEntitySortComponentSerializer, AZ::SystemAllocator);
 
     AZ::JsonSerializationResult::Result JsonEditorEntitySortComponentSerializer::Load(
         void* outputValue,
@@ -122,9 +123,34 @@ namespace AzToolsFramework::Components
             const EntityOrderArray* defaultChildEntityOrderArray =
                 defaultsortComponentInstance ? &defaultsortComponentInstance->m_childEntityOrderArray : nullptr;
 
+
+            // Since sort order component on an entity stores a vector of child entityIds in it,
+            // it's possible for the vector to contain stale entityIds if a discrepancy occurs
+            // between existing children and the child entityId vector. This is acceptable, so we
+            // skip warning on unknown entityIds when serializing.
+            // An example of having a stale entityId can be seen when using prefab overrides.
+            // When an entity is added/removed as a prefab override, two separate overrides are
+            // generated, one referencing the child and the other referencing the parent.
+            // Reverting prefab overrides only affects one entity at a time, so reverting overrides on
+            // a parent whose child was deleted as an override would cause the deleted child's entityId
+            // to be added back to the parent's child order array
+            AZ::JsonEntityIdSerializer::JsonEntityIdMapper** idMapper =
+                context.GetMetadata().Find<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>();
+            bool prevAcceptUnregisteredEntity = false;
+            if (idMapper && *idMapper)
+            {
+                prevAcceptUnregisteredEntity = (*idMapper)->GetAcceptUnregisteredEntity();
+                (*idMapper)->SetAcceptUnregisteredEntity(true);
+            }
+
             JSR::ResultCode resultParentEntityId = ContinueStoringToJsonObjectField(
                 outputValue, "Child Entity Order", childEntityOrderArray, defaultChildEntityOrderArray,
                 azrtti_typeid<decltype(sortComponentInstance->m_childEntityOrderArray)>(), context);
+
+            if (idMapper && *idMapper)
+            {
+                (*idMapper)->SetAcceptUnregisteredEntity(prevAcceptUnregisteredEntity);
+            }
 
             result.Combine(resultParentEntityId);
         }

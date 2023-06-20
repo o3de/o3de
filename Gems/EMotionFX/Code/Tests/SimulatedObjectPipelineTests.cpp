@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <Tests/InitSceneAPIFixture.h>
 
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
@@ -30,7 +29,6 @@
 namespace EMotionFX
 {
     using ActorCanSaveSimulatedObjectSetupFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,

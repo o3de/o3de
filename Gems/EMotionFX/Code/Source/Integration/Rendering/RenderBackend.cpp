@@ -14,6 +14,6 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(RenderBackend, EMotionFXAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(RenderBackend, EMotionFXAllocator);
     } // namespace Integration
 } // namespace EMotionFX

@@ -13,7 +13,8 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
-#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
@@ -26,12 +27,13 @@ namespace AtomToolsFramework
 {
     AssetSelectionGrid::AssetSelectionGrid(
         const QString& title,
-        const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
+        const FilterFn& filterFn,
         const QSize& tileSize,
         QWidget* parent)
         : QDialog(parent)
         , m_tileSize(tileSize)
         , m_ui(new Ui::AssetSelectionGrid)
+        , m_filterFn(filterFn)
     {
         m_ui->setupUi(this);
 
@@ -44,8 +46,6 @@ namespace AtomToolsFramework
         SetupDialogButtons();
         setModal(true);
 
-        SetFilterCallback(filterCallback);
-
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
 
@@ -54,118 +54,82 @@ namespace AtomToolsFramework
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
     }
 
-    void AssetSelectionGrid::Reset()
+    void AssetSelectionGrid::Clear()
     {
         m_ui->m_assetList->clear();
+    }
 
-        if (m_filterCallback)
+    void AssetSelectionGrid::Populate()
+    {
+        Clear();
+
+        for (const auto& path : GetPathsInSourceFoldersMatchingFilter(m_filterFn))
         {
-            AZ::Data::AssetCatalogRequests::AssetEnumerationCB enumerateCB =
-                [&]([[maybe_unused]] const AZ::Data::AssetId id, const AZ::Data::AssetInfo& assetInfo)
-            {
-                if (m_filterCallback(assetInfo))
-                {
-                    const AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                    const AZStd::string displayName = GetDisplayNameFromPath(path);
-                    CreateListItem(assetInfo.m_assetId, displayName.c_str());
-                }
-            };
-
-            AZ::Data::AssetCatalogRequestBus::Broadcast(
-                &AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, enumerateCB, nullptr);
+            AddPath(path);
         }
 
         m_ui->m_assetList->sortItems();
         m_ui->m_assetList->setCurrentItem(0);
     }
 
-    void AssetSelectionGrid::SetFilterCallback(const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback)
+    void AssetSelectionGrid::SetFilter(const FilterFn& filterFn)
     {
-        m_filterCallback = filterCallback;
-        Reset();
+        m_filterFn = filterFn;
     }
 
-    void AssetSelectionGrid::SelectAsset(const AZ::Data::AssetId& assetId)
+    const AssetSelectionGrid::FilterFn& AssetSelectionGrid::GetFilter() const
     {
-        const QVariant assetIdItemData(assetId.ToFixedString().c_str());
+        return m_filterFn;
+    }
+
+    void AssetSelectionGrid::AddPath(const AZStd::string& path)
+    {
+        if(m_filterFn && !m_filterFn(path))
+        {
+            return;
+        }
+
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const auto& pathWithoutAlias = GetPathWithoutAlias(path);
+        if (!QFileInfo::exists(pathWithoutAlias.c_str()))
+        {
+            return;
+        }
+
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        const QString title(GetDisplayNameFromPath(pathWithAlias).c_str());
+
+        // Skip creating this list item if one with the same path is already registered
         for (int i = 0; i < m_ui->m_assetList->count(); ++i)
         {
             QListWidgetItem* item = m_ui->m_assetList->item(i);
-            if (assetIdItemData == item->data(Qt::UserRole))
+            if (pathItemData == item->data(Qt::UserRole))
             {
-                m_ui->m_assetList->setCurrentItem(item);
                 return;
-
             }
         }
-    }
 
-    AZ::Data::AssetId AssetSelectionGrid::GetSelectedAsset() const
-    {
-        auto item = m_ui->m_assetList->currentItem();
-        return item ? AZ::Data::AssetId::CreateString(item->data(Qt::UserRole).toString().toUtf8().constData()) : AZ::Data::AssetId();
-    }
-
-    AZStd::string AssetSelectionGrid::GetSelectedAssetSourcePath() const
-    {
-        return AZ::RPI::AssetUtils::GetSourcePathByAssetId(GetSelectedAsset());
-    }
-
-    AZStd::string AssetSelectionGrid::GetSelectedAssetProductPath() const
-    {
-        return AZ::RPI::AssetUtils::GetProductPathByAssetId(GetSelectedAsset());
-    }
-
-    void AssetSelectionGrid::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
-    {
-        AZ::Data::AssetCatalogRequestBus::Broadcast(
-            [this, assetId](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
-            {
-                AZ::Data::AssetInfo assetInfo = assetCatalogRequests->GetAssetInfoById(assetId);
-                if (m_filterCallback && m_filterCallback(assetInfo))
-                {
-                    const AZStd::string path = AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetInfo.m_assetId);
-                    const AZStd::string displayName = GetDisplayNameFromPath(path);
-                    CreateListItem(assetInfo.m_assetId, displayName.c_str());
-                }
-                m_ui->m_assetList->sortItems();
-            });
-    }
-
-    void AssetSelectionGrid::OnCatalogAssetRemoved(
-        [[maybe_unused]] const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo)
-    {
-        if (m_filterCallback && m_filterCallback(assetInfo))
+        // Compare the item title against all other items and append a suffix until the new title is unique
+        QString uniqueTitle = title;
+        int uniqueTitleSuffix = 0;
+        bool uniqueTitleFound = true;
+        while (uniqueTitleFound)
         {
-            const QVariant assetIdItemData(assetInfo.m_assetId.ToFixedString().c_str());
+            uniqueTitleFound = false;
             for (int i = 0; i < m_ui->m_assetList->count(); ++i)
             {
                 QListWidgetItem* item = m_ui->m_assetList->item(i);
-                if (assetIdItemData == item->data(Qt::UserRole))
+                if (uniqueTitle == item->data(Qt::DisplayRole))
                 {
-                    m_ui->m_assetList->removeItemWidget(item);
-                    return;
+                    uniqueTitle = title + QString(" (%1)").arg(++uniqueTitleSuffix);
+                    uniqueTitleFound = true;
+                    break;
                 }
-            }
-        }
-    }
-
-    QListWidgetItem* AssetSelectionGrid::CreateListItem(const AZ::Data::AssetId& assetId, const QString& title)
-    {
-        // Skip creating this list item if one with the same asset ID is already registered
-        const QVariant assetIdItemData(assetId.ToFixedString().c_str());
-        for (int i = 0; i < m_ui->m_assetList->count(); ++i)
-        {
-            QListWidgetItem* item = m_ui->m_assetList->item(i);
-            if (assetIdItemData == item->data(Qt::UserRole))
-            {
-                return item;
             }
         }
 
         const int itemBorder =
-            aznumeric_cast<int>(
-            AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemBorder", 4));
+            aznumeric_cast<int>(AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemBorder", 4));
         const int itemSpacing = aznumeric_cast<int>(
             AtomToolsFramework::GetSettingsValue<AZ::u64>("/O3DE/AtomToolsFramework/AssetSelectionGrid/ItemSpacing", 10));
         const int headerHeight = aznumeric_cast<int>(
@@ -177,8 +141,9 @@ namespace AtomToolsFramework
             AZStd::max(gridSize.height(), m_tileSize.height() + itemSpacing + headerHeight)));
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_assetList);
-        item->setData(Qt::DisplayRole, title);
-        item->setData(Qt::UserRole, assetIdItemData);
+        item->setData(Qt::DisplayRole, uniqueTitle);
+        item->setData(Qt::UserRole, pathItemData);
+        item->setData(Qt::ToolTipRole, pathWithoutAlias.c_str());
         item->setSizeHint(m_tileSize + QSize(itemBorder, itemBorder + headerHeight));
         m_ui->m_assetList->addItem(item);
 
@@ -188,7 +153,7 @@ namespace AtomToolsFramework
         itemWidget->layout()->setMargin(0);
 
         AzQtComponents::ElidingLabel* header = new AzQtComponents::ElidingLabel(itemWidget);
-        header->setText(title);
+        header->setText(uniqueTitle);
         header->setFixedSize(QSize(m_tileSize.width(), headerHeight));
         header->setMargin(0);
         header->setStyleSheet("background-color: rgb(35, 35, 35)");
@@ -196,15 +161,66 @@ namespace AtomToolsFramework
         AzQtComponents::Text::addLabelStyle(header);
         itemWidget->layout()->addWidget(header);
 
+        bool result = false;
+        AZ::Data::AssetInfo assetInfo;
+        AZStd::string watchFolder;
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, pathWithoutAlias.c_str(), assetInfo, watchFolder);
+
         AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(m_tileSize);
-        thumbnail->SetThumbnailKey(MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetId));
+        thumbnail->SetThumbnailKey(MAKE_TKEY(AzToolsFramework::AssetBrowser::SourceThumbnailKey, assetInfo.m_assetId.m_guid));
         thumbnail->updateGeometry();
         itemWidget->layout()->addWidget(thumbnail);
 
         m_ui->m_assetList->setItemWidget(item, itemWidget);
+        m_ui->m_assetList->sortItems();
+    }
 
-        return item;
+    void AssetSelectionGrid::RemovePath(const AZStd::string& path)
+    {
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        for (int i = 0; i < m_ui->m_assetList->count(); ++i)
+        {
+            QListWidgetItem* item = m_ui->m_assetList->item(i);
+            if (pathItemData == item->data(Qt::UserRole))
+            {
+                m_ui->m_assetList->removeItemWidget(item);
+                return;
+            }
+        }
+    }
+
+    void AssetSelectionGrid::SelectPath(const AZStd::string& path)
+    {
+        const auto& pathWithAlias = GetPathWithAlias(path);
+        const QVariant pathItemData(QString::fromUtf8(pathWithAlias.c_str(), static_cast<int>(pathWithAlias.size())));
+        for (int i = 0; i < m_ui->m_assetList->count(); ++i)
+        {
+            QListWidgetItem* item = m_ui->m_assetList->item(i);
+            if (pathItemData == item->data(Qt::UserRole))
+            {
+                m_ui->m_assetList->setCurrentItem(item);
+                return;
+            }
+        }
+    }
+
+    AZStd::string AssetSelectionGrid::GetSelectedPath() const
+    {
+        auto item = m_ui->m_assetList->currentItem();
+        return item ? AZStd::string(item->data(Qt::UserRole).toString().toUtf8().constData()) : AZStd::string();
+    }
+
+    void AssetSelectionGrid::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+    {
+        AddPath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
+    }
+
+    void AssetSelectionGrid::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+    {
+        RemovePath(AZ::RPI::AssetUtils::GetSourcePathByAssetId(assetId));
     }
 
     void AssetSelectionGrid::SetupAssetList()
@@ -214,7 +230,7 @@ namespace AtomToolsFramework
         m_ui->m_assetList->setGridSize(QSize(0, 0));
         m_ui->m_assetList->setWrapping(true);
 
-        QObject::connect(m_ui->m_assetList, &QListWidget::currentItemChanged, [this](){ emit AssetSelected(GetSelectedAsset()); });
+        QObject::connect(m_ui->m_assetList, &QListWidget::currentItemChanged, [this](){ emit PathSelected(GetSelectedPath()); });
     }
 
     void AssetSelectionGrid::SetupSearchWidget()
@@ -230,7 +246,7 @@ namespace AtomToolsFramework
     {
         connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-        connect(this, &QDialog::rejected, this, &AssetSelectionGrid::AssetRejected);
+        connect(this, &QDialog::rejected, this, &AssetSelectionGrid::PathRejected);
     }
 
     void AssetSelectionGrid::ApplySearchFilter()

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <ScriptCanvas/Data/Data.h>
 
 namespace AZ

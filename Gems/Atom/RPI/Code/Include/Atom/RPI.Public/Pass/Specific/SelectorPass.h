@@ -31,7 +31,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(SelectorPass, "{A6BCB7A5-EF09-4863-BC8C-C84655067984}", Pass);
-            AZ_CLASS_ALLOCATOR(SelectorPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SelectorPass, SystemAllocator);
 
             static Ptr<SelectorPass> Create(const PassDescriptor& descriptor);
             ~SelectorPass() = default;

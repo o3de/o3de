@@ -91,7 +91,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(SkinnedMeshOutputStreamAllocation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SkinnedMeshOutputStreamAllocation, AZ::SystemAllocator);
             explicit SkinnedMeshOutputStreamAllocation(RHI::VirtualAddress virtualAddress)
                 : m_virtualAddress(virtualAddress)
             {}

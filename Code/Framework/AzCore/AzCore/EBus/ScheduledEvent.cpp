@@ -115,6 +115,10 @@ namespace AZ
 
     void ScheduledEvent::ClearHandle()
     {
+        if (m_handle)
+        {
+            m_handle->Clear();
+        }
         m_handle = nullptr;
     }
 }

@@ -18,7 +18,7 @@ namespace EMotionFX
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionHandler, PropertyWidgetAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LODTreeSelectionHandler, PropertyWidgetAllocator)
 
             QWidget* LODTreeSelectionHandler::CreateGUI(QWidget* parent)
             {
@@ -26,7 +26,8 @@ namespace EMotionFX
                 connect(instance, &LODTreeSelectionWidget::valueChanged, this,
                     [instance]()
                     {
-                        EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, instance);
+                        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                            &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, instance);
                     });
                 return instance;
             }

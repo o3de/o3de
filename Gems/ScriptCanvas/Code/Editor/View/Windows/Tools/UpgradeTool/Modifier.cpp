@@ -9,8 +9,8 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Modifier.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Core/Graph.h>
 

@@ -338,3 +338,5 @@ namespace AzFramework
     using AssetSystemConnectionNotificationsBus = AZ::EBus<AssetSystem::AssetSystemConnectionNotifications>;
     using AssetSystemStatusBus = AZ::EBus<AssetSystem::AssetSystemStatus>;
 } // namespace AzFramework
+
+DECLARE_EBUS_EXTERN(AzFramework::AssetSystem::AssetSystemRequests);

@@ -13,7 +13,6 @@
 #include <QString>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/conversions.h>
-#include <CryCommon/LegacyAllocator.h>
 #include "Util/EditorUtils.h"
 
 inline AZStd::string ToString(const QString& s)
@@ -94,7 +93,7 @@ public:
             return m_args[i];
         }
     private:
-        AZStd::vector<AZStd::string,AZ::StdLegacyAllocator> m_args;
+        AZStd::vector<AZStd::string> m_args;
         unsigned char m_stringFlags;    // This is needed to quote string parameters when logging a command.
     };
 

@@ -16,6 +16,7 @@ namespace AZ
 {
     namespace RHI
     {
+        //! State of a property that affects the render target attachments in a command list.
         template<class T>
         struct CommandListRenderTargetsState
         {
@@ -31,11 +32,31 @@ namespace AZ
                 return !m_states.empty();
             }
 
+            //! List with the state for each render target.
             StateList m_states;
+            //! Whether the states have already been applied to the command list.
             bool m_isDirty = false;
         };
 
         using CommandListScissorState = CommandListRenderTargetsState<RHI::Scissor>;
         using CommandListViewportState = CommandListRenderTargetsState<RHI::Viewport>;
+
+        //! State of the shading rate of a command list.
+        struct CommandListShadingRateState
+        {
+            void Set(ShadingRate rate, const RHI::ShadingRateCombinators& combinators)
+            {
+                m_shadingRate = rate;
+                m_shadingRateCombinators = combinators;
+                m_isDirty = true;
+            }
+
+            //! Shading rate value
+            ShadingRate m_shadingRate = RHI::ShadingRate::Rate1x1;
+            //! Shading rate combinator operators
+            RHI::ShadingRateCombinators m_shadingRateCombinators = CommandList::DefaultShadingRateCombinators;
+            //! Whether the state has already been applied to the command list.
+            bool m_isDirty = false;
+        };
     }
 }

@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_EnhancedPBR(geoData)
+#define EvaluateSurface EvaluateSurface_EnhancedPBR
 #endif
 
 #include "../StandardPBR/StandardPBR_SurfaceEval.azsli"
@@ -20,9 +20,9 @@
 
 Surface EvaluateSurface_EnhancedPBR(
     float3 positionWS,
-    float3 vertexNormal,
-    float3 tangents[UvSetCount],
-    float3 bitangents[UvSetCount],
+    real3 normalWS,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float2 detailUvs[UvSetCount],
     bool isFrontFace,
@@ -40,31 +40,31 @@ Surface EvaluateSurface_EnhancedPBR(
         detailUvs[MaterialSrg::m_detail_blendMask_uvIndex] : 
         uvs[MaterialSrg::m_detail_blendMask_uvIndex];        
 
-    const float detailLayerBlendFactor = GetDetailLayerBlendFactor(
+    const real detailLayerBlendFactor = GetDetailLayerBlendFactor(
         MaterialSrg::m_detail_blendMask_texture,
         MaterialSrg::m_sampler,
         detailBlendMaskUv,
         o_detail_blendMask_useTexture,
-        MaterialSrg::m_detail_blendFactor);
+        real(MaterialSrg::m_detail_blendFactor));
 
     // ------- Normal -------
     
-    surface.vertexNormal = vertexNormal;
+    surface.vertexNormal = normalWS;
     float2 normalUv = uvs[MaterialSrg::m_normalMapUvIndex];
-    float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
-    float detailLayerNormalFactor = MaterialSrg::m_detail_normal_factor * detailLayerBlendFactor;
+    real3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3()); // By design, only UV0 is allowed to apply transforms.
+    real detailLayerNormalFactor = real(MaterialSrg::m_detail_normal_factor) * detailLayerBlendFactor;
     surface.normal = GetDetailedNormalInputWS(
-        isFrontFace, vertexNormal,
-        tangents[MaterialSrg::m_normalMapUvIndex],      bitangents[MaterialSrg::m_normalMapUvIndex],      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, MaterialSrg::m_normalFactor,  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                      o_normal_useTexture,
-        tangents[MaterialSrg::m_detail_allMapsUvIndex], bitangents[MaterialSrg::m_detail_allMapsUvIndex], MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,      MaterialSrg::m_detail_normal_flipX, MaterialSrg::m_detail_normal_flipY, MaterialSrg::m_detailUvMatrix, o_detail_normal_useTexture);
+        isFrontFace, normalWS,
+        real3(tangents[MaterialSrg::m_normalMapUvIndex]),      real3(bitangents[MaterialSrg::m_normalMapUvIndex]),      MaterialSrg::m_normalMap,             MaterialSrg::m_sampler, normalUv, real(MaterialSrg::m_normalFactor),  MaterialSrg::m_flipNormalX,         MaterialSrg::m_flipNormalY,         uvMatrix,                               o_normal_useTexture,
+        real3(tangents[MaterialSrg::m_detail_allMapsUvIndex]), real3(bitangents[MaterialSrg::m_detail_allMapsUvIndex]), MaterialSrg::m_detail_normal_texture, MaterialSrg::m_sampler, detailUv, detailLayerNormalFactor,           MaterialSrg::m_detail_normal_flipX,  MaterialSrg::m_detail_normal_flipY, real3x3(MaterialSrg::m_detailUvMatrix), o_detail_normal_useTexture);
 
     // ------- Base Color -------
 
-    float detailLayerBaseColorFactor = MaterialSrg::m_detail_baseColor_factor * detailLayerBlendFactor;
+    real detailLayerBaseColorFactor = real(MaterialSrg::m_detail_baseColor_factor) * detailLayerBlendFactor;
     float2 baseColorUv = uvs[MaterialSrg::m_baseColorMapUvIndex];
 
-    float3 baseColor = GetDetailedBaseColorInput(
-        MaterialSrg::m_baseColorMap,             MaterialSrg::m_sampler, baseColorUv, o_baseColor_useTexture,        MaterialSrg::m_baseColor,  MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode,
+    real3 baseColor = GetDetailedBaseColorInput(
+        MaterialSrg::m_baseColorMap,             MaterialSrg::m_sampler, baseColorUv, o_baseColor_useTexture,        real3(MaterialSrg::m_baseColor),  real(MaterialSrg::m_baseColorFactor), o_baseColorTextureBlendMode,
         MaterialSrg::m_detail_baseColor_texture, MaterialSrg::m_sampler, detailUv,    o_detail_baseColor_useTexture, detailLayerBaseColorFactor);
     
     // ------- Parallax Clipping -------
@@ -81,94 +81,94 @@ Surface EvaluateSurface_EnhancedPBR(
 
     // ------- Metallic -------
 
-    float metallic = 0;
+    real metallic = 0;
     if(!o_enableSubsurfaceScattering)   // If subsurface scattering is enabled skip texture lookup for metallic, as this quantity won't be used anyway
     {
         float2 metallicUv = uvs[MaterialSrg::m_metallicMapUvIndex];
-        metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, MaterialSrg::m_metallicFactor, o_metallic_useTexture);
+        metallic = GetMetallicInput(MaterialSrg::m_metallicMap, MaterialSrg::m_sampler, metallicUv, real(MaterialSrg::m_metallicFactor), o_metallic_useTexture);
     }
 
     // ------- Specular -------
 
     float2 specularUv = uvs[MaterialSrg::m_specularF0MapUvIndex];
-    float specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, MaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+    real specularF0Factor = GetSpecularInput(MaterialSrg::m_specularF0Map, MaterialSrg::m_sampler, specularUv, real(MaterialSrg::m_specularF0Factor), o_specularF0_useTexture);
 
     surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
 
     // ------- Roughness -------
 
     float2 roughnessUv = uvs[MaterialSrg::m_roughnessMapUvIndex];
-    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, MaterialSrg::m_roughnessFactor,
-                                        MaterialSrg::m_roughnessLowerBound, MaterialSrg::m_roughnessUpperBound, o_roughness_useTexture);
+    surface.roughnessLinear = GetRoughnessInput(MaterialSrg::m_roughnessMap, MaterialSrg::m_sampler, roughnessUv, real(MaterialSrg::m_roughnessFactor),
+                                        real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture);
     surface.CalculateRoughnessA();
 
     // ------- Subsurface -------
 
     float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
-    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, MaterialSrg::m_subsurfaceScatteringFactor);
-    surface.subsurfaceScatteringQuality = MaterialSrg::m_subsurfaceScatteringQuality;
-    surface.scatterDistance = MaterialSrg::m_scatterDistance;
+    surface.subsurfaceScatteringFactor = GetSubsurfaceInput(MaterialSrg::m_subsurfaceScatteringInfluenceMap, MaterialSrg::m_sampler, subsurfaceUv, real(MaterialSrg::m_subsurfaceScatteringFactor));
+    surface.subsurfaceScatteringQuality = real(MaterialSrg::m_subsurfaceScatteringQuality);
+    surface.scatterDistance = real3(MaterialSrg::m_scatterDistance);
 
     // ------- Transmission -------
-
+    
+#if ENABLE_TRANSMISSION
     float2 transmissionUv = uvs[MaterialSrg::m_transmissionThicknessMapUvIndex];
-    float4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, MaterialSrg::m_transmissionTintThickness);
+    real4 transmissionTintThickness = GeTransmissionInput(MaterialSrg::m_transmissionThicknessMap, MaterialSrg::m_sampler, transmissionUv, real4(MaterialSrg::m_transmissionTintThickness));
     surface.transmission.tint = transmissionTintThickness.rgb;
     surface.transmission.thickness = transmissionTintThickness.w;
-    surface.transmission.transmissionParams = MaterialSrg::m_transmissionParams;
-    surface.transmission.scatterDistance = MaterialSrg::m_scatterDistance;
+    surface.transmission.transmissionParams = real4(MaterialSrg::m_transmissionParams);
+    surface.transmission.scatterDistance = real3(MaterialSrg::m_scatterDistance);
+#endif
 
     // ------- Anisotropy -------
 
     if (o_enableAnisotropy)
     {
         // Convert the angle from [0..1] = [0 .. 180 degrees] to radians [0 .. PI]
-        const float anisotropyAngle = MaterialSrg::m_anisotropicAngle * PI;
-        const float anisotropyFactor = MaterialSrg::m_anisotropicFactor;
+        const real anisotropyAngle = real(MaterialSrg::m_anisotropicAngle) * PI;
+        const real anisotropyFactor = real(MaterialSrg::m_anisotropicFactor);
         surface.anisotropy.Init(surface.normal, tangents[0], bitangents[0], anisotropyAngle, anisotropyFactor, surface.roughnessA);
     }
 
     // ------- Emissive -------
 
     float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), real(MaterialSrg::m_emissiveAffectedByAlpha), surface.alpha,  o_emissiveEnabled, o_emissive_useTexture);
 
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
 
     // ------- Clearcoat -------
     
+#if ENABLE_CLEAR_COAT
     // Todo: Clean up the double uses of these clear coat flags
     if(o_clearCoat_feature_enabled)
     {
         if(o_clearCoat_enabled)
         {
-            float3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_clearCoatFactor, o_clearCoat_factor_useTexture,
-                               MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
-                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, MaterialSrg::m_clearCoatNormalStrength,
+            real3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
+            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], real(MaterialSrg::m_clearCoatFactor), o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], real(MaterialSrg::m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], normalWS, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),
                                uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
         }
-
-        // Manipulate base layer f0 if clear coat is enabled and modify base layer's normal incidence reflectance
-        // For the derivation of the following equation please refer to:
-        // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
-        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
-        surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
+        
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
+#endif
     
     // ------- Opacity -------
 
-    surface.opacityAffectsSpecularFactor = MaterialSrg::m_opacityAffectsSpecularFactor;
+    surface.opacityAffectsSpecularFactor = real(MaterialSrg::m_opacityAffectsSpecularFactor);
 
     return surface;
 }
 
-Surface EvaluateSurface_EnhancedPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_EnhancedPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_EnhancedPBR(
         geoData.positionWS,

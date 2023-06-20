@@ -15,7 +15,7 @@
 
 namespace EMotionFX::MotionMatching
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MinMaxScaler, MotionMatchAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(MinMaxScaler, MotionMatchAllocator);
 
     bool MinMaxScaler::Fit(const FeatureMatrix& featureMatrix, const Settings& settings)
     {

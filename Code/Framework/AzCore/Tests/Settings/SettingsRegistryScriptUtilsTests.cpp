@@ -18,7 +18,7 @@ namespace SettingsRegistryScriptUtilsTests
 
 
     class SettingsRegistryBehaviorContextFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 

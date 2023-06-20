@@ -63,7 +63,7 @@ namespace Maestro
         }
 
         IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
             IAnimSequence* sequence = editor->GetMovieSystem()->FindSequenceById(m_sequenceId);
@@ -127,7 +127,7 @@ namespace Maestro
         EditorComponentBase::Init();
         m_sequenceId = s_invalidSequenceId;
         IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
 
         if (editor)
         {
@@ -170,7 +170,7 @@ namespace Maestro
         Maestro::SequenceComponentRequestBus::Handler::BusConnect(GetEntityId());
 
         IEditor* editor = nullptr;
-        EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
         if (editor)
         {
             editor->GetSequenceManager()->OnSequenceActivated(GetEntityId());
@@ -238,7 +238,7 @@ namespace Maestro
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), removedEntityId);
 
         // Notify the SequenceAgentComponent that we're disconnecting from it
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, DisconnectSequence);
+        Maestro::SequenceAgentComponentRequestBus::Event(ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::DisconnectSequence);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -254,7 +254,8 @@ namespace Maestro
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
 
-        EBUS_EVENT_ID(ebusId, Maestro::EditorSequenceAgentComponentRequestBus, GetAnimatableComponents, componentIds);
+        Maestro::EditorSequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::EditorSequenceAgentComponentRequestBus::Events::GetAnimatableComponents, componentIds);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -272,7 +273,8 @@ namespace Maestro
     void EditorSequenceComponent::GetAssetDuration(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, AZ::ComponentId componentId, const AZ::Data::AssetId& assetId)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAssetDuration, returnValue, componentId, assetId);
+        Maestro::SequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAssetDuration, returnValue, componentId, assetId);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,7 +305,8 @@ namespace Maestro
             AZ::TickBus::Handler::BusConnect();
         }
 
-        EBUS_EVENT_ID_RESULT(changed, ebusId, Maestro::SequenceAgentComponentRequestBus, SetAnimatedPropertyValue, animatableAddress, value);
+        Maestro::SequenceAgentComponentRequestBus::EventResult(
+            changed, ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::SetAnimatedPropertyValue, animatableAddress, value);
 
         return changed;
     }
@@ -327,7 +330,8 @@ namespace Maestro
     void EditorSequenceComponent::GetAnimatedPropertyValue(AnimatedValue& returnValue, const AZ::EntityId& animatedEntityId, const Maestro::SequenceComponentRequests::AnimatablePropertyAddress& animatableAddress)
     {
         const Maestro::SequenceAgentEventBusId ebusId(GetEntityId(), animatedEntityId);
-        EBUS_EVENT_ID(ebusId, Maestro::SequenceAgentComponentRequestBus, GetAnimatedPropertyValue, returnValue, animatableAddress);
+        Maestro::SequenceAgentComponentRequestBus::Event(
+            ebusId, &Maestro::SequenceAgentComponentRequestBus::Events::GetAnimatedPropertyValue, returnValue, animatableAddress);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -336,12 +340,13 @@ namespace Maestro
         bool retSuccess = false;
         AZ::Entity* entity = nullptr;
 
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, GetEntityId());
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, GetEntityId());
         if (entity)
         {
             CEntityObject* entityObject = nullptr;
 
-            EBUS_EVENT_ID_RESULT(entityObject, GetEntityId(), AzToolsFramework::ComponentEntityEditorRequestBus, GetSandboxObject);
+            AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+                entityObject, GetEntityId(), &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
             if (entityObject)
             {
                 entityObject->SetModified(false);

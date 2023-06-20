@@ -9,6 +9,12 @@
 #include <Editor/Source/ComponentModes/Joints/JointsComponentMode.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAngleCone.h>
 #include <Editor/Source/ComponentModes/Joints/JointsSubComponentModeAnglePair.h>
@@ -20,7 +26,47 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsComponentMode, AZ::SystemAllocator);
+
+    void SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
+    {
+        auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [modeType](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                JointsComponentModeRequestBus::Event(
+                    entityComponentIdPair, &JointsComponentModeRequests::SetCurrentSubMode, modeType);
+            }
+        );
+    }
+
+    bool IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType modeType)
+    {
+        auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        bool isComponentActive = false;
+        bool isAvailable = true;
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [&isComponentActive, &isAvailable, modeType](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                isComponentActive = true;
+
+                bool isCurrentSubModeAvailable = false;
+                JointsComponentModeRequestBus::EventResult(
+                    isCurrentSubModeAvailable, entityComponentIdPair, &JointsComponentModeRequests::IsCurrentSubModeAvailable, modeType);
+
+                if (!isCurrentSubModeAvailable)
+                {
+                    isAvailable = false;
+                }
+            });
+
+        return isComponentActive && isAvailable;
+    }
 
     namespace SubModeData
     {
@@ -108,17 +154,365 @@ namespace PhysX
         SetupSubModes(entityComponentIdPair);
 
         EditorJointRequestBus::Event(
-            entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParamaterNames::ComponentMode, true);
+            entityComponentIdPair, &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode, true);
+
+        PhysX::JointsComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
     }
 
     JointsComponentMode::~JointsComponentMode()
     {
+        PhysX::JointsComponentModeRequestBus::Handler::BusDisconnect();
+
         EditorJointRequestBus::Event(
-            GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParamaterNames::ComponentMode,
+            GetEntityComponentIdPair(), &EditorJointRequests::SetBoolValue, JointsComponentModeCommon::ParameterNames::ComponentMode,
             false);
 
         TeardownSubModes();
         m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
+    }
+
+    void JointsComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<JointsComponentMode>(context);
+    }
+
+    void JointsComponentMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "JointsComponentMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "JointsComponentMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Switch to Translation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToTranslationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::TranslationTitle;
+            actionProperties.m_description = SubModeData::TranslationToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
+        }
+
+        // Switch to Rotation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToRotationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::RotationTitle;
+            actionProperties.m_description = SubModeData::RotationToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Rotation);
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
+        }
+
+        // Switch to MaxForce Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToMaxForceSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::MaxForceTitle;
+            actionProperties.m_description = SubModeData::MaxForceToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
+                }
+            );
+        }
+
+        // Switch to MaxTorque Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::MaxTorqueTitle;
+            actionProperties.m_description = SubModeData::MaxTorqueToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
+                }
+            );
+        }
+
+        // Switch to Damping Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToDampingSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::DampingTitle;
+            actionProperties.m_description = SubModeData::DampingToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
+                }
+            );
+        }
+
+        // Switch to Stiffness Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToStiffnessSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::StiffnessTitle;
+            actionProperties.m_description = SubModeData::StiffnessToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
+                }
+            );
+        }
+
+        // Switch to TwistLimits Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::TwistLimitsTitle;
+            actionProperties.m_description = SubModeData::TwistLimitsToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
+                }
+            );
+        }
+
+        // Switch to SwingLimits Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::SwingLimitsTitle;
+            actionProperties.m_description = SubModeData::SwingLimitsToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
+                }
+            );
+        }
+
+        // Switch to SnapPosition Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToSnapPositionSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::SnapPositionTitle;
+            actionProperties.m_description = SubModeData::SnapPositionToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
+                }
+            );
+        }
+
+        // Switch to SnapRotation Sub-Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.switchToSnapRotationSubMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::SnapRotationTitle;
+            actionProperties.m_description = SubModeData::SnapRotationToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    SetCurrentSubModeHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []()
+                {
+                    return IsCurrentSubModeAvailableHelper(JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
+                }
+            );
+        }
+
+        // Reset Current Mode
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.jointsComponentMode.resetCurrentMode";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SubModeData::ResetTitle;
+            actionProperties.m_description = SubModeData::ResetToolTip;
+            actionProperties.m_category = "Joints Component Mode";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface =
+                        AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            JointsComponentModeRequestBus::Event(entityComponentIdPair, &JointsComponentModeRequests::ResetCurrentSubMode);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "R");
+        }
+    }
+
+    void JointsComponentMode::BindActionsToModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "JointsComponentMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+
+        AZStd::string modeIdentifier =
+            AZStd::string::format("o3de.context.mode.%s", serializeContext->FindClassData(azrtti_typeid<JointsComponentMode>())->m_name);
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToTranslationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToRotationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToMaxForceSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.jointsComponentMode.resetCurrentMode");
+    }
+
+    void JointsComponentMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "JointsComponentMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTranslationSubMode", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToRotationSubMode", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxForceSubMode", 6002);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToMaxTorqueSubMode", 6003);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToDampingSubMode", 6004);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToStiffnessSubMode", 6005);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapPositionSubMode", 6006);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSnapRotationSubMode", 6007);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToSwingLimitsSubMode", 6008);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.switchToTwistLimitsSubMode", 6009);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.jointsComponentMode.resetCurrentMode", 6010);
     }
 
     void JointsComponentMode::Refresh()
@@ -130,7 +524,7 @@ namespace PhysX
     {
         const AZ::EntityComponentIdPair entityComponentIdPair = GetEntityComponentIdPair();
 
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
         auto makeActionOverride = [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Crc32& actionUri,
@@ -154,9 +548,7 @@ namespace PhysX
                 SubModeData::TranslationTitle, SubModeData::TranslationToolTip,
                 [this]()
                 {
-                    SetCurrentMode(
-                        JointsComponentModeCommon::SubComponentModes::ModeType::Translation,
-                        m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Translation]);
+                    SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
                 });
             translateAction.SetKeySequence(QKeySequence(Qt::Key_1));
             actions.emplace_back(translateAction);
@@ -169,9 +561,7 @@ namespace PhysX
                 SubModeData::RotationTitle, SubModeData::RotationToolTip,
                 [this]()
                 {
-                    SetCurrentMode(
-                        JointsComponentModeCommon::SubComponentModes::ModeType::Rotation,
-                        m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Rotation]);
+                    SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Rotation);
                 });
             rotationAction.SetKeySequence(QKeySequence(Qt::Key_2));
             actions.emplace_back(rotationAction);
@@ -189,9 +579,7 @@ namespace PhysX
                         SubModeData::MaxForceTitle, SubModeData::MaxForceToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce);
                         }));
                 }
                 break;
@@ -202,9 +590,7 @@ namespace PhysX
                         SubModeData::MaxTorqueTitle, SubModeData::MaxTorqueToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque);
                         }));
                 }
                 break;
@@ -215,9 +601,7 @@ namespace PhysX
                         SubModeData::DampingTitle, SubModeData::DampingToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::Damping,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Damping]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Damping);
                         }));
                 }
                 break;
@@ -228,9 +612,7 @@ namespace PhysX
                         SubModeData::StiffnessTitle, SubModeData::StiffnessToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::Stiffness);
                         }));
                 }
                 break;
@@ -241,9 +623,7 @@ namespace PhysX
                         SubModeData::TwistLimitsTitle, SubModeData::TwistLimitsToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::TwistLimits);
                         }));
                 }
                 break;
@@ -254,9 +634,7 @@ namespace PhysX
                         SubModeData::SwingLimitsTitle, SubModeData::SwingLimitsToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::SwingLimits);
                         }));
                 }
                 break;
@@ -267,9 +645,7 @@ namespace PhysX
                         SubModeData::SnapPositionTitle, SubModeData::SnapPositionToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition);
                         }));
                 }
                 break;
@@ -280,9 +656,7 @@ namespace PhysX
                         SubModeData::SnapRotationTitle, SubModeData::SnapRotationToolTip,
                         [this]()
                         {
-                            SetCurrentMode(
-                                JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation,
-                                m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation]);
+                            SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation);
                         }));
                 }
                 break;
@@ -296,8 +670,9 @@ namespace PhysX
                 SubModeData::ResetTitle, SubModeData::ResetToolTip,
                 [this]()
                 {
-                    ResetCurrentMode();
-                });
+                    ResetCurrentSubMode();
+                }
+            );
             resetValuesAction.SetKeySequence(QKeySequence(Qt::Key_R));
             actions.emplace_back(resetValuesAction);
         }
@@ -324,9 +699,13 @@ namespace PhysX
         return "Joint Edit Mode";
     }
 
-    void JointsComponentMode::SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData)
+    AZ::Uuid JointsComponentMode::GetComponentModeType() const
     {
-        
+        return azrtti_typeid<JointsComponentMode>();
+    }
+
+    void JointsComponentMode::SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode)
+    {
         if (auto subMode = m_subModes.find(newMode);
             subMode != m_subModes.end())
         {
@@ -336,7 +715,7 @@ namespace PhysX
             subMode->second->Setup(entityComponentIdPair);
 
             // if this button is on a different cluster. clear the active state.
-            if (m_activeButton.m_clusterId != buttonData.m_clusterId)
+            if (m_activeButton.m_clusterId != m_buttonData[newMode].m_clusterId)
             {
                 AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                     AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -344,14 +723,20 @@ namespace PhysX
             }
             AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
                 AzToolsFramework::ViewportUi::DefaultViewportId,
-                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, buttonData.m_clusterId,
-                buttonData.m_buttonId);
-            m_activeButton = buttonData;
+                &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton,
+                m_buttonData[newMode].m_clusterId,
+                m_buttonData[newMode].m_buttonId);
+            m_activeButton = m_buttonData[newMode];
         }
         else
         {
             AZ_Assert(false, "PhysXJoints Uninitialized joint component mode selected.");
         }
+    }
+
+    bool JointsComponentMode::IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) const
+    {
+        return m_subModes.contains(mode);
     }
 
     bool JointsComponentMode::HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
@@ -368,7 +753,7 @@ namespace PhysX
     void JointsComponentMode::SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         //retrieve the enabled sub components from the entity
-        AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> subModesState;
+        AZStd::vector<JointsComponentModeCommon::SubModeParameterState> subModesState;
         EditorJointRequestBus::EventResult(subModesState, entityComponentIdPair, &EditorJointRequests::GetSubComponentModesState);
 
         //group 1 is always available so create it
@@ -411,6 +796,9 @@ namespace PhysX
                     }
                 }
                 break;
+            case JointsComponentModeCommon::SubComponentModes::ModeType::SnapPosition:
+            case JointsComponentModeCommon::SubComponentModes::ModeType::SnapRotation:
+                break;
             default:
                 AZ_Error("Joints", false, "Joints component mode cluster UI setup found unknown sub mode.");
                 break;
@@ -449,7 +837,7 @@ namespace PhysX
                 {
                     m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::MaxForce] =
                         AZStd::make_unique<JointsSubComponentModeLinearFloat>(
-                            parameterString, ExponentBreakage, EditorJointConfig::s_breakageMax, EditorJointConfig::s_breakageMin);
+                            parameterString, ExponentBreakage, EditorJointConfig::BreakageMax, EditorJointConfig::BreakageMin);
 
                     const AzToolsFramework::ViewportUi::ButtonId buttonId =
                         Internal::RegisterClusterButton(group3ClusterId, "joints/MaxForce", SubModeData::MaxForceToolTip);
@@ -461,7 +849,7 @@ namespace PhysX
                 {
                     m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::MaxTorque] =
                         AZStd::make_unique<JointsSubComponentModeLinearFloat>(
-                            parameterString, ExponentBreakage, EditorJointConfig::s_breakageMax, EditorJointConfig::s_breakageMin);
+                            parameterString, ExponentBreakage, EditorJointConfig::BreakageMax, EditorJointConfig::BreakageMin);
 
                     const AzToolsFramework::ViewportUi::ButtonId buttonId =
                         Internal::RegisterClusterButton(group3ClusterId, "joints/MaxTorque", SubModeData::MaxTorqueToolTip);
@@ -554,7 +942,7 @@ namespace PhysX
                 {
                     if (itr.second.m_clusterId == GetClusterId(ClusterGroups::Group1) && itr.second.m_buttonId == buttonId)
                     {
-                        SetCurrentMode(itr.first, itr.second);
+                        SetCurrentSubMode(itr.first);
                         break;
                     }
                 }
@@ -566,7 +954,7 @@ namespace PhysX
                 {
                     if (itr.second.m_clusterId == GetClusterId(ClusterGroups::Group2) && itr.second.m_buttonId == buttonId)
                     {
-                        SetCurrentMode(itr.first, itr.second);
+                        SetCurrentSubMode(itr.first);
                         break;
                     }
                 }
@@ -578,7 +966,7 @@ namespace PhysX
                 {
                     if (itr.second.m_clusterId == GetClusterId(ClusterGroups::Group3) && itr.second.m_buttonId == buttonId)
                     {
-                        SetCurrentMode(itr.first, itr.second);
+                        SetCurrentSubMode(itr.first);
                         break;
                     }
                 }
@@ -596,15 +984,14 @@ namespace PhysX
         }
         
         // set the translate as enabled by default.
-        SetCurrentMode(
-            JointsComponentModeCommon::SubComponentModes::ModeType::Translation,
-            m_buttonData[JointsComponentModeCommon::SubComponentModes::ModeType::Translation]);
+        SetCurrentSubMode(
+            JointsComponentModeCommon::SubComponentModes::ModeType::Translation);
 
         m_subModes[JointsComponentModeCommon::SubComponentModes::ModeType::Translation]->Setup(GetEntityComponentIdPair());
         m_subMode = JointsComponentModeCommon::SubComponentModes::ModeType::Translation;
     }
 
-    void JointsComponentMode::ResetCurrentMode()
+    void JointsComponentMode::ResetCurrentSubMode()
     {
         const AZ::EntityComponentIdPair entityComponentIdPair = GetEntityComponentIdPair();
         m_subModes[m_subMode]->ResetValues(entityComponentIdPair);

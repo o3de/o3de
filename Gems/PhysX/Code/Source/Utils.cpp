@@ -34,11 +34,11 @@
 #include <PhysX/MeshAsset.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
+#include <Source/Articulation/ArticulationLinkConfiguration.h>
 #include <Source/SystemComponent.h>
 #include <Source/Collision.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Shape.h>
-#include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
 #include <PhysX/Material/PhysXMaterialConfiguration.h>
@@ -1151,7 +1151,7 @@ namespace PhysX
             }
         }
 
-        void GetShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
+        void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
             const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
             AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes)
         {
@@ -1177,17 +1177,11 @@ namespace PhysX
             }
         }
 
-        AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
+        float GetTransformScale(AZ::EntityId entityId)
         {
-            float worldUniformScale = 1.0f;
-            AZ::TransformBus::EventResult(worldUniformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
-            return AZ::Vector3(worldUniformScale);
-        }
-
-        AZ::Vector3 GetUniformScale(AZ::EntityId entityId)
-        {
-            const float uniformScale = GetTransformScale(entityId).GetMaxElement();
-            return AZ::Vector3(uniformScale);
+            float transformScale = 1.0f;
+            AZ::TransformBus::EventResult(transformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return transformScale;
         }
 
         AZ::Vector3 GetNonUniformScale(AZ::EntityId entityId)
@@ -1199,7 +1193,7 @@ namespace PhysX
 
         AZ::Vector3 GetOverallScale(AZ::EntityId entityId)
         {
-            return GetUniformScale(entityId) * GetNonUniformScale(entityId);
+            return GetTransformScale(entityId) * GetNonUniformScale(entityId);
         }
 
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue)
@@ -1807,10 +1801,14 @@ namespace PhysX
             D6JointLimitConfiguration::Reflect(context);
             JointGenericProperties::Reflect(context);
             JointLimitProperties::Reflect(context);
+            JointMotorProperties::Reflect(context);
             FixedJointConfiguration::Reflect(context);
             BallJointConfiguration::Reflect(context);
             HingeJointConfiguration::Reflect(context);
             PrismaticJointConfiguration::Reflect(context);
+            ArticulationSensorConfiguration::Reflect(context);
+            ArticulationJointMotorProperties::Reflect(context);
+            ArticulationLinkConfiguration::Reflect(context);
 
             MaterialConfiguration::Reflect(context);
         }
@@ -1911,53 +1909,4 @@ namespace PhysX
             return rigidStatic;
         }
     } // namespace PxActorFactories
-
-    namespace StaticRigidBodyUtils
-    {
-        bool EntityHasComponentsUsingService(const AZ::Entity& entity, AZ::Crc32 service)
-        {
-            const AZ::Entity::ComponentArrayType& components = entity.GetComponents();
-
-            return AZStd::any_of(components.begin(), components.end(),
-                [service](const AZ::Component* component) -> bool
-                {
-                    AZ::ComponentDescriptor* componentDescriptor = nullptr;
-                    AZ::ComponentDescriptorBus::EventResult(
-                        componentDescriptor, azrtti_typeid(component), &AZ::ComponentDescriptorBus::Events::GetDescriptor);
-
-                    AZ::ComponentDescriptor::DependencyArrayType services;
-                    componentDescriptor->GetDependentServices(services, nullptr);
-
-                    return AZStd::find(services.begin(), services.end(), service) != services.end();
-                }
-            );
-        }
-
-        bool CanCreateRuntimeComponent(const AZ::Entity& editorEntity)
-        {
-            // Allow to create runtime StaticRigidBodyComponent if there are no components
-            // using 'PhysXColliderService' attached to entity.
-            const AZ::Crc32 physxColliderServiceId = AZ_CRC_CE("PhysicsColliderService");
-
-            return !EntityHasComponentsUsingService(editorEntity, physxColliderServiceId);
-        }
-
-        bool TryCreateRuntimeComponent(const AZ::Entity& editorEntity, AZ::Entity& gameEntity)
-        {
-            // Only allow single StaticRigidBodyComponent per entity
-            const auto* staticRigidBody = gameEntity.FindComponent<StaticRigidBodyComponent>();
-            if (staticRigidBody)
-            {
-                return false;
-            }
-
-            if (CanCreateRuntimeComponent(editorEntity))
-            {
-                gameEntity.CreateComponent<StaticRigidBodyComponent>();
-                return true;
-            }
-
-            return false;
-        }
-    } // namespace StaticRigidBodyUtils
 } // namespace PhysX

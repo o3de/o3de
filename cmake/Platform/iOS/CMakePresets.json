@@ -25,8 +25,9 @@
       "displayName": "iOS Monolithic with Unity and Xcode",
       "description": "Configures iOS to build the Monolithic permutation using Xcode with Unity builds",
       "toolchainFile": "${sourceDir}/cmake/Platform/iOS/Toolchain_ios.cmake",
+      "binaryDir": "${sourceDir}/build/ios_mono",
       "inherits": [
-        "ios-ninja",
+        "ios-xcode",
         "ios-unity",
         "ios-monolithic"
       ]

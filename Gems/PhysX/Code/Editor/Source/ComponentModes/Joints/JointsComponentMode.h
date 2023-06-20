@@ -16,7 +16,7 @@
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
-#include <Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h>
+#include <Editor/Source/ComponentModes/Joints/JointsComponentModeBus.h>
 #include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 
 namespace AZ
@@ -29,18 +29,32 @@ namespace PhysX
     //! Class responsible for managing component mode for joints.
     class JointsComponentMode final
         : public AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode
+        , public PhysX::JointsComponentModeRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
+        AZ_RTTI(JointsComponentMode, "{BF9ABF22-950B-4FDD-846D-643D27F449C5}", EditorBaseComponentMode)
 
         JointsComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~JointsComponentMode();
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
+
+        // JointsComponentModeRequestBus overrides ...
+        void SetCurrentSubMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode) override;
+        void ResetCurrentSubMode() override;
+        bool IsCurrentSubModeAvailable(JointsComponentModeCommon::SubComponentModes::ModeType mode) const override;
 
         // EditorBaseComponentMode ...
         void Refresh() override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> PopulateViewportUiImpl() override;
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
     private:
         //! Used to identify the group of component modes.
@@ -60,10 +74,8 @@ namespace PhysX
             AzToolsFramework::ViewportUi::ButtonId m_buttonId;
         };
 
-        void SetCurrentMode(JointsComponentModeCommon::SubComponentModes::ModeType newMode, ButtonData& buttonData);
         bool HandleMouseInteraction(const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction) override;
         void SetupSubModes(const AZ::EntityComponentIdPair& entityComponentIdPair);
-        void ResetCurrentMode();
         void TeardownSubModes();
 
         AzToolsFramework::ViewportUi::ClusterId GetClusterId(ClusterGroups group);

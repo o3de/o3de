@@ -21,7 +21,7 @@
 namespace UnitTest
 {
     class PolygonPrismShapeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -31,7 +31,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -48,7 +48,7 @@ namespace UnitTest
             m_polygonPrismShapeComponentDescriptor.reset();
             m_nonUniformScaleComponentDescriptor.reset();
             m_serializeContext.reset();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -231,7 +231,7 @@ namespace UnitTest
         }
         {
             bool inside;
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, AZ::Vector3(502.0f, 585.0f, 32.0f));
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, AZ::Vector3(502.0f, 585.1f, 32.0f));
             EXPECT_TRUE(inside);
         }
         {
@@ -830,7 +830,7 @@ namespace UnitTest
         sourceShape.Deactivate();
     }
 
-    TEST_F(AllocatorsFixture, PolygonPrismFilledMeshClearedWithLessThanThreeVertices)
+    TEST_F(LeakDetectionFixture, PolygonPrismFilledMeshClearedWithLessThanThreeVertices)
     {
         // given
         // invalid vertex data (less than three vertices)

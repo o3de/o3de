@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/Hemisphere.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/CoreLights/SimpleSpotLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
@@ -40,6 +43,7 @@ namespace AZ
             : public SimpleSpotLightFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(SimpleSpotLightFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::SimpleSpotLightFeatureProcessor, "{01610AD4-0872-4F80-9F12-22FB7CCF6866}", AZ::Render::SimpleSpotLightFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -73,7 +77,7 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "SimpleSpotLightFeatureProcessor";
 
-            IndexedDataVector<SimpleSpotLightData> m_pointLightData;
+            IndexedDataVector<SimpleSpotLightData> m_lightData;
             GpuBufferHandler m_lightBufferHandler;
             bool m_deviceBufferNeedsUpdate = false;
         };

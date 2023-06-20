@@ -62,7 +62,7 @@ namespace Audio
 
     public:
         AZ_RTTI(CAudioSystem, "{96254647-000D-4896-93C4-92E0F258F21D}", IAudioSystem);
-        AZ_CLASS_ALLOCATOR(CAudioSystem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CAudioSystem, AZ::SystemAllocator);
 
         CAudioSystem();
         ~CAudioSystem() override;

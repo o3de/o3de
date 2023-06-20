@@ -93,6 +93,7 @@ public:
     bool IsUiCursorVisible() override;
     void SetUiCursor(const char* cursorImagePath) override;
     AZ::Vector2 GetUiCursorPosition() override;
+    void SetUiCursorPosition(const AZ::Vector2&) override;
     // ~UiCursorInterface
 
     // InputChannelEventListener

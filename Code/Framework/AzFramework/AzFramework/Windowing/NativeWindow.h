@@ -96,7 +96,7 @@ namespace AzFramework
         : public WindowRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindow, AZ::SystemAllocator);
 
         //! Constructor
         //! \param[in] title The title of the window (may or may not be displayed depending on the platform).
@@ -125,8 +125,13 @@ namespace AzFramework
         // WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
         WindowSize GetClientAreaSize() const override;
-        void ResizeClientArea(WindowSize clientAreaSize) override;
+        WindowSize GetMaximumClientAreaSize() const override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
         bool SupportsClientAreaResize() const override;
+        void SetEnableCustomizedResolution(bool enable) override;
+        bool IsCustomizedResolutionEnabled() const override;
+        WindowSize GetRenderResolution() const override;
+        void SetRenderResolution(WindowSize resolution) override;
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override;
@@ -175,8 +180,13 @@ namespace AzFramework
 
             virtual void SetWindowTitle(const AZStd::string& title);
             virtual WindowSize GetClientAreaSize() const;
-            virtual void ResizeClientArea(WindowSize clientAreaSize);
+            virtual WindowSize GetMaximumClientAreaSize() const;
+            virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options);
             virtual bool SupportsClientAreaResize() const;
+            virtual void SetEnableCustomizedResolution(bool enable);
+            virtual bool IsCustomizedResolutionEnabled() const;
+            virtual WindowSize GetRenderResolution() const;
+            virtual void SetRenderResolution(WindowSize resolution);
             virtual bool GetFullScreenState() const;
             virtual void SetFullScreenState(bool fullScreenState);
             virtual bool CanToggleFullScreenState() const;
@@ -187,6 +197,8 @@ namespace AzFramework
             uint32_t m_width = 0;
             uint32_t m_height = 0;
             bool m_activated = false;
+            WindowSize m_customizedRenderResolution;
+            bool m_enableCustomizedResolution = false;
         };
 
     private:

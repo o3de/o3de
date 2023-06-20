@@ -212,24 +212,25 @@ namespace AZ
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
+            auto index = static_cast<uint8_t>(m_attachmentBindings.size());
+            // Add the binding. This will assert if the fixed size array is full.
+            m_attachmentBindings.push_back(attachmentBinding);
+
             // Add the index of the binding to the input, output or input/output list based on the slot type
             switch (attachmentBinding.m_slotType)
             {
             case PassSlotType::Input:
-                m_inputBindingIndices.push_back(uint8_t(m_attachmentBindings.size()));
+                m_inputBindingIndices.push_back(index);
                 break;
             case PassSlotType::InputOutput:
-                m_inputOutputBindingIndices.push_back(uint8_t(m_attachmentBindings.size()));
+                m_inputOutputBindingIndices.push_back(index);
                 break;
             case PassSlotType::Output:
-                m_outputBindingIndices.push_back(uint8_t(m_attachmentBindings.size()));
+                m_outputBindingIndices.push_back(index);
                 break;
             default:
                 break;
             }
-
-            // Add the binding
-            m_attachmentBindings.push_back(attachmentBinding);
         }
 
         // --- Finders ---
@@ -312,20 +313,36 @@ namespace AZ
             return FindOwnedAttachment(slotName);
         }
 
-        const PassAttachmentBinding* Pass::FindAdjacentBinding(const PassAttachmentRef& attachmentRef)
+        const PassAttachmentBinding* Pass::FindAdjacentBinding(const PassAttachmentRef& attachmentRef, [[maybe_unused]] const char* attachmentSourceTypeDebugName)
         {
-            // Validate attachmentRef
-            if (attachmentRef.m_pass.IsEmpty() || attachmentRef.m_attachment.IsEmpty())
+            const PassAttachmentBinding* result = nullptr;
+
+            if (attachmentRef.m_pass.IsEmpty() && attachmentRef.m_attachment.IsEmpty())
             {
-                return nullptr;
+                // The data isn't actually referencing anything, so this is not an error, just return null.
+                return result;
             }
+
+            if (attachmentRef.m_pass.IsEmpty() != attachmentRef.m_attachment.IsEmpty())
+            {
+                AZ_Error("Pass", false,
+                    "Invalid attachment reference (Pass [%s], Attachment [%s]). Both Pass and Attachment must be set.",
+                    attachmentRef.m_pass.GetCStr(), attachmentRef.m_attachment.GetCStr());
+
+                return result;
+            }
+
             // Find pass
             if (Ptr<Pass> pass = FindAdjacentPass(attachmentRef.m_pass))
             {
                 // Find attachment within pass
-                return pass->FindAttachmentBinding(attachmentRef.m_attachment);
+                result = pass->FindAttachmentBinding(attachmentRef.m_attachment);
             }
-            return nullptr;
+
+            AZ_Error("Pass", result, "Pass [%s] could not find %s (Pass [%s], Attachment [%s])",
+                m_path.GetCStr(), attachmentSourceTypeDebugName, attachmentRef.m_pass.GetCStr(), attachmentRef.m_attachment.GetCStr());
+
+            return result;
         }
 
         // --- PassTemplate related functions ---
@@ -676,7 +693,7 @@ namespace AZ
                 attachment->m_getSizeFromPipeline = true;
                 attachment->m_sizeMultipliers = desc.m_sizeSource.m_multipliers;
             }
-            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_sizeSource.m_source))
+            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_sizeSource.m_source, "SizeSource"))
             {
                 attachment->m_sizeSource = source;
                 attachment->m_sizeMultipliers = desc.m_sizeSource.m_multipliers;
@@ -687,7 +704,7 @@ namespace AZ
                 attachment->m_renderPipelineSource = m_pipeline;
                 attachment->m_getFormatFromPipeline = true;
             }
-            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_formatSource))
+            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_formatSource, "FormatSource"))
             {
                 attachment->m_formatSource = source;
             }
@@ -697,12 +714,12 @@ namespace AZ
                 attachment->m_renderPipelineSource = m_pipeline;
                 attachment->m_getMultisampleStateFromPipeline = true;
             }
-            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_multisampleSource))
+            else if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_multisampleSource, "MultisampleSource"))
             {
                 attachment->m_multisampleSource = source;
             }
 
-            if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_arraySizeSource))
+            if (const PassAttachmentBinding* source = FindAdjacentBinding(desc.m_arraySizeSource, "ArraySizeSource"))
             {
                 attachment->m_arraySizeSource = source;
             }
@@ -1286,7 +1303,6 @@ namespace AZ
 
         void Pass::FrameBegin(FramePrepareParams params)
         {
-            AZ_PROFILE_SCOPE(RPI, "Pass::FrameBegin() - %s", m_path.GetCStr());
             AZ_RPI_BREAK_ON_TARGET_PASS;
 
             bool earlyOut = !IsEnabled();
@@ -1304,7 +1320,9 @@ namespace AZ
                 return;
             }
 
-            AZ_Error("PassSystem", m_state == PassState::Idle, "Pass::FrameBegin - Pass [%s] is attempting to render, but is not in the Idle state.", m_path.GetCStr());
+            AZ_Error("PassSystem", m_state == PassState::Idle,
+                "Pass::FrameBegin - Pass [%s] is attempting to render, and should be in the 'Idle' or 'Queued' state, but is in the '%s' state.",
+                m_path.GetCStr(), ToString(m_state).data());
 
             m_state = PassState::Rendering;
 
@@ -1319,10 +1337,7 @@ namespace AZ
 
             // FrameBeginInternal needs to be the last function be called in FrameBegin because its implementation expects 
             // all the attachments are imported to database (for example, ImageAttachmentPreview)
-            {
-                AZ_PROFILE_SCOPE(RPI, "Pass::FrameBeginInternal()");
-                FrameBeginInternal(params);
-            }
+            FrameBeginInternal(params);
             
             // readback attachment with output state
             UpdateReadbackAttachment(params, false);
@@ -1417,7 +1432,7 @@ namespace AZ
             }
         }
 
-        void Pass::GetPipelineViewTags(SortedPipelineViewTags& outTags) const
+        void Pass::GetPipelineViewTags(PipelineViewTags& outTags) const
         {
             if (HasPipelineViewTag())
             {
@@ -1427,7 +1442,10 @@ namespace AZ
 
         void Pass::SortDrawList(RHI::DrawList& drawList) const
         {
-            RHI::SortDrawList(drawList, m_drawListSortType);
+            if (!drawList.empty())
+            {
+                RHI::SortDrawList(drawList, m_drawListSortType);
+            }
         }
 
         // --- Debug & Validation functions ---
@@ -1460,7 +1478,7 @@ namespace AZ
             // Return false if it's already readback
             if (m_attachmentReadback)
             {
-                AZ_Warning("Pass", false, "ReadbackAttachment: skip readback pass [%s] slot [%s]because there is an another active readback", m_name.GetCStr(), slotName.GetCStr());
+                AZ_Warning("Pass", false, "ReadbackAttachment: skip readback pass [%s] slot [%s] because there is an another active readback", m_path.GetCStr(), slotName.GetCStr());
                 return false;
             }
             uint32_t bindingIndex = 0;
@@ -1492,7 +1510,7 @@ namespace AZ
                 }
                 bindingIndex++;
             }
-            AZ_Warning("Pass", false, "ReadbackAttachment: failed to find slot [%s] from pass [%s]", slotName.GetCStr(), m_name.GetCStr());
+            AZ_Warning("Pass", false, "ReadbackAttachment: failed to find slot [%s] from pass [%s]", slotName.GetCStr(), m_path.GetCStr());
             return false;
         }
 

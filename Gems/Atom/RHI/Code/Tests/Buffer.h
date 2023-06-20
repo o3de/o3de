@@ -18,7 +18,7 @@ namespace UnitTest
         : public AZ::RHI::BufferView
     {
     public:
-        AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::Resource&) override;
@@ -33,7 +33,7 @@ namespace UnitTest
     {
         friend class BufferPool;
     public:
-        AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator);
 
         bool IsMapped() const;
 
@@ -52,7 +52,7 @@ namespace UnitTest
         : public AZ::RHI::BufferPool
     {
     public:
-        AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
 
     private:
         AZ::RHI::ResultCode InitInternal(AZ::RHI::Device& device, const AZ::RHI::BufferPoolDescriptor& descriptor) override;

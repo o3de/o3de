@@ -939,7 +939,7 @@ namespace AZStd
     template<class Element>
     struct RegExBuffer
     {
-        AZ_CLASS_ALLOCATOR(RegExBuffer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RegExBuffer, AZ::SystemAllocator);
 
         // character buffer
         RegExBuffer()
@@ -1002,22 +1002,12 @@ namespace AZStd
             }
             else
             {
-                size_t resizedSize = m_allocator.resize(m_chars, requiredSize);
-                // must update capacity immediately in case we need to realloc
-                m_capacity = static_cast<unsigned int>(resizedSize / sizeof(Element));
-                if (resizedSize >= requiredSize)
-                {
-                    m_capacity = static_cast<unsigned int>(resizedSize / sizeof(Element));
-                }
-                else
-                {
-                    // resize didn't work, realloc instead
-                    Element* newBuf = static_cast<Element*>(m_allocator.allocate(requiredSize, 1));
-                    memcpy(newBuf, m_chars, m_capacity * sizeof(Element));
-                    m_allocator.deallocate(m_chars, m_capacity * sizeof(Element), 1);
-                    m_chars = newBuf;
-                    m_capacity = length;
-                }
+                // resize didn't work, realloc instead
+                Element* newBuf = static_cast<Element*>(m_allocator.allocate(requiredSize, 1));
+                memcpy(newBuf, m_chars, m_capacity * sizeof(Element));
+                m_allocator.deallocate(m_chars, m_capacity * sizeof(Element), 1);
+                m_chars = newBuf;
+                m_capacity = length;
             }
             AZ_Assert(m_chars != nullptr, "AZStd::allocator failed to allocate %u bytes!", requiredSize);
         }
@@ -1030,7 +1020,7 @@ namespace AZStd
 
     struct RegExBitmap
     {   // accelerator table for small character values
-        AZ_CLASS_ALLOCATOR(RegExBitmap, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RegExBitmap, AZ::SystemAllocator)
 
         RegExBitmap()
         {
@@ -1054,7 +1044,7 @@ namespace AZStd
     template<class Element>
     struct RegExSequence
     {   // holds sequences of m_size elements
-        AZ_CLASS_ALLOCATOR(RegExSequence, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RegExSequence, AZ::SystemAllocator)
         RegExSequence(unsigned int len)
             : m_size(len) { }
 
@@ -1066,7 +1056,7 @@ namespace AZStd
     class NodeBase
     {   // base class for all nfa nodes
     public:
-        AZ_CLASS_ALLOCATOR(NodeBase, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(NodeBase, AZ::SystemAllocator)
         NodeBase(NodeType _Ty, NodeFlags flags = NFLG_none)
             : m_kind(_Ty)
             , m_flags(flags)
@@ -1098,7 +1088,7 @@ namespace AZStd
         : public NodeBase
     {   // root of parse tree
     public:
-        AZ_CLASS_ALLOCATOR(RootNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RootNode, AZ::SystemAllocator);
         RootNode()
             : NodeBase(NT_begin)
             , m_loops(0)
@@ -1117,7 +1107,7 @@ namespace AZStd
         : public NodeBase
     {   // node that marks end of a group
     public:
-        AZ_CLASS_ALLOCATOR(NodeEndGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeEndGroup, AZ::SystemAllocator);
         NodeEndGroup(NodeType type, NodeFlags flags, NodeBase* back)
             : NodeBase(type, flags)
             , m_back(back)
@@ -1131,7 +1121,7 @@ namespace AZStd
         : public NodeBase
     {   // node that holds an ECMAScript assertion
     public:
-        AZ_CLASS_ALLOCATOR(NodeAssert, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeAssert, AZ::SystemAllocator);
         NodeAssert(NodeType type, NodeFlags flags = NFLG_none)
             : NodeBase(type, flags)
             , m_child(0)
@@ -1150,7 +1140,7 @@ namespace AZStd
         : public NodeBase
     {   // node that marks beginning of a capture group
     public:
-        AZ_CLASS_ALLOCATOR(NodeCapture, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeCapture, AZ::SystemAllocator);
         NodeCapture(unsigned int index)
             : NodeBase(NT_capture, NFLG_none)
             , m_index(index)
@@ -1164,7 +1154,7 @@ namespace AZStd
         : public NodeBase
     {   // node that holds a back reference
     public:
-        AZ_CLASS_ALLOCATOR(NodeBack, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeBack, AZ::SystemAllocator);
         NodeBack(unsigned int index)
             : NodeBase(NT_back, NFLG_none)
             , m_index(index)
@@ -1179,7 +1169,7 @@ namespace AZStd
         : public NodeBase
     {   // node that holds text
     public:
-        AZ_CLASS_ALLOCATOR(NodeString, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeString, AZ::SystemAllocator);
         NodeString(NodeFlags flags = NFLG_none)
             : NodeBase(NT_str, flags)
         {
@@ -1193,7 +1183,7 @@ namespace AZStd
         : public NodeBase
     {   // node that holds a character class (POSIX bracket expression)
     public:
-        AZ_CLASS_ALLOCATOR(NodeClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeClass, AZ::SystemAllocator);
         NodeClass(NodeType type = NT_class, NodeFlags flags = NFLG_none)
             : NodeBase(type, flags)
             , m_coll(0)
@@ -1237,7 +1227,7 @@ namespace AZStd
         : public NodeBase
     {   // node that marks the end of an alternative
     public:
-        AZ_CLASS_ALLOCATOR(NodeEndif, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeEndif, AZ::SystemAllocator);
         NodeEndif()
             : NodeBase(NT_endif, NFLG_none) {}
     };
@@ -1247,7 +1237,7 @@ namespace AZStd
         : public NodeBase
     {   // node that marks the beginning of an alternative
     public:
-        AZ_CLASS_ALLOCATOR(NodeIf, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeIf, AZ::SystemAllocator);
         NodeIf(NodeBase* m_end)
             : NodeBase(NT_if, NFLG_none)
             , _Endif((NodeEndif*)m_end)
@@ -1278,7 +1268,7 @@ namespace AZStd
         : public NodeBase
     {   // node that marks the end of a repetition
     public:
-        AZ_CLASS_ALLOCATOR(NodeEndRepetition, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeEndRepetition, AZ::SystemAllocator);
         NodeEndRepetition()
             : NodeBase(NT_end_rep)
             , _Begin_rep(0)
@@ -1303,7 +1293,7 @@ namespace AZStd
         : public NodeBase
     {   // node that marks the beginning of a repetition
     public:
-        AZ_CLASS_ALLOCATOR(NodeRepetition, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeRepetition, AZ::SystemAllocator);
         NodeRepetition(bool isGreedy, int min, int max, NodeEndRepetition* m_end, int loopNumber)
             : NodeBase(NT_rep, isGreedy ? NFLG_greedy : NFLG_none)
             , m_min(min)

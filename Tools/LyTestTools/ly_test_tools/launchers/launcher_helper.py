@@ -79,19 +79,20 @@ def create_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_EDITOR, arg
     return launcher_class(workspace, args)
 
 
-def create_material_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_MATERIAL_EDITOR, args=None):
-    # type: (workspace_manager.AbstractWorkspaceManager, str, list[str]) -> base_launcher.Launcher
+def create_atom_tools_launcher(workspace, app_file_name, launcher_platform=ly_test_tools.HOST_OS_ATOM_TOOLS, args=None):
+    # type: (workspace_manager.AbstractWorkspaceManager, str, str, list[str]) -> base_launcher.Launcher
     """
-    Create a MaterialEditor compatible with the specified workspace.
-    MaterialEditor is only officially supported on the Windows Platform.
+    Create an Atom Tools launcher compatible with the specified workspace.
+    Most Atom Tools executables are only officially supported on the Windows Platform.
     :param workspace: lumberyard workspace to use
-    :param launcher_platform: the platform to target for a launcher (i.e. 'windows_dedicated' for DedicatedWinLauncher)
+    :param app_file_name: name of the file to look for
+    :param launcher_platform: the platform to target for a launcher (i.e. 'windows_atom_tools' for WinAtomToolsLauncher)
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
-    :return: MaterialEditor instance
+    :return: Atom Tools application instance
     """
     launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
-        log.warning(f"Using default MaterialEditor launcher for '{ly_test_tools.HOST_OS_MATERIAL_EDITOR}' "
+        log.warning(f"Using default Atom Tools launcher for '{ly_test_tools.HOST_OS_ATOM_TOOLS}' "
                     f"as no option is available for '{launcher_platform}'")
-        launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_MATERIAL_EDITOR)
-    return launcher_class(workspace, args)
+        launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_ATOM_TOOLS)
+    return launcher_class(workspace, app_file_name, args)

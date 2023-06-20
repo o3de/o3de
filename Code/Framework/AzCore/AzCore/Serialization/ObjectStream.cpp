@@ -105,7 +105,7 @@ namespace AZ
                 ST_BINARYFLAG_ELEMENT_END       = 0
             };
 
-            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ObjectStreamImpl, SystemAllocator);
 
             ObjectStreamImpl(IO::GenericStream* stream, SerializeContext* sc, const ClassReadyCB& readyCB, const CompletionCB& doneCB, const FilterDescriptor& filterDesc = FilterDescriptor(), int flags = 0, const InplaceLoadRootInfoCB& inplaceLoadInfoCB = InplaceLoadRootInfoCB())
                 : ObjectStream(sc)
@@ -251,12 +251,13 @@ namespace AZ
             // whenever tracing is available we make error logging available.
 #if defined(AZ_ENABLE_TRACING) 
             {
-                SerializeContext::DbgStackEntry de;
-                de.m_dataPtr = nullptr;
-                de.m_uuidPtr = &elementClass->m_typeId;
-                de.m_elementName = elementNode.GetNameString();
-                de.m_classData = elementClass;
-                de.m_classElement = nullptr;
+                SerializeContext::DbgStackEntry de {
+                    /*.m_dataPtr =*/ nullptr,
+                    /*.m_uuid =*/ elementClass ? elementClass->m_typeId : AZ::Uuid{},
+                    /*.m_classData =*/ elementClass,
+                    /*.m_elementName =*/ elementNode.GetNameString(),
+                    /*.m_classElement =*/ nullptr,
+                };
                 m_errorLogger.Push(de);
             }
 #endif // AZ_ENABLE_TRACING
@@ -520,7 +521,8 @@ namespace AZ
                     overlaidNode.m_element.m_stream = &stream;
                     DataOverlayTarget data(&overlaidNode, m_sc, &m_errorLogger);
 
-                    EBUS_EVENT_ID(overlay.m_providerId, DataOverlayProviderBus, FillOverlayData, &data, overlay.m_dataToken);
+                    DataOverlayProviderBus::Event(
+                        overlay.m_providerId, &DataOverlayProviderBus::Events::FillOverlayData, &data, overlay.m_dataToken);
                     if (overlaidNode.GetNumSubElements() > 0)
                     {
                         AZ_Assert(overlaidNode.GetNumSubElements() == 1, "Only one node should ever be returned by the overlay provider!");
@@ -769,12 +771,13 @@ namespace AZ
 
 #if defined(AZ_ENABLE_TRACING)
                 {
-                    SerializeContext::DbgStackEntry de;
-                    de.m_dataPtr = dataAddress;
-                    de.m_uuidPtr = &element.m_id;
-                    de.m_elementName = element.m_name;
-                    de.m_classData = classData;
-                    de.m_classElement = classElement;
+                    SerializeContext::DbgStackEntry de {
+                        /*.m_dataPtr =*/ dataAddress,
+                        /*.m_uuid =*/ element.m_id,
+                        /*.m_classData =*/ classData,
+                        /*.m_elementName =*/ element.m_name,
+                        /*.m_classElement =*/ classElement,
+                    };
                     m_errorLogger.Push(de);
                 }
 #endif // AZ_ENABLE_TRACING
@@ -1567,7 +1570,8 @@ namespace AZ
             {
                 // Data overlays are only supported for non-root elements, which means we should have a valid class element.
                 DataOverlayInfo overlay;
-                EBUS_EVENT_ID_RESULT(overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), DataOverlayInstanceBus, GetOverlayInfo);
+                DataOverlayInstanceBus::EventResult(
+                    overlay, DataOverlayInstanceId(objectPtr, classElement->m_typeId), &DataOverlayInstanceBus::Events::GetOverlayInfo);
                 if (overlay.m_providerId)
                 {
                     const SerializeContext::ClassData* overlayClassMetadata = m_sc->FindClassData(SerializeTypeInfo<DataOverlayInfo>::GetUuid());
@@ -1745,7 +1749,8 @@ namespace AZ
                     classData->m_serializer->DataToText(memStream, m_outStream, false);
 
                     char* rawText = static_cast<char*>(m_outStream.GetData()->data());
-                    char* xmlString = m_xmlDoc->allocate_string(rawText, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    char* xmlString = m_xmlDoc->allocate_string(nullptr, static_cast<size_t>(m_outStream.GetCurPos() + 1));
+                    AZStd::copy(rawText, rawText + m_outStream.GetCurPos(), xmlString);
                     xmlString[m_outStream.GetCurPos()] = 0;
 
                     attr = m_xmlDoc->allocate_attribute(m_xmlDoc->allocate_string("value"), xmlString);

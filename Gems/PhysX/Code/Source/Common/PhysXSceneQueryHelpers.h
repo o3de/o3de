@@ -11,6 +11,7 @@
 #include<AzFramework/Physics/Common/PhysicsSceneQueries.h>
 
 //physx sdk includes
+#include <PxPhysicsVersion.h>
 #include <PxQueryFiltering.h>
 #include <PxQueryReport.h>
 #include <PxRigidActor.h>
@@ -31,7 +32,7 @@ namespace PhysX
         physx::PxQueryHitType::Enum GetPxHitType(AzPhysics::SceneQuery::QueryHitType hitType);
 
         //! Helper function to convert from PhysX hit to AZ.
-        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit);
+        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit, const physx::PxActorShape& pxActorShape);
         AzPhysics::SceneQueryHit GetHitFromPxOverlapHit(const physx::PxOverlapHit& pxHit);
 
         //! Helper function to perform a ray cast against a PxRigidActor.
@@ -71,8 +72,17 @@ namespace PhysX
                 const physx::PxFilterData& queryFilterData, const physx::PxShape* pxShape,
                 const physx::PxRigidActor* actor, physx::PxHitFlags& queryTypes) override;
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
             // Unused, we're only pre-filtering at this time
-            physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData&, const physx::PxQueryHit&) override;
+            physx::PxQueryHitType::Enum postFilter(
+                const physx::PxFilterData& filterData,
+                const physx::PxQueryHit& hit,
+                const physx::PxShape* shape,
+                const physx::PxRigidActor* actor) override;
+#endif
+
+            // Unused, we're only pre-filtering at this time
+            physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         private:
             AzPhysics::SceneQuery::FilterCallback m_filterCallback;
@@ -88,10 +98,11 @@ namespace PhysX
             void finalizeQuery() override;
 
             const AzPhysics::SceneQuery::UnboundedOverlapHitCallback& m_hitCallback;
-            AzPhysics::SceneQueryHits m_results;
+            AzPhysics::SceneQueryHits& m_results;
 
             UnboundedOverlapCallback(const AzPhysics::SceneQuery::UnboundedOverlapHitCallback& hitCallback,
-                AZStd::vector<physx::PxOverlapHit>& hitBuffer);
+                AZStd::vector<physx::PxOverlapHit>& hitBuffer,
+                AzPhysics::SceneQueryHits& hits);
         };
     } // namespace SceneQueryHelpers
 }

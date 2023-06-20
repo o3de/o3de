@@ -26,7 +26,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(TagBitRegistry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TagBitRegistry, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(TagBitRegistry);
 
             using TagType = Handle<IndexType>;
@@ -56,11 +56,14 @@ namespace AZ
             //! Returns the number of allocated tags in the registry.
             size_t GetAllocatedTagCount() const { return m_tagRegistry.GetAllocatedTagCount(); };
 
+            template <class TagVisitor>
+            void VisitTags(TagVisitor visitor);
+
         private:
             TagBitRegistry() = default;
             static TagType ConvertToUnderlyingType(TagType tag);
             static TagType ConvertFromUnderlyingType(TagType tag);
-            TagRegistry<typename IndexType, sizeof(IndexType) * 8> m_tagRegistry;
+            TagRegistry<IndexType, sizeof(IndexType) * 8> m_tagRegistry;
         };
 
         template<typename IndexType>
@@ -103,6 +106,17 @@ namespace AZ
         auto TagBitRegistry<IndexType>::ConvertFromUnderlyingType(TagType tag) -> TagType
         {
             return tag.IsValid() ? TagType(1 << tag.GetIndex()) : tag;
+        }
+
+        template<typename IndexType>
+        template<class TagVisitor>
+        void TagBitRegistry<IndexType>::VisitTags(TagVisitor visitor)
+        {
+            auto tagConverter = [&](const Name& name, TagType tag)
+            {
+                visitor(name, ConvertFromUnderlyingType(tag));
+            };
+            m_tagRegistry.VisitTags(tagConverter);
         }
     }
 }

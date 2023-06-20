@@ -14,6 +14,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
+#include <SurfaceDataProfiler.h>
 
 namespace SurfaceData
 {
@@ -150,7 +151,7 @@ namespace SurfaceData
     void SurfaceDataShapeComponent::GetSurfacePointsFromList(
         AZStd::span<const AZ::Vector3> inPositions, SurfacePointList& surfacePointList) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        SURFACE_DATA_PROFILE_FUNCTION_VERBOSE
 
         AZStd::shared_lock<decltype(m_cacheMutex)> lock(m_cacheMutex);
 
@@ -192,7 +193,7 @@ namespace SurfaceData
         AZStd::span<const AZ::EntityId> creatorEntityIds,
         AZStd::span<SurfaceData::SurfaceTagWeights> weights) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        SURFACE_DATA_PROFILE_FUNCTION_VERBOSE
 
         AZ_Assert(
             (positions.size() == creatorEntityIds.size()) && (positions.size() == weights.size()),
@@ -256,7 +257,7 @@ namespace SurfaceData
 
     void SurfaceDataShapeComponent::UpdateShapeData()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(SurfaceData);
 
         bool shapeValidBeforeUpdate = false;
         bool shapeValidAfterUpdate = false;

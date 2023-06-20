@@ -59,7 +59,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->DataElement(Edit::UIHandlers::Color, &DirectionalLightComponentConfig::m_color, "Color", "Color of the light")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetRgbEditorConfig())
+                            ->Attribute("ColorEditorConfiguration", AZ::RPI::ColorUtils::GetLinearRgbEditorConfig())
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_intensityMode, "Intensity mode", "Allows specifying light values in lux or Ev100")
                             ->EnumAttribute(PhotometricUnit::Lux, "Lux")
                             ->EnumAttribute(PhotometricUnit::Ev100Illuminance, "Ev100")
@@ -80,7 +80,7 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::EntityId, &DirectionalLightComponentConfig::m_cameraEntityId, "Camera", "Entity of the camera for cascaded shadowmap view frustum.")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowFarClipDistance, "Shadow far clip", "Shadow specific far clip distance.")
-                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowmapSize, "Shadowmap size", "Width/Height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")
@@ -91,8 +91,10 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, 1)
                             ->Attribute(Edit::Attributes::Max, Shadow::MaxNumberOfCascades)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                         ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_isShadowmapFrustumSplitAutomatic, "Automatic splitting",
                             "Switch splitting of shadowmap frustum to cascades automatically or not.")
+                            ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowmapFrustumSplitSchemeRatio, "Split ratio",
                             "Ratio to lerp between the two types of frustum splitting scheme.\n"
                             "0 = Uniform scheme which will split the frustum evenly across all cascades.\n"
@@ -104,7 +106,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitManual)
                         ->DataElement(Edit::UIHandlers::Vector4, &DirectionalLightComponentConfig::m_cascadeFarDepths, "Far depth cascade",
                             "Far depth of each cascade.  The value of the index greater than or equal to cascade count is ignored.")
-                            ->Attribute(Edit::Attributes::Min, 0.01f)
+                            ->Attribute(Edit::Attributes::Min, DirectionalLightConstants::MIN_CASCADE_FAR_DEPTH)
                             ->Attribute(Edit::Attributes::Max, &DirectionalLightComponentConfig::m_shadowFarClipDistance)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitAutomatic)
@@ -133,7 +135,7 @@ namespace AZ
                             ->EnumAttribute(ShadowFilterMethod::Esm, "ESM")
                             ->EnumAttribute(ShadowFilterMethod::EsmPcf, "ESM+PCF")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count\n",
+                        ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is used only when the pixel is predicted to be on the boundary.\n"
                             "Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
@@ -142,20 +144,20 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled,
-                            "Shadow Receiver Plane Bias Enable\n",
+                            "Shadow Receiver Plane Bias Enable",
                             "This reduces shadow acne when using large pcf kernels.")
                           ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                           ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled) 
                          ->DataElement(
                             Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowBias,
-                            "Shadow Bias\n",
+                            "Shadow Bias",
                             "Reduces acne by applying a fixed bias along z in shadow-space.\n"
                             "If this is 0, no biasing is applied.") 
                            ->Attribute(Edit::Attributes::Min, 0.f)
                            ->Attribute(Edit::Attributes::Max, 0.2) 
                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(
-                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias\n",
+                           Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias",
                            "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
                            "If this is 0, no biasing is applied.")
                            ->Attribute(Edit::Attributes::Min, 0.f)
@@ -163,12 +165,12 @@ namespace AZ
                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(
                             Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_cascadeBlendingEnabled,
-                            "Blend between cascades\n", "Enables smooth blending between shadow map cascades.")
+                            "Blend between cascades", "Enables smooth blending between shadow map cascades.")
                         ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
 
                         // Fullscreen Shadow Blur...
                         ->DataElement(Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_fullscreenBlurEnabled,
-                            "Fullscreen Blur\n",
+                            "Fullscreen Blur",
                             "Enables fullscreen blur on fullscreen sunlight shadows.")
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_fullscreenBlurConstFalloff,
                                 "Fullscreen Blur Strength",

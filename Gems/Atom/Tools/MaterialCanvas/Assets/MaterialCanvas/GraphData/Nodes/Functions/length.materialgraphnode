@@ -1,0 +1,44 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{3E3DB3D2-D6EB-4688-8A06-6A47DE3A3327}",
+        "category": "Math Functions",
+        "title": "Length",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the length of the input vector",
+        "slotDataTypeGroups": [
+            "inValue",
+            "outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = length(inValue);"
+                    ]
+                }
+            }
+        ]
+    }
+}

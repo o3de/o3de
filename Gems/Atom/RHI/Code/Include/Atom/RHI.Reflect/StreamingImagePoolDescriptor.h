@@ -20,7 +20,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(StreamingImagePoolDescriptor, "{67F5A1DB-37B9-4959-A04F-4A7C939DD853}", ResourcePoolDescriptor);
-            AZ_CLASS_ALLOCATOR(StreamingImagePoolDescriptor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePoolDescriptor, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

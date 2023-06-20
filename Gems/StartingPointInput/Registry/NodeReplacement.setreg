@@ -1,0 +1,16 @@
+{
+    "O3DE": {
+        "NodeReplacement": {
+            "StartingPointInput": [
+                {
+                    "OldNode" : {
+                        "Uuid": "0B0AC61B-4BBA-42BF-BDCD-DAF2D3CA41A8"
+                    },
+                    "NewNode" : {
+                        "Uuid": "0A2EB488-5A6A-E166-BB62-23FF81499E33"
+                    }
+                }
+            ]
+        }
+    }
+}

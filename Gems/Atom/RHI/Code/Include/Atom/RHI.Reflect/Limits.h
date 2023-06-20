@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {
@@ -34,7 +35,8 @@ namespace AZ
                 constexpr uint32_t MultiSampleCustomLocationsCountMax = 16;
                 constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
                 constexpr uint32_t SubpassCountMax = 10;
-                constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 1; // RenderAttachments + ResolveAttachments + DepthStencilAttachment
+                constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 2; // RenderAttachments + ResolveAttachments + DepthStencilAttachment +  ShadingRateAttachment
+                constexpr uint32_t UnboundedArraySize = 100000u;
             }
 
             namespace Device
@@ -85,5 +87,12 @@ namespace AZ
             constexpr uint32_t Constant = 256;
             constexpr uint32_t Buffer = 16;
         }
+
+        namespace MultiDevice
+        {
+            constexpr int DefaultDeviceIndex = 0;
+        }
+
+        constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();
     }
 }

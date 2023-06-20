@@ -108,7 +108,7 @@ struct TestObject
 };
 
 class AWSCoreFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     AWSCoreFixture() = default;
@@ -121,9 +121,6 @@ public:
 
     void SetUpFixture(bool mockSettingsRegistry = true)
     {
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
         m_localFileIO = aznew AZ::IO::LocalFileIO();
         m_otherFileIO = AZ::IO::FileIOBase::GetInstance();
         AZ::IO::FileIOBase::SetInstance(nullptr);
@@ -142,7 +139,16 @@ public:
         // Add AWSCore as an active gem for unit test
         if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
         {
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            AZ::IO::FixedMaxPath enginePath;
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+
+            // Merge in the o3de manifest files gem root paths to the Settings Registry
+            // and set the AWSCore gem as an active gem which will add it to the active gem
+            // section of the Settings Registry as well as add a @gemroot@ alias for it
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(*settingsRegistry);
             AZ::Test::AddActiveGem("AWSCore", *settingsRegistry, m_localFileIO);
         }
@@ -178,9 +184,6 @@ public:
         {
             AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
         }
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
     bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)

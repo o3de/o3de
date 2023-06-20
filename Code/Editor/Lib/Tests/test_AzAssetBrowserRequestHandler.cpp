@@ -53,7 +53,15 @@ namespace UnitTest
         }
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType&) {}
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType&){}
-        static void Reflect(AZ::ReflectContext*){};
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            AZ::SerializeContext* serializeContext = AZ::RttiCast<AZ::SerializeContext*>(context);
+
+            if (serializeContext)
+            {
+                serializeContext->Class<MockEditorComponent, AzToolsFramework::Components::EditorComponentBase>();
+            }
+        }
 
         AZ::Data::AssetId m_primaryAssetSet;
     };
@@ -108,7 +116,6 @@ namespace UnitTest
     {
     public:
         MOCK_METHOD1(BrowseForAssets, void(AzToolsFramework::AssetBrowser::AssetSelectionModel& /*selection*/));
-        MOCK_METHOD1(GetIconTextureIdFromEntityIconPath, int(const AZStd::string&));
         MOCK_METHOD2(CreateNewEntityAtPosition, AZ::EntityId (const AZ::Vector3&, AZ::EntityId));
     };
 
@@ -130,7 +137,7 @@ namespace UnitTest
         MOCK_METHOD1(GetComponentName, AZStd::string(const AZ::Component*));
     };
 
-    class AzAssetBrowserRequestHandlerFixture : public AllocatorsTestFixture
+    class AzAssetBrowserRequestHandlerFixture : public LeakDetectionFixture
     {
     public:
         using MockComponentApplicationBusHandler = UnitTest::MockComponentApplication;
@@ -140,13 +147,14 @@ namespace UnitTest
             using namespace AzToolsFramework::AssetBrowser;
             using namespace AzToolsFramework::AssetDatabase;
 
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
-            MockEditorComponent::CreateDescriptor();
+            m_editorComponentDescriptor = MockEditorComponent::CreateDescriptor();
             m_assetTypeOfModel = AZ::Data::AssetType("{8ABC6797-2DB6-4AC1-975B-5B344ABD9105}");
             m_assetTypeOfActor = AZ::Data::AssetType("{2C9B7713-8C78-43AA-ABC9-B1FEC964ECFC}");
 
             m_fileIOMock = AZStd::make_unique<testing::NiceMock<AZ::IO::MockFileIOBase>>();
+            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_componentApplicationMock = AZStd::make_unique<testing::NiceMock<MockComponentApplicationBusHandler>>();
             m_frameworkApplicationMock = AZStd::make_unique<testing::NiceMock<MockAzFrameworkApplicationRequestBusHandler>>();
             m_editorRequestHandlerMock = AZStd::make_unique<testing::NiceMock<MockEditorRequestBusHandler>>();
@@ -163,6 +171,8 @@ namespace UnitTest
 
             // Setup the default returns for our mock file io calls
             AZ::IO::MockFileIOBase::InstallDefaultReturns(*m_fileIOMock.get());
+
+            MockEditorComponent::Reflect(m_serializeContext.get());
 
             // override the file IO mocks's ISDirectory function to return true
             // only if the folder name is "C:/whatever"
@@ -185,6 +195,9 @@ namespace UnitTest
                         newEntity->Activate();
                         return newEntity->GetId();
                     });
+
+            ON_CALL(*m_componentApplicationMock.get(), GetSerializeContext())
+                .WillByDefault(::testing::Return(m_serializeContext.get()));
 
             // AddEntity should just return true - to avoid asserts, etc.
             ON_CALL(*m_componentApplicationMock.get(), AddEntity(::testing::_))
@@ -226,17 +239,17 @@ namespace UnitTest
                         {
                             if (comptype != AZ::Uuid(MockEditorComponent::s_MockEditorComponentTypeId))
                             {
-                                return ThisOutcome(AZStd::string("Failed - wrong component"));
+                                return ThisOutcome(AZStd::unexpect, AZStd::string("Failed - wrong component"));
                             }
                         }
                         if (componentsToAdd.size() != 1)
                         {
-                            return ThisOutcome(AZStd::string("Failed - too many components"));
+                            return ThisOutcome(AZStd::unexpect, AZStd::string("Failed - too many components"));
                         }
                         // to 1 entity
                         if (entities.size() != 1)
                         {
-                            return ThisOutcome(AZStd::string("Failed - requires exactly 1 entity"));
+                            return ThisOutcome(AZStd::unexpect, AZStd::string("Failed - requires exactly 1 entity"));
                         }
                         // record what components were attempted to be added:
                         m_componentsAddedToEntites.assign(componentsToAdd.begin(), componentsToAdd.end());
@@ -363,16 +376,20 @@ namespace UnitTest
             m_rootAssetBrowserEntry.reset();
             AzToolsFramework::AssetBrowser::EntryCache::DestroyInstance();
 
+            m_editorComponentDescriptor->ReleaseDescriptor();
+
+            m_serializeContext.reset();
             m_componentApplicationMock.reset();
             m_frameworkApplicationMock.reset();
             m_editorRequestHandlerMock.reset();
             m_entityCompositionRequestBusMock.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     protected:
         AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
+        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<testing::NiceMock<MockComponentApplicationBusHandler>> m_componentApplicationMock;
         AZStd::unique_ptr<testing::NiceMock<MockAzFrameworkApplicationRequestBusHandler>> m_frameworkApplicationMock;
         AZStd::unique_ptr<testing::NiceMock<MockEditorRequestBusHandler>> m_editorRequestHandlerMock;
@@ -385,6 +402,8 @@ namespace UnitTest
         AZ::Data::AssetType m_assetTypeOfActor;
         AZStd::vector<AZ::Entity*> m_createdEntities;
         AZ::ComponentTypeList m_componentsAddedToEntites;
+    private:
+        AZ::ComponentDescriptor* m_editorComponentDescriptor = nullptr;
     };
 
     TEST_F(AzAssetBrowserRequestHandlerFixture, DragEnterTest)

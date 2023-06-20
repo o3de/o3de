@@ -29,7 +29,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(DiskShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DiskShape, AZ::SystemAllocator)
         AZ_RTTI(DiskShape, "{21E75068-3E05-4DD2-981A-DAEB0B1A9BC4}")
 
         static void Reflect(AZ::ReflectContext* context);

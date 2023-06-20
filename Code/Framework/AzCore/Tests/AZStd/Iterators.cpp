@@ -23,7 +23,7 @@
 namespace UnitTest
 {
     class Iterators
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 

@@ -6,11 +6,7 @@
  *
  */
 
-#include <stdarg.h>
-#include <algorithm>
-#include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <RHI/Vulkan.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/BufferView.h>
@@ -19,6 +15,14 @@
 #include <RHI/Image.h>
 #include <RHI/Instance.h>
 #include <Vulkan_Traits_Platform.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
+
+#define VMA_IMPLEMENTATION
+
+#include <vma/vk_mem_alloc.h>
 
 namespace AZ
 {
@@ -343,7 +347,7 @@ namespace AZ
                     }
 
                     [[maybe_unused]] VkResult result =
-                        context.CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &s_messageCallback);
+                        context.CreateDebugUtilsMessengerEXT(instance, &createInfo, VkSystemAllocator::Get(), &s_messageCallback);
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug messaging system");
                 }
@@ -375,7 +379,7 @@ namespace AZ
                     }
 
                     [[maybe_unused]] VkResult result =
-                        context.CreateDebugReportCallbackEXT(instance, &dbgCreateInfo, nullptr, &s_reportCallback);
+                        context.CreateDebugReportCallbackEXT(instance, &dbgCreateInfo, VkSystemAllocator::Get(), &s_reportCallback);
 
                     AZ_Error("Vulkan", !result, "Failed to initialize the debug reporting system");
                 }
@@ -385,11 +389,11 @@ namespace AZ
             {
                 if (s_reportCallback != VK_NULL_HANDLE)
                 {
-                    context.DestroyDebugReportCallbackEXT(instance, s_reportCallback, nullptr);
+                    context.DestroyDebugReportCallbackEXT(instance, s_reportCallback, VkSystemAllocator::Get());
                 }
                 if (s_messageCallback != VK_NULL_HANDLE)
                 {
-                    context.DestroyDebugUtilsMessengerEXT(instance, s_messageCallback, nullptr);
+                    context.DestroyDebugUtilsMessengerEXT(instance, s_messageCallback, VkSystemAllocator::Get());
                 }
             }
 

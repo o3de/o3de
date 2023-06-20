@@ -11,9 +11,13 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 namespace AzFramework
 {
@@ -26,7 +30,7 @@ namespace AzFramework
         friend class AssetCatalog;
     public:
         AZ_TYPE_INFO(AssetRegistry, "{5DBC20D9-7143-48B3-ADEE-CCBD2FA6D443}");
-        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetRegistry, AZ::SystemAllocator);
 
         AssetRegistry() = default;
 
@@ -34,13 +38,13 @@ namespace AzFramework
         void UnregisterAsset(AZ::Data::AssetId id);
 
         void RegisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId, const AZ::Data::AssetId& newId);
-        void UnregisterLegacyAssetMapping(const AZ::Data::AssetId& legacyId);
+        void UnregisterLegacyAssetMappingsForAsset(const AZ::Data::AssetId& id);
 
         void SetAssetDependencies(const AZ::Data::AssetId& id, const AZStd::vector<AZ::Data::ProductDependency>& dependencies);
         void RegisterAssetDependency(const AZ::Data::AssetId& id, const AZ::Data::ProductDependency& dependency);
-        AZStd::vector<AZ::Data::ProductDependency> GetAssetDependencies(const AZ::Data::AssetId& id);
+        AZStd::vector<AZ::Data::ProductDependency> GetAssetDependencies(const AZ::Data::AssetId& id) const;
 
-        //! LEGACY - do not use in new code unless interfacing with legacy systems.  
+        //! LEGACY - do not use in new code unless interfacing with legacy systems.
         //! All new systems should be referring to assets by ID/Type only and should not need to look up by path/
         AZ::Data::AssetId GetAssetIdByPath(const char* assetPath) const;
 
@@ -65,10 +69,13 @@ namespace AzFramework
 
         // use these only through the legacy getters/setters above.
         using AssetPathToIdMap = AZStd::unordered_map < AZ::Uuid, AZ::Data::AssetId >;
-        
+
         AssetPathToIdMap m_assetPathToId; // for legacy lookups only
         LegacyAssetIdToRealAssetIdMap m_legacyAssetIdToRealAssetId; // for when we change the UUID-creation scheme
-        
+
+        // for reverse look-ups of the above, provides a list of legacy AssetIds for a given real AssetId
+        AZStd::unordered_multimap<AZ::Data::AssetId, AZ::Data::AssetId> m_realAssetIdToLegacyAssetIdMap;
+
         //! LEGACY - do not use in new code unless interfacing with legacy systems.
         //! given an assetPath and AssetID, this stores it in the registry to use with the above GetAssetIdByPath function.
         //! Called automatically by RegisterAsset.

@@ -19,7 +19,7 @@ namespace Gestures
     {
     public:
         AZ_RTTI(GesturesModule, "{5648A92C-04A3-4E30-B4E2-B0AEB280CA44}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(GesturesModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GesturesModule, AZ::SystemAllocator);
 
         GesturesModule()
             : CryHooksModule()

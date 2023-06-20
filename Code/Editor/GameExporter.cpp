@@ -27,7 +27,6 @@
 
 #include "Objects/EntityObject.h"
 
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,7 +83,6 @@ CGameExporter::~CGameExporter()
 bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportEndian, const char* subdirectory)
 {
     CAutoDocNotReady autoDocNotReady;
-    CObjectManagerLevelIsExporting levelIsExportingFlag;
     QWaitCursor waitCursor;
 
     IEditor* pEditor = GetIEditor();
@@ -180,7 +178,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             ////////////////////////////////////////////////////////////////////////
             // Exporting map setttings
             ////////////////////////////////////////////////////////////////////////
-            ExportOcclusionMesh(sLevelPath.toUtf8().data());
 
             //! Export Level data.
             CLogFile::WriteLine("Exporting leveldata.xml");
@@ -238,29 +235,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
-{
-    IEditor* pEditor = GetIEditor();
-    pEditor->SetStatusText(QObject::tr("including Occluder Mesh \"occluder.ocm\" if available"));
-
-    char resolvedLevelPath[AZ_MAX_PATH_LEN] = { 0 };
-    AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pszGamePath, resolvedLevelPath, AZ_MAX_PATH_LEN);
-    QString levelDataFile = QString(resolvedLevelPath) + "occluder.ocm";
-    QFile FileIn(levelDataFile);
-    if (FileIn.open(QFile::ReadOnly))
-    {
-        CMemoryBlock Temp;
-        const size_t Size   =   FileIn.size();
-        Temp.Allocate(static_cast<int>(Size));
-        FileIn.read(reinterpret_cast<char*>(Temp.GetBuffer()), Size);
-        FileIn.close();
-        CCryMemFile FileOut;
-        FileOut.Write(Temp.GetBuffer(), static_cast<int>(Size));
-        m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), FileOut);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/)
 {
     IEditor* pEditor = GetIEditor();
@@ -292,7 +266,11 @@ void CGameExporter::ExportLevelData(const QString& path, bool /*bExportMission*/
     AZStd::vector<char> entitySaveBuffer;
     AZ::IO::ByteContainerStream<AZStd::vector<char> > entitySaveStream(&entitySaveBuffer);
     bool savedEntities = false;
-    EBUS_EVENT_RESULT(savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForGame, entitySaveStream, AZ::DataStream::ST_BINARY);
+    AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+        savedEntities,
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::SaveToStreamForGame,
+        entitySaveStream,
+        AZ::DataStream::ST_BINARY);
     if (savedEntities)
     {
         QString entitiesFile;

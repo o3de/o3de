@@ -10,6 +10,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
+#include <Atom/RPI.Edit/Shader/ShaderOptionValuesSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -69,6 +70,97 @@ namespace ShaderManagementConsole
         if (shaderAssetResult)
         {
             m_shaderAsset = shaderAssetResult.GetValue();
+
+            // No material is using this shader, check for system option settings
+            if (m_shaderVariantListSourceData.m_shaderVariants.empty())
+            {
+                // Read system option file
+                AZ::IO::Path fullPath = AZ::IO::Path(AZ::RPI::AssetUtils::ResolvePathReference(m_absolutePath, shaderPath));
+                fullPath.ReplaceExtension("systemoptions");
+
+                AZ::RPI::ShaderOptionValuesSourceData systemOptionSetting;
+                if (!AZ::RPI::JsonUtils::LoadObjectFromFile(fullPath.String(), systemOptionSetting))
+                {
+                    AZ_Warning("ShaderManagementConsoleDocument", false, "System option setting not found : '%s.'", fullPath.c_str());
+                    return;
+                }
+
+                if (systemOptionSetting.size() > 0)
+                {
+                    AZ::u32 stableId = 1;
+                    AZStd::vector<AZ::RPI::ShaderOptionDescriptor> unsetOption;
+                    const auto& shaderOptionDescriptors = m_shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
+
+                    // Check user input with descriptor from shader asset
+                    for (auto& shaderOptionDescriptor : shaderOptionDescriptors)
+                    {
+                        AZ::Name optionName = shaderOptionDescriptor.GetName();
+                        const auto optionIt = systemOptionSetting.find(optionName);
+                        if (optionIt != systemOptionSetting.end())
+                        {
+                            AZ::Name valueName = AZ::Name(optionIt->second);
+                            if (strcmp(valueName.GetCStr(), "") == 0)
+                            {
+                                // Option with unset value, expend later
+                                unsetOption.push_back(shaderOptionDescriptor);
+                                systemOptionSetting[optionName] = shaderOptionDescriptor.GetDefaultValue();
+                            }
+                        }
+                    }
+
+                    // Get total number of variants
+                    size_t totalVariantSize = 1;
+                    for (auto& shaderOptionDescriptor : unsetOption)
+                    {
+                        uint32_t minValue = shaderOptionDescriptor.GetMinValue().GetIndex();
+                        uint32_t maxValue = shaderOptionDescriptor.GetMaxValue().GetIndex();
+                        totalVariantSize = totalVariantSize * (maxValue - minValue + 1);
+                    }
+                    m_shaderVariantListSourceData.m_shaderVariants.reserve(totalVariantSize);
+                    m_shaderVariantListSourceData.m_shaderVariants.emplace_back(stableId, systemOptionSetting);
+                    stableId++;
+
+                    // Expand unset option
+                    for (auto& shaderOptionDescriptor : unsetOption)
+                    {
+                        AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo> shaderVariants;
+                        AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo> expandShaderVariants;
+
+                        uint32_t minValue = shaderOptionDescriptor.GetMinValue().GetIndex();
+                        uint32_t maxValue = shaderOptionDescriptor.GetMaxValue().GetIndex();
+                        size_t listSize = m_shaderVariantListSourceData.m_shaderVariants.size();
+                        size_t expandSize = listSize * (maxValue - minValue);
+                        shaderVariants.reserve(listSize);
+                        expandShaderVariants.reserve(expandSize);
+
+                        for (uint32_t index = minValue; index <= maxValue; ++index)
+                        {
+                            AZ::Name optionValue = shaderOptionDescriptor.GetValueName(index);
+                            if (optionValue != shaderOptionDescriptor.GetDefaultValue())
+                            {
+                                stableId = UpdateOptionValue(
+                                    m_shaderVariantListSourceData.m_shaderVariants,
+                                    shaderVariants,
+                                    shaderOptionDescriptor.GetName(),
+                                    optionValue,
+                                    stableId);
+
+                                expandShaderVariants.insert(
+                                    expandShaderVariants.end(),
+                                    AZStd::make_move_iterator(shaderVariants.begin()),
+                                    AZStd::make_move_iterator(shaderVariants.end()));
+                            }
+                        }
+
+                        m_shaderVariantListSourceData.m_shaderVariants.insert(
+                            m_shaderVariantListSourceData.m_shaderVariants.end(),
+                            AZStd::make_move_iterator(expandShaderVariants.begin()),
+                            AZStd::make_move_iterator(expandShaderVariants.end()));
+                    }
+                }
+            }
+            
+
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
@@ -116,7 +208,6 @@ namespace ShaderManagementConsole
             return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
-        documentType.m_supportedAssetTypesToCreate.insert(azrtti_typeid<AZ::RPI::ShaderAsset>());
         return documentType;
     }
 
@@ -244,11 +335,6 @@ namespace ShaderManagementConsole
         return true;
     }
 
-    bool ShaderManagementConsoleDocument::CanSave() const
-    {
-        return true;
-    }
-
     void ShaderManagementConsoleDocument::Clear()
     {
         AtomToolsFramework::AtomToolsDocument::Clear();
@@ -291,5 +377,28 @@ namespace ShaderManagementConsole
         m_modified = {};
 
         return OpenSucceeded();
+    }
+
+    AZ::u32 ShaderManagementConsoleDocument::UpdateOptionValue(
+        AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo>& shaderVariantIN,
+        AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo>& shaderVariantOUT,
+        AZ::Name targetOption,
+        AZ::Name targetValue,
+        AZ::u32 stableId)
+    {
+        shaderVariantOUT.clear();
+
+        for (auto& variantInfo : shaderVariantIN)
+        {
+            AZ::RPI::ShaderOptionValuesSourceData optionList;
+            optionList = variantInfo.m_options;
+            if (optionList.count(targetOption) > 0)
+            {
+                optionList[targetOption] = targetValue;
+            }
+            shaderVariantOUT.emplace_back(stableId, optionList);
+            stableId += 1;
+        }
+        return stableId;
     }
 } // namespace ShaderManagementConsole

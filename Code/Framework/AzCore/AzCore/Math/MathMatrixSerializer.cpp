@@ -342,7 +342,7 @@ namespace AZ
 {
     // BaseJsonMatrixSerializer
 
-    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonMatrixSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(BaseJsonMatrixSerializer, SystemAllocator);
 
     auto BaseJsonMatrixSerializer::GetOperationsFlags() const -> OperationFlags
     {
@@ -352,7 +352,7 @@ namespace AZ
 
     // Matrix3x3
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x3Serializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x3Serializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonMatrix3x3Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -373,7 +373,7 @@ namespace AZ
 
     // Matrix3x4
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x4Serializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix3x4Serializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonMatrix3x4Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -393,7 +393,7 @@ namespace AZ
 
     // Matrix4x4
 
-    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix4x4Serializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonMatrix4x4Serializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonMatrix4x4Serializer::Load(void* outputValue, const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)

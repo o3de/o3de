@@ -31,7 +31,7 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # the default and currently only supported discovery path
 from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
 # -------------------------------------------------------------------------
-# currently we only support the default win install path for 
+# currently we only support the default win install path for
 # for Blender 3.1, you can modify constants.py or you can
 # override the envar/path in
 def get_default_install(default_app_home: Union[str, Path] = PATH_DCCSI_BLENDER_LOCATION) -> Path:
@@ -75,11 +75,11 @@ def find_all_installs() -> list:
 if __name__ == '__main__':
     """! Run this file as main, local testing"""
 
-    winghome = get_default_install(winghome=PATH_WINGHOME)
+    blender_home = get_default_install(default_app_home=PATH_DCCSI_BLENDER_LOCATION)
 
     find_all_installs()
 
-    if winghome.exists():
-        _LOGGER.info(f'WINGHOME: {winghome}')
+    if blender_home.exists():
+        _LOGGER.info(f'blender_home: {blender_home}')
     else:
-        _LOGGER.error(f'WINGHOME not valid: {winghome.as_posix()}')
+        _LOGGER.error(f'blender_home not valid: {blender_home.as_posix()}')

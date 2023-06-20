@@ -31,8 +31,10 @@ set(FILES
     ../Common/VisualStudio/AzCore/Natvis/azcore.natstepfilter
     ../Common/VisualStudio/AzCore/Natvis/azcore.natjmc
     ../Common/VisualStudio/AzCore/Natvis/rapidjson.natvis
+    ../Common/WinAPI/AzCore/Process/ProcessInfo_WinAPI.cpp
     AzCore/Debug/StackTracer_Windows.cpp
     ../Common/WinAPI/AzCore/Debug/Trace_WinAPI.cpp
+    ../Common/WinAPI/AzCore/IO/AnsiTerminalUtils_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.cpp
     ../Common/WinAPI/AzCore/IO/Streamer/StreamerContext_WinAPI.h
     ../Common/WinAPI/AzCore/IO/SystemFile_WinAPI.cpp
@@ -49,10 +51,7 @@ set(FILES
     AzCore/IPC/SharedMemory_Windows.h
     AzCore/IPC/SharedMemory_Windows.cpp
     ../Common/WinAPI/AzCore/Memory/OSAllocator_WinAPI.h
-    ../Common/WinAPI/AzCore/Memory/OverrunDetectionAllocator_WinAPI.h
-    AzCore/Memory/HeapSchema_Windows.cpp
     AzCore/Memory/OSAllocator_Platform.h
-    AzCore/Memory/OverrunDetectionAllocator_Platform.h
     AzCore/Math/Random_Platform.h
     AzCore/Math/Random_Windows.cpp
     AzCore/Math/Random_Windows.h

@@ -253,7 +253,7 @@ namespace UnitTest
      * We use tuned version of the boost::function (which is in TR1), so we use the boost::function tests too
      */
     class Function
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void test_zero_args()
@@ -1005,12 +1005,12 @@ namespace UnitTest
     // Fixture for Type Parameter test to test AZStd::function move operations
     template <typename FunctorType>
     class FunctionFunctorTestFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             FunctionTestInternal::s_functorCopyAssignmentCount = 0;
             FunctionTestInternal::s_functorCopyConstructorCount = 0;
             FunctionTestInternal::s_functorMoveAssignmentCount = 0;
@@ -1019,7 +1019,7 @@ namespace UnitTest
 
         void TearDown() override
         {
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
     };
@@ -1083,7 +1083,7 @@ namespace UnitTest
     * We use tuned version of the boost::bind (which is in TR1), so we use the boost::bind tests too
     */
     class Bind
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void function_test()

@@ -28,6 +28,10 @@
                     "ScopeAttachmentUsage": "DepthStencil"
                 },
                 {
+                    "Name": "DepthLinear",
+                    "SlotType": "Input"
+                },
+                {
                     "Name": "SpecularInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
@@ -282,7 +286,13 @@
                             "AttachmentRef": {
                                 "Pass": "ReflectionProbeStencilPass",
                                 "Attachment": "DepthStencilInputOutput"
-
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinear"
                             }
                         },
                         {

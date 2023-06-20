@@ -189,7 +189,7 @@ void CCompoundSplineTrack::GetValue(float time, Quat& value)
         {
             m_subTracks[i]->GetValue(time, angles[i]);
         }
-        value = Quat::CreateRotationXYZ(Ang3(DEG2RAD(angles[0]), DEG2RAD(angles[1]), DEG2RAD(angles[2])));
+        value = Quat::CreateRotationZYX(Ang3(DEG2RAD(angles[0]), DEG2RAD(angles[1]), DEG2RAD(angles[2])));
     }
     else
     {

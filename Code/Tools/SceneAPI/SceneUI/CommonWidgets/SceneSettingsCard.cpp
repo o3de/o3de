@@ -16,6 +16,7 @@
 #include <QPushButton>
 #include <QSvgWidget>
 #include <QSvgRenderer>
+#include <QTimer>
 #include <QWidgetAction>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContextLogFormatter.h>
@@ -35,12 +36,14 @@ SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */
     m_busySpinner->setBaseSize(20, 20);
     m_backgroundLayout->insertWidget(1, m_busySpinner);
     m_busySpinner->setStyleSheet("background-color: rgba(0,0,0,0)");
+    m_busySpinner->setToolTip(tr("There is an active processing event for this file. The window will update when the event completes."));
 
     m_closeButton = new QPushButton(this);
     m_closeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     m_closeButton->setMinimumSize(24, 24);
     m_closeButton->setMaximumSize(24, 24);
     m_closeButton->setBaseSize(24, 24);
+    m_closeButton->setToolTip(tr("Removes this from the window. If you wish to see log details for this file again later, you can check the Asset Processor."));
 
     QIcon closeButtonIcon;
     closeButtonIcon.addPixmap(QPixmap(":/SceneUI/Common/CloseIcon.svg"));
@@ -54,7 +57,15 @@ SceneSettingsCardHeader::SceneSettingsCardHeader(QWidget* parent /* = nullptr */
 
 void SceneSettingsCardHeader::triggerCloseButton()
 {
-    parent()->deleteLater();
+    // A singleshot + delete on the parent is used instead of calling deleteLater,
+    // because the deleteLater wasn't functioning in automated tests, but this logic does.
+    QObject* card(parent());
+    QTimer::singleShot(
+        0,
+        [card]()
+        {
+            delete card;
+        });
 }
 
 void SceneSettingsCardHeader::SetCanClose(bool canClose)
@@ -280,32 +291,47 @@ void SceneSettingsCard::SetState(State newState)
     switch (newState)
     {
     case State::Loading:
-        setTitle(tr("Loading scene settings"));
-        m_settingsHeader->SetCanClose(false);
+        {
+            QString toolTip(tr("The scene settings for this file are being loaded. The window will update when the event completes."));
+            setTitle(tr("Loading scene settings"));
+            setTitleToolTip(toolTip);
+            m_settingsHeader->m_busySpinner->setToolTip(toolTip);
+            m_settingsHeader->SetCanClose(false);
+        }
         break;
     case State::Processing:
-        setTitle(tr("Saving scene settings, and reprocessing scene file"));
-        m_settingsHeader->SetCanClose(false);
+        {
+            QString toolTip(tr("The scene file is being processed. The window will update when the event completes."));
+            setTitle(tr("Saving scene settings, and reprocessing scene file"));
+            setTitleToolTip(toolTip);
+            m_settingsHeader->m_busySpinner->setToolTip(toolTip);
+            m_settingsHeader->SetCanClose(false);
+        }
         break;
     case State::Done:
         {
+            QString toolTip(tr("No errors or warnings were encountered with the scene file."));
             QString errorsAndWarningsString;
             if (m_warningCount > 0 || m_errorCount > 0)
             {
                 errorsAndWarningsString = tr(" with %1 warning(s), %2 error(s)").arg(m_warningCount).arg(m_errorCount);
+                toolTip = tr("Warnings and/or errors were encountered with the scene file. You can view the details by expanding this card "
+                             "and reading the log message.");
             }
 
             QString previousStateString;
             switch (m_sceneCardState)
             {
             case State::Loading:
-                previousStateString = tr("Loading ");
+                previousStateString = tr("Loading");
                 break;
             case State::Processing:
-                previousStateString = tr("Processing ");
+                previousStateString = tr("Processing");
+                toolTip = tr("%1 If you dismiss this card, you can view the processing logs again in the Asset Processor.").arg(toolTip);
                 break;
                 }
-            setTitle(tr("%1%2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
+            setTitle(tr("%1 %2 completed at %3%4").arg(previousStateString).arg(m_fileTracked).arg(GetTimeNowAsString()).arg(errorsAndWarningsString));
+            setTitleToolTip(toolTip);
             m_settingsHeader->SetCanClose(true);
 
             switch (m_completionState)

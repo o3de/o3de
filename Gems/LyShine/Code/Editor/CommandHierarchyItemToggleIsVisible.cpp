@@ -23,7 +23,7 @@ CommandHierarchyItemToggleIsVisible::CommandHierarchyItemToggleIsVisible(UndoSta
         m_ids.push_back(i->GetEntityId());
     }
 
-    EBUS_EVENT_ID_RESULT(m_toIsVisible, m_ids.front(), UiEditorBus, GetIsVisible);
+    UiEditorBus::EventResult(m_toIsVisible, m_ids.front(), &UiEditorBus::Events::GetIsVisible);
     m_toIsVisible = !m_toIsVisible;
 }
 

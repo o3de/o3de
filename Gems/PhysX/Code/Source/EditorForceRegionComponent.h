@@ -50,7 +50,7 @@ namespace PhysX
         struct EditorForceProxy
         {
         public:
-            AZ_CLASS_ALLOCATOR(EditorForceProxy, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorForceProxy, AZ::SystemAllocator);
             AZ_TYPE_INFO(EditorForceProxy, "{26BB8392-6FE4-472E-B5D4-50BA952F1A39}");
 
             static void Reflect(AZ::ReflectContext* context);

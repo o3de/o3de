@@ -17,7 +17,7 @@ namespace AZ
             : public ScopeProducer
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScopeProducerEmpty, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScopeProducerEmpty, SystemAllocator);
 
             ScopeProducerEmpty(const ScopeId& scopeId)
                 : ScopeProducer(scopeId)

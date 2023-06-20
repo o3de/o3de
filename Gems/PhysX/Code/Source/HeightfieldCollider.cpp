@@ -446,6 +446,12 @@ namespace PhysX
         size_t numColumns = m_dirtyRegion.m_maxColumnVertex - m_dirtyRegion.m_minColumnVertex;
         size_t numRows = m_dirtyRegion.m_maxRowVertex - m_dirtyRegion.m_minRowVertex;
 
+        // If our dirty region is too small to affect any vertices, early-out.
+        if ((numRows == 0) || (numColumns == 0))
+        {
+            return;
+        }
+
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
         auto* scene = physicsSystem->GetScene(m_attachedSceneHandle);
 

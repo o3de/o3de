@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
@@ -28,6 +29,22 @@ namespace AzToolsFramework::ViewportUi::Internal
         return m_viewportUiId;
     }
 
+    void ButtonGroup::SetDisabledButton(ButtonId buttonId, bool disabled)
+    {
+        if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())
+        {
+            switch (buttonEntry->second->m_state)
+            {
+            case Button::State::Selected:
+                ClearHighlightedButton();
+                [[fallthrough]];
+            default:
+                buttonEntry->second->m_state = disabled ? Button::State::Disabled : Button::State::Deselected;
+                break;
+            }
+        }
+    }
+
     void ButtonGroup::SetHighlightedButton(ButtonId buttonId)
     {
         if (buttonId == m_highlightedButtonId) // the requested button is highlighted, so do nothing.
@@ -37,6 +54,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())
         {
+            if(buttonEntry->second->m_state == Button::State::Disabled)
+            {
+                return;
+            }
+
             ClearHighlightedButton();
             buttonEntry->second->m_state = Button::State::Selected;
             m_highlightedButtonId = buttonId;

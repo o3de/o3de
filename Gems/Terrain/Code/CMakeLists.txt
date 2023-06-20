@@ -21,11 +21,11 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
-            Gem::Atom_Feature_Common
+            Gem::Atom_Feature_Common.Static
             Gem::AtomLyIntegration_CommonFeatures.Static
-            Gem::GradientSignal
-            Gem::SurfaceData
-            Gem::LmbrCentral
+            Gem::GradientSignal.Static
+            Gem::SurfaceData.Static
+            Gem::LmbrCentral.API
 )
 
 ly_add_target(
@@ -41,7 +41,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Terrain.Static
-            Gem::LmbrCentral
+            Gem::LmbrCentral.API
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
@@ -49,6 +49,7 @@ ly_add_target(
 # the above module is for use in all client/server types
 ly_create_alias(NAME Terrain.Servers  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Servers Gem::GradientSignal.Servers)
 ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Clients Gem::GradientSignal.Clients)
+ly_create_alias(NAME Terrain.Unified  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Unified Gem::GradientSignal.Unified)
 
 # If we are on a host platform, we want to add the host tools targets like the Terrain.Editor target which
 # will also depend on Terrain.Static
@@ -68,10 +69,13 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PUBLIC
                 Include
         BUILD_DEPENDENCIES
+            PRIVATE
+                Gem::Atom_RPI.Edit
+                Gem::GradientSignal.Editor.Static
             PUBLIC
                 AZ::AzToolsFramework
-                Gem::GradientSignal
-                Gem::LmbrCentral
+                Gem::GradientSignal.Static
+                Gem::LmbrCentral.API
                 Gem::Terrain.Static
     )
 
@@ -110,6 +114,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTestShared
                 AZ::AzFramework
                 Gem::Atom_RPI.TestUtils.Static
+                Gem::GradientSignal.Tests.Static
                 Gem::LmbrCentral.Mocks
                 Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
@@ -123,6 +128,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add Terrain.Tests to googletest
     ly_add_googletest(
         NAME Gem::Terrain.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_googlebenchmark(

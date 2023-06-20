@@ -39,7 +39,8 @@ namespace PhysX
             return queryFlags;
         }
 
-        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit)
+        AzPhysics::SceneQueryHit GetHitFromPxHit(const physx::PxLocationHit& pxHit,
+            [[maybe_unused]] const physx::PxActorShape& pxActorShape)
         {
             AzPhysics::SceneQueryHit hit;
 
@@ -57,8 +58,11 @@ namespace PhysX
                 hit.m_normal = PxMathConvert(pxHit.normal);
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Normal;
             }
-
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+            const ActorData* actorData = Utils::GetUserData(pxActorShape.actor);
+#else
             const ActorData* actorData = Utils::GetUserData(pxHit.actor);
+#endif
             hit.m_bodyHandle = actorData->GetBodyHandle();
             if (hit.m_bodyHandle != AzPhysics::InvalidSimulatedBodyHandle)
             {
@@ -69,7 +73,12 @@ namespace PhysX
             {
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::EntityId;
             }
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+            hit.m_shape = Utils::GetUserData(pxActorShape.shape);
+#else
             hit.m_shape = Utils::GetUserData(pxHit.shape);
+#endif
             if (hit.m_shape != nullptr)
             {
                 hit.m_resultFlags |= AzPhysics::SceneQuery::ResultFlags::Shape;
@@ -77,20 +86,27 @@ namespace PhysX
 
             if (pxHit.faceIndex != 0xFFFFffff)
             {
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+                PHYSX_SCENE_READ_LOCK(pxActorShape.actor->getScene());
+                physx::PxBaseMaterial* pxBaseMaterial = pxActorShape.shape->getMaterialFromInternalFaceIndex(pxHit.faceIndex);
+                AZ_Assert(pxBaseMaterial->getConcreteType() == physx::PxConcreteType::eMATERIAL, "");
+                if (const auto* physicsMaterial = Utils::GetUserData(static_cast<physx::PxMaterial*>(pxBaseMaterial));
+                    physicsMaterial != nullptr)
+                {
+                    hit.m_physicsMaterialId = physicsMaterial->GetId();
+                }
+#else
                 PHYSX_SCENE_READ_LOCK(pxHit.actor->getScene());
                 if (const auto* physicsMaterial = Utils::GetUserData(pxHit.shape->getMaterialFromInternalFaceIndex(pxHit.faceIndex));
                     physicsMaterial != nullptr)
                 {
                     hit.m_physicsMaterialId = physicsMaterial->GetId();
                 }
+#endif
             }
             else if (hit.m_shape != nullptr)
             {
-                if (const auto& physicsMaterial = hit.m_shape->GetMaterial();
-                    physicsMaterial.get() != nullptr)
-                {
-                    hit.m_physicsMaterialId = physicsMaterial->GetId();
-                }
+                hit.m_physicsMaterialId = hit.m_shape->GetMaterialId();
             }
             if (hit.m_physicsMaterialId.IsValid())
             {
@@ -128,20 +144,30 @@ namespace PhysX
 
         physx::PxHitFlags GetPxHitFlags(AzPhysics::SceneQuery::HitFlags hitFlags)
         {
-            static_assert(
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::Position) == static_cast<AZ::u16>(physx::PxHitFlag::ePOSITION) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::Normal) == static_cast<AZ::u16>(physx::PxHitFlag::eNORMAL) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::UV) == static_cast<AZ::u16>(physx::PxHitFlag::eUV) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::AssumeNoInitialOverlap) == static_cast<AZ::u16>(physx::PxHitFlag::eASSUME_NO_INITIAL_OVERLAP) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::MeshMultiple) == static_cast<AZ::u16>(physx::PxHitFlag::eMESH_MULTIPLE) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::MeshAny) == static_cast<AZ::u16>(physx::PxHitFlag::eMESH_ANY) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::MeshBothSides) == static_cast<AZ::u16>(physx::PxHitFlag::eMESH_BOTH_SIDES) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::PreciseSweep) == static_cast<AZ::u16>(physx::PxHitFlag::ePRECISE_SWEEP) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::MTD) == static_cast<AZ::u16>(physx::PxHitFlag::eMTD) &&
-                static_cast<AZ::u16>(AzPhysics::SceneQuery::HitFlags::FaceIndex) == static_cast<AZ::u16>(physx::PxHitFlag::eFACE_INDEX),
-                "Physics::HitFlags values do not match the corresponding PhysX ones.");
+            physx::PxHitFlags pxHitFlags; // PxFlags is initialized to 0 by default
+            const auto ConvertToPxFlags = [&pxHitFlags, hitFlags](AzPhysics::SceneQuery::HitFlags azHitFlagCheck, physx::PxHitFlag::Enum pxHitFlagSet)
+            {
+                if (azHitFlagCheck == (hitFlags & azHitFlagCheck))
+                {
+                    pxHitFlags |= pxHitFlagSet;
+                }
+            };
 
-            return static_cast<physx::PxHitFlags>(static_cast<AZ::u16>(hitFlags));
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::Position, physx::PxHitFlag::ePOSITION);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::Normal, physx::PxHitFlag::eNORMAL);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::UV, physx::PxHitFlag::eUV);
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::AnyHit, physx::PxHitFlag::eANY_HIT);
+#endif
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::AssumeNoInitialOverlap, physx::PxHitFlag::eASSUME_NO_INITIAL_OVERLAP);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshMultiple, physx::PxHitFlag::eMESH_MULTIPLE);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshAny, physx::PxHitFlag::eMESH_ANY);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MeshBothSides, physx::PxHitFlag::eMESH_BOTH_SIDES);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::PreciseSweep, physx::PxHitFlag::ePRECISE_SWEEP);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::MTD, physx::PxHitFlag::eMTD);
+            ConvertToPxFlags(AzPhysics::SceneQuery::HitFlags::FaceIndex, physx::PxHitFlag::eFACE_INDEX);
+
+            return pxHitFlags;
         }
 
         physx::PxQueryHitType::Enum GetPxHitType(AzPhysics::SceneQuery::QueryHitType hitType)
@@ -178,15 +204,20 @@ namespace PhysX
                     const physx::PxTransform shapeTransform = actorTransform * shape->getLocalPose();
 
                     physx::PxRaycastHit pxHitInfo;
-                    const bool hit = physx::PxGeometryQuery::raycast(start, unitDir, shape->getGeometry().any(), shapeTransform,
-                        worldSpaceRequest.m_distance, hitFlags, maxHits, &pxHitInfo);
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+                    const bool hit = physx::PxGeometryQuery::raycast(
+                        start, unitDir, shape->getGeometry(), shapeTransform, worldSpaceRequest.m_distance, hitFlags, maxHits, &pxHitInfo);
+#else
+                    const bool hit = physx::PxGeometryQuery::raycast(
+                        start, unitDir, shape->getGeometry().any(), shapeTransform, worldSpaceRequest.m_distance, hitFlags, maxHits, &pxHitInfo);
+#endif
 
                     if (hit && pxHitInfo.distance < closestHitDistance)
                     {
                         // Fill actor and shape, as they won't be filled from PxGeometryQuery
                         pxHitInfo.actor = actor;
                         pxHitInfo.shape = shape;
-                        closestHit = GetHitFromPxHit(pxHitInfo);
+                        closestHit = GetHitFromPxHit(pxHitInfo, pxHitInfo);
                         closestHitDistance = pxHitInfo.distance;
                     }
                 }
@@ -280,14 +311,28 @@ namespace PhysX
 
         // Unused, we're only pre-filtering at this time
         physx::PxQueryHitType::Enum PhysXQueryFilterCallback::postFilter(
-            [[maybe_unused]] const physx::PxFilterData&, [[maybe_unused]] const physx::PxQueryHit&)
+            [[maybe_unused]] const physx::PxFilterData& filterData, 
+            [[maybe_unused]] const physx::PxQueryHit& hit)
         {
             return physx::PxQueryHitType::eNONE;
         }
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        // Unused, we're only pre-filtering at this time
+        physx::PxQueryHitType::Enum PhysXQueryFilterCallback::postFilter(
+            [[maybe_unused]] const physx::PxFilterData& filterData,
+            [[maybe_unused]] const physx::PxQueryHit& hit,
+            [[maybe_unused]] const physx::PxShape* shape,
+            [[maybe_unused]] const physx::PxRigidActor* actor)
+        {
+            return physx::PxQueryHitType::eNONE;
+        }
+#endif
+
         UnboundedOverlapCallback::UnboundedOverlapCallback(const AzPhysics::SceneQuery::UnboundedOverlapHitCallback& hitCallback,
-            AZStd::vector<physx::PxOverlapHit>& hitBuffer)
+            AZStd::vector<physx::PxOverlapHit>& hitBuffer, AzPhysics::SceneQueryHits& hits)
             : m_hitCallback(hitCallback)
+            , m_results(hits)
             , physx::PxHitCallback<physx::PxOverlapHit>(hitBuffer.begin(), static_cast<physx::PxU32>(hitBuffer.size()))
         {}
 

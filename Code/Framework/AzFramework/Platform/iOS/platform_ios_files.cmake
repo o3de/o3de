@@ -28,9 +28,7 @@ set(FILES
     ../Common/Default/AzFramework/Input/User/LocalUserId_Default.h
     ../Common/Apple/AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard_Apple.mm
     AzFramework/Process/ProcessCommon.h
+    AzFramework/Process/ProcessUtils_iOS.cpp
     AzFramework/Process/ProcessWatcher_iOS.cpp
     AzFramework/Process/ProcessCommunicator_iOS.cpp
-    ../Common/Apple/AzFramework/Utils/SystemUtilsApple.h
-    ../Common/Apple/AzFramework/Utils/SystemUtilsApple.mm
 )
-

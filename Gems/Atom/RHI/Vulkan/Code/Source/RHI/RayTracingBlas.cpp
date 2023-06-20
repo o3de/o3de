@@ -13,6 +13,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -35,7 +36,8 @@ namespace AZ
 
             if (buffers.m_accelerationStructure)
             {
-                device.GetContext().DestroyAccelerationStructureKHR(device.GetNativeDevice(), buffers.m_accelerationStructure, nullptr);
+                device.GetContext().DestroyAccelerationStructureKHR(
+                    device.GetNativeDevice(), buffers.m_accelerationStructure, VkSystemAllocator::Get());
                 buffers.m_accelerationStructure = nullptr;
             }
 
@@ -121,6 +123,7 @@ namespace AZ
             AZ::RHI::BufferDescriptor scratchBufferDescriptor;
             scratchBufferDescriptor.m_bindFlags = RHI::BufferBindFlags::ShaderReadWrite | RHI::BufferBindFlags::RayTracingScratchBuffer;
             scratchBufferDescriptor.m_byteCount = buildSizesInfo.buildScratchSize;
+            scratchBufferDescriptor.m_alignment = accelerationStructureProperties.minAccelerationStructureScratchOffsetAlignment;
             
             AZ::RHI::BufferInitRequest scratchBufferRequest;
             scratchBufferRequest.m_buffer = buffers.m_scratchBuffer.get();
@@ -160,7 +163,7 @@ namespace AZ
             createInfo.buffer = blasMemoryView->GetNativeBuffer();
 
             VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
-                device.GetNativeDevice(), &createInfo, nullptr, &buffers.m_accelerationStructure);
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &buffers.m_accelerationStructure);
             AssertSuccess(vkResult);
 
             buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure;

@@ -11,7 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <IGem.h>
 
-#include <AudioSystemGemSystemComponent.h>
+#include "AudioSystemGemSystemComponent.h"
 
 namespace AudioSystemGem
 {
@@ -20,7 +20,7 @@ namespace AudioSystemGem
     {
     public:
         AZ_RTTI(AudioSystemModule, "{BE8CD7ED-AEB9-4617-B069-D848EA986ED3}", CryHooksModule);
-        AZ_CLASS_ALLOCATOR(AudioSystemModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioSystemModule, AZ::SystemAllocator);
 
         AudioSystemModule()
             : CryHooksModule()

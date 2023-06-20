@@ -8,14 +8,14 @@
             "PassClass": "RasterPass",
             "Slots": [
                 {
-                    "Name": "DepthInputOutput",
-                    "SlotType": "InputOutput",
-                    "ScopeAttachmentUsage": "DepthStencil"
-                },
-                {
                     "Name": "ColorInputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
+                },
+                {
+                    "Name": "DepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
                 }
             ]
         }

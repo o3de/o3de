@@ -41,27 +41,38 @@ namespace AZ
 
             // FrameCaptureRequestBus overrides ...
             bool CanCapture() const override;
-            FrameCaptureId CaptureScreenshot(const AZStd::string& filePath) override;
-            FrameCaptureId CaptureScreenshotForWindow(const AZStd::string& filePath, AzFramework::NativeWindowHandle windowHandle) override;
-            FrameCaptureId CaptureScreenshotWithPreview(const AZStd::string& outputFilePath) override;
-            FrameCaptureId CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName, const AZStd::string& outputFilePath,
+            FrameCaptureOutcome CaptureScreenshot(const AZStd::string& imagePath) override;
+            FrameCaptureOutcome CaptureScreenshotForWindow(const AZStd::string& imagePath, AzFramework::NativeWindowHandle windowHandle) override;
+            FrameCaptureOutcome CaptureScreenshotWithPreview(const AZStd::string& imagePath) override;
+            FrameCaptureOutcome CapturePassAttachment(
+                const AZStd::string& imagePath,
+                const AZStd::vector<AZStd::string>& passHierarchy,
+                const AZStd::string& slotName,
                 RPI::PassAttachmentReadbackOption option) override;
-            FrameCaptureId CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-                , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option) override;
+
+            FrameCaptureOutcome CapturePassAttachmentWithCallback(
+                RPI::AttachmentReadback::CallbackFunction callback,
+                const AZStd::vector<AZStd::string>& passHierarchy,
+                const AZStd::string& slotName,
+                RPI::PassAttachmentReadbackOption option) override;
 
             // FrameCaptureTestRequestBus overrides ...
             void SetScreenshotFolder(const AZStd::string& screenshotFolder) override;
             void SetTestEnvPath(const AZStd::string& envPath) override;
             void SetOfficialBaselineImageFolder(const AZStd::string& baselineFolder) override;
             void SetLocalBaselineImageFolder(const AZStd::string& baselineFolder) override;
-            AZStd::string BuildScreenshotFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            AZStd::string BuildOfficialBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            AZStd::string BuildLocalBaselineFilePath(const AZStd::string& imageName, bool useEnvPath) override;
-            bool CompareScreenshots(
+            FrameCapturePathOutcome BuildScreenshotFilePath(
+                const AZStd::string& imageName, bool useEnvPath) override;
+
+            FrameCapturePathOutcome BuildOfficialBaselineFilePath(
+                const AZStd::string& imageName, bool useEnvPath) override;
+
+            FrameCapturePathOutcome BuildLocalBaselineFilePath(
+                const AZStd::string& imageName, bool useEnvPath) override;
+
+            FrameCaptureComparisonOutcome CompareScreenshots(
                 const AZStd::string& filePathA,
                 const AZStd::string& filePathB,
-                float* diffScore,
-                float* filteredDiffScore,
                 float minDiffFilter) override;
 
         private:
@@ -104,11 +115,20 @@ namespace AZ
             };
             friend CaptureHandle;
 
-            CaptureHandle  InternalCapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, 
-                                                         const AZStd::string& slotName, 
-                                                         const AZStd::string& outputFilePath,
-                                                         RPI::PassAttachmentReadbackOption option,
-                                                         AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction);
+            AZ::Outcome<CaptureHandle, FrameCaptureError> ScreenshotPreparation(
+                const AZStd::string& imagePath,
+                AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction);
+
+            FrameCaptureOutcome InternalCaptureScreenshot(
+                const AZStd::string& imagePath,
+                AzFramework::NativeWindowHandle windowHandle);
+
+            FrameCaptureOutcome InternalCapturePassAttachment(
+                    const AZStd::string& outputFilePath,
+                    AZ::RPI::AttachmentReadback::CallbackFunction callbackFunction,
+                    const AZStd::vector<AZStd::string>& passHierarchy,
+                    const AZStd::string& slotName,
+                    RPI::PassAttachmentReadbackOption option);
 
             void CaptureAttachmentCallback(const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult);
 

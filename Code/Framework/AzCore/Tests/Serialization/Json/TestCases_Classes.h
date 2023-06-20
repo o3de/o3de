@@ -18,7 +18,7 @@ namespace JsonSerializationTests
         template<class T>
         friend struct AZStd::IntrusivePtrCountPolicy;
 
-        AZ_CLASS_ALLOCATOR(SimpleClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleClass, AZ::SystemAllocator);
         AZ_RTTI(SimpleClass, "{5A40E851-A748-40F3-97BA-5BB3A98CDD61}");
 
         SimpleClass() = default;
@@ -51,7 +51,7 @@ namespace JsonSerializationTests
 
     struct SimpleInheritence : public BaseClass
     {
-        AZ_CLASS_ALLOCATOR(SimpleInheritence, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleInheritence, AZ::SystemAllocator);
         AZ_RTTI(SimpleInheritence, "{CD2A6797-63B4-4B4D-B3D2-9044781C1E42}", BaseClass);
 
         ~SimpleInheritence() override = default;
@@ -71,7 +71,7 @@ namespace JsonSerializationTests
 
     struct MultipleInheritence : public BaseClass, public BaseClass2
     {
-        AZ_CLASS_ALLOCATOR(MultipleInheritence, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultipleInheritence, AZ::SystemAllocator);
         AZ_RTTI(MultipleInheritence, "{44E30C38-CE6B-4DC6-9CBF-85B10C148B11}", BaseClass, BaseClass2);
 
         ~MultipleInheritence() override = default;
@@ -118,7 +118,7 @@ namespace JsonSerializationTests
             RawOption1 = 1,
             RawOption2,
         };
-        AZ_CLASS_ALLOCATOR(SimpleEnumWrapper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleEnumWrapper, AZ::SystemAllocator);
         AZ_RTTI(SimpleEnumWrapper, "{CC95FF00-8D04-437A-9849-80D5AD7AD5DC}");
         
         static constexpr bool SupportsPartialDefaults = true;
@@ -148,7 +148,7 @@ namespace JsonSerializationTests
             RawOption1 = 1,
             RawOption2,
         };
-        AZ_CLASS_ALLOCATOR(NonReflectedEnumWrapper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NonReflectedEnumWrapper, AZ::SystemAllocator);
         AZ_RTTI(NonReflectedEnumWrapper, "{A80D5B6B-2FD1-46E9-A7A9-44C5E2650526}");
         
         static constexpr bool SupportsPartialDefaults = true;

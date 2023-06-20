@@ -29,8 +29,6 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerRequests : public AZ::EBusTraits
     {
     public:
-        static inline constexpr float InterpolateToTransformDuration = 1.0f;
-
         using BusIdType = AzFramework::ViewportId;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -39,7 +37,7 @@ namespace AtomToolsFramework
         //! @param worldFromLocal The transform of where the camera should end up.
         //! @return Returns true if the call began an interpolation and false otherwise. Calls to InterpolateToTransform
         //! will have no effect if an interpolation is currently in progress.
-        virtual bool InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
+        virtual bool InterpolateToTransform(const AZ::Transform& worldFromLocal, float duration) = 0;
         //! Returns if the camera is currently interpolating to a new transform.
         virtual bool IsInterpolating() const = 0;
         //! Starts tracking a transform.
@@ -66,10 +64,14 @@ namespace AtomToolsFramework
         virtual void SetCameraOffset(const AZ::Vector3& offset) = 0;
         //! Same as SetCameraOffset only the offset is set on the current and target cameras so no interpolation occurs.
         virtual void SetCameraOffsetImmediate(const AZ::Vector3& offset) = 0;
+        //! Transitions a camera from an orbit state (pivot and non-zero offset) to a look state (pivot and zero offset).
+        virtual void LookFromOrbit() = 0;
         //! Add one or more camera inputs (behaviors) to run for the current camera.
         virtual bool AddCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
         //! Remove one or more camera inputs (behaviors) to stop them running for the current camera.
         virtual bool RemoveCameras(const AZStd::vector<AZStd::shared_ptr<AzFramework::CameraInput>>& cameraInputs) = 0;
+        //! Reset the state of all camera inputs (clear inputs from running).
+        virtual void ResetCameras() = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

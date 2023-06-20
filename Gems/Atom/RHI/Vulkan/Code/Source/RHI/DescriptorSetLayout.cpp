@@ -13,6 +13,7 @@
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/Device.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -120,7 +121,8 @@ namespace AZ
             if (m_nativeDescriptorSetLayout != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.GetContext().DestroyDescriptorSetLayout(device.GetNativeDevice(), m_nativeDescriptorSetLayout, nullptr);
+                device.GetContext().DestroyDescriptorSetLayout(
+                    device.GetNativeDevice(), m_nativeDescriptorSetLayout, VkSystemAllocator::Get());
                 m_nativeDescriptorSetLayout = VK_NULL_HANDLE;
             }
             m_shaderResourceGroupLayout = nullptr;
@@ -141,12 +143,17 @@ namespace AZ
             createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             createInfo.pNext = &bindingFlagsCreateInfo;
             createInfo.flags = 0;
+            if (IsBindlessSRGLayout())
+            {
+                // This flag is needed as we are using VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT for descriptors within unbounded arrays
+                createInfo.flags |= VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+            }
             createInfo.bindingCount = static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
             createInfo.pBindings = m_descriptorSetLayoutBindings.size() ? m_descriptorSetLayoutBindings.data() : nullptr;
 
             auto& device = static_cast<Device&>(GetDevice());
-            const VkResult result =
-                device.GetContext().CreateDescriptorSetLayout(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeDescriptorSetLayout);
+            const VkResult result = device.GetContext().CreateDescriptorSetLayout(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeDescriptorSetLayout);
 
             return ConvertResult(result);
         }
@@ -347,15 +354,22 @@ namespace AZ
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::BufferViewUnboundedArray)] =
                 bufferUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
 
-            if (bufferUnboundedArrayDescs.size())
+            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc : bufferUnboundedArrayDescs)
             {
-                AZ_Assert(bufferUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
-
-                const RHI::ShaderInputBufferUnboundedArrayDescriptor& desc = bufferUnboundedArrayDescs[0];
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
                 m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+                VkDescriptorBindingFlags descriptorBindingFlag = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                if (IsBindlessSRGLayout())
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+                }
+                else
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+                }
+                m_descriptorBindingFlags.back() = descriptorBindingFlag;
 
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
@@ -365,6 +379,9 @@ namespace AZ
                     {
                     case RHI::ShaderInputBufferType::Typed:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+                        break;
+                    case RHI::ShaderInputBufferType::AccelerationStructure:
+                        vbinding.descriptorType = VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR;
                         break;
                     default:
                         vbinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
@@ -390,15 +407,23 @@ namespace AZ
             m_layoutIndexOffset[static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)] =
                 imageUnboundedArrayDescs.empty() ? InvalidLayoutIndex : static_cast<uint32_t>(m_descriptorSetLayoutBindings.size());
 
-            if (imageUnboundedArrayDescs.size())
+            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& desc : imageUnboundedArrayDescs)
             {
-                AZ_Assert(m_hasUnboundedArray == false && imageUnboundedArrayDescs.size() == 1, "Vulkan descriptor layout can have at most one unbounded array");
-                const RHI::ShaderInputImageUnboundedArrayDescriptor& desc = imageUnboundedArrayDescs[0];
 
                 m_descriptorSetLayoutBindings.emplace_back(VkDescriptorSetLayoutBinding{});
                 VkDescriptorSetLayoutBinding& vbinding = m_descriptorSetLayoutBindings.back();
                 m_descriptorBindingFlags.emplace_back(VkDescriptorBindingFlags{});
-                m_descriptorBindingFlags.back() = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT | VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+
+                VkDescriptorBindingFlags descriptorBindingFlag = VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
+                if (IsBindlessSRGLayout())
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
+                }
+                else
+                {
+                    descriptorBindingFlag |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+                }
+                m_descriptorBindingFlags.back() = descriptorBindingFlag;
 
                 vbinding.binding = desc.m_registerId;
                 switch (desc.m_access)
@@ -441,6 +466,12 @@ namespace AZ
         const RHI::ShaderResourceGroupLayout* DescriptorSetLayout::GetShaderResourceGroupLayout() const
         {
             return m_shaderResourceGroupLayout.get();
+        }
+
+        bool DescriptorSetLayout::IsBindlessSRGLayout()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            return m_shaderResourceGroupLayout->GetBindingSlot() == device.GetBindlessDescriptorPool().GetBindlessSrgBindingSlot();
         }
     }
 }

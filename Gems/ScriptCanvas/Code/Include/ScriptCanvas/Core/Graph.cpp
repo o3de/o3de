@@ -617,21 +617,35 @@ namespace ScriptCanvas
 
     void Graph::RemoveAllConnections()
     {
-        for (auto connectionEntity : m_graphData.m_connections)
+        for (auto connectionId : GetConnections())
         {
-            if (auto connection = connectionEntity ? AZ::EntityUtils::FindFirstDerivedComponent<Connection>(connectionEntity) : nullptr)
+            if (!RemoveConnection(connectionId))
             {
-                if (connection->GetSourceEndpoint().IsValid())
+                auto entry = AZStd::find_if(m_graphData.m_connections.begin(), m_graphData.m_connections.end(),
+                    [connectionId](const AZ::Entity* connection) { return connection->GetId() == connectionId; });
+                if (entry != m_graphData.m_connections.end())
                 {
-                    EndpointNotificationBus::Event(connection->GetSourceEndpoint(), &EndpointNotifications::OnEndpointDisconnected, connection->GetTargetEndpoint());
-                }
-                if (connection->GetTargetEndpoint().IsValid())
-                {
-                    EndpointNotificationBus::Event(connection->GetTargetEndpoint(), &EndpointNotifications::OnEndpointDisconnected, connection->GetSourceEndpoint());
+                    if (auto connection = *entry ? AZ::EntityUtils::FindFirstDerivedComponent<Connection>(*entry) : nullptr)
+                    {
+                        if (connection->GetSourceEndpoint().IsValid())
+                        {
+                            EndpointNotificationBus::Event(
+                                connection->GetSourceEndpoint(),
+                                &EndpointNotifications::OnEndpointDisconnected,
+                                connection->GetTargetEndpoint());
+                        }
+                        if (connection->GetTargetEndpoint().IsValid())
+                        {
+                            EndpointNotificationBus::Event(
+                                connection->GetTargetEndpoint(),
+                                &EndpointNotifications::OnEndpointDisconnected,
+                                connection->GetSourceEndpoint());
+                        }
+                    }
+
+                    GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnConnectionRemoved, connectionId);
                 }
             }
-
-            GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnConnectionRemoved, connectionEntity->GetId());
         }
 
         for (auto& connectionRef : m_graphData.m_connections)

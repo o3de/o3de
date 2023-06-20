@@ -25,7 +25,7 @@ namespace AzFramework
         //! Custom data struct for three dimensional axis data
         struct QuaternionData : public InputChannel::CustomData
         {
-            AZ_CLASS_ALLOCATOR(QuaternionData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QuaternionData, AZ::SystemAllocator);
             AZ_RTTI(QuaternionData, "{D1B11964-0ABB-4539-ACB2-7156B6CDEB90}", CustomData);
             ~QuaternionData() override = default;
 
@@ -35,7 +35,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputChannelQuaternion, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputChannelQuaternion, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Type Info

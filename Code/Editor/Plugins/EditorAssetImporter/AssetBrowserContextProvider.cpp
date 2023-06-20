@@ -32,7 +32,8 @@ namespace AZ
     bool AssetBrowserContextProvider::HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry) const
     {
         AZStd::unordered_set<AZStd::string> extensions;
-        EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+        AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+            &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
         if (extensions.empty())
         {
             return false;
@@ -70,7 +71,7 @@ namespace AZ
             return;
         }
 
-        openers.push_back({ "O3DE_FBX_Settings_Edit", "Edit Settings...", QIcon(), [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
+        openers.push_back({ "O3DE_FBX_Settings_Edit", "Edit Scene Settings...", QIcon(), [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
         {
             AZStd::string sourceName(fullSourceFileNameInCallback); // because the below call absolutely requires a AZStd::string.
             AssetImporterPlugin::GetInstance()->EditImportSettings(sourceName);
@@ -84,12 +85,13 @@ namespace AZ
         {
             // this does include the "." in the extension.
             AZStd::unordered_set<AZStd::string> extensions;
-            EBUS_EVENT(AZ::SceneAPI::Events::AssetImportRequestBus, GetSupportedFileExtensions, extensions);
+            AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+                &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetSupportedFileExtensions, extensions);
             for (AZStd::string potentialExtension : extensions)
             {
                 if (AzFramework::StringFunc::Equal(extensionString.c_str(), potentialExtension.c_str()))
                 {
-                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_16.svg");
+                    return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/FBX_80.svg");
                 }
             }
         }

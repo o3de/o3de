@@ -15,7 +15,7 @@
 #include <SaveDataSystemComponent.h>
 
 class SaveDataTest
-    : public UnitTest::AllocatorsTestFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     static AzFramework::LocalUserId GetDefaultTestUserId();

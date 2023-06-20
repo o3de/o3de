@@ -18,7 +18,7 @@ namespace MultiplayerCompression
     {
     public:
         AZ_RTTI(MultiplayerCompressionModule, "{939AFA0D-CFBC-4910-88F3-A0CF429307E4}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MultiplayerCompressionModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiplayerCompressionModule, AZ::SystemAllocator);
 
         MultiplayerCompressionModule()
             : AZ::Module()

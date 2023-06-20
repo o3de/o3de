@@ -24,7 +24,7 @@ namespace AZ
 
         public:
             AZ_RTTI(SubsurfaceScatteringPass, "{15036827-D18C-4752-B58F-6F17D59D6D9E}", RenderPass);
-            AZ_CLASS_ALLOCATOR(SubsurfaceScatteringPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SubsurfaceScatteringPass, SystemAllocator);
             virtual ~SubsurfaceScatteringPass() = default;
 
             //! Creates a SubsurfaceScatteringPass

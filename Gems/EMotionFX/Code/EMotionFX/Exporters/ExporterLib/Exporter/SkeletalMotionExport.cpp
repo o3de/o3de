@@ -56,12 +56,56 @@ namespace ExporterLib
         }
     }
 
+    void SaveRootMotionExtractionData(MCore::Stream* file, EMotionFX::Motion* motion, MCore::Endian::EEndianType targetEndianType)
+    {
+        if (!motion->GetRootMotionExtractionData())
+        {
+            return;
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!serializeContext)
+        {
+            AZ_Error("EMotionFX", false, "Can't get serialize context from component application.");
+            return;
+        }
+
+        AZStd::vector<AZ::u8> buffer;
+        AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8>> stream(&buffer);
+        if (AZ::Utils::SaveObjectToStream<EMotionFX::RootMotionExtractionData>(
+                stream, AZ::ObjectStream::ST_BINARY, motion->GetRootMotionExtractionData().get(), serializeContext))
+        {
+            const AZ::u32 bufferSize = static_cast<AZ::u32>(buffer.size());
+
+            EMotionFX::FileFormat::FileChunk chunkHeader;
+            chunkHeader.m_chunkId = EMotionFX::FileFormat::MOTION_CHUNK_ROOTMOTIONEXTRACTION;
+            chunkHeader.m_version = 1;
+            chunkHeader.m_sizeInBytes = bufferSize + sizeof(AZ::u32);
+
+            ConvertFileChunk(&chunkHeader, targetEndianType);
+            file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
+
+            // Write the number of bytes again as inside the chunk processor we don't have access to the file chunk.
+            AZ::u32 endianBufferSize = bufferSize;
+            ConvertUnsignedInt(&endianBufferSize, targetEndianType);
+            file->Write(&endianBufferSize, sizeof(endianBufferSize));
+
+            file->Write(buffer.data(), bufferSize);
+        }
+        else
+        {
+            AZ_Error("EMotionFX", false, "Cannot save root motion extraction data. SaveObjectToStream() failed.");
+        }
+    }
+
     void SaveMotion(MCore::Stream* file, EMotionFX::Motion* motion, MCore::Endian::EEndianType targetEndianType)
     {
         SaveMotionHeader(file, motion, targetEndianType);
         SaveMotionFileInfo(file, motion, targetEndianType);
         SaveMotionData(file, motion, targetEndianType);
         SaveMotionEvents(file, motion->GetEventTable(), targetEndianType);
+        SaveRootMotionExtractionData(file, motion, targetEndianType);
     }
 
     void SaveMotion(AZStd::string& filename, EMotionFX::Motion* motion, MCore::Endian::EEndianType targetEndianType)

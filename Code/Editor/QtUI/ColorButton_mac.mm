@@ -19,7 +19,7 @@
 void macRaiseWindowDelayed(QWidget* window)
 {
     NSWindow* nativeWindow = [(NSView*)(window->winId()) window];
-    CGWindowLevel level = nativeWindow.level;
+    CGWindowLevel level = static_cast<CGWindowLevel>(nativeWindow.level);
     QTimer* t = new QTimer(window);
     QObject::connect(t, &QTimer::timeout, t, [t,nativeWindow,level] {
         if (nativeWindow.level != level)

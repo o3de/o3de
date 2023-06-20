@@ -26,7 +26,7 @@ namespace EMotionFX
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(LODSceneGraphWidget, EMotionFX::PropertyWidgetAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(LODSceneGraphWidget, EMotionFX::PropertyWidgetAllocator)
 
             LODSceneGraphWidget::LODSceneGraphWidget(const SceneContainers::Scene& scene, const SceneDataTypes::ISceneNodeSelectionList& targetList,
                 QWidget* parent)

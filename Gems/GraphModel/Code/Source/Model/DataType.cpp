@@ -7,6 +7,7 @@
  */
 
 // AZ
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 // GraphModel
@@ -14,9 +15,9 @@
 
 namespace GraphModel
 {
-    void DataType::Reflect(AZ::ReflectContext* reflection)
+    void DataType::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<DataType>()
                 ->Version(0)
@@ -26,6 +27,27 @@ namespace GraphModel
                 ->Field("m_cppName", &DataType::m_cppName)
                 ->Field("m_displayName", &DataType::m_displayName)
                 ;
+
+            serializeContext->RegisterGenericType<DataTypePtr>();
+            serializeContext->RegisterGenericType<DataTypeList>();
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<DataType>("GraphModelDataType")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("IsValid", &DataType::IsValid)
+                ->Method("GetTypeEnum", &DataType::GetTypeEnum)
+                ->Method("GetTypeUuid", &DataType::GetTypeUuid)
+                ->Method("GetTypeUuidString", &DataType::GetTypeUuidString)
+                ->Method("GetDefaultValue", &DataType::GetDefaultValue)
+                ->Method("GetDisplayName", &DataType::GetDisplayName)
+                ->Method("GetCppName", &DataType::GetCppName)
+                ->Method("IsSupportedType", &DataType::IsSupportedType)
+                ->Method("IsSupportedValue", &DataType::IsSupportedValue)
+               ;
         }
     }
 
@@ -97,11 +119,6 @@ namespace GraphModel
 
     bool DataType::IsSupportedValue(const AZStd::any& value) const
     {
-        if (m_valueValidator)
-        {
-            return m_valueValidator(value);
-        }
-
-        return IsSupportedType(value.type());
+        return IsSupportedType(value.type()) && (!m_valueValidator || m_valueValidator(value));
     }
 } // namespace GraphModel

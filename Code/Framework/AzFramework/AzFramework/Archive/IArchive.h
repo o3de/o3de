@@ -35,7 +35,7 @@ namespace AZ::IO
     struct MemoryBlock
         : AZStd::intrusive_base
     {
-        AZ_CLASS_ALLOCATOR(MemoryBlock, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MemoryBlock, AZ::SystemAllocator);
         MemoryBlock() = default;
 
         struct AddressDeleter

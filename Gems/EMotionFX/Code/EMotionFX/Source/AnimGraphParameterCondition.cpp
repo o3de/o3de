@@ -37,8 +37,8 @@ namespace EMotionFX
     const char* AnimGraphParameterCondition::s_functionInRange = "param INRANGE [testValue..rangeValue]";
     const char* AnimGraphParameterCondition::s_functionNotInRange = "param NOT INRANGE [testValue..rangeValue]";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphParameterCondition::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     AnimGraphParameterCondition::UniqueData::UniqueData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
         : AnimGraphObjectData(object, animGraphInstance)

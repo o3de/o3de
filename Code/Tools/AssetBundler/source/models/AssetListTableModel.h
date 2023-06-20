@@ -44,7 +44,7 @@ namespace AssetBundler
         };
 
     private:
-        AZ::Outcome<AzToolsFramework::AssetFileInfo&, AZStd::string> GetAssetFileInfo(const QModelIndex& index) const;
+        AZ::Outcome<AZStd::reference_wrapper<const AzToolsFramework::AssetFileInfo>, AZStd::string> GetAssetFileInfo(const QModelIndex& index) const;
 
         AZStd::shared_ptr<AzToolsFramework::AssetSeedManager> m_seedListManager;
         AzToolsFramework::AssetFileInfoList m_assetFileInfoList;

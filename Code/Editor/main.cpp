@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 
@@ -20,8 +21,6 @@ int main(int argc, char* argv[])
     using CryEditMain = int (*)(int, char*[]);
     constexpr const char CryEditMainName[] = "CryEditMain";
 
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-
     auto handle = AZ::DynamicModuleHandle::Create("EditorLib");
     [[maybe_unused]] const bool loaded = handle->Load(true);
     AZ_Assert(loaded, "EditorLib could not be loaded");
@@ -33,6 +32,5 @@ int main(int argc, char* argv[])
     }
 
     handle = {};
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     return ret;
 }

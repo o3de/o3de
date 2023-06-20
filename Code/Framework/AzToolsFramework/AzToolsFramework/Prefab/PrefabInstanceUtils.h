@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/utils.h>
 
@@ -22,6 +23,10 @@ namespace AzToolsFramework
         {
             //! Instance pointer to the destination.
             const Instance* m_reachedInstance = nullptr;
+
+            //! Flag to tell if reached instance is the target instance.
+            bool m_isTargetInstanceReached = false;
+
             //! Instance list that contains instances that are climbed up from bottom to top.
             //! The list does not include the reached instance.
             AZStd::vector<const Instance*> m_climbedInstances;
@@ -44,15 +49,17 @@ namespace AzToolsFramework
 
             //! Generates a relative path from a list of climbed instances.
             //! @param climbedInstances The list of climbed instances from bottom to top.
+            //! @param skipTopClimbedInstance A flag to determine if returned path should include the top instance of climbedInstances.
             //! @return The relative path string.
-            AZStd::string GetRelativePathFromClimbedInstances(const AZStd::vector<const Instance*>& climbedInstances);
+            AZStd::string GetRelativePathFromClimbedInstances(
+                const AZStd::vector<const Instance*>& climbedInstances,
+                bool skipTopClimbedInstance = false);
 
             //! Checks if the child instance is a descendant of the parent instance.
             //! @param childInstance The given child instance.
             //! @param parentInstance The given parent instance.
             //! @return bool on whether the relation is valid. Returns true if two instances are identical.
             bool IsDescendantInstance(const Instance& childInstance, const Instance& parentInstance);
-
         } // namespace PrefabInstanceUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -16,18 +16,16 @@ namespace AZ
 {
     namespace RPI
     {
-        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, const Data::Asset<MaterialTypeAsset>& materialType, bool shouldFinalize)
+        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, const Data::Asset<MaterialTypeAsset>& materialType)
         {
             BeginCommon(assetId);
 
             if (ValidateIsReady())
             {
-                m_shouldFinalize = shouldFinalize;
-
                 m_asset->m_materialTypeAsset = materialType;
                 m_asset->m_materialTypeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
                 
-                if (shouldFinalize && !m_asset->m_materialTypeAsset)
+                if (!m_asset->m_materialTypeAsset)
                 {
                     ReportError("MaterialTypeAsset is null, the MaterialAsset cannot be finalized");
                 }
@@ -41,21 +39,16 @@ namespace AZ
                 return false;
             }
 
+            m_asset->Finalize(
+                [this](const char* message) { ReportWarning("%s", message); },
+                [this](const char* message) { ReportError("%s", message); });
+
+            // Finalize() doesn't clear the raw property data because that's the same function used at runtime, which does need to maintain the raw data
+            // to support hot reload. But here we are pre-baking with the assumption that AP build dependencies will keep the material type
+            // and material asset in sync, so we can discard the raw property data and just rely on the data in the material type asset.
+            m_asset->m_rawPropertyValues.clear();
+
             m_asset->SetReady();
-
-            if (m_shouldFinalize)
-            {
-                m_asset->Finalize(
-                    [this](const char* message) { ReportWarning("%s", message); },
-                    [this](const char* message) { ReportError("%s", message); });
-
-                m_asset->m_wasPreFinalized = true;
-
-                // Finalize() doesn't clear the raw property data because that's the same function used at runtime, which does need to maintain the raw data
-                // to support hot reload. But here we are pre-baking with the assumption that AP build dependencies will keep the material type
-                // and material asset in sync, so we can discard the raw property data and just rely on the data in the material type asset.
-                m_asset->m_rawPropertyValues.clear();
-            }
 
             return EndCommon(result);
         }
@@ -78,16 +71,13 @@ namespace AZ
                 // Preserving the original order will ensure that the later properties still overwrite the earlier ones even after
                 // renames have been applied.
 
-                auto iter = AZStd::find_if(m_asset->m_rawPropertyValues.begin(), m_asset->m_rawPropertyValues.end(), [&name](const AZStd::pair<Name, MaterialPropertyValue>& pair)
+                AZStd::erase_if(
+                    m_asset->m_rawPropertyValues,
+                    [&name](const AZStd::pair<Name, MaterialPropertyValue>& pair)
                     {
                         return pair.first == name;
                     });
-                
-                if (iter != m_asset->m_rawPropertyValues.end())
-                {
-                    m_asset->m_rawPropertyValues.erase(iter);
-                }
-                
+
                 m_asset->m_rawPropertyValues.emplace_back(name, value);
             }
         }

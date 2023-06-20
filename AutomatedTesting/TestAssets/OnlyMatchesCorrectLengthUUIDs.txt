@@ -6,7 +6,7 @@ a6BDE282B49C957F7B0714B26579BCA9A
 This is the UUID for project . json. It has an extra non-UUID character at the end. It should not show up in scan results.
 B076CDDC14DF50F4A5E97518ABB3E851t
 
-Two UUIDs, the first invalid a1CB10C43F3245B93A294C602ADEF95F9 mixed with a second valid one BAB4D64A05BC5E6FB9E3FC9695D1DBB3 the same line. The second should show up in scan results.
+Two UUIDs, the first invalid a1CB10C43F3245B93A294C602ADEF95F9 mixed with a second valid one 3F642A0FDC825696A70A1DA5709744DF the same line. The second should show up in scan results.
 
 UUID for TestAssets / DependencyScannerAsset . slice, after an equal sign should show up in scan results=837412DFD05F576D81AAACF360463749
 

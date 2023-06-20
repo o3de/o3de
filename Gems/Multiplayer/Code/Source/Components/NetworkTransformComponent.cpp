@@ -23,11 +23,51 @@ namespace Multiplayer
                 ->Version(1);
         }
         NetworkTransformComponentBase::Reflect(context);
+
+        AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
+        if (behaviorContext)
+        {
+            behaviorContext->Class<NetworkTransformComponent>("NetworkTransformComponent")
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
+
+                ->Method("IncrementResetCount", [](AZ::EntityId id)
+                    {
+                        const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
+                        if (!entity)
+                        {
+                            AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
+                                "The entity with id %s doesn't exist, please provide a valid entity id.", id.ToString().c_str());
+                        }
+
+                        NetworkTransformComponent* networkComponent = entity->FindComponent<NetworkTransformComponent>();
+                        if (!networkComponent)
+                        {
+                            AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
+                                "Entity '%s' (id: %s) is missing NetworkTransformComponent, be sure to add NetworkTransformComponent to this entity.", entity->GetName().c_str(), id.ToString().c_str());
+                        }
+                        else
+                        {
+                            if (networkComponent->HasController())
+                            {
+                                static_cast<NetworkTransformComponentController*>(networkComponent->GetController())->ModifyResetCount()++;
+                            }
+                            else
+                            {
+                                AZ_Warning("Network Property", false, "NetworkTransformComponent IncrementResetCount failed. "
+                                    "Entity '%s' (id: %s) does not have Authority or Autonomous role.", entity->GetName().c_str(), id.ToString().c_str());
+                            }
+                        }
+                    });
+        }
     }
 
     NetworkTransformComponent::NetworkTransformComponent()
         : m_entityPreRenderEventHandler([this](float deltaTime) { OnPreRender(deltaTime); })
         , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
+        , m_rotationChangedEventHandler([this](AZ::Quaternion) { OnTransformChanged(); })
+        , m_translationChangedEventHandler([this](AZ::Vector3) { OnTransformChanged(); })
+        , m_scaleChangedEventHandler([this](float) { OnTransformChanged(); })
         , m_parentChangedEventHandler([this](NetEntityId parentId) { OnParentChanged(parentId); })
         , m_resetCountChangedEventHandler([this]([[maybe_unused]] uint8_t resetCount) { m_syncTransformImmediate = true; })
     {
@@ -43,6 +83,9 @@ namespace Multiplayer
     {
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
+        RotationAddEvent(m_rotationChangedEventHandler);
+        TranslationAddEvent(m_translationChangedEventHandler);
+        ScaleAddEvent(m_scaleChangedEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
         ResetCountAddEvent(m_resetCountChangedEventHandler);
 
@@ -132,6 +175,11 @@ namespace Multiplayer
         }
     }
 
+    void NetworkTransformComponent::OnTransformChanged()
+    {
+        OnPreRender(0.0f);
+    }
+
     void NetworkTransformComponent::OnParentChanged(NetEntityId parentId)
     {
         if (AZ::TransformInterface* transformComponent = GetEntity()->GetTransform())
@@ -197,4 +245,13 @@ namespace Multiplayer
             }
         }
     }
+
+#if AZ_TRAIT_SERVER
+    void NetworkTransformComponentController::HandleMultiplayerTeleport(
+        [[maybe_unused]] AzNetworking::IConnection* invokingConnection, const AZ::Vector3& teleportToPosition)
+    {
+        GetEntity()->GetTransform()->SetWorldTranslation(teleportToPosition);
+        ModifyResetCount()++;
+    }
+#endif
 }

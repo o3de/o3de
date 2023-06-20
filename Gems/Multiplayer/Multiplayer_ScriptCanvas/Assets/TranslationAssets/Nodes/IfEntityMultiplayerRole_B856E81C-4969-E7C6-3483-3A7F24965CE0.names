@@ -1,0 +1,60 @@
+{
+    "entries": [
+        {
+            "base": "{B856E81C-4969-E7C6-3483-3A7F24965CE0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "If Entity Multiplayer Role",
+                "category": "Multiplayer",
+                "tooltip": "An execution flow gate that continues to the path based on the network role of a given entity."
+            },
+            "slots": [
+                {
+                    "base": "Input_In_0",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Branches on multiplayer role."
+                    }
+                },
+                {
+                    "base": "DataInput_multiplayer Entity_0",
+                    "details": {
+                        "name": "multiplayer Entity"
+                    }
+                },
+                {
+                    "base": "Output_If Client Role_0",
+                    "details": {
+                        "name": "If Client Role"
+                    }
+                },
+                {
+                    "base": "Output_If Autonomous Role_1",
+                    "details": {
+                        "name": "If Autonomous Role"
+                    }
+                },
+                {
+                    "base": "Output_If Authority Role_2",
+                    "details": {
+                        "name": "If Authority Role"
+                    }
+                },
+                {
+                    "base": "Output_If Server Role_3",
+                    "details": {
+                        "name": "If Server Role"
+                    }
+                },
+                {
+                    "base": "Output_If Unknown Role_4",
+                    "details": {
+                        "name": "If Unknown Role",
+                        "tooltip": "Returned when multiplayer isn't configured."
+                    }
+                }
+            ]
+        }
+    ]
+}

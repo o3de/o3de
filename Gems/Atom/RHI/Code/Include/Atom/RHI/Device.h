@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <Atom/RHI/BindlessSrgDescriptor.h>
 #include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
 #include <Atom/RHI.Reflect/Format.h>
 #include <Atom/RHI.Reflect/MemoryEnums.h>
+#include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <Atom/RHI.Reflect/SwapChainDescriptor.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/PhysicalDevice.h>
@@ -55,7 +57,7 @@ namespace AZ
             //!
             //! If initialization fails. The device is left in an uninitialized state (as if Init had never
             //! been called), and an error code is returned.
-            ResultCode Init(PhysicalDevice& physicalDevice);
+            ResultCode Init(int deviceIndex, PhysicalDevice& physicalDevice);
 
             //! Begins execution of a frame. The device internally manages a set of command queues. This
             //! method will synchronize the CPU with the GPU according to the number of in-light frames
@@ -95,6 +97,9 @@ namespace AZ
 
             //! Returns the physical device associated with this device.
             const PhysicalDevice& GetPhysicalDevice() const;
+
+            //! Returns the device index.
+            int GetDeviceIndex() const;
 
             //! Returns the descriptor associated with the device.
             const DeviceDescriptor& GetDescriptor() const;
@@ -136,11 +141,18 @@ namespace AZ
             //! Notifies after all objects currently in the platform release queue are released
             virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
+            //! Called to initialize bindless SRG related native binding objects (i.e descriptor set/argument table).
+            //! This is called after AssetCatalog is loaded and hence we can use bindless.azsli to data drive the binding indices.
+            ResultCode InitBindlessSrg(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout);
+
             //! Allows the back-ends to compact SRG related memory if applicable
             virtual RHI::ResultCode CompactSRGMemory()
             {
                 return RHI::ResultCode::Success;
             };
+
+            //! Converts a shading rate enum to the proper texel value to be used in a shading rate image.
+            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) const = 0;
 
             bool WasDeviceRemoved();
             void SetDeviceRemoved();
@@ -198,6 +210,9 @@ namespace AZ
 
             //! Initialize limits and resources associated with them.
             virtual ResultCode InitializeLimits() = 0;
+
+            //! Initialize back-end specific objects related to bindless SRG
+            virtual ResultCode InitInternalBindlessSrg(const BindlessSrgDescriptor& bindlessSrgDesc) = 0;
             ///////////////////////////////////////////////////////////////////
 
             void CalculateDepthStencilNearestSupportedFormats();
@@ -208,6 +223,9 @@ namespace AZ
 
             // The physical device backing this logical device instance.
             Ptr<PhysicalDevice> m_physicalDevice;
+
+            // The device's index for when there are multiple devices.
+            int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
 
             // Tracks whether the device is in the BeginFrame / EndFrame scope.
             bool m_isInFrame = false;

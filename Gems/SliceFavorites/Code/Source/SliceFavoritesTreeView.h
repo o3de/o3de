@@ -27,7 +27,7 @@ namespace SliceFavorites
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(SliceFavoritesTreeView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceFavoritesTreeView, AZ::SystemAllocator);
 
         SliceFavoritesTreeView(QWidget* pParent = NULL);
         virtual ~SliceFavoritesTreeView();

@@ -11,8 +11,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-
 #include <Integration/Assets/AssetCommon.h>
 #include <Integration/Rendering/RenderActor.h>
 
@@ -43,8 +41,6 @@ namespace EMotionFX
             AZ_CLASS_ALLOCATOR_DECL
 
             ActorAsset(AZ::Data::AssetId id = AZ::Data::AssetId());
-
-            using MaterialList = AZStd::vector<AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset> >;
 
             using ActorInstancePtr = EMotionFXPtr<EMotionFX::ActorInstance>;
             ActorInstancePtr CreateInstance(AZ::Entity* entity);

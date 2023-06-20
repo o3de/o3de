@@ -13,6 +13,7 @@
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -20,6 +21,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/string/regex.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzQtComponents/Components/Widgets/FileDialog.h>
@@ -34,11 +36,15 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QListWidget>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProcess>
 #include <QTimer>
+#include <QVBoxLayout>
 AZ_POP_DISABLE_WARNING
 
 namespace AtomToolsFramework
@@ -81,26 +87,76 @@ namespace AtomToolsFramework
         return mainWindow;
     }
 
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue)
+    {
+        for (const auto& value : values)
+        {
+            if (!value.empty())
+            {
+                return value;
+            }
+        }
+
+        return defaultValue;
+    }
+
+    void ReplaceSymbolsInContainer(const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container)
+    {
+        const AZStd::regex findRegex(findText);
+        for (auto& sourceText : container)
+        {
+            sourceText = AZStd::regex_replace(sourceText, findRegex, replaceText);
+        }
+    }
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container)
+    {
+        for (const auto& substitutionSymbolPair : substitutionSymbols)
+        {
+            ReplaceSymbolsInContainer(substitutionSymbolPair.first, substitutionSymbolPair.second, container);
+        }
+    }
+
     AZStd::string GetSymbolNameFromText(const AZStd::string& text)
     {
         QString symbolName(text.c_str());
-        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
-        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
-        symbolName.replace(QRegExp("\\A(\\d)"), "_\\1");
+        // Remove all leading whitespace
+        symbolName.replace(QRegExp("^\\s+"), "");
+        // Remove all trailing whitespace
+        symbolName.replace(QRegExp("\\s+$"), "");
+        // Replace non alphanumeric characters with _
+        symbolName.replace(QRegExp("[^a-zA-Z\\d]"), "_");
+        // Insert a _ between a lowercase or numeric character followed by an uppercase character
+        symbolName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1_\\2");
+        // Insert an underscore at the beginning of the string if it starts with a digit
+        symbolName.replace(QRegExp("^(\\d)"), "_\\1");
+        // Replace every sequence of whitespace characters with underscores
         symbolName.replace(QRegExp("\\s+"), "_");
+        // Replace Sequences of _ with a single _
+        symbolName.replace(QRegExp("_+"), "_");
         return symbolName.toLower().toUtf8().constData();
     }
 
     AZStd::string GetDisplayNameFromText(const AZStd::string& text)
     {
         QString displayName(text.c_str());
+        // Remove all leading whitespace
+        displayName.replace(QRegExp("^\\s+"), "");
+        // Remove all trailing whitespace
+        displayName.replace(QRegExp("\\s+$"), "");
+        // Replace non alphanumeric characters with space
         displayName.replace(QRegExp("[^a-zA-Z\\d]"), " ");
+        // Insert a space between a lowercase or numeric character followed by an uppercase character
         displayName.replace(QRegExp("([a-z\\d])([A-Z])"), "\\1 \\2");
+        // Tokenize the string where separated by whitespace
         QStringList displayNameParts = displayName.split(QRegExp("\\s"), Qt::SkipEmptyParts);
         for (QString& part : displayNameParts)
         {
+            // Capitalize the first character of every token
             part.replace(0, 1, part[0].toUpper());
         }
+        // Recombine all of the strings separated by a single space
         return displayNameParts.join(" ").toUtf8().constData();
     }
 
@@ -110,44 +166,222 @@ namespace AtomToolsFramework
         return GetDisplayNameFromText(fileInfo.baseName().toUtf8().constData());
     }
 
-    AZStd::string GetSaveFilePath(const AZStd::string& initialPath, const AZStd::string& title)
+    bool GetStringListFromDialog(
+        AZStd::vector<AZStd::string>& selectedStrings,
+        const AZStd::vector<AZStd::string>& availableStrings,
+        const AZStd::string& title,
+        const bool multiSelect)
     {
-        const QFileInfo initialFileInfo(initialPath.c_str());
-        const QString initialExt(initialFileInfo.completeSuffix());
+        // Create a dialog that will display a list of string options and prompt the user for input.
+        QDialog dialog(GetToolMainWindow());
+        dialog.setModal(true);
+        dialog.setWindowTitle(title.c_str());
+        dialog.setLayout(new QVBoxLayout());
 
+        // Fill the list widget with all of the available strings for the user to select.
+        QListWidget listWidget(&dialog);
+        listWidget.setSelectionMode(multiSelect ? QAbstractItemView::ExtendedSelection : QAbstractItemView::SingleSelection);
+
+        for (const auto& availableString : availableStrings)
+        {
+            listWidget.addItem(availableString.c_str());
+        }
+
+        listWidget.sortItems();
+
+        // The selected strings vector already has items then attempt to select those in the list.
+        for (const auto& selection : selectedStrings)
+        {
+            for (auto item : listWidget.findItems(selection.c_str(), Qt::MatchExactly))
+            {
+                item->setSelected(true);
+            }
+        }
+
+        // Create the button box that will provide default dialog buttons to allow the user to accept or reject their selections.
+        QDialogButtonBox buttonBox(&dialog);
+        buttonBox.setStandardButtons(QDialogButtonBox::Cancel | QDialogButtonBox::Ok);
+        QObject::connect(&buttonBox, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+        QObject::connect(&buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+        // Add the list widget and button box to the layout so they appear and the dialog.
+        dialog.layout()->addWidget(&listWidget);
+        dialog.layout()->addWidget(&buttonBox);
+
+        // Temporarily forcing a fixed size before showing it to compensate for window management centering and resizing the dialog.
+        dialog.setFixedSize(400, 200);
+        dialog.show();
+        dialog.setMinimumSize(0, 0);
+        dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+
+        // If the user accepts their selections then the selected strings director will be cleared and refilled with them.
+        if (dialog.exec() == QDialog::Accepted)
+        {
+            selectedStrings.clear();
+            for (auto item : listWidget.selectedItems())
+            {
+                selectedStrings.push_back(item->text().toUtf8().constData());
+            }
+            return true;
+        }
+        return false;
+    }
+
+    AZStd::string GetFileFilterFromSupportedExtensions(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions)
+    {
+        // Build an ordered table of all of the supported extensions and their display names. This will be transformed into the file filter
+        // that is displayed in the dialog.
+        AZStd::map<AZStd::string, AZStd::set<AZStd::string>> orderedExtensions;
+        for (const auto& extensionPair : supportedExtensions)
+        {
+            if (!extensionPair.second.empty())
+            {
+                // Sift all of the extensions into display name groups. If no display name was provided then we will use a default one.
+                const auto& group = !extensionPair.first.empty() ? extensionPair.first : "Supported";
+
+                // Convert the extension into a wild card.
+                orderedExtensions[group].insert("*." + extensionPair.second);
+            }
+        }
+
+        // Transform each of the ordered extension groups into individual file dialog filters that represent one or more extensions.
+        AZStd::vector<AZStd::string> individualFilters;
+        for (const auto& orderedExtensionPair : orderedExtensions)
+        {
+            AZStd::string combinedExtensions;
+            AZ::StringFunc::Join(combinedExtensions, orderedExtensionPair.second, " ");
+            individualFilters.push_back(orderedExtensionPair.first + " (" + combinedExtensions + ")");
+        }
+
+        // Combine all of the individual filters into a single expression that can be used directly with the file dialog.
+        AZStd::string combinedFilters;
+        AZ::StringFunc::Join(combinedFilters, individualFilters, ";;");
+        return combinedFilters;
+    }
+
+    AZStd::string GetFirstValidSupportedExtension(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions)
+    {
+        for (const auto& extensionPair : supportedExtensions)
+        {
+            if (!extensionPair.second.empty())
+            {
+                return extensionPair.second;
+            }
+        }
+
+        return AZStd::string();
+    }
+
+    AZStd::string GetFirstMatchingSupportedExtension(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions, const AZStd::string& path)
+    {
+        for (const auto& extensionPair : supportedExtensions)
+        {
+            if (!extensionPair.second.empty() && path.ends_with(extensionPair.second))
+            {
+                return extensionPair.second;
+            }
+        }
+
+        return AZStd::string();
+    }
+
+    AZStd::string GetSaveFilePathFromDialog(
+        const AZStd::string& initialPath,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions,
+        const AZStd::string& title)
+    {
+        // Build the file dialog filter from all of the supported extensions.
+        const auto& combinedFilters = GetFileFilterFromSupportedExtensions(supportedExtensions);
+
+        // If no valid extensions were provided then return immediately.
+        if (combinedFilters.empty())
+        {
+            QMessageBox::critical(GetToolMainWindow(), "Error", QString("No supported extensions were specified."));
+            return AZStd::string();
+        }
+
+        // Remove any aliasing from the initial path to feed to the file dialog.
+        AZStd::string displayedPath = GetPathWithoutAlias(initialPath);
+
+        // If the display name is empty or invalid then build a unique default display name using the first supported extension. 
+        if (displayedPath.empty())
+        {
+            displayedPath = GetUniqueUntitledFilePath(GetFirstValidSupportedExtension(supportedExtensions));
+        }
+
+        // Prompt the user to select a save file name using the input path and the list of filtered extensions.
         const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
-            GetToolMainWindow(),
-            QObject::tr("Save %1").arg(title.c_str()),
-            initialFileInfo.absoluteFilePath(),
-            QString("Files (*.%1)").arg(initialExt)));
+            GetToolMainWindow(), QObject::tr("Save %1").arg(title.c_str()), displayedPath.c_str(), combinedFilters.c_str()));
 
+        // If the returned path is empty this means that the user cancelled or escaped from the dialog and is canceling the operation.
         if (selectedFileInfo.absoluteFilePath().isEmpty())
         {
-            // Cancelled operation
             return AZStd::string();
         }
 
-        if (!selectedFileInfo.absoluteFilePath().endsWith(initialExt))
+        // Find the supported extension corresponding to the user selection.
+        const auto& selectedExtension =
+            GetFirstMatchingSupportedExtension(supportedExtensions, selectedFileInfo.absoluteFilePath().toUtf8().constData());
+
+        // If the selected path does not match any of the supported extensions consider it invalid and return. 
+        if (selectedExtension.empty())
         {
-            QMessageBox::critical(GetToolMainWindow(), "Error", QString("File name must have .%1 extension.").arg(initialExt));
+            QMessageBox::critical(GetToolMainWindow(), "Error", QString("File name does not match supported extension."));
             return AZStd::string();
         }
 
-        // Reconstructing the file info from the absolute path and expected extension to compensate for an issue with the save file
-        // dialog adding the extension multiple times if it contains "." like *.lightingpreset.azasset
-        return QFileInfo(QString("%1/%2.%3").arg(selectedFileInfo.absolutePath()).arg(selectedFileInfo.baseName()).arg(initialExt))
+        // Reconstruct the path to compensate for known problems with the file dialog and complex extensions containing multiple "." like
+        // *.lightingpreset.azasset
+        return QFileInfo(QString("%1/%2.%3").arg(selectedFileInfo.absolutePath()).arg(selectedFileInfo.baseName()).arg(selectedExtension.c_str()))
             .absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::vector<AZStd::string> GetOpenFilePaths(const QRegExp& filter, const AZStd::string& title)
+    AZStd::vector<AZStd::string> GetOpenFilePathsFromDialog(
+        const AZStd::vector<AZStd::string>& selectedFilePaths,
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& supportedExtensions,
+        const AZStd::string& title,
+        const bool multiSelect)
     {
-        auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
+        // Removing aliases from all incoming paths because the asset selection model does not recognize them.
+        AZStd::vector<AZStd::string> selectedFilePathsWithoutAliases = selectedFilePaths;
+        for (auto& path : selectedFilePathsWithoutAliases)
+        {
+            path = GetPathWithoutAlias(path);
+        }
+
+        // Create a custom filter function to plug into the asset selection model. The filter function will only display source assets
+        // matching one of the supported extensions. It will also ignore files in the cache folder, usually intermediate assets. This is
+        // much faster than the previous iteration using regular expressions.
+        auto filterFn = [&](const AssetBrowserEntry* entry)
+        {
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
+            {
+                return false;
+            }
+
+            const auto& path = entry->GetFullPath();
+            return !AZ::StringFunc::Contains(path, "cache") &&
+                AZStd::any_of(
+                    supportedExtensions.begin(),
+                    supportedExtensions.end(),
+                    [&](const auto& extensionPair)
+                    {
+                        return path.ends_with(AZStd::fixed_string<32>::format(".%s", extensionPair.second.c_str()));
+                    });
+        };
+
+        AssetSelectionModel selection;
+        selection.SetDisplayFilter(FilterConstType(new CustomFilter(filterFn)));
+        selection.SetSelectionFilter(FilterConstType(new CustomFilter(filterFn)));
         selection.SetTitle(title.c_str());
-        selection.SetMultiselect(true);
+        selection.SetMultiselect(multiSelect);
+        selection.SetSelectedFilePaths(selectedFilePathsWithoutAliases);
 
         AzToolsFramework::AssetBrowser::AssetBrowserComponentRequestBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetBrowserComponentRequests::PickAssets, selection, GetToolMainWindow());
 
+        // Return absolute paths for all results.
         AZStd::vector<AZStd::string> results;
         results.reserve(selection.GetResults().size());
         for (const auto& result : selection.GetResults())
@@ -170,14 +404,9 @@ namespace AtomToolsFramework
         return fileInfo.absoluteFilePath().toUtf8().constData();
     }
 
-    AZStd::string GetUniqueDefaultSaveFilePath(const AZStd::string& extension)
+    AZStd::string GetUniqueUntitledFilePath(const AZStd::string& extension)
     {
         return GetUniqueFilePath(AZStd::string::format("%s/Assets/untitled.%s", AZ::Utils::GetProjectPath().c_str(), extension.c_str()));
-    }
-
-    AZStd::string GetUniqueDuplicateFilePath(const AZStd::string& initialPath)
-    {
-        return GetSaveFilePath(GetUniqueFilePath(initialPath), "Duplicate File");
     }
 
     bool ValidateDocumentPath(AZStd::string& path)
@@ -214,13 +443,9 @@ namespace AtomToolsFramework
 
     bool IsDocumentPathInSupportedFolder(const AZStd::string& path)
     {
-        bool assetFoldersRetrieved = false;
-        AZStd::vector<AZStd::string> assetFolders;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
-
-        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(GetPathWithoutAlias(path)).LexicallyNormal();
-        for (const auto& assetFolder : assetFolders)
+        const auto& fullPath = GetPathWithoutAlias(path);
+        const AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(fullPath).LexicallyNormal();
+        for (const auto& assetFolder : GetNonCacheSourceFolders())
         {
             // Check if the path is relative to the asset folder
             if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
@@ -363,7 +588,7 @@ namespace AtomToolsFramework
             AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
         if (AZ::IO::SystemFile outputFile; outputFile.Open(savePath.c_str(), configurationMode))
         {
-            saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
+            saved = outputFile.Write(stringBuffer.c_str(), stringBuffer.size()) == stringBuffer.size();
         }
 
         AZ_Warning("AtomToolsFramework", saved, R"(Unable to save registry file to path "%s"\n)", savePath.c_str());
@@ -436,33 +661,116 @@ namespace AtomToolsFramework
         return paths;
     }
 
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    void VisitFilesInFolder(
+        const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
+        if (!visitorFn || AZ::StringFunc::Contains(folder, "cache"))
+        {
+            return;
+        }
+
+        AZStd::string fullFilter = folder + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "*";
+        AZ::StringFunc::Replace(fullFilter, "\\", "/");
+
+        AZStd::string fullPath;
+        AZ::IO::SystemFile::FindFiles(
+            fullFilter.c_str(),
+            [&](const char* item, bool is_file)
+            {
+                // Skip the '.' and '..' folders
+                if ((azstricmp(".", item) == 0) || (azstricmp("..", item) == 0))
+                {
+                    return true;
+                }
+
+                // Continue if we can
+                fullPath.clear();
+                if (!AzFramework::StringFunc::Path::Join(folder.c_str(), item, fullPath))
+                {
+                    return false;
+                }
+                AZ::StringFunc::Replace(fullPath, "\\", "/");
+
+                if (is_file)
+                {
+                    return visitorFn(fullPath);
+                }
+
+                VisitFilesInFolder(fullPath, visitorFn, recurse);
+                return true;
+            });
+    }
+
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn)
+    {
+        if (!visitorFn)
+        {
+            return;
+        }
+
+        for (const AZStd::string& scanFolder : GetNonCacheSourceFolders())
+        {
+            VisitFilesInFolder(scanFolder, visitorFn, true);
+        }
+    }
+
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn)
+    {
+        const auto& scanFolders = GetNonCacheSourceFolders();
+
         AZStd::vector<AZStd::string> results;
+        results.reserve(scanFolders.size());
+
+        AZStd::for_each(
+            scanFolders.begin(),
+            scanFolders.end(),
+            [&](const AZStd::string& scanFolder)
+            {
+                VisitFilesInFolder(
+                    scanFolder,
+                    [&](const AZStd::string& path)
+                    {
+                        if (!filterFn || filterFn(path))
+                        {
+                            results.emplace_back(path);
+                        }
+                        return true;
+                    },
+                    true);
+            });
+
+        // Sorting the container and removing duplicate paths to ensure uniqueness in case of nested or overlapping scan folders.
+        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python.
+        AZStd::sort(results.begin(), results.end());
+        results.erase(AZStd::unique(results.begin(), results.end()), results.end());
+        return results;
+    }
+
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension)
+    {
+        if (extension.empty())
+        {
+            return {};
+        }
+
+        const AZStd::string& extensionWithDot = (extension[0] == '.') ? extension : AZStd::string::format(".%s", extension.c_str());
+        return GetPathsInSourceFoldersMatchingFilter(
+            [&](const AZStd::string& path)
+            {
+                return path.ends_with(extensionWithDot) && IsDocumentPathEditable(path);
+            });
+    }
+
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders()
+    {
         AZStd::vector<AZStd::string> scanFolders;
+        scanFolders.reserve(100);
+
         AzToolsFramework::AssetSystemRequestBus::Broadcast(
             &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
 
-        for (const AZStd::string& scanFolder : scanFolders)
-        {
-            if (const auto& findFilesResult = AzFramework::FileFunc::FindFileList(scanFolder, wildcard.c_str(), true))
-            {
-                for (AZStd::string path : findFilesResult.GetValue())
-                {
-                    if (ValidateDocumentPath(path))
-                    {
-                        results.push_back(path);
-                    }
-                }
-            }
-        }
-
-        // Sorting the container and removing duplicate paths to ensure uniqueness in case of nested or overlapping scan folders.
-        // This was previously done automatically with a set but using a vector for compatibility with behavior context and Python. 
-        AZStd::sort(results.begin(), results.end());
-        results.erase(AZStd::unique(results.begin(), results.end()), results.end());
-
-        return results;
+        AZStd::erase_if(scanFolders, [](const AZStd::string& path){ return AZ::StringFunc::Contains(path, "cache"); });
+        return scanFolders;
     }
 
     void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
@@ -497,12 +805,12 @@ namespace AtomToolsFramework
 
                     scriptCategoryMenu->addAction(filename.c_str(), [scriptPath, arguments]() {
                         // Delay execution of the script until the next frame.
-                        QTimer::singleShot(0, [scriptPath, arguments]() {
+                        AZ::SystemTickBus::QueueFunction([scriptPath, arguments]() {
                             AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                                 &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                                 scriptPath,
                                 AZStd::vector<AZStd::string_view>(arguments.begin(), arguments.end()));
-                            });
+                        });
                     });
                 }
             }
@@ -515,7 +823,7 @@ namespace AtomToolsFramework
             if (!scriptPath.isEmpty())
             {
                 // Delay execution of the script until the next frame.
-                QTimer::singleShot(0, [scriptPath, arguments]() {
+                AZ::SystemTickBus::QueueFunction([scriptPath, arguments]() {
                     AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
                         &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
                         scriptPath.toUtf8().constData(),
@@ -540,10 +848,14 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetSymbolNameFromText", GetSymbolNameFromText, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetDisplayNameFromText", GetDisplayNameFromText, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetDisplayNameFromPath", GetDisplayNameFromPath, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetSaveFilePath", GetSaveFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetStringListFromDialog", GetStringListFromDialog, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetFileFilterFromSupportedExtensions", GetFileFilterFromSupportedExtensions, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetFirstValidSupportedExtension", GetFirstValidSupportedExtension, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetFirstMatchingSupportedExtension", GetFirstMatchingSupportedExtension, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSaveFilePathFromDialog", GetSaveFilePathFromDialog, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetOpenFilePathsFromDialog", GetOpenFilePathsFromDialog, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetUniqueFilePath", GetUniqueFilePath, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetUniqueDefaultSaveFilePath", GetUniqueDefaultSaveFilePath, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetUniqueDuplicateFilePath", GetUniqueDuplicateFilePath, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetUniqueUntitledFilePath", GetUniqueUntitledFilePath, nullptr, ""));
             addUtilFunc(behaviorContext->Method("ValidateDocumentPath", ValidateDocumentPath, nullptr, ""));
             addUtilFunc(behaviorContext->Method("IsDocumentPathInSupportedFolder", IsDocumentPathInSupportedFolder, nullptr, ""));
             addUtilFunc(behaviorContext->Method("IsDocumentPathEditable", IsDocumentPathEditable, nullptr, ""));
@@ -551,7 +863,18 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetPathToExteralReference", GetPathToExteralReference, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingExtension", GetPathsInSourceFoldersMatchingExtension, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetNonCacheSourceFolders", GetNonCacheSourceFolders, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_bool", GetSettingsValue<bool>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_bool", SetSettingsValue<bool>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_s64", GetSettingsValue<AZ::s64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_s64", SetSettingsValue<AZ::s64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_u64", GetSettingsValue<AZ::u64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_u64", SetSettingsValue<AZ::u64>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_double", GetSettingsValue<double>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_double", SetSettingsValue<double>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetSettingsValue_string", GetSettingsValue<AZStd::string>, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("SetSettingsValue_string", SetSettingsValue<AZStd::string>, nullptr, ""));
         }
     }
 } // namespace AtomToolsFramework

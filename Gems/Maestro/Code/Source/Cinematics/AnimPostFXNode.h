@@ -21,7 +21,7 @@ class CAnimPostFXNode
     : public CAnimNode
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimPostFXNode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimPostFXNode, AZ::SystemAllocator);
     AZ_RTTI(CAnimPostFXNode, "{41FCA8BB-46A8-4F37-87C2-C1D10994854B}", CAnimNode);
 
     //-----------------------------------------------------------------------------
@@ -64,9 +64,9 @@ public:
 protected:
     bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
-    typedef std::map< AnimNodeType, _smart_ptr<CFXNodeDescription> > FxNodeDescriptionMap;
-    static StaticInstance<FxNodeDescriptionMap> s_fxNodeDescriptions;
-    static bool s_initialized;
+    using FxNodeDescriptionMap = AZStd::map<AnimNodeType, AZStd::unique_ptr<CFXNodeDescription>>;
+    static FxNodeDescriptionMap s_fxNodeDescriptions;
+    static inline bool s_initialized{};
 
     CFXNodeDescription* m_pDescription;
 };

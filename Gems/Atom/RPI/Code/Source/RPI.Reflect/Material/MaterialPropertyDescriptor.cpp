@@ -23,6 +23,8 @@ namespace AZ
             {
             case MaterialPropertyOutputType::ShaderInput:  return "ShaderInput";
             case MaterialPropertyOutputType::ShaderOption: return "ShaderOption";
+            case MaterialPropertyOutputType::ShaderEnabled: return "ShaderEnabled";
+            case MaterialPropertyOutputType::InternalProperty: return "InternalProperty";
             default:
                 AZ_Assert(false, "Unhandled type");
                 return "<Unknown>";
@@ -98,7 +100,7 @@ namespace AZ
             }
         }
         
-        bool ValidateMaterialPropertyDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError)
         {
             auto toMaterialPropertyDataType = [](TypeId typeId)
             {
@@ -126,7 +128,7 @@ namespace AZ
                 {
                     onError(
                         AZStd::string::format("Material property '%s' is a Enum type, can only accept UInt value, input value is %s",
-                            propertyName.GetCStr(),
+                            materialPropertyDescriptor->GetName().GetCStr(),
                             ToString(actualDataType)
                         ).data());
                     return false;
@@ -138,7 +140,7 @@ namespace AZ
                 {
                     onError(
                         AZStd::string::format("Material property '%s': Type mismatch. Expected %s but was %s",
-                            propertyName.GetCStr(),
+                            materialPropertyDescriptor->GetName().GetCStr(),
                             ToString(expectedDataType),
                             ToString(actualDataType)
                         ).data());
@@ -154,8 +156,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialPropertyOutputId>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_type", &MaterialPropertyOutputId::m_type)
+                    ->Field("m_materialPipelineName", &MaterialPropertyOutputId::m_materialPipelineName)
                     ->Field("m_containerIndex", &MaterialPropertyOutputId::m_containerIndex)
                     ->Field("m_itemIndex", &MaterialPropertyOutputId::m_itemIndex)
                     ;
@@ -169,6 +172,8 @@ namespace AZ
                 serializeContext->Enum<MaterialPropertyOutputType>()
                     ->Value(ToString(MaterialPropertyOutputType::ShaderInput), MaterialPropertyOutputType::ShaderInput)
                     ->Value(ToString(MaterialPropertyOutputType::ShaderOption), MaterialPropertyOutputType::ShaderOption)
+                    ->Value(ToString(MaterialPropertyOutputType::ShaderEnabled), MaterialPropertyOutputType::ShaderEnabled)
+                    ->Value(ToString(MaterialPropertyOutputType::InternalProperty), MaterialPropertyOutputType::InternalProperty)
                     ;
 
                 serializeContext->Enum<MaterialPropertyDataType>()

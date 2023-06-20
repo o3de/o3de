@@ -15,16 +15,18 @@ namespace AzFramework
     public:
         ~CommunicatorHandleImpl() = default;
 
-        bool IsValid() const;
-        bool IsBroken() const;
-        int GetHandle() const;
+        [[nodiscard]] bool IsValid() const;
+        [[nodiscard]] bool IsBroken() const;
+        [[nodiscard]] int GetHandle() const;
+        [[nodiscard]] int GetEPollHandle() const;
 
         void Break();
         void Close();
-        void SetHandle(int handle);
+        [[nodiscard]] bool SetHandle(int handle, bool createEPollHandle);
 
     protected:
         int m_handle = -1;
+        int m_epollHandle = -1;
         bool m_broken = false;
     };
 

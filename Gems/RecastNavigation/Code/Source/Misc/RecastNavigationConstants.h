@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace RecastNavigation
 {
     inline constexpr AZ::TypeId RecastNavigationMeshComponentTypeId{ "{a281f314-a525-4c05-876d-17eb632f14b4}" };

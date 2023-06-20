@@ -15,20 +15,20 @@ namespace UnitTests
     {
         AssetManagerTestingBase::SetUp();
 
-        m_tempFolder = m_tempDir.GetDirectory();
-        CreateTestFile((m_tempFolder / ".gitattributes").Native(),
+        m_assetRootDir = m_databaseLocationListener.GetAssetRootDir();
+        CreateTestFile((m_assetRootDir / ".gitattributes").Native(),
             "#\n"
             "# Git LFS(see https ://git-lfs.github.com/)\n"
             "#\n"
             "*.test filter=lfs diff=lfs merge=lfs -text\n"
         );
 
-        m_validator = AssetProcessor::LfsPointerFileValidator({ m_tempDir.GetDirectory() });
+        m_validator = AssetProcessor::LfsPointerFileValidator({ m_assetRootDir.c_str() });
     }
 
     void LfsPointerFileValidatorTests::TearDown()
     {
-        RemoveTestFile((m_tempFolder / ".gitattributes").Native());
+        RemoveTestFile((m_assetRootDir / ".gitattributes").Native());
         AssetManagerTestingBase::TearDown();
     }
 
@@ -64,7 +64,7 @@ namespace UnitTests
 
     TEST_F(LfsPointerFileValidatorTests, IsLfsPointerFile_ValidLfsPointerFile_CheckSucceed)
     {
-        AZStd::string testFilePath = (m_tempFolder / "file.test").Native();
+        AZStd::string testFilePath = (m_assetRootDir / "file.test").Native();
         CreateTestFile(testFilePath,
             "version https://git-lfs.github.com/spec/v1\n"
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
@@ -77,7 +77,7 @@ namespace UnitTests
 
     TEST_F(LfsPointerFileValidatorTests, IsLfsPointerFile_NonLfsPointerFileType_CheckFail)
     {
-        AZStd::string testFilePath = (m_tempFolder / "file.test1").Native();
+        AZStd::string testFilePath = (m_assetRootDir / "file.test1").Native();
         CreateTestFile(testFilePath,
             "version https://git-lfs.github.com/spec/v1\n"
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
@@ -90,7 +90,7 @@ namespace UnitTests
 
     TEST_F(LfsPointerFileValidatorTests, IsLfsPointerFile_InvalidFirstKey_CheckFail)
     {
-        AZStd::string testFilePath = (m_tempFolder / "file.test").Native();
+        AZStd::string testFilePath = (m_assetRootDir / "file.test").Native();
         CreateTestFile(testFilePath,
             "oid sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
             "size 63872\n"
@@ -103,7 +103,7 @@ namespace UnitTests
 
     TEST_F(LfsPointerFileValidatorTests, IsLfsPointerFile_InvalidKeyCharacter_CheckFail)
     {
-        AZStd::string testFilePath = (m_tempFolder / "file.test").Native();
+        AZStd::string testFilePath = (m_assetRootDir / "file.test").Native();
         CreateTestFile(testFilePath,
             "version https://git-lfs.github.com/spec/v1\n"
             "oid+ sha256:ee4799379bfcfa99e95afd6494da51fbeda95f21ea71d267ae7102f048edec85\n"
@@ -116,7 +116,7 @@ namespace UnitTests
 
     TEST_F(LfsPointerFileValidatorTests, IsLfsPointerFile_UnorderedKeys_CheckFail)
     {
-        AZStd::string testFilePath = (m_tempFolder / "file.test").Native();
+        AZStd::string testFilePath = (m_assetRootDir / "file.test").Native();
         CreateTestFile(testFilePath,
             "version https://git-lfs.github.com/spec/v1\n"
             "size 63872\n"
@@ -129,7 +129,7 @@ namespace UnitTests
 
     TEST_F(LfsPointerFileValidatorTests, IsLfsPointerFile_MissingRequiredKey_CheckFail)
     {
-        AZStd::string testFilePath = (m_tempFolder / "file.test").Native();
+        AZStd::string testFilePath = (m_assetRootDir / "file.test").Native();
         CreateTestFile(testFilePath,
             "version https://git-lfs.github.com/spec/v1\n"
             "bla 63872\n"

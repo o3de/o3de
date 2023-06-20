@@ -9,7 +9,6 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Asset/AssetBundler.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
@@ -24,13 +23,14 @@
 #include <tests/main.h>
 #include <source/utils/applicationManager.h>
 
+#include <QApplication>
 
 extern char g_cachedEngineRoot[AZ_MAX_PATH_LEN];
 
 namespace AssetBundler
 {
     class AssetBundlerBatchUtilsTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     };
 
@@ -82,18 +82,18 @@ namespace AssetBundler
         ASSERT_EQ(platformIdentifier, "pc");
     }
 
-    const char RelativeTestFolder[] = "Code/Tools/AssetBundler/tests";
+    const char RelativeTestFolder[] = "AssetBundler.Tests.dir";
     const char GemsFolder[] = "Gems";
     constexpr auto EngineFolder = AZ::IO::FixedMaxPath("Assets") / "Engine";
     const char PlatformsFolder[] = "Platforms";
     const char DummyProjectFolder[] = "DummyProject";
 
     class AssetBundlerGemsUtilTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
-        {          
+        {
             AZ::SettingsRegistryInterface* registry = nullptr;
             if (!AZ::SettingsRegistry::Get())
             {
@@ -106,15 +106,14 @@ namespace AssetBundler
             }
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            AZ::IO::FixedMaxPath enginePath;
-            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            AZ::IO::FixedMaxPath enginePath = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*registry);
             registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
-            if (engineRoot.empty())
+            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+            if (executableDirectory.empty())
             {
-                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate engine root.\n").c_str());
+                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to locate executable.\n").c_str());
             }
 
             m_data = AZStd::make_unique<StaticData>();
@@ -122,15 +121,16 @@ namespace AssetBundler
             m_data->m_application.get()->Start(AzFramework::Application::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).LexicallyNormal().String();
+            // Set the test engine root to be the executable directory
+            m_data->m_testEngineRoot = (executableDirectory / RelativeTestFolder).LexicallyNormal().String();
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_data->m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            // we need to set it to nullptr first because otherwise the 
+            // we need to set it to nullptr first because otherwise the
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_data->m_localFileIO);
@@ -140,13 +140,19 @@ namespace AssetBundler
 
             auto absoluteEngineSeedFilePath = m_data->m_testEngineRoot / EngineFolder / "SeedAssetList";
             absoluteEngineSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
-            m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(absoluteEngineSeedFilePath, true));
+            m_data->m_gemSeedFilePairList.push_back({ absoluteEngineSeedFilePath.Native(), true});
 
             AddGemData(m_data->m_testEngineRoot.c_str(), "GemC", false);
 
-            AZStd::string absoluteProjectSeedFilePath;
-            AzFramework::StringFunc::Path::ConstructFull(m_data->m_testEngineRoot.c_str(), DummyProjectFolder, "SeedAssetList", AzToolsFramework::AssetSeedManager::GetSeedFileExtension(), absoluteProjectSeedFilePath, true);
-            m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(absoluteProjectSeedFilePath, true));
+
+            auto absoluteProjectJsonSeedFilePath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectFolder / "SeedAssetList";
+            absoluteProjectJsonSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
+            m_data->m_gemSeedFilePairList.push_back({ absoluteProjectJsonSeedFilePath.Native(), true });
+
+            // Add an explicit ObjectStream format XML seed file to validate that it loads successfully
+            auto absoluteProjectObjectStreamSeedFilePath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectFolder / "SeedAssetListObjectStreamXML";
+            absoluteProjectObjectStreamSeedFilePath.ReplaceExtension(AzToolsFramework::AssetSeedManager::GetSeedFileExtension());
+            m_data->m_gemSeedFilePairList.push_back({ absoluteProjectObjectStreamSeedFilePath.Native(), true });
         }
         void TearDown() override
         {
@@ -195,9 +201,7 @@ namespace AssetBundler
                     AZStd::string::format("*.%s", AzToolsFramework::AssetSeedManager::GetSeedFileExtension()).c_str(),
                     [&](const char* fileName)
                 {
-                    AZStd::string normalizedFilePath = fileName;
-                    AzFramework::StringFunc::Path::Normalize(normalizedFilePath);
-                    m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(normalizedFilePath, seedFileExists));
+                    m_data->m_gemSeedFilePairList.push_back({ AZ::IO::PathView(fileName).LexicallyNormal().String(), seedFileExists });
                     return true;
                 });
             }
@@ -214,9 +218,7 @@ namespace AssetBundler
                     AZStd::list<AZStd::string> seedFiles = result.TakeValue();
                     for (AZStd::string& seedFile : seedFiles)
                     {
-                        AZStd::string normalizedFilePath = seedFile;
-                        AzFramework::StringFunc::Path::Normalize(normalizedFilePath);
-                        m_data->m_gemSeedFilePairList.emplace_back(AZStd::make_pair(normalizedFilePath, seedFileExists));
+                        m_data->m_gemSeedFilePairList.push_back({ AZ::IO::PathView(seedFile).LexicallyNormal().String(), seedFileExists });
                     }
                 }
             }
@@ -248,10 +250,10 @@ namespace AssetBundler
     {
         // DummyProject and fake Engine/Gem structure lives at dev/Code/Tools/AssetBundler/tests/
         auto dummyProjectPath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectFolder;
-        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.c_str(), dummyProjectPath.Native(), m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC);
+        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.Native(), dummyProjectPath.Native(), m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC);
         ASSERT_EQ(defaultSeedList.size(), 5); //adding one for the engine seed file and one for the project file
 
-        // Validate whether both GemA and GemB seed file are present  
+        // Validate whether both GemA and GemB seed file are present
         EXPECT_NE(defaultSeedList.find(m_data->m_gemSeedFilePairList[GemAIndex].first), defaultSeedList.end());
         EXPECT_NE(defaultSeedList.find(m_data->m_gemSeedFilePairList[GemBIndex].first), defaultSeedList.end());
         EXPECT_NE(defaultSeedList.find(m_data->m_gemSeedFilePairList[GemBSharedFileIndex].first), defaultSeedList.end());
@@ -265,11 +267,11 @@ namespace AssetBundler
     {
         // DummyProject and fake Engine/Gem structure lives at dev/Code/Tools/AssetBundler/tests/
         auto dummyProjectPath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectFolder;
-        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.c_str(), dummyProjectPath.Native(), m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_IOS);
+        auto defaultSeedList = AssetBundler::GetDefaultSeedListFiles(m_data->m_testEngineRoot.Native(), dummyProjectPath.Native(), m_data->m_gemInfoList, AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_IOS);
         ASSERT_EQ(defaultSeedList.size(), 6); //adding one for the engine seed file and one for the project file
 
 
-        // Validate whether both GemA and GemB seed file are present  
+        // Validate whether both GemA and GemB seed file are present
         EXPECT_NE(defaultSeedList.find(m_data->m_gemSeedFilePairList[GemAIndex].first), defaultSeedList.end());
         EXPECT_NE(defaultSeedList.find(m_data->m_gemSeedFilePairList[GemBIndex].first), defaultSeedList.end());
         EXPECT_NE(defaultSeedList.find(m_data->m_gemSeedFilePairList[GemBSharedFileIndex].first), defaultSeedList.end());
@@ -294,17 +296,16 @@ namespace AssetBundler
 int main(int argc, char* argv[])
 {
     AZ::Debug::Trace::HandleExceptions(true);
+    QApplication app(argc, argv);
     AZ::Test::ApplyGlobalParameters(&argc, argv);
 
     INVOKE_AZ_UNIT_TEST_MAIN();
 
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     int runSuccess = 0;
     {
         AssetBundler::ApplicationManager applicationManger(&argc, &argv);
         applicationManger.Init();
         runSuccess = applicationManger.Run() ? 0 : 1;
     }
-    AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     return runSuccess;
 }

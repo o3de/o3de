@@ -155,7 +155,7 @@ namespace AZ
                 : public AZStd::intrusive_list_node<CacheItem>
             {
             public:
-                AZ_CLASS_ALLOCATOR(CacheItem, AZ::ThreadPoolAllocator, 0);
+                AZ_CLASS_ALLOCATOR(CacheItem, AZ::ThreadPoolAllocator);
 
                 KeyType m_key;
                 Ptr<ObjectType> m_object = nullptr;

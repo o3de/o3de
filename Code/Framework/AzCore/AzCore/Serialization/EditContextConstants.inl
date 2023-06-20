@@ -90,7 +90,8 @@ namespace AZ
             const static AZ::Crc32 GenericValueList = AZ_CRC("GenericValueList", 0x6847012e);
             const static AZ::Crc32 PostChangeNotify = AZ_CRC("PostChangeNotify", 0x456e84c8);
 
-            const static AZ::Crc32 ValueText = AZ_CRC("ValueText", 0x251534d1);
+            const static AZ::Crc32 ValueText = AZ_CRC_CE("ValueText");
+            const static AZ::Crc32 PlaceholderText = AZ_CRC_CE("PlaceholderText");
 
             const static AZ::Crc32 TrueText = AZ_CRC("TrueText", 0x263d9d95);
             const static AZ::Crc32 FalseText = AZ_CRC("FalseText", 0x5f8c95bd);
@@ -244,7 +245,7 @@ namespace AZ
             const static AZ::Crc32 EntityId = AZ_CRC("EntityId", 0x63ac0d5e);
             const static AZ::Crc32 LayoutPadding = AZ_CRC("LayoutPadding", 0x87ffd04b);
             const static AZ::Crc32 LineEdit = AZ_CRC("LineEdit", 0x3f15f4ba);
-            const static AZ::Crc32 MultiLineEdit = AZ_CRC("MultiLineEdit", 0xf5d93777);
+            const static AZ::Crc32 MultiLineEdit = AZ_CRC_CE("MultiLineEdit");
             const static AZ::Crc32 Quaternion = AZ_CRC("Quaternion", 0x4be832b9);
             const static AZ::Crc32 Slider = AZ_CRC("Slider", 0xcfc71007);
             const static AZ::Crc32 SpinBox = AZ_CRC("SpinBox", 0xf3fd1c2d);
@@ -253,6 +254,7 @@ namespace AZ
             const static AZ::Crc32 Vector3 = AZ_CRC("Vector3", 0x917068af);
             const static AZ::Crc32 Vector4 = AZ_CRC("Vector4", 0x0f14fd0c);
             const static AZ::Crc32 ExeSelectBrowseEdit = AZ_CRC("ExeSelectBrowseEdit", 0xa2feae94);
+            const static AZ::Crc32 Label = AZ_CRC_CE("Label");
 
             // Maintained in the UIHandlers namespace for backwards compatibility; moved to the Attributes namespace now
             const static AZ::Crc32 Handler = Attributes::Handler;

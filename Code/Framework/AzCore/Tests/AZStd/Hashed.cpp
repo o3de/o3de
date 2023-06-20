@@ -16,6 +16,7 @@
 #include <AzCore/std/ranges/transform_view.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/typetraits/has_member_function.h>
+#include <AzCore/Memory/AllocatorWrappers.h>
 
 #if defined(HAVE_BENCHMARK)
 #include <benchmark/benchmark.h>
@@ -32,7 +33,7 @@ namespace UnitTest
      * Hash functions test.
      */
     class HashedContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         template <class H, bool hasValidate>
@@ -1162,7 +1163,7 @@ namespace UnitTest
 
     template<typename ContainerType>
     class HashedSetContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1396,18 +1397,18 @@ namespace UnitTest
 
     template <typename ContainerType>
     class HashedSetDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
     template<template <typename, typename, typename, typename> class ContainerTemplate>
     struct HashedSetWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorSet(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorSet;
         }
     };
@@ -1419,7 +1420,11 @@ namespace UnitTest
     TYPED_TEST_CASE(HashedSetDifferentAllocatorFixture, SetTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(HashedSetDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(HashedSetDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1436,7 +1441,7 @@ namespace UnitTest
                 {
                     // AZ_Assert does not cause the application to exit in profile_test configuration
                     // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                    abort();
+                    exit(1);
                 }
             }, ".*");
     }
@@ -1444,7 +1449,7 @@ namespace UnitTest
 
     template<typename ContainerType>
     class HashedMapContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -1892,18 +1897,18 @@ namespace UnitTest
 
     template <typename ContainerType>
     class HashedMapDifferentAllocatorFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
     template<template <typename, typename, typename, typename, typename> class ContainerTemplate>
     struct HashedMapWithCustomAllocatorConfig
     {
-        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AZStdIAllocator>;
+        using ContainerType = ContainerTemplate<int32_t, int32_t, AZStd::hash<int32_t>, AZStd::equal_to<int32_t>, AZ::AllocatorPointerWrapper>;
 
         static ContainerType Create(std::initializer_list<typename ContainerType::value_type> intList, AZ::IAllocator* allocatorInstance)
         {
-            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AZStdIAllocator{ allocatorInstance });
+            ContainerType allocatorMap(intList, 0, AZStd::hash<int32_t>{}, AZStd::equal_to<int32_t>{}, AZ::AllocatorPointerWrapper{ allocatorInstance });
             return allocatorMap;
         }
     };
@@ -1915,7 +1920,11 @@ namespace UnitTest
     TYPED_TEST_CASE(HashedMapDifferentAllocatorFixture, MapTemplateConfigs);
 
 #if GTEST_HAS_DEATH_TEST
+#if AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
+    TYPED_TEST(HashedMapDifferentAllocatorFixture, DISABLED_InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#else
     TYPED_TEST(HashedMapDifferentAllocatorFixture, InsertNodeHandleWithDifferentAllocatorsLogsTraceMessages)
+#endif // AZ_TRAIT_DISABLE_FAILED_DEATH_TESTS
     {
         using ContainerType = typename TypeParam::ContainerType;
 
@@ -1932,7 +1941,7 @@ namespace UnitTest
             {
                 // AZ_Assert does not cause the application to exit in profile_test configuration
                 // Therefore an exit with a non-zero error code is invoked to trigger the death condition
-                abort();
+                exit(1);
             }
         } , ".*");
     }
@@ -2012,7 +2021,7 @@ namespace UnitTest
     };
     template <typename ContainerType>
     class HashedContainerTransparentFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override

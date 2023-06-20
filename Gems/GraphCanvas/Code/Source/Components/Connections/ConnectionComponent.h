@@ -250,7 +250,7 @@ namespace GraphCanvas
         : public SceneEventFilter
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConnectionEventFilter, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConnectionEventFilter, AZ::SystemAllocator);
         ConnectionEventFilter(ConnectionComponent& connection)
             : SceneEventFilter(nullptr)
             , m_connection(connection)

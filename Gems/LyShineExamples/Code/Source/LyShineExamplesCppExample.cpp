@@ -152,13 +152,14 @@ namespace LyShineExamples
         // We want the background to stretch to the corners of the canvas
         // So we set the anchors to go all the way to the right and to the bottom
         AZ::EntityId backgroundId = background->GetId();
-        EBUS_EVENT_ID(backgroundId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.0f, 0.0f, 1.0f, 1.0f), false, false);
+        UiTransform2dBus::Event(
+            backgroundId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.0f, 0.0f, 1.0f, 1.0f), false, false);
 
         // Set the color of the background image to black
-        EBUS_EVENT_ID(backgroundId, UiImageBus, SetColor, AZ::Color(0.f, 0.f, 0.f, 1.f));
+        UiImageBus::Event(backgroundId, &UiImageBus::Events::SetColor, AZ::Color(0.f, 0.f, 0.f, 1.f));
 
         // Set the background button's navigation to none
-        EBUS_EVENT_ID(backgroundId, UiNavigationBus, SetNavigationMode, UiNavigationInterface::NavigationMode::None);
+        UiNavigationBus::Event(backgroundId, &UiNavigationBus::Events::SetNavigationMode, UiNavigationInterface::NavigationMode::None);
 
         // Now let's create a child of the background
         AZ::Entity* foreground = canvas->CreateChildElement("Foreground");
@@ -169,7 +170,8 @@ namespace LyShineExamples
 
         // Stretch it to the corners of the background with the anchors, stretch it 90% of background to still a background outline
         AZ::EntityId foregroundId = foreground->GetId();
-        EBUS_EVENT_ID(foregroundId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.1f, 0.1f, 0.9f, 0.9f), false, false);
+        UiTransform2dBus::Event(
+            foregroundId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.1f, 0.1f, 0.9f, 0.9f), false, false);
 
         return foregroundId;
     }
@@ -247,11 +249,11 @@ namespace LyShineExamples
         AZ::Entity* button = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(button, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(button, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(button, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(button, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId buttonId = button->GetId();
@@ -264,24 +266,49 @@ namespace LyShineExamples
 
             AZ_Assert(UiTransform2dBus::FindFirstHandler(buttonId), "Transform2d component missing");
 
-            EBUS_EVENT_ID(buttonId, UiTransformBus, SetScaleToDeviceMode, scaleToDeviceMode);
-            EBUS_EVENT_ID(buttonId, UiTransform2dBus, SetAnchors, anchors, false, false);
-            EBUS_EVENT_ID(buttonId, UiTransform2dBus, SetOffsets, offsets);
-            EBUS_EVENT_ID(buttonId, UiImageBus, SetColor, baseColor);
+            UiTransformBus::Event(buttonId, &UiTransformBus::Events::SetScaleToDeviceMode, scaleToDeviceMode);
+            UiTransform2dBus::Event(buttonId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(buttonId, &UiTransform2dBus::Events::SetOffsets, offsets);
+            UiImageBus::Event(buttonId, &UiImageBus::Events::SetColor, baseColor);
 
-            EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StateHover, buttonId, selectedColor);
-            EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StateHover, buttonId, selectedColor.GetA());
-            EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
-            EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
+            UiInteractableStatesBus::Event(
+                buttonId,
+                &UiInteractableStatesBus::Events::SetStateColor,
+                UiInteractableStatesInterface::StateHover,
+                buttonId,
+                selectedColor);
+            UiInteractableStatesBus::Event(
+                buttonId,
+                &UiInteractableStatesBus::Events::SetStateAlpha,
+                UiInteractableStatesInterface::StateHover,
+                buttonId,
+                selectedColor.GetA());
+            UiInteractableStatesBus::Event(
+                buttonId,
+                &UiInteractableStatesBus::Events::SetStateColor,
+                UiInteractableStatesInterface::StatePressed,
+                buttonId,
+                pressedColor);
+            UiInteractableStatesBus::Event(
+                buttonId,
+                &UiInteractableStatesBus::Events::SetStateAlpha,
+                UiInteractableStatesInterface::StatePressed,
+                buttonId,
+                pressedColor.GetA());
 
-            EBUS_EVENT_ID(buttonId, UiImageBus, SetSpritePathname, "UI/Textures/Prefab/button_normal.sprite");
-            EBUS_EVENT_ID(buttonId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
+            UiImageBus::Event(buttonId, &UiImageBus::Events::SetSpritePathname, "UI/Textures/Prefab/button_normal.sprite");
+            UiImageBus::Event(buttonId, &UiImageBus::Events::SetImageType, UiImageInterface::ImageType::Sliced);
 
-            EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateSpritePathname, UiInteractableStatesInterface::StateDisabled, buttonId, "UI/Textures/Prefab/button_disabled.sprite");
+            UiInteractableStatesBus::Event(
+                buttonId,
+                &UiInteractableStatesBus::Events::SetStateSpritePathname,
+                UiInteractableStatesInterface::StateDisabled,
+                buttonId,
+                "UI/Textures/Prefab/button_disabled.sprite");
         }
 
         AZ::Entity* textElem = nullptr;
-        EBUS_EVENT_ID_RESULT(textElem, buttonId, UiElementBus, CreateChildElement, "ButtonText");
+        UiElementBus::EventResult(textElem, buttonId, &UiElementBus::Events::CreateChildElement, "ButtonText");
         AZ::EntityId textId = textElem->GetId();
 
         // Create and set up the text element (text displayed on the button)
@@ -291,18 +318,19 @@ namespace LyShineExamples
 
             AZ_Assert(UiTransform2dBus::FindFirstHandler(textId), "Transform component missing");
 
-            EBUS_EVENT_ID(textId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), false, false);
-            EBUS_EVENT_ID(textId, UiTransform2dBus, SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
+            UiTransform2dBus::Event(
+                textId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.5, 0.5, 0.5, 0.5), false, false);
+            UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetOffsets, UiTransform2dInterface::Offsets(0, 0, 0, 0));
 
-            EBUS_EVENT_ID(textId, UiTextBus, SetText, text);
-            EBUS_EVENT_ID(textId, UiTextBus, SetTextAlignment, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
-            EBUS_EVENT_ID(textId, UiTextBus, SetColor, textColor);
-            EBUS_EVENT_ID(textId, UiTextBus, SetFontSize, 24.0f);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetText, text);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetTextAlignment, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetColor, textColor);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetFontSize, 24.0f);
         }
 
         // Trigger all InGamePostActivate
-        EBUS_EVENT_ID(buttonId, UiInitializationBus, InGamePostActivate);
-        EBUS_EVENT_ID(textId, UiInitializationBus, InGamePostActivate);
+        UiInitializationBus::Event(buttonId, &UiInitializationBus::Events::InGamePostActivate);
+        UiInitializationBus::Event(textId, &UiInitializationBus::Events::InGamePostActivate);
 
         return buttonId;
     }
@@ -317,11 +345,11 @@ namespace LyShineExamples
         AZ::Entity* checkbox = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(checkbox, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(checkbox, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(checkbox, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(checkbox, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId checkboxId = checkbox->GetId();
@@ -334,23 +362,43 @@ namespace LyShineExamples
 
             AZ_Assert(UiTransform2dBus::FindFirstHandler(checkboxId), "Transform2d component missing");
 
-            EBUS_EVENT_ID(checkboxId, UiTransformBus, SetScaleToDeviceMode, scaleToDeviceMode);
-            EBUS_EVENT_ID(checkboxId, UiTransform2dBus, SetAnchors, anchors, false, false);
-            EBUS_EVENT_ID(checkboxId, UiTransform2dBus, SetOffsets, offsets);
-            EBUS_EVENT_ID(checkboxId, UiImageBus, SetColor, baseColor);
+            UiTransformBus::Event(checkboxId, &UiTransformBus::Events::SetScaleToDeviceMode, scaleToDeviceMode);
+            UiTransform2dBus::Event(checkboxId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(checkboxId, &UiTransform2dBus::Events::SetOffsets, offsets);
+            UiImageBus::Event(checkboxId, &UiImageBus::Events::SetColor, baseColor);
 
-            EBUS_EVENT_ID(checkboxId, UiImageBus, SetSpritePathname, "UI/Textures/Prefab/checkbox_box_normal.sprite");
+            UiImageBus::Event(checkboxId, &UiImageBus::Events::SetSpritePathname, "UI/Textures/Prefab/checkbox_box_normal.sprite");
 
-            EBUS_EVENT_ID(checkboxId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StateHover, checkboxId, selectedColor);
-            EBUS_EVENT_ID(checkboxId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StateHover, checkboxId, selectedColor.GetA());
-            EBUS_EVENT_ID(checkboxId, UiInteractableStatesBus, SetStateSpritePathname, UiInteractableStatesInterface::StateHover, checkboxId, "UI/Textures/Prefab/checkbox_box_hover.sprite");
+            UiInteractableStatesBus::Event(
+                checkboxId,
+                &UiInteractableStatesBus::Events::SetStateColor,
+                UiInteractableStatesInterface::StateHover,
+                checkboxId,
+                selectedColor);
+            UiInteractableStatesBus::Event(
+                checkboxId,
+                &UiInteractableStatesBus::Events::SetStateAlpha,
+                UiInteractableStatesInterface::StateHover,
+                checkboxId,
+                selectedColor.GetA());
+            UiInteractableStatesBus::Event(
+                checkboxId,
+                &UiInteractableStatesBus::Events::SetStateSpritePathname,
+                UiInteractableStatesInterface::StateHover,
+                checkboxId,
+                "UI/Textures/Prefab/checkbox_box_hover.sprite");
 
-            EBUS_EVENT_ID(checkboxId, UiInteractableStatesBus, SetStateSpritePathname, UiInteractableStatesInterface::StateDisabled, checkboxId, "UI/Textures/Prefab/checkbox_box_disabled.sprite");
+            UiInteractableStatesBus::Event(
+                checkboxId,
+                &UiInteractableStatesBus::Events::SetStateSpritePathname,
+                UiInteractableStatesInterface::StateDisabled,
+                checkboxId,
+                "UI/Textures/Prefab/checkbox_box_disabled.sprite");
         }
 
         // Create the On element (the checkmark that will be displayed when the checkbox is "on")
         AZ::Entity* onElement;
-        EBUS_EVENT_ID_RESULT(onElement, checkboxId, UiElementBus, CreateChildElement, "onElem");
+        UiElementBus::EventResult(onElement, checkboxId, &UiElementBus::Events::CreateChildElement, "onElem");
 
         AZ::EntityId onId = onElement->GetId();
 
@@ -359,19 +407,20 @@ namespace LyShineExamples
             CreateComponent(onElement, LyShine::UiTransform2dComponentUuid);
             CreateComponent(onElement, LyShine::UiImageComponentUuid);
 
-            EBUS_EVENT_ID(onId, UiTransform2dBus, SetAnchors, UiTransform2dInterface::Anchors(0.5f, 0.5f, 0.5f, 0.5f), false, false);
-            EBUS_EVENT_ID(onId, UiTransform2dBus, SetOffsets, offsets);
+            UiTransform2dBus::Event(
+                onId, &UiTransform2dBus::Events::SetAnchors, UiTransform2dInterface::Anchors(0.5f, 0.5f, 0.5f, 0.5f), false, false);
+            UiTransform2dBus::Event(onId, &UiTransform2dBus::Events::SetOffsets, offsets);
 
-            EBUS_EVENT_ID(onId, UiImageBus, SetSpritePathname, "UI/Textures/Prefab/checkbox_check.sprite");
-            EBUS_EVENT_ID(onId, UiImageBus, SetColor, checkColor);
+            UiImageBus::Event(onId, &UiImageBus::Events::SetSpritePathname, "UI/Textures/Prefab/checkbox_check.sprite");
+            UiImageBus::Event(onId, &UiImageBus::Events::SetColor, checkColor);
         }
 
         // Link the on and off child entities to the parent checkbox entity.
-        EBUS_EVENT_ID(checkboxId, UiCheckboxBus, SetCheckedEntity, onId);
+        UiCheckboxBus::Event(checkboxId, &UiCheckboxBus::Events::SetCheckedEntity, onId);
 
         // Trigger all InGamePostActivate
-        EBUS_EVENT_ID(onId, UiInitializationBus, InGamePostActivate);
-        EBUS_EVENT_ID(checkboxId, UiInitializationBus, InGamePostActivate);
+        UiInitializationBus::Event(onId, &UiInitializationBus::Events::InGamePostActivate);
+        UiInitializationBus::Event(checkboxId, &UiInitializationBus::Events::InGamePostActivate);
 
         return checkboxId;
     }
@@ -386,11 +435,11 @@ namespace LyShineExamples
         AZ::Entity* textElem = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(textElem, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(textElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(textElem, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(textElem, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId textId = textElem->GetId();
@@ -402,17 +451,17 @@ namespace LyShineExamples
 
             AZ_Assert(UiTransform2dBus::FindFirstHandler(textId), "Transform component missing");
 
-            EBUS_EVENT_ID(textId, UiTransformBus, SetScaleToDeviceMode, scaleToDeviceMode);
-            EBUS_EVENT_ID(textId, UiTransform2dBus, SetAnchors, anchors, false, false);
-            EBUS_EVENT_ID(textId, UiTransform2dBus, SetOffsets, offsets);
+            UiTransformBus::Event(textId, &UiTransformBus::Events::SetScaleToDeviceMode, scaleToDeviceMode);
+            UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(textId, &UiTransform2dBus::Events::SetOffsets, offsets);
 
-            EBUS_EVENT_ID(textId, UiTextBus, SetText, text);
-            EBUS_EVENT_ID(textId, UiTextBus, SetTextAlignment, hAlign, vAlign);
-            EBUS_EVENT_ID(textId, UiTextBus, SetColor, textColor);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetText, text);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetTextAlignment, hAlign, vAlign);
+            UiTextBus::Event(textId, &UiTextBus::Events::SetColor, textColor);
         }
 
         // Trigger all InGamePostActivate
-        EBUS_EVENT_ID(textId, UiInitializationBus, InGamePostActivate);
+        UiInitializationBus::Event(textId, &UiInitializationBus::Events::InGamePostActivate);
 
         return textId;
     }
@@ -429,11 +478,11 @@ namespace LyShineExamples
         AZ::Entity* textInputElem = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(textInputElem, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(textInputElem, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(textInputElem, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(textInputElem, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId textInputId = textInputElem->GetId();
@@ -446,23 +495,53 @@ namespace LyShineExamples
 
             AZ_Assert(UiTransform2dBus::FindFirstHandler(textInputId), "Transform2d component missing");
 
-            EBUS_EVENT_ID(textInputId, UiTransformBus, SetScaleToDeviceMode, scaleToDeviceMode);
-            EBUS_EVENT_ID(textInputId, UiTransform2dBus, SetAnchors, anchors, false, false);
-            EBUS_EVENT_ID(textInputId, UiTransform2dBus, SetOffsets, offsets);
-            EBUS_EVENT_ID(textInputId, UiImageBus, SetColor, baseColor);
+            UiTransformBus::Event(textInputId, &UiTransformBus::Events::SetScaleToDeviceMode, scaleToDeviceMode);
+            UiTransform2dBus::Event(textInputId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(textInputId, &UiTransform2dBus::Events::SetOffsets, offsets);
+            UiImageBus::Event(textInputId, &UiImageBus::Events::SetColor, baseColor);
 
-            EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StateHover, textInputId, selectedColor);
-            EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StateHover, textInputId, selectedColor.GetA());
+            UiInteractableStatesBus::Event(
+                textInputId,
+                &UiInteractableStatesBus::Events::SetStateColor,
+                UiInteractableStatesInterface::StateHover,
+                textInputId,
+                selectedColor);
+            UiInteractableStatesBus::Event(
+                textInputId,
+                &UiInteractableStatesBus::Events::SetStateAlpha,
+                UiInteractableStatesInterface::StateHover,
+                textInputId,
+                selectedColor.GetA());
 
-            EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor);
-            EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
+            UiInteractableStatesBus::Event(
+                textInputId,
+                &UiInteractableStatesBus::Events::SetStateColor,
+                UiInteractableStatesInterface::StatePressed,
+                textInputId,
+                pressedColor);
+            UiInteractableStatesBus::Event(
+                textInputId,
+                &UiInteractableStatesBus::Events::SetStateAlpha,
+                UiInteractableStatesInterface::StatePressed,
+                textInputId,
+                pressedColor.GetA());
 
-            EBUS_EVENT_ID(textInputId, UiImageBus, SetSpritePathname, "UI/Textures/Prefab/textinput_normal.sprite");
-            EBUS_EVENT_ID(textInputId, UiImageBus, SetImageType, UiImageInterface::ImageType::Sliced);
+            UiImageBus::Event(textInputId, &UiImageBus::Events::SetSpritePathname, "UI/Textures/Prefab/textinput_normal.sprite");
+            UiImageBus::Event(textInputId, &UiImageBus::Events::SetImageType, UiImageInterface::ImageType::Sliced);
 
-            EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateSpritePathname, UiInteractableStatesInterface::StateHover, textInputId, "UI/Textures/Prefab/textinput_hover.sprite");
+            UiInteractableStatesBus::Event(
+                textInputId,
+                &UiInteractableStatesBus::Events::SetStateSpritePathname,
+                UiInteractableStatesInterface::StateHover,
+                textInputId,
+                "UI/Textures/Prefab/textinput_hover.sprite");
 
-            EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateSpritePathname, UiInteractableStatesInterface::StateDisabled, textInputId, "UI/Textures/Prefab/textinput_disabled.sprite");
+            UiInteractableStatesBus::Event(
+                textInputId,
+                &UiInteractableStatesBus::Events::SetStateSpritePathname,
+                UiInteractableStatesInterface::StateDisabled,
+                textInputId,
+                "UI/Textures/Prefab/textinput_disabled.sprite");
         }
 
         // Create the text element (what the user will type)
@@ -472,10 +551,10 @@ namespace LyShineExamples
                 text, textColor, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
 
         // reduce the font size
-        EBUS_EVENT_ID(textElemId, UiTextBus, SetFontSize, 24.0f);
+        UiTextBus::Event(textElemId, &UiTextBus::Events::SetFontSize, 24.0f);
 
         // now link the textInputComponent to the child text entity
-        EBUS_EVENT_ID(textInputId, UiTextInputBus, SetTextEntity, textElemId);
+        UiTextInputBus::Event(textInputId, &UiTextInputBus::Events::SetTextEntity, textElemId);
 
         // Create the placeholder text element (what appears before any text is typed)
         AZ::EntityId placeHolderElemId = CreateText("PlaceholderText", false, textInputId,
@@ -484,15 +563,15 @@ namespace LyShineExamples
                 placeHolderText, placeHolderColor, IDraw2d::HAlign::Center, IDraw2d::VAlign::Center);
 
         // reduce the font size
-        EBUS_EVENT_ID(placeHolderElemId, UiTextBus, SetFontSize, 24.0f);
+        UiTextBus::Event(placeHolderElemId, &UiTextBus::Events::SetFontSize, 24.0f);
 
         // now link the textInputComponent to the child placeholder text entity
-        EBUS_EVENT_ID(textInputId, UiTextInputBus, SetPlaceHolderTextEntity, placeHolderElemId);
+        UiTextInputBus::Event(textInputId, &UiTextInputBus::Events::SetPlaceHolderTextEntity, placeHolderElemId);
 
         // Trigger all InGamePostActivate
-        EBUS_EVENT_ID(textInputId, UiInitializationBus, InGamePostActivate);
-        EBUS_EVENT_ID(textElemId, UiInitializationBus, InGamePostActivate);
-        EBUS_EVENT_ID(placeHolderElemId, UiInitializationBus, InGamePostActivate);
+        UiInitializationBus::Event(textInputId, &UiInitializationBus::Events::InGamePostActivate);
+        UiInitializationBus::Event(textElemId, &UiInitializationBus::Events::InGamePostActivate);
+        UiInitializationBus::Event(placeHolderElemId, &UiInitializationBus::Events::InGamePostActivate);
 
         return textInputId;
     }
@@ -507,11 +586,11 @@ namespace LyShineExamples
         AZ::Entity* image = nullptr;
         if (atRoot)
         {
-            EBUS_EVENT_ID_RESULT(image, parent, UiCanvasBus, CreateChildElement, name);
+            UiCanvasBus::EventResult(image, parent, &UiCanvasBus::Events::CreateChildElement, name);
         }
         else
         {
-            EBUS_EVENT_ID_RESULT(image, parent, UiElementBus, CreateChildElement, name);
+            UiElementBus::EventResult(image, parent, &UiElementBus::Events::CreateChildElement, name);
         }
 
         AZ::EntityId imageId = image->GetId();
@@ -523,17 +602,17 @@ namespace LyShineExamples
 
             AZ_Assert(UiTransform2dBus::FindFirstHandler(imageId), "Transform2d component missing");
 
-            EBUS_EVENT_ID(imageId, UiTransformBus, SetScaleToDeviceMode, scaleToDeviceMode);
-            EBUS_EVENT_ID(imageId, UiTransform2dBus, SetAnchors, anchors, false, false);
-            EBUS_EVENT_ID(imageId, UiTransform2dBus, SetOffsets, offsets);
+            UiTransformBus::Event(imageId, &UiTransformBus::Events::SetScaleToDeviceMode, scaleToDeviceMode);
+            UiTransform2dBus::Event(imageId, &UiTransform2dBus::Events::SetAnchors, anchors, false, false);
+            UiTransform2dBus::Event(imageId, &UiTransform2dBus::Events::SetOffsets, offsets);
 
-            EBUS_EVENT_ID(imageId, UiImageBus, SetColor, color);
-            EBUS_EVENT_ID(imageId, UiImageBus, SetSpritePathname, spritePath);
-            EBUS_EVENT_ID(imageId, UiImageBus, SetImageType, imageType);
+            UiImageBus::Event(imageId, &UiImageBus::Events::SetColor, color);
+            UiImageBus::Event(imageId, &UiImageBus::Events::SetSpritePathname, spritePath);
+            UiImageBus::Event(imageId, &UiImageBus::Events::SetImageType, imageType);
         }
 
         // Trigger all InGamePostActivate
-        EBUS_EVENT_ID(imageId, UiInitializationBus, InGamePostActivate);
+        UiInitializationBus::Event(imageId, &UiInitializationBus::Events::InGamePostActivate);
 
         return imageId;
     }
@@ -548,6 +627,6 @@ namespace LyShineExamples
         UiTransform2dInterface::Offsets newOffsets = m_maxHealthBarOffsets;
         float healthFraction = m_health / 10.f;
         newOffsets.m_right = m_maxHealthBarOffsets.m_left + (m_maxHealthBarOffsets.m_right - m_maxHealthBarOffsets.m_left) * healthFraction;
-        EBUS_EVENT_ID(m_healthBar, UiTransform2dBus, SetOffsets, newOffsets);
+        UiTransform2dBus::Event(m_healthBar, &UiTransform2dBus::Events::SetOffsets, newOffsets);
     }
 }

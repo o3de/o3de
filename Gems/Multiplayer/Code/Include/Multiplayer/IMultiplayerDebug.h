@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Math/MathStringConversions.h>
+#include <Multiplayer/MultiplayerTypes.h>
 
 namespace Multiplayer
 {

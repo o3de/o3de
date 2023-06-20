@@ -16,25 +16,26 @@
 // Use the COMMON_SRG_INPUTS_* macro in your material SRG definition, and use the COMMON_OPTIONS_* macro at the global scope in your shader. Then you can pass these variables to the Get*Input() function below.
 // You can optionally provide a prefix for the set of inputs which corresponds to a prefix string supplied by the .materialtype file. This is common for multi-layered material types.
 
-#define COMMON_SRG_INPUTS_EMISSIVE(prefix) \
-float3      prefix##m_emissiveColor;        \
-float       prefix##m_emissiveIntensity;    \
-Texture2D   prefix##m_emissiveMap;          \
-uint        prefix##m_emissiveMapUvIndex;   
+#define COMMON_SRG_INPUTS_EMISSIVE(prefix)     \
+float3      prefix##m_emissiveColor;           \
+float       prefix##m_emissiveAffectedByAlpha; \
+float       prefix##m_emissiveIntensity;       \
+Texture2D   prefix##m_emissiveMap;             \
+uint        prefix##m_emissiveMapUvIndex;
 
 #define COMMON_OPTIONS_EMISSIVE(prefix) \
 option bool prefix##o_emissiveEnabled; \
 option bool prefix##o_emissive_useTexture; 
 
-float3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, float factor, float3 emissiveColor, bool emissiveEnabled, bool useTexture)
+real3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, real factor, real3 emissiveColor, real emissiveAffectedByAlpha, real alpha, bool emissiveEnabled, bool useTexture)
 {
-    float3 emissive = float3(0,0,0);
+    real3 emissive = real3(0,0,0);
     if(emissiveEnabled)
     {
-        emissive = emissiveColor * factor;
+        emissive = factor * lerp(1, alpha, emissiveAffectedByAlpha) * emissiveColor;
         if (useTexture)
         {
-            float3 sampledValue = map.Sample(mapSampler, uv).rgb;
+            real3 sampledValue = real3(map.Sample(mapSampler, uv).rgb);
             emissive *= TransformColor(sampledValue, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
     }

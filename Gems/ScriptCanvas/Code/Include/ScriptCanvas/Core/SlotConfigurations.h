@@ -75,7 +75,7 @@ namespace ScriptCanvas
 
     struct SlotDescriptor
     {
-        AZ_CLASS_ALLOCATOR(SlotDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotDescriptor, AZ::SystemAllocator);
         AZ_TYPE_INFO(SlotDescriptor, "{FBF1C3A7-AA74-420F-BBE4-29F78D6EA262}");
 
         constexpr SlotDescriptor() = default;
@@ -212,7 +212,7 @@ namespace ScriptCanvas
         SlotConfiguration(SlotTypeDescriptor slotType);
 
     public:
-        AZ_CLASS_ALLOCATOR(SlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotConfiguration, AZ::SystemAllocator);
         AZ_RTTI(SlotConfiguration, "{C169C86A-378F-4263-8B8D-C40D51631ECF}");
 
         virtual ~SlotConfiguration() = default;
@@ -246,7 +246,7 @@ namespace ScriptCanvas
     struct ExecutionSlotConfiguration
         : public SlotConfiguration
     {
-        AZ_CLASS_ALLOCATOR(ExecutionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionSlotConfiguration, AZ::SystemAllocator);
         AZ_RTTI(ExecutionSlotConfiguration, "{F2785E7D-635F-4C94-BAB2-F09F8FB2B7CF}", SlotConfiguration);
 
         ExecutionSlotConfiguration()
@@ -267,7 +267,7 @@ namespace ScriptCanvas
     struct DataSlotConfiguration
         : public SlotConfiguration
     {
-        AZ_CLASS_ALLOCATOR(DataSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotConfiguration, AZ::SystemAllocator);
         AZ_RTTI(DataSlotConfiguration, "{9411A82E-EB3E-4235-9DDA-12EF6C9ECB1D}", SlotConfiguration);
 
         DataSlotConfiguration()
@@ -316,7 +316,7 @@ namespace ScriptCanvas
     struct DynamicDataSlotConfiguration
         : public SlotConfiguration
     {
-        AZ_CLASS_ALLOCATOR(DynamicDataSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DynamicDataSlotConfiguration, AZ::SystemAllocator);
         AZ_RTTI(DynamicDataSlotConfiguration, "{64BB0D10-D776-4D28-AF33-065530A95310}", SlotConfiguration);
 
         DynamicDataSlotConfiguration()

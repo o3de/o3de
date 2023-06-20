@@ -19,7 +19,7 @@ namespace ScriptCanvas
         {
         public:
             AZ_TYPE_INFO(VariableDatumBase, "{93D2BD2B-1559-4968-B055-77736E06D3F2}");
-            AZ_CLASS_ALLOCATOR(VariableDatumBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(VariableDatumBase, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             VariableDatumBase() = default;

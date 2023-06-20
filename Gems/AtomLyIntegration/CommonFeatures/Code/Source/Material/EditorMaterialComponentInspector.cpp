@@ -316,7 +316,6 @@ namespace AZ
                     const AZStd::string uvName = uvNamePair.m_uvName.GetStringView();
 
                     propertyConfig = {};
-                    propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
                     propertyConfig.m_id = AZ::RPI::MaterialPropertyId(groupName, shaderInputStr).GetCStr();
                     propertyConfig.m_name = shaderInputStr;
                     propertyConfig.m_displayName = shaderInputStr;
@@ -382,7 +381,7 @@ namespace AZ
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, *propertyDefinition);
                             propertyConfig.m_description +=
                                 "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties "
-                                "with overridden values that are different from the assigned material.";
+                                "with overridden values that are different from the assigned material.\n";
 
                             const auto& propertyIndex = 
                                 m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
@@ -576,7 +575,7 @@ namespace AZ
 
                     // It's significant that we check IsGroupHidden rather than IsGroupVisisble, because it follows the same rules as QWidget::isHidden().
                     // We don't care whether the widget and all its parents are visible, we only care about whether the group was hidden within the context
-                    // of the material property inspector.
+                    // of the Material Instance Editor.
                     metadata.m_visibility = IsGroupHidden(groupPair.first) ?
                         AZ::RPI::MaterialPropertyGroupVisibility::Hidden : AZ::RPI::MaterialPropertyGroupVisibility::Enabled;
                 }
@@ -588,9 +587,8 @@ namespace AZ
                     // which will later get caught in Process() when trying to access a property.
                     if (materialPropertyDependencies.none() || functor->NeedsProcess(m_dirtyPropertyFlags))
                     {
-                        AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                            m_materialInstance->GetPropertyValues(),
-                            m_materialInstance->GetMaterialPropertiesLayout(),
+                        AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+                            m_materialInstance->GetPropertyCollection(),
                             propertyDynamicMetadata,
                             propertyGroupDynamicMetadata,
                             changedPropertyNames,
@@ -703,7 +701,8 @@ namespace AZ
 
             bool MaterialPropertyInspector::SaveMaterial(const AZStd::string& path) const
             {
-                const auto& saveFilePath = AtomToolsFramework::GetSaveFilePath(path);
+                const AZStd::string saveFilePath = AtomToolsFramework::GetSaveFilePathFromDialog(
+                    path, { { "Material", AZ::RPI::MaterialSourceData::Extension } }, "Material");
                 if (saveFilePath.empty())
                 {
                     return false;

@@ -32,7 +32,7 @@ namespace AssetProcessor
     //! Primarily intended for unit tests
     struct IRCJobSignal
     {
-        AZ_RTTI(JobSignalReceiver, "{F81AEDE6-C670-4F3D-8393-4E2FF8ADDD02}");
+        AZ_RTTI(IRCJobSignal, "{F81AEDE6-C670-4F3D-8393-4E2FF8ADDD02}");
 
         virtual ~IRCJobSignal() = default;
 
@@ -76,6 +76,11 @@ namespace AssetProcessor
         AZ::IO::Path m_cacheOutputDir;
         AZ::IO::Path m_intermediateOutputDir;
         AZ::IO::Path m_relativePath;
+
+        // UUID of the original source asset.
+        // If this job is for an intermediate asset, the UUID is for the direct source which produced the intermediate.
+        // If the original source asset is not using metadata files, this value will be empty.
+        AZ::Uuid m_sourceUuid;
 
         Params(const Params&) = default;
 
@@ -202,6 +207,7 @@ namespace AssetProcessor
         AssetBuilderSDK::ProcessJobResponse& GetProcessJobResponse();
 
         const JobEntry& GetJobEntry() const;
+        bool HasMissingSourceDependency() const;
 
         void Start();
 

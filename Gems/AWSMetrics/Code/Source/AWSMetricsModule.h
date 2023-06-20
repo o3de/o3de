@@ -17,7 +17,7 @@ namespace AWSMetrics
     {
     public:
         AZ_RTTI(AWSMetricsModule, "{A36566F3-E144-4188-A7E0-BAB45BCEA55F}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AWSMetricsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSMetricsModule, AZ::SystemAllocator);
 
         AWSMetricsModule();
         ~AWSMetricsModule() override = default;

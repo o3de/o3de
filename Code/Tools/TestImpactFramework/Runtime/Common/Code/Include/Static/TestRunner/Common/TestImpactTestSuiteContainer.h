@@ -41,6 +41,12 @@ namespace TestImpact
         //! Returns the total number of disabled tests across all test suites.
         size_t GetNumDisabledTests() const;
 
+        //! Returns the total number of enabled test suites with one more enabled tests in each test suite.
+        size_t GetNumEnabledTestSuites() const;
+
+        //! Returns the total number of disabled test suites and test enabled suites with no enabled tests.
+        size_t GetNumDisabledTestSuites() const;
+
     private:
         void CalculateTestMetrics();
 
@@ -48,6 +54,7 @@ namespace TestImpact
         AZStd::vector<TestSuite> m_testSuites;
         size_t m_numDisabledTests = 0;
         size_t m_numEnabledTests = 0;
+        size_t m_numEnabledTestSuites = 0;
     };
 
     template<typename TestSuite>
@@ -111,18 +118,24 @@ namespace TestImpact
     {
         m_numDisabledTests = 0;
         m_numEnabledTests = 0;
+        m_numEnabledTestSuites = 0;
 
         for (const auto& suite : m_testSuites)
         {
             if (suite.m_enabled)
             {
-                const auto enabled = std::count_if(suite.m_tests.begin(), suite.m_tests.end(), [](const auto& test)
+                const auto enabledTests = std::count_if(suite.m_tests.begin(), suite.m_tests.end(), [](const auto& test)
                 {
                     return test.m_enabled;
                 });
 
-                m_numEnabledTests += enabled;
-                m_numDisabledTests += suite.m_tests.size() - enabled;
+                m_numEnabledTests += enabledTests;
+                m_numDisabledTests += suite.m_tests.size() - enabledTests;
+
+                if (enabledTests > 0)
+                {
+                    m_numEnabledTestSuites++;
+                }
             }
             else
             {
@@ -160,5 +173,17 @@ namespace TestImpact
     size_t TestSuiteContainer<TestSuite>::GetNumTestSuites() const
     {
         return m_testSuites.size();
+    }
+
+    template<typename TestSuite>
+    size_t TestSuiteContainer<TestSuite>::GetNumEnabledTestSuites() const
+    {
+        return m_numEnabledTestSuites;
+    }
+
+    template<typename TestSuite>
+    size_t TestSuiteContainer<TestSuite>::GetNumDisabledTestSuites() const
+    {
+        return GetNumTestSuites() - m_numEnabledTestSuites;
     }
 } // namespace TestImpact

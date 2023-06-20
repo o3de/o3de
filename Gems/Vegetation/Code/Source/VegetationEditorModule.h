@@ -17,7 +17,7 @@ namespace Vegetation
     {
     public:
         AZ_RTTI(VegetationEditorModule, "{8BA356E4-A07D-46A4-ADE1-B17F3BA032BF}", VegetationModule);
-        AZ_CLASS_ALLOCATOR(VegetationEditorModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VegetationEditorModule, AZ::SystemAllocator);
 
         VegetationEditorModule();
 

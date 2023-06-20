@@ -93,26 +93,38 @@ namespace AzToolsFramework
         return AZStd::string_view(AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags));
     }
 
-    void PlatformAddressedAssetCatalogManager::AssetChanged(AzFramework::AssetSystem::AssetNotificationMessage message)
+    void PlatformAddressedAssetCatalogManager::AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize)
     {
-        int platformId = AzFramework::PlatformHelper::GetPlatformIndexFromName(message.m_platform.c_str());
+        if(messages.empty())
+        {
+            return;
+        }
+
+        // All messages are required to be for the same platform, so just check the first
+        int platformId = AzFramework::PlatformHelper::GetPlatformIndexFromName(messages[0].m_platform.c_str());
         for (const auto& thisCatalog : m_assetCatalogList)
         {
             if (thisCatalog->GetPlatformId() == platformId)
             {
-                thisCatalog->AssetChanged(message);
+                thisCatalog->AssetChanged(messages, isCatalogInitialize);
             }
         }
     }
 
-    void PlatformAddressedAssetCatalogManager::AssetRemoved(AzFramework::AssetSystem::AssetNotificationMessage message)
+    void PlatformAddressedAssetCatalogManager::AssetRemoved(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages)
     {
-        int platformId = AzFramework::PlatformHelper::GetPlatformIndexFromName(message.m_platform.c_str());
+        if (messages.empty())
+        {
+            return;
+        }
+
+        // All messages are required to be for the same platform, so just check the first
+        int platformId = AzFramework::PlatformHelper::GetPlatformIndexFromName(messages[0].m_platform.c_str());
         for (const auto& thisCatalog : m_assetCatalogList)
         {
             if (thisCatalog->GetPlatformId() == platformId)
             {
-                thisCatalog->AssetRemoved(message);
+                thisCatalog->AssetRemoved(messages);
             }
         }
     }

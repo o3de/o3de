@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     struct TraceTests
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
         , AZ::Debug::TraceMessageBus::Handler
     {
         bool OnPreAssert(const char*, int, const char*, const char*) override
@@ -139,8 +139,12 @@ namespace UnitTest
         ASSERT_TRUE(m_printf);
     }
 
-    TEST_F(TraceTests, RedirectToRawOutputToStderr_DoesNotOutputToStdout)
+    TEST_F(TraceTests, RedirectRawOutputToStderr_DoesNotOutputToStdout)
     {
+        // Invoke the Trace::Init() function to create AZ environment variables
+        auto& traceInstance = AZ::Debug::Trace::Instance();
+        traceInstance.Init();
+
         constexpr const char* errorMessage = "Test Error\n";
         bool testErrorMessageFound{};
         auto GetStdout = [&testErrorMessageFound, expectedMessage = errorMessage](AZStd::span<const AZStd::byte> capturedBytes)
@@ -155,11 +159,11 @@ namespace UnitTest
         // file descriptor 1 is stdout
         constexpr int StdoutDescriptor = 1;
         AZ::IO::FileDescriptorCapturer capturer(StdoutDescriptor);
-        capturer.Start();
+        capturer.Start(GetStdout);
         // This message should get captured
         AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         fflush(stdout);
-        capturer.Stop(GetStdout);
+        capturer.Stop();
         // The message should be found
         EXPECT_TRUE(testErrorMessageFound);
 
@@ -175,10 +179,17 @@ namespace UnitTest
 
         // Redirect the Trace output back to stdout
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand({ "bg_redirectrawoutput", "0" });
+
+        // Destroy created AZ Environment Variables for the Trace system
+        traceInstance.Destroy();
     }
 
-    TEST_F(TraceTests, RedirectToRawOutputNone_DoesNotOutputToStdout_NorStderr)
+    TEST_F(TraceTests, RedirectRawOutputToDevNull_DoesNotOutputToStdout_NorStderr)
     {
+        // Invoke the Trace::Init() function to create AZ environment variables
+        auto& traceInstance = AZ::Debug::Trace::Instance();
+        traceInstance.Init();
+
         constexpr const char* errorMessage = "Test Error\n";
         bool testErrorMessageFound{};
         auto GetOutput = [&testErrorMessageFound, expectedMessage = errorMessage](AZStd::span<const AZStd::byte> capturedBytes)
@@ -197,30 +208,39 @@ namespace UnitTest
 
         AZ::IO::FileDescriptorCapturer stdoutCapturer(StdoutDescriptor);
         AZ::IO::FileDescriptorCapturer stderrCapturer(StderrDescriptor);
-        stdoutCapturer.Start();
-        stderrCapturer.Start();
+        stdoutCapturer.Start(GetOutput);
+        stderrCapturer.Start(GetOutput);
         // This message should get captured
         AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         // flush both stdout and stderr to make sure it capturer is able to get the data
         fflush(stdout);
         fflush(stderr);
-        stdoutCapturer.Stop(GetOutput);
-        stderrCapturer.Stop(GetOutput);
+        stdoutCapturer.Stop();
+        stderrCapturer.Stop();
         // The message should be found
         EXPECT_TRUE(testErrorMessageFound);
 
         // Reset the error message found boolean back to false
+
         testErrorMessageFound = false;
 
         // Redirect the Trace output to None
-        AZ::Interface<AZ::IConsole>::Get()->PerformCommand({ "bg_redirectrawoutput", "0" });
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand({ "bg_redirectrawoutput", "2" });
+
+        // Restart the capture of stdout and stderr
+        stdoutCapturer.Start(GetOutput);
+        stderrCapturer.Start(GetOutput);
         AZ::Debug::Trace::Instance().RawOutput("UnitTest", errorMessage);
         fflush(stdout);
         fflush(stderr);
-        // The message should not be found since trace output should be going to stderr
+        stdoutCapturer.Stop();
+        stderrCapturer.Stop();
+        // The message should not be found since trace output should be output to the /dev/null or NUL device
         EXPECT_FALSE(testErrorMessageFound);
 
         // Redirect the Trace output back to stdout
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand({ "bg_redirectrawoutput", "0" });
+
+        traceInstance.Destroy();
     }
 }

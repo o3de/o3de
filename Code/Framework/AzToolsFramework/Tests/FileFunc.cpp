@@ -28,7 +28,7 @@
 
 namespace UnitTest
 {
-    class FileFuncTest : public ScopedAllocatorSetupFixture
+    class FileFuncTest : public LeakDetectionFixture
     {
     public:
         void SetUp() override

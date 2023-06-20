@@ -26,6 +26,7 @@
     </RemoteProcedure>
 
     <RemoteProcedure Name="SendClientInputCorrection" InvokeFrom="Authority" HandleOn="Autonomous" IsPublic="true" IsReliable="false" GenerateEventBindings="false" Description="Autonomous proxy correction RPC">
+        <Param Type="Multiplayer::HostFrameId" Name="hostFrameId" />
         <Param Type="Multiplayer::ClientInputId" Name="inputId" />
         <Param Type="AzNetworking::PacketEncodingBuffer" Name="correction" />
     </RemoteProcedure>

@@ -30,7 +30,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ApplyShaperLookupTablePass, "{5C76BE12-307A-4595-91CE-AAA13ED6368C}", DisplayMapperFullScreenPass);
-            AZ_CLASS_ALLOCATOR(ApplyShaperLookupTablePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ApplyShaperLookupTablePass, SystemAllocator);
             virtual ~ApplyShaperLookupTablePass();
 
             /// Creates a AcesOutputTransformLutPass

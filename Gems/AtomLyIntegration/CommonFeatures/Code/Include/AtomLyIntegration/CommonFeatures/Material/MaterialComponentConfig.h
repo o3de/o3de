@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
 #include <Atom/RPI.Public/Material/Material.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
+#include <AzCore/Component/Component.h>
 
 namespace AZ
 {
@@ -23,7 +23,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MaterialComponentConfig, "{3366C279-32AE-48F6-839B-7700AE117A54}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(MaterialComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialComponentConfig, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

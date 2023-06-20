@@ -19,26 +19,12 @@ namespace AZ
             : public RenderPassData
         {
             AZ_RTTI(ComputePassData, "{C9ADBF8D-34A3-4406-9067-DD17D0564FD8}", RenderPassData);
-            AZ_CLASS_ALLOCATOR(ComputePassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ComputePassData, SystemAllocator);
 
             ComputePassData() = default;
             virtual ~ComputePassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<ComputePassData, RenderPassData>()
-                        ->Version(2)
-                        ->Field("ShaderAsset", &ComputePassData::m_shaderReference)
-                        ->Field("Target Thread Count X", &ComputePassData::m_totalNumberOfThreadsX)
-                        ->Field("Target Thread Count Y", &ComputePassData::m_totalNumberOfThreadsY)
-                        ->Field("Target Thread Count Z", &ComputePassData::m_totalNumberOfThreadsZ)
-                        ->Field("Make Fullscreen Pass", &ComputePassData::m_makeFullscreenPass)
-                        ->Field("Use Async Compute", &ComputePassData::m_useAsyncCompute)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             AssetReference m_shaderReference;
 

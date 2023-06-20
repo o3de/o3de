@@ -24,13 +24,12 @@ namespace UnitTest
     };
 
     struct PerforceComponentFixture
-        : ScopedAllocatorSetupFixture
+        : LeakDetectionFixture
         , SourceControlTest
 
     {
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
             jobDesc.m_workerThreads.push_back(threadDesc);
@@ -60,7 +59,6 @@ namespace UnitTest
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         }
 
         AZStd::unique_ptr<MockPerforceComponent> m_perforceComponent;

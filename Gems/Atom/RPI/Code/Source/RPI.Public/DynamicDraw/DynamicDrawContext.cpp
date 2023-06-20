@@ -238,10 +238,14 @@ namespace AZ
 
         void DynamicDrawContext::SetOutputScope(RenderPipeline* pipeline)
         {
-            AZ_Assert(pipeline, "SetOutputScope was called with an invalid RenderPipeline");
-            AZ_Assert(pipeline->GetScene(), "SetOutputScope called with a RenderPipeline without adding to a scene");
-            if (!pipeline || !pipeline->GetScene())
+            if (!pipeline)
             {
+                return;
+            }
+
+            if (!pipeline->GetScene())
+            {
+                AZ_Error("DynamicDrawContext", false, "SetOutputScope called with a RenderPipeline without adding to a scene");
                 return;
             }
             

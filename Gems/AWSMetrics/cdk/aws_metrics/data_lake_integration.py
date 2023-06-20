@@ -5,8 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Fn,
+    RemovalPolicy,
     aws_iam as iam,
     aws_s3 as s3,
     aws_glue as glue
@@ -20,7 +23,8 @@ class DataLakeIntegration:
     """
     Create the AWS resources including the S3 bucket, Glue database, table and crawler for data lake integration
     """
-    def __init__(self, stack: core.Construct, application_name: str,
+
+    def __init__(self, stack: Construct, application_name: str,
                  server_access_logs_bucket: str = None) -> None:
         self._stack = stack
         self._application_name = application_name
@@ -33,7 +37,7 @@ class DataLakeIntegration:
 
     def _create_analytics_bucket(self) -> None:
         """
-        Create a a private bucket that should only be accessed by the resources defined in the CDK application.
+        Create a private bucket that should only be accessed by the resources defined in the CDK application.
         The bucket uses server-side encryption with a CMK managed by S3:
         https://docs.aws.amazon.com/AmazonS3/latest/userguide/UsingKMSEncryption.html
         """
@@ -65,9 +69,9 @@ class DataLakeIntegration:
 
         # For Amazon S3 buckets, you must delete all objects in the bucket for deletion to succeed.
         cfn_bucket = self._analytics_bucket.node.find_child('Resource')
-        cfn_bucket.apply_removal_policy(core.RemovalPolicy.DESTROY)
+        cfn_bucket.apply_removal_policy(RemovalPolicy.DESTROY)
 
-        core.CfnOutput(
+        CfnOutput(
             self._stack,
             id='AnalyticsBucketName',
             description='Name of the S3 bucket for storing metrics event data',
@@ -89,7 +93,8 @@ class DataLakeIntegration:
                 name=f'{self._stack.stack_name}-EventsDatabase'.lower()
             )
         )
-        core.CfnOutput(
+
+        CfnOutput(
             self._stack,
             id='EventDatabaseName',
             description='Glue database for metrics events.',
@@ -205,7 +210,7 @@ class DataLakeIntegration:
             configuration=aws_metrics_constants.CRAWLER_CONFIGURATION
         )
 
-        core.CfnOutput(
+        CfnOutput(
             self._stack,
             id='EventsCrawlerName',
             description='Glue Crawler to populate the AWS Glue Data Catalog with metrics events tables',
@@ -250,16 +255,16 @@ class DataLakeIntegration:
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                core.Fn.sub(
+                Fn.sub(
                     'arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'
                 ),
-                core.Fn.sub(
+                Fn.sub(
                     body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/${EventsDatabase}/*',
                     variables={
                         'EventsDatabase': self._events_database.ref
                     }
                 ),
-                core.Fn.sub(
+                Fn.sub(
                     body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${EventsDatabase}',
                     variables={
                         'EventsDatabase': self._events_database.ref
@@ -277,10 +282,10 @@ class DataLakeIntegration:
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                core.Fn.sub(
+                Fn.sub(
                     'arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'
                 ),
-                core.Fn.sub(
+                Fn.sub(
                     body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${EventsDatabase}',
                     variables={
                         'EventsDatabase': self._events_database.ref
@@ -298,7 +303,7 @@ class DataLakeIntegration:
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                core.Fn.sub(
+                Fn.sub(
                     'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws-glue/crawlers:*'
                 )
             ]

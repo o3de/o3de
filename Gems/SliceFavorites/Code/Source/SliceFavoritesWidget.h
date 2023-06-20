@@ -36,7 +36,7 @@ namespace SliceFavorites
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(SliceFavoritesWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SliceFavoritesWidget, AZ::SystemAllocator)
 
         SliceFavoritesWidget(FavoriteDataModel* dataModel, QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
         virtual ~SliceFavoritesWidget();

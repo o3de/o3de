@@ -28,7 +28,7 @@ namespace AZ::IO
         public IStreamerStackConfig
     {
         AZ_RTTI(AZ::IO::StorageDriveConfig, "{3D568902-6C09-4E9E-A4DB-8B561481D298}", IStreamerStackConfig);
-        AZ_CLASS_ALLOCATOR(StorageDriveConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StorageDriveConfig, AZ::SystemAllocator);
 
         ~StorageDriveConfig() override = default;
         AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(

@@ -23,6 +23,7 @@ set(FILES
     Tests/Main.cpp
     Tests/MockInterfaces.h
     Tests/LocalPredictionPlayerInputTests.cpp
+    Tests/MultiplayerComponentTests.cpp
     Tests/MultiplayerSystemTests.cpp
     Tests/NetworkCharacterTests.cpp
     Tests/NetworkEntityTests.cpp
@@ -32,6 +33,12 @@ set(FILES
     Tests/RewindableContainerTests.cpp
     Tests/RewindableObjectTests.cpp
     Tests/ServerHierarchyTests.cpp
+    Tests/SimplePlayerSpawnerTests.cpp
     Tests/TestMultiplayerComponent.h
     Tests/TestMultiplayerComponent.cpp
+
+    Tests/LocalRpcTests.cpp
+    Tests/AutoGen/RpcUnitTesterComponent.AutoComponent.xml
+    Tests/RpcUnitTesterComponent.h
+    Tests/RpcUnitTesterComponent.cpp
 )

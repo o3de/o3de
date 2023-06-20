@@ -49,7 +49,7 @@ namespace AZ
             bool operator==(const MultisampleState& other) const;
             bool operator!=(const MultisampleState& other) const;
 
-            AZStd::array<SamplePosition, Limits::Pipeline::MultiSampleCustomLocationsCountMax> m_customPositions;
+            AZStd::array<SamplePosition, Limits::Pipeline::MultiSampleCustomLocationsCountMax> m_customPositions{};
             uint32_t m_customPositionsCount = 0;
             uint16_t m_samples = 1;
             uint16_t m_quality = 0;

@@ -103,12 +103,7 @@ namespace AzToolsFramework
 
     //! Returns the union of all editor selection bounds on a given Entity.
     //! @note The returned Aabb is in world space.
-    inline AZ::Aabb CalculateEditorEntitySelectionBounds(const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo)
-    {
-        AZ::EBusReduceResult<AZ::Aabb, AzFramework::AabbUnionAggregator> aabbResult(AZ::Aabb::CreateNull());
-        EditorComponentSelectionRequestsBus::EventResult(
-            aabbResult, entityId, &EditorComponentSelectionRequestsBus::Events::GetEditorSelectionBoundsViewport, viewportInfo);
-
-        return aabbResult.value;
-    }
+    AZ::Aabb CalculateEditorEntitySelectionBounds(const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo);
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorComponentSelectionRequests);

@@ -222,7 +222,7 @@ namespace AzToolsFramework
             virtual AZ::s32 GetPriority() const { return 0; }
 
             //! Notification that a context menu is about to be shown and offers an opportunity to add actions.
-            virtual void AddContextMenuActions(QWidget* /*caller*/, QMenu* /*menu*/, const AZStd::vector<AssetBrowserEntry*>& /*entries*/) {};
+            virtual void AddContextMenuActions(QWidget* /*caller*/, QMenu* /*menu*/, const AZStd::vector<const AssetBrowserEntry*>& /*entries*/) {};
 
             //! Implement AddSourceFileOpeners to provide your own editor for source files
             //! This gets called to collect the list of available openers for a file.
@@ -330,6 +330,22 @@ namespace AzToolsFramework
         };
         using AssetBrowserViewRequestBus = AZ::EBus<AssetBrowserViewRequests>;
 
+        //! Preview the currently selected Asset in a PreviewFrame
+        class AssetBrowserPreviewRequest
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
+
+            //! Updates the asset browser inspector panel with data about the passed entry.
+            //! Clears the panel if nullptr is passed
+            virtual void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) = 0;
+
+            //! Clears the asset browser inspector panel
+            virtual void ClearPreview(){};
+        };
+        using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;
+
         //////////////////////////////////////////////////////////////////////////
         // File creation notifications
         //////////////////////////////////////////////////////////////////////////
@@ -349,7 +365,8 @@ namespace AzToolsFramework
             //! Notifies the handler that a new asset was created from the editor so they can handle renaming or other behavior as necessary.
             //! @param assetPath The full path to the asset that was created.
             //! @param creatorBusId The file creator's bus handler address. A default constructed Crc32 implies no one is listening.
-            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/) {}
+            //! @param initialFilenameChange Notifies the handler that this file should give users the option to rename upon creation, set to false if you will use custom naming
+            virtual void HandleAssetCreatedInEditor(const AZStd::string_view /*assetPath*/, const AZ::Crc32& /*creatorBusId*/, const bool /*initialFilenameChange*/) {}
 
             //! Notifies a given handler that an asset which was recently created has been given a non-default name.
             //! @param assetPath The full path to the asset that had its initial name change.
@@ -363,6 +380,28 @@ namespace AzToolsFramework
             ~AssetBrowserFileCreationNotifications() = default;
         };
         using AssetBrowserFileCreationNotificationBus = AZ::EBus<AssetBrowserFileCreationNotifications>;
+
+        //////////////////////////////////////////////////////////////////////////
+        // File action notifications
+        //////////////////////////////////////////////////////////////////////////
+
+        //! Used for sending and/or recieving notifications regarding source file manipulation through the Asset Browser.
+        class AssetBrowserFileActionNotifications
+            : public AZ::EBusTraits
+        {
+        public:
+            //! Notifies when a source file has been moved or renamed
+            virtual void OnSourceFilePathNameChanged(
+                [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
+
+            //! Notifies when a source folder has been moved or renamed
+            virtual void OnSourceFolderPathNameChanged(
+                [[maybe_unused]] const AZStd::string_view fromPathName, [[maybe_unused]] const AZStd::string_view toPathName) {}
+
+        protected:
+            ~AssetBrowserFileActionNotifications() = default;
+        };
+        using AssetBrowserFileActionNotificationBus = AZ::EBus<AssetBrowserFileActionNotifications>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

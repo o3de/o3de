@@ -9,6 +9,8 @@
 #include <API/EditorAssetSystemAPI.h>
 #include <AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AssetBrowser/Thumbnails/SourceThumbnail.h>
+#include <Atom/Feature/Utils/LightingPreset.h>
+#include <Atom/Feature/Utils/ModelPreset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -75,8 +77,8 @@ namespace AZ
                             // Reject any assets that don't match supported source file extensions
                             if (assetInfo.m_assetType == RPI::AnyAsset::RTTI_Type())
                             {
-                                if (!AZ::StringFunc::EndsWith(path.c_str(), ".modelpreset.azasset") &&
-                                    !AZ::StringFunc::EndsWith(path.c_str(), ".lightingpreset.azasset"))
+                                if (!path.ends_with(AZ::Render::LightingPreset::Extension) &&
+                                    !path.ends_with(AZ::Render::ModelPreset::Extension))
                                 {
                                     continue;
                                 }

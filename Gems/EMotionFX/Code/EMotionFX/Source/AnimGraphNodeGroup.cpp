@@ -11,10 +11,9 @@
 #include "EMotionFXConfig.h"
 #include "AnimGraphNodeGroup.h"
 
-
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator)
 
     AnimGraphNodeGroup::AnimGraphNodeGroup()
         : m_color(AZ::Color::CreateU32(255, 255, 255, 255))
@@ -27,6 +26,7 @@ namespace EMotionFX
     {
         SetName(groupName);
         m_isVisible = true;
+        m_nameEditOngoing = false;
     }
 
 
@@ -35,6 +35,7 @@ namespace EMotionFX
         SetName(groupName);
         SetNumNodes(numNodes);
         m_isVisible = true;
+        m_nameEditOngoing = false;
     }
 
 
@@ -164,10 +165,11 @@ namespace EMotionFX
     // init from another group
     void AnimGraphNodeGroup::InitFrom(const AnimGraphNodeGroup& other)
     {
-        m_nodeIds        = other.m_nodeIds;
-        m_color          = other.m_color;
-        m_name           = other.m_name;
-        m_isVisible      = other.m_isVisible;
+        m_nodeIds = other.m_nodeIds;
+        m_color = other.m_color;
+        m_name = other.m_name;
+        m_isVisible = other.m_isVisible;
+        m_nameEditOngoing = other.m_nameEditOngoing;
     }
 
 
@@ -176,6 +178,25 @@ namespace EMotionFX
         return m_isVisible;
     }
 
+    void AnimGraphNodeGroup::SetNameEditOngoing(bool nameEditOngoing)
+    {
+        m_nameEditOngoing = nameEditOngoing;
+    }
+
+    bool AnimGraphNodeGroup::IsNameEditOngoing() const
+    {
+        return m_nameEditOngoing;
+    }
+
+    AnimGraphNodeId AnimGraphNodeGroup::GetParentNodeId() const
+    {
+        return m_parentNodeId;
+    }
+
+    void AnimGraphNodeGroup::SetParentNodeId(AnimGraphNodeId nodeId)
+    {
+        m_parentNodeId = nodeId;
+    }
 
     void AnimGraphNodeGroup::Reflect(AZ::ReflectContext* context)
     {
@@ -190,6 +211,8 @@ namespace EMotionFX
             ->Field("nodes", &AnimGraphNodeGroup::m_nodeIds)
             ->Field("name", &AnimGraphNodeGroup::m_name)
             ->Field("color", &AnimGraphNodeGroup::m_color)
-            ->Field("isVisible", &AnimGraphNodeGroup::m_isVisible);
+            ->Field("isVisible", &AnimGraphNodeGroup::m_isVisible)
+            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing)
+            ->Field("parentNodeId", &AnimGraphNodeGroup::m_parentNodeId);
     }
 } // namespace EMotionFX

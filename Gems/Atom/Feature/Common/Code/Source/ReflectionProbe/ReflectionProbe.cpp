@@ -35,7 +35,7 @@ namespace AZ
                 m_visualizationMaterialAsset = asset;
                 Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
 
-                m_meshFeatureProcessor->SetMaterialAssignmentMap(m_visualizationMeshHandle, AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset));
+                m_meshFeatureProcessor->SetCustomMaterials(m_visualizationMeshHandle, AZ::RPI::Material::FindOrCreate(m_visualizationMaterialAsset));
             }
         }
 
@@ -105,7 +105,6 @@ namespace AZ
             AZ_Error("ReflectionProbeFeatureProcessor", m_renderInnerSrg.get(), "Failed to create render inner reflection shader resource group");
 
             // setup culling
-            m_cullable.m_cullData.m_scene = m_scene;
             m_cullable.SetDebugName(AZ::Name("ReflectionProbe Volume"));
         }
 

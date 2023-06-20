@@ -26,7 +26,7 @@ namespace AZ
             using Base = RHI::Scope;
         public:
             AZ_RTTI(Scope, "{DE4C74AA-FD4C-4BC3-80DC-F405B72E4327}", Base);
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
             static RHI::Ptr<Scope> Create();
 
@@ -42,11 +42,36 @@ namespace AZ
 
             const bool IsStateSupportedByQueue(D3D12_RESOURCE_STATES state) const;
 
-            void QueuePrologueTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier);
-            void QueueEpilogueTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier);
-            void QueueAliasingBarrier(const D3D12_RESOURCE_ALIASING_BARRIER& aliasingBarrier);
-            void QueueResolveTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier);
-            void QueuePreDiscardTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier);
+            //! Adds a transition barrier that will be emitted at the beginning of the scope.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueuePrologueTransition(
+                const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds a transition barrier that will be emitted at the end of the scope.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueueEpilogueTransition(
+                const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds an aliasing barrier that will be emitted at the beginning of the scope.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueueAliasingBarrier(
+                const D3D12_RESOURCE_ALIASING_BARRIER& aliasingBarrier,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds a transition barrier that will be emitted at the end of the scope before resolving.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueueResolveTransition(
+                const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds a transition barrier that will be emitted at the beginning of the scope before discarting resources.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueuePreDiscardTransition(
+                const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier,
+                const BarrierOp::CommandListState* state = nullptr);
 
             bool HasSignalFence() const;
             bool HasWaitFences() const;
@@ -80,21 +105,24 @@ namespace AZ
             bool IsInDiscardResourceRequests(ID3D12Resource* nativeResource) const;
             
             /// A set of transition barriers for both before and after the scope.
-            AZStd::vector<D3D12_RESOURCE_TRANSITION_BARRIER> m_prologueTransitionBarrierRequests;
-            AZStd::vector<D3D12_RESOURCE_TRANSITION_BARRIER> m_epilogueTransitionBarrierRequests;
-            AZStd::vector<D3D12_RESOURCE_TRANSITION_BARRIER> m_preDiscardTransitionBarrierRequests;
+            AZStd::vector<BarrierOp> m_prologueTransitionBarrierRequests;
+            AZStd::vector<BarrierOp> m_epilogueTransitionBarrierRequests;
+            AZStd::vector<BarrierOp> m_preDiscardTransitionBarrierRequests;
 
             /// A set of transition barriers for resolving a multisample image.
-            AZStd::vector<D3D12_RESOURCE_TRANSITION_BARRIER> m_resolveTransitionBarrierRequests;
+            AZStd::vector<BarrierOp> m_resolveTransitionBarrierRequests;
 
             /// Aliasing barrier requests for transient resources.
-            AZStd::vector<D3D12_RESOURCE_ALIASING_BARRIER> m_aliasingBarriers;
+            AZStd::vector<BarrierOp> m_aliasingBarriers;
 
             /// Array of color attachments, bound by index.
             AZStd::vector<const ImageView*> m_colorAttachments;
 
             /// [optional] Depth stencil attachment.
             const ImageView* m_depthStencilAttachment = nullptr;
+
+            /// [optional] Shading rate attachment.
+            const ImageView* m_shadingRateAttachment = nullptr;
 
             /// Depth stencil attachment access.
             RHI::ScopeAttachmentAccess m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;

@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/mutex.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
@@ -22,8 +22,6 @@
 #include <Include/ScriptCanvas/Libraries/Core/FunctionCallNode.generated.h>
 
 namespace ScriptCanvas { class RuntimeComponent; }
-
-namespace ScriptCanvas { struct SubgraphInterfaceData; }
 
 namespace AZ
 {

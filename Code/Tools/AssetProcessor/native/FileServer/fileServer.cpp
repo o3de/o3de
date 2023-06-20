@@ -274,7 +274,7 @@ template <class R>
 inline void FileServer::Send(unsigned int connId, unsigned int serial, const R& response)
 {
     size_t bytesSent;
-    EBUS_EVENT_ID_RESULT(bytesSent, connId, AssetProcessor::ConnectionBus, SendResponse, serial, response);
+    AssetProcessor::ConnectionBus::EventResult(bytesSent, connId, &AssetProcessor::ConnectionBus::Events::SendResponse, serial, response);
     m_bytesSent += bytesSent;
     AddBytesSent(connId, bytesSent, m_realtimeMetrics);
 }

@@ -8,12 +8,15 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 #include <AzFramework/Entity/EntityContext.h>
 
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace AzToolsFramework::Prefab
@@ -52,9 +55,9 @@ namespace AzToolsFramework::Prefab
         //! @return True if the currently focused prefab instance is read-only, false otherwise.
         virtual bool IsFocusedPrefabInstanceReadOnly(AzFramework::EntityContextId entityContextId) const = 0;
 
-        //! Appends the path from the focused instance to entity id into the provided patch array.
-        //! @param providedPatch The provided path array to be appended to.
+        //! Prepends the path from the focused instance to entity id into the provided patch array.
+        //! @param patches The provided patch array to prepend path to.
         //! @return LinkId stored in the instance closest to the focused instance in hierarchy.
-        virtual LinkId AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const = 0;
+        virtual LinkId PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const = 0;
     };
 } // namespace AzToolsFramework::Prefab

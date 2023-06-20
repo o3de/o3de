@@ -19,7 +19,7 @@
 
 namespace UnitTest
 {
-    class EditorFocusModeFixture : public ToolsApplicationFixture
+    class EditorFocusModeFixture : public ToolsApplicationFixture<>
     {
     protected:
         void SetUpEditorFixtureImpl() override;

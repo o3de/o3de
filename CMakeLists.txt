@@ -6,10 +6,19 @@
 #
 #
 
-# Cmake version 3.20 is the minimum version needed for all of Open 3D Engine's supported platforms
-cmake_minimum_required(VERSION 3.20)
+# Cmake version 3.22 is the minimum version needed for all of Open 3D Engine's supported platforms
+cmake_minimum_required(VERSION 3.22)
+
+if(NOT ${CMAKE_VERSION} VERSION_LESS "3.24") 
+    # CMP0135 - controls whether, when unpacking an archive file, it should:
+    # (OLD) set the file timestamps to what they are in the archive (not recommended)
+    # (NEW) set the file timestamps to the time of extraction (recommended)
+    cmake_policy(SET CMP0135 NEW) 
+endif()
 
 include(cmake/LySet.cmake)
+include(cmake/GeneralSettings.cmake)
+include(cmake/FileUtil.cmake)
 include(cmake/Version.cmake)
 include(cmake/OutputDirectory.cmake)
 
@@ -17,15 +26,14 @@ if(NOT PROJECT_NAME)
     include(cmake/CompilerSettings.cmake)
     project(O3DE
         LANGUAGES C CXX
-        VERSION ${LY_VERSION_STRING}
+        VERSION ${O3DE_INSTALL_VERSION_STRING}
     )
 endif()
 
 ################################################################################
 # Initialize
 ################################################################################
-include(cmake/GeneralSettings.cmake)
-include(cmake/FileUtil.cmake)
+include(CTest)
 include(cmake/PAL.cmake)
 include(cmake/PALTools.cmake)
 include(cmake/RuntimeDependencies.cmake)
@@ -38,6 +46,7 @@ include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
+include(cmake/TestImpactFramework/TestImpactTestTargetConfig.cmake) # LYTestWrappers dependency
 include(cmake/LYTestWrappers.cmake)
 include(cmake/Monolithic.cmake)
 include(cmake/SettingsRegistry.cmake)
@@ -110,7 +119,9 @@ endif()
 ly_delayed_generate_runtime_dependencies()
 
 # 6. Perform test impact framework post steps once all of the targets have been enumerated
-ly_test_impact_post_step()
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_test_impact_post_step()
+endif()
 
 # 7. Generate the O3DE find file and setup install locations for scripts, tools, assets etc., required by the engine
 if(LY_INSTALL_ENABLED)

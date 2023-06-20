@@ -23,6 +23,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/MemoryUsage.h>
 
 #include <CryCommon/ISystem.h>
@@ -62,7 +63,6 @@ namespace AZ::Render
             {
                 ec->Class<AtomViewportDisplayInfoSystemComponent>("Viewport Display Info", "Manages debug viewport information through r_displayInfo")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -152,10 +152,13 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+            if (auto currentPipeline = viewportContext->GetCurrentPipeline())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                m_updateRootPassQuery = false;
+                if (auto rootPass = currentPipeline->GetRootPass())
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                    m_updateRootPassQuery = false;
+                }
             }
         }
 
@@ -217,6 +220,8 @@ namespace AZ::Render
             viewportContext->GetViewportSize().m_height,
             multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
         ));
+                
+        DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
@@ -244,16 +249,17 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        if (!viewportContext->GetCurrentPipeline())
+        {
+            return;
+        }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
-        const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
         RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
         DrawLine(AZStd::string::format(
-            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
-            passSystemFrameStatistics.m_numRenderPassesExecuted,
-            aznumeric_cast<long long>(stats.m_vertexCount),
-            aznumeric_cast<long long>(stats.m_primitiveCount)
+            "RenderPasses: %d",
+            passSystemFrameStatistics.m_numRenderPassesExecuted
         ));
         DrawLine(AZStd::string::format(
             "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
@@ -280,7 +286,13 @@ namespace AZ::Render
             return;
         }
 
-        const RHI::MemoryStatistics* stats = rhi->GetMemoryStatistics();
+        RHI::RHIMemoryStatisticsInterface* rhiMemStats = RHI::RHIMemoryStatisticsInterface::Get();
+        if (!rhiMemStats)
+        {
+            return;
+        }
+
+        const RHI::MemoryStatistics* stats = rhiMemStats->GetMemoryStatistics();
         if (!stats)
         {
             return;
@@ -292,8 +304,8 @@ namespace AZ::Render
 
         for (const auto& pool : stats->m_pools)
         {
-            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_reservedInBytes;
-            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_residentInBytes;
+            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
         }
 
         // Query for available device memory
@@ -329,21 +341,22 @@ namespace AZ::Render
                 "VRAM (resident/reserved): %.2f / %.2f MiB | %.2f available", deviceResidentMB, deviceReservedMB, availableDeviceMemoryMB),
             deviceMemoryColor);
 
-        // RPI AssetStreamingImagePool usage
-        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetStreamingPool();
+        // RPI default StreamingImagePool usage
+        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
         const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
 
         float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
         float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
         float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        bool supportTiledImage = streamingImagePool->GetRHIPool()->SupportTiledImage();
         AZ::Color fontColor = AZ::Colors::White;
-        if (imagePoolTotalAllocatedMB > 0.99f * imagePoolBudgetMB && imagePoolBudgetMB > 0)
+        if (streamingImagePool->IsMemoryLow())
         {
             fontColor = AZ::Colors::Red;
         }
 
         DrawLine(
-            AZStd::string::format("RPI AssetStreamingImagePool (used/allocated/budget): %.2f / %.2f/%.2f MiB", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("Texture %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }

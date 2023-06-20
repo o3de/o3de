@@ -22,7 +22,7 @@ class TUiAnimTrack
     : public IUiAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(TUiAnimTrack, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(TUiAnimTrack, AZ::SystemAllocator)
     AZ_RTTI((TUiAnimTrack, "{5513FA16-991D-40DD-99B2-9C5531AC872C}", KeyType), IUiAnimTrack);
 
     TUiAnimTrack();
@@ -425,7 +425,7 @@ inline bool TUiAnimTrack<KeyType>::SerializeSelection(XmlNodeRef& xmlNode, bool 
         int numCur = GetNumKeys();
         int num = xmlNode->getChildCount();
 
-        int type;
+        unsigned int type;
         xmlNode->getAttr("TrackType", type);
 
         if (type != GetCurveType())

@@ -175,5 +175,5 @@ namespace AZ
         }
     };
 
-    AZ_CLASS_ALLOCATOR_IMPL(ElementInformationSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ElementInformationSerializer, SystemAllocator);
 }

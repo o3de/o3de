@@ -17,7 +17,7 @@ namespace AtomToolsFramework
     class PreviewContent
     {
     public:
-        AZ_CLASS_ALLOCATOR(PreviewContent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PreviewContent, AZ::SystemAllocator);
 
         PreviewContent() = default;
         virtual ~PreviewContent() = default;

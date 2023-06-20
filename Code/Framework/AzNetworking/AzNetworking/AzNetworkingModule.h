@@ -17,7 +17,7 @@ namespace AzNetworking
     {
     public:
         AZ_RTTI(AzNetworkingModule, "{4118D37D-233D-4CD5-ACE7-747FBAF2615D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AzNetworkingModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzNetworkingModule, AZ::OSAllocator);
 
         AzNetworkingModule();
         ~AzNetworkingModule() override = default;

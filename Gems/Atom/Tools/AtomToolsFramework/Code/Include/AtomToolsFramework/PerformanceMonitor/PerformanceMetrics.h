@@ -9,16 +9,13 @@
 #pragma once
 
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/RTTI/ReflectContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AtomToolsFramework
 {
     //! Data structure containing performance metrics
     struct PerformanceMetrics final
     {
-        AZ_CLASS_ALLOCATOR(PerformanceMetrics, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PerformanceMetrics, AZ::SystemAllocator);
 
         double m_cpuFrameTimeMs = 0;
         double m_gpuFrameTimeMs = 0;

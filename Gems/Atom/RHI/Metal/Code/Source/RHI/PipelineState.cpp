@@ -14,6 +14,7 @@
 #include <RHI/Device.h>
 #include <RHI/PipelineState.h>
 #include <RHI/PipelineLibrary.h>
+#include <AzCore/std/algorithm.h>
 
 namespace AZ
 {
@@ -24,9 +25,9 @@ namespace AZ
             return aznew PipelineState;
         }
 
-        const PipelineLayout& PipelineState::GetPipelineLayout() const
+        const PipelineLayout* PipelineState::GetPipelineLayout() const
         {
-            return *m_pipelineLayout;
+            return m_pipelineLayout.get();
         }
 
         id<MTLRenderPipelineState> PipelineState::GetGraphicsPipelineState() const
@@ -72,7 +73,7 @@ namespace AZ
             }
             
             const uint8_t* shaderByteCode = reinterpret_cast<const uint8_t*>(shaderFunction->GetByteCode().data());
-            const int byteCodeLength = shaderFunction->GetByteCode().size();
+            const int byteCodeLength = static_cast<int>(shaderFunction->GetByteCode().size());
             if(byteCodeLength > 0 && loadFromByteCode)
             {
                 dispatch_data_t dispatchByteCodeData = dispatch_data_create(shaderByteCode, byteCodeLength, NULL, DISPATCH_DATA_DESTRUCTOR_DEFAULT);
@@ -167,8 +168,12 @@ namespace AZ
                 [depthStencilDesc release];
                 depthStencilDesc = nil;
             }
-                        
+#if defined(__IPHONE_16_0) || defined(__MAC_13_0)
+            m_renderPipelineDesc.rasterSampleCount = descriptor.m_renderStates.m_multisampleState.m_samples;
+#else
             m_renderPipelineDesc.sampleCount = descriptor.m_renderStates.m_multisampleState.m_samples;
+#endif
+            
             m_renderPipelineDesc.alphaToCoverageEnabled = descriptor.m_renderStates.m_blendState.m_alphaToCoverageEnable;
             
             PipelineLibrary* pipelineLibrary = static_cast<PipelineLibrary*>(pipelineLibraryBase);

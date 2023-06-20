@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
-#define AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
@@ -34,6 +33,9 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
+        // This bus itself is thread safe, and function like GetEditorEntityContextId() is thread safe. But be careful
+        // with function like AddEntity, DestroyEntity - those might not be thread safe due the implementation.
+        static constexpr bool LocklessDispatch = true;
 
         virtual ~EditorEntityContextRequests() {}
 
@@ -160,9 +162,9 @@ namespace AzToolsFramework
         virtual ~EditorEntityContextNotification() = default;
 
         /// Called before the context is reset.
-        virtual void PrepareForContextReset() {}
+        virtual void OnPrepareForContextReset() {}
 
-        /// Fired when the context is being reset.
+        /// Fired after the context is reset.
         virtual void OnContextReset() {}
 
         //! Fired when an Editor entity is created
@@ -179,6 +181,9 @@ namespace AzToolsFramework
 
         //! Fired when the editor finishes going into 'Simulation' mode.
         virtual void OnStartPlayInEditor() {}
+
+        //! Fired when the editor begins coming out of 'Simulation' mode.
+        virtual void OnStopPlayInEditorBegin() {}
 
         //! Fired when the editor comes out of 'Simulation' mode
         virtual void OnStopPlayInEditor() {}
@@ -229,4 +234,4 @@ namespace AzToolsFramework
     using EditorLegacyGameModeNotificationBus = AZ::EBus<EditorLegacyGameModeNotifications>;
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityContextRequests);

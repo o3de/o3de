@@ -570,7 +570,7 @@ namespace AZ
             // Get the DOM for the unmodified nested instance.  This will be used later below for generating the correct patch
             // to the top-level template DOM.
             AzToolsFramework::Prefab::PrefabDom unmodifiedNestedInstanceDom;
-            instanceToTemplateInterface->GenerateDomForInstance(unmodifiedNestedInstanceDom, *(nestedInstance.get()));
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(unmodifiedNestedInstanceDom, *(nestedInstance.get()));
 
             // Instantiate a new instance of the nested slice
             SliceComponent* dependentSlice = sliceAsset.Get()->GetComponent();
@@ -595,7 +595,7 @@ namespace AZ
             // throughout the entire nested hierarchy, then add the new patched entities back in at the appropriate place in the hierarchy.
             // (This is easier than trying to figure out what the patched data changes are - we can let the JSON patch handle it for us)
 
-            nestedInstance->RemoveNestedEntities(
+            nestedInstance->RemoveEntitiesInHierarchy(
                 [](const AZStd::unique_ptr<AZ::Entity>&)
                 {
                     return true;
@@ -733,13 +733,13 @@ namespace AZ
             // create a patch out of it, and patch the top-level prefab template.
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomBefore;
-            instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomBefore, *topLevelInstance);
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(topLevelInstanceDomBefore, *topLevelInstance);
 
             // Use the deterministic instance alias for this new instance
             AzToolsFramework::Prefab::Instance& addedInstance = topLevelInstance->AddInstance(AZStd::move(nestedInstance));
 
             AzToolsFramework::Prefab::PrefabDom topLevelInstanceDomAfter;
-            instanceToTemplateInterface->GenerateDomForInstance(topLevelInstanceDomAfter, *topLevelInstance);
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(topLevelInstanceDomAfter, *topLevelInstance);
 
             AzToolsFramework::Prefab::PrefabDom addedInstancePatch;
             instanceToTemplateInterface->GeneratePatch(addedInstancePatch, topLevelInstanceDomBefore, topLevelInstanceDomAfter);
@@ -749,7 +749,7 @@ namespace AZ
             // to the top-level instance, we've got all the changes we need to generate the correct patch.
 
             AzToolsFramework::Prefab::PrefabDom modifiedNestedInstanceDom;
-            instanceToTemplateInterface->GenerateDomForInstance(modifiedNestedInstanceDom, addedInstance);
+            instanceToTemplateInterface->GenerateInstanceDomBySerializing(modifiedNestedInstanceDom, addedInstance);
 
             AzToolsFramework::Prefab::PrefabDom linkPatch;
             instanceToTemplateInterface->GeneratePatch(linkPatch, unmodifiedNestedInstanceDom, modifiedNestedInstanceDom);

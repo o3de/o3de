@@ -39,6 +39,11 @@ namespace PhysX
         return m_physxSystem->GetSceneHandle(sceneName);
     }
 
+    AzPhysics::Scene* PhysXSceneInterface::GetScene(AzPhysics::SceneHandle handle)
+    {
+        return m_physxSystem->GetScene(handle);
+    }
+
     void PhysXSceneInterface::StartSimulation(AzPhysics::SceneHandle sceneHandle, float deltatime)
     {
         if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
@@ -179,6 +184,16 @@ namespace PhysX
             return scene->QueryScene(request);
         }
         return AzPhysics::SceneQueryHits();
+    }
+
+    bool PhysXSceneInterface::QueryScene(
+        AzPhysics::SceneHandle sceneHandle, const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits& result)
+    {
+        if (AzPhysics::Scene* scene = m_physxSystem->GetScene(sceneHandle))
+        {
+            return scene->QueryScene(request, result);
+        }
+        return false;
     }
 
     AzPhysics::SceneQueryHitsList PhysXSceneInterface::QuerySceneBatch(

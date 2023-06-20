@@ -38,7 +38,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(BookmarkAnchorVisualGraphicsWidget, "");
-        AZ_CLASS_ALLOCATOR(BookmarkAnchorVisualGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkAnchorVisualGraphicsWidget, AZ::SystemAllocator);
 
         BookmarkAnchorVisualGraphicsWidget(const AZ::EntityId& busId);
         virtual ~BookmarkAnchorVisualGraphicsWidget() = default;
@@ -96,7 +96,7 @@ namespace GraphCanvas
         {
         public:
             AZ_RTTI(BookmarkAnchorVisualComponentSaveData, "{1EDD7480-8CB5-4656-8B04-00E82ED0063A}", ComponentSaveData);
-            AZ_CLASS_ALLOCATOR(BookmarkAnchorVisualComponentSaveData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BookmarkAnchorVisualComponentSaveData, AZ::SystemAllocator);
 
             BookmarkAnchorVisualComponentSaveData() = default;
         };

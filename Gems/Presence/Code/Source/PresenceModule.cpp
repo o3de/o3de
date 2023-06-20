@@ -18,7 +18,7 @@ namespace Presence
     {
     public:
         AZ_RTTI(PresenceModule, "{FAFD5AC3-26EC-446B-A444-ADFFC06BCD3D}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(PresenceModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PresenceModule, AZ::SystemAllocator);
 
         PresenceModule()
             : AZ::Module()

@@ -616,6 +616,8 @@ namespace PhysX
         {
             if (!isKinematic)
             {
+                PHYSX_SCENE_READ_LOCK(m_pxRigidActor->getScene());
+
                 // check if any of the shapes on the rigid body would prevent switching to dynamic
                 const bool allShapesCanComputeMassProperties = AZStd::all_of(
                     m_shapes.begin(),

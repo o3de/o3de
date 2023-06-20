@@ -35,16 +35,11 @@ namespace AZ::IO
     INSTANTIATE_TYPED_TEST_CASE_P(Streamer_BlockCacheConformityTests, StreamStackEntryConformityTests, BlockCacheTestDescription);
 
     class BlockCacheTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -64,11 +59,6 @@ namespace AZ::IO
             m_context = nullptr;
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-            TeardownAllocator();
         }
 
         void CreateTestEnvironmentImplementation(bool onlyEpilogWrites)

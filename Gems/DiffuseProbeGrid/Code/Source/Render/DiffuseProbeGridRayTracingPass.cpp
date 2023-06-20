@@ -71,14 +71,6 @@ namespace AZ
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
             closestHitShaderVariant.ConfigurePipelineState(closestHitShaderDescriptor);
 
-            // any hit shader
-            AZStd::string anyHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingAnyHit.azshader";
-            m_anyHitShader = RPI::LoadCriticalShader(anyHitShaderFilePath);
-
-            auto anyHitShaderVariant = m_anyHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            RHI::PipelineStateDescriptorForRayTracing anyHitShaderDescriptor;
-            anyHitShaderVariant.ConfigurePipelineState(anyHitShaderDescriptor);
-
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
             m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
@@ -92,7 +84,7 @@ namespace AZ
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
             m_globalSrgLayout = m_rayTracingShader->FindShaderResourceGroupLayout(Name{ "RayTracingGlobalSrg" });
-            AZ_Error( "ReflectionProbeFeatureProcessor", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
+            AZ_Error( "DiffuseProbeGridRayTracingPass", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
 
             // build the ray tracing pipeline state descriptor
             RHI::RayTracingPipelineStateDescriptor descriptor;
@@ -100,18 +92,15 @@ namespace AZ
                 ->PipelineState(m_globalPipelineState.get())
                 ->MaxPayloadSize(96)
                 ->MaxAttributeSize(32)
-                ->MaxRecursionDepth(16)
+                ->MaxRecursionDepth(MaxRecursionDepth)
                 ->ShaderLibrary(rayGenerationShaderDescriptor)
                     ->RayGenerationShaderName(AZ::Name("RayGen"))
                 ->ShaderLibrary(missShaderDescriptor)
                     ->MissShaderName(AZ::Name("Miss"))
                 ->ShaderLibrary(closestHitShaderDescriptor)
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-                ->ShaderLibrary(anyHitShaderDescriptor)
-                    ->AnyHitShaderName(AZ::Name("AnyHit"))
                 ->HitGroup(AZ::Name("HitGroup"))
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
-                    ->AnyHitShaderName(AZ::Name("AnyHit"))
             ;
 
             // create the ray tracing pipeline state object
@@ -148,16 +137,19 @@ namespace AZ
             return true;
         }
 
+        void DiffuseProbeGridRayTracingPass::BuildInternal()
+        {
+            RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
+            if (device->GetFeatures().m_rayTracing)
+            {
+                CreateRayTracingPipelineState();
+            }
+        }
+
         void DiffuseProbeGridRayTracingPass::FrameBeginInternal(FramePrepareParams params)
         {
             RPI::Scene* scene = m_pipeline->GetScene();
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
-
-            if (!m_initialized)
-            {
-                CreateRayTracingPipelineState();
-                m_initialized = true;
-            }
 
             if (!m_rayTracingShaderTable)
             {
@@ -310,6 +302,8 @@ namespace AZ
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                     diffuseProbeGrid->UpdateRayTraceSrg(m_rayTracingShader, m_globalSrgLayout);
+
+                    diffuseProbeGrid->GetRayTraceSrg()->SetConstant(m_maxRecursionDepthNameIndex, MaxRecursionDepth);
                     diffuseProbeGrid->GetRayTraceSrg()->Compile();
                 }
             }
@@ -328,7 +322,8 @@ namespace AZ
                     descriptor->Build(AZ::Name("RayTracingShaderTable"), m_rayTracingPipelineState)
                         ->RayGenerationRecord(AZ::Name("RayGen"))
                         ->MissRecord(AZ::Name("Miss"))
-                        ->HitGroupRecord(AZ::Name("HitGroup"));
+                        ->HitGroupRecord(AZ::Name("HitGroup"))
+                    ;
                 }
 
                 m_rayTracingShaderTable->Build(descriptor);
@@ -354,7 +349,8 @@ namespace AZ
 
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
-                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
+                        rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;

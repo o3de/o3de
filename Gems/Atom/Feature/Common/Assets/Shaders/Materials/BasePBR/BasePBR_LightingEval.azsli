@@ -12,11 +12,11 @@
 // used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
 //
 #ifndef EvaluateLighting
-#define EvaluateLighting(surface, screenPosition)       EvaluateLighting_BasePBR(surface, screenPosition)
+#define EvaluateLighting EvaluateLighting_BasePBR
 #endif
 
 #include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
+#include <Atom/Features/PBR/Lights/IblForward.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
 
 void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition, inout LightingData lightingData)
@@ -26,7 +26,7 @@ void InitializeLightingData_BasePBR(inout Surface surface, float4 screenPosition
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
     
     // Diffuse and Specular response (used in IBL calculations)
-    float3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    real3 specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
     lightingData.diffuseResponse = 1.0 - specularResponse;
 
     // Multiscatter
@@ -42,7 +42,7 @@ void CalculateLighting_BasePBR(inout Surface surface, float4 screenPosition, ino
     ApplyDirectLighting(surface, lightingData, screenPosition);
 
     // Apply Image Based Lighting (IBL)
-    ApplyIBL(surface, lightingData);
+    ApplyIblForward(surface, lightingData);
 
     // Finalize Lighting
     lightingData.FinalizeLighting(surface);

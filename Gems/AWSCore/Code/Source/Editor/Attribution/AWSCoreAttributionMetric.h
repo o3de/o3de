@@ -21,14 +21,17 @@ namespace AWSCore
     class AttributionMetric
     {
     public:
-        AZ_TYPE_INFO(MetricsAttribute, "{6483F481-0C18-4171-8B59-A44F2F28EAE5}")
+        AZ_TYPE_INFO(AttributionMetric, "{6483F481-0C18-4171-8B59-A44F2F28EAE5}")
 
         AttributionMetric();
         AttributionMetric(const AZStd::string& timestamp);
         ~AttributionMetric() = default;
 
         void SetO3DEVersion(const AZStd::string& version);
+
+        const AZStd::string& GetPlatform() const { return m_platform;}
         void SetPlatform(const AZStd::string& platform, const AZStd::string& platformVersion);
+
         void AddActiveGem(const AZStd::string& gemName);
 
         //! Serialize the metrics object queue to a string.

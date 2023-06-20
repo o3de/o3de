@@ -78,19 +78,19 @@ namespace EMotionFX
         m_translationManipulators.InstallLinearManipulatorMouseUpCallback(
             [this](const AzToolsFramework::LinearManipulator::Action& action)
             {
-                FinishEditing(action.m_start.m_localPosition, action.m_current.m_localPositionOffset);
+                EndEditing(action.m_start.m_localPosition, action.m_current.m_localPositionOffset);
             });
 
         m_translationManipulators.InstallPlanarManipulatorMouseUpCallback(
             [this](const AzToolsFramework::PlanarManipulator::Action& action)
             {
-                FinishEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
+                EndEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
         m_translationManipulators.InstallSurfaceManipulatorMouseUpCallback(
             [this](const AzToolsFramework::SurfaceManipulator::Action& action)
             {
-                FinishEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
+                EndEditing(action.m_start.m_localPosition, action.m_current.m_localOffset);
             });
 
         PhysicsSetupManipulatorRequestBus::Handler::BusConnect();
@@ -126,7 +126,7 @@ namespace EMotionFX
         {
             BeginEditing(
                 m_physicsSetupManipulatorData.m_colliderNodeConfiguration->m_shapes[0].first->m_position, AZ::Vector3::CreateZero());
-            FinishEditing(AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero());
+            EndEditing(AZ::Vector3::CreateZero(), AZ::Vector3::CreateZero());
             Refresh();
         }
     }
@@ -165,7 +165,7 @@ namespace EMotionFX
         command->SetOldPosition(GetPosition(startPosition, offset));
     }
 
-    void ColliderTranslationManipulators::FinishEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
+    void ColliderTranslationManipulators::EndEditing(const AZ::Vector3& startPosition, const AZ::Vector3& offset)
     {
         if (m_commandGroup.IsEmpty())
         {

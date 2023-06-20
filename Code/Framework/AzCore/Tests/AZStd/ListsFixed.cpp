@@ -48,7 +48,7 @@ namespace UnitTest
     };
 
     class FixedListContainers
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct RemoveLessThan401

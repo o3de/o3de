@@ -48,7 +48,7 @@ namespace Vegetation
                     "Vegetation Layer Debugger Config", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::Color, &AreaDebugConfig::m_debugColor, "Debug Visualization Color", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Color, &AreaDebugConfig::m_debugCubeSize, "Debug Visualization Cube Size", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AreaDebugConfig::m_debugCubeSize, "Debug Visualization Cube Size", "")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                     ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AreaDebugConfig::m_hideDebug, "Hide created instance in the Debug Visualization", "")

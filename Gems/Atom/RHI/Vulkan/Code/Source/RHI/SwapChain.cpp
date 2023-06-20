@@ -25,11 +25,18 @@
 #include <RHI/RenderPass.h>
 #include <RHI/SwapChain.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
     namespace Vulkan
     {
+        static bool IsDefaultSwapChainNeeded()
+        {
+            auto* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
+            return !xrSystem || xrSystem->IsDefaultRenderPipelineNeeded();
+        }
+
         RHI::Ptr<SwapChain> SwapChain::Create()
         {
             return aznew SwapChain();
@@ -67,9 +74,11 @@ namespace AZ
         {
             if (m_pendingRecreation)
             {
+                VkSwapchainKHR oldSwapchain = m_nativeSwapChain;
                 ShutdownImages();
-                InvalidateNativeSwapChain();
                 CreateSwapchain();
+                // Destroy the old swapchain AFTER creating the new one (because it's used for building the new one)
+                InvalidateNativeSwapChain(oldSwapchain);
                 InitImages();
 
                 m_pendingRecreation = false;
@@ -88,7 +97,7 @@ namespace AZ
 
         void SwapChain::SetNameInternal(const AZStd::string_view& name)
         {
-            if (IsInitialized() && !name.empty())
+            if ((m_nativeSwapChain != VK_NULL_HANDLE) && IsInitialized() && !name.empty())
             {
                 Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativeSwapChain), name.data(), VK_OBJECT_TYPE_SWAPCHAIN_KHR, static_cast<Device&>(GetDevice()));
             }
@@ -117,8 +126,12 @@ namespace AZ
                 auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
                 m_presentationQueue = &presentationQueue;
 
-                result = CreateSwapchain();
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                if (IsDefaultSwapChainNeeded())
+                {
+                    result = CreateSwapchain();
+                    RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                }
+
                 if (nativeDimensions)
                 {
                     // Fill out the real swapchain dimensions to return
@@ -139,7 +152,8 @@ namespace AZ
                 return;
             }
 
-            InvalidateNativeSwapChainImmediately();
+            InvalidateNativeSwapChain(m_nativeSwapChain);
+            m_nativeSwapChain = VK_NULL_HANDLE;
             InvalidateSurface();
             m_presentationQueue = nullptr;
 
@@ -169,8 +183,11 @@ namespace AZ
             }
             else
             {
-                imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
-                result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                if (IsDefaultSwapChainNeeded())
+                {
+                    imageDesc.m_format = ConvertFormat(m_surfaceFormat.format);
+                    result = image->Init(device, m_swapchainNativeImages[request.m_imageIndex], imageDesc);
+                }
             }
 
             if (result != RHI::ResultCode::Success)
@@ -187,10 +204,9 @@ namespace AZ
 
         RHI::ResultCode SwapChain::ResizeInternal(const RHI::SwapChainDimensions& dimensions, RHI::SwapChainDimensions* nativeDimensions)
         {
+            VkSwapchainKHR oldSwapchain = m_nativeSwapChain;
             auto& device = static_cast<Device&>(GetDevice());
             m_dimensions = dimensions;
-
-            InvalidateNativeSwapChain();
 
             auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
             m_presentationQueue = &presentationQueue;
@@ -207,6 +223,9 @@ namespace AZ
 
                 nativeDimensions->m_imageFormat = ConvertFormat(m_surfaceFormat.format);
             }
+
+            // Destroy the old swapchain AFTER creating the new one (because it's used for building the new one)
+            InvalidateNativeSwapChain(oldSwapchain);
 
             return RHI::ResultCode::Success;
         }
@@ -449,7 +468,6 @@ namespace AZ
 
         RHI::ResultCode SwapChain::BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions)
         {
-            AZ_Assert(m_nativeSwapChain == VK_NULL_HANDLE, "Vulkan's native SwapChain has been initialized already.");
             AZ_Assert(m_surface, "Surface is null.");
 
             if (!ValidateSurfaceDimensions(dimensions))
@@ -491,6 +509,7 @@ namespace AZ
             createInfo.imageExtent = extent;
             createInfo.imageArrayLayers = 1; // non-stereoscopic
             createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+            createInfo.imageUsage = RHI::FilterBits(createInfo.imageUsage, m_surfaceCapabilities.supportedUsageFlags);
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
             createInfo.queueFamilyIndexCount = aznumeric_cast<uint32_t>(familyIndices.size());
             createInfo.pQueueFamilyIndices = familyIndices.empty() ? nullptr : familyIndices.data();
@@ -498,10 +517,11 @@ namespace AZ
             createInfo.compositeAlpha = m_compositeAlphaFlagBits;
             createInfo.presentMode = m_presentMode;
             createInfo.clipped = VK_FALSE;
-            createInfo.oldSwapchain = m_oldNativeSwapChain;
+            // Pass the current swapchain as the old one
+            createInfo.oldSwapchain = m_nativeSwapChain;
 
             const VkResult result =
-                device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeSwapChain);
+                device.GetContext().CreateSwapchainKHR(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeSwapChain);
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -543,36 +563,15 @@ namespace AZ
             m_surface = nullptr;
         }
 
-        void SwapChain::InvalidateNativeSwapChain()
+        void SwapChain::InvalidateNativeSwapChain(VkSwapchainKHR swapchain)
         {
             auto& device = static_cast<Device&>(GetDevice());
-            auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
+            auto presentCommand = [&device, swapchain]([[maybe_unused]] void* queue)
             {
                 device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
-                if (m_nativeSwapChain != VK_NULL_HANDLE)
+                if (swapchain != VK_NULL_HANDLE)
                 {
-                    //Add the swapchain on the release queue to be released later as we still need it in order to transition to the new swapchain
-                    device.QueueForRelease(new ReleaseContainer<VkSwapchainKHR>(
-                        device.GetNativeDevice(), m_nativeSwapChain, device.GetContext().DestroySwapchainKHR));
-                    m_oldNativeSwapChain = m_nativeSwapChain;
-                    m_nativeSwapChain = VK_NULL_HANDLE;
-                }
-            };
-
-            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
-            m_presentationQueue->FlushCommands();
-        }
-
-        void SwapChain::InvalidateNativeSwapChainImmediately()
-        {
-            auto& device = static_cast<Device&>(GetDevice());
-            auto presentCommand = [this, &device]([[maybe_unused]] void* queue)
-            {
-                device.GetContext().DeviceWaitIdle(device.GetNativeDevice());
-                if (m_nativeSwapChain != VK_NULL_HANDLE)
-                {
-                    device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), m_nativeSwapChain, nullptr);
-                    m_nativeSwapChain = VK_NULL_HANDLE;
+                    device.GetContext().DestroySwapchainKHR(device.GetNativeDevice(), swapchain, VkSystemAllocator::Get());
                 }
             };
 

@@ -27,6 +27,7 @@ namespace PhysX
         virtual AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const = 0;
 
         /// Sets the mesh asset ID
+        /// @note Calling this function will not recreate the physics shapes of the collider.
         /// @param id The asset ID to set it to.
         virtual void SetMeshAsset(const AZ::Data::AssetId& id) = 0;
     };

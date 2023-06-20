@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <AzCore/base.h>
 #include <AzCore/std/typetraits/is_integral.h>
-#include <AzCore/std/typetraits/underlying_type.h>
+#include <AzCore/std/utility/to_underlying.h>
 
 namespace AZStd
 {
@@ -31,6 +31,25 @@ namespace AZStd
     AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(TYPE_NAME)                                                                                                  \
     AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(TYPE_NAME)                                                                                                  \
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(TYPE_NAME)
+
+//! This implements AZStd to_string methods for a type safe integral alias.
+//! This must be placed in global scope (not in a namespace) and the TYPE_NAME should be fully qualified.
+//! Usage: AZ_TYPE_SAFE_INTEGRAL_TOSTRING(TypeSafeClassName);
+#define AZ_TYPE_SAFE_INTEGRAL_TOSTRING(TYPE_NAME)                                                                               \
+    namespace AZStd                                                                                                                        \
+    {                                                                                                                                      \
+        template<class Str>                                                                                                                \
+        void to_string(Str& str, const TYPE_NAME value)                                                                                    \
+        {                                                                                                                                  \
+            to_string(str, AZStd::to_underlying(value));                                                                                   \
+        }                                                                                                                                  \
+        inline AZStd::string to_string(const TYPE_NAME& val)                                                                               \
+        {                                                                                                                                  \
+            AZStd::string str;                                                                                                             \
+            to_string(str, val);                                                                                                           \
+            return str;                                                                                                                    \
+        }                                                                                                                                  \
+    }
 
 //! This implements cvar binding methods for a type safe integral alias.
 //! This must be placed in global scope (not in a namespace) and the TYPE_NAME should be fully qualified.

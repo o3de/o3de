@@ -19,18 +19,18 @@ namespace Physics
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ColliderConfiguration>()
-                ->Version(6, &Physics::ClassConverters::ColliderConfigurationConverter)
+                ->Version(7, &Physics::ClassConverters::ColliderConfigurationConverter)
                 ->Field("CollisionLayer", &ColliderConfiguration::m_collisionLayer)
                 ->Field("CollisionGroupId", &ColliderConfiguration::m_collisionGroupId)
                 ->Field("Visible", &ColliderConfiguration::m_visible)
                 ->Field("Trigger", &ColliderConfiguration::m_isTrigger)
                 ->Field("Simulated", &ColliderConfiguration::m_isSimulated)
+                ->Field("DummySimulated", &ColliderConfiguration::m_dummyIsSimulated)
                 ->Field("InSceneQueries", &ColliderConfiguration::m_isInSceneQueries)
                 ->Field("Exclusive", &ColliderConfiguration::m_isExclusive)
                 ->Field("Position", &ColliderConfiguration::m_position)
                 ->Field("Rotation", &ColliderConfiguration::m_rotation)
                 ->Field("MaterialSlots", &ColliderConfiguration::m_materialSlots)
-                ->Field("MaterialSelection", &ColliderConfiguration::m_legacyMaterialSelection)
                 ->Field("propertyVisibilityFlags", &ColliderConfiguration::m_propertyVisibilityFlags)
                 ->Field("ColliderTag", &ColliderConfiguration::m_tag)
                 ->Field("RestOffset", &ColliderConfiguration::m_restOffset)
@@ -44,10 +44,14 @@ namespace Physics
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isTrigger, "Trigger", "If set, this collider will act as a trigger")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isSimulated, "Simulated", "If set, this collider will partake in collision in the physical simulation")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
-                        ->Attribute(AZ::Edit::Attributes::ReadOnly, &ColliderConfiguration::m_isTrigger) // Trigger shapes ignore simulated flag, making it read-only in the UI.
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree) // Necessary so visibility attributes are consumed
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isSimulated, "Simulated",
+                        "If set, this collider will partake in collision in the physical simulation.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetSimulatedPropertyVisibility)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_dummyIsSimulated, "Simulated",
+                        "If set, this collider will partake in collision in the physical simulation. Currently disabled because this collider is acting as a trigger.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetDummySimulatedPropertyVisibility)
+                        ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_isInSceneQueries, "In Scene Queries", "If set, this collider will be visible for scene queries")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &ColliderConfiguration::GetIsTriggerVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ColliderConfiguration::m_collisionLayer, "Collision Layer", "The collision layer assigned to the collider")
@@ -133,5 +137,29 @@ namespace Physics
     AZ::Crc32 ColliderConfiguration::GetOffsetVisibility() const
     {
         return GetPropertyVisibility(PropertyVisibility::Offset);
+    }
+
+    AZ::Crc32 ColliderConfiguration::GetSimulatedPropertyVisibility() const
+    {
+        if (GetIsTriggerVisibility() == AZ::Edit::PropertyVisibility::Show)
+        {
+            return m_isTrigger ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
+        }
+        else
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
+    }
+
+    AZ::Crc32 ColliderConfiguration::GetDummySimulatedPropertyVisibility() const
+    {
+        if (GetIsTriggerVisibility() == AZ::Edit::PropertyVisibility::Show)
+        {
+            return m_isTrigger ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        }
+        else
+        {
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
     }
 }

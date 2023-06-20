@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/Time/ITime.h>
@@ -19,7 +20,6 @@
 #include "CVarNode.h"
 #include "ScriptVarNode.h"
 #include "SceneNode.h"
-#include "MaterialNode.h"
 #include "EventNode.h"
 #include "AnimPostFXNode.h"
 #include "AnimScreenFaderNode.h"
@@ -28,7 +28,6 @@
 #include "ShadowsSetupNode.h"
 
 #include <MathConversion.h>
-#include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>
@@ -191,10 +190,10 @@ namespace Internal
     {
         if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
         {
-            const AZ::TimeMs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
-            if (deltatimeOverride != AZ::Time::ZeroTimeMs)
+            const AZ::TimeUs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
+            if (deltatimeOverride != AZ::Time::ZeroTimeUs)
             {
-                deltaTime = AZ::TimeMsToSeconds(deltatimeOverride);
+                deltaTime = AZ::TimeUsToSeconds(deltatimeOverride);
             }
         }
         return deltaTime;
@@ -216,7 +215,7 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_bStartCapture = false;
     m_captureFrame = -1;
     m_bEndCapture = false;
-    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeMs;
+    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeUs;
     m_cvar_capture_frame_once = nullptr;
     m_cvar_capture_folder = nullptr;
     m_cvar_sys_maxTimeStepForMovieSystem = nullptr;
@@ -246,7 +245,6 @@ CMovieSystem::CMovieSystem()
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::DoNodeStaticInitialisation()
 {
-    CAnimMaterialNode::Initialize();
     CAnimPostFXNode::Initialize();
     CAnimSceneNode::Initialize();
     CAnimScreenFaderNode::Initialize();
@@ -962,8 +960,8 @@ void CMovieSystem::StillUpdate()
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
     float y = 10.0f;
-    std::vector<const char*> names;
-    std::vector<float> rows;
+    AZStd::vector<const char*> names;
+    AZStd::vector<float> rows;
     constexpr f32 green[4]  = {0, 1, 0, 1};
     constexpr f32 purple[4] = {1, 0, 1, 1};
     constexpr f32 white[4]  = {1, 1, 1, 1};
@@ -1503,7 +1501,7 @@ void CMovieSystem::EnableFixedStepForCapture(float step)
     if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
         m_fixedTimeStepBackUp = timeSystem->GetSimulationTickDeltaOverride();
-        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(step));
+        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeUs(step));
     }
 
     if (nullptr == m_cvar_sys_maxTimeStepForMovieSystem)
@@ -1836,116 +1834,6 @@ void CMovieSystem::OnSequenceActivated(IAnimSequence* sequence)
 {
     // Queue for processing, sequences will be removed after checked for auto start.
     m_newlyActivatedSequences.push_back(sequence);
-}
-
-//////////////////////////////////////////////////////////////////////////
-StaticInstance<CLightAnimWrapper::LightAnimWrapperCache> CLightAnimWrapper::ms_lightAnimWrapperCache;
-AZStd::intrusive_ptr<IAnimSequence> CLightAnimWrapper::ms_pLightAnimSet;
-
-//////////////////////////////////////////////////////////////////////////
-CLightAnimWrapper::CLightAnimWrapper(const char* name)
-    : ILightAnimWrapper(name)
-{
-    m_nRefCounter = 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CLightAnimWrapper::~CLightAnimWrapper()
-{
-    RemoveCachedLightAnim(m_name.c_str());
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CLightAnimWrapper::Resolve()
-{
-    IF (!m_pNode, 0)
-    {
-        IAnimSequence* pSeq = GetLightAnimSet();
-        m_pNode = pSeq ? pSeq->FindNodeByName(m_name.c_str(), 0) : 0;
-    }
-
-    return m_pNode != 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-CLightAnimWrapper* CLightAnimWrapper::Create(const char* name)
-{
-    CLightAnimWrapper* pWrapper = FindLightAnim(name);
-
-    IF (pWrapper, 1)
-    {
-        pWrapper->AddRef();
-    }
-    else
-    {
-        pWrapper = new CLightAnimWrapper(name);
-        CacheLightAnim(name, pWrapper);
-    }
-
-    return pWrapper;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLightAnimWrapper::ReconstructCache()
-{
-#if !defined(_RELEASE)
-    if (!ms_lightAnimWrapperCache.empty())
-    {
-        __debugbreak();
-    }
-#endif
-
-    ms_lightAnimWrapperCache.clear();
-    SetLightAnimSet(0);
-}
-
-//////////////////////////////////////////////////////////////////////////
-IAnimSequence* CLightAnimWrapper::GetLightAnimSet()
-{
-    return ms_pLightAnimSet.get();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLightAnimWrapper::SetLightAnimSet(IAnimSequence* pLightAnimSet)
-{
-    ms_pLightAnimSet = pLightAnimSet;
-}
-
-void CLightAnimWrapper::InvalidateAllNodes()
-{
-#if !defined(_RELEASE)
-    if (!gEnv->IsEditor())
-    {
-        __debugbreak();
-    }
-#endif
-    // !!! Will only work in Editor as the renderer runs in single threaded mode !!!
-    // Invalidate all node pointers before the light anim set can get destroyed via SetLightAnimSet(0).
-    // They'll get re-resolved in the next frame via Resolve(). Needed for Editor undo, import, etc.
-    LightAnimWrapperCache::iterator it = ms_lightAnimWrapperCache.begin();
-    LightAnimWrapperCache::iterator itEnd = ms_lightAnimWrapperCache.end();
-    for (; it != itEnd; ++it)
-    {
-        (*it).second->m_pNode = 0;
-    }
-}
-
-CLightAnimWrapper* CLightAnimWrapper::FindLightAnim(const char* name)
-{
-    LightAnimWrapperCache::const_iterator it = ms_lightAnimWrapperCache.find(name);
-    return it != ms_lightAnimWrapperCache.end() ? (*it).second : 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLightAnimWrapper::CacheLightAnim(const char* name, CLightAnimWrapper* p)
-{
-    ms_lightAnimWrapperCache.insert(LightAnimWrapperCache::value_type(AZStd::string(name), p));
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CLightAnimWrapper::RemoveCachedLightAnim(const char* name)
-{
-    ms_lightAnimWrapperCache.erase(name);
 }
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING

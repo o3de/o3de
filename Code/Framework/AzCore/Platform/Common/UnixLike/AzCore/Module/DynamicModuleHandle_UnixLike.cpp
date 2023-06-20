@@ -16,20 +16,21 @@
 #include <dlfcn.h>
 #include <libgen.h>
 
+namespace AZ::Platform
+{
+    AZ::IO::FixedMaxPath GetModulePath();
+    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
+    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
+    AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName);
+}
+
 namespace AZ
 {
-    namespace Platform
-    {
-        AZ::IO::FixedMaxPath GetModulePath();
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen);
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
-    }
-
     class DynamicModuleHandleUnixLike
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator)
 
         DynamicModuleHandleUnixLike(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
@@ -50,6 +51,7 @@ namespace AZ
                 }
 
                 fullFilePath.ReplaceFilename(AZStd::string_view(fileNamePath));
+                m_fileName.assign(fullFilePath.Native().data(), fullFilePath.Native().size());
             }
 
             Platform::ConstructModuleFullFileName(fullFilePath);
@@ -64,14 +66,23 @@ namespace AZ
                     m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
                     return;
                 }
+
+                // If the executable is bundle, such as on an Apple platform
+                // Check if the module is in the <bundle.app>/Frameworks directory
+                candidatePath = Platform::CreateFrameworkModulePath(fullFilePath);
+                if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
+                {
+                    m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                    return;
+                }
             }
 
-            // If the path still doesn't exist at this point, check the SettingsRegistryMergeUtils
-            // FilePathKey_ProjectBuildPath key to see if a project-build-path argument has been supplied
+            // If the path still doesn't exist at this point, check the SettingsRegistry.
             if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
+                    // Check FilePathKey_ProjectConfigurationBinPath if a project-build-path argument has been supplied
                     bool fileFound = false;
                     if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
@@ -85,6 +96,7 @@ namespace AZ
                     }
                     if (!fileFound)
                     {
+                        // Check FilePathKey_InstalledBinaryFolder path, which would be the case if this is an installation
                         if (AZ::IO::FixedMaxPath installedBinariesPath;
                             settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
                         {
@@ -124,7 +136,7 @@ namespace AZ
 
             m_handle = Platform::OpenModule(m_fileName, alreadyOpen);
 
-            if(m_handle)
+            if (m_handle)
             {
                 if (alreadyOpen)
                 {

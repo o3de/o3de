@@ -11,11 +11,15 @@
 #include <LyShine/UiComponentTypes.h>
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include "UiInteractableState.h"
 #include "UiStateActionManager.h"
 #include "UiNavigationSettings.h"
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiDropTargetComponent

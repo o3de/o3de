@@ -92,6 +92,12 @@ namespace AZ
 
             /// Called by the frame attachment at frame building time.
             void SetFrameAttachment(FrameAttachment* frameAttachment);
+
+            /// Called by GetResourceView to insert a new image view
+            Ptr<ImageView> InsertNewImageView(HashValue64 hash, const ImageViewDescriptor& imageViewDescriptor) const;
+
+            /// Called by GetResourceView to insert a new buffer view
+            Ptr<BufferView> InsertNewBufferView(HashValue64 hash, const BufferViewDescriptor& bufferViewDescriptor) const;
                                     
             /// The parent pool this resource is registered with.
             ResourcePool* m_pool = nullptr;

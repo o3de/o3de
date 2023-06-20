@@ -58,6 +58,7 @@ namespace AzToolsFramework
             m_scanFolderIdMap.clear();
             m_fileIdMap.clear();
             m_sourceUuidMap.clear();
+            m_folderUuidMap.clear();
             m_sourceIdMap.clear();
             m_productAssetIdMap.clear();
             m_dirtyThumbnailsSet.clear();

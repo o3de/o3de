@@ -26,7 +26,7 @@ namespace AzToolsFramework
     class EditorMenuBar final
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorMenuBar, AZ::SystemAllocator);
         AZ_RTTI(EditorMenuBar, "{6242037D-9BC5-41A1-91BE-441B33875DC6}");
 
         EditorMenuBar() = default;

@@ -79,7 +79,7 @@ def print_gems(verbose: int = 0) -> int:
 
 
 def print_external_subdirectories(verbose: int = 0) -> int:
-    external_subdirs_data = manifest.get_all_external_subdirectories()
+    external_subdirs_data = manifest.get_all_external_subdirectories(gems_json_data_by_path=dict())
     print(f'External Subdirectories:\n{json.dumps(external_subdirs_data, indent=4)}')
     return 0
 
@@ -176,6 +176,16 @@ def print_project_templates(verbose: int, project_path: pathlib.Path, project_na
     if verbose > 0:
         return print_manifest_json_data(project_templates_data, 'Template Jsons',
                                         manifest.get_template_json_data, 'template_path')
+    return 0
+
+
+def print_project_engine_name(verbose: int, project_path: pathlib.Path, project_name: str) -> int:
+    project_path = get_project_path(project_path, project_name)
+    if not project_path:
+        return 1
+
+    project_json_data = manifest.get_project_json_data(project_path=project_path)
+    print(f'Engine Name:\n{project_json_data.get("engine", "")}')
     return 0
 
 

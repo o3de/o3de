@@ -56,6 +56,11 @@ namespace AZ
             AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1, 0.1f, 1000.f, true);
             SetViewToClipMatrix(viewToClipMatrix);
 
+            if ((usage & UsageFlags::UsageXR))
+            {
+                SetViewToClipMatrix(AZ::Matrix4x4::CreateIdentity());
+            }
+
             TryCreateShaderResourceGroup();
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -77,15 +82,19 @@ namespace AZ
 
         void View::SetDrawListMask(const RHI::DrawListMask& drawListMask)
         {
-            m_drawListMask = drawListMask;
-            m_drawListContext.Shutdown();
-            m_drawListContext.Init(m_drawListMask);
+            if (m_drawListMask != drawListMask)
+            {
+                m_drawListMask = drawListMask;
+                m_drawListContext.Shutdown();
+                m_drawListContext.Init(m_drawListMask);
+            }
         }
 
         void View::Reset()
         {
             m_drawListMask.reset();
             m_drawListContext.Shutdown();
+            m_visibleObjectContext.Shutdown();
             m_passesByDrawList = nullptr;
         }
 
@@ -105,11 +114,24 @@ namespace AZ
             m_drawListContext.AddDrawPacket(drawPacket, depth);
         }        
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition)
+        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
             AddDrawPacket(drawPacket, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, float depth)
+        {
+            // This function is thread safe since VisibleObjectContext has storage per thread for draw item data.
+            m_visibleObjectContext.AddVisibleObject(userData, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, const Vector3& worldPosition)
+        {
+            Vector3 cameraToObject = worldPosition - m_position;
+            float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
+            AddVisibleObject(userData, depth);
         }
 
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
@@ -117,13 +139,54 @@ namespace AZ
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }
 
+        void View::ApplyFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_and(&m_andFlags, flags);
+            AZStd::atomic_fetch_or(&m_orFlags, flags);
+        }
+
+        void View::ClearFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_or(&m_andFlags, flags);
+            AZStd::atomic_fetch_and(&m_orFlags, ~flags);
+        }
+
+        void View::ClearAllFlags()
+        {
+            ClearFlags(0xFFFFFFFF);
+        }
+
+        uint32_t View::GetAndFlags()
+        {
+            return m_andFlags;
+        }
+
+        uint32_t View::GetOrFlags()
+        {
+            return m_orFlags;
+        }
+
+        void View::UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld)
+        {
+            m_viewToWorldMatrix = viewToWorld;
+
+            //Update view transform
+            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
+            m_viewTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                       Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp, m_viewToWorldMatrix.GetTranslation()).GetOrthogonalized();
+        }
+
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
         {
-            m_viewToWorldMatrix = worldToView.GetInverseFast();
+            UpdateViewToWorldMatrix(worldToView.GetInverseFast());
             m_position = m_viewToWorldMatrix.GetTranslation();
 
             m_worldToViewMatrix = worldToView;
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
@@ -132,11 +195,7 @@ namespace AZ
 
         AZ::Transform View::GetCameraTransform() const
         {
-            static const Quaternion yUpToZUp = Quaternion::CreateRotationX(-AZ::Constants::HalfPi);
-            return AZ::Transform::CreateFromQuaternionAndTranslation(
-                Quaternion::CreateFromMatrix4x4(m_viewToWorldMatrix) * yUpToZUp,
-                m_viewToWorldMatrix.GetTranslation()
-            ).GetOrthogonalized();
+            return m_viewTransform;
         }
 
         void View::SetCameraTransform(const AZ::Matrix3x4& cameraTransform)
@@ -157,11 +216,15 @@ namespace AZ
                         0,0,0,1 };
             yUpWorld.StoreToRowMajorFloat12(viewToWorldMatrixRaw);
             const AZ::Matrix4x4 prevViewToWorldMatrix = m_viewToWorldMatrix;
-            m_viewToWorldMatrix = AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw);
-
+            UpdateViewToWorldMatrix(AZ::Matrix4x4::CreateFromRowMajorFloat16(viewToWorldMatrixRaw));
+ 
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Only signal an update when there is a change, otherwise this might block
@@ -216,6 +279,20 @@ namespace AZ
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
         }
 
+        void View::SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude)
+        {
+            if (viewToClipExclude)
+            {
+                m_viewToClipExcludeMatrix = *viewToClipExclude;
+                m_worldToClipExcludeMatrix = *viewToClipExclude * m_worldToViewMatrix;
+            }
+            else
+            {
+                m_viewToClipExcludeMatrix.reset();
+                m_worldToClipExcludeMatrix.reset();
+            }
+        }
+
         void View::SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth)
         {
             m_viewToClipMatrix = viewToClip;
@@ -230,7 +307,7 @@ namespace AZ
                 // zNear -> n, zFar -> f
                 // A = 2n/(f-n), B = 2fn / (f - n)
                 // the formula of A and B should be the same as projection matrix's definition
-                // currently defined in CreateProjectionOffset in XRUtils.cpp
+                // currently defined in CreateStereoscopicProjection in XRUtils.cpp
                 double A = m_viewToClipMatrix.GetElement(2, 2);
                 double B = m_viewToClipMatrix.GetElement(2, 3);
 
@@ -301,6 +378,11 @@ namespace AZ
             return m_viewToClipMatrix;
         }
 
+        const AZ::Matrix4x4* View::GetWorldToClipExcludeMatrix() const
+        {
+            return m_worldToClipExcludeMatrix.has_value() ? &m_worldToClipExcludeMatrix.value() : nullptr;
+        }
+
         const AZ::Matrix4x4& View::GetWorldToClipMatrix() const
         {
             return m_worldToClipMatrix;
@@ -319,6 +401,16 @@ namespace AZ
         RHI::DrawListView View::GetDrawList(RHI::DrawListTag drawListTag)
         {
             return m_drawListContext.GetList(drawListTag);
+        }
+
+        VisibleObjectListView View::GetVisibleObjectList()
+        {
+            return m_visibleObjectContext.GetList();
+        }
+
+        void View::FinalizeVisibleObjectList()
+        {
+            m_visibleObjectContext.FinalizeLists();
         }
 
         void View::FinalizeDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent)
@@ -398,8 +490,14 @@ namespace AZ
 
         void View::SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag)
         {
-            const Pass* passWithDrawListTag = (*m_passesByDrawList)[tag];
-            passWithDrawListTag->SortDrawList(drawList);
+            // Note: it's possible that the m_passesByDrawList doesn't have a pass for the input tag.
+            // This is because a View can be used for multiple render pipelines.
+            // So it may contains draw list tag which exists in one render pipeline but not others. 
+            auto itr = m_passesByDrawList->find(tag);
+            if (itr != m_passesByDrawList->end())
+            {
+                itr->second->SortDrawList(drawList);
+            }
         }
 
         void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
@@ -583,5 +681,16 @@ namespace AZ
                 AZ_Warning("RPI::View", false, "Shader Resource Group failed to initialize");
             }
         }
+
+        void View::SetShadowPassRenderPipelineId(const RenderPipelineId renderPipelineId)
+        {
+            m_shadowPassRenderpipelineId = renderPipelineId;
+        }
+
+        RenderPipelineId View::GetShadowPassRenderPipelineId() const
+        {
+            return m_shadowPassRenderpipelineId;
+        }
+
     } // namespace RPI
 } // namespace AZ

@@ -38,12 +38,8 @@ class CLayoutViewPane;
 class CLayoutWnd;
 class CMainFrame;
 class EngineConnectionListener;
-class KeyboardCustomizationSettings;
 class LevelEditorMenuHandler;
 class MainStatusBar;
-class ShortcutDispatcher;
-class ToolbarManager;
-class ToolbarCustomizationDialog;
 class UndoStackStateAdapter;
 
 class QComboBox;
@@ -110,8 +106,6 @@ public:
     HWND GetNativeHandle();
 #endif // #ifdef Q_OS_WIN
 
-    ActionManager* GetActionManager() const;
-
     void Initialize();
 
     // Returns the old and original main frame which we're porting away from.
@@ -127,16 +121,10 @@ public:
     MainStatusBar* StatusBar() const;
     CLayoutWnd* GetLayout() const;
 
-    KeyboardCustomizationSettings* GetShortcutManager() const;
-    ToolbarManager* GetToolbarManager() const;
-
     void OpenViewPane(int paneId);
     void OpenViewPane(QtViewPane* pane);
 
     void SetActiveView(CLayoutViewPane* vp);
-
-    QMenu* createPopupMenu() override;
-    bool IsCustomizingToolbars() const;
 
     /**
      * Returns the active view layout (Perspective, Top, Bottom, or Left, etc).
@@ -155,12 +143,10 @@ public:
     void RefreshStyle();
 
     //! Reset timers used for auto saving.
-    void ResetAutoSaveTimers(bool bForceInit = false);
+    void StopAutoSaveTimers();
+    void StartAutoSaveTimers();
+    void ResetAutoSaveTimers();
     void ResetBackgroundUpdateTimer();
-
-    void UpdateToolsMenu();
-
-    int ViewPaneVersion() const;
 
     LevelEditorMenuHandler* GetLevelEditorMenuHandler() { return m_levelEditorMenuHandler; }
 
@@ -185,19 +171,12 @@ protected:
     bool focusNextPrevChild(bool next) override;
 
 private:
-    void OnGameModeChanged(bool inGameMode);
-    QWidget* CreateToolbarWidget(int id);
-    void ShowCustomizeToolbarDialog();
     void OnGotoSelected();
 
     void ToggleConsole();
     void RegisterOpenWndCommands();
     void InitCentralWidget();
-    void InitActions();
-    void InitToolActionHandlers();
-    void InitToolBars();
     void InitStatusBar();
-    void OnViewPaneCreated(const QtViewPane* pane);
 
     template <class TValue>
     void ReadConfigValue(const QString& key, TValue& value)
@@ -210,12 +189,7 @@ private:
 
     QWidget* CreateSpacerRightWidget();
 
-    QToolButton* CreateUndoRedoButton(int command);
-
 private Q_SLOTS:
-    void ShowKeyboardCustomization();
-    void ExportKeyboardShortcuts();
-    void ImportKeyboardShortcuts();
     void OnStopAllSounds();
     void OnRefreshAudioSystem();
     void SaveLayout();
@@ -229,6 +203,7 @@ private Q_SLOTS:
     void OnEscapeAction();
 
     void OnOpenAssetImporterManager(const QStringList& list);
+    void OnOpenAssetImporterManagerAtPath(const QStringList& list, const QString& path);
 
 private:
     friend class EditorActionsHandler;
@@ -242,12 +217,8 @@ private:
     void RegisterStdViewClasses();
     CMainFrame* m_oldMainFrame;
     QtViewPaneManager* m_viewPaneManager;
-    ShortcutDispatcher* m_shortcutDispatcher = nullptr;
-    ActionManager* m_actionManager = nullptr;
-    ToolbarManager* m_toolbarManager = nullptr;
     UndoStackStateAdapter* m_undoStateAdapter;
 
-    KeyboardCustomizationSettings* m_keyboardCustomization;
     CLayoutViewPane* m_activeView;
     QSettings m_settings;
 
@@ -260,7 +231,6 @@ private:
     AZStd::shared_ptr<EngineConnectionListener> m_connectionListener;
     QTimer* m_connectionLostTimer;
 
-    QPointer<ToolbarCustomizationDialog> m_toolbarCustomizationDialog;
     QScopedPointer<AzToolsFramework::QtSourceControlNotificationHandler> m_sourceControlNotifHandler;
 
     EditorActionsHandler m_editorActionsHandler;
@@ -278,7 +248,6 @@ private:
     bool m_showAPDisconnectDialog = false;
     bool m_selectedEntityHasRoot = false;
 
-    friend class ToolbarManager;
     friend class WidgetAction;
     friend class LevelEditorMenuHandler;
 };

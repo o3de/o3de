@@ -14,21 +14,6 @@
 class StartingPointInputTest
     : public ::testing::Test
 {
-protected:
-    void SetUp() override 
-    {
-        // A system allocator needs to be created so the application and system entity can
-        // function correctly.
-        AZ::SystemAllocator::Descriptor systemAllocatorDesc;
-        if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(systemAllocatorDesc);
-        }
-    }
-    void TearDown() override 
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
 };
 
 TEST_F(StartingPointInputTest, CopyingInputEventGroupDoesDeepCopy)

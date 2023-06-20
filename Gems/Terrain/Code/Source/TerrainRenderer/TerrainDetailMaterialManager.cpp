@@ -100,15 +100,13 @@ namespace Terrain
     );
 
     void TerrainDetailMaterialManager::Initialize(
-        const AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler>& bindlessImageHandler,
         const AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg,
         const AZ::Data::Instance<AZ::RPI::Material>& terrainMaterial)
     {
-        AZ_Error(TerrainDetailMaterialManagerName, bindlessImageHandler, "bindlessImageHandler must not be null.");
         AZ_Error(TerrainDetailMaterialManagerName, terrainSrg, "terrainSrg must not be null.");
         AZ_Error(TerrainDetailMaterialManagerName, !m_isInitialized, "Already initialized.");
 
-        if (!bindlessImageHandler || !terrainSrg || m_isInitialized)
+        if (!terrainSrg || m_isInitialized)
         {
             return;
         }
@@ -121,8 +119,6 @@ namespace Terrain
 
         if (UpdateSrgIndices(terrainSrg))
         {
-            m_bindlessImageHandler = bindlessImageHandler;
-            
             // Find any detail material areas that have already been created.
             TerrainAreaMaterialRequestBus::EnumerateHandlers(
                 [&](TerrainAreaMaterialRequests* handler)
@@ -190,30 +186,6 @@ namespace Terrain
         return IndicesValid && m_detailMaterialDataBuffer.IsValid();
     }
     
-    void TerrainDetailMaterialManager::RemoveAllImages()
-    {   
-        for (const DetailMaterialData& materialData: m_detailMaterials.GetDataVector())
-        {
-            DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(materialData.m_detailMaterialBufferIndex);
-
-            auto checkRemoveImage = [&](uint16_t index)
-            {
-                if (index != 0xFFFF)
-                {
-                    m_bindlessImageHandler->RemoveBindlessImage(index);
-                }
-            };
-            
-            checkRemoveImage(shaderData.m_colorImageIndex);
-            checkRemoveImage(shaderData.m_normalImageIndex);
-            checkRemoveImage(shaderData.m_roughnessImageIndex);
-            checkRemoveImage(shaderData.m_metalnessImageIndex);
-            checkRemoveImage(shaderData.m_specularF0ImageIndex);
-            checkRemoveImage(shaderData.m_occlusionImageIndex);
-            checkRemoveImage(shaderData.m_heightImageIndex);
-        }
-    }
-
     bool TerrainDetailMaterialManager::IsInitialized() const
     {
         return m_isInitialized;
@@ -221,8 +193,6 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::Reset()
     {
-        RemoveAllImages();
-
         m_detailTextureImage = {};
         m_detailMaterials.Clear();
         m_detailMaterialRegions.Clear();
@@ -273,7 +243,7 @@ namespace Terrain
             m_detailTextureScale, &AzFramework::Terrain::TerrainDataRequests::GetTerrainSurfaceDataQueryResolution);
 
         // Texture size needs to be twice the render distance because the camera is positioned in the middle of the texture.
-        m_detailTextureSize = lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2;
+        m_detailTextureSize = static_cast<int32_t>(lroundf(m_config.m_renderDistance / m_detailTextureScale) * 2);
 
         ClipmapBoundsDescriptor desc;
         desc.m_clipmapUpdateMultiple = 1;
@@ -321,11 +291,11 @@ namespace Terrain
 
     void TerrainDetailMaterialManager::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::SurfaceData) == TerrainDataChangedMask::SurfaceData)
         {
             m_dirtyDetailRegion.AddAabb(dirtyRegion);
         }
-        if ((dataChangedMask & TerrainDataChangedMask::Settings) != 0)
+        if ((dataChangedMask & TerrainDataChangedMask::Settings) == TerrainDataChangedMask::Settings)
         {
             InitializeTextureParams();
         }
@@ -545,25 +515,6 @@ namespace Terrain
         if (--detailMaterialData.m_refCount == 0)
         {
             uint16_t bufferIndex = detailMaterialData.m_detailMaterialBufferIndex;
-            DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(bufferIndex);
-
-            for (uint16_t imageIndex :
-                {
-                    shaderData.m_colorImageIndex,
-                    shaderData.m_normalImageIndex,
-                    shaderData.m_roughnessImageIndex,
-                    shaderData.m_metalnessImageIndex,
-                    shaderData.m_specularF0ImageIndex,
-                    shaderData.m_occlusionImageIndex,
-                    shaderData.m_heightImageIndex
-                })
-            {
-                if (imageIndex != InvalidImageIndex)
-                {
-                    m_bindlessImageHandler->RemoveBindlessImage(imageIndex);
-                }
-            }
-
             m_detailMaterialShaderData.Release(bufferIndex);
             m_detailMaterials.RemoveIndex(detailMaterialId);
 
@@ -601,12 +552,6 @@ namespace Terrain
     void TerrainDetailMaterialManager::UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material)
     {
         DetailMaterialData& materialData = m_detailMaterials.GetData(detailMaterialIndex);
-        if (materialData.m_materialChangeId == material->GetCurrentChangeId())
-        {
-            return; // material hasn't changed, nothing to do
-        }
-
-        materialData.m_materialChangeId = material->GetCurrentChangeId();
         materialData.m_assetId = material->GetAssetId();
         
         DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(materialData.m_detailMaterialBufferIndex);
@@ -633,7 +578,7 @@ namespace Terrain
             }
         };
 
-        auto applyImage = [&](const char* const indexName, AZ::Data::Instance<AZ::RPI::Image>& ref, const char* const usingFlagName, DetailTextureFlags flagToSet, uint16_t& imageIndex) -> void
+        auto applyImage = [&](const char* const indexName, AZ::Data::Instance<AZ::RPI::Image>& ref, const char* const usingFlagName, DetailTextureFlags flagToSet, uint32_t& imageIndex) -> void
         {
             // Determine if an image exists and if its using flag allows it to be used.
             const auto index = getIndex(indexName);
@@ -651,21 +596,12 @@ namespace Terrain
             useTextureValue = useTextureValue && ref;
             flags = DetailTextureFlags(useTextureValue ? (flags | flagToSet) : (flags & ~flagToSet));
 
-            // Update queues to add/remove textures depending on if the image is used
             if (ref)
             {
-                if (imageIndex == InvalidImageIndex)
-                {
-                    imageIndex = m_bindlessImageHandler->AppendBindlessImage(ref->GetImageView());
-                }
-                else
-                {
-                    m_bindlessImageHandler->UpdateBindlessImage(imageIndex, ref->GetImageView());
-                }
+                imageIndex = ref->GetImageView()->GetBindlessReadIndex();
             }
             else if (imageIndex != InvalidImageIndex)
             {
-                m_bindlessImageHandler->RemoveBindlessImage(imageIndex);
                 imageIndex = InvalidImageIndex;
             }
         };

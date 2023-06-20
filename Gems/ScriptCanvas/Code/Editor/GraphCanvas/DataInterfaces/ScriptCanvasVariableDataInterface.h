@@ -41,7 +41,7 @@ namespace ScriptCanvasEditor
         , public GeneralEditorNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(VariableComboBoxDataModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableComboBoxDataModel, AZ::SystemAllocator);
 
         VariableComboBoxDataModel()
         {
@@ -150,7 +150,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::GraphCanvasSortFilterComboBoxProxyModel
     {
     public:
-        AZ_CLASS_ALLOCATOR(VariableTypeComboBoxFilterModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(VariableTypeComboBoxFilterModel, AZ::SystemAllocator);
 
         VariableTypeComboBoxFilterModel(const VariableComboBoxDataModel* sourceModel, ScriptCanvas::Slot* slot = nullptr)
             : m_sourceModel(sourceModel)
@@ -233,7 +233,7 @@ namespace ScriptCanvasEditor
         , public AZ::SystemTickBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasGraphScopedVariableDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasGraphScopedVariableDataInterface, AZ::SystemAllocator);
 
         ScriptCanvasGraphScopedVariableDataInterface(const VariableComboBoxDataModel* variableDataModel, const AZ::EntityId& scriptCanvasGraphId, const AZ::EntityId& scriptCanvasNodeId, const ScriptCanvas::SlotId& scriptCanvasSlotId)
             : ScriptCanvasDataInterface(scriptCanvasNodeId, scriptCanvasSlotId)
@@ -409,7 +409,7 @@ namespace ScriptCanvasEditor
         , public AZ::SystemTickBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasVariableReferenceDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasVariableReferenceDataInterface, AZ::SystemAllocator);
 
         ScriptCanvasVariableReferenceDataInterface(const VariableComboBoxDataModel* variableDataModel, const AZ::EntityId& scriptCanvasGraphId, const AZ::EntityId& scriptCanvasNodeId, const ScriptCanvas::SlotId& scriptCanvasSlotId)
             : ScriptCanvasDataInterface(scriptCanvasNodeId, scriptCanvasSlotId)

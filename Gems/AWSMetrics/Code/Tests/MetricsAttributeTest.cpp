@@ -15,7 +15,7 @@
 namespace AWSMetrics
 {
     class MetricsAttributeTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         const AZStd::string AttrName = "name";

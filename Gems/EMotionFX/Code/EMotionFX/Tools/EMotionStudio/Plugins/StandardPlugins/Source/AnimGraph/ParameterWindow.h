@@ -51,6 +51,7 @@ namespace EMStudio
     class AnimGraphPlugin;
     class ValueParameterEditor;
     class ParameterWindowTreeWidget;
+    class ParameterCreateEditWidget;
 
     class ParameterCreateRenameWindow
         : public QDialog
@@ -125,7 +126,7 @@ namespace EMStudio
         void OnAddParameter();
         void OnAddGroup();
         void OnRemoveSelected();
-        void OnEditButton();
+        void OnEditSelected();
 
     private slots:
         void UpdateInterface();
@@ -194,7 +195,7 @@ namespace EMStudio
         QAction* m_addAction;
         static int s_contextMenuWidth;
 
-        QAction* m_editAction;
+        ParameterCreateEditWidget*      m_parameterCreateEditWidget = nullptr;
 
         AZStd::vector<AZStd::string>    m_selectedParameterNames;
         bool                            m_ensureVisibility;

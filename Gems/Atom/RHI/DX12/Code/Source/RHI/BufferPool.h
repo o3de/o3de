@@ -8,6 +8,11 @@
 #pragma once
 
 #include <Atom/RHI/BufferPool.h>
+#include <RHI/Device.h>
+
+#ifdef USE_AMD_D3D12MA
+#include <RHI/BufferD3D12MemoryAllocator.h>
+#endif
 #include <RHI/BufferMemoryAllocator.h>
 
 namespace AZ
@@ -22,7 +27,7 @@ namespace AZ
             using Base = RHI::BufferPool;
         public:
             AZ_RTTI(BufferPool, "{BC251841-AADD-4A4A-A4FF-4F94897541D5}", Base);
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
             virtual ~BufferPool() = default;
 
             static RHI::Ptr<BufferPool> Create();
@@ -52,7 +57,11 @@ namespace AZ
 
             BufferPoolResolver* GetResolver();
 
+#ifdef USE_AMD_D3D12MA
+            BufferD3D12MemoryAllocator m_allocator;
+#else
             BufferMemoryAllocator m_allocator;
+#endif
         };
     }
 }

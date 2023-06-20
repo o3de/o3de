@@ -29,7 +29,7 @@ namespace
 namespace UnitTest
 {
     class PlatformAddressedAssetCatalogManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -48,7 +48,9 @@ namespace UnitTest
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
-            m_application->Start(AzFramework::Application::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(AzFramework::Application::Descriptor(), startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
@@ -161,12 +163,13 @@ namespace UnitTest
     class PlatformAddressedAssetCatalogMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalog
     {
     public:
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogMessageTest, AZ::SystemAllocator)
         PlatformAddressedAssetCatalogMessageTest(AzFramework::PlatformId platformId) :  AzToolsFramework::PlatformAddressedAssetCatalog(platformId)
         {
 
         }
-        MOCK_METHOD1(AssetChanged, void(AzFramework::AssetSystem::AssetNotificationMessage message));
-        MOCK_METHOD1(AssetRemoved, void(AzFramework::AssetSystem::AssetNotificationMessage message));
+        MOCK_METHOD2(AssetChanged, void(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message, bool isCatalogInitialize));
+        MOCK_METHOD1(AssetRemoved, void(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message));
     };
 
     class PlatformAddressedAssetCatalogManagerMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalogManager
@@ -180,7 +183,7 @@ namespace UnitTest
     };
 
     class MessageTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -221,23 +224,23 @@ namespace UnitTest
         catalogHolder.reset(mockCatalog);
 
         m_platformAddressedAssetCatalogManager->TakeSingleCatalog(AZStd::move(catalogHolder));
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(0);
+        notificationInterface->AssetChanged({ testMessage });
 
         testMessage.m_platform = "android";
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(1);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(1);
+        notificationInterface->AssetChanged({ testMessage });
 
         testMessage.m_platform = "pc";
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(0);
+        notificationInterface->AssetChanged({ testMessage });
 
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(0);
-        notificationInterface->AssetRemoved(testMessage);
+        notificationInterface->AssetRemoved({ testMessage });
 
         testMessage.m_platform = "android";
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(1);
-        notificationInterface->AssetRemoved(testMessage);
+        notificationInterface->AssetRemoved({ testMessage });
     }
 
 }

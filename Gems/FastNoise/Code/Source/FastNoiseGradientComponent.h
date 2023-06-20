@@ -39,7 +39,7 @@ namespace FastNoiseGem
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(FastNoiseGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FastNoiseGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(FastNoiseGradientConfig, "{831C1F11-5898-4FBF-B4CF-92B757A907A8}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

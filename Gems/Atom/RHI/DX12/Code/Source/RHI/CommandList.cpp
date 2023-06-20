@@ -19,7 +19,6 @@
 #include <RHI/SwapChain.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
-#include <Atom/RHI/IndirectArguments.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -27,6 +26,7 @@
 #include <RHI/BufferPool.h>
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/IndirectArguments.h>
 
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
@@ -40,12 +40,11 @@
 #define DX12_COMMANDLIST_TIMER_DETAIL(id)
 #endif
 
-#define PIX_MARKER_CMDLIST_COL 0xFF0000FF
-
 namespace AZ
 {
     namespace DX12
     {
+
         RHI::Ptr<CommandList> CommandList::Create()
         {
             return aznew CommandList();
@@ -95,8 +94,7 @@ namespace AZ
         {
             SetName(name);
 
-            PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
+            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
             }
@@ -105,12 +103,10 @@ namespace AZ
         void CommandList::Close()
         {
             FlushBarriers();
-            PIXEndEvent();
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
+            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXEndEvent(GetCommandList());
             }
-            
 
             CommandListBase::Close();
         }
@@ -344,10 +340,27 @@ namespace AZ
 
             // set the global root signature
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
+            if (!rayTracingPipelineState)
+            {
+                AZ_Assert(false, "Pipeline state not provided");
+                return;
+            }
+
             commandList->SetComputeRootSignature(rayTracingPipelineState->GetGlobalRootSignature());
 
             const PipelineState* globalPipelineState = static_cast<const PipelineState*>(dispatchRaysItem.m_globalPipelineState);
-            const PipelineLayout& globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            if (!globalPipelineState)
+            {
+                AZ_Assert(false, "Global Pipeline state not provided");
+                return;
+            }
+
+            const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            if (!globalPipelineLayout)
+            {
+                AZ_Assert(false, "Pipeline layout is null.");
+                return;
+            }
 
             // bind ShaderResourceGroups
             for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
@@ -355,22 +368,24 @@ namespace AZ
                 const uint32_t srgBindingSlot = dispatchRaysItem.m_shaderResourceGroups[srgIndex]->GetBindingSlot();
 
                 // retrieve binding
-                const size_t srgBindingIndex = globalPipelineLayout.GetIndexBySlot(srgBindingSlot);
-                RootParameterBinding binding = globalPipelineLayout.GetRootParameterBindingByIndex(srgBindingIndex);
+                const size_t srgBindingIndex = globalPipelineLayout->GetIndexBySlot(srgBindingSlot);
+                RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(srgBindingIndex);
                 const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
                 const ShaderResourceGroupCompiledData& compiledData = srg->GetCompiledData();
 
-                if (binding.m_resourceTable.IsValid())
+                if (binding.m_resourceTable.IsValid()
+                    && compiledData.m_gpuViewsDescriptorHandle.ptr)
                 {
                     GetCommandList()->SetComputeRootDescriptorTable(binding.m_resourceTable.GetIndex(), compiledData.m_gpuViewsDescriptorHandle);
                 }
 
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
-                    if (binding.m_unboundedArrayResourceTables[unboundedArrayIndex].IsValid())
+                    if (binding.m_bindlessTable.IsValid() 
+                        && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
-                            binding.m_unboundedArrayResourceTables[unboundedArrayIndex].GetIndex(),
+                            binding.m_bindlessTable.GetIndex(),
                             compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex]);
                     }
                 }
@@ -378,6 +393,18 @@ namespace AZ
                 if (binding.m_constantBuffer.IsValid())
                 {
                     GetCommandList()->SetComputeRootConstantBufferView(binding.m_constantBuffer.GetIndex(), compiledData.m_gpuConstantAddress);
+                }
+            }
+
+            // set the bindless descriptor table if required by the shader
+            for (uint32_t bindingIndex = 0; bindingIndex < globalPipelineLayout->GetRootParameterBindingCount(); ++bindingIndex)
+            {
+                RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(bindingIndex);
+                if (binding.m_bindlessTable.IsValid())
+                {
+                    GetCommandList()->SetComputeRootDescriptorTable(
+                        binding.m_bindlessTable.GetIndex(), m_descriptorContext->GetBindlessGpuPlatformHandle());
+                    break;
                 }
             }
 
@@ -392,9 +419,13 @@ namespace AZ
             desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
             desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
             
-            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress();
+            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable ? shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress() : 0;
             desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
             desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
+
+            desc.CallableShaderTable.StartAddress = shaderTableBuffers.m_callableTable ? shaderTableBuffers.m_callableTable->GetMemoryView().GetGpuAddress() : 0;
+            desc.CallableShaderTable.SizeInBytes = shaderTableBuffers.m_callableTableSize;
+            desc.CallableShaderTable.StrideInBytes = shaderTableBuffers.m_callableTableStride;
             
             desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
             desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
@@ -437,6 +468,7 @@ namespace AZ
 
             CommitScissorState();
             CommitViewportState();
+            CommitShadingRateState();
 
             switch (drawItem.m_arguments.m_type)
             {
@@ -528,6 +560,18 @@ namespace AZ
 #endif
         }
 
+        void CommandList::SetFragmentShadingRate(
+            RHI::ShadingRate rate, const RHI::ShadingRateCombinators& combinators)
+        {
+            if (!RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw))
+            {
+                AZ_Assert(false, "Per Draw shading rate is not supported on this platform");
+                return;
+            }
+
+            m_state.m_shadingRateState.Set(rate, combinators);
+        }
+
         void CommandList::BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas)
         {
 #ifdef AZ_DX12_DXR_SUPPORT
@@ -611,6 +655,35 @@ namespace AZ
             m_state.m_scissorState.m_isDirty = false;
         }
 
+        void CommandList::CommitShadingRateState()
+        {
+            if (!m_state.m_shadingRateState.m_isDirty)
+            {
+                return;
+            }
+
+#ifdef O3DE_DX12_VRS_SUPPORT
+            AZ_Assert(
+                RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerDraw),
+                "PerDraw shading rate is not supported on this platform");
+
+            AZStd::array<D3D12_SHADING_RATE_COMBINER, RHI::ShadingRateCombinators::array_size> d3d12Combinators;
+            for (int i = 0; i < m_state.m_shadingRateState.m_shadingRateCombinators.size(); ++i)
+            {
+                d3d12Combinators[i] = ConvertShadingRateCombiner(m_state.m_shadingRateState.m_shadingRateCombinators[i]);
+            }
+
+            auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
+            AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
+            if (commandList5)
+            {
+                commandList5->RSSetShadingRate(
+                    ConvertShadingRateEnum(m_state.m_shadingRateState.m_shadingRate), d3d12Combinators.data());
+            }
+#endif
+            m_state.m_shadingRateState.m_isDirty = false;
+        }
+
         void CommandList::ExecuteIndirect(const RHI::IndirectArguments& arguments)
         {
             const IndirectBufferSignature* signature = static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
@@ -685,7 +758,8 @@ namespace AZ
             uint32_t renderTargetCount,
             const ImageView* const* renderTargets,
             const ImageView* depthStencilAttachment,
-            RHI::ScopeAttachmentAccess depthStencilAccess)
+            RHI::ScopeAttachmentAccess depthStencilAccess,
+            const ImageView* shadingRateAttachment)
         {
             D3D12_CPU_DESCRIPTOR_HANDLE colorDescriptors[RHI::Limits::Pipeline::AttachmentColorCountMax];
             for (uint32_t i = 0; i < renderTargetCount; ++i)
@@ -697,6 +771,7 @@ namespace AZ
 
             if (depthStencilAttachment)
             {
+                SetSamplePositions(depthStencilAttachment->GetImage().GetDescriptor().m_multisampleState);
                 AZ_Assert(depthStencilAttachment->IsStale() == false, "Depth Stencil view is stale!");
                 DescriptorHandle depthStencilDescriptor = depthStencilAttachment->GetDepthStencilDescriptor(depthStencilAccess);
                 D3D12_CPU_DESCRIPTOR_HANDLE depthStencilPlatformDescriptor = m_descriptorContext->GetCpuPlatformHandle(depthStencilDescriptor);
@@ -704,8 +779,36 @@ namespace AZ
             }
             else
             {
+                SetSamplePositions(renderTargets[0]->GetImage().GetDescriptor().m_multisampleState);
                 GetCommandList()->OMSetRenderTargets(renderTargetCount, colorDescriptors, false, nullptr);
             }
+
+#ifdef O3DE_DX12_VRS_SUPPORT
+            if (m_state.m_shadingRateImage != shadingRateAttachment &&
+                RHI::CheckBitsAll(GetDevice().GetFeatures().m_shadingRateTypeMask, RHI::ShadingRateTypeFlags::PerRegion))
+            {
+                auto commandList5 = DX12ResourceCast<ID3D12GraphicsCommandList5>(GetCommandList());
+                AZ_Assert(commandList5, "Failed to cast command list to ID3D12GraphicsCommandList5");
+                if (commandList5)
+                {
+                    if (shadingRateAttachment)
+                    {
+                        commandList5->RSSetShadingRateImage(shadingRateAttachment->GetMemory());
+                        SetFragmentShadingRate(
+                            RHI::ShadingRate::Rate1x1,
+                            RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Passthrough, RHI::ShadingRateCombinerOp::Override });
+                    }
+                    else
+                    {
+                        commandList5->RSSetShadingRateImage(nullptr);
+                        SetFragmentShadingRate(
+                            RHI::ShadingRate::Rate1x1,
+                            RHI::ShadingRateCombinators{ RHI::ShadingRateCombinerOp::Override, RHI::ShadingRateCombinerOp::Passthrough });
+                    }
+                    m_state.m_shadingRateImage = shadingRateAttachment;
+                }
+            }
+#endif
         }
 
         void CommandList::QueueTileMapRequest(const TileMapRequest& request)
@@ -737,6 +840,8 @@ namespace AZ
             }
             else if (request.m_clearValue.m_type == RHI::ClearValueType::DepthStencil)
             {
+                // Need to set the custom MSAA positions (if being used) before clearing it.
+                SetSamplePositions(request.m_imageView->GetImage().GetDescriptor().m_multisampleState);
                 D3D12_CPU_DESCRIPTOR_HANDLE descriptorHandle =
                     m_descriptorContext->GetCpuPlatformHandle(request.m_imageView->GetDepthStencilDescriptor(RHI::ScopeAttachmentAccess::ReadWrite));
 

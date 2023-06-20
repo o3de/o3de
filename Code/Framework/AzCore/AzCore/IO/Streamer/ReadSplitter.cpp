@@ -395,7 +395,7 @@ namespace AZ::IO
         if (m_bufferSize != 0 && m_buffer == nullptr)
         {
             m_buffer = reinterpret_cast<u8*>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
-                m_bufferSize, m_memoryAlignment, 0, "AZ::IO::Streamer ReadSplitter", __FILE__, __LINE__));
+                m_bufferSize, m_memoryAlignment));
         }
     }
 

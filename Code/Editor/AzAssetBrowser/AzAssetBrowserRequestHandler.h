@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzQtComponents/Buses/DragAndDrop.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
 
 namespace AZ
@@ -31,6 +32,9 @@ namespace AzToolsFramework
         class PreviewerFactory;
         class ProductAssetBrowserEntry;
         class SourceAssetBrowserEntry;
+        class AssetBrowserTreeView;
+        class AssetBrowserTableView;
+        class AssetBrowserThumbnailView;
     }
 }
 
@@ -56,13 +60,23 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // AssetBrowserInteractionNotificationBus
     //////////////////////////////////////////////////////////////////////////
-    void AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
+    void AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
     void AddSourceFileOpeners(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers) override;
     void AddSourceFileCreators(const char* fullSourceFileName, const AZ::Uuid& sourceUUID, AzToolsFramework::AssetBrowser::SourceFileCreatorList& openers) override;
     void OpenAssetInAssociatedEditor(const AZ::Data::AssetId& assetId, bool& alreadyHandled) override;
 
     static bool OpenWithOS(const AZStd::string& fullEntryPath);
     void AddCreateMenu(QMenu* menu, const AZStd::string fullFolderPath);
+    void CreateSortAction(
+        QMenu* menu,
+        AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+        QString name,
+        AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode);
+    void AddSortMenu(QMenu* menu,
+        AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView
+        );
 
 protected:
 

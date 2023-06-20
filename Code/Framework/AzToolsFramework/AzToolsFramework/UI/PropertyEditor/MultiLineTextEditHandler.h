@@ -37,7 +37,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MultiLineTextEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiLineTextEditHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* parent) override;
         AZ::u32 GetHandlerName() const override;

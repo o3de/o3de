@@ -12,15 +12,14 @@
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/RTTI/RTTI.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 
 #include <QIcon>
 
-inline AZ::Crc32 EditorPropertyVisibility(const bool enabled)
+namespace AZ
 {
-    return enabled ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+    class SerializeContext;
 }
 
 class CEditorPreferencesPage_ViewportCamera : public IPreferencesPage
@@ -47,8 +46,11 @@ private:
     {
         AZ_TYPE_INFO(CameraMovementSettings, "{60B8C07E-5F48-4171-A50B-F45558B5CCA1}")
 
+        static void Reflect(AZ::SerializeContext& serialize);
+
         AZ::Vector3 m_defaultPosition;
         AZ::Vector2 m_defaultPitchYaw;
+        float m_speedScale;
         float m_translateSpeed;
         float m_rotateSpeed;
         float m_scrollSpeed;
@@ -58,27 +60,42 @@ private:
         float m_rotateSmoothness;
         float m_translateSmoothness;
         float m_defaultOrbitDistance;
+        float m_goToPositionDuration;
         bool m_captureCursorLook;
         bool m_orbitYawRotationInverted;
         bool m_panInvertedX;
         bool m_panInvertedY;
         bool m_rotateSmoothing;
         bool m_translateSmoothing;
+        bool m_goToPositionInstantly;
 
-        AZ::Crc32 RotateSmoothingVisibility() const
+        bool GoToPositionDurationReadOnly() const
         {
-            return EditorPropertyVisibility(m_rotateSmoothing);
+            return m_goToPositionInstantly;
         }
 
-        AZ::Crc32 TranslateSmoothingVisibility() const
+        bool RotateSmoothingReadOnly() const
         {
-            return EditorPropertyVisibility(m_translateSmoothing);
+            return !m_rotateSmoothing;
         }
+
+        bool TranslateSmoothingReadOnly() const
+        {
+            return !m_translateSmoothing;
+        }
+
+        void Reset();
+        void Initialize();
+
+    private:
+        bool m_resetButton = false; // required for positioning in edit context, otherwise unused
     };
 
     struct CameraInputSettings
     {
         AZ_TYPE_INFO(struct CameraInputSettings, "{A250FAD4-662E-4896-B030-D4ED03679377}")
+
+        static void Reflect(AZ::SerializeContext& serialize);
 
         AZStd::string m_translateForwardChannelId;
         AZStd::string m_translateBackwardChannelId;
@@ -94,6 +111,12 @@ private:
         AZStd::string m_orbitDollyChannelId;
         AZStd::string m_orbitPanChannelId;
         AZStd::string m_focusChannelId;
+
+        void Reset();
+        void Initialize();
+
+    private:
+        bool m_resetButton = false; // required for positioning in edit context, otherwise unused
     };
 
     CameraMovementSettings m_cameraMovementSettings;

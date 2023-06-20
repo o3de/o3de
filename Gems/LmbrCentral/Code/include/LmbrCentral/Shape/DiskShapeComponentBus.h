@@ -29,7 +29,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(DiskShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DiskShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(DiskShapeConfig, "{24EC2919-F198-4871-8404-F6DE8A16275E}", ShapeComponentConfig);
         
         static void Reflect(AZ::ReflectContext* context);

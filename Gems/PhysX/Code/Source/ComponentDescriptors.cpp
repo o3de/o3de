@@ -7,25 +7,26 @@
  */
 
 #include <ComponentDescriptors.h>
-#include <Source/SystemComponent.h>
-#include <Source/RigidBodyComponent.h>
+#include <Source/ArticulationLinkComponent.h>
+#include <Source/BallJointComponent.h>
 #include <Source/BaseColliderComponent.h>
-#include <Source/MeshColliderComponent.h>
 #include <Source/BoxColliderComponent.h>
-#include <Source/HeightfieldColliderComponent.h>
-#include <Source/SphereColliderComponent.h>
 #include <Source/CapsuleColliderComponent.h>
-#include <Source/ShapeColliderComponent.h>
+#include <Source/FixedJointComponent.h>
 #include <Source/ForceRegionComponent.h>
-#include <Source/StaticRigidBodyComponent.h>
+#include <Source/HeightfieldColliderComponent.h>
+#include <Source/HingeJointComponent.h>
+#include <Source/JointComponent.h>
+#include <Source/MeshColliderComponent.h>
 #include <Source/PhysXCharacters/Components/CharacterControllerComponent.h>
 #include <Source/PhysXCharacters/Components/CharacterGameplayComponent.h>
 #include <Source/PhysXCharacters/Components/RagdollComponent.h>
-#include <Source/JointComponent.h>
-#include <Source/BallJointComponent.h>
-#include <Source/FixedJointComponent.h>
-#include <Source/HingeJointComponent.h>
 #include <Source/PrismaticJointComponent.h>
+#include <Source/RigidBodyComponent.h>
+#include <Source/ShapeColliderComponent.h>
+#include <Source/SphereColliderComponent.h>
+#include <Source/StaticRigidBodyComponent.h>
+#include <Source/SystemComponent.h>
 
 namespace PhysX
 {
@@ -51,7 +52,8 @@ namespace PhysX
             BallJointComponent::CreateDescriptor(),
             FixedJointComponent::CreateDescriptor(),
             HingeJointComponent::CreateDescriptor(),
-            PrismaticJointComponent::CreateDescriptor()
+            PrismaticJointComponent::CreateDescriptor(),
+            ArticulationLinkComponent::CreateDescriptor()
         };
 
         return descriptors;

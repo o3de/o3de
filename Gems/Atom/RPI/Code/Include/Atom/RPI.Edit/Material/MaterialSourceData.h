@@ -34,12 +34,6 @@ namespace AZ
         class MaterialAsset;
         class MaterialAssetCreator;
 
-        enum class MaterialAssetProcessingMode
-        {
-            PreBake,      //!< all material asset processing is done in the Asset Processor, producing a finalized material asset
-            DeferredBake  //!< some material asset processing is deferred, and the material asset is finalized at runtime after loading
-        };
-
         //! This is a simple data structure for serializing in/out material source files.
         class MaterialSourceData final
         {
@@ -72,7 +66,7 @@ namespace AZ
             
             //! If the data was loaded from an old format file (i.e. where "properties" was a tree with property values nested under groups),
             //! this converts to the new format where properties are stored in a flat list.
-            void ConvertToNewDataFormat();
+            void UpgradeLegacyFormat();
 
             // Note that even though we use an unordered map, the JSON serialization system is nice enough to sort the data when saving to JSON.
             using PropertyValueMap = AZStd::unordered_map<Name, MaterialPropertyValue>;
@@ -91,8 +85,7 @@ namespace AZ
             //! @param elevateWarnings Indicates whether to treat warnings as errors
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAsset(
                 Data::AssetId assetId,
-                AZStd::string_view materialSourceFilePath,
-                MaterialAssetProcessingMode processingMode,
+                const AZStd::string& materialSourceFilePath,
                 bool elevateWarnings = true) const;
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
@@ -106,9 +99,6 @@ namespace AZ
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
                 AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
-
-            //! Inspects the content of the MaterialPropertyValue to see if it is a string that appears to be an image file path.
-            static bool LooksLikeImageFileReference(const MaterialPropertyValue& value);
 
         private:
 

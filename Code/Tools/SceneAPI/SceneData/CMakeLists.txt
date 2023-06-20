@@ -45,10 +45,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzFramework
+                AZ::AzToolsFramework
                 AZ::SceneCore
                 AZ::SceneData
     )
     ly_add_googletest(
         NAME AZ::SceneData.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

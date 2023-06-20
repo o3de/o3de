@@ -13,9 +13,15 @@
 
 namespace AZ::ComponentApplicationLifecycle
 {
-    //! Root Key where lifecycle events should be registered under
+    //! Root Key used to determine where lifecycle events are registered underneath
     inline constexpr AZStd::string_view ApplicationLifecycleEventRegistrationKey = "/O3DE/Application/LifecycleEvents";
 
+    //! Root Key to use for signaling lifecycle events
+    //! This key section is runtime only and will not be merged into the aggregated setreg file
+    //! produced by the SettingsRegistryBuilder
+    //! It is used to separately from the registration key section, to avoid the scenario
+    //! where registering a lifecycle event would result in signaling the event.
+    inline constexpr AZStd::string_view ApplicationLifecycleEventSignalKey = "/O3DE/Runtime/Application/LifecycleEvents";
 
     //! Validates that the event @eventName is stored in the array at ApplicationLifecycleEventRegistrationKey
     //! @param settingsRegistry registry where @eventName will be searched

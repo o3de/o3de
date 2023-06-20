@@ -9,6 +9,7 @@
 #include <AzTest/AzTest.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -217,13 +218,15 @@ namespace AzToolsFramework
 
 
     class EditorLayerComponentTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
     {
     protected:
         void SetUp() override
         {
-            m_app.Start(m_descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(m_descriptor, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -580,6 +583,8 @@ namespace AzToolsFramework
         m_layerEntity.m_layer->ClearUnsavedChanges();
 
         AZ::Entity* childEntity = CreateEditorReadyEntity("ChildEntity");
+        // An undo batch needs to begin before the entity can be registered as dirty
+        AzToolsFramework::ScopedUndoBatch undoBatch("Reparent Entity");
         AZ::TransformBus::Event(
             childEntity->GetId(),
             &AZ::TransformBus::Events::SetParent,
@@ -604,6 +609,8 @@ namespace AzToolsFramework
         m_layerEntity.m_layer->ClearUnsavedChanges();
 
         // Change the scale of the child entity so it registers as an unsaved change on the layer.
+        // An undo batch needs to begin before the entity can be registered as dirty
+        AzToolsFramework::ScopedUndoBatch undoBatch("Scale Entity");
         float scale = 0.0f;
         AZ::TransformBus::EventResult(
             scale,

@@ -16,7 +16,7 @@ namespace GraphCanvas
     class CommentActionsMenuGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(CommentActionsMenuGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentActionsMenuGroup, AZ::SystemAllocator);
         
         CommentActionsMenuGroup();
         ~CommentActionsMenuGroup();

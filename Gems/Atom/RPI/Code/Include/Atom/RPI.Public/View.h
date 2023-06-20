@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/VisibleObjectContext.h>
 
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -46,7 +47,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(View, "{C3FFC8DE-83C4-4E29-8216-D55BE0ACE3E4}");
-            AZ_CLASS_ALLOCATOR(View, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(View, AZ::SystemAllocator);
 
             enum UsageFlags : uint32_t         //bitwise operators are defined for this (see below)
             {
@@ -74,10 +75,34 @@ namespace AZ
             void AddDrawPacket(const RHI::DrawPacket* drawPacket, float depth = 0.0f);
 
             //! Similar to previous AddDrawPacket() but calculates depth from packet position
-            void AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition);
+            void AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition);
+            
+            //! Similar to AddDrawPacket, but the view will not submit any draw items for rendering. It will just
+            //! maintain a list of visible objects for the current frame, and the caller must get that list, reinterpret the
+            //! userData, and submit the draw calls.
+            void AddVisibleObject(const void* userData, float depth = 0.0f);
+
+            //! Similar to previous AddVisibleObject() but calculates depth from object position
+            void AddVisibleObject(const void* userData, const Vector3& worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
             void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
+
+            //! Applies some flags to the view that are reset each frame. The provided flags are combined with m_andFlags
+            //! using &, and are combined with m_orFlags using |.
+            void ApplyFlags(uint32_t flags);
+
+            //! Clears and resets the flag positions marked with flag. This means the 'and' flag is set to 1 and the 'or' flag is set to 0.
+            void ClearFlags(uint32_t flags);
+
+            //! Clears and resets all the flags. This effectively sets the and flags back to 0xFFFFFFFF and the or flags to 0x00000000;
+            void ClearAllFlags();
+
+            //! Returns the boolean & combination of all flags provided with ApplyFlags() since the last frame.
+            uint32_t GetAndFlags();
+
+            //! Returns the boolean | combination of all flags provided with ApplyFlags() since the last frame.
+            uint32_t GetOrFlags();
 
             //! Sets the worldToView matrix and recalculates the other matrices.
             void SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView);
@@ -88,6 +113,10 @@ namespace AZ
             //! Sets the viewToClip matrix and recalculates the other matrices
             void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip);
 
+            //! Sets the viewToClip exclusion matrix. This is used by culling to exclude items completely contained inside
+            //! the exclusion frustum. Pass in nullptr to unset.
+            void SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude);
+            
             //! Sets the viewToClip matrix and recalculates the other matrices for stereoscopic projection
             void SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth = true);
 
@@ -99,6 +128,7 @@ namespace AZ
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
+            const AZ::Matrix4x4* GetWorldToClipExcludeMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
@@ -106,6 +136,10 @@ namespace AZ
 
             //! Get the camera's world transform, converted from the viewToWorld matrix's native y-up to z-up
             AZ::Transform GetCameraTransform() const;
+
+            //! Finalize visible object lists in this view. This function should only be called when all
+            //! visible objects for current frame are added, but before FinalizeDrawLists is called. 
+            void FinalizeVisibleObjectList();
 
             //! Finalize draw lists in this view. This function should only be called when all
             //! draw packets for current frame are added. 
@@ -115,6 +149,7 @@ namespace AZ
             bool HasDrawListTag(RHI::DrawListTag drawListTag);
 
             RHI::DrawListView GetDrawList(RHI::DrawListTag drawListTag);
+            VisibleObjectListView GetVisibleObjectList();
 
             //! Helper function to generate a sort key from a given position in world
             RHI::DrawItemSortKey GetSortKeyForPosition(const Vector3& positionInWorld) const;
@@ -145,6 +180,10 @@ namespace AZ
             //! This is called by RenderPipeline when this view is added to the pipeline.
             void OnAddToRenderPipeline();
 
+            //! Accessors for shadow pass render pipeline id.
+            void SetShadowPassRenderPipelineId(const RenderPipelineId renderPipelineId);
+            RenderPipelineId GetShadowPassRenderPipelineId() const;
+            
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
@@ -158,6 +197,9 @@ namespace AZ
 
             //! Attempt to create a shader resource group.
             void TryCreateShaderResourceGroup();
+
+            //! Update ViewToWorld matrix as well as the view transform
+            void UpdateViewToWorldMatrix(const AZ::Matrix4x4& viewToWorld);
 
             AZ::Name m_name;
             UsageFlags m_usageFlags;
@@ -184,11 +226,18 @@ namespace AZ
             RHI::DrawListContext m_drawListContext;
             RHI::DrawListMask m_drawListMask;
 
+            RPI::VisibleObjectContext m_visibleObjectContext;
+
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
+            AZStd::optional<Matrix4x4> m_viewToClipExcludeMatrix;
             Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
+            AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
+
+            // Cached View transform from ViewToWorld matrix 
+            AZ::Transform m_viewTransform;
 
             // View's position in world space
             Vector3 m_position;
@@ -213,6 +262,12 @@ namespace AZ
 
             // Masked Occlusion Culling interface
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
+
+            AZStd::atomic_uint32_t m_andFlags{ 0xFFFFFFFF };
+            AZStd::atomic_uint32_t m_orFlags { 0x00000000 };
+
+            // Get the render pipeline id associated with this view if used as a shadow light view.
+            RenderPipelineId m_shadowPassRenderpipelineId;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(View::UsageFlags);

@@ -12,12 +12,18 @@ set(FILES
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
+    Source/EditorArticulationLinkComponent.cpp
+    Source/EditorArticulationLinkComponent.h
     Source/EditorComponentDescriptors.cpp
     Source/EditorComponentDescriptors.h
     Source/EditorRigidBodyComponent.cpp
     Source/EditorRigidBodyComponent.h
+    Source/EditorStaticRigidBodyComponent.cpp
+    Source/EditorStaticRigidBodyComponent.h
     Source/EditorColliderComponent.cpp
     Source/EditorColliderComponent.h
+    Source/EditorMeshColliderComponent.cpp
+    Source/EditorMeshColliderComponent.h
     Source/EditorShapeColliderComponent.cpp
     Source/EditorShapeColliderComponent.h
     Source/EditorForceRegionComponent.cpp
@@ -44,6 +50,8 @@ set(FILES
     Source/Pipeline/MeshGroup.h
     Source/Pipeline/MeshBehavior.cpp
     Source/Pipeline/MeshBehavior.h
+    Source/Pipeline/PhysicsPrefabProcessor.cpp
+    Source/Pipeline/PhysicsPrefabProcessor.h
     Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.cpp
     Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.h
     Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.cpp
@@ -73,16 +81,12 @@ set(FILES
     Editor/CollisionFilteringWidget.cpp
     Editor/PropertyTypes.h
     Editor/PropertyTypes.cpp
-    Editor/EditorClassConverters.cpp
-    Editor/EditorClassConverters.h
     Editor/PvdWidget.h
     Editor/PvdWidget.cpp
     Editor/DocumentationLinkWidget.h
     Editor/DocumentationLinkWidget.cpp
     Editor/InertiaPropertyHandler.h
     Editor/InertiaPropertyHandler.cpp
-    Editor/ComboBoxEditButtonPair.h
-    Editor/ComboBoxEditButtonPair.cpp
     Editor/ColliderComponentMode.h
     Editor/ColliderComponentMode.cpp
     Editor/ColliderOffsetMode.h
@@ -95,6 +99,8 @@ set(FILES
     Editor/ColliderSphereMode.cpp
     Editor/ColliderCapsuleMode.h
     Editor/ColliderCapsuleMode.cpp
+    Editor/ColliderCylinderMode.h
+    Editor/ColliderCylinderMode.cpp
     Editor/ColliderAssetScaleMode.h
     Editor/ColliderAssetScaleMode.cpp
     Editor/DebugDraw.cpp
@@ -106,11 +112,17 @@ set(FILES
     Editor/EditorJointConfiguration.h
     Editor/EditorViewportEntityPicker.cpp
     Editor/EditorViewportEntityPicker.h
-
+    Editor/KinematicDescriptionDialog.h
+    Editor/KinematicDescriptionDialog.cpp
+    Editor/KinematicDescriptionDialog.ui
     Editor/Source/Components/EditorSystemComponent.h
     Editor/Source/Components/EditorSystemComponent.cpp
+    Editor/Source/Components/Conversion/CollidersPrefabConversion.cpp
+    Editor/Source/Components/Conversion/PrefabConversionUtils.h
+    Editor/Source/Components/Conversion/PrefabConversionUtils.cpp
     Editor/Source/ComponentModes/Joints/JointsComponentMode.h
     Editor/Source/ComponentModes/Joints/JointsComponentMode.cpp
+    Editor/Source/ComponentModes/Joints/JointsComponentModeBus.h
     Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.h
     Editor/Source/ComponentModes/Joints/JointsComponentModeCommon.cpp
     Editor/Source/ComponentModes/PhysXSubComponentModeBase.h
@@ -136,11 +148,4 @@ set(FILES
     Editor/Source/Material/PhysXEditorMaterialAsset.h
     Editor/Source/Material/PhysXEditorMaterialAssetBuilder.cpp
     Editor/Source/Material/PhysXEditorMaterialAssetBuilder.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialLibraryConversion.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialAssetsConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialPrefabConversion.h
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.cpp
-    Editor/Source/Material/Conversion/LegacyPhysicsMaterialFbxManifestConversion.h
 )

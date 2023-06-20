@@ -52,7 +52,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(AttachmentImage, "{85691099-5143-4C11-88B0-897DA9064FDF}", Image);
-            AZ_CLASS_ALLOCATOR(AttachmentImage, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentImage, AZ::SystemAllocator);
 
             ~AttachmentImage();
 

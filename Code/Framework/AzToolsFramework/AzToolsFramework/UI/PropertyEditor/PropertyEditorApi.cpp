@@ -209,32 +209,33 @@ namespace AzToolsFramework
                 {
                     return componentWrapper->GetDisplayName();
                 }
-                else
-                {
-                    return "<empty component>";
-                }
+
+                return "<empty component>";
             }
         }
 
-        // Otherwise use friendly reflection name.
-        AZStd::string displayName;
-        if (node.GetElementEditMetadata())
+        // Otherwise, search for a valid display name override in the node edit, class, and element metadata.
+        if (const auto metadata = node.GetElementEditMetadata(); metadata && metadata->m_name)
         {
-            displayName = node.GetElementEditMetadata()->m_name;
+            return metadata->m_name;
         }
-        else if (node.GetClassMetadata()->m_editData)
+
+        if (const auto metadata = node.GetClassMetadata(); metadata && metadata->m_editData && metadata->m_editData->m_name)
         {
-            displayName = node.GetClassMetadata()->m_editData->m_name;
+            return metadata->m_editData->m_name;
         }
-        else if (node.GetElementMetadata() && node.GetElementMetadata()->m_nameCrc != AZ_CRC("element", 0x41405e39))
+
+        if (const auto metadata = node.GetElementMetadata(); metadata && metadata->m_name && metadata->m_nameCrc != AZ_CRC_CE("element"))
         {
-            displayName = node.GetElementMetadata()->m_name;
+            return metadata->m_name;
         }
-        else
+
+        if (const auto metadata = node.GetClassMetadata(); metadata && metadata->m_name)
         {
-            displayName = node.GetClassMetadata()->m_name;
+            return metadata->m_name;
         }
-        return displayName;
+
+        return AZStd::string{};
     }
 
     bool ReadVisibilityAttribute(void* instance, AZ::Edit::Attribute* attr, AZ::Crc32& visibility)

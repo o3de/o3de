@@ -80,6 +80,7 @@ void CTrackViewFindDlg::FillList()
 {
     QString filter = ui->FILTER->text();
     ui->LIST->clear();
+    m_objsSourceIndex.clear();
 
     for (int i = 0; i < m_objs.size(); i++)
     {
@@ -99,6 +100,7 @@ void CTrackViewFindDlg::FillList()
                 text += pObj.m_seqName;
             }
             ui->LIST->addItem(text);
+            m_objsSourceIndex.push_back(i);
         }
     }
     ui->LIST->setCurrentRow(0);
@@ -132,7 +134,8 @@ void CTrackViewFindDlg::ProcessSel()
 
     if (index >= 0 && m_tvDlg)
     {
-        ObjName object = m_objs[index];
+        int sourceIndex = m_objsSourceIndex[index];
+        ObjName object = m_objs[sourceIndex];
 
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         CTrackViewSequence* pSequence = pSequenceManager->GetSequenceByName(object.m_seqName);
@@ -152,9 +155,31 @@ void CTrackViewFindDlg::ProcessSel()
             CTrackViewAnimNodeBundle foundNodes = pParentDirector->GetAnimNodesByName(object.m_objName.toUtf8().data());
 
             const uint numNodes = foundNodes.GetCount();
-            for (uint i = 0; i < numNodes; ++i)
+            uint selectedNodeIndex = 0;
+            if (numNodes > 1)
             {
-                foundNodes.GetNode(i)->SetSelected(true);
+                for (int i = 0; i < sourceIndex; ++i)
+                {
+                    if (pParentDirector != pSequence && object.m_directorName != m_objs[i].m_directorName)
+                    {
+                        continue;
+                    }
+                    if (m_objs[i].m_objName == object.m_objName)
+                    {
+                        selectedNodeIndex++;
+                    }
+                }
+            }
+
+            if (selectedNodeIndex < numNodes)
+            {
+                CTrackViewAnimNodeBundle animNodes = pSequence->GetAllAnimNodes();
+                for (uint i = 0, numAnimNodes = animNodes.GetCount(); i < numAnimNodes; ++i)
+                {
+                    animNodes.GetNode(i)->SetSelected(false);
+                }
+
+                foundNodes.GetNode(selectedNodeIndex)->SetSelected(true);
             }
         }
     }

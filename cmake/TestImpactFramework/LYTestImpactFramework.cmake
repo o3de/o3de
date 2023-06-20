@@ -6,8 +6,9 @@
 #
 #
 
-# Path to test instrumentation binary
-set(LY_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
+if(NOT PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    return()
+endif()
 
 # Name of test impact framework console static library target
 set(LY_TEST_IMPACT_CONSOLE_NATIVE_STATIC_TARGET "TestImpact.Frontend.Console.Native.Static")
@@ -68,15 +69,6 @@ set(LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR "${GTEST_XML_OUTPUT_DIR}")
 
 # Path to the directory that the result of python runs will be stored in.
 set(LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR "${PYTEST_XML_OUTPUT_DIR}")
-
-# If we are not provided a path to the Instrumentation bin,
-# set LY_TEST_IMPACT to false so that our tests don't get added
-# and TIAF doesn't get built.
-if(LY_TEST_IMPACT_INSTRUMENTATION_BIN)
-    set(LY_TEST_IMPACT_ACTIVE true)
-else()
-    set(LY_TEST_IMPACT_ACTIVE false)
-endif()
 
 #! ly_test_impact_rebase_file_to_repo_root: rebases the relative and/or absolute path to be relative to repo root directory and places the resulting path in quotes.
 #
@@ -193,16 +185,18 @@ function(ly_test_impact_extract_google_test_params COMPOSITE_TEST COMPOSITE_SUIT
 
     set(test_suites "")
     foreach(composite_suite ${COMPOSITE_SUITES})
-        # Command, suite, timeout
+        # Command, suite, timeout, labels
         string(REPLACE "#" ";" suite_components ${composite_suite})
         list(LENGTH suite_components num_suite_components)
-        if(num_suite_components LESS 3)
-            message(FATAL_ERROR "The suite components ${composite_suite} are required to be in the following format: command#suite#string.")
+        if(num_suite_components LESS 4)
+            message(FATAL_ERROR "Test ${test_components} suite components ${composite_suite} are required to be in the following format: command#suite#timeout#labels.")
         endif()
         list(GET suite_components 0 test_command)
         list(GET suite_components 1 test_suite)
         list(GET suite_components 2 test_timeout)
-        set(suite_params "{ \"suite\": \"${test_suite}\",  \"command\": \"${test_command}\", \"timeout\": ${test_timeout} }")
+        list(GET suite_components 3 test_labels)
+        string(REPLACE "," "\",\"" test_labels "${test_labels}")
+        set(suite_params "{ \"suite\": \"${test_suite}\",  \"command\": \"${test_command}\", \"timeout\": ${test_timeout}, \"labels\": [\"${test_labels}\"] }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
     string(REPLACE ";" ", " test_suites "${test_suites}")
@@ -239,22 +233,24 @@ function(ly_test_impact_extract_python_test_params COMPOSITE_TEST COMPOSITE_SUIT
     
     set(test_suites "")
     foreach(composite_suite ${COMPOSITE_SUITES})
-        # Script path, suite, timeout
+        # Script path, suite, timeout, labels
         string(REPLACE "#" ";" suite_components ${composite_suite})
         list(LENGTH suite_components num_suite_components)
-        if(num_suite_components LESS 3)
-            message(FATAL_ERROR "The suite components ${composite_suite} are required to be in the following format: script_path#suite#string.")
+        if(num_suite_components LESS 4)
+            message(FATAL_ERROR "Test ${test_components} suite components ${composite_suite} are required to be in the following format: script_path#suite#timeout#labels.")
         endif()
         list(GET suite_components 0 script_path)
         list(GET suite_components 1 test_suite)
         list(GET suite_components 2 test_timeout)
+        list(GET suite_components 3 test_labels)
         # Get python script path relative to repo root
         ly_test_impact_rebase_file_to_repo_root(
             "${script_path}"
             script_path
             "${LY_ROOT_FOLDER}"
         )
-        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout}, \"command\": \"${test_command}\" }")
+        string(REPLACE "," "\",\"" test_labels "${test_labels}")
+        set(suite_params "{ \"suite\": \"${test_suite}\",  \"script\": \"${script_path}\", \"timeout\": ${test_timeout}, \"command\": \"${test_command}\", \"labels\": [\"${test_labels}\"] }")
         list(APPEND test_suites "${suite_params}")
     endforeach()
     string(REPLACE ";" ", " test_suites "${test_suites}")
@@ -278,12 +274,13 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
         message(TRACE "Parsing ${test}")
         get_property(test_params GLOBAL PROPERTY LY_ALL_TESTS_${test}_PARAMS)
         get_property(test_type GLOBAL PROPERTY LY_ALL_TESTS_${test}_TEST_LIBRARY)
+
         if("${test_type}" STREQUAL "pytest")
             # Python tests
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             list(APPEND python_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "pytest_editor")
-            # Python editor tests            
+            # Python editor tests
             ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             list(APPEND python_editor_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"suites\": [${test_suites}] }")
         elseif("${test_type}" STREQUAL "googletest")
@@ -296,9 +293,8 @@ function(ly_test_impact_write_test_enumeration_file TEST_ENUMERATION_TEMPLATE_FI
             ly_test_impact_extract_google_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             list(APPEND google_benchmarks "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test_name}\", \"launch_method\": \"${launch_method}\", \"suites\": [${test_suites}] }")
         else()
-            ly_test_impact_extract_python_test_params(${test} "${test_params}" test_namespace test_name test_suites)
             message("${test_name} is of unknown type (TEST_LIBRARY property is \"${test_type}\")")
-            list(APPEND unknown_tests "        { \"namespace\": \"${test_namespace}\", \"name\": \"${test}\", \"type\": \"${test_type}\" }")
+            list(APPEND unknown_tests "        { \"name\": \"${test}\" }")
         endif()
     endforeach()
 
@@ -334,9 +330,9 @@ function(ly_test_impact_write_gem_target_enumeration_file GEM_TARGET_TEMPLATE_FI
         endif()
     endforeach()
     string (REPLACE ";" ",\n" enumerated_gem_targets "${enumerated_gem_targets}")
-     # Write out source to target mapping file
-     set(mapping_path "${LY_TEST_IMPACT_GEM_TARGET_FILE}")
-     configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
+    # Write out source to target mapping file
+    set(mapping_path "${LY_TEST_IMPACT_GEM_TARGET_FILE}")
+    configure_file(${GEM_TARGET_TEMPLATE_FILE} ${mapping_path})
 endfunction()
 
 #! ly_extract_aliased_target_dependencies: recursively extracts the aliases of a target to retrieve the true de-aliased target.
@@ -513,18 +509,29 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     set(build_config "$<CONFIG>")
 
     # Instrumentation binary
-    if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)
-        # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled
-        message("No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
-        set(use_tiaf false)
+    if(NOT O3DE_TEST_IMPACT_INSTRUMENTATION_BIN)
+        # No binary specified is not an error, it just means that the test impact analysis part of the framework is disabled for native tests
+        message(DEBUG "No test impact framework instrumentation binary was specified, test impact analysis framework will fall back to regular test sequences instead")
+        set(native_use_test_impact_analysis false)
         set(instrumentation_bin "")
     else()
-        set(use_tiaf true)
-        file(TO_CMAKE_PATH ${LY_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
+        set(native_use_test_impact_analysis true)
+        file(TO_CMAKE_PATH ${O3DE_TEST_IMPACT_INSTRUMENTATION_BIN} instrumentation_bin)
     endif()
 
-    # Testrunner binary
-    set(native_test_runner_bin $<TARGET_FILE:AzTestRunner>)
+    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+        set(native_test_targets_enabled true)
+        # Testrunner binary
+        set(native_test_runner_bin $<TARGET_FILE:AzTestRunner>)
+    else()
+        set(native_test_targets_enabled false)
+    endif()
+
+    if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+        set(python_test_targets_enabled true)
+    else()
+        set(python_test_targets_enabled false)
+    endif()
 
     # Python command
     set(python_cmd "${LY_ROOT_FOLDER}/python/python.cmd")
@@ -566,10 +573,14 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
     set(target_dependency_dir "${LY_TEST_IMPACT_TARGET_DEPENDENCY_DIR}")
 
     # Test impact analysis framework native runtime binary
-    set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+    if(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED)
+        set(native_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_NATIVE_CONSOLE_TARGET}>")
+    endif()
 
     # Test impact analysis framework python runtime binary
-    set(python_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET}>")
+    if(O3DE_TEST_IMPACT_PYTHON_TEST_TARGETS_ENABLED)
+        set(python_runtime_bin "$<TARGET_FILE:${LY_TEST_IMPACT_PYTHON_CONSOLE_TARGET}>")
+    endif()
     
     # Substitute config file template with above vars
     ly_file_read("${CONFIG_TEMPLATE_FILE}" config_file)
@@ -595,16 +606,17 @@ function(ly_test_impact_write_pytest_file CONFIGURATION_FILE)
         set(config_path "${LY_TEST_IMPACT_WORKING_DIR}/${config_type}/${LY_TEST_IMPACT_PERSISTENT_DIR}/${LY_TEST_IMPACT_CONFIG_FILE_NAME}")
         list(APPEND build_configs "\"${config_type}\" : { \"config\" : \"${config_path}\"}")
     endforeach()
- 
+
     # Configure our list of entries
     string(REPLACE ";" ",\n" build_configs "${build_configs}")
-    
+
     # Configure and write out our test data file
     ly_file_read("${CONFIGURATION_FILE}" test_file)
     string(CONFIGURE ${test_file} test_file)
     file(GENERATE
         OUTPUT "${LY_TEST_IMPACT_PYTEST_FILE_PATH}/ly_test_impact_test_data.json"
-        CONTENT "${test_file}")
+        CONTENT "${test_file}"
+    )
 
 endfunction()
 
@@ -614,9 +626,7 @@ function(ly_test_impact_clean_directories)
 
     # Clean the output folders of native and python tests to ensure only the most current run is in there.
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR})
-    message("${LY_TEST_IMPACT_NATIVE_TEST_RUN_DIR}")
     file(REMOVE_RECURSE ${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR})
-    message("${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}")
 
     # For each build configuration type, delete the persistent and temp folders
     foreach(config_type ${LY_CONFIGURATION_TYPES})
@@ -630,7 +640,8 @@ endfunction()
 
 #! ly_test_impact_post_step: runs the post steps to be executed after all other cmake scripts have been executed.
 function(ly_test_impact_post_step)
-    if(NOT LY_TEST_IMPACT_ACTIVE)
+    # TIAF not supported for monolithic games
+    if(LY_MONOLITHIC_GAME)
         return()
     endif()
 

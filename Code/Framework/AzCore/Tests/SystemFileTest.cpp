@@ -18,7 +18,7 @@ namespace UnitTest
      * systemFile test
      */
     class SystemFileTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
@@ -135,7 +135,6 @@ namespace UnitTest
 
     TEST_F(SystemFileTest, Open_BadFileNames_DoesNotCrash)
     {
-
         AZStd::string randomJunkName;
 
         randomJunkName.resize(128, '\0');
@@ -250,6 +249,97 @@ namespace UnitTest
 
         AZ::IO::SystemFile::Delete(srcFile.c_str());
         AZ::IO::SystemFile::Delete(redirectFile.c_str());
+    }
+
+    TEST_F(SystemFileTest, FileDescriptorCapturer_DoesNotDeadlock_WhenMoreThanPipeSizeContent_IsCaptured)
+    {
+        AZStd::string stdoutData;
+        auto StoreStdout = [&stdoutData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            stdoutData += capturedStrView;
+        };
+
+        // The +1 to make sure the value isn't a power of 2, to try to catch any edge cases
+        // with reading from a buffered pipe
+        constexpr size_t charCountToWrite = AZ::IO::FileDescriptorCapturer::DefaultPipeSize * 2 + 1;
+        stdoutData.reserve(charCountToWrite);
+
+        // file descriptor 1 is stdout
+        constexpr int StdoutDescriptor = 1;
+        AZ::IO::FileDescriptorCapturer capturer(StdoutDescriptor);
+        capturer.Start(StoreStdout);
+        // Capture twice the DefaultPipeSize amount of bytes
+        for (size_t i = 0; i < charCountToWrite; ++i)
+        {
+            fputc('a', stdout);
+        }
+        fflush(stdout);
+        capturer.Stop();
+
+        const AZStd::string expectedValue(charCountToWrite, 'a');
+        EXPECT_EQ(expectedValue, stdoutData);
+    }
+
+    TEST_F(SystemFileTest, GetStdout_ReturnsHandle_ThatCanWriteToStdout_Succeeds)
+    {
+        AZStd::string stdoutData;
+        auto StoreStdout = [&stdoutData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            stdoutData += capturedStrView;
+        };
+
+        constexpr AZStd::string_view testData{ "Micro Macro Tera Zetta\n"};
+
+        // Capture stdout using descriptor of 1
+        constexpr int StdoutDescriptor = 1;
+        AZ::IO::FileDescriptorCapturer capturer(StdoutDescriptor);
+        capturer.Start(StoreStdout);
+        {
+            AZ::IO::SystemFile stdoutHandle = AZ::IO::SystemFile::GetStdout();
+            stdoutHandle.Write(testData.data(), testData.size());
+        }
+        fflush(stdout);
+        capturer.Stop();
+
+        EXPECT_EQ(testData, stdoutData);
+    }
+
+    TEST_F(SystemFileTest, GetStderr_ReturnsHandle_ThatCanWriteToStderr_Succeeds)
+    {
+        AZStd::string stderrData;
+        auto StoreStderr = [&stderrData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            stderrData += capturedStrView;
+        };
+
+        constexpr AZStd::string_view testData{ "Micro Macro Tera Zetta\n"};
+
+        // Capture stderr using descriptor of 2
+        constexpr int StderrDescriptor = 2;
+        AZ::IO::FileDescriptorCapturer capturer(StderrDescriptor);
+        capturer.Start(StoreStderr);
+        {
+            AZ::IO::SystemFile stderrHandle = AZ::IO::SystemFile::GetStderr();
+            stderrHandle.Write(testData.data(), testData.size());
+        }
+        fflush(stderr);
+        capturer.Stop();
+
+        EXPECT_EQ(testData, stderrData);
+    }
+
+    TEST_F(SystemFileTest, GetStdin_ReturnsHandle_ThatIsOpen_Succeeds)
+    {
+        char buffer[1];
+        AZ::IO::SystemFile stdinHandle = AZ::IO::SystemFile::GetStdin();
+        ASSERT_TRUE(stdinHandle.IsOpen());
+        // Read 0 bytes to validate that the stdin handle is open
+        // as well to avoid needing stdin to have data within it
+        // This call should block.
+        EXPECT_EQ(0, stdinHandle.Read(static_cast<AZ::IO::SizeType>(0), buffer));
     }
 
 }   // namespace UnitTest

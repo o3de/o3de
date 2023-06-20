@@ -29,20 +29,34 @@ namespace AZ
             /// be added here because it cannot be loaded using the usual module loading process, as that would result
             /// in attempting to create the gem's environment a second time.
             /// @param dynamicModulePaths Dynamic module paths to be added to the existing collection.
-            void AddDynamicModulePaths(const AZStd::vector<AZStd::string>& dynamicModulePaths);
+            void AddDynamicModulePaths(AZStd::span<AZStd::string_view const> dynamicModulePaths);
+            void AddDynamicModulePaths(AZStd::initializer_list<AZStd::string_view const> dynamicModulePaths);
 
             /// Adds to the collection of component descriptors which should be registered during the environment setup.
             /// Generally this will be the same as the descriptors which are registered in the gem's Module function,
             /// or a subset of those if only certain components are required during testing.
             /// @param componentDescriptors Component descriptors to be added to the existing collection.
-            void AddComponentDescriptors(const AZStd::vector<AZ::ComponentDescriptor*>& componentDescriptors);
+            void AddComponentDescriptors(AZStd::span<AZ::ComponentDescriptor* const> componentDescriptors);
+            void AddComponentDescriptors(AZStd::initializer_list<AZ::ComponentDescriptor* const> componentDescriptors);
 
             /// Adds to the sorted list of components which should be activated during the environment setup.
             /// Any required components, for example the gem's system component, should be added here.  Dependency
             /// sorting is not performed, so it is up to the caller to ensure that all dependencies are met and the
             /// components are provided in a valid activation order.
             /// @param requiredComponents Components to be appended to the existing collection of required components.
-            void AddRequiredComponents(const AZStd::vector<AZ::TypeId>& requiredComponents);
+            void AddRequiredComponents(AZStd::span<AZ::TypeId const> requiredComponents);
+            void AddRequiredComponents(AZStd::initializer_list<AZ::TypeId const> requiredComponents);
+
+            /// Adds Gem Names which should be active in the test environment
+            /// Any gem names added to this environment will be looked up through the O3DE manifest registration system
+            /// to locate their gem root path.
+            /// The gem root path is the directory containing the gem.json file.
+            /// Each gem name is mapped as a key in the registered Settings Registry and FileIO global instances
+            /// to the gem root path location on disk
+            /// @param gemNames Set of Gem Names to treat as active via adding keys each gem name
+            /// underneath the `AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey` key
+            /// and adding a FileIO alias of @gemroot:<gem-name>@
+            void AddActiveGems(AZStd::span<AZStd::string_view const> gemNames);
 
             /// Allows derived environments to set up which gems, components etc the environment should load.
             virtual void AddGemsAndComponents() {}
@@ -65,14 +79,12 @@ namespace AZ
             /// Allows derived environments to create a desired instance of the application (for example ToolsApplication).
             virtual AZ::ComponentApplication* CreateApplicationInstance();
         protected:
-            class Parameters
+            struct Parameters
             {
-            public:
-                ~Parameters();
-
                 AZStd::vector<AZ::ComponentDescriptor*> m_componentDescriptors;
                 AZStd::vector<AZStd::string> m_dynamicModulePaths;
                 AZStd::vector<AZ::TypeId> m_requiredComponents;
+                AZStd::vector<AZStd::string> m_activeGems;
             };
 
             class GemTestEntity :

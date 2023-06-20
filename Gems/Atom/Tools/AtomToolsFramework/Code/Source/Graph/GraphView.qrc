@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/GraphView">
+        <file>GraphView.qss</file>
+    </qresource>
+</RCC>

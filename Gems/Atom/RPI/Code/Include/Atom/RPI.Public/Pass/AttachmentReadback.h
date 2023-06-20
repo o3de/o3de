@@ -30,7 +30,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AttachmentReadback, "{9C70ACD3-8694-4EF3-A556-9DA25BD1237C}");
-            AZ_CLASS_ALLOCATOR(AttachmentReadback, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentReadback, SystemAllocator);
 
             enum class ReadbackState : uint32_t
             {

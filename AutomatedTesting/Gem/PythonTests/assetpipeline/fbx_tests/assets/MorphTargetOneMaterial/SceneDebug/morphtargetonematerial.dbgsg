@@ -10,8 +10,8 @@ Node Type: RootBoneData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
 
-Node Name: animationMball.001*0
-Node Path: RootNode.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 16594569657313590262
 	TimeStepBetweenFrames: 0.041667
@@ -46,8 +46,8 @@ Node Path: RootNode.Mball_001.SkinWeight_
 Node Type: SkinWeightData
 	VertexLinks: Count 696. Hash: 10428453650987264418
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Mball_001.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Mball_001.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 16444376794354522612
 	TimeStepBetweenFrames: 0.041667
@@ -78,9 +78,9 @@ Node Type: BlendShapeData
 Node Name: custom_properties
 Node Path: RootNode.Mball_001.custom_properties
 Node Type: CustomPropertyData
-	UserProperties: 
 	IsNull: false
 	DefaultAttributeIndex: 0
+	UserProperties: 
 	InheritType: 1
 
 Node Name: UVMap
@@ -105,7 +105,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -132,8 +132,8 @@ Node Type: MeshVertexBitangentData
 	Bitangents: Count 696. Hash: 5593568244043778543
 	GenerationMethod: 1
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Armature.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Armature.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 16444376794354522612
 	TimeStepBetweenFrames: 0.041667
@@ -163,6 +163,14 @@ Node Type: BoneData
 		BasisY: <-0.000000,  0.000016,  100.000000>
 		BasisZ: <-0.000009,  100.000000, -0.000016>
 		Transl: < 0.000000,  0.000000,  0.000000>
+
+Node Name: custom_properties
+Node Path: RootNode.Mball_001_MorphTargetOneMaterial_optimized.custom_properties
+Node Type: CustomPropertyData
+	IsNull: false
+	DefaultAttributeIndex: 0
+	UserProperties: 
+	InheritType: 1
 
 Node Name: UVMap
 Node Path: RootNode.Mball_001_MorphTargetOneMaterial_optimized.UVMap
@@ -202,8 +210,8 @@ Node Type: BlendShapeData
 	Normals: Count 1044. Hash: 4838429295025120454
 	Faces: Count 348. Hash: 10303589656939351813
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Mball_001_MorphTargetOneMaterial_optimized.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Mball_001_MorphTargetOneMaterial_optimized.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 16444376794354522612
 	TimeStepBetweenFrames: 0.041667
@@ -216,14 +224,6 @@ Node Type: TransformData
 		BasisY: < 0.000009, -100.000000,  0.000000>
 		BasisZ: < 0.000000,  0.000000,  100.000000>
 		Transl: < 0.000000,  0.000000,  0.000000>
-
-Node Name: custom_properties
-Node Path: RootNode.Mball_001_MorphTargetOneMaterial_optimized.custom_properties
-Node Type: CustomPropertyData
-	UserProperties: 
-	IsNull: false
-	DefaultAttributeIndex: 0
-	InheritType: 1
 
 Node Name: Material_001
 Node Path: RootNode.Mball_001_MorphTargetOneMaterial_optimized.Material_001
@@ -241,7 +241,7 @@ Node Type: MaterialData
 	UseMetallicMap: Not set
 	MetallicFactor: Not set
 	UseRoughnessMap: Not set
-	RoughnessFactor: Not set
+	RoughnessFactor: 0.500000
 	UseEmissiveMap: Not set
 	EmissiveIntensity: Not set
 	UseAOMap: Not set
@@ -255,8 +255,8 @@ Node Type: MaterialData
 	EmissiveTexture: 
 	BaseColorTexture: 
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Armature.Bone.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Armature.Bone.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 12571026262766850303
 	TimeStepBetweenFrames: 0.041667
@@ -287,8 +287,8 @@ Node Type: BoneData
 		BasisZ: <-0.000009,  100.000000, -0.000016>
 		Transl: <-0.000000,  0.000000,  1.000000>
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Armature.Bone.Bone_001.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Armature.Bone.Bone_001.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 11054744277397627493
 	TimeStepBetweenFrames: 0.041667
@@ -319,8 +319,8 @@ Node Type: BoneData
 		BasisZ: <-0.000009,  100.000000, -0.000016>
 		Transl: <-0.000000,  0.000000,  2.000000>
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Armature.Bone.Bone_001.Bone_002.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Armature.Bone.Bone_001.Bone_002.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 11054744277397627493
 	TimeStepBetweenFrames: 0.041667
@@ -351,8 +351,8 @@ Node Type: BoneData
 		BasisZ: <-0.000009,  100.000000, -0.000016>
 		Transl: <-0.000000,  0.000000,  3.050803>
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Armature.Bone.Bone_001.Bone_002.Bone_003.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Armature.Bone.Bone_001.Bone_002.Bone_003.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 5380291732685406748
 	TimeStepBetweenFrames: 0.041667
@@ -383,8 +383,8 @@ Node Type: TransformData
 		BasisZ: < 0.000000,  0.000000,  1.000000>
 		Transl: < 0.000000,  0.009451,  0.000000>
 
-Node Name: animationMball.001*0
-Node Path: RootNode.Armature.Bone.Bone_001.Bone_002.Bone_003.Bone_003_end.animationMball.001*0
+Node Name: animationMball_001*0
+Node Path: RootNode.Armature.Bone.Bone_001.Bone_002.Bone_003.Bone_003_end.animationMball_001*0
 Node Type: AnimationData
 	KeyFrames: Count 31. Hash: 14966422776310279327
 	TimeStepBetweenFrames: 0.041667

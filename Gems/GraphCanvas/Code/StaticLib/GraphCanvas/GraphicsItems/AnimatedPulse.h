@@ -24,7 +24,7 @@ namespace GraphCanvas
     class AnimatedPulseControlPoint
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimatedPulseControlPoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimatedPulseControlPoint, AZ::SystemAllocator);
         
         AnimatedPulseControlPoint(const QPointF& startPoint, const QPointF& endPoint);
         ~AnimatedPulseControlPoint() = default;
@@ -40,7 +40,7 @@ namespace GraphCanvas
     class AnimatedPulseConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimatedPulseControlPoint, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimatedPulseControlPoint, AZ::SystemAllocator);
         
         AnimatedPulseConfiguration();
         ~AnimatedPulseConfiguration() = default;
@@ -59,7 +59,7 @@ namespace GraphCanvas
         , public PulseRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimatedPulse, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimatedPulse, AZ::SystemAllocator);
 
         AnimatedPulse(const AnimatedPulseConfiguration& pulseConfiguration);
         ~AnimatedPulse() override;

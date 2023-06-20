@@ -17,5 +17,12 @@
                 }
             }
         }
+    },
+    "O3DE": {
+        "Preferences": {
+            "Prefabs": {
+                "EnableOutlinerOverrideManagement": true
+            }
+        }
     }
 }

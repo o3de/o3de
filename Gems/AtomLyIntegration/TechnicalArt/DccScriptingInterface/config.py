@@ -11,7 +11,7 @@
 
 :file: < DCCsi >/config.py
 :Status: Prototype
-:Version: 0.0.1, first significant refactor
+:Version: 0.0.2, first significant refactor
 
 This module handles core configuration of the dccsi
 -   It initializes and generates a dynamic, and synthetic, environment context,
@@ -90,6 +90,11 @@ from DccScriptingInterface.globals import *
 import DccScriptingInterface.azpy.test.entry_test
 import DccScriptingInterface.azpy.config_utils
 
+# set this manually if you want to raise exceptions/warnings while debugging
+DCCSI_STRICT = False
+# allow package to capture warnings
+#_logging.captureWarnings(capture=True)
+
 if DCCSI_DEV_MODE:
     # if dev mode, this will attempt to auto-attach the debugger
     # at the earliest possible point in this module
@@ -103,6 +108,14 @@ except ImportError as e:
     _LOGGER.warning(f'Most likely the application loading this module does not have DCCsi pkg dependancies installed. Use foundation.py to install pkgs for ')
     _LOGGER.exception(f'{e} , traceback =', exc_info=True)
     raise e
+
+# dynaconf boilerplate
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+
+settings.setenv() # ensure default file based settings are in the env
 #-------------------------------------------------------------------------
 
 
@@ -290,7 +303,7 @@ def init_o3de_pyside2(dccsi_sys_path=_DCCSI_SYS_PATH):
     if not PATH_O3DE_BIN.exists():
         raise Exception(f'_PATH_O3DE_BIN does NOT exist: {PATH_O3DE_BIN}')
     else:
-        pass
+        os.add_dll_directory(f'{PATH_O3DE_BIN}')
 
     # # allows to retrieve from settings.QTFORPYTHON_PATH
     # from DccScriptingInterface.azpy.constants import STR_QTFORPYTHON_PATH  # a path string constructor
@@ -497,15 +510,23 @@ def init_o3de_core(engine_path=O3DE_DEV,
     _DCCSI_LOCAL_SETTINGS['O3DE_PROJECT'] = str(project_name)
 
     # -- O3DE build -- set up \bin\path (for Qt dll access)
-
-    _PATH_O3DE_BIN = Path(engine_bin_path)
-    os.environ["DYNACONF_PATH_O3DE_BIN"] = PATH_O3DE_BIN.as_posix()
-
-    # hard check
-    if not _PATH_O3DE_BIN.exists():
-        raise Exception(f'PATH_O3DE_BIN does NOT exist: {_PATH_O3DE_BIN}')
+    if engine_bin_path:
+        _PATH_O3DE_BIN = Path(engine_bin_path)
+        if _PATH_O3DE_BIN.exists():
+            os.environ["DYNACONF_PATH_O3DE_BIN"] = PATH_O3DE_BIN.as_posix()
     else:
+        _LOGGER.warning(f'The engine binary folder not set/found, '
+                        f'method input var: engine_bin_path, '
+                        f'the ENVAR is PATH_O3DE_BIN')
+        _PATH_O3DE_BIN = Path('< not set >')
+
+    # hard check (but more forgiving now)
+    if _PATH_O3DE_BIN.exists():
         dccsi_sys_path.append(_PATH_O3DE_BIN)
+    else:
+        _LOGGER.warning(f'PATH_O3DE_BIN does NOT exist: {str(_PATH_O3DE_BIN)}')
+        if DCCSI_STRICT:
+            raise NotADirectoryError
     # --
 
     from DccScriptingInterface.azpy.constants import TAG_DIR_DCCSI_TOOLS

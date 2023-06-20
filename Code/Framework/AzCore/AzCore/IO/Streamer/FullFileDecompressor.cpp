@@ -332,7 +332,7 @@ namespace AZ::IO
                 "is needed or the number of read slots can be reduced."));
             statistics.push_back(Statistic::CreateByteSize(
                 m_name, "Buffer memory", m_memoryUsage, 
-                "The total amount of memory in megabytes used by the decompressor. This is depended on the compressed file sizes and may "
+                "The total amount of memory in megabytes used by the decompressor. This is dependent on the compressed file sizes and may "
                 "improve by reducing the file sizes of the largest files in the archive."));
 
             double averageJobStartDelay = m_decompressionJobDelayMicroSec.CalculateAverage() * usToMs;
@@ -534,7 +534,7 @@ namespace AZ::IO
                 size_t offsetAdjustment = info.m_offset - AZ_SIZE_ALIGN_DOWN(info.m_offset, aznumeric_cast<size_t>(m_alignment));
                 size_t bufferSize = AZ_SIZE_ALIGN_UP((info.m_compressedSize + offsetAdjustment), aznumeric_cast<size_t>(m_alignment));
                 m_readBuffers[i] = reinterpret_cast<Buffer>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
-                    bufferSize, m_alignment, 0, "AZ::IO::Streamer FullFileDecompressor", __FILE__, __LINE__));
+                    bufferSize, m_alignment));
                 m_memoryUsage += bufferSize;
 
                 FileRequest* archiveReadRequest = m_context->GetNewInternalRequest();
@@ -558,7 +558,7 @@ namespace AZ::IO
                 return;
             }
         }
-        AZ_Assert(false, "%u of %u read slots are use in the FullFileDecompressor, but no empty slot was found.", m_numInFlightReads, m_maxNumReads);
+        AZ_Assert(false, "%u of %u read slots are used in the FullFileDecompressor, but no empty slot was found.", m_numInFlightReads, m_maxNumReads);
     }
 
     void FullFileDecompressor::FinishArchiveRead(FileRequest* readRequest, u32 readSlot)

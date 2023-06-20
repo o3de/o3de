@@ -32,7 +32,7 @@ namespace Vegetation
         : public AreaConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(BlockerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BlockerConfig, AZ::SystemAllocator);
         AZ_RTTI(BlockerConfig, "{01F6E6C5-707E-42EC-91BB-F674B9F51A40}", AreaConfig);
         static void Reflect(AZ::ReflectContext* context);
 

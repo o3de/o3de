@@ -710,8 +710,8 @@ namespace
                         pBuf = drawBatch.text.data() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
                         assert(*pBuf == '\n');
                         pChar = Utf8::Unchecked::octet_iterator(pBuf); // pChar once again points inside the target string, at the current character
-                        assert(*pChar == ch);
                         ++pChar;
+                        assert(*pChar == ch);
                         ++curChar;
                         ++batchCurChar;
 
@@ -939,7 +939,7 @@ namespace
     float GetMax2dTransformScale(AZ::EntityId entityId)
     {
         AZ::Matrix4x4 elementTransform = AZ::Matrix4x4::CreateIdentity();
-        EBUS_EVENT_ID(entityId, UiTransformBus, GetTransformToCanvasSpace, elementTransform);
+        UiTransformBus::Event(entityId, &UiTransformBus::Events::GetTransformToCanvasSpace, elementTransform);
         const AZ::Vector3 elementScale = elementTransform.RetrieveScale();
         return AZ::GetMax<float>(elementScale.GetX(), elementScale.GetY());
     }
@@ -2052,7 +2052,7 @@ void UiTextComponent::SetFont(const LyShine::PathnameType& fontPath)
     // the input string could be in any form but must be a game path - not a full path.
     // Make it normalized
     AZStd::string newPath = fontPath;
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, newPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, newPath);
 
     if (m_fontFilename.GetAssetPath() != newPath)
     {
@@ -2196,7 +2196,7 @@ int UiTextComponent::GetCharIndexFromPoint(AZ::Vector2 point, bool mustBeInBound
     // get the input point into untransformed canvas space
     AZ::Vector3 point3(point.GetX(), point.GetY(), 0.0f);
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformFromViewport, transform);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformFromViewport, transform);
     point3 = transform * point3;
     AZ::Vector2 pointInCanvasSpace(point3.GetX(), point3.GetY());
 
@@ -2398,10 +2398,10 @@ AZ::Vector2 UiTextComponent::GetTextSize()
     // width of the element. Sync it up by checking and handling a change in canvas space size.
     // The notification handler will prepare the text again
     bool canvasSpaceSizeChanged = false;
-    EBUS_EVENT_ID_RESULT(canvasSpaceSizeChanged, GetEntityId(), UiTransformBus, HasCanvasSpaceSizeChanged);
+    UiTransformBus::EventResult(canvasSpaceSizeChanged, GetEntityId(), &UiTransformBus::Events::HasCanvasSpaceSizeChanged);
     if (canvasSpaceSizeChanged)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, NotifyAndResetCanvasSpaceRectChange);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::NotifyAndResetCanvasSpaceRectChange);
     }
 
     return GetTextSizeFromDrawBatchLines(GetDrawBatchLines());
@@ -2495,7 +2495,7 @@ void UiTextComponent::GetTextBoundingBoxPrivate(const DrawBatchLines& drawBatchL
         if (ShouldClip())
         {
             UiTransformInterface::RectPoints elemRect;
-            EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, elemRect);
+            UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, elemRect);
             AZ::Vector2 elemSize = elemRect.GetAxisAlignedSize();
             const float displayedTextWidth = GetTextSize().GetX();
 
@@ -2523,7 +2523,7 @@ void UiTextComponent::GetTextBoundingBoxPrivate(const DrawBatchLines& drawBatchL
         }
 
         // now we have the rect in untransformed canvas space, so transform it to viewport space
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, rect);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, rect);
 
         // if the start and end indices are the same we want to draw a cursor
         if (startIndex == endIndex)
@@ -2531,7 +2531,7 @@ void UiTextComponent::GetTextBoundingBoxPrivate(const DrawBatchLines& drawBatchL
             // we want to make the rect one pixel wide in transformed space.
             // Get the transform to viewport for the text entity
             AZ::Matrix4x4 transformToViewport;
-            EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transformToViewport);
+            UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transformToViewport);
 
             // take a sample vector along X-axis and transform it then normalize it
             AZ::Vector3 offset(100.0f, 0.0f, 0.0f);
@@ -2659,7 +2659,7 @@ void UiTextComponent::SetMinimumShrinkScale(float minShrinkScale)
 void UiTextComponent::GetClickableTextRects(UiClickableTextInterface::ClickableTextRects& clickableTextRects)
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
     AZ::Vector2 pos = CalculateAlignedPositionWithYOffset(points);
 
     const DrawBatchLines& drawBatchLines = GetDrawBatchLines();
@@ -2808,14 +2808,14 @@ void UiTextComponent::OnCanvasSpaceRectChanged([[maybe_unused]] AZ::EntityId ent
         {
             // Invalidate the element's layout since element width affects text height (ex. text element has a layout fitter that is set to fit height)
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-            EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+            UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
         }
     }
 
     // If size did not change, then the position must have changed for this method to be called, so notify listeners that
     // the clickable text rects have changed and invalidate the render cache.
-    EBUS_EVENT_ID(GetEntityId(), UiClickableTextNotificationsBus, OnClickableTextChanged);
+    UiClickableTextNotificationsBus::Event(GetEntityId(), &UiClickableTextNotificationsBus::Events::OnClickableTextChanged);
     MarkRenderCacheDirty();
 }
 
@@ -2902,7 +2902,7 @@ float UiTextComponent::GetTargetHeight(float maxHeight)
         // Check if the element's size has changed, but we haven't received a callback about it yet to mark
         // draw batches dirty (typically done by the Layout Manager after ApplyLayoutWidth and before ApplyLayoutHeight)
         bool canvasSpaceSizeChanged = false;
-        EBUS_EVENT_ID_RESULT(canvasSpaceSizeChanged, GetEntityId(), UiTransformBus, HasCanvasSpaceSizeChanged);
+        UiTransformBus::EventResult(canvasSpaceSizeChanged, GetEntityId(), &UiTransformBus::Events::HasCanvasSpaceSizeChanged);
         calculateBatchLines = canvasSpaceSizeChanged;
     }
 
@@ -3342,7 +3342,7 @@ void UiTextComponent::GetTextRect(UiTransformInterface::RectPoints& rect, const 
 {
     // get the "no scale rotate" element box
     UiTransformInterface::RectPoints elemRect;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, elemRect);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, elemRect);
 
     // given the text alignment work out the box of the actual text
     rect = elemRect;
@@ -3444,7 +3444,7 @@ AZ::u32 UiTextComponent::OnFontPathnameChange()
     // we should be guaranteed that the asset path in the simple asset ref is root relative and
     // normalized. But just to be safe we make sure is normalized
     AZStd::string fontPath = m_fontFilename.GetAssetPath();
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, fontPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, fontPath);
     m_fontFilename.SetAssetPath(fontPath.c_str());
 
     // if the font we have loaded has a different pathname to the one we want then change
@@ -3547,7 +3547,7 @@ float UiTextComponent::CalculateHorizontalClipOffset()
     if (ShouldClip() && m_wrapTextSetting != WrapTextSetting::Wrap && cursorIsValid)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
         int requestFontSize = GetRequestFontSize();
         const DrawBatchLines& drawBatchLines = GetDrawBatchLines();
@@ -3753,7 +3753,7 @@ const UiTextComponent::DrawBatchLines& UiTextComponent::GetDrawBatchLines()
         // m_drawBatchLines has changed so render cache is invalid
         MarkRenderCacheDirty();
 
-        EBUS_EVENT_ID(GetEntityId(), UiClickableTextNotificationsBus, OnClickableTextChanged);
+        UiClickableTextNotificationsBus::Event(GetEntityId(), &UiClickableTextNotificationsBus::Events::OnClickableTextChanged);
     }
 
     return m_drawBatchLines;
@@ -3778,7 +3778,7 @@ void UiTextComponent::CalculateDrawBatchLines(
             // we start building our string content! Otherwise drawbatches etc. will end
             // up in a potentially undefined state.
             UiTransformInterface::RectPoints points;
-            EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+            UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
             availableWidth = points.GetAxisAlignedSize().GetX();
         }
         else
@@ -3934,7 +3934,7 @@ void UiTextComponent::RenderToCache(float alpha)
     if (!UiCanvasPixelAlignmentNotificationBus::Handler::BusIsConnected())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         UiCanvasPixelAlignmentNotificationBus::Handler::BusConnect(canvasEntityId);
     }
 
@@ -3985,7 +3985,7 @@ void UiTextComponent::RenderToCache(float alpha)
     fontContext.SetFlags(flags);
 
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transform);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
 
     float transFloats[16];
     transform.StoreToRowMajorFloat16(transFloats);
@@ -3997,7 +3997,7 @@ void UiTextComponent::RenderToCache(float alpha)
     // Get the rect that positions the text prior to scale and rotate. The scale and rotate transform
     // will be applied inside the font draw.
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     if (ShouldClip())
     {
@@ -4092,6 +4092,12 @@ void UiTextComponent::RenderDrawBatchLines(
                         cacheBatch->m_position.GetX(), cacheBatch->m_position.GetY(), 1.0f, cacheBatch->m_text.c_str(), true, fontContext);
 
                     AZ_Assert(numQuadsWritten <= numQuads, "value returned from WriteTextQuadsToBuffers is larger than size allocated");
+
+                    if (numQuadsWritten == 0)
+                    {
+                        delete cacheBatch;
+                        continue;
+                    }
 
                     int numVertices = numQuadsWritten * 4;
                     FontVertexToUiVertex(vertices.data(), cacheBatch->m_cachedPrimitive.m_vertices, numVertices);
@@ -4249,8 +4255,8 @@ STextDrawContext UiTextComponent::GetTextDrawContextPrototype(int requestFontSiz
                                                                // used.
 
     AZ::EntityId canvasId;
-    EBUS_EVENT_ID_RESULT(canvasId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID_RESULT(ctx.m_pixelAligned, canvasId, UiCanvasBus, GetIsTextPixelAligned);
+    UiElementBus::EventResult(canvasId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasBus::EventResult(ctx.m_pixelAligned, canvasId, &UiCanvasBus::Events::GetIsTextPixelAligned);
 
     return ctx;
 }
@@ -4298,7 +4304,7 @@ void UiTextComponent::HandleShrinkToFit(UiTextComponent::DrawBatchLines& drawBat
 
     AZ::Vector2 textSize = GetTextSizeFromDrawBatchLines(drawBatchLinesOut);
     AZ::Vector2 currentElementSize;   //  This needs to be computed with the unscaled size. This is because scaling happens after the text is laid out.
-    EBUS_EVENT_ID_RESULT(currentElementSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(currentElementSize, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
     if (availableHeight >= 0.0f)
     {
         currentElementSize.SetY(availableHeight);
@@ -4596,7 +4602,7 @@ void UiTextComponent::HandleEllipsis(UiTextComponent::DrawBatchLines& drawBatchL
 
     AZ::Vector2 textSize = GetTextSizeFromDrawBatchLines(drawBatchLinesOut);
     AZ::Vector2 currentElementSize;   //  This needs to be computed with the unscaled size. This is because scaling happens after the text is laid out.
-    EBUS_EVENT_ID_RESULT(currentElementSize, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+    UiTransformBus::EventResult(currentElementSize, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
     if (availableHeight >= 0.0f)
     {
         currentElementSize.SetY(availableHeight);
@@ -5146,11 +5152,12 @@ void UiTextComponent::InvalidateLayout() const
 {
     // Invalidate the parent's layout
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiLayoutManagerBus::Event(
+        canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
 
     // Invalidate the element's layout
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
+    UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5173,8 +5180,8 @@ void UiTextComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -7,7 +7,12 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInternalInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 #include <Mesh/EditorMeshComponent.h>
@@ -15,13 +20,6 @@
 
 namespace UnitTest
 {
-    static AzFramework::EntityContextId FindOwningContextId(const AZ::EntityId entityId)
-    {
-        AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-        AzFramework::EntityIdContextQueryBus::EventResult(contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-        return contextId;
-    }
-
     class IntersectionNotificationDetector : public AzFramework::RenderGeometry::IntersectionNotificationBus::Handler
     {
     public:
@@ -59,7 +57,7 @@ namespace UnitTest
         m_lastEntityIdChanged = entityId;
     }
 
-    class MeshComponentControllerFixture : public ToolsApplicationFixture
+    class MeshComponentControllerFixture : public ToolsApplicationFixture<false>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -71,17 +69,18 @@ namespace UnitTest
                 AZStd::unique_ptr<AZ::ComponentDescriptor>(AZ::Render::EditorMeshComponent::CreateDescriptor());
             m_editorMeshComponentDescriptor->Reflect(GetApplication()->GetSerializeContext());
 
-            m_entityId1 = CreateDefaultEditorEntity("Entity1");
-            m_entityIds.push_back(m_entityId1);
+            m_entity = AZStd::make_unique<AZ::Entity>();
+            m_entity->Init();
+            m_entity->CreateComponent<AzToolsFramework::Components::TransformComponent>();
+            m_entity->Activate();
 
-            m_intersectionNotificationDetector.Connect(FindOwningContextId(m_entityId1));
+            AzFramework::EntityContextId contextId(AZStd::string_view{"123456"});
+            m_intersectionNotificationDetector.Connect(contextId);
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            bool entityDestroyed = false;
-            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                entityDestroyed, &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entityId1);
+            m_entity.reset();
 
             m_intersectionNotificationDetector.Disconnect();
 
@@ -89,8 +88,7 @@ namespace UnitTest
             m_editorMeshComponentDescriptor.reset();
         }
 
-        AZ::EntityId m_entityId1;
-        AzToolsFramework::EntityIdList m_entityIds;
+        AZStd::unique_ptr<AZ::Entity> m_entity;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_meshComponentDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorMeshComponentDescriptor;
         IntersectionNotificationDetector m_intersectionNotificationDetector;
@@ -98,19 +96,17 @@ namespace UnitTest
 
     TEST_F(MeshComponentControllerFixture, IntersectionNotificationBusIsNotifiedWhenMeshComponentControllerTransformIsModified)
     {
-        auto* entity1 = AzToolsFramework::GetEntityById(m_entityId1);
-        entity1->Deactivate();
-        entity1->CreateComponent<AZ::Render::EditorMeshComponent>();
-        // note: RPI::Scene::GetFeatureProcessorForEntity<MeshFeatureProcessorInterface>(...) returns nullptr
-        // and so m_meshFeatureProcessor is null
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        entity1->Activate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a MeshFeatureProcessorInterface on the entityId.");
+
+        m_entity->Deactivate();
+        m_entity->CreateComponent<AZ::Render::EditorMeshComponent>();
+        m_entity->Activate();
 
         AZ::TransformBus::Event(
-            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f)));
+            m_entity->GetId(), &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f)));
 
         using ::testing::Eq;
-        EXPECT_THAT(m_entityId1, Eq(m_intersectionNotificationDetector.m_lastEntityIdChanged));
+        EXPECT_THAT(m_entity->GetId(), Eq(m_intersectionNotificationDetector.m_lastEntityIdChanged));
     }
 } // namespace UnitTest

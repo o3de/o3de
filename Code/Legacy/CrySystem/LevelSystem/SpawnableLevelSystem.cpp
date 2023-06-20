@@ -83,6 +83,9 @@ namespace LegacyLevelSystem
 
         AzFramework::RootSpawnableNotificationBus::Handler::BusConnect();
 
+        AZ_Error("SpawnableLevelSystem", AzFramework::LevelSystemLifecycleInterface::Get() == this,
+            "Failed to register the SpawnableLevelSystem with the LevelSystemLifecycleInterface.");
+
         // If there were LoadLevel command invocations before the creation of the level system
         // then those invocations were queued.
         // load the last level in the queue, since only one level can be loaded at a time
@@ -113,7 +116,7 @@ namespace LegacyLevelSystem
         delete this;
     }
 
-    bool SpawnableLevelSystem::IsLevelLoaded()
+    bool SpawnableLevelSystem::IsLevelLoaded() const
     {
         return m_bLevelLoaded;
     }
@@ -237,8 +240,8 @@ namespace LegacyLevelSystem
 
         // This is a valid level, find out if any systems need to stop level loading before proceeding
         bool blockLoading = false;
-        AzFramework::LevelSystemLifecycleRequestBus::EnumerateHandlers(
-            [&blockLoading, &validLevelName](AzFramework::LevelSystemLifecycleRequests* handler)->bool
+        AzFramework::LevelLoadBlockerBus::EnumerateHandlers(
+            [&blockLoading, &validLevelName](AzFramework::LevelLoadBlockerRequests* handler) -> bool
             {
                 if (handler->ShouldBlockLevelLoading(validLevelName.c_str()))
                 {

@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
+#include <ScreensCtrl.h>
 
 #include <QWidget>
 #include <QStyleOption>
@@ -28,20 +29,24 @@ namespace O3DE::ProjectManager
             : QFrame(parent)
         {
         }
+
         ~ScreenWidget() = default;
 
         virtual ProjectManagerScreen GetScreenEnum()
         {
             return ProjectManagerScreen::Empty;
         }
+
         virtual bool IsReadyForNextScreen()
         {
             return true;
         }
+
         virtual bool IsTab()
         {
             return false;
         }
+
         virtual QString GetTabText()
         {
             return tr("Missing");
@@ -51,8 +56,31 @@ namespace O3DE::ProjectManager
         {
             return GetScreenEnum() == screen;
         }
+
         virtual void GoToScreen([[maybe_unused]] ProjectManagerScreen screen)
         {
+        }
+
+        virtual void Init()
+        {
+        }
+
+        ScreensCtrl* GetScreensCtrl(QObject* widget)
+        {
+            if (!widget)
+            {
+                return nullptr;
+            }
+
+            ScreensCtrl* screensCtrl = qobject_cast<ScreensCtrl*> (widget);
+            return screensCtrl ? screensCtrl : GetScreensCtrl(widget->parent());
+        }
+
+        //! Returns true if this screen is the current screen 
+        virtual bool IsCurrentScreen()
+        {
+            ScreensCtrl* screensCtrl = GetScreensCtrl(this);
+            return screensCtrl ? screensCtrl->GetCurrentScreen() == this : false;
         }
 
         //! Notify this screen it is the current screen 
@@ -66,7 +94,8 @@ namespace O3DE::ProjectManager
         void ResetScreenRequest(ProjectManagerScreen screen);
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);
-
+        void NotifyProjectRemoved(const QString& projectPath);
+        void NotifyRemoteContentRefreshed();
     };
 
 } // namespace O3DE::ProjectManager

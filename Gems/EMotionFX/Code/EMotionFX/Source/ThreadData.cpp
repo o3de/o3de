@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ThreadData, ThreadDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ThreadData, ThreadDataAllocator)
 
     // default constructor
     ThreadData::ThreadData()

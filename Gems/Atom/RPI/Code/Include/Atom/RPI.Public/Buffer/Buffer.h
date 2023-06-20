@@ -38,7 +38,7 @@ namespace AZ
 
         public:
             AZ_INSTANCE_DATA(Buffer, "{389B818E-136A-44A4-8B6C-4766C0DDB644}");
-            AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator);
 
             ~Buffer() override;
 

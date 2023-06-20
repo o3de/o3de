@@ -54,6 +54,7 @@ namespace AZ
             m_hasImageGroup = m_descriptor.m_layout->GetGroupSizeForImages() > 0;
             m_hasSamplerGroup = m_descriptor.m_layout->GetGroupSizeForSamplers() > 0;
             m_hasConstants = m_descriptor.m_layout->GetConstantDataSize() > 0;
+
             return ResultCode::Success;
         }
 
@@ -116,7 +117,8 @@ namespace AZ
             bool isQueuedForCompile = shaderResourceGroup.IsQueuedForCompile();
             AZ_Warning(
                 "ShaderResourceGroupPool", !isQueuedForCompile,
-                "Attempting to compile an SRG that's already been queued for compile. Only compile an SRG once per frame.");
+                "Attempting to compile SRG '%s' that's already been queued for compile. Only compile an SRG once per frame.",
+                shaderResourceGroup.GetName().GetCStr());
 
             if (!isQueuedForCompile)
             {
@@ -342,10 +344,10 @@ namespace AZ
                 }
             }
 
-            //Modify m_rhiUpdateMask in case a view was modified. This can happen if a view is invalidated
+            // Modify m_rhiUpdateMask in case a view was modified. This can happen if a view is invalidated
             ResetUpdateMaskForModifiedViews(shaderResourceGroup, shaderResourceGroupData);   
             
-            //Check if any part of the Srg was updated before trying to compile it
+            // Check if any part of the Srg was updated before trying to compile it
             if (shaderResourceGroup.IsAnyResourceTypeUpdated())
             {
                 ResultCode resultCode = CompileGroupInternal(shaderResourceGroup, shaderResourceGroupData);
@@ -368,7 +370,7 @@ namespace AZ
             for (uint32_t i = interval.m_min; i < interval.m_max; ++i)
             {
                 ShaderResourceGroup* group = m_groupsToCompile[i];
-                AZ_PROFILE_SCOPE(RHI, "CompileGroupsForInterval %s", group->GetName().GetCStr());
+                RHI_PROFILE_SCOPE_VERBOSE("CompileGroupsForInterval %s", group->GetName().GetCStr());
 
                 CompileGroup(*group, group->GetData());
                 group->m_isQueuedForCompile = false;

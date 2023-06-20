@@ -20,7 +20,9 @@ namespace Benchmark
         m_app = AZStd::make_unique<AzToolsFramework::ToolsApplication>();
         ASSERT_TRUE(m_app != nullptr);
 
-        m_app->Start(AzFramework::Application::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
 
         AZ::Entity* systemEntity = m_app->FindEntity(AZ::SystemEntityId);
         ASSERT_TRUE(systemEntity != nullptr);

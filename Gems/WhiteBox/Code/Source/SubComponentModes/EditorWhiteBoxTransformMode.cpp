@@ -13,6 +13,12 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Viewport/ViewportColors.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <Manipulators/LinearManipulator.h>
 #include <Manipulators/ManipulatorManager.h>
@@ -27,7 +33,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(TransformMode, AZ::SystemAllocator)
 
     static const AZ::Crc32 SwitchTranslationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_translation");
     static const AZ::Crc32 SwitchRotationMode = AZ_CRC_CE("org.o3de.action.whitebox.switch_rotation");
@@ -51,9 +57,22 @@ namespace WhiteBox
             buttonId);
     }
 
+    static void SetViewportUiClusterDisableButton(
+        AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId, bool isDisabled)
+    {
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterDisableButton,
+            clusterId,
+            buttonId,
+            isDisabled);
+    }
+
     TransformMode::TransformMode(const AZ::EntityComponentIdPair& entityComponentIdPair)
         : m_entityComponentIdPair(entityComponentIdPair)
     {
+        EditorWhiteBoxTransformModeRequestBus::Handler::BusConnect(entityComponentIdPair);
+
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
             [&](AzToolsFramework::ViewportUi::ViewportUiRequests* requests)
@@ -76,26 +95,26 @@ namespace WhiteBox
                     ManipulatorModeClusterRotateTooltip);
                 requests->SetClusterButtonTooltip(m_transformClusterId, m_transformScaleButtonId, 
                     ManipulatorModeClusterScaleTooltip);
-            });
+            }
+        );
 
         m_transformSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(
             [this](AzToolsFramework::ViewportUi::ButtonId buttonId)
             {
                 if (buttonId == m_transformTranslateButtonId)
                 {
-                    m_transformType = TransformType::Translation;
+                    ChangeTransformType(TransformType::Translation);
                 }
                 else if (buttonId == m_transformRotateButtonId)
                 {
-                    m_transformType = TransformType::Rotation;
+                    ChangeTransformType(TransformType::Rotation);
                 }
                 else if (buttonId == m_transformScaleButtonId)
                 {
-                    m_transformType = TransformType::Scale;
+                    ChangeTransformType(TransformType::Scale);
                 }
-
-                RefreshManipulator();
-            });
+            }
+        );
 
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
@@ -114,6 +133,139 @@ namespace WhiteBox
             m_transformClusterId);
 
         DestroyManipulators();
+
+        EditorWhiteBoxTransformModeRequestBus::Handler::BusDisconnect();
+    }
+
+    void TransformMode::RegisterActionUpdaters()
+    {
+    }
+
+    void TransformMode::RegisterActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxTransformMode - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(hotKeyManagerInterface, "WhiteBoxTransformMode - could not get HotKeyManagerInterface on RegisterActions.");
+
+        // Translation
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.transform.translation";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SwitchToTranslationModeTile;
+            actionProperties.m_description = SwitchToTranslationModeDesc;
+            actionProperties.m_category = "White Box Component Mode - Transform";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Translation);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "1");
+        }
+
+        // Rotation
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.transform.rotation";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SwitchToRotationModeTile;
+            actionProperties.m_description = SwitchToRotationModeDesc;
+            actionProperties.m_category = "White Box Component Mode - Transform";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Rotation);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "2");
+        }
+
+        // Scale
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.whiteBoxComponentMode.transform.scale";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = SwitchToScaleModeTile;
+            actionProperties.m_description = SwitchToScaleModeDesc;
+            actionProperties.m_category = "White Box Component Mode - Transform";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<AzToolsFramework::ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorWhiteBoxTransformModeRequestBus::Event(
+                                entityComponentIdPair,
+                                &EditorWhiteBoxTransformModeRequests::ChangeTransformType,
+                                TransformType::Scale);
+                        }
+                    );
+                }
+            );
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "3");
+        }
+    }
+
+    void TransformMode::BindActionsToModes(const AZStd::string& modeIdentifier)
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "WhiteBoxTransformMode - could not get ActionManagerInterface on BindActionsToModes.");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation");
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale");
+
+        actionManagerInterface->AssignModeToAction(modeIdentifier, "o3de.action.componentMode.end");
+    }
+
+    void TransformMode::BindActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(menuManagerInterface, "WhiteBoxTransformMode - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.translation", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.rotation", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.whiteBoxComponentMode.transform.scale", 6002);
     }
 
     void TransformMode::DestroyManipulators()
@@ -123,6 +275,12 @@ namespace WhiteBox
             m_manipulator->Unregister();
             m_manipulator.reset();
         }
+    }
+
+    void TransformMode::ChangeTransformType(TransformType subModeType)
+    {
+        m_transformType = subModeType;
+        RefreshManipulator();
     }
 
     void TransformMode::Refresh()
@@ -352,8 +510,21 @@ namespace WhiteBox
 
     void TransformMode::RefreshManipulator()
     {
+        TransformType activeTransformType = m_transformType;
+        if (m_whiteBoxSelection && AZStd::get_if<VertexIntersection>(&m_whiteBoxSelection->m_selection))
+        {
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformRotateButtonId, true);
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformScaleButtonId, true);
+            activeTransformType = TransformType::Translation;
+        }
+        else
+        {
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformRotateButtonId, false);
+            SetViewportUiClusterDisableButton(m_transformClusterId, m_transformScaleButtonId, false);
+        }
+
         DestroyManipulators();
-        switch (m_transformType)
+        switch (activeTransformType)
         {
         case TransformType::Translation:
             CreateTranslationManipulators();
@@ -403,11 +574,11 @@ namespace WhiteBox
             return;
         }
 
-        AZ::Transform worldTranform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(worldTranform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
+        AZ::Transform worldTransform = AZ::Transform::CreateIdentity();
+        AZ::TransformBus::EventResult(worldTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         AZStd::shared_ptr<AzToolsFramework::TranslationManipulators> translationManipulators =
             AZStd::make_shared<AzToolsFramework::TranslationManipulators>(
-                AzToolsFramework::TranslationManipulators::Dimensions::Three, worldTranform, AZ::Vector3::CreateOne());
+                AzToolsFramework::TranslationManipulators::Dimensions::Three, worldTransform, AZ::Vector3::CreateOne());
 
         translationManipulators->SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
         translationManipulators->AddEntityComponentIdPair(m_entityComponentIdPair);
@@ -590,9 +761,15 @@ namespace WhiteBox
         UpdateTransformHandles(whiteBox);
         scaleManipulators->SetLocalPosition(m_whiteBoxSelection->m_localPosition);
 
+        enum class ScaleType
+        {
+            Uniform,
+            NonUniform
+        };
+
         auto mouseMoveHandlerFn =
             [entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_whiteBoxSelection](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action, ScaleType scaleType)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
@@ -602,9 +779,21 @@ namespace WhiteBox
             {
                 const AZ::Vector3 vertexLocalPosition =
                     (transformSelection->m_vertexPositions[vertexIndex++] - transformSelection->m_localPosition);
-                const AZ::Vector3 vertexPosition =
-                    (vertexLocalPosition * (AZ::Vector3::CreateOne() + (action.m_start.m_sign * action.LocalScaleOffset()))) +
-                    transformSelection->m_localPosition;
+                const AZ::Vector3 scale = [&action, &scaleType]
+                {
+                    switch (scaleType)
+                    {
+                    case ScaleType::Uniform:
+                        return AZ::Vector3(action.LocalScaleOffset().GetZ());
+                    case ScaleType::NonUniform:
+                        return action.LocalScaleOffset();
+                    default:
+                        break;
+                    }
+                    return AZ::Vector3();
+                }();
+                const AZ::Vector3 manipulatorScale = AZ::Vector3::CreateOne() + (action.m_start.m_sign * scale);
+                const AZ::Vector3 vertexPosition = (vertexLocalPosition * manipulatorScale) + transformSelection->m_localPosition;
                 Api::SetVertexPosition(*whiteBox, vertexHandle, vertexPosition);
             }
 
@@ -616,23 +805,35 @@ namespace WhiteBox
 
         auto mouseUpHandlerFn =
             [mouseMoveHandlerFn, entityComponentIdPair = m_entityComponentIdPair,
-             transformSelection = m_whiteBoxSelection](const auto& action)
+             transformSelection = m_whiteBoxSelection](const auto& action, ScaleType scaleType)
         {
             WhiteBoxMesh* whiteBox = nullptr;
             EditorWhiteBoxComponentRequestBus::EventResult(
                 whiteBox, entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
 
-            mouseMoveHandlerFn(action);
+            mouseMoveHandlerFn(action, scaleType);
             transformSelection->m_vertexPositions = Api::VertexPositions(*whiteBox, transformSelection->m_vertexHandles);
 
             EditorWhiteBoxComponentRequestBus::Event(entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
         };
 
-        scaleManipulators->InstallAxisMouseMoveCallback(mouseMoveHandlerFn);
-        scaleManipulators->InstallUniformMouseMoveCallback(mouseMoveHandlerFn);
+        scaleManipulators->InstallAxisMouseMoveCallback([mouseMoveHandlerFn](const auto& action)
+            {
+                return mouseMoveHandlerFn(action, ScaleType::NonUniform);
+            });
+        scaleManipulators->InstallAxisLeftMouseUpCallback([mouseUpHandlerFn](const auto& action)
+            {
+                return mouseUpHandlerFn(action, ScaleType::NonUniform);
+            });
 
-        scaleManipulators->InstallAxisLeftMouseUpCallback(mouseUpHandlerFn);
-        scaleManipulators->InstallUniformLeftMouseUpCallback(mouseUpHandlerFn);
+        scaleManipulators->InstallUniformMouseMoveCallback([mouseMoveHandlerFn](const auto& action)
+            {
+                return mouseMoveHandlerFn(action, ScaleType::Uniform);
+            });
+        scaleManipulators->InstallUniformLeftMouseUpCallback([mouseUpHandlerFn](const auto& action)
+            {
+                return mouseUpHandlerFn(action, ScaleType::Uniform);
+            });
 
         scaleManipulators->Register(AzToolsFramework::g_mainManipulatorManagerId);
         m_manipulator = AZStd::move(scaleManipulators);

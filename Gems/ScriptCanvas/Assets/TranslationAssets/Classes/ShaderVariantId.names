@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "Equal",
-                    "context": "ShaderVariantId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Equal"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "IsEmpty",
-                    "context": "ShaderVariantId",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsEmpty"

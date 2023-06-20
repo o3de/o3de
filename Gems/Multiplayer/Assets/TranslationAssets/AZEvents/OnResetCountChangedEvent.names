@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "On ResetCount Changed Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Reset Count Changed Event"
+            },
+            "slots": [
+                {
+                    "base": "New uint8_t",
+                    "details": {
+                        "name": "Reset Count"
+                    }
+                },
+                {
+                    "base": "On ResetCount Changed Event",
+                    "details": {
+                        "name": "On ResetCount Changed Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

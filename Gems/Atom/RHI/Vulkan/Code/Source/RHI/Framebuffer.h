@@ -29,7 +29,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Framebuffer, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Framebuffer, AZ::ThreadPoolAllocator);
             AZ_RTTI(Framebuffer, "1EF7EE0F-CB6C-45EB-8D8A-8254F4AC5F67", Base);
 
             struct Descriptor

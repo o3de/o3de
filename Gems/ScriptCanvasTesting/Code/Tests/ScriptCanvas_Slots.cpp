@@ -18,7 +18,6 @@
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
-#include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
 #include <ScriptCanvas/Core/Slot.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 
@@ -453,6 +452,162 @@ TEST_F(ScriptCanvasTestFixture, SlotConnecting_DataBasic)
 
     const bool validConnection = true;
     TestConnectionBetween(outputEndpoint, inputEndpoint, validConnection);
+}
+
+TEST_F(ScriptCanvasTestFixture, TypeMatching_SubClassShouldMatchBaseClassSlot)
+{
+    // When a slot is configured to use a base class, the slot should accept subclasses of that base class as well.
+
+    using namespace ScriptCanvas;
+
+    ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
+
+    for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
+    {
+        DataSlotConfiguration dataSlotConfiguration;
+
+        dataSlotConfiguration.m_name = GenerateSlotName();
+        dataSlotConfiguration.SetConnectionType(connectionType);
+
+        // Set the slot to the base class type
+        dataSlotConfiguration.SetType(m_baseClassType);
+
+        Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
+
+        // When a slot is set to a base class type, it should be able to be hooked up to
+        // either a base class type or a subclass type.
+        EXPECT_TRUE(slot->IsTypeMatchFor(m_baseClassType));
+        EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
+    }
+}
+
+TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassShouldNotMatchSubClassSlot)
+{
+    // When a slot is configured to use a subclass, the slot should accept the subclass but not the base class.
+
+    using namespace ScriptCanvas;
+
+    ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
+
+    for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
+    {
+        DataSlotConfiguration dataSlotConfiguration;
+
+        dataSlotConfiguration.m_name = GenerateSlotName();
+        dataSlotConfiguration.SetConnectionType(connectionType);
+
+        // Set the slot to the subclass type
+        dataSlotConfiguration.SetType(m_subClassType);
+
+        Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
+
+        // When a slot is set to a subclass type, it will only connect to the subclass, not to the base class.
+        EXPECT_FALSE(slot->IsTypeMatchFor(m_baseClassType));
+        EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
+    }
+}
+
+TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_SubClassShouldMatchBaseClassDisplayType)
+{
+    // When a dynamic slot is created with a base class type, it should match both base classes and subclasses.
+
+    using namespace ScriptCanvas;
+
+    ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
+
+    for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
+    {
+        for (auto dynamicDataType : { DynamicDataType::Any, DynamicDataType::Value })
+        {
+            DynamicDataSlotConfiguration dataSlotConfiguration;
+
+            dataSlotConfiguration.m_name = GenerateSlotName();
+            dataSlotConfiguration.SetConnectionType(connectionType);
+            dataSlotConfiguration.m_dynamicDataType = dynamicDataType;
+
+            // Set the dynamic display type to the base class
+            dataSlotConfiguration.m_displayType = m_baseClassType;
+
+            Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
+
+            // Both the base class and the subclass should match.
+            EXPECT_TRUE(slot->IsTypeMatchFor(m_baseClassType));
+            EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
+        }
+    }
+}
+
+TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_BaseClassShouldNotMatchSubClassDisplayType)
+{
+    // When a dynamic slot is created with a subclass type, it should only match the subclass not the base class.
+
+    using namespace ScriptCanvas;
+
+    ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
+
+    for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
+    {
+        for (auto dynamicDataType : { DynamicDataType::Any, DynamicDataType::Value })
+        {
+            DynamicDataSlotConfiguration dataSlotConfiguration;
+
+            dataSlotConfiguration.m_name = GenerateSlotName();
+            dataSlotConfiguration.SetConnectionType(connectionType);
+            dataSlotConfiguration.m_dynamicDataType = dynamicDataType;
+
+            // Set the dynamic display type to the subclass
+            dataSlotConfiguration.m_displayType = m_subClassType;
+
+            Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
+
+            // Only the subclass should match, not the base class.
+            EXPECT_FALSE(slot->IsTypeMatchFor(m_baseClassType));
+            EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
+        }
+    }
+}
+
+TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassSlotWithSubClassVariableShouldMatchBaseClass)
+{
+    // When a slot is configured to use a base class, and it has a variable of a subclass type assigned to it,
+    // the slot should still match base classes. This is important for being able to change what is hooked to the slot.
+
+    using namespace ScriptCanvas;
+
+    // Create a slot of type TestBaseClass
+
+    ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
+    DataSlotConfiguration dataSlotConfiguration;
+
+    dataSlotConfiguration.m_name = GenerateSlotName();
+    dataSlotConfiguration.SetConnectionType(ConnectionType::Input);
+    dataSlotConfiguration.SetType(m_baseClassType);
+    Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
+
+    // Create a variable of type TestSubClass.
+
+    ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
+
+    TestSubClass testObject;
+    auto testSubClassDatum = Datum(testObject);
+
+    constexpr bool FunctionScope = false;
+    AZ::Outcome<VariableId, AZStd::string> variableOutcome(AZ::Failure(""));
+    GraphVariableManagerRequestBus::EventResult(
+        variableOutcome, scriptCanvasId, &GraphVariableManagerRequests::AddVariable, "TestSubClass", testSubClassDatum, FunctionScope);
+    EXPECT_TRUE(variableOutcome);
+    EXPECT_TRUE(variableOutcome.GetValue().IsValid());
+
+    // Set the slot to a variable of type TestSubClass
+
+    slot->SetVariableReference(variableOutcome.GetValue());
+
+    // The slot's data type should appear to be TestSubClass, matching the currently-assigned variable
+    EXPECT_EQ(slot->GetDataType(), m_subClassType);
+
+    // However, the slot should still allow type matches for both TestBaseClass and TestSubClass
+    EXPECT_TRUE(slot->IsTypeMatchFor(m_baseClassType));
+    EXPECT_TRUE(slot->IsTypeMatchFor(m_subClassType));
 }
 
 // Exhaustive Data Connection Test(attempts to connect every data type to every other data type, in both input and output)
@@ -900,7 +1055,7 @@ TEST_F(ScriptCanvasTestFixture, DynamicTypingDisplayType_Value)
         DynamicDataSlotConfiguration dataSlotConfiguration;
 
         dataSlotConfiguration.m_name = GenerateSlotName();
-        dataSlotConfiguration.SetConnectionType(ConnectionType::Input);
+        dataSlotConfiguration.SetConnectionType(connectionType);
         dataSlotConfiguration.m_dynamicDataType = DynamicDataType::Value;
 
         Slot* slot = emptyNode->AddTestingSlot(dataSlotConfiguration);
@@ -1924,7 +2079,7 @@ TEST_F(ScriptCanvasTestFixture, SlotGrouping_BasicFunctionalitySanityTest)
 {
     using namespace ScriptCanvas;
 
-    ScriptCanvas::Graph* graph = CreateGraph();
+    [[maybe_unused]] ScriptCanvas::Graph* graph = CreateGraph();
     ConfigurableUnitTestNode* inputNode = CreateConfigurableNode();
 
     Slot* dynamicInputSlot = nullptr;
@@ -2268,7 +2423,7 @@ TEST_F(ScriptCanvasTestFixture, SlotGrouping_SingleGroupDisplayTypeRestriction)
 {
     using namespace ScriptCanvas;
 
-    ScriptCanvas::Graph* graph = CreateGraph();
+    [[maybe_unused]] ScriptCanvas::Graph* graph = CreateGraph();
     ConfigurableUnitTestNode* groupedNode = CreateConfigurableNode();
 
     Slot* restrictedInputSlot = nullptr;
@@ -2332,7 +2487,7 @@ TEST_F(ScriptCanvasTestFixture, SlotGrouping_SingleGroupDisplayTypeRestrictionCo
 {
     using namespace ScriptCanvas;
 
-    ScriptCanvas::Graph* graph = CreateGraph();
+    [[maybe_unused]] ScriptCanvas::Graph* graph = CreateGraph();
     ConfigurableUnitTestNode* groupedNode = CreateConfigurableNode();
 
     Slot* restrictedInputSlot = nullptr;

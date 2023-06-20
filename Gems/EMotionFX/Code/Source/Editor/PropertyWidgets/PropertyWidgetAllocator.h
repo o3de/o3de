@@ -10,6 +10,7 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Memory/ChildAllocatorSchema.h>
 
 namespace EMotionFX
 {
@@ -17,13 +18,9 @@ namespace EMotionFX
         : public AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>
     {
     public:
-        AZ_TYPE_INFO(PropertyWidgetAllocator, "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}");
         using Base = AZ::SimpleSchemaAllocator<AZ::ChildAllocatorSchema<AZ::SystemAllocator>>;
-        using Descriptor = Base::Descriptor;
 
-        PropertyWidgetAllocator() : Base("PropertyWidgetAllocator", "EMotion FX property widget allocator")
-        {
-        }
+        AZ_RTTI(PropertyWidgetAllocator, "{5A2780C1-3660-4F47-A529-8E4F7B2B2F84}", Base)
     };
 
 } // namespace EMotionFX

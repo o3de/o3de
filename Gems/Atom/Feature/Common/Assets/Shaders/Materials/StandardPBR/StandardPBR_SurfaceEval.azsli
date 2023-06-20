@@ -12,17 +12,18 @@
 // used in your shader. Simply #define EvaluateSurface to your custom definition before including this file
 //
 #ifndef EvaluateSurface
-#define EvaluateSurface(geoData)        EvaluateSurface_StandardPBR(geoData)
+#define EvaluateSurface EvaluateSurface_StandardPBR
 #endif
 
 #include "../BasePBR/BasePBR_SurfaceEval.azsli"
 #include "../MaterialFunctions/StandardGetAlphaAndClip.azsli"
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 Surface EvaluateSurface_StandardPBR(
     float3 positionWS,
-    float3 vertexNormal,
-    float3 tangents[UvSetCount],
-    float3 bitangents[UvSetCount],
+    real3 vertexNormal,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace,
     bool isDisplacementClipped)
@@ -44,43 +45,41 @@ Surface EvaluateSurface_StandardPBR(
     // ------- Emissive -------
 
     float2 emissiveUv = uvs[MaterialSrg::m_emissiveMapUvIndex];
-    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, MaterialSrg::m_emissiveIntensity, MaterialSrg::m_emissiveColor.rgb, o_emissiveEnabled, o_emissive_useTexture);
+    surface.emissiveLighting = GetEmissiveInput(MaterialSrg::m_emissiveMap, MaterialSrg::m_sampler, emissiveUv, real(MaterialSrg::m_emissiveIntensity), real3(MaterialSrg::m_emissiveColor.rgb), real(MaterialSrg::m_emissiveAffectedByAlpha), real(surface.alpha), o_emissiveEnabled, o_emissive_useTexture);
 
     // ------- Occlusion -------
     
-    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex], MaterialSrg::m_diffuseOcclusionFactor, o_diffuseOcclusion_useTexture);
-    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, uvs[MaterialSrg::m_specularOcclusionMapUvIndex], MaterialSrg::m_specularOcclusionFactor, o_specularOcclusion_useTexture);
+    surface.diffuseAmbientOcclusion = GetOcclusionInput(MaterialSrg::m_diffuseOcclusionMap, MaterialSrg::m_sampler, real2(uvs[MaterialSrg::m_diffuseOcclusionMapUvIndex]), real(MaterialSrg::m_diffuseOcclusionFactor), o_diffuseOcclusion_useTexture);
+    surface.specularOcclusion = GetOcclusionInput(MaterialSrg::m_specularOcclusionMap, MaterialSrg::m_sampler, real2(uvs[MaterialSrg::m_specularOcclusionMapUvIndex]), real(MaterialSrg::m_specularOcclusionFactor), o_specularOcclusion_useTexture);
 
     // ------- Clearcoat -------
-    
+
+#if ENABLE_CLEAR_COAT
     // Todo: Clean up the double uses of these clear coat flags
     if(o_clearCoat_feature_enabled)
     {
         if(o_clearCoat_enabled)
         {
-            float3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], MaterialSrg::m_clearCoatFactor, o_clearCoat_factor_useTexture,
-                               MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], MaterialSrg::m_clearCoatRoughness, o_clearCoat_roughness_useTexture,
-                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, MaterialSrg::m_clearCoatNormalStrength,
+            real3x3 uvMatrix = MaterialSrg::m_clearCoatNormalMapUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
+            GetClearCoatInputs(MaterialSrg::m_clearCoatInfluenceMap, uvs[MaterialSrg::m_clearCoatInfluenceMapUvIndex], real(MaterialSrg::m_clearCoatFactor), o_clearCoat_factor_useTexture,
+                               MaterialSrg::m_clearCoatRoughnessMap, uvs[MaterialSrg::m_clearCoatRoughnessMapUvIndex], real(MaterialSrg::m_clearCoatRoughness), o_clearCoat_roughness_useTexture,
+                               MaterialSrg::m_clearCoatNormalMap,    uvs[MaterialSrg::m_clearCoatNormalMapUvIndex], vertexNormal, o_clearCoat_normal_useTexture, real(MaterialSrg::m_clearCoatNormalStrength),
                                uvMatrix, tangents[MaterialSrg::m_clearCoatNormalMapUvIndex], bitangents[MaterialSrg::m_clearCoatNormalMapUvIndex],
                                MaterialSrg::m_sampler, isFrontFace,
                                surface.clearCoat.factor, surface.clearCoat.roughness, surface.clearCoat.normal);
         }
 
-        // Manipulate base layer f0 if clear coat is enabled and modify base layer's normal incidence reflectance
-        // For the derivation of the following equation please refer to:
-        // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
-        float3 f0 = (1.0 - 5.0 * sqrt(surface.specularF0)) / (5.0 - sqrt(surface.specularF0));
-        surface.specularF0 = lerp(surface.specularF0, f0 * f0, surface.clearCoat.factor);
+        ApplyClearCoatToSpecularF0(surface.specularF0, surface.clearCoat.factor);
     }
+#endif
     
     // ------- Opacity -------
-    surface.opacityAffectsSpecularFactor = MaterialSrg::m_opacityAffectsSpecularFactor;
+    surface.opacityAffectsSpecularFactor = real(MaterialSrg::m_opacityAffectsSpecularFactor);
 
     return surface;
 }
 
-Surface EvaluateSurface_StandardPBR(PixelGeometryData geoData)
+Surface EvaluateSurface_StandardPBR(VsOutput IN, PixelGeometryData geoData)
 {
     return EvaluateSurface_StandardPBR(
         geoData.positionWS,

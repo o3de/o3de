@@ -13,7 +13,7 @@
 
 namespace MCore
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AttributeBool, AttributeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributeBool, AttributeAllocator)
 
     bool AttributeBool::InitFrom(const Attribute* other)
     {

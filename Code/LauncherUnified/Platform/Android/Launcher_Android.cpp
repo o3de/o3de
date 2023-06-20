@@ -315,7 +315,6 @@ void android_main(android_app* appState)
     appState->activity->callbacks->onNativeWindowRedrawNeeded = OnWindowRedrawNeeded;
 
     // setup the android environment
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
     {
         AZ::Android::AndroidEnv::Descriptor descriptor;
 
@@ -332,7 +331,6 @@ void android_main(android_app* appState)
         if (!AZ::Android::AndroidEnv::Create(descriptor))
         {
             AZ::Android::AndroidEnv::Destroy();
-            AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
             MAIN_EXIT_FAILURE(appState, "Failed to create the AndroidEnv");
         }
 
@@ -423,7 +421,6 @@ void android_main(android_app* appState)
     ReturnCode status = Run(mainInfo);
 
     AZ::Android::AndroidEnv::Destroy();
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
 
     if (status != ReturnCode::Success)
     {

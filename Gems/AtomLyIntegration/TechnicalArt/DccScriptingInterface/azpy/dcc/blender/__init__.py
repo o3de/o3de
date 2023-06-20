@@ -37,7 +37,7 @@ def init(_all=list()):
     import, then it should be initialized and added here so general imports
     don't fail"""
 
-    _add_all_ = (None) # populate modules here
+    _add_all_ = ('helpers') # populate modules here
 
     # ^ as moldules are created, add them to the list above
     # like _add_all_ = list('foo', 'bar')

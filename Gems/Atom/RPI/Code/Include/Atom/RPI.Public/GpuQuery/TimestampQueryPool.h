@@ -23,7 +23,7 @@ namespace AZ
 
         public:
             AZ_RTTI(TimestampQueryPool, "{95A8D7ED-9BAD-4EC4-A201-AF4FD6345D17}", QueryPool);
-            AZ_CLASS_ALLOCATOR(TimestampQueryPool, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TimestampQueryPool, SystemAllocator);
 
             //! Only use this function to create a new Timestamp QueryPool object. And force using smart pointer to manage pool's life time.
             static QueryPoolPtr CreateTimestampQueryPool(uint32_t queryCount);

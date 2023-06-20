@@ -40,10 +40,6 @@ namespace AZStd
     class unordered_set;
     template<AZStd::size_t NumBits>
     class bitset;
-    template<class Element, class Traits, class Allocator>
-    class basic_string;
-    template<class Element>
-    struct char_traits;
 
     template<class T>
     class intrusive_ptr;
@@ -72,45 +68,11 @@ namespace AZ
     namespace CommonOnDemandReflections
     {
         void ReflectCommonString(ReflectContext* context);
+        void ReflectCommonFixedString(ReflectContext* context);
         void ReflectCommonStringView(ReflectContext* context);
         void ReflectStdAny(ReflectContext* context);
         void ReflectVoidOutcome(ReflectContext* context);
     }
-    /// OnDemand reflection for AZStd::basic_string
-    template<class Element, class Traits, class Allocator>
-    struct OnDemandReflection< AZStd::basic_string<Element, Traits, Allocator> >
-    {
-        using ContainerType = AZStd::basic_string<Element, Traits, Allocator>;
-        using SizeType = typename ContainerType::size_type;
-        using ValueType = typename ContainerType::value_type;
-
-        static void Reflect(ReflectContext* context)
-        {
-            constexpr bool is_string = AZStd::is_same_v<Element, char> && AZStd::is_same_v<Traits, AZStd::char_traits<char>>
-                    && AZStd::is_same_v<Allocator, AZStd::allocator>;
-            if constexpr(is_string)
-            {
-                CommonOnDemandReflections::ReflectCommonString(context);
-            }
-            static_assert (is_string, "Unspecialized basic_string<> template reflection requested.");
-        }
-    };
-
-    /// OnDemand reflection for AZStd::basic_string_view
-    template<class Element, class Traits>
-    struct OnDemandReflection< AZStd::basic_string_view<Element, Traits> >
-    {
-        using ContainerType = AZStd::basic_string_view<Element, Traits>;
-        using SizeType = typename ContainerType::size_type;
-        using ValueType = typename ContainerType::value_type;
-
-        static void Reflect(ReflectContext* context)
-        {
-            constexpr bool is_common = AZStd::is_same_v<Element,char> && AZStd::is_same_v<Traits,AZStd::char_traits<char>>;
-            static_assert (is_common, "Unspecialized basic_string_view<> template reflection requested.");
-            CommonOnDemandReflections::ReflectCommonStringView(context);
-        }
-    };
 
     /// OnDemand reflection for AZStd::intrusive_ptr
     template<class T>
@@ -144,6 +106,8 @@ namespace AZ
             if (behaviorContext)
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -155,6 +119,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
@@ -191,6 +156,8 @@ namespace AZ
             if (BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
                 behaviorContext->Class<ContainerType>()
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "std")
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                     ->Attribute(AZ::ScriptCanvasAttributes::PrettyName, ScriptCanvasOnDemandReflection::OnDemandPrettyName<ContainerType>::Get(*behaviorContext))
                     ->Attribute(AZ::Script::Attributes::ToolTip, ScriptCanvasOnDemandReflection::OnDemandToolTip<ContainerType>::Get(*behaviorContext))
@@ -202,6 +169,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::ConstructorOverride, &CustomConstructor)
                     ->template WrappingMember<typename ContainerType::value_type>(&ContainerType::get)
                     ->Method("get", &ContainerType::get)
+                    ->Method("__bool__", [](ContainerType* self) { return static_cast<bool>(self); })
                     ;
             }
         }
