@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! Be sure to update this if you change this file.
     void Reflect(PropertyEditorSystemInterface* system);
 
-    //! PropertyVisibility: Provided for compatability with the RPE, determines whether an entry
+    //! PropertyVisibility: Provided for compatibility with the RPE, determines whether an entry
     //! and/or its children should be visible.
     enum class PropertyVisibility : AZ::u32
     {
