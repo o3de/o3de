@@ -95,8 +95,8 @@ namespace AZ
                 }
             }
 
-            //Init RHI device
-            m_rhiSystem.InitDevice();
+            // Init RHI device(s)
+            m_rhiSystem.InitDevices(AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("enableMultipleDevices").c_str(), "enable") ? RHI::InitDevicesFlags::MultiDevice : RHI::InitDevicesFlags::SingleDevice);
 
             // Gather asset handlers from sub-systems.
             ImageSystem::GetAssetHandlers(m_assetHandlers);
