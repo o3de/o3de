@@ -114,7 +114,7 @@ namespace AZ
         bool ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations);
         MergeSettingsResult MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey);
         MergeSettingsResult MergeSettingsJsonDocument(const rapidjson::Document& jsonPatch, Format format, AZStd::string_view rootKey,
-            AZ::JsonImportSettings& importSettings);
+            AZ::IO::PathView filePath);
 
         //! The filePath here is for the loaded json content in the string parameter
         MergeSettingsResult MergeSettingsString(AZStd::string insituData, Format format, AZStd::string_view anchorKey,

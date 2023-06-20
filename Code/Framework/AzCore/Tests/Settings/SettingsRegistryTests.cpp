@@ -1444,12 +1444,14 @@ namespace SettingsRegistryTests
         EXPECT_EQ(7, intValue);
     }
 
-    TEST_F(SettingsRegistryTest, MergeSettingsFile_ObjectWithImport_MergesImportedFile)
+    TEST_F(SettingsRegistryTest, MergeSettingsFile_JsonWithImport_MergesImportedFiles_InOrder)
     {
-        auto filePath = CreateTestFile("Memory.iphone13.setreg", R"({ "$import": "Memory.ios.setreg", "non_override": 7 })");
+        auto filePath = CreateTestFile("Memory.iphone13.setreg", R"({ "pre_field": {"first": 7 },
+            "$import": "Memory.ios.setreg", "non_override": 7, "post_field": {"2nd": "twenty-one"} })");
         CreateTestFile("Memory.ios.setreg", R"({ "$import": { "filename": "Memory.mobile.setreg" },
             "non_override2": "Hello World", "override_imported_settings": "override" })");
-        CreateTestFile("Memory.mobile.setreg", R"({ "Memory": 1, "override_imported_settings": "initial" })");
+        CreateTestFile("Memory.mobile.setreg", R"({ "Memory": 1, "override_imported_settings": "initial",
+            "pre_field": {"first": 14, "second": "fourteen"}, "post_field": [2] })");
 
         // anchor the settings to scalability
         constexpr AZStd::string_view anchorKey = "/Test/Scalability";
@@ -1475,6 +1477,85 @@ namespace SettingsRegistryTests
         intValue = {};
         EXPECT_TRUE(m_registry->Get(intValue, FixedValueString(anchorKey) + "/Memory"));
         EXPECT_EQ(1, intValue);
+
+        // Check that the "pre_field" is object "first" field is overridden
+        // but the "post_field" overrides the import files value
+        // The "Memory.mobile.setreg" would merge over the "Memory.iphone13.setreg"
+        // because it's import values appear afterwards
+        intValue = {};
+        EXPECT_TRUE(m_registry->Get(intValue, FixedValueString(anchorKey) + "/pre_field/first"));
+        EXPECT_EQ(14, intValue);
+
+        stringValue.clear();
+        EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/pre_field/second"));
+        EXPECT_EQ("fourteen", stringValue);
+
+        stringValue.clear();
+        // The "Memory.iphone13.setreg" "post_field" should retain it's value
+        // as that field appears after the import
+        EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/post_field/2nd"));
+        EXPECT_EQ("twenty-one", stringValue);
+    }
+
+    TEST_F(SettingsRegistryTest, MergeSettingsFile_JsonWithImport_MultipleImports_MergesBasedOnOrder)
+    {
+        CreateTestFile("number.setreg", R"({ "object_field": { "1": 23,
+            "2": 34 }})");
+        CreateTestFile("string.setreg", R"({ "object_field": { "1": "Hello",
+           "3": "World" }})");
+
+        // anchor the settings underneath the Aggregate key
+        constexpr AZStd::string_view anchorKey = "/Test/Aggregate";
+        {
+            // Test by importing the files in order of number.setreg followed by
+            // string.setreg. In this scenario, the "object_field/1" from string.setreg
+            // should be the value in the Settings Registry
+            auto numberStringFilePath = CreateTestFile("aggregate.setreg", R"({
+                "$import": "number.setreg",
+                "$import": "string.setreg" })");
+            auto result = m_registry->MergeSettingsFile(numberStringFilePath.Native(),
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch, anchorKey);
+            ASSERT_TRUE(result);
+
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            AZStd::string stringValue;
+            EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/object_field/1"));
+            EXPECT_EQ("Hello", stringValue);
+
+            AZ::s64 intValue{};
+            EXPECT_TRUE(m_registry->Get(intValue, FixedValueString(anchorKey) + "/object_field/2"));
+            EXPECT_EQ(34, intValue);
+
+            stringValue.clear();
+            EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/object_field/3"));
+            EXPECT_EQ("World", stringValue);
+        }
+
+        {
+            // Test by importing the files in order of string.setreg followed by
+            // number.setreg. In this scenario, the "object_field/1" from number.setreg
+            // should be the value in the Settings Registry
+            auto stringNumberFilePath = CreateTestFile("aggregate.setreg", R"({
+                "$import": "string.setreg",
+                "$import": "number.setreg" })");
+
+            auto result = m_registry->MergeSettingsFile(stringNumberFilePath.Native(),
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch, anchorKey);
+            ASSERT_TRUE(result);
+
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            AZ::s64 intValue{};
+            EXPECT_TRUE(m_registry->Get(intValue, FixedValueString(anchorKey) + "/object_field/1"));
+            EXPECT_EQ(23, intValue);
+
+            intValue = {};
+            EXPECT_TRUE(m_registry->Get(intValue, FixedValueString(anchorKey) + "/object_field/2"));
+            EXPECT_EQ(34, intValue);
+
+            AZStd::string stringValue;
+            EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/object_field/3"));
+            EXPECT_EQ("World", stringValue);
+        }
     }
 
     //

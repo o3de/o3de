@@ -1245,7 +1245,7 @@ namespace AZ
         };
         jsonData.resize_and_overwrite(fileSize, ReadJsonIntoString);
 
-        // If the strin is empty then the file could not be read
+        // If the string is empty then the file could not be read
         if (jsonData.empty())
         {
             MergeSettingsResult result;
@@ -1279,36 +1279,11 @@ namespace AZ
         }
 
         // Delegate to the MergeSettingsJsonDocument function to merge the settings to registry
-        AZ::BaseJsonImporter jsonImporter;
-        AZ::JsonImportSettings importSettings;
-        // Store any operation message from JSON Importing
-        // as part of the merge result
-        AZStd::string resolveImportErrors;
-        importSettings.m_reporting = [&resolveImportErrors](AZStd::string_view message,
-            AZ::JsonSerializationResult::ResultCode result, AZStd::string_view)
-        {
-            resolveImportErrors += message;
-            resolveImportErrors += '\n';
-            return result;
-        };
-        importSettings.m_importer = &jsonImporter;
-        // Set the resolve flags to ImportTracking::Import to get all the metadata information
-        // (import directive json pointer path, import directive relative path value, import directive resolved path value)
-        importSettings.m_resolveFlags = ImportTracking::Imports;
-        // Have the JsonImporter skip resolving nested imports
-        // Resolving of nested imports is taking care of in MergeSettingsJsonDocument
-        importSettings.m_resolveNestedImports = false;
-        importSettings.m_loadedJsonPath = filePath;
-
-        MergeSettingsResult mergeResult = MergeSettingsJsonDocument(jsonPatch, format, anchorKey, importSettings);
-        // Append any error message from the JSON Import resolve as well
-        mergeResult.m_operationMessages += resolveImportErrors;
-
-        return mergeResult;
+        return MergeSettingsJsonDocument(jsonPatch, format, anchorKey, filePath);
     }
 
     auto SettingsRegistryImpl::MergeSettingsJsonDocument(const rapidjson::Document& jsonPatch, Format format,
-        AZStd::string_view anchorKey, AZ::JsonImportSettings& importSettings)
+        AZStd::string_view anchorKey, AZ::IO::PathView filePath)
             -> MergeSettingsResult
     {
         MergeSettingsResult mergeResult;
@@ -1321,7 +1296,7 @@ namespace AZ
             break;
         case Format::JsonMergePatch:
             mergeApproach = JsonMergeApproach::JsonMergePatch;
-             if (anchorKey.empty() && !jsonPatch.IsObject())
+            if (anchorKey.empty() && !jsonPatch.IsObject())
             {
                 mergeResult.Combine(MergeSettingsReturnCode::Failure);
                 mergeResult.m_operationMessages = AZStd::string::format(
@@ -1397,32 +1372,45 @@ namespace AZ
             };
         }
 
-        // Create a scoped merge event to triger the PreMerge notification on construction
-        // and PostMerge event on destruction
-        ScopedMergeEvent scopedMergeEvent(*this, { importSettings.m_loadedJsonPath.Native(), anchorKey});
-
-        // First resolve any $import directives in the merge JSON blob
+        // First resolve any $import directives in the source JSON blob in place, while maintaining
+        // the order of fields
+        // Any fields that are after $import directives override the imported JSON data, while fields before
+        // are overridden by the $import directive
         AZ::StackedString importedFieldKey(AZ::StackedString::Format::JsonPointer);
         JsonImportResolver::ImportPathStack importPathStack;
-        importPathStack.push_back(importSettings.m_loadedJsonPath);
-        AZ::JsonSerializationResult::ResultCode result = AZ::JsonImportResolver::StoreImports(jsonPatch,
-            importPathStack, importSettings, importedFieldKey);
-        if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+        importPathStack.push_back(filePath);
+
+        // JSON Importer lifetime needs to be larger than the improt settings
+        AZ::BaseJsonImporter jsonImporter;
+        AZ::JsonImportSettings importSettings;
+        importSettings.m_reporting = [&mergeResult](AZStd::string_view message,
+            AZ::JsonSerializationResult::ResultCode result, AZStd::string_view)
         {
-            // Specify this merge operation as failed, if the JSON Importer has not completed
+            // Store any JSON Importer messages as par of the merge result
+            mergeResult.m_operationMessages += message;
+            mergeResult.m_operationMessages += '\n';
+            return result;
+        };
+        importSettings.m_importer = &jsonImporter;
+        // Set the resolve flags to ImportTracking::Import to get all the metadata information
+        // (import directive json pointer path, import directive relative path value, import directive resolved path value)
+        importSettings.m_resolveFlags = ImportTracking::Imports;
+        // Use the supplied file path as the path for for the current JSON document @jsonPatch
+        importSettings.m_loadedJsonPath = filePath;
+
+        rapidjson::Value jsonPatchPostImport;
+        if (AZ::JsonSerializationResult::ResultCode result = AZ::JsonImportResolver::ResolveImportsInOrder(jsonPatchPostImport,
+            m_settings.GetAllocator(), jsonPatch,
+            importPathStack, importSettings, importedFieldKey);
+            result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+        {
+            // Mark merge operation as having failed, if the JSON Importer has not completed
             mergeResult.Combine(MergeSettingsReturnCode::Failure);
         }
 
-        // Next merge the imported files to the settings registry before the current json data is merged
-        for ([[maybe_unused]] const auto& [importJsonPath, importRelPath, importedAbsPath] : importSettings.m_importer->GetImportDirectives())
-        {
-            // Use the file extension of the imported path to determine which JSON Patch algorithm to use
-            const auto importFormat = importedAbsPath.Extension() != PatchExtension
-                ? Format::JsonMergePatch : Format::JsonPatch;
-            // Now merge the $import files under the same anchor
-            mergeResult.Combine(MergeSettingsFileInternal(importedAbsPath.c_str(), importFormat, anchorKey));
-        }
-
+        // Create a scoped merge event to trigger the PreMerge notification on construction
+        // and PostMerge event on destruction
+        ScopedMergeEvent scopedMergeEvent(*this, { filePath.Native(), anchorKey });
         SettingsType anchorType;
         {
             AZStd::scoped_lock lock(LockForWriting());
@@ -1430,8 +1418,9 @@ namespace AZ
             rapidjson::Value& anchorRoot = anchorPath.IsValid() ? anchorPath.Create(m_settings, m_settings.GetAllocator())
                 : m_settings;
 
+            // Merge the @jsonPatchPostImport object after the imports have been resolved into the Settings Registry
             JsonSerializationResult::ResultCode patchResult =
-                JsonSerialization::ApplyPatch(anchorRoot, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
+                JsonSerialization::ApplyPatch(anchorRoot, m_settings.GetAllocator(), jsonPatchPostImport, mergeApproach, applyPatchSettings);
             if (patchResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
             {
                 mergeResult.Combine(MergeSettingsReturnCode::Failure);

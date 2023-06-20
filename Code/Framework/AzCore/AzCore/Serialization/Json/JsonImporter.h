@@ -97,6 +97,17 @@ namespace AZ
             rapidjson::Document::AllocatorType& allocator, ImportPathStack& importPathStack,
             JsonImportSettings& settings, StackedString& element);
 
+        //! Resolves the imports from the source JSON object in the field order.
+        //! It does this by iterating over the fields of the source JSON object and copies them
+        //! to the target object as it processes them.
+        //! Any $import directives are merged  to the target object at that point using the JSON Merge Patch
+        //! algorithm. This allows fields before the $import directive to be overridden via the patching mechanism
+        //! and fields that appear after the $import directive to override the imported JSON
+        static JsonSerializationResult::ResultCode ResolveImportsInOrder(rapidjson::Value& target,
+            rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+            ImportPathStack& importPathStack,
+            JsonImportSettings& settings, StackedString& element);
+
         //! Store imports only gathers the list of resolved $import paths without merging
         //! their contents into the json document
         static JsonSerializationResult::ResultCode StoreImports(const rapidjson::Value& jsonDoc,
@@ -105,7 +116,7 @@ namespace AZ
 
         static JsonSerializationResult::ResultCode RestoreImports(rapidjson::Value& jsonDoc,
             rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings);
-        
+
     private:
 
         static JsonSerializationResult::ResultCode ResolveNestedImports(rapidjson::Value& jsonDoc,
@@ -114,6 +125,26 @@ namespace AZ
         static JsonSerializationResult::ResultCode StoreNestedImports(const rapidjson::Value& jsonDoc,
             ImportPathStack& importPathStack,
             JsonImportSettings& settings, const AZ::IO::FixedMaxPath& importPath, StackedString& element);
+
+        static JsonSerializationResult::ResultCode LoadAndMergeImportFile(
+            rapidjson::Value& target, rapidjson::Document::AllocatorType& allocator,
+            const rapidjson::Value& importDirective, AZ::IO::PathView importAbsPath,
+            const AZ::StackedString& element, const JsonSerializationResult::JsonIssueCallback& issueReporter);
+
+        static JsonSerializationResult::ResultCode ResolveNestedImportsInOrder(rapidjson::Value& target,
+            rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+            ImportPathStack& importPathStack,
+            JsonImportSettings& settings, StackedString& element, AZ::IO::PathView importPath);
+
+        // Stores the absolute import path to use when merging the JSON file
+        // and the import path as read from the source JSON file
+        struct ImportPathsResult
+        {
+            AZ::IO::FixedMaxPath m_importAbsPath;
+            AZ::IO::FixedMaxPath m_importRelPath;
+        };
+        static ImportPathsResult GetImportPaths(const rapidjson::Value& importDirective,
+            const ImportPathStack&);
     };
 
     //! Settings used to configure how resolution of a $import directive
