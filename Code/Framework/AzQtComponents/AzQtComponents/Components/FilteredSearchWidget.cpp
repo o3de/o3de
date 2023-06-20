@@ -1041,7 +1041,7 @@ namespace AzQtComponents
         m_addFavoritesButton = new QToolButton(this);
         m_addFavoritesButton->setObjectName("addSearchFavoriteButton");
         m_addFavoritesButton->setIcon(QIcon(":/Gallery/Favorites.svg"));
-        m_addFavoritesButton->setToolTip(tr("Save Search to Favorites"));
+        m_addFavoritesButton->setToolTip(tr("Add to Favorites"));
         m_addFavoritesButton->setAutoRaise(true);
         m_flowLayout->addWidget(m_addFavoritesButton);
         connect(
