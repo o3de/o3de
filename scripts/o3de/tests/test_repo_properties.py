@@ -7,14 +7,15 @@
 #
 
 import json
+import os
+import shutil
 import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import repo_properties
+from o3de import download, repo_properties
 
-TEST_TEMPLATE_REPO_JSON = '''
-{
+TEST_TEMPLATE_REPO_JSON = '''{
     "repo_name": "repotest",
     "repo_uri": "https://test.com",
     "$schemaVersion": "1.0.0",
@@ -29,9 +30,40 @@ TEST_TEMPLATE_REPO_JSON = '''
 }
 '''
 
+TEST_GEM_JSON_PAYLOAD = {
+    "gem_name": "TestGem",
+    "version": "0.0.0",
+    "compatible_engines" : [
+        "o3de-sdk==1.2.3"
+    ],
+    "engine_api_dependencies" : [
+        "framework==1.2.3"
+    ],
+    "display_name": "TestGem",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "The primary repo for TestGem goes here: i.e. http://www.mydomain.com",
+    "summary": "A short description of TestGem.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "TestGem",
+        "OtherTag"
+    ],
+    "platforms": [
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/",
+    "dependencies": [
+    ]
+}
+
+
 GEM_VERSION_ONE_JSON={
     "gem_name": "TestGem",
-    "version": "1.0.0",
+    "version": "1.0.0"
 }
 
 GEM_VERSION_TWO_JSON={
@@ -79,7 +111,8 @@ JSON_DICT={'gem_version1_json_key': GEM_VERSION_ONE_JSON,
            'gem_version1_with_updated_field_key': GEM_VERSION_ONE_WITH_UPDATED_FIELD,
            'gem_version2_tobe_updated_key': GEM_VERSION_TWO_TOBE_UPDATED,
            'gem_version2_updated_key': GEM_VERSION_TWO_WITH_UPDATED_FIELD,
-           'gem_with_no_version_key': GEM_WITH_NO_VERSION}
+           'gem_with_no_version_key': GEM_WITH_NO_VERSION,
+           'gem_archive_json_key': TEST_GEM_JSON_PAYLOAD}
 
 # class returns a dictionary of the template repo json
 @pytest.fixture(scope='function')
@@ -89,6 +122,21 @@ def init_repo_json_data(request):
             self.data = json.loads(TEST_TEMPLATE_REPO_JSON)
             self.path = None
     request.cls.repo_json = RepoJsonData()
+
+@pytest.fixture(scope="session")
+def temp_folder(tmpdir_factory):
+    temp_path = pathlib.Path(tmpdir_factory.mktemp('temp'))
+    gem_path = temp_path / 'gem'
+    os.makedirs(gem_path)
+    gem_json_path = gem_path / 'gem.json'
+    with gem_json_path.open('w') as s:
+        s.write(json.dumps(TEST_GEM_JSON_PAYLOAD, indent=4) + '\n')
+
+    os.makedirs(temp_path / 'release')
+
+    # Yield the temporary path to the test and remove
+    yield temp_path
+    shutil.rmtree(temp_path)
 
 # use the TEST_TEMPLATE_REPO_JSON created above as the repo json template
 @pytest.mark.usefixtures('init_repo_json_data')
@@ -103,54 +151,63 @@ class TestEditRepoProperties:
                               add_gems, delete_gems, replace_gems, expected_gems, \
                               add_projects, delete_projects, replace_projects, expected_projects, \
                               add_templates, delete_templates, replace_templates, expected_templates, \
+                              release_archive_path, force, download_prefix, \
                               expected_result", [
             # test add gems
             pytest.param(pathlib.Path('F:/repotest'),'Repotest1',
                          'gem1 gem3', None, None, [{'gem_name':'gem1'}, {'gem_name':'gem3'}],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test remove a gem
             pytest.param(pathlib.Path('D:/repotest'),'Repotest2',
                          'gem1 gem2', 'gem2', None, [{'gem_name':'gem1'}],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test replace with multiple gems
             pytest.param(pathlib.Path('F:/repotest/AFH'),'Repotest3',
                          'gem1 gem2', None, 'gem3 gem4', [{'gem_name':'gem3'}, {'gem_name':'gem4'}],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test replace a gem with an empty parameter
             pytest.param(pathlib.Path('F:/repotest'),'Repo',
                          'gem1 gem2', None, '', [{'gem_name':'gem1'}, {'gem_name':'gem2'}],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test add projects
             pytest.param(pathlib.Path('F:/repotest'),'test',
                          None, None, None, None,
                          'project1 project2', None, None, [{'project_name':'project1'}, {'project_name':'project2'}],
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test remove a project
             pytest.param(pathlib.Path('F:/repotest'),'random',
                          None, None, None, None,
                          'project1 project2 project3', 'project2', None, [{'project_name':'project1'}, {'project_name':'project3'}],
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test replace a project
             pytest.param(pathlib.Path('F:/repotest'),'RepoReplace',
                          None, None, None, None,
                          'project1 project2', None, 'project3', [{'project_name':'project3'}],
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test remove project with a empty parameter
             pytest.param(pathlib.Path('F:/repotest'),'RepoRemove', 
                          None, None, None, None,
                          'project1 project2', '', None, [{'project_name':'project1'}, {'project_name':'project2'}],
                          None, None, None, None,
+                         None, None, None,
                          0),
             # test add template
             pytest.param(pathlib.Path('F:/repotest'),'RepoAdd',
@@ -158,30 +215,35 @@ class TestEditRepoProperties:
                          None, None, None, None,
                          'template1 template2 template3', None, None, [{'template_name':'template1'}, {'template_name':'template2'}, 
                                                                        {'template_name':'template3'}],
+                        None, None, None,
                          0),
             # test remove multiple templates
             pytest.param(pathlib.Path('F:/repotest'),'removeTemplate',
                          None, None, None, None,
                          None, None, None, None,
                          'template1 template2 template3', 'template1 template2', None, [{'template_name':'template3'}],
+                         None, None, None,
                          0),
             # test replace a temlpate
             pytest.param(pathlib.Path('F:/repotest'),'replaceTemp',
                          None, None, None, None,
                          None, None, None, None,
                          'template1 template2 template3', None, "template48", [{'template_name':'template48'}],
+                         None, None, None,
                          0),
             # test add all objects
             pytest.param(pathlib.Path('F:/repotest'),'addAll',
                          'gem1', None, None, [{'gem_name':'gem1'}],
                          'project1', None, None, [{'project_name':'project1'}],
                          'template1 template2', None, None, [{'template_name':'template1'}, {'template_name':'template2'}],
+                         None, None, None,
                          0),
             # test remove all object types
             pytest.param(pathlib.Path('F:/repotest'),'removeAll',
                          'gem1 gem2', 'gem1', None, [{'gem_name':'gem2'}],
                          'project1', 'project1', None, [],
                          'template1 template2 template3', 'template1 template3', None, [{'template_name':'template2'}],
+                         None, None, None,
                          0),
             # Adding a gem with version 1.0.0 and then the same gem with version 2.0.0
             pytest.param(pathlib.Path('F:/repotest'),'GemAddVersion',
@@ -191,6 +253,7 @@ class TestEditRepoProperties:
                                                                                     }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem with version 1.0.0 and then the same gem with version 2.0.0 and then removing version 2.0.0             
             pytest.param(pathlib.Path('F:/repotest'),'GemAddAndRemoveVersion',
@@ -200,6 +263,7 @@ class TestEditRepoProperties:
                                                                                                 }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem with version 1.0.0 and then the same gem with version 2.0.0 and then removing version 1.0.0
             pytest.param(pathlib.Path('F:/repotest'),'GemAddAndRemoveBaseVersion',
@@ -209,12 +273,14 @@ class TestEditRepoProperties:
                                                                                                 }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem with version 1.0.0 and then the same gem with version 2.0.0 and then removing version 1.0.0 and 2.0.0
             pytest.param(pathlib.Path('F:/repotest'),'GemAddAndRemoveAllVersion',
                          'gem_version1_json_key gem_version2_json_key', 'TestGem==1.0.0 TestGem==2.0.0', None, [],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem with version 1.0.0 and then the same gem with the same version but other updated gem.json fields
             pytest.param(pathlib.Path('F:/repotest'),'GemAddSameVersionWithUpdateField',
@@ -224,6 +290,7 @@ class TestEditRepoProperties:
                                                                                                             }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem with version 1.0.0 and then the same gem with version 2.0.0 and then adding version 2.0.0 with updated gem.json fields
             pytest.param(pathlib.Path('F:/repotest'),'GemAddSameVersionWithUpdateField',
@@ -236,6 +303,7 @@ class TestEditRepoProperties:
                                                                                                                         }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem with multiple versions and then replacing all gems with another set of gems             
             pytest.param(pathlib.Path('F:/repotest'),'ReplaceGem',
@@ -243,6 +311,7 @@ class TestEditRepoProperties:
                                                                                                          'version': '3.0.0'}],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Deleting a gem with version>2.0.0
             pytest.param(pathlib.Path('F:/repotest'),'DeletingGemVersion',
@@ -254,6 +323,7 @@ class TestEditRepoProperties:
                                                                                                                         }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
                          0),
             # Adding a gem without a version, then adding a gem with the same name but with a version
             pytest.param(pathlib.Path('F:/repotest'),'GemAddSameVersionWithUpdateField',
@@ -263,13 +333,22 @@ class TestEditRepoProperties:
                                                                                         }],
                          None, None, None, None,
                          None, None, None, None,
+                         None, None, None,
+                         0),
+            # Add a gem and create an archive
+            pytest.param(pathlib.Path('F:/repotest'),'testArchive',
+                         'na', None, None, [JSON_DICT['gem_archive_json_key']],
+                         None, None, None, None,
+                         None, None, None, None,
+                         'na', None, 'http://testGemPath',
                          0),
             ]
     ) 
     # Where actual test starts
-    def test_edit_repo_obj_version(self, repo_path, repo_name, add_gems, delete_gems, replace_gems, expected_gems,
+    def test_edit_repo_obj_version(self, temp_folder, repo_path, repo_name, add_gems, delete_gems, replace_gems, expected_gems,
                                      add_projects, delete_projects, replace_projects, expected_projects, 
-                                     add_templates, delete_templates, replace_templates, expected_templates, 
+                                     add_templates, delete_templates, replace_templates, expected_templates,
+                                     release_archive_path, force, download_prefix,  
                                      expected_result):
         
         def get_repo_props(repo_path: str or pathlib.Path = None) -> dict or None:
@@ -284,10 +363,12 @@ class TestEditRepoProperties:
 
         def get_json_data(object_typename: str,
                     object_path: str or pathlib.Path,
-                    object_validator: callable) -> dict or None: 
-            # object_path = gem
+                    object_validator: callable) -> dict or None:
             if object_path in JSON_DICT:
                 return JSON_DICT[object_path].copy()
+            if isinstance(object_path, pathlib.Path):
+                #add_gem json data
+                return JSON_DICT['gem_archive_json_key']
             # if object json template doesn't exist 
             if object_typename == "gem":
                 return {'gem_name': object_path}
@@ -299,18 +380,26 @@ class TestEditRepoProperties:
         with patch('o3de.repo_properties.get_repo_props', side_effect=get_repo_props) as get_repo_props_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch, \
                 patch('o3de.manifest.get_json_data', side_effect=get_json_data) as get_json_data_patch:
+            if release_archive_path:
+                add_gems = [temp_folder / 'gem']
+                release_archive_path = temp_folder / 'release'
             result = repo_properties.edit_repo_props(repo_path, repo_name, add_gems, delete_gems, replace_gems,
                                                      add_projects, delete_projects, replace_projects, 
-                                                     add_templates, delete_templates, replace_templates)
+                                                     add_templates, delete_templates, replace_templates, 
+                                                     release_archive_path, force, download_prefix)
             assert result == expected_result
             if result == 0:
                 assert self.repo_json.data.get('repo_name') == repo_name
                 assert self.repo_json.data.get('repo_uri') == 'https://test.com'
                 assert self.repo_json.data.get('$schemaVersion') == '1.0.0'
                 assert self.repo_json.data.get('origin') == 'o3de'
-
+ 
                 for gem in self.repo_json.data.get('gems_data', []):
-                    assert gem in expected_gems
+                    if release_archive_path:
+                        zip_path = release_archive_path / pathlib.Path(gem['download_source_uri']).name
+                        download.validate_downloaded_zip_sha256(gem, zip_path, "gem.json")
+                    else:
+                        assert gem in expected_gems
                 for project in self.repo_json.data.get('projects_data', []):
                     assert project in expected_projects
                 for template in self.repo_json.data.get('templates_data', []):
