@@ -108,7 +108,7 @@ namespace AZ
         public:
             // Notifications can be triggered from job threads, so this uses a mutex to guard against
             // listeners joining or leaving the ebus on other threads mid-notification.
-            typedef AZStd::recursive_mutex MutexType;
+            using MutexType = AZStd::recursive_mutex;
 
             //! Notifies listeners when a model has been loaded.
             //! If the model is already loaded when first connecting to the MeshComponentNotificationBus,
