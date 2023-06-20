@@ -276,7 +276,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
             const bool selectFirstFilteredIndex = false;
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
-            m_ui->m_tableViewButton->setDisabled(hasFilter);
         });
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
