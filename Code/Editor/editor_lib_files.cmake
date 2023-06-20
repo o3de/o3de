@@ -455,8 +455,6 @@ set(FILES
     EditorPreferencesPageViewportCamera.cpp
     EditorPreferencesPageViewportDebug.h
     EditorPreferencesPageViewportDebug.cpp
-    EditorPreferencesPageExperimentalLighting.h
-    EditorPreferencesPageExperimentalLighting.cpp
     EditorPreferencesPageAWS.h
     EditorPreferencesPageAWS.cpp
     EditorPreferencesDialog.h
