@@ -658,8 +658,6 @@ set(FILES
     ViewportTitleDlg.cpp
     ViewportTitleDlg.ui
     ViewportTitleDlg.h
-    EditorEnvironment.cpp
-    EditorEnvironment.h
 )
 
 
