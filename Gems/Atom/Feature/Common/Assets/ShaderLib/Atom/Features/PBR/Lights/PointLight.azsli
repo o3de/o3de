@@ -9,9 +9,15 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+#if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
 
 #if ENABLE_SPHERE_LIGHTS
+
+#if ENABLE_SHADOWS
+
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
     const float3 toPoint = targetPos - lightPos;    
@@ -64,6 +70,8 @@ uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
     const int shadowCubemapFace = GetPointLightShadowCubemapFace(biasedPosition, light.m_position);
     return UnpackPointLightShadowIndex(light, shadowCubemapFace);
 }
+
+#endif // ENABLE_SHADOWS
 
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {

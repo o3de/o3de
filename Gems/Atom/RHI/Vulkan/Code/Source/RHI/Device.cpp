@@ -219,9 +219,9 @@ namespace AZ
             VkDeviceCreateInfo deviceInfo = {};
             deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-            // If we are running Vulkan >= 1.2, then we must use VkPhysicalDeviceVulkan12Features instead
+            // If the instance extension "VK_KHR_get_physical_device_properties2" is present, then we must use VkPhysicalDeviceVulkan12Features instead
             // of VkPhysicalDeviceShaderFloat16Int8FeaturesKHR or VkPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR.
-            if (majorVersion >= 1 && minorVersion >= 2)
+            if (VK_INSTANCE_EXTENSION_SUPPORTED(Instance::GetInstance().GetContext(), KHR_get_physical_device_properties2))
             {
                 vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
                 vulkan12Features.drawIndirectCount = physicalDevice.GetPhysicalDeviceVulkan12Features().drawIndirectCount;
@@ -231,8 +231,11 @@ namespace AZ
                 vulkan12Features.descriptorBindingPartiallyBound = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
                 vulkan12Features.descriptorIndexing = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
                 vulkan12Features.descriptorBindingVariableDescriptorCount = physicalDevice.GetPhysicalDeviceVulkan12Features().separateDepthStencilLayouts;
-                vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddress;
-                vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceVulkan12Features().bufferDeviceAddressMultiDevice;
+                // We use the "VkPhysicalDeviceBufferDeviceAddressFeatures" instead of the "VkPhysicalDeviceVulkan12Features" for buffer device address
+                // because some drivers (e.g. Intel) don't report any features of buffer device address through the "PhysicalDeviceVulkan12Features" but they do
+                // through the "VK_EXT_buffer_device_address" extension.
+                vulkan12Features.bufferDeviceAddress = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddress;
+                vulkan12Features.bufferDeviceAddressMultiDevice = physicalDevice.GetPhysicalDeviceBufferDeviceAddressFeatures().bufferDeviceAddressMultiDevice;
                 vulkan12Features.runtimeDescriptorArray = physicalDevice.GetPhysicalDeviceVulkan12Features().runtimeDescriptorArray;
                 vulkan12Features.shaderSharedInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderSharedInt64Atomics;
                 vulkan12Features.shaderBufferInt64Atomics = physicalDevice.GetPhysicalDeviceVulkan12Features().shaderBufferInt64Atomics;
@@ -348,6 +351,17 @@ namespace AZ
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
         {
             m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
+
+            RHI::ResultCode result = RHI::ResultCode::Success;
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+            if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
+            {
+                // Need to initialize the NullDescriptorManager AFTER the bindless descriptor pool, since we create images and buffers
+                // during the initialization of the NullDescriptorManager.
+                m_nullDescriptorManager = NullDescriptorManager::Create();
+                result = m_nullDescriptorManager->Init(*this);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            }
             return RHI::ResultCode::Success;
         }
 
@@ -407,14 +421,6 @@ namespace AZ
                 bufferPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::Constant;
                 bufferPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
                 result = m_constantBufferPool->Init(*this, bufferPoolDescriptor);
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-
-            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
-            {
-                m_nullDescriptorManager = NullDescriptorManager::Create();
-                result = m_nullDescriptorManager->Init(*this);
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
@@ -1250,7 +1256,6 @@ namespace AZ
             };
 
             auto& instance = Instance::GetInstance();
-            StringList deviceExtensions = physicalDevice.GetDeviceExtensionNames();
 
             VmaAllocatorCreateInfo allocatorInfo = {};
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
@@ -1271,8 +1276,7 @@ namespace AZ
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
             }
 
-            if (AZStd::find(deviceExtensions.begin(), deviceExtensions.end(), VK_EXT_MEMORY_BUDGET_EXTENSION_NAME) !=
-                deviceExtensions.end())
+            if (physicalDevice.IsFeatureSupported(DeviceFeature::MemoryBudget))
             {
                 allocatorInfo.flags |= VMA_ALLOCATOR_CREATE_EXT_MEMORY_BUDGET_BIT;
             }

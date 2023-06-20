@@ -329,6 +329,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         this,
         [this](const QModelIndex& index)
         {
+            // If multiple AssetBrowsers are open, only the focused browser should perform the rename.
+            QWidget* focusWidget = QApplication::focusWidget();
+            if (!isAncestorOf(focusWidget))
+            {
+                return;
+            }
+
             if (m_ui->m_thumbnailView->GetThumbnailActiveView())
             {
                 m_ui->m_thumbnailView->OpenItemForEditing(index);
