@@ -2464,11 +2464,13 @@ namespace AZ
             AssetBuilderSDK::SourceFileDependency defaultVertexBufferPoolSource;
             defaultVertexBufferPoolSource.m_sourceFileDependencyPath = ModelAssetBuilderComponent::s_defaultVertexBufferPoolSourcePath;
 
+            constexpr AZ::u32 ResourcePoolDefaultSubId = 0;
+
             AssetBuilderSDK::JobDependency jobDependency;
             jobDependency.m_jobKey = "Model Asset Builder (Default Vertex Buffer Pool)";
             jobDependency.m_sourceFile = defaultVertexBufferPoolSource;
             jobDependency.m_platformIdentifier = platformIdentifier;
-            jobDependency.m_productSubIds.push_back(0);
+            jobDependency.m_productSubIds.push_back(ResourcePoolDefaultSubId);
             jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
 
             jobDependencyList.push_back(jobDependency);
