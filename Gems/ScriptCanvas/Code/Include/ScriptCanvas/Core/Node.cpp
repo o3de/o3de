@@ -46,8 +46,12 @@ namespace NodeCpp
         AddDisabledFlag = 13,
         AddName = 1,
 
+#if defined(CARBONATED)
+        Current = MergeFromBackend2dotZero
+#else
         // add your named version above
-        Current,
+        Current
+#endif
     }; 
 }
 
