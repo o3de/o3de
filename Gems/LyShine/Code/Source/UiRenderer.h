@@ -113,10 +113,10 @@ public: // member functions
     AZ::RPI::ShaderVariantId GetCurrentShaderVariant();
 
     //! Get the current stencil test reference value
-    uint32 GetStencilRef();
+    uint32_t GetStencilRef();
 
     //! Set the stencil test reference value
-    void SetStencilRef(uint32);
+    void SetStencilRef(uint32_t);
 
     //! Increment the current stencil reference value
     void IncrementStencilRef();
