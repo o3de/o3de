@@ -881,7 +881,7 @@ namespace AzToolsFramework
                         }
                         else
                         {
-                            // this is a column widget move, consume its layout attributes and add 
+                            // this is a column widget move, consume its layout attributes and add
                             // it to the correct place in the (possibly) new layout
                             const auto valueForAttributes = theDPE->GetAdapter()->GetContents()[domOperation.GetDestinationPath()];
                             destinationParentRow->AddColumnWidget(newOwner, destinationIndex, valueForAttributes);
@@ -1137,7 +1137,8 @@ namespace AzToolsFramework
 
         if (rowWidget->IsExpanded())
         {
-            for (int childIndex = 0, numChildren = static_cast<int>(rowWidget->m_domOrderedChildren.size()); childIndex < numChildren; ++childIndex)
+            for (int childIndex = 0, numChildren = static_cast<int>(rowWidget->m_domOrderedChildren.size()); childIndex < numChildren;
+                 ++childIndex)
             {
                 DPERowWidget* childRow = qobject_cast<DPERowWidget*>(rowWidget->m_domOrderedChildren[childIndex]);
                 if (childRow)
@@ -1380,8 +1381,8 @@ namespace AzToolsFramework
 
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
-        m_dpeSettings.reset();
-        m_dpeSettings = AZStd::make_unique<LabeledRowDPEExpanderSettings>(this);
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::DocumentPropertyEditorSettings>(
+            m_adapter->CreateExpanderSettings(m_adapter.get()));
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1440,7 +1441,8 @@ namespace AzToolsFramework
         // the in-memory settings to be saved to disk (in settings destructor) before they're loaded
         // from disk (in settings constructor)
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::make_unique<LabeledRowDPEExpanderSettings>(keyStr, propertyEditorName, this);
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::DocumentPropertyEditorSettings>(
+            m_adapter->CreateExpanderSettings(m_adapter.get(), keyStr, propertyEditorName));
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {
@@ -1662,8 +1664,7 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
-                    m_adapter->GetContents(), containerPath);
+                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(m_adapter->GetContents(), containerPath);
             }
         };
 

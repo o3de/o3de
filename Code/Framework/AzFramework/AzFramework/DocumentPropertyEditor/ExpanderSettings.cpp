@@ -6,32 +6,33 @@
  *
  */
 
-#include "DocumentPropertyEditor.h"
-
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-namespace AzToolsFramework
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
+#include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
+
+namespace AZ::DocumentPropertyEditor
 {
-    DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(const DocumentPropertyEditor* owningEditor)
-        : m_shouldSettingsPersist(true)
-        , m_owningEditor(owningEditor)
-    {
-    }
-
     DocumentPropertyEditorSettings::DocumentPropertyEditorSettings(
+        const AZ::DocumentPropertyEditor::DocumentAdapter* adapter,
         const AZStd::string& settingsRegistryKey,
-        const AZStd::string& propertyEditorName,
-        const DocumentPropertyEditor* owningEditor)
-        : DocumentPropertyEditorSettings(owningEditor)
+        const AZStd::string& propertyEditorName)
+        : m_shouldSettingsPersist(true)
+        , m_adapter(adapter)
     {
-        m_settingsRegistryBasePath = AZStd::string::format("%s/%s", RootSettingsRegistryPath, propertyEditorName.c_str());
-        m_fullSettingsRegistryPath = AZStd::string::format("%s/%s", m_settingsRegistryBasePath.c_str(), settingsRegistryKey.c_str());
+        if (!settingsRegistryKey.empty() && !propertyEditorName.empty())
+        {
+            m_settingsRegistryBasePath = AZStd::string::format("%s/%s", RootSettingsRegistryPath, propertyEditorName.c_str());
+            m_fullSettingsRegistryPath = AZStd::string::format("%s/%s", m_settingsRegistryBasePath.c_str(), settingsRegistryKey.c_str());
 
-        m_settingsFilepath.Append(RootSettingsFilepath)
-            .Append(AZStd::string::format("%s_settings", propertyEditorName.c_str()))
-            .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
+            m_settingsFilepath.Append(RootSettingsFilepath)
+                .Append(AZStd::string::format("%s_settings", propertyEditorName.c_str()))
+                .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
 
-        m_wereSettingsLoaded = LoadExpanderStates();
+            m_wereSettingsLoaded = LoadExpanderStates();
+        }
     }
 
     DocumentPropertyEditorSettings::~DocumentPropertyEditorSettings()
@@ -149,10 +150,10 @@ namespace AzToolsFramework
 
     DocumentPropertyEditorSettings::PathType LabeledRowDPEExpanderSettings::GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const
     {
-        AZ_Assert(m_owningEditor, "must have a valid owning editor to resolve paths!");
-        PathType newPath;
+        AZ_Assert(m_adapter, "must have a valid owning editor to resolve paths!");
+        PathType newPath(AZ::IO::PosixPathSeparator);
 
-        const auto& fullContents = m_owningEditor->GetAdapter()->GetContents();
+        const auto& fullContents = m_adapter->GetContents();
         AZ::Dom::Path subPath;
         for (auto pathComponent : rowPath)
         {
@@ -170,4 +171,4 @@ namespace AzToolsFramework
         return newPath;
     }
 
-} // namespace AzToolsFramework
+} // namespace AZ::DocumentPropertyEditor

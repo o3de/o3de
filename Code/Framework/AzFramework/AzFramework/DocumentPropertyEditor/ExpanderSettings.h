@@ -10,14 +10,16 @@
 
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/SettingsRegistrar.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/SettingsRegistrar.h>
 
 namespace AZ
 {
     class ReflectContext;
 }
 
-namespace AzToolsFramework
+namespace AZ::DocumentPropertyEditor
 {
     class DocumentPropertyEditor;
 
@@ -31,11 +33,11 @@ namespace AzToolsFramework
         using ExpanderStateMap = AZStd::unordered_map<PathType, bool>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
-        //! Use this constructor when temporary in-memory only storage is desired
-        DocumentPropertyEditorSettings(const DocumentPropertyEditor* owningEditor = nullptr);
-        //! Use this constructor when storing settings in a persistent registry file on-disk
         DocumentPropertyEditorSettings(
-            const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName, const DocumentPropertyEditor* owningEditor);
+            const AZ::DocumentPropertyEditor::DocumentAdapter* adapter = nullptr,
+            //! if settingsRegistryKey or propertyEditorName is empty, the expander state will only be stored in-memory (temporary) 
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string());
 
         virtual ~DocumentPropertyEditorSettings();
 
@@ -78,20 +80,18 @@ namespace AzToolsFramework
 
         AZStd::string m_fullSettingsRegistryPath;
         AZStd::string m_settingsRegistryBasePath;
-        const DocumentPropertyEditor* m_owningEditor = nullptr;
+        const AZ::DocumentPropertyEditor::DocumentAdapter* m_adapter;
     };
 
     class LabeledRowDPEExpanderSettings : public DocumentPropertyEditorSettings
     {
     public:
-        LabeledRowDPEExpanderSettings(const DocumentPropertyEditor* owningEditor = nullptr)
-            : DocumentPropertyEditorSettings(owningEditor)
-        {
-        }
-
         LabeledRowDPEExpanderSettings(
-            const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName, const DocumentPropertyEditor* owningEditor)
-            : DocumentPropertyEditorSettings(settingsRegistryKey, propertyEditorName, owningEditor)
+            const AZ::DocumentPropertyEditor::DocumentAdapter* adapter = nullptr,
+            //! if settingsRegistryKey or propertyEditorName is empty, the expander state will only be stored in-memory (temporary)
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string())
+            : DocumentPropertyEditorSettings(adapter, settingsRegistryKey, propertyEditorName)
         {
         }
 
@@ -99,4 +99,4 @@ namespace AzToolsFramework
         PathType GetStringPathForDomPath(const AZ::Dom::Path& rowPath) const override;
     };
 
-} // namespace AzToolsFramework
+} // namespace AZ::DocumentPropertyEditor
