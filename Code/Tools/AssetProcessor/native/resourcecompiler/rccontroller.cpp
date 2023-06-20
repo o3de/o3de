@@ -397,7 +397,7 @@ namespace AssetProcessor
                 AssetProcessor::DebugChannel,
                 "GetAssetStatus: OnRequestCompileGroup:  %s - %s requested and queued, found %d results.\n",
                 searchTerm.toUtf8().constData(),
-                assetId.ToString<AZStd::string>().c_str(), results.size());
+                assetId.ToFixedString().c_str(), results.size());
 
             // it is not necessary to denote the search terms or list of results here because
             // PerformHeursticSearch already prints out the results.
