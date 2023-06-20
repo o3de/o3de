@@ -493,7 +493,7 @@ namespace AzToolsFramework
 
             bool hasString{ false };
             auto filterCopy = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
-            for (const auto& subFilter : filter->GetSubFilters())
+            for (auto& subFilter : filter->GetSubFilters())
             {
                 // Switch between "search mode" where all results in the asset folder tree are shown,
                 // and "normal mode", where only contents for a single folder are shown, depending on
@@ -518,6 +518,13 @@ namespace AzToolsFramework
                 {
                     filterCopy->AddFilter(subFilter);
                 }
+                auto anyCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
+                if (anyCompFilter)
+                {
+                    auto myCompFilter = const_cast<CompositeFilter*>(anyCompFilter);
+                    myCompFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
+                }
+
             }
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::None);
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
