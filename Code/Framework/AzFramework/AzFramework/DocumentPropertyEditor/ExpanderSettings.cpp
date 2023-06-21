@@ -188,6 +188,7 @@ namespace AZ::DocumentPropertyEditor
                 if (currChild.GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
                 {
                     newPath.Append(AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(currChild).value_or(""));
+                    break;
                 }
             }
         }

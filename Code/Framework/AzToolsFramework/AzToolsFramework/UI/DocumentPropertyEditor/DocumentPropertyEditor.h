@@ -137,8 +137,10 @@ namespace AzToolsFramework
         void AddRowChild(DPERowWidget* rowWidget, size_t domIndex);
         void PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex);
 
-        AZ::Dom::Path BuildDomPath();
+        AZ::Dom::Path BuildDomPath() const;
         void SaveExpanderStatesForChildRows(bool isExpanded);
+
+        static bool ValueHasChildRows(const AZ::Dom::Value& rowValue);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -208,6 +210,7 @@ namespace AzToolsFramework
 
         // IPropertyEditor overrides
         void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
+        void ClearInstances() override;
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 
@@ -228,7 +231,7 @@ namespace AzToolsFramework
             return "ed_enableCVarDPE";
         }
 
-        AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
+        AZStd::vector<size_t> GetPathToRoot(const DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
 

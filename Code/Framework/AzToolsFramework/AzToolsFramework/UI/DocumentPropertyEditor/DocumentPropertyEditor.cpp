@@ -702,36 +702,39 @@ namespace AzToolsFramework
         auto domPath = BuildDomPath();
         SetAttributesFromDom(domArray);
 
-        // determine whether this node should be expanded
-        if (m_forceAutoExpand.has_value())
+        if (ValueHasChildRows(domArray))
         {
-            // forced attribute always wins, set the expansion state
-            SetExpanded(m_forceAutoExpand.value());
-        }
-        else
-        {
-            // nothing forced, so the user's saved expansion state, if it exists, should be used
-            DocumentPropertyEditor* dpe = GetDPE();
-            if (dpe->IsRecursiveExpansionOngoing())
+            // determine whether this node should be expanded, so we know whether to populate row children
+            if (m_forceAutoExpand.has_value())
             {
-                SetExpanded(true);
-                dpe->SetSavedExpanderStateForRow(domPath, true);
-            }
-            else if (dpe->HasSavedExpanderStateForRow(domPath))
-            {
-                SetExpanded(dpe->GetSavedExpanderStateForRow(domPath));
+                // forced attribute always wins, set the expansion state
+                SetExpanded(m_forceAutoExpand.value());
             }
             else
             {
-                // no prior expansion state set, use the AutoExpand attribute, if it's set
-                if (m_expandByDefault.has_value())
+                // nothing forced, so the user's saved expansion state, if it exists, should be used
+                DocumentPropertyEditor* dpe = GetDPE();
+                if (dpe->IsRecursiveExpansionOngoing())
                 {
-                    SetExpanded(m_expandByDefault.value());
+                    SetExpanded(true);
+                    dpe->SetSavedExpanderStateForRow(domPath, true);
+                }
+                else if (dpe->HasSavedExpanderStateForRow(domPath))
+                {
+                    SetExpanded(dpe->GetSavedExpanderStateForRow(domPath));
                 }
                 else
                 {
-                    // expander state is not explicitly set or saved anywhere, default to expanded
-                    SetExpanded(true);
+                    // no prior expansion state set, use the AutoExpand attribute, if it's set
+                    if (m_expandByDefault.has_value())
+                    {
+                        SetExpanded(m_expandByDefault.value());
+                    }
+                    else
+                    {
+                        // expander state is not explicitly set or saved anywhere, default to expanded
+                        SetExpanded(true);
+                    }
                 }
             }
         }
@@ -1173,7 +1176,7 @@ namespace AzToolsFramework
         return lastDescendant;
     }
 
-    AZ::Dom::Path DPERowWidget::BuildDomPath()
+    AZ::Dom::Path DPERowWidget::BuildDomPath() const
     {
         auto pathToRoot = GetDPE()->GetPathToRoot(this);
         AZ::Dom::Path rowPath = AZ::Dom::Path();
@@ -1214,6 +1217,21 @@ namespace AzToolsFramework
 
             GetDPE()->SetSavedExpanderStateForRow(row->BuildDomPath(), isExpanded);
         }
+    }
+
+    bool DPERowWidget::ValueHasChildRows(const AZ::Dom::Value& rowValue)
+    {
+        bool childRowFound = false;
+
+        for (size_t arrayIndex = 0, numIndices = rowValue.ArraySize(); arrayIndex < numIndices && !childRowFound; ++arrayIndex)
+        {
+            auto& childValue = rowValue[arrayIndex];
+            if (childValue.GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
+            {
+                childRowFound = true;
+            }
+        }
+        return childRowFound;
     }
 
     void DPERowWidget::SetExpanded(bool expanded, bool recurseToChildRows)
@@ -1302,7 +1320,14 @@ namespace AzToolsFramework
 
     bool DPERowWidget::HasChildRows() const
     {
-        return !m_domOrderedChildren.empty();
+        for (auto currChild : m_domOrderedChildren)
+        {
+            if (qobject_cast<DPERowWidget*>(currChild))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     int DPERowWidget::GetLevel() const
@@ -1381,6 +1406,7 @@ namespace AzToolsFramework
 
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
+        m_dpeSettings.reset();
         m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
             m_adapter->CreateExpanderSettings(m_adapter.get()));
 
@@ -1449,6 +1475,12 @@ namespace AzToolsFramework
             // We need to rebuild the view using the stored expander states
             HandleReset();
         }
+    }
+
+    void DocumentPropertyEditor::ClearInstances()
+    {
+        m_dpeSettings.reset();
+        Clear();
     }
 
     void DocumentPropertyEditor::SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
@@ -1567,7 +1599,7 @@ namespace AzToolsFramework
         return currWidget;
     }
 
-    AZStd::vector<size_t> DocumentPropertyEditor::GetPathToRoot(DPERowWidget* row) const
+    AZStd::vector<size_t> DocumentPropertyEditor::GetPathToRoot(const DPERowWidget* row) const
     {
         AZStd::vector<size_t> pathToRoot;
         const DPERowWidget* thisRow = row;
