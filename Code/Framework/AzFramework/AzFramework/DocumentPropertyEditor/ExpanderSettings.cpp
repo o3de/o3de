@@ -78,10 +78,6 @@ namespace AZ::DocumentPropertyEditor
         // Configuration that the dumper util will use when collecting our data from the SettingsRegistry
         AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
         dumperSettings.m_prettifyOutput = true;
-        dumperSettings.m_includeFilter = [pathFilter = m_settingsRegistryBasePath](AZStd::string_view path)
-        {
-            return AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual(pathFilter, path);
-        };
         dumperSettings.m_jsonPointerPrefix = m_settingsRegistryBasePath;
 
         auto outcome = m_settingsRegistrar.SaveSettingsToFile(m_settingsFilepath, dumperSettings, m_settingsRegistryBasePath);
@@ -189,7 +185,7 @@ namespace AZ::DocumentPropertyEditor
             for (auto arrayIter = rowValue.ArrayBegin(), endIter = rowValue.ArrayEnd(); arrayIter != endIter; ++arrayIter)
             {
                 auto& currChild = *arrayIter;
-                if (arrayIter->GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
+                if (currChild.GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Label>())
                 {
                     newPath.Append(AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(currChild).value_or(""));
                 }

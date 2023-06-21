@@ -29,7 +29,7 @@ namespace AZ::DocumentPropertyEditor
     public:
         AZ_RTTI(ExpanderSettings, "{7DECB0A1-A1AB-41B2-B31F-E52D3C3014A6}");
 
-        using PathType = AZ::IO::BasicPath<AZStd::string>;
+        using PathType = AZ::IO::Path;
         using ExpanderStateMap = AZStd::unordered_map<PathType, bool>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
