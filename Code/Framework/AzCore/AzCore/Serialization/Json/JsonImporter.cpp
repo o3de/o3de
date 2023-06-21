@@ -293,6 +293,11 @@ namespace AZ
         return pathsResult;
     }
 
+    // The algorithm below is a modified JSON Merge Patch algorithm that is for patching a specific field
+    // in the target JSON value
+    // The modifications are that any `null` entries do not revome existing fields from the target JSON
+    // The reason this is needed is because the Json Import operation should preserve existing fields
+    // in case the JSON data is used for an JSON patch or JSON merge patch operation explicitly
     JsonSerializationResult::ResultCode JsonImportResolver::PatchField(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
         rapidjson::Value::StringRefType fieldNameStringRef, const rapidjson::Value& fieldValue,
@@ -436,13 +441,6 @@ namespace AZ
             // Array fields are recursively checked for children $import directives
             mergePatchResult.Combine(ResolveImportsInOrder(*newFieldValue, allocator, fieldValue,
                 importPathStack, settings, element));
-        }
-        else if (fieldValue.IsNull())
-        {
-            if (targetFieldName)
-            {
-                target.RemoveMember(*targetFieldName);
-            }
         }
         else
         {
