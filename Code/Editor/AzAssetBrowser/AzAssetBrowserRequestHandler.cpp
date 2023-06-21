@@ -467,7 +467,8 @@ void AzAssetBrowserRequestHandler::AddSortMenu(
     CreateSortAction(
         sortMenu,
         thumbnailView,
-        treeView, QObject::tr("Type"), AssetBrowserEntry::AssetEntrySortMode::FileType);
+        treeView,
+        QObject::tr("Type"), AssetBrowserEntry::AssetEntrySortMode::FileType);
 
     CreateSortAction(
         sortMenu,
@@ -478,7 +479,8 @@ void AzAssetBrowserRequestHandler::AddSortMenu(
     CreateSortAction(
         sortMenu,
         thumbnailView,
-        treeView, QObject::tr("Size"), AssetBrowserEntry::AssetEntrySortMode::Size);
+        treeView,
+        QObject::tr("Size"), AssetBrowserEntry::AssetEntrySortMode::Size);
 }
 
 void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
