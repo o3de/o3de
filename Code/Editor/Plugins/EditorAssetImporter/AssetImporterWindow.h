@@ -93,7 +93,6 @@ public slots:
     void OnClearUnsavedChangesRequested();
     void OnSceneResetRequested();
     void OnAssignScript();
-    void OnOpenDocumentation();
     void OnInspect();
     void SceneSettingsCardDestroyed();
     void SceneSettingsCardProcessingCompleted();

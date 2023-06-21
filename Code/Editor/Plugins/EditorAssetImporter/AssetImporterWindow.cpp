@@ -161,24 +161,37 @@ void AssetImporterWindow::Init()
     //  the Import button & the cancel button, which are handled here by the window.
     m_overlay.reset(aznew AZ::SceneAPI::UI::OverlayWidget(this));
     m_rootDisplay.reset(aznew ImporterRootDisplayWidget(m_serializeContext));
-    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::SaveClicked, this, &AssetImporterWindow::SaveClicked);
-    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::HelpClicked, this, &AssetImporterWindow::OnOpenDocumentation);
-    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::InspectClicked, this, &AssetImporterWindow::OnInspect);
-    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::ResetSettings, this, &AssetImporterWindow::OnSceneResetRequested);
-    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::ClearChanges, this, &AssetImporterWindow::OnClearUnsavedChangesRequested);
-    connect(m_rootDisplay.data(), &ImporterRootDisplayWidget::AssignScript, this, &AssetImporterWindow::OnAssignScript);
+    connect(
+        m_rootDisplay.data()->GetManifestWidget(),
+        &AZ::SceneAPI::UI::ManifestWidget::SaveClicked,
+        this,
+        &AssetImporterWindow::SaveClicked);
+    connect(
+        m_rootDisplay.data()->GetManifestWidget(),
+        &AZ::SceneAPI::UI::ManifestWidget::OnInspect,
+        this,
+        &AssetImporterWindow::OnInspect);
+    connect(
+        m_rootDisplay.data()->GetManifestWidget(),
+        &AZ::SceneAPI::UI::ManifestWidget::OnSceneResetRequested,
+        this,
+        &AssetImporterWindow::OnSceneResetRequested);
+    connect(
+        m_rootDisplay.data()->GetManifestWidget(),
+        &AZ::SceneAPI::UI::ManifestWidget::OnClearUnsavedChangesRequested,
+        this,
+        &AssetImporterWindow::OnClearUnsavedChangesRequested);
+    connect(
+        m_rootDisplay.data()->GetManifestWidget(),
+        &AZ::SceneAPI::UI::ManifestWidget::OnAssignScript,
+        this,
+        &AssetImporterWindow::OnAssignScript);
 
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerAdded, this, &AssetImporterWindow::OverlayLayerAdded);
     connect(m_overlay.data(), &AZ::SceneAPI::UI::OverlayWidget::LayerRemoved, this, &AssetImporterWindow::OverlayLayerRemoved);
 
     m_overlay->SetRoot(m_rootDisplay.data());
     ui->m_settingsAreaLayout->addWidget(m_overlay.data());
-    const int handleCount = ui->m_mainAreaSplitter->count();
-    for (int handleIndex = 0; handleIndex < handleCount; ++handleIndex)
-    {
-        auto handle = ui->m_mainAreaSplitter->handle(handleIndex);
-        handle->setEnabled(false);
-    }
 
     // Filling the initial browse prompt text to be programmatically set from available extensions
     AZStd::unordered_set<AZStd::string> extensions;
@@ -274,6 +287,7 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     ui->m_notificationAreaLayoutWidget->show();
     card->SetState(state);
     ui->m_cardAreaLayout->addWidget(card);
+    ui->m_cardAreaLayoutWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     ++m_openSceneSettingsCards;
     connect(card, &QObject::destroyed, this, &AssetImporterWindow::SceneSettingsCardDestroyed);
 
@@ -420,6 +434,11 @@ void AssetImporterWindow::SaveClicked()
     else if (!m_scriptProcessorRuleFilename.empty())
     {
         AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow, "A script updates the manifest; will not save.");
+        QMessageBox messageBox(
+            QMessageBox::Icon::Warning,
+            tr("Failed to save"),
+            tr("A script updates this file; will not save."));
+        messageBox.exec();
         return;
     }
 
@@ -567,11 +586,6 @@ void AssetImporterWindow::OnAssignScript()
     {
         OpenFile(m_assetImporterDocument->GetScene()->GetSourceFilename());
     }
-}
-
-void AssetImporterWindow::OnOpenDocumentation()
-{
-    QDesktopServices::openUrl(QString(s_documentationWebAddress));
 }
 
 void AssetImporterWindow::OnInspect()

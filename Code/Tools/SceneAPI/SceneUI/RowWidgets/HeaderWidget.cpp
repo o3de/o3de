@@ -267,7 +267,7 @@ namespace AZ
                                 AZStd::string categoryAttributeValue = categoryAttributeData->Get(&sceneNodeGroup);
                                 if (categoryAttributeValue.compare("display divider") == 0)
                                 {
-                                    ui->m_nameLabel->setStyleSheet("font: bold");
+                                    setStyleSheet("QFrame, QLabel {margin-top: 0px; font: bold;}");
                                 }
                             }
                         }

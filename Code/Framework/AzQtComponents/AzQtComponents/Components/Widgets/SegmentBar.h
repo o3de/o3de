@@ -62,11 +62,6 @@ namespace AzQtComponents
         //! Returns the text of the tab at the given index.
         QString tabText(int index) const;
 
-        //! Sets the visibility of the tab at the given index.
-        void setVisibility(int index, bool isVisible);
-        //! Returns the visibility of the tab at the given index.
-        bool isVisible(int index) const;
-
         //! Sets the text color to the tab at the given index.
         void setTabTextColor(int index, const QColor& color);
         //! Returns the text color of the tab at the given index.

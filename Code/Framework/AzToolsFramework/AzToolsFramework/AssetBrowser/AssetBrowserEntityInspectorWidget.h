@@ -18,7 +18,9 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QMainWindow>
+#include <QPushButton>
 #include <QStackedLayout>
+#include <QStackedWidget>
 #include <QTreeWidget>
 #endif
 
@@ -67,9 +69,11 @@ namespace AzToolsFramework
             QWidget* m_emptyLayoutWidget = nullptr;
             QWidget* m_populatedLayoutWidget = nullptr;
 
+            QPushButton* m_detailsButton = nullptr;
+            QPushButton* m_sceneSettingsButton = nullptr;
             QLabel* m_previewImage = nullptr;
 
-            AzQtComponents::SegmentControl* m_segmentControl = nullptr;
+            QStackedWidget* m_settingsSwitcher = nullptr;
             QWidget* m_detailsWidget = nullptr;
             QMainWindow* m_sceneSettings = nullptr;
 

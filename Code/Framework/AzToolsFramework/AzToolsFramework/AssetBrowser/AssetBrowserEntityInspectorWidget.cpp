@@ -43,10 +43,29 @@ namespace AzToolsFramework
             // Instantiate the populated previewer
             m_populatedLayoutWidget = new QWidget(this);
             auto populatedLayout = new QVBoxLayout(m_populatedLayoutWidget);
+            populatedLayout->setContentsMargins(0, 0, 0, 0);
+
+            // Create the buttons to switch between asset details and scene settings
+            auto buttonLayout = new QHBoxLayout(m_populatedLayoutWidget);
+            buttonLayout->setSpacing(0);
+            //auto horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Maximum);
+            m_detailsButton = new QPushButton(m_populatedLayoutWidget);
+            m_detailsButton->setText("Details");
+            //m_detailsButton->setCheckable(true);
+            //m_detailsButton->setChecked(true);
+            //m_detailsButton->setStyleSheet("QPushButton {background-color: #333333; border: 1px solid #222222;} QPushButton::checked {background-color: #1E70EB; border: none;}");
+            m_sceneSettingsButton = new QPushButton(m_populatedLayoutWidget);
+            m_sceneSettingsButton->setText("Scene Settings");
+            //m_sceneSettingsButton->setCheckable(true);
+            //m_sceneSettingsButton->setStyleSheet("QPushButton::checked {background-color: #1E70EB;}");
+            //buttonLayout->addSpacerItem(horizontalSpacer);
+            buttonLayout->addWidget(m_detailsButton);
+            buttonLayout->addWidget(m_sceneSettingsButton);
+            //buttonLayout->addSpacerItem(horizontalSpacer);
 
             // Create the layout for the asset icon preview
             m_previewImage = new QLabel(m_populatedLayoutWidget);
-            m_previewImage->setStyleSheet("QLabel, QFrame {background-color: #333333; margin-bottom: 6px}");
+            m_previewImage->setStyleSheet("QLabel {background-color: #333333;}");
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
 
@@ -84,33 +103,51 @@ namespace AzToolsFramework
             m_dependentProducts->setMinimumHeight(0);
             m_dependentAssetsCard->setContentWidget(m_dependentProducts);
 
-            m_segmentControl = new AzQtComponents::SegmentControl(m_populatedLayoutWidget);
-            m_segmentControl->setObjectName("SegmentControl");
-            m_segmentControl->setStyleSheet("#SegmentControl { padding-top: 7px;}");
-
-            m_detailsWidget = new QWidget(m_segmentControl);
+            m_settingsSwitcher = new QStackedWidget(m_populatedLayoutWidget);
+            m_detailsWidget = new QWidget(m_settingsSwitcher);
             m_detailsWidget->setLayout(cardLayout);
-            m_segmentControl->addTab(m_detailsWidget, QObject::tr("Details"));
+            m_settingsSwitcher->addWidget(m_detailsWidget);
             AssetBrowserPreviewRequestBus::BroadcastResult(m_sceneSettings, &AssetBrowserPreviewRequest::GetSceneSettings);
             if (m_sceneSettings)
             {
-                m_segmentControl->addTab(m_sceneSettings, QObject ::tr("Scene Settings"));
+                m_settingsSwitcher->addWidget(m_sceneSettings);
+                connect(
+                    m_detailsButton,
+                    &QPushButton::clicked,
+                    this,
+                    [this]
+                    {
+                        m_settingsSwitcher->setCurrentIndex(0);
+                        //m_detailsButton->setChecked(true);
+                        //m_sceneSettingsButton->setChecked(false);
+                    });
+
+                connect(
+                    m_sceneSettingsButton,
+                    &QPushButton::clicked,
+                    this,
+                    [this]
+                    {
+                        m_settingsSwitcher->setCurrentIndex(1);
+                        //m_sceneSettingsButton->setChecked(true);
+                        //m_detailsButton->setChecked(false);
+                    });
             }
-            m_segmentControl->tabBar()->setVisibility(1, false);
 
             QSplitter* splitter = new QSplitter(m_populatedLayoutWidget);
             splitter->setHandleWidth(2);
-            splitter->setStyleSheet("QSplitter::Handle { background-color: #222222;}");
             splitter->setOrientation(Qt::Vertical);
             splitter->addWidget(m_previewImage);
-            splitter->addWidget(m_segmentControl);
+            splitter->addWidget(m_settingsSwitcher);
 
             // Add the image preview and the card layouts to a single layout, spacing them appropriately
+            populatedLayout->addLayout(buttonLayout);
             populatedLayout->addWidget(splitter);
             m_populatedLayoutWidget->setLayout(populatedLayout);
 
             // Add the widgets containing both empty and populated layouts to a stacked widget
             m_layoutSwitcher = new QStackedLayout(this);
+            m_layoutSwitcher->setContentsMargins(0, 0, 0, 0);
             m_layoutSwitcher->addWidget(m_populatedLayoutWidget);
             m_layoutSwitcher->addWidget(m_emptyLayoutWidget);
             setLayout(m_layoutSwitcher);
@@ -173,21 +210,21 @@ namespace AzToolsFramework
                 setMinimumWidth(MinimumPopulatedWidth);
             }
 
+            if (m_settingsSwitcher->currentWidget() != m_detailsWidget)
+            {
+                m_settingsSwitcher->setCurrentWidget(m_detailsWidget);
+            }
+
+            if (m_previewImage->isHidden())
+            {
+                m_previewImage->show();
+            }
+
             if (selectedEntry == m_currentEntry)
             {
                 return;
             }
             m_currentEntry = selectedEntry;
-
-            if (m_segmentControl->currentWidget() != m_detailsWidget)
-            {
-                m_segmentControl->setCurrentWidget(m_detailsWidget);
-            }
-
-            if (m_segmentControl->tabBar()->isVisible(1))
-            {
-                m_segmentControl->tabBar()->setVisibility(1, false);
-            }
 
             int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
             while (assetDetailIndex >= 0)
@@ -196,8 +233,9 @@ namespace AzToolsFramework
                 assetDetailIndex--;
             }
             m_dependentProducts->clear();
-
             m_detailsCard->setExpanded(true);
+            m_detailsButton->hide();
+            m_sceneSettingsButton->hide();
 
             const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(selectedEntry);
             QPixmap pixmap = qVariant.value<QPixmap>();
@@ -297,8 +335,9 @@ namespace AzToolsFramework
                     if (validSceneSettings)
                     {
                         QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
-                        m_segmentControl->setTabText(1, QString("%1 Settings - %2").arg(fileType.toUpper(), name));
-                        m_segmentControl->tabBar()->setVisibility(1, true);
+                        m_sceneSettingsButton->setText(QString("%1 Settings").arg(fileType.toUpper()));
+                        m_detailsButton->show();
+                        m_sceneSettingsButton->show();
                     }
                 }
             }
@@ -364,14 +403,7 @@ namespace AzToolsFramework
             if (m_layoutSwitcher->currentWidget() != m_emptyLayoutWidget)
             {
                 setMinimumWidth(0);
-                m_previewImage->clear();
-                m_dependentProducts->clear();
-                int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
-                while (assetDetailIndex >= 0)
-                {
-                    m_assetDetailLayout->removeRow(assetDetailIndex);
-                    assetDetailIndex--;
-                }
+                m_previewImage->hide();
                 m_populatedLayoutWidget->setMinimumWidth(m_previewImage->minimumSizeHint().width());
                 m_layoutSwitcher->setCurrentWidget(m_emptyLayoutWidget);
             }

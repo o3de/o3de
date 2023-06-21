@@ -110,18 +110,8 @@ public:
 
     bool HasUnsavedChanges() const;
 
-    void AppendUnsaveChangesToTitle();
-
 signals:
-    void SaveClicked();
-    void ResetSettings();
-    void ClearChanges();
-    void AssignScript();
-    void InspectClicked();
-    void HelpClicked();
-
-protected slots:
-    void AddEditMenu();
+    void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
 
 private:
     // ManifestMetaInfoBus

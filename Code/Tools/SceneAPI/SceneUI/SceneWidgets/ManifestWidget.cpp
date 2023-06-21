@@ -30,6 +30,11 @@ namespace AZ
                 , m_serializeContext(serializeContext)
             {
                 ui->setupUi(this);
+                ui->m_tabs->setStyleSheet("AzQtComponents--SegmentBar {margin-bottom: 6px;}"
+                    "AzQtComponents--SegmentBar QAbstractButton {background-color: #222222; border-color: #111111; padding-left: 2px; padding-right: 2px; min-width: 26px;}"
+                    "AzQtComponents--SegmentBar QAbstractButton:checked {background-color: #1E70EB;}"
+                    "AzQtComponents--SegmentBar QAbstractButton:pressed:!checked {background-color: #333333;}"
+                    "AzQtComponents--SegmentBar QAbstractButton:hover:!checked {background-color: #333333;}");
             }
             
             ManifestWidget::~ManifestWidget()
@@ -198,6 +203,12 @@ namespace AZ
             {
                 m_pages.push_back(page);
                 ui->m_tabs->addTab(page, category);
+                connect(page, &ManifestWidgetPage::SaveClicked, this, &ManifestWidget::SaveClicked);
+                connect(page, &ManifestWidgetPage::InspectClicked, this, &ManifestWidget::OnInspect);
+                connect(page, &ManifestWidgetPage::ResetSettings, this, &ManifestWidget::OnSceneResetRequested);
+                connect(page, &ManifestWidgetPage::ClearChanges, this, &ManifestWidget::OnClearUnsavedChangesRequested);
+                connect(page, &ManifestWidgetPage::AssignScript, this, &ManifestWidget::OnAssignScript);
+                connect(this, &ManifestWidget::AppendUnsavedChangesToTitle, page, &ManifestWidgetPage::AppendUnsavedChangesToTitle);
             }
         } // namespace UI
     } // namespace SceneAPI

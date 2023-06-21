@@ -64,6 +64,14 @@ namespace AZ
                 //! Finds this ManifestWidget if the given widget is it's child, otherwise returns null.
                 static const ManifestWidget* FindRoot(const QWidget* child);
 
+            signals:
+                void SaveClicked();
+                void OnInspect();
+                void OnSceneResetRequested();
+                void OnClearUnsavedChangesRequested();
+                void OnAssignScript();
+                void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
+
             protected:
                 void BuildPages();
                 void AddPage(const QString& category, ManifestWidgetPage* page);

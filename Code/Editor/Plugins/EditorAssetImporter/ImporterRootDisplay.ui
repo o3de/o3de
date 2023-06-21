@@ -17,233 +17,22 @@
    </sizepolicy>
   </property>
   <layout class="QGridLayout" name="mainAreaLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <property name="spacing">
     <number>0</number>
    </property>
-   <item row="2" column="0">
-    <widget class="QFrame" name="headerFrame">
-     <property name="styleSheet">
-      <string notr="true">QFrame#headerFrame {border-color: transparent; border-width: 5px 7px 9px 7px; border-image: url(:/Cards/img/UI20/Cards/shadow.png) 5 7 9 7; border-top-left-radius: 2px; border-top-right-radius: 2px; background-color: #333333; margin-bottom: 10px;}</string>
-     </property>
-     <property name="frameShape">
-      <enum>QFrame::NoFrame</enum>
-     </property>
-     <property name="frameShadow">
-      <enum>QFrame::Plain</enum>
-     </property>
-     <property name="lineWidth">
-      <number>1</number>
-     </property>
-     <property name="midLineWidth">
-      <number>0</number>
-     </property>
-     <layout class="QGridLayout" name="headerBrowseLayout">
-      <property name="leftMargin">
-       <number>6</number>
-      </property>
-      <item row="0" column="0">
-       <layout class="QVBoxLayout" name="HeaderVerticalLayout">
-        <item>
-         <layout class="QHBoxLayout" name="HeaderPythonBuilderLayout">
-          <item>
-           <widget class="QLabel" name="PythonBuilderScriptTitle">
-            <property name="text">
-             <string>&lt;b&gt;Assigned Python Builder Script:&lt;/b&gt;</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="AzQtComponents::ElidingLabel" name="m_pythonBuilderScript">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <property name="margin">
-             <number>-4</number>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="HeaderPythonBuilderLayoutSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QPushButton" name="m_closeButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="baseSize">
-             <size>
-              <width>24</width>
-              <height>24</height>
-             </size>
-            </property>
-            <property name="toolTip">
-             <string>Removes this from the window.</string>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="icon">
-             <iconset theme=":/SceneUI/Common/CloseIcon.svg"/>
-            </property>
-            <property name="iconSize">
-             <size>
-              <width>12</width>
-              <height>12</height>
-             </size>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="5" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <property name="rightMargin">
-      <number>6</number>
-     </property>
-     <item>
-      <widget class="QPushButton" name="m_saveButton">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>0</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Saves any changes to the scene settings to disk.</string>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>Save</string>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>16</width>
-         <height>16</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QToolButton" name="m_editButton">
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-         <underline>false</underline>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>Edit</string>
-       </property>
-       <property name="popupMode">
-        <enum>QToolButton::InstantPopup</enum>
-       </property>
-       <property name="toolButtonStyle">
-        <enum>Qt::ToolButtonTextOnly</enum>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="m_inspectButton">
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>Inspect</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QToolButton" name="m_helpButton">
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-       <property name="styleSheet">
-        <string notr="true"/>
-       </property>
-       <property name="text">
-        <string>Help</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item row="6" column="0">
-    <layout class="QVBoxLayout" name="m_manifestWidgetAreaLayout"/>
-   </item>
-   <item row="7" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
       <spacer name="horizontalSpacer">
@@ -277,15 +66,11 @@
      </item>
     </layout>
    </item>
+   <item row="4" column="0">
+    <layout class="QVBoxLayout" name="m_manifestWidgetAreaLayout"/>
+   </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>AzQtComponents::ElidingLabel</class>
-   <extends>QLabel</extends>
-   <header>AzQtComponents/Components/Widgets/ElidingLabel.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

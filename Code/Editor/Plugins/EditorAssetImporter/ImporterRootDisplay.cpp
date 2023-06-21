@@ -77,32 +77,18 @@ ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* seria
     ui->setupUi(this);
     ui->m_manifestWidgetAreaLayout->addWidget(m_manifestWidget.data());
 
-    ui->m_saveButton->setVisible(false);
-    ui->m_saveButton->setProperty("class", "Primary");
-    ui->m_saveButton->setDefault(true);
-
-    m_editMenu = new QMenu("Edit Scene Settings Menu", ui->m_editButton);
-    ui->m_editButton->setMenu(m_editMenu);
-    ui->m_editButton->setVisible(false);
-
-    connect(m_editMenu, &QMenu::aboutToShow, this, &ImporterRootDisplayWidget::AddEditMenu);
-
-    ui->m_inspectButton->setVisible(false);
-
-    ui->m_helpButton->setVisible(false);
-
     ui->m_timeStamp->setVisible(false);
     ui->m_timeStampTitle->setVisible(false);
-
-    ui->headerFrame->setVisible(false);
-
-    connect(ui->m_saveButton, &QPushButton::clicked, this, &ImporterRootDisplayWidget::SaveClicked);
-    connect(ui->m_inspectButton, &QPushButton::clicked, this, &ImporterRootDisplayWidget::InspectClicked);
-    connect(ui->m_helpButton, &QPushButton::clicked, this, &ImporterRootDisplayWidget::HelpClicked);
 
     AZ::SceneAPI::Events::ManifestMetaInfoBus::Handler::BusConnect();
     m_requestHandler = AZStd::make_shared<SceneSettingsRootDisplayScriptRequestHandler>();
     m_requestHandler->SetRootDisplay(this);
+
+    connect(
+        this,
+        &ImporterRootDisplayWidget::AppendUnsavedChangesToTitle,
+        m_manifestWidget.data(),
+        &AZ::SceneAPI::UI::ManifestWidget::AppendUnsavedChangesToTitle);
 }
 
 ImporterRootDisplayWidget::~ImporterRootDisplayWidget()
@@ -200,13 +186,10 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath,
         ui->m_timeStampTitle->setVisible(false);
         ui->m_timeStamp->setVisible(false);
     }
-    ui->m_saveButton->setVisible(true);
-    ui->m_editButton->setVisible(true);
-    ui->m_helpButton->setVisible(true);
 
     if (enableInspector)
     {
-        ui->m_inspectButton->setVisible(true);
+        //ui->m_inspectButton->setVisible(true);
     }
 }
 
@@ -221,48 +204,7 @@ void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)
 
     if (refreshTitle)
     {
-        AppendUnsaveChangesToTitle();
+       emit AppendUnsavedChangesToTitle(m_hasUnsavedChanges);
     }
-}
-
-void ImporterRootDisplayWidget::AppendUnsaveChangesToTitle()
-{
-    QString title(ui->m_saveButton->text());
-
-    if (m_hasUnsavedChanges && title.front() != "*")
-    {
-        title.push_front("*");
-    }
-    else if (!m_hasUnsavedChanges && title.front() == "*")
-    {
-        title.remove(0,1);
-    }
-    ui->m_saveButton->setText(title);
-}
-
-void ImporterRootDisplayWidget::AddEditMenu()
-{
-    m_editMenu->clear();
-
-    m_editMenu->addAction(
-        QObject::tr("Reset settings to default..."),
-        [this]()
-        {
-            emit ResetSettings();
-        });
-
-    m_editMenu->addAction(
-        QObject::tr("Clear unsaved changes..."),
-        [this]()
-        {
-            emit ClearChanges();
-        });
-
-    m_editMenu->addAction(
-        QObject::tr("Assign build script..."),
-        [this]()
-        {
-            emit AssignScript();
-        });
 }
 #include <moc_ImporterRootDisplay.cpp>
