@@ -164,7 +164,7 @@ protected: // attributes
     static constexpr char LogName[] = "UiRenderer";
 
     BaseState m_baseState;
-    uint32 m_stencilRef = 0;
+    uint32_t m_stencilRef = 0;
 
     UiShaderData m_uiShaderData;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
