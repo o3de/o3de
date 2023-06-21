@@ -1187,7 +1187,7 @@ namespace ScriptCanvasEditor
                 // Count the number of data connections between the nodes of the two endpoints
                 for (const ScriptCanvas::Slot* dataSlot : sourceNodeDataSlots)
                 {
-                    for (ScriptCanvas::EndpointResolved connectedNode : sourceNode->GetConnectedNodes(*dataSlot))
+                    for (const ScriptCanvas::EndpointResolved& connectedNode : sourceNode->GetConnectedNodes(*dataSlot))
                     {
                         if (connectedNode.first == targetNode)
                         {
