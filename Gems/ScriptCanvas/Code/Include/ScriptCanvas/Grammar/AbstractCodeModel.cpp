@@ -3317,7 +3317,27 @@ namespace ScriptCanvas
 
             // \todo Infinite loop handling both in code and in the graph will have to occur here.
             auto executionOutNodes = execution->GetId().m_node->GetConnectedNodes(outSlot);
-            auto numConnections = executionOutNodes.size();
+
+            // Sort the out node connections to ensure that implicit execution connections are always parsed first
+            EndpointsResolved sortedExecutionOutNodes;
+            for (const EndpointResolved& endpoint : executionOutNodes)
+            {
+                // If this connection is implicit, only parse it if the recieving node has parsed all of its implicit
+                // connections already
+                if (endpoint.second->CreatesImplicitConnections() && !HasUnparsedImplicitConnections(&outSlot, endpoint.second))
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+            for (const EndpointResolved& endpoint : executionOutNodes)
+            {
+                if (!endpoint.second->CreatesImplicitConnections())
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+
+            auto numConnections = sortedExecutionOutNodes.size();
 
             if (numConnections == 0)
             {
@@ -3332,13 +3352,13 @@ namespace ScriptCanvas
             }
             else if (numConnections == 1)
             {
-                ParseExecutionFunctionRecurse(execution, execution->ModChild(0), outSlot, executionOutNodes[0]);
+                ParseExecutionFunctionRecurse(execution, execution->ModChild(0), outSlot, sortedExecutionOutNodes[0]);
             }
             else
             {
                 AZStd::vector<const Slot*> outSlots;
-                outSlots.resize(executionOutNodes.size(), &outSlot);
-                ParseExecutionMultipleOutSyntaxSugar(execution, executionOutNodes, outSlots);
+                outSlots.resize(sortedExecutionOutNodes.size(), &outSlot);
+                ParseExecutionMultipleOutSyntaxSugar(execution, sortedExecutionOutNodes, outSlots);
             }
 
             ParseMultiExecutionPost(execution);
@@ -3769,23 +3789,9 @@ namespace ScriptCanvas
                 execution->AddChild({ outSlots[childIndex], {}, nullptr });
             }
 
-            // Sort the out node connections to ensure that implicit execution connections are always parsed first
-            EndpointsResolved sortedExecutionOutNodes;
-            for (EndpointResolved endpoint : executionOutNodes)
-            {
-                if (endpoint.second->CreatesImplicitConnections())
-                {
-                    sortedExecutionOutNodes.insert(sortedExecutionOutNodes.begin(), endpoint);
-                }
-                else
-                {
-                    sortedExecutionOutNodes.emplace_back(endpoint);
-                }
-            }
-
             for (size_t childIndex = 0; childIndex < executionOutNodes.size(); ++childIndex)
             {
-                ParseExecutionFunctionRecurse(execution, execution->ModChild(childIndex), *outSlots[childIndex], sortedExecutionOutNodes[childIndex]);
+                ParseExecutionFunctionRecurse(execution, execution->ModChild(childIndex), *outSlots[childIndex], executionOutNodes[childIndex]);
 
                 if (!IsErrorFree())
                 {
@@ -3798,6 +3804,51 @@ namespace ScriptCanvas
                     return;
                 }
             }
+        }
+
+        bool AbstractCodeModel::HasUnparsedImplicitConnections(const Slot* outSlot, const Slot* inSlot)
+        {
+            if (inSlot->CreatesImplicitConnections())
+            {
+                // Get each endpoint connected to the input slot
+                EndpointsResolved connectedNodes;
+                if (const Node* inNode = inSlot->GetNode())
+                {
+                    connectedNodes = inNode->GetConnectedNodes(*inSlot);
+                }
+                for (const EndpointResolved& connectedNode : connectedNodes)
+                {
+                    // If the endpoint's slot is not the same as the output slot currently being processed, check if it has already been parsed
+                    if (connectedNode.second != outSlot)
+                    {
+                        // If there are no connections to ignore yet, that must mean there are still more slots on this node to parse
+                        if (m_parsedImplicitConnections.size() == 0)
+                        {
+                            m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
+                            return true;
+                        }
+                        else
+                        {
+                            bool foundConnectionInParsed = false;
+                            for (auto connection : m_parsedImplicitConnections)
+                            {
+                                if (connection.first == connectedNode.second && connection.second == inSlot)
+                                {
+                                    foundConnectionInParsed = true;
+                                }
+                            }
+                            // If the connection we are currently checking is not in the connections to ignore vector, that means there are
+                            // still more implicit slots on this node that we must parse
+                            if (!foundConnectionInParsed)
+                            {
+                                m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
         }
 
         void AbstractCodeModel::ParseExecutionOnce(ExecutionTreePtr once)
