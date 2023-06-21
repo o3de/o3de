@@ -402,9 +402,8 @@ namespace AZ
                 size_t vertexIndex) const;
         };
 
-        /**
-         * Report dependencies for the ModelAssetBuilderComponent
-         */
+        //! Report dependencies for the ModelAssetBuilderComponent.
+        //! Specifically, this reports the dependency on DefaultVertexBufferPool.resourcepool.
         class ModelAssetDependenciesComponent
             : public Component
             , public SceneAPI::SceneBuilderDependencyBus::Handler

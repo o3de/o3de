@@ -371,7 +371,7 @@ namespace AZ
             m_lodAssets.clear();
             m_tags = {};
 
-            for (auto& lodAsset : lodAssets)
+            for (const auto& lodAsset : lodAssets)
             {
                 m_lodAssets.push_back(lodAsset);
                 if (lodAsset.IsReady())
@@ -380,7 +380,7 @@ namespace AZ
                 }
             }
 
-            for (auto& tag : tags)
+            for (const auto& tag : tags)
             {
                 m_tags.push_back(tag);
             }

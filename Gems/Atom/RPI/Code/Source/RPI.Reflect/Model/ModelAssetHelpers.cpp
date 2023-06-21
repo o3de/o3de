@@ -15,7 +15,6 @@ namespace AZ
 {
     namespace RPI
     {
-        // Build a buffer asset that contains the given data.
         AZ::Data::Asset<AZ::RPI::BufferAsset> ModelAssetHelpers::CreateBufferAsset(
             const void* data, const uint32_t elementCount, const uint32_t elementSize)
         {
