@@ -19,7 +19,23 @@ namespace AZ
             {
                 AsyncAssetLoader loader(callback);
 
-                Data::AssetId assetId = GetAssetIdForProductPath(path.c_str(), TraceLevel::Error, azrtti_typeid<AssetDataT>(), true);
+                // Try to get an asset id for the requested path. Don't print an error yet if it isn't found though.
+                Data::AssetId assetId = GetAssetIdForProductPath(path.c_str(), TraceLevel::None, azrtti_typeid<AssetDataT>());
+
+                // If the asset id isn't valid for this path, it's possible that the asset hasn't been compiled yet.
+                if (!assetId.IsValid())
+                {
+                    // Try compiling the asset and getting the id again.
+                    AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+                    AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, path);
+
+                    // This time, print an error if the asset id can't be determined.
+                    assetId = GetAssetIdForProductPath(path.c_str(), TraceLevel::Error, azrtti_typeid<AssetDataT>());
+                }
+
+                // We'll start the load whether or not the asset id is valid. It will immediately call the callback with failure if
+                // the asset id is invalid.
                 loader.StartLoad<AssetDataT>(assetId);
                 return loader;
             }

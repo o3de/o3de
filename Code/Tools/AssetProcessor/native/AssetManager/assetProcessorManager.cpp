@@ -618,12 +618,9 @@ namespace AssetProcessor
                 platform.toUtf8().constData(),
                 AzToolsFramework::AssetSystem::JobStatus::Any);
 
-            if (foundOne)
-            {
-                // the source exists.
-                Q_EMIT SendAssetExistsResponse(groupID, true);
-                return;
-            }
+            // respond with whether or not the entry was found in the DB.
+            Q_EMIT SendAssetExistsResponse(groupID, foundOne);
+            return;
         }
 
         // otherwise, we have to guess
