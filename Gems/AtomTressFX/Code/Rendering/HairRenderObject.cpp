@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
