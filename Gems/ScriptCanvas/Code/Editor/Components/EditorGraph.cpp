@@ -1074,7 +1074,7 @@ namespace ScriptCanvasEditor
             ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
             : AZ::EntityId();
 
-        if (ScriptCanvas::Connection* connectionComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
+        if (auto connectionComponent = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
             ScriptCanvas::Endpoint sourceEndpoint = connectionComponent->GetSourceEndpoint();
             ScriptCanvas::Endpoint targetEndpoint = connectionComponent->GetTargetEndpoint();
