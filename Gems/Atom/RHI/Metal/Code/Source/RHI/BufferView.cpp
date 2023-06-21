@@ -70,8 +70,9 @@ namespace AZ
             const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? viewDescriptor.m_overrideBindFlags : buffer.GetDescriptor().m_bindFlags;
             bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
             bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+
             // Cache the read and readwrite index of the view within the global Bindless Argument buffer
-            if (shaderRead || shaderReadWrite)
+            if (device.GetBindlessArgumentBuffer().IsInitialized() && (shaderRead || shaderReadWrite))
             {
                 if (shaderRead)
                 {
@@ -115,14 +116,16 @@ namespace AZ
         void BufferView::ReleaseBindlessIndices()
         {
             auto& device = static_cast<Device&>(GetDevice());
-
-            if (m_readIndex != InvalidBindlessIndex)
+            if (device.GetBindlessArgumentBuffer().IsInitialized())
             {
-                device.GetBindlessArgumentBuffer().DetachReadBuffer(m_readIndex);
-            }
-            if (m_readWriteIndex != InvalidBindlessIndex)
-            {
-                device.GetBindlessArgumentBuffer().DetachReadWriteBuffer(m_readWriteIndex);
+                if (m_readIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadBuffer(m_readIndex);
+                }
+                if (m_readWriteIndex != InvalidBindlessIndex)
+                {
+                    device.GetBindlessArgumentBuffer().DetachReadWriteBuffer(m_readWriteIndex);
+                }
             }
         }
 

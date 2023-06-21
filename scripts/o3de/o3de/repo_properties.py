@@ -90,7 +90,10 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         FileNotFoundError: If the json_data_path does not exist.
         ValueError: If the json_data_path is not a dict.
     """
-
+    if download_prefix is None:
+        logger.error('The --download-prefix argument must be provided. A url prefix for a file attached to a Github release might look like this:'
+                     '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
+        return {}
     zip_path = releases_path / archive_filename
     # check if a object.zip folder already exist in the path - ask user if they want to overwrite the current zip
     if not force and zip_path.exists():
