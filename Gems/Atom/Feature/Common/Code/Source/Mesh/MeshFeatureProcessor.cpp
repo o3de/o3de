@@ -2125,7 +2125,8 @@ namespace AZ
                 constexpr size_t NumExpectedStreams = 5;
                 if (streamBufferViews.size() < NumExpectedStreams)
                 {
-                    AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams, skipping.");
+                    AZ_Warning("MeshFeatureProcessor", false, "Model is missing one or more expected streams "
+                        "(positions, normals, tangents, bitangents, uvs), skipping the raytracing data generation.");
                     continue;
                 }
 

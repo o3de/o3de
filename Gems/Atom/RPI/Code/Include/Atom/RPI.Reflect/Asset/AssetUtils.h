@@ -32,7 +32,21 @@ namespace AZ
             //! Finds the AssetId for a given product file path.
             Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting = TraceLevel::Warning, Data::AssetType assetType = Data::s_invalidAssetType);
 
-            bool TryToCompileAsset(const AZStd::string& assetFilePath, TraceLevel reporting);
+            //! Tries to compile the asset at the given product path.
+            //! This will actively try to compile the asset every time it is called, it won't skip compilation just because the
+            //! asset exists. This should only be used for assets that need to be at their most up-to-date version of themselves
+            //! before getting loaded into the engine, as it can take seconds to minutes for this call to return. It is synchronously
+            //! asking the Asset Processor to compile the asset, and then blocks until it gets a result. If the AP is busy, it can
+            //! take a while to get a result even if the asset is already up-to-date.
+            //! In release builds where the AP isn't connected this will immediately return with "Unknown".
+            //! @param assetProductFilePath - the relative file path to the product asset (ex: default/models/sphere.azmodel)
+            //! @param reporting - the reporting level to use for problems.
+            //! @return true if the compilation is successful or unknown, false if an error was detected
+            //! "Unknown" is considered a successful result because if there's no Asset Processor, there's no way to truly
+            //! know the compile state of the asset. If the AP is connected, there *should* always be a result
+            //! (Compiled, Failed, Missing, etc), but if this is called *before* the AP is connected, it's possible to get Unknown
+            //! even when you think the AP is (or will be) connected.
+            bool TryToCompileAsset(const AZStd::string& assetProductFilePath, TraceLevel reporting);
 
             //! Gets an Asset<AssetDataT> reference for a given product file path. This function does not cause the asset to load.
             //! @return a null asset if the asset could not be found.

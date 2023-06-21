@@ -395,7 +395,7 @@ namespace AZ
             const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
             // If there's a 0-length stream, this must be trying to load our default fallback model.
-            // Fill in the asset data with a generated unit cube model.
+            // Fill in the asset data with a generated unit X-shaped model.
             // We need to generate the data instead of load a fallback asset because model assets have dependencies
             // on buffer and material assets, and fallback assets need to not have any dependencies to be able to load
             // correctly when used as fallbacks. (The AssetManager doesn't currently support handling dependency pre-loading
@@ -405,7 +405,7 @@ namespace AZ
                 auto assetData = asset.GetAs<AZ::RPI::ModelAsset>();
                 if (assetData)
                 {
-                    ModelAssetHelpers::CreateUnitCube(assetData);
+                    ModelAssetHelpers::CreateUnitX(assetData);
                 }
 
                 return Data::AssetHandler::LoadResult::LoadComplete;

@@ -59,13 +59,108 @@ namespace AZ
             return asset;
         }
 
+        void ModelAssetHelpers::CreateModel(
+            ModelAsset* modelAsset,
+            const AZ::Name& name,
+            AZStd::span<const uint32_t> indices,
+            AZStd::span<const float_t> positions,
+            AZStd::span<const float> normals,
+            AZStd::span<const float> tangents,
+            AZStd::span<const float> bitangents,
+            AZStd::span<const float> uvs)
+        {
+            // First build a model LOD asset that contains a mesh for the given data.
+            AZ::Data::Asset<AZ::RPI::ModelLodAsset> lodAsset;
+
+            AZ::Data::AssetId lodAssetId = AZ::Uuid::CreateRandom();
+            lodAsset = AZ::Data::AssetManager::Instance().CreateAsset(
+                lodAssetId, azrtti_typeid<AZ::RPI::ModelLodAsset>(), Data::AssetLoadBehavior::PreLoad);
+
+            AZ::RPI::ModelLodAssetCreator creator;
+            creator.Begin(lodAssetId);
+
+            const uint32_t positionElementCount = aznumeric_cast<uint32_t>(positions.size() / 3);
+            const uint32_t indexElementCount = aznumeric_cast<uint32_t>(indices.size());
+            const uint32_t uvElementCount = aznumeric_cast<uint32_t>(uvs.size() / 2);
+            const uint32_t normalElementCount = aznumeric_cast<uint32_t>(normals.size() / 3);
+            const uint32_t tangentElementCount = aznumeric_cast<uint32_t>(tangents.size() / 4);
+            const uint32_t bitangentElementCount = aznumeric_cast<uint32_t>(bitangents.size() / 3);
+
+            constexpr uint32_t PositionElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
+            constexpr uint32_t IndexElementSize = aznumeric_cast<uint32_t>(sizeof(uint32_t));
+            constexpr uint32_t UvElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 2);
+            constexpr uint32_t NormalElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
+            constexpr uint32_t TangentElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 4);
+            constexpr uint32_t BitangentElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
+
+            // Calculate the Aabb for the given positions.
+            AZ::Aabb aabb = AZ::Aabb::CreateNull();
+            for (uint32_t i = 0; i < positions.size(); i += 3)
+            {
+                aabb.AddPoint(AZ::Vector3(positions[i], positions[i + 1], positions[i + 2]));
+            }
+
+            // Set up a single-mesh asset with only position data.
+            creator.BeginMesh();
+            creator.SetMeshAabb(AZStd::move(aabb));
+            creator.SetMeshMaterialSlot(0);
+            creator.SetMeshIndexBuffer({ CreateBufferAsset(indices.data(), indexElementCount, IndexElementSize),
+                                         AZ::RHI::BufferViewDescriptor::CreateTyped(0, indexElementCount, AZ::RHI::Format::R32_UINT) });
+            creator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
+                AZ::Name(),
+                { CreateBufferAsset(positions.data(), positionElementCount, PositionElementSize),
+                  AZ::RHI::BufferViewDescriptor::CreateTyped(0, positionElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
+            creator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("NORMAL")),
+                AZ::Name(),
+                { CreateBufferAsset(normals.data(), normalElementCount, NormalElementSize),
+                  AZ::RHI::BufferViewDescriptor::CreateTyped(0, normalElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
+            creator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("TANGENT")),
+                AZ::Name(),
+                { CreateBufferAsset(tangents.data(), tangentElementCount, TangentElementSize),
+                  AZ::RHI::BufferViewDescriptor::CreateTyped(0, tangentElementCount, AZ::RHI::Format::R32G32B32A32_FLOAT) });
+            creator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("BITANGENT")),
+                AZ::Name(),
+                { CreateBufferAsset(bitangents.data(), bitangentElementCount, BitangentElementSize),
+                  AZ::RHI::BufferViewDescriptor::CreateTyped(0, bitangentElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
+            creator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("UV")),
+                AZ::Name(),
+                { CreateBufferAsset(uvs.data(), uvElementCount, UvElementSize),
+                  AZ::RHI::BufferViewDescriptor::CreateTyped(0, uvElementCount, AZ::RHI::Format::R32G32_FLOAT) });
+            creator.EndMesh();
+            creator.End(lodAsset);
+
+            // Create a model asset that contains the single LOD built above.
+            modelAsset->InitData(
+                name,
+                AZStd::span<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>(&lodAsset, 1),
+                {}, // no material slots
+                {}, // no fallback material
+                {} // no tags
+            );
+        }
+
         void ModelAssetHelpers::CreateUnitCube(ModelAsset* modelAsset)
         {
             // Build a mesh containing a unit cube.
             // The vertices are duplicated for each face so that we can have correct per-face normals and UVs.
 
+            constexpr int ValuesPerPositionEntry = 3;
+            constexpr int ValuesPerUvEntry = 2;
+            constexpr int ValuesPerNormalEntry = 3;
+            constexpr int ValuesPerTangentEntry = 4;
+            constexpr int ValuesPerBitangentEntry = 3;
+
+            constexpr int VerticesPerFace = 6;
+            constexpr int MeshFaces = 6;
+            constexpr int ValuesPerFace = 4;
+
             // 6 vertices per face, 6 faces.
-            constexpr AZStd::array<uint32_t, 6 * 6> indices = {
+            constexpr AZStd::array<uint32_t, VerticesPerFace * MeshFaces> indices = {
                  0,  1,  2,  0,  2,  3,   // front face
                  4,  5,  6,  4,  6,  7,   // right face
                  8,  9, 10,  8, 10, 11,   // back face
@@ -75,7 +170,7 @@ namespace AZ
             };
 
             // 3 values per position, 4 positions per face, 6 faces
-            constexpr AZStd::array<float, 3 * 4 * 6> positions = {
+            constexpr AZStd::array<float, ValuesPerPositionEntry * ValuesPerFace * MeshFaces> positions = {
                 -0.5f, -0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f,     // front
                 +0.5f, -0.5f, -0.5f, +0.5f, +0.5f, -0.5f, +0.5f, +0.5f, +0.5f, +0.5f, -0.5f, +0.5f,     // right
                 +0.5f, +0.5f, -0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f, +0.5f, +0.5f, +0.5f, +0.5f,     // back
@@ -87,7 +182,7 @@ namespace AZ
             // 2 values per position, 4 positions per face, 6 faces
             // This aribtrarily maps the UVs to use the full texture on each face.
             // This choice can be changed if a different mapping would be more usable.
-            constexpr AZStd::array<float, 2 * 4 * 6> uvs = {
+            constexpr AZStd::array<float, ValuesPerUvEntry * ValuesPerFace * MeshFaces> uvs = {
                 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // front
                 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // right
                 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,     // back
@@ -97,7 +192,7 @@ namespace AZ
             };
 
             // 3 values per position, 4 positions per face, 6 faces
-            constexpr AZStd::array<float, 3 * 4 * 6> normals = {
+            constexpr AZStd::array<float, ValuesPerNormalEntry * ValuesPerFace * MeshFaces> normals = {
                 +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f,     // front (-Y)
                 +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f,     // right (+X)
                 +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f,     // back (+Y)
@@ -107,7 +202,7 @@ namespace AZ
             };
 
             // 4 values per position, 4 positions per face, 6 faces
-            constexpr AZStd::array<float, 4 * 4 * 6> tangents = {
+            constexpr AZStd::array<float, ValuesPerTangentEntry * ValuesPerFace * MeshFaces> tangents = {
                 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // front (+Z)
                 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // right (+Z)
                 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // back (+Z)
@@ -117,7 +212,7 @@ namespace AZ
             };
 
             // 3 values per position, 4 positions per face, 6 faces
-            constexpr AZStd::array<float, 3 * 4 * 6> bitangents = {
+            constexpr AZStd::array<float, ValuesPerBitangentEntry * ValuesPerFace * MeshFaces> bitangents = {
                 +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, // front (+X)
                 +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, // right (+Y)
                 -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, -1.0f, +0.0f, +0.0f, // back (-X)
@@ -126,81 +221,75 @@ namespace AZ
                 +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, +1.0f, +0.0f, +0.0f, // bottom (+X)
             };
 
-            // First build a model LOD asset that contains a mesh for the given data.
-            AZ::Data::Asset<AZ::RPI::ModelLodAsset> lodAsset;
-            {
-                AZ::Data::AssetId lodAssetId = AZ::Uuid::CreateRandom();
-                lodAsset = AZ::Data::AssetManager::Instance().CreateAsset(
-                    lodAssetId, azrtti_typeid<AZ::RPI::ModelLodAsset>(), Data::AssetLoadBehavior::PreLoad);
-
-                AZ::RPI::ModelLodAssetCreator creator;
-                creator.Begin(lodAssetId);
-
-                constexpr uint32_t positionElementCount = aznumeric_cast<uint32_t>(positions.size() / 3);
-                constexpr uint32_t indexElementCount = aznumeric_cast<uint32_t>(indices.size());
-                constexpr uint32_t uvElementCount = aznumeric_cast<uint32_t>(uvs.size() / 2);
-                constexpr uint32_t normalElementCount = aznumeric_cast<uint32_t>(normals.size() / 3);
-                constexpr uint32_t tangentElementCount = aznumeric_cast<uint32_t>(tangents.size() / 4);
-                constexpr uint32_t bitangentElementCount = aznumeric_cast<uint32_t>(bitangents.size() / 3);
-
-                constexpr uint32_t PositionElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
-                constexpr uint32_t IndexElementSize = aznumeric_cast<uint32_t>(sizeof(uint32_t));
-                constexpr uint32_t UvElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 2);
-                constexpr uint32_t NormalElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
-                constexpr uint32_t TangentElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 4);
-                constexpr uint32_t BitangentElementSize = aznumeric_cast<uint32_t>(sizeof(float) * 3);
-
-                // Calculate the Aabb for the given positions.
-                AZ::Aabb aabb = AZ::Aabb::CreateNull();
-                for (uint32_t i = 0; i < positions.size(); i += 3)
-                {
-                    aabb.AddPoint(AZ::Vector3(positions[i], positions[i + 1], positions[i + 2]));
-                }
-
-                // Set up a single-mesh asset with only position data.
-                creator.BeginMesh();
-                creator.SetMeshAabb(AZStd::move(aabb));
-                creator.SetMeshMaterialSlot(0);
-                creator.SetMeshIndexBuffer({ CreateBufferAsset(indices.data(), indexElementCount, IndexElementSize),
-                      AZ::RHI::BufferViewDescriptor::CreateTyped(0, indexElementCount, AZ::RHI::Format::R32_UINT) });
-                creator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
-                    AZ::Name(),
-                    { CreateBufferAsset(positions.data(), positionElementCount, PositionElementSize),
-                      AZ::RHI::BufferViewDescriptor::CreateTyped(0, positionElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
-                creator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("NORMAL")),
-                    AZ::Name(),
-                    { CreateBufferAsset(normals.data(), normalElementCount, NormalElementSize),
-                      AZ::RHI::BufferViewDescriptor::CreateTyped(0, normalElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
-                creator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("TANGENT")),
-                    AZ::Name(),
-                    { CreateBufferAsset(tangents.data(), tangentElementCount, TangentElementSize),
-                      AZ::RHI::BufferViewDescriptor::CreateTyped(0, tangentElementCount, AZ::RHI::Format::R32G32B32A32_FLOAT) });
-                creator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("BITANGENT")),
-                    AZ::Name(),
-                    { CreateBufferAsset(bitangents.data(), bitangentElementCount, BitangentElementSize),
-                      AZ::RHI::BufferViewDescriptor::CreateTyped(0, bitangentElementCount, AZ::RHI::Format::R32G32B32_FLOAT) });
-                creator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("UV")),
-                    AZ::Name(),
-                    { CreateBufferAsset(uvs.data(), uvElementCount, UvElementSize),
-                      AZ::RHI::BufferViewDescriptor::CreateTyped(0, uvElementCount, AZ::RHI::Format::R32G32_FLOAT) });
-                creator.EndMesh();
-                creator.End(lodAsset);
-            }
-
-            // Create a model asset that contains the single LOD built above.
-            modelAsset->InitData(
-                AZ::Name("UnitCube"),
-                AZStd::span<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>(&lodAsset, 1),
-                {},     // no material slots
-                {},     // no fallback material
-                {}      // no tags
-            );
+            CreateModel(modelAsset, AZ::Name("UnitCube"), indices, positions, normals, tangents, bitangents, uvs);
         }
 
+        void ModelAssetHelpers::CreateUnitX(ModelAsset* modelAsset)
+        {
+            // Build a mesh containing a unit X model.
+            // To make the X double-sided regardless of material, we'll create two faces for each branch of the X.
+
+            constexpr int ValuesPerPositionEntry = 3;
+            constexpr int ValuesPerUvEntry = 2;
+            constexpr int ValuesPerNormalEntry = 3;
+            constexpr int ValuesPerTangentEntry = 4;
+            constexpr int ValuesPerBitangentEntry = 3;
+
+            constexpr int VerticesPerFace = 6;
+            constexpr int MeshFaces = 4;
+            constexpr int ValuesPerFace = 4;
+
+            // 6 vertices per face, 4 faces.
+            constexpr AZStd::array<uint32_t, VerticesPerFace * MeshFaces> indices = {
+                0,  1,  2,  0,  2,  3, // / face of X
+                4,  5,  6,  4,  6,  7, // \ face of X
+                8,  9,  10, 8,  10, 11, // / face of X (back)
+                12, 13, 14, 12, 14, 15, // \ face of X (back)
+            };
+
+            // 3 values per position, 4 positions per face, 2 faces
+            constexpr AZStd::array<float, ValuesPerPositionEntry * ValuesPerFace * MeshFaces> positions = {
+                -0.5f, -0.5f, -0.5f, +0.5f, +0.5f, -0.5f, +0.5f, +0.5f, +0.5f, -0.5f, -0.5f, +0.5f, //   / face of X
+                -0.5f, +0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f, -0.5f, +0.5f, -0.5f, +0.5f, +0.5f, //   \ face of X
+                +0.5f, +0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, -0.5f, +0.5f, +0.5f, +0.5f, +0.5f, //   / face of X (back)
+                +0.5f, -0.5f, -0.5f, -0.5f, +0.5f, -0.5f, -0.5f, +0.5f, +0.5f, +0.5f, -0.5f, +0.5f, //   \ face of X (back)
+            };
+
+            // 2 values per position, 4 positions per face, 2 faces
+            // This aribtrarily maps the UVs to use the full texture on each face.
+            // This choice can be changed if a different mapping would be more usable.
+            constexpr AZStd::array<float, ValuesPerUvEntry * ValuesPerFace * MeshFaces> uvs = {
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, //   / face of X
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, //   \ face of X
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, //   / face of X (back)
+                0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, //   \ face of X (back
+            };
+
+            // 3 values per position, 4 positions per face, 2 faces
+            constexpr AZStd::array<float, ValuesPerNormalEntry * ValuesPerFace * MeshFaces> normals = {
+                +0.5f, -0.5f, +0.0f, +0.5f, -0.5f, +0.0f, +0.5f, -0.5f, +0.0f, +0.5f, -0.5f, +0.0f, //   / face of X
+                -0.5f, -0.5f, +0.0f, -0.5f, -0.5f, +0.0f, -0.5f, -0.5f, +0.0f, -0.5f, -0.5f, +0.0f, //   \ face of X
+                -0.5f, +0.5f, +0.0f, -0.5f, +0.5f, +0.0f, -0.5f, +0.5f, +0.0f, -0.5f, +0.5f, +0.0f, //   / face of X (back)
+                +0.5f, +0.5f, +0.0f, +0.5f, +0.5f, +0.0f, +0.5f, +0.5f, +0.0f, +0.5f, +0.5f, +0.0f, //   \ face of X (back)
+            };
+
+            // 4 values per position, 4 positions per face, 2 faces
+            constexpr AZStd::array<float, ValuesPerTangentEntry * ValuesPerFace * MeshFaces> tangents = {
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //   / face of X
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //   \ face of X
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //   / face of X (back)
+                0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, //   \ face of X (back)
+            };
+
+            // 3 values per position, 4 positions per face, 2 faces
+            constexpr AZStd::array<float, ValuesPerBitangentEntry * ValuesPerFace * MeshFaces> bitangents = {
+                +0.5f, +0.5f, +0.0f, +0.5f, +0.5f, +0.0f, +0.5f, +0.5f, +0.0f, +0.5f, +0.5f, +0.0f, //   / face of X
+                -0.5f, +0.5f, +0.0f, -0.5f, +0.5f, +0.0f, -0.5f, +0.5f, +0.0f, -0.5f, +0.5f, +0.0f, //   \ face of X
+                -0.5f, -0.5f, +0.0f, -0.5f, -0.5f, +0.0f, -0.5f, -0.5f, +0.0f, -0.5f, -0.5f, +0.0f, //   / face of X (back)
+                +0.5f, -0.5f, +0.0f, +0.5f, -0.5f, +0.0f, +0.5f, -0.5f, +0.0f, +0.5f, -0.5f, +0.0f, //   \ face of X (back)
+            };
+
+            CreateModel(modelAsset, AZ::Name("UnitX"), indices, positions, normals, tangents, bitangents, uvs);
+        }
     } // namespace RPI
 } // namespace AZ
