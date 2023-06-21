@@ -479,7 +479,7 @@ namespace AZ
         
             // setup packed data
             uint32_t packed0 = m_probeCountX | (m_probeCountY << 8) | (m_probeCountZ << 16);
-            uint32_t packed1 = (uint32_t)(m_probeRandomRayBackfaceThreshold * 65535) | ((uint32_t)(m_probeFixedRayBackfaceThreshold * 65535) << 16);
+            uint32_t packed1 = aznumeric_cast<uint32_t>(m_probeRandomRayBackfaceThreshold * 65535) | (aznumeric_cast<uint32_t>(m_probeFixedRayBackfaceThreshold * 65535) << 16);
             uint32_t packed2 = GetNumRaysPerProbe().m_rayCount | (DefaultNumIrradianceTexels << 16) | (DefaultNumDistanceTexels << 24);
             uint32_t packed3 = 0;
             uint32_t packed4 = (m_scrolling << 16) | (1 << 17) | (1 << 18) | (1 << 19) | (1 << 20); // scrolling, rayFormat, irradianceFormat, relocation, classification
