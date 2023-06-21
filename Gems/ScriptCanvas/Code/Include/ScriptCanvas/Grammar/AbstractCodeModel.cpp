@@ -3769,9 +3769,23 @@ namespace ScriptCanvas
                 execution->AddChild({ outSlots[childIndex], {}, nullptr });
             }
 
+            // Sort the out node connections to ensure that implicit execution connections are always parsed first
+            EndpointsResolved sortedExecutionOutNodes;
+            for (EndpointResolved endpoint : executionOutNodes)
+            {
+                if (endpoint.second->CreatesImplicitConnections())
+                {
+                    sortedExecutionOutNodes.insert(sortedExecutionOutNodes.begin(), endpoint);
+                }
+                else
+                {
+                    sortedExecutionOutNodes.emplace_back(endpoint);
+                }
+            }
+
             for (size_t childIndex = 0; childIndex < executionOutNodes.size(); ++childIndex)
             {
-                ParseExecutionFunctionRecurse(execution, execution->ModChild(childIndex), *outSlots[childIndex], executionOutNodes[childIndex]);
+                ParseExecutionFunctionRecurse(execution, execution->ModChild(childIndex), *outSlots[childIndex], sortedExecutionOutNodes[childIndex]);
 
                 if (!IsErrorFree())
                 {
