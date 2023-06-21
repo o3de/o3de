@@ -228,7 +228,7 @@ namespace AZ
             if (importPath == path)
             {
                 return settings.m_reporting(
-                    AZStd::string::format(R"("%s" was already imported in this chain.)"
+                    AZStd::string::format(R"("%.*s" was already imported in this chain.)"
                         " This indicates a cyclic dependency.", AZ_PATH_ARG(importPath)),
                     JsonSerializationResult::ResultCode(JsonSerializationResult::Tasks::Import,
                         JsonSerializationResult::Outcomes::Catastrophic), element);
@@ -293,6 +293,187 @@ namespace AZ
         return pathsResult;
     }
 
+    JsonSerializationResult::ResultCode JsonImportResolver::PatchField(rapidjson::Value& target,
+        rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+        rapidjson::Value::StringRefType fieldNameStringRef, const rapidjson::Value& fieldValue,
+        ImportPathStack& importPathStack,
+        JsonImportSettings& settings, StackedString& element)
+    {
+        using namespace JsonSerializationResult;
+
+        using ReporterString = AZStd::fixed_string<1024>;
+
+        // Initialize the Merge Patch result to success
+        ResultCode mergePatchResult{ Tasks::Import, Outcomes::Success };
+
+        // Check if the target data already contains a field with the same name
+        rapidjson::Value* targetFieldName{};
+        rapidjson::Value* targetFieldValue{};
+        if (target.IsObject())
+        {
+            if (auto targetMemberIter = target.FindMember(fieldNameStringRef);
+                targetMemberIter != target.MemberEnd())
+            {
+                targetFieldName = &targetMemberIter->name;
+                targetFieldValue = &targetMemberIter->value;
+            }
+        }
+
+        if (fieldValue.IsObject())
+        {
+            if (targetFieldValue)
+            {
+                mergePatchResult.Combine(ResolveImportsInOrder(*targetFieldValue, allocator, fieldValue,
+                    importPathStack, settings, element));
+            }
+            else
+            {
+                // If the source is an object add an object member
+                // otherwise add an array field
+                rapidjson::Value* newFieldValue{};
+                if (source.IsObject())
+                {
+                    rapidjson::Value name;
+                    name.CopyFrom(rapidjson::Value(fieldNameStringRef), allocator, true);
+                    // Add an empty object or array field depending on the field value type
+                    target.AddMember(AZStd::move(name),
+                        rapidjson::Value{ rapidjson::kObjectType },
+                        allocator);
+                    auto newFieldMemberIter = target.FindMember(fieldNameStringRef);
+                    if (newFieldMemberIter == target.MemberEnd())
+                    {
+                        AZStd::string_view fieldName(static_cast<const char*>(fieldNameStringRef),
+                            fieldNameStringRef.length);
+                        auto reportMessage = ReporterString::format("Failed to add member %.*s to JSON while importing.",
+                            AZ_STRING_ARG(fieldName));
+                        if (!importPathStack.empty())
+                        {
+                            reportMessage += ReporterString::format(R"( This occured while importing file "%s".)",
+                                importPathStack.back().c_str());
+                        }
+                        return settings.m_reporting(reportMessage, ResultCode(Tasks::Import, Outcomes::Catastrophic), element);
+                    }
+
+                    // Get reference to the value object/array member that was just added
+                    newFieldValue = &newFieldMemberIter->value;
+                }
+                else
+                {
+                    // The source value is an array in this if block
+                    rapidjson::SizeType oldArrayCount = target.Size();
+                    target.PushBack(rapidjson::Value{ rapidjson::kObjectType }, allocator);
+
+                    // Verify that a new array element was added
+                    if (oldArrayCount == target.Size())
+                    {
+                        ReporterString reportMessage{ "Failed to Add array element to JSON while importing." };
+                        if (!importPathStack.empty())
+                        {
+                            reportMessage += ReporterString::format(R"( This occured while importing file "%s".)",
+                                importPathStack.back().c_str());
+                        }
+                        return settings.m_reporting(reportMessage, ResultCode(Tasks::Import, Outcomes::Catastrophic), element);
+                    }
+
+                    newFieldValue = &target[oldArrayCount];
+                }
+
+                // Object fields are recursively checked for children $import directives
+                mergePatchResult.Combine(ResolveImportsInOrder(*newFieldValue, allocator, fieldValue,
+                    importPathStack, settings, element));
+            }
+        }
+        else if (fieldValue.IsArray())
+        {
+            rapidjson::Value* newFieldValue{};
+            if (source.IsObject())
+            {
+                rapidjson::Value name;
+                name.CopyFrom(rapidjson::Value(fieldNameStringRef), allocator, true);
+                // Add an empty object or array field depending on the field value type
+                target.AddMember(AZStd::move(name),
+                    rapidjson::Value{ rapidjson::kArrayType },
+                    allocator);
+                auto newFieldMemberIter = target.FindMember(fieldNameStringRef);
+                if (newFieldMemberIter == target.MemberEnd())
+                {
+                    AZStd::string_view fieldName(static_cast<const char*>(fieldNameStringRef),
+                        fieldNameStringRef.length);
+                    auto reportMessage = ReporterString::format("Failed to add member %.*s to JSON while importing.",
+                        AZ_STRING_ARG(fieldName));
+                    if (!importPathStack.empty())
+                    {
+                        reportMessage += ReporterString::format(R"( This occured while importing file "%s".)",
+                            importPathStack.back().c_str());
+                    }
+                    return settings.m_reporting(reportMessage, ResultCode(Tasks::Import, Outcomes::Catastrophic), element);
+                }
+
+                // Get reference to the value object/array member that was just added
+                newFieldValue = &newFieldMemberIter->value;
+            }
+            else
+            {
+                // The source value is an array in this if block
+                rapidjson::SizeType oldArrayCount = target.Size();
+                target.PushBack(rapidjson::Value{ rapidjson::kArrayType }, allocator);
+
+                // Verify that a new array element was added
+                if (oldArrayCount == target.Size())
+                {
+                    ReporterString reportMessage{ "Failed to Add array element to JSON while importing." };
+                    if (!importPathStack.empty())
+                    {
+                        reportMessage += ReporterString::format(R"( This occured while importing file "%s".)",
+                            importPathStack.back().c_str());
+                    }
+                    return settings.m_reporting(reportMessage, ResultCode(Tasks::Import, Outcomes::Catastrophic), element);
+                }
+
+                newFieldValue = &target[oldArrayCount];
+            }
+
+            // Array fields are recursively checked for children $import directives
+            mergePatchResult.Combine(ResolveImportsInOrder(*newFieldValue, allocator, fieldValue,
+                importPathStack, settings, element));
+        }
+        else if (fieldValue.IsNull())
+        {
+            if (targetFieldName)
+            {
+                target.RemoveMember(*targetFieldName);
+            }
+        }
+        else
+        {
+            if (targetFieldValue)
+            {
+                targetFieldValue->CopyFrom(fieldValue, allocator, true);
+            }
+            else
+            {
+                if (source.IsObject())
+                {
+                    rapidjson::Value name;
+                    rapidjson::Value value;
+                    name.CopyFrom(rapidjson::Value(fieldNameStringRef), allocator, true);
+                    value.CopyFrom(fieldValue, allocator, true);
+                    target.AddMember(AZStd::move(name), AZStd::move(value), allocator);
+                }
+                else
+                {
+                    // Push the value to the end of the array
+                    rapidjson::Value value;
+                    value.CopyFrom(fieldValue, allocator, true);
+                    target.PushBack(AZStd::move(value), allocator);
+                }
+
+            }
+        }
+
+        return mergePatchResult;
+    }
+
     JsonSerializationResult::ResultCode JsonImportResolver::ResolveImportsInOrder(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
         ImportPathStack& importPathStack,
@@ -321,9 +502,12 @@ namespace AZ
             return ResultCode(Tasks::Import, Outcomes::Success);
         }
 
+        ResultCode resolveImportsResult(Tasks::Import, Outcomes::Success);
+
         // Stores the currently copied field from the source object or array
         // into a local JSON value that will be moved to the target JSON value at the end of this function
-        rapidjson::Value targetDataAtCurrentDepth{ rapidjson::kObjectType };
+        rapidjson::Value targetDataAtCurrentDepth{ source.IsObject()
+            ? rapidjson::kObjectType : rapidjson::kArrayType };
 
         // If this point is reached, the source is either an object or an array
         size_t fieldCount = source.IsObject() ? source.MemberCount() : source.Size();
@@ -395,68 +579,16 @@ namespace AZ
             }
             else
             {
-                // Check if the target data already contains a field with the same name
                 auto fieldNameStringRef = rapidjson::Value::StringRefType(fieldName.data(),
                     static_cast<rapidjson::SizeType>(fieldName.size()));
-                auto targetField = targetDataAtCurrentDepth.FindMember(fieldNameStringRef);
-                // Initialize the Merge Patch result to success
-                // Any recursive calls to ResolveImportsInOrder would be responsible
-                // for converting the result code to failure
-                ResultCode mergePatchResult{ Tasks::Import, Outcomes::Success };
-                if (fieldValue->IsObject() && targetField != targetDataAtCurrentDepth.MemberEnd())
-                {
-                    mergePatchResult.Combine(ResolveImportsInOrder(targetField->value, allocator, *fieldValue,
-                        importPathStack, settings, element));
-                }
-                else if (fieldValue->IsObject() || fieldValue->IsArray())
-                {
-                    // And Object or Array is checked for children $import directives
-                    rapidjson::Value name;
-                    name.CopyFrom(rapidjson::Value(fieldNameStringRef), allocator, true);
-                    rapidjson::Value value;
-                    // Add an empty object field and then use ResolveImportsInOrder to merge to it.
-                    targetDataAtCurrentDepth.AddMember(AZStd::move(name),
-                        rapidjson::Value{ rapidjson::kObjectType }, allocator);
-                    auto newFieldMemberIter = targetDataAtCurrentDepth.FindMember(fieldNameStringRef);
-                    if (newFieldMemberIter == targetDataAtCurrentDepth.MemberEnd())
-                    {
-                        auto reportMessage = ReporterString::format("Failed to Add Member %.*s to JSON while importing.",
-                            AZ_STRING_ARG(fieldName));
-                        if (!importPathStack.empty())
-                        {
-                            reportMessage += ReporterString::format(R"( This occured while importing file "%s".)",
-                                importPathStack.back().c_str());
-                        }
-                        return settings.m_reporting(reportMessage, ResultCode(Tasks::Import, Outcomes::Catastrophic), element);
-                    }
-
-                    mergePatchResult.Combine(ResolveImportsInOrder(newFieldMemberIter->value, allocator, *fieldValue,
-                        importPathStack, settings, element));
-                }
-                else if (fieldValue->IsNull())
-                {
-                    if (targetField != targetDataAtCurrentDepth.MemberEnd())
-                    {
-                        targetDataAtCurrentDepth.RemoveMember(targetField);
-                    }
-                }
-                else
-                {
-                    if (targetField != targetDataAtCurrentDepth.MemberEnd())
-                    {
-                        targetField->value.CopyFrom(*fieldValue, allocator, true);
-                    }
-                    else
-                    {
-                        rapidjson::Value name;
-                        rapidjson::Value value;
-                        name.CopyFrom(rapidjson::Value(fieldNameStringRef), allocator, true);
-                        value.CopyFrom(*fieldValue, allocator, true);
-                        targetDataAtCurrentDepth.AddMember(AZStd::move(name), AZStd::move(value), allocator);
-
-                    }
-                }
+                resolveImportsResult.Combine(PatchField(targetDataAtCurrentDepth, allocator, source,
+                    fieldNameStringRef, *fieldValue, importPathStack, settings, element));
             }
+        }
+
+        if (resolveImportsResult.GetProcessing() != Processing::Completed)
+        {
+            return resolveImportsResult;
         }
 
         // Move the local target data json value to the target result variable

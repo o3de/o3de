@@ -136,6 +136,12 @@ namespace AZ
             ImportPathStack& importPathStack,
             JsonImportSettings& settings, StackedString& element, AZ::IO::PathView importPath);
 
+        static JsonSerializationResult::ResultCode PatchField(rapidjson::Value& target,
+            rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& source,
+            rapidjson::Value::StringRefType fieldNameStringRef, const rapidjson::Value& fieldValue,
+            ImportPathStack& importPathStack,
+            JsonImportSettings& settings, StackedString& element);
+
         // Stores the absolute import path to use when merging the JSON file
         // and the import path as read from the source JSON file
         struct ImportPathsResult
