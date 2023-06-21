@@ -56,7 +56,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void reject();
-    void CompleteAssetImporting();
+    void CompleteAssetImporting(bool wasSuccessful = true);
     void OnDragAndDropFiles(const QStringList* fileList);
     void OnBrowseDestinationFilePath(QLineEdit* destinationLineEdit);
     void OnCopyFiles();
