@@ -518,15 +518,24 @@ namespace AzToolsFramework
                 {
                     filterCopy->AddFilter(subFilter);
                 }
-                auto anyCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
-                if (anyCompFilter)
-                {
-                    auto myCompFilter = const_cast<CompositeFilter*>(anyCompFilter);
-                    myCompFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
-                }
-
             }
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::None);
+            if (hasString)
+            {
+                for (auto& subFilter : filterCopy->GetSubFilters())
+                {
+                    auto anyCompFilter = qobject_cast<const CompositeFilter*>(subFilter.get());
+                    if (anyCompFilter)
+                    {
+                        auto myCompFilter = const_cast<CompositeFilter*>(anyCompFilter);
+                        myCompFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
+                    }
+                }
+                filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::None);
+            }
+            else
+            {
+                filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
+            }
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
             if (hasString)
             {

@@ -56,9 +56,16 @@ namespace AzToolsFramework
                             }
                         }
                     case DiskSize:
-                        if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        if (GetShowSearchResultsMode())
                         {
-                            return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
+                            return assetBrowserEntry->GetDisplayPath();
+                        }
+                        else
+                        {
+                            if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                            {
+                                return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
+                            }
                         }
                         return "";
                     case Vertices:
@@ -84,7 +91,7 @@ namespace AzToolsFramework
                     }
                 }
             case Qt::TextAlignmentRole:
-                if (index.column() == DiskSize || index.column() == Vertices)
+                if ((index.column() == DiskSize && !GetShowSearchResultsMode()) || index.column() == Vertices)
                 {
                     return QVariant(Qt::AlignRight | Qt::AlignVCenter);
                 }
@@ -104,12 +111,22 @@ namespace AzToolsFramework
             case Qt::DisplayRole:
                 if (orientation == Qt::Horizontal)
                 {
-                    section += section ? aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
-                    return tr(AssetBrowserEntry::m_columnNames[section]);
+                    int section2 = section ? section + aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
+                    if (GetShowSearchResultsMode())
+                    {
+                        if (section < 3)
+                        {
+                            return tr(AssetBrowserEntry::m_columnNames[section == 2 ? 1 : section2]);
+                        }
+                    }
+                    else
+                    {
+                        return tr(AssetBrowserEntry::m_columnNames[section2]);
+                    }
                 }
                 break;
             case Qt::TextAlignmentRole:
-                if (section == DiskSize || section == Vertices)
+                if ((section == DiskSize  && !GetShowSearchResultsMode())|| section == Vertices)
                 {
                     return QVariant(Qt::AlignRight | Qt::AlignVCenter);
                 }
