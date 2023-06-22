@@ -354,7 +354,7 @@ namespace AZ
             Asset<AssetData> GetAssetInternal(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams = AssetLoadParameters{}, AssetInfo assetInfo = AssetInfo(), bool signalLoaded = false);
             // Alternative path to GetAssetInternal intended to be called by the AssetContainer when reloading an asset
             // Assumes the asset is already ready to go and just needs to be set up for loading
-            void QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset, bool signalLoaded);
+            void QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> asset, bool signalLoaded, const AssetLoadParameters& loadParams);
 
             void UpdateDebugStatus(const AZ::Data::Asset<AZ::Data::AssetData>& asset);
 

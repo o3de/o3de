@@ -250,7 +250,7 @@ namespace AZ::Data
             // calling GetAssetInternal would result in re-using the existing reference instead of actually loading
             thisAsset = rootAsset;
 
-            AssetManager::Instance().QueueAssetReload(rootAsset, HasPreloads(rootAssetId));
+            AssetManager::Instance().QueueAssetReload(rootAsset, HasPreloads(rootAssetId), loadParamsCopyWithNoLoadingFilter);
         }
 
         if (!thisAsset)

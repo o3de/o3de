@@ -1136,7 +1136,8 @@ namespace AZ::Data
         return asset;
     }
 
-    void AssetManager::QueueAssetReload(AZ::Data::Asset<AZ::Data::AssetData> newAsset, bool signalLoaded)
+    void AssetManager::QueueAssetReload(
+        AZ::Data::Asset<AZ::Data::AssetData> newAsset, bool signalLoaded, const AssetLoadParameters& loadParams)
     {
         AssetHandler* handler = nullptr;
 
@@ -1167,7 +1168,7 @@ namespace AZ::Data
             if (dataStream)
             {
                 // Currently there isn't a clear use case for needing to adjust priority for reloads so the default load priority is used
-                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload, handler, {}, signalLoaded);
+                QueueAsyncStreamLoad(newAsset, dataStream, loadInfo, isReload, handler, loadParams, signalLoaded);
             }
             else
             {
