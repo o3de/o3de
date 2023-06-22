@@ -989,7 +989,7 @@ namespace AzToolsFramework
             {
                 m_isSceneSetting = true;
                 setContentsMargins(8, 0, 4, 0);
-                setStyleSheet("QFrame {background-color: #333333; margin-top: 6px; border-top-right-radius: 2px; border-top-left-radius: 2px;}");
+                setStyleSheet("QFrame {background-color: #333333; margin-top: 5px; border-top-right-radius: 2px; border-top-left-radius: 2px;}");
             }
         }
         // Attribute types you are NOT allowed to update at runtime

@@ -139,7 +139,13 @@ bool AssetImporterPlugin::SaveBeforeClosing()
         return false;
     }
 
-    return assetImporterWindow->CanClose();
+    bool canClose = assetImporterWindow->CanClose();
+    if (canClose)
+    {
+        delete m_assetImporterWindow;
+    }
+
+    return !canClose;
 }
 
 SceneSettingsAssetImporterForScriptRequestHandler::SceneSettingsAssetImporterForScriptRequestHandler()

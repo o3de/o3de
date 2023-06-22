@@ -111,30 +111,30 @@ bool AssetImporterWindow::CanClose()
 {
     if (m_isClosed)
     {
-        return false;
+        return true;
     }
 
     if (m_sceneSettingsCardOverlay != AZ::SceneAPI::UI::OverlayWidget::s_invalidOverlayIndex)
     {
         QMessageBox::critical(this, "Processing In Progress", "Please wait until processing has completed to try again.",
             QMessageBox::Ok, QMessageBox::Ok);
-        return true;
+        return false;
     }
 
     if (!m_overlay->CanClose())
     {
         QMessageBox::critical(this, "Unable to close", "Unable to close one or more windows at this time.",
             QMessageBox::Ok, QMessageBox::Ok);
-        return true;
+        return false;
     }
 
     if (ShouldSaveBeforeClose())
     {
-        return true;
+        return false;
     }
 
     m_isClosed = true;
-    return false;
+    return true;
 }
 
 void AssetImporterWindow::Init()

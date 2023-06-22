@@ -30,15 +30,15 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="AzQtComponents::SegmentControl" name="m_tabs"/>
+    <widget class="AzQtComponents::TabWidget" name="m_tabs"/>
    </item>
   </layout>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AzQtComponents::SegmentControl</class>
-   <extends>QFrame</extends>
-   <header>AzQtComponents/Components/Widgets/SegmentControl.h</header>
+   <class>AzQtComponents::TabWidget</class>
+   <extends>QTabWidget</extends>
+   <header>AzQtComponents/Components/Widgets/TabWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

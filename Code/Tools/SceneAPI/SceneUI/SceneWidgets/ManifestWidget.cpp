@@ -30,11 +30,7 @@ namespace AZ
                 , m_serializeContext(serializeContext)
             {
                 ui->setupUi(this);
-                ui->m_tabs->setStyleSheet("AzQtComponents--SegmentBar {margin-bottom: 6px;}"
-                    "AzQtComponents--SegmentBar QAbstractButton {background-color: #222222; border-color: #111111; padding-left: 2px; padding-right: 2px; min-width: 26px;}"
-                    "AzQtComponents--SegmentBar QAbstractButton:checked {background-color: #1E70EB;}"
-                    "AzQtComponents--SegmentBar QAbstractButton:pressed:!checked {background-color: #333333;}"
-                    "AzQtComponents--SegmentBar QAbstractButton:hover:!checked {background-color: #333333;}");
+                ui->m_tabs->setOverflowButtonSpacing(true);
             }
             
             ManifestWidget::~ManifestWidget()
