@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 
+#include <native/assetprocessor.h>
 #include <native/utilities/BuilderConfigurationManager.h>
 #include <native/resourcecompiler/rccontroller.h>
 #include <native/AssetManager/assetScanner.h>

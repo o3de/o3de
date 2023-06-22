@@ -71,9 +71,9 @@ namespace PhysX
             physx::PxTransform pxWorldTransform = PxMathConvert(m_worldTransform);
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
-            const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry();
+            const physx::PxGeometry pxShapeGeom = pxShape->getGeometry();
 #else
-            const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry().any();
+            const physx::PxGeometry pxShapeGeom = pxShape->getGeometry().any();
 #endif
 
             physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,

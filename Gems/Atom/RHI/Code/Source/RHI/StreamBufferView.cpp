@@ -77,7 +77,8 @@ namespace AZ
 
                 for (int i = 0; i < inputStreamLayout.GetStreamBuffers().size() && i < streamBufferViews.size(); ++i)
                 {
-                    auto& bufferDescriptor = inputStreamLayout.GetStreamBuffers()[i];
+                    auto bufferDescriptors = inputStreamLayout.GetStreamBuffers();
+                    auto& bufferDescriptor = bufferDescriptors[i];
                     auto& bufferView = streamBufferViews[i];
 
                     // It can be valid to have a null buffer if this stream is not actually used by the shader, which can be the case for streams marked optional.

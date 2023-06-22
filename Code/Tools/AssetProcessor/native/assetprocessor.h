@@ -40,7 +40,7 @@ namespace AssetProcessor
     const char* const AutoFailOmitFromDatabaseKey = "failreason_omitFromDatabase"; // if set in your job info hash, your job will not be tracked by the database.
     const unsigned int g_RetriesForFenceFile = 5; // number of retries for fencing
     constexpr int RetriesForJobLostConnection = ASSETPROCESSOR_TRAIT_ASSET_BUILDER_LOST_CONNECTION_RETRIES; // number of times to retry a job when a network error due to network issues or a crashed AssetBuilder process is determined to have caused a job failure
-    constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
+    [[maybe_unused]] constexpr const char* IntermediateAssetsFolderName = "Intermediate Assets"; // name of the intermediate assets folder
     // Even though AP can handle files with path length greater than window's legacy path length limit, we have some 3rdparty sdk's
     // which do not handle this case ,therefore we will make AP fail any jobs whose either source file or output file name exceeds the windows legacy path length limit
 #define AP_MAX_PATH_LEN 260
