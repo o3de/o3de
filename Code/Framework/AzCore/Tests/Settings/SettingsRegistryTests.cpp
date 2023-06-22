@@ -1446,9 +1446,9 @@ namespace SettingsRegistryTests
 
     TEST_F(SettingsRegistryTest, MergeSettingsFile_JsonWithImport_MergesImportedFiles_InOrder)
     {
-        auto filePath = CreateTestFile("Memory.iphone13.setreg", R"({ "pre_field": {"first": 7 },
-            "$import": "Memory.ios.setreg", "non_override": 7, "post_field": {"2nd": "twenty-one"} })");
-        CreateTestFile("Memory.ios.setreg", R"({ "$import": { "filename": "Memory.mobile.setreg" },
+        auto filePath = CreateTestFile("Memory.phone.setreg", R"({ "pre_field": {"first": 7 },
+            "$import": "Memory.os.setreg", "non_override": 7, "post_field": {"2nd": "twenty-one"} })");
+        CreateTestFile("Memory.os.setreg", R"({ "$import": { "filename": "Memory.mobile.setreg" },
             "non_override2": "Hello World", "override_imported_settings": "override" })");
         CreateTestFile("Memory.mobile.setreg", R"({ "Memory": 1, "override_imported_settings": "initial",
             "pre_field": {"first": 14, "second": "fourteen"}, "post_field": [2] })");
@@ -1470,7 +1470,7 @@ namespace SettingsRegistryTests
         // Check the overridden imported settigns
         stringValue.clear();
         EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/override_imported_settings"));
-        // As the Memory.ios.setreg imports the Memory.mobile.setreg all of its settings
+        // As the Memory.os.setreg imports the Memory.mobile.setreg all of its settings
         // should be merged afterwards and therefore overrides them
         EXPECT_EQ("override", stringValue);
 
@@ -1480,8 +1480,8 @@ namespace SettingsRegistryTests
 
         // Check that the "pre_field" is object "first" field is overridden
         // but the "post_field" overrides the import files value
-        // The "Memory.mobile.setreg" would merge over the "Memory.iphone13.setreg"
-        // because it's import values appear afterwards
+        // The "Memory.mobile.setreg" would merge over the "Memory.phone.setreg"
+        // because its import values appear afterwards
         intValue = {};
         EXPECT_TRUE(m_registry->Get(intValue, FixedValueString(anchorKey) + "/pre_field/first"));
         EXPECT_EQ(14, intValue);
@@ -1491,7 +1491,7 @@ namespace SettingsRegistryTests
         EXPECT_EQ("fourteen", stringValue);
 
         stringValue.clear();
-        // The "Memory.iphone13.setreg" "post_field" should retain it's value
+        // The "Memory.phone.setreg" "post_field" should retain its value
         // as that field appears after the import
         EXPECT_TRUE(m_registry->Get(stringValue, FixedValueString(anchorKey) + "/post_field/2nd"));
         EXPECT_EQ("twenty-one", stringValue);

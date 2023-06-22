@@ -1260,13 +1260,13 @@ namespace AZ
         return mergeResult;
     }
 
-    auto SettingsRegistryImpl::MergeSettingsString(AZStd::string insituData, Format format, AZStd::string_view anchorKey,
+    auto SettingsRegistryImpl::MergeSettingsString(AZStd::string jsonData, Format format, AZStd::string_view anchorKey,
         AZ::IO::PathView filePath)
         -> MergeSettingsResult
     {
         rapidjson::Document jsonPatch;
         constexpr int flags = rapidjson::kParseStopWhenDoneFlag | rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag;
-        jsonPatch.ParseInsitu<flags>(insituData.data());
+        jsonPatch.ParseInsitu<flags>(jsonData.data());
         if (jsonPatch.HasParseError())
         {
             MergeSettingsResult mergeResult;
@@ -1380,13 +1380,13 @@ namespace AZ
         JsonImportResolver::ImportPathStack importPathStack;
         importPathStack.push_back(filePath);
 
-        // JSON Importer lifetime needs to be larger than the improt settings
+        // JSON Importer lifetime needs to be larger than the import settings
         AZ::BaseJsonImporter jsonImporter;
         AZ::JsonImportSettings importSettings;
         importSettings.m_reporting = [&mergeResult](AZStd::string_view message,
             AZ::JsonSerializationResult::ResultCode result, AZStd::string_view)
         {
-            // Store any JSON Importer messages as par of the merge result
+            // Store any JSON Importer messages as part of the merge result
             mergeResult.m_operationMessages += message;
             mergeResult.m_operationMessages += '\n';
             return result;

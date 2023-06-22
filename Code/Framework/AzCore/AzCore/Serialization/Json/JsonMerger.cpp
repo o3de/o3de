@@ -12,12 +12,9 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/std/string/fixed_string.h>
-#include <AzCore/std/string/osstring.h>
 
 namespace AZ
 {
-    using ReporterString = AZStd::fixed_string<1024>;
-
     JsonSerializationResult::ResultCode JsonMerger::ApplyPatch(rapidjson::Value& target,
         rapidjson::Document::AllocatorType& allocator, const rapidjson::Value& patch,
         JsonApplyPatchSettings& settings)

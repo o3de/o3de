@@ -100,7 +100,7 @@ namespace AZ
         //! Resolves the imports from the source JSON object in the field order.
         //! It does this by iterating over the fields of the source JSON object and copies them
         //! to the target object as it processes them.
-        //! Any $import directives are merged  to the target object at that point using the JSON Merge Patch
+        //! Any $import directives are merged to the target object at that point using the JSON Merge Patch
         //! algorithm. This allows fields before the $import directive to be overridden via the patching mechanism
         //! and fields that appear after the $import directive to override the imported JSON
         static JsonSerializationResult::ResultCode ResolveImportsInOrder(rapidjson::Value& target,

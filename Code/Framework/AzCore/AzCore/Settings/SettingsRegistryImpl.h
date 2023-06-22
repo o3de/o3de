@@ -117,7 +117,9 @@ namespace AZ
             AZ::IO::PathView filePath);
 
         //! The filePath here is for the loaded json content in the string parameter
-        MergeSettingsResult MergeSettingsString(AZStd::string insituData, Format format, AZStd::string_view anchorKey,
+        //! The jsonData parameter is accepted by value for efficiency as the string
+        //! will be modified inside of the method
+        MergeSettingsResult MergeSettingsString(AZStd::string jsonData, Format format, AZStd::string_view anchorKey,
             AZ::IO::PathView filePath);
         MergeSettingsResult LoadJsonFileIntoString(AZStd::string& jsonData, const char* filePath);
 
