@@ -139,7 +139,7 @@ namespace PhysX
             if (serializeContext)
             {
                 serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(5 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
+                    ->Version(6 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 
@@ -643,7 +643,26 @@ namespace PhysX
                 AZStd::string productUuidString = meshGroup.GetId().ToString<AZStd::string>();
                 AZ::Uuid productUuid = AZ::Uuid::CreateName(productUuidString);
 
-                context.GetProductList().AddProduct(AZStd::move(filename), productUuid, AZ::AzTypeInfo<MeshAsset>::Uuid(), AZStd::nullopt, AZStd::nullopt);
+                auto& meshProduct = context.GetProductList().AddProduct(
+                    AZStd::move(filename), productUuid, AZ::AzTypeInfo<MeshAsset>::Uuid(), AZStd::nullopt, AZStd::nullopt);
+
+                // Add product dependencies for every valid physics material used by this physics mesh.
+                for (int materialIndex = 0; materialIndex < assetData.m_materialSlots.GetSlotsCount(); materialIndex++)
+                {
+                    auto& material = assetData.m_materialSlots.GetMaterialAsset(materialIndex);
+
+                    if (material.GetId().IsValid())
+                    {
+                        AZ::SceneAPI::Events::ExportProduct materialProduct;
+                        materialProduct.m_filename = material.GetHint();
+                        materialProduct.m_id = material.GetId().m_guid;
+                        materialProduct.m_subId = material.GetId().m_subId;
+                        materialProduct.m_assetType = material.GetType();
+
+                        meshProduct.m_productDependencies.push_back(materialProduct);
+                    }
+                }
+
                 result = SceneEvents::ProcessingResult::Success;
             }
             else
