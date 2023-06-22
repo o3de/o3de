@@ -212,6 +212,13 @@ namespace EMotionFX
             CheckActorCreation();
         }
 
+        // carbonated begin EMotionFX_port
+        AZ::Data::Asset<AZ::Data::AssetData> ActorComponent::GetActorAsset()
+        {
+            return m_configuration.m_actorAsset;
+        }
+        // carbonated end EMotionFX_port
+
         void ActorComponent::EnableInstanceUpdate(bool enable)
         {
             if (m_actorInstance)

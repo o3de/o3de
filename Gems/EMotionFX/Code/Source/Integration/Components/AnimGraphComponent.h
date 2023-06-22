@@ -144,6 +144,19 @@ namespace EMotionFX
             void SetActiveMotionSet(const char* activeMotionSetName) override;
             //////////////////////////////////////////////////////////////////////////
 
+            // carbonated begin EMotionFX_port
+#if defined(CARBONATED)
+            AZ::Data::Asset<AZ::Data::AssetData> GetAnimGraphAsset()
+            {
+                return m_configuration.m_animGraphAsset;
+            }
+            AZ::Data::Asset<AZ::Data::AssetData> GetMotionSetAsset()
+            {
+                return m_configuration.m_motionSetAsset;
+            }
+#endif
+            // carbonated end EMotionFX_port
+
             //////////////////////////////////////////////////////////////////////////
             // ActorComponentNotificationBus::Handler
             void OnActorInstanceCreated(EMotionFX::ActorInstance* /*actorInstance*/) override;
