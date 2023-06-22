@@ -23,7 +23,6 @@
 #define CLASS_LIGHT "Light"
 #define CLASS_DESTROYABLE_LIGHT "DestroyableLight"
 #define CLASS_RIGIDBODY_LIGHT "RigidBodyLight"
-#define CLASS_ENVIRONMENT_LIGHT "EnvironmentLight"
 
 class CEntityObject;
 class CSelectionGroup;
