@@ -96,6 +96,9 @@ namespace EMotionFX
             // Use this to alter the actor asset.
             virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
 
+            // Returns actor asset
+            virtual AZ::Data::Asset<AZ::Data::AssetData> GetActorAsset() = 0; // carbonated EMotionFX_port
+
             // Use this bus to enable or disable the actor instance update in the job scheduler system.
             // This could be useful if you want to manually update the actor instance.
             virtual void EnableInstanceUpdate(bool enableInstanceUpdate) = 0;

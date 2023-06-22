@@ -194,6 +194,13 @@ namespace EMotionFX
 
             /// Set the name of the active motion set.
             virtual void SetActiveMotionSet(const char* activeMotionSetName) = 0;
+
+            // carbonated begin EMotionFX_port
+#if defined(CARBONATED)
+            virtual AZ::Data::Asset<AZ::Data::AssetData> GetAnimGraphAsset() = 0;
+            virtual AZ::Data::Asset<AZ::Data::AssetData> GetMotionSetAsset() = 0;
+#endif
+            // carbonated end EMotionFX_port
         };
 
         using AnimGraphComponentRequestBus = AZ::EBus<AnimGraphComponentRequests>;
