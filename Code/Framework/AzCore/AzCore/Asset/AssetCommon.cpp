@@ -117,6 +117,13 @@ namespace AZ::Data
             return AssetManager::Instance().GetAsset(id, type, assetReferenceLoadBehavior, loadParams);
         }
 
+        Asset<AssetData> GetAsset(
+            const AssetId& id, const AssetType& type, const AZStd::string& hint,
+            AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams)
+        {
+            return AssetManager::Instance().GetAsset(id, type, hint, assetReferenceLoadBehavior, loadParams);
+        }
+
         AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset)
         {
             return AssetManager::Instance().BlockUntilLoadComplete(asset);

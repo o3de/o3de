@@ -512,6 +512,12 @@ namespace AZ
             Asset<AssetData> FindOrCreateAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior);
             Asset<AssetData> GetAsset(const AssetId& id, const AssetType& type, AssetLoadBehavior assetReferenceLoadBehavior,
                 const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
+            Asset<AssetData> GetAsset(
+                const AssetId& id,
+                const AssetType& type,
+                const AZStd::string& hint,
+                AssetLoadBehavior assetReferenceLoadBehavior,
+                const AZ::Data::AssetLoadParameters& assetLoadFilterCB = AssetLoadParameters{});
             AssetData::AssetStatus BlockUntilLoadComplete(const Asset<AssetData>& asset);
             void UpdateAssetInfo(AssetId& id, AZStd::string& assetHint);
             Asset<AssetData> ReloadAsset(AssetData* assetData, AssetLoadBehavior assetReferenceLoadBehavior);
@@ -1133,7 +1139,7 @@ namespace AZ
                 if ((m_assetData->GetStatus() == AZ::Data::AssetData::AssetStatus::NotLoaded) ||
                     (m_assetData->GetUseCount() == 1))
                 {
-                    *this = AssetInternal::GetAsset(m_assetData->GetId(), m_assetData->GetType(), loadBehavior, loadParams);
+                    *this = AssetInternal::GetAsset(m_assetData->GetId(), m_assetData->GetType(), GetHint(), loadBehavior, loadParams);
                 }
 
                 // If the asset made it to a loading or ready state, consider the request successful.

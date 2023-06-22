@@ -60,7 +60,7 @@ namespace AZ::Data
         {
             // Queue each asset to load.
             auto queuedDependentAsset = AssetManager::Instance().GetAssetInternal(
-                dependentAsset.GetId(), dependentAsset.GetType(),
+                dependentAsset.GetId(), dependentAsset.GetType(), dependentAsset.GetHint(),
                 AZ::Data::AssetLoadBehavior::Default, loadParamsCopyWithNoLoadingFilter,
                 dependentAssetInfo, HasPreloads(dependentAsset.GetId()));
 
@@ -241,7 +241,7 @@ namespace AZ::Data
         if (!m_isReload)
         {
             thisAsset = AssetManager::Instance().GetAssetInternal(
-                rootAssetId, rootAssetType, rootAsset.GetAutoLoadBehavior(),
+                rootAssetId, rootAssetType, rootAsset.GetHint(), rootAsset.GetAutoLoadBehavior(),
                 loadParamsCopyWithNoLoadingFilter, AssetInfo(), HasPreloads(rootAssetId));
         }
         else

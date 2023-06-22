@@ -906,7 +906,18 @@ namespace AZ::Data
     // GetAsset
     // [6/19/2012]
     //=========================================================================
-    Asset<AssetData> AssetManager::GetAsset(const AssetId& assetId, const AssetType& assetType, AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams)
+    Asset<AssetData> AssetManager::GetAsset(
+        const AssetId& assetId,
+        const AssetType& assetType,
+        AssetLoadBehavior assetReferenceLoadBehavior,
+        const AssetLoadParameters& loadParams)
+    {
+        return GetAsset(assetId, assetType, "", assetReferenceLoadBehavior, loadParams);
+    }
+
+
+    Asset<AssetData> AssetManager::GetAsset(const AssetId& assetId, const AssetType& assetType, const AZStd::string& assetHint,
+        AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams)
     {
         // If parallel dependent loads are disabled, just try to load the requested asset directly, and let it trigger
         // dependent loads as they're encountered.
@@ -914,12 +925,16 @@ namespace AZ::Data
         // will be available and complete until after all assets are finished building.
         if(!GetParallelDependentLoadingEnabled())
         {
-            return GetAssetInternal(assetId, assetType, assetReferenceLoadBehavior, loadParams);
+            return GetAssetInternal(assetId, assetType, assetHint, assetReferenceLoadBehavior, loadParams);
         }
 
         // Otherwise, use Asset Containers to load all dependent assets in parallel.
 
         Asset<AssetData> asset = FindOrCreateAsset(assetId, assetType, assetReferenceLoadBehavior);
+        if (asset && asset.GetHint().empty())
+        {
+            asset.SetHint(assetHint);
+        }
 
         // NOTE: Do not use assetId past this point, asset may have been assigned an "upgraded" id if assetId is actually a legacy id
 
@@ -958,7 +973,19 @@ namespace AZ::Data
         return asset;
     }
 
-    Asset<AssetData> AssetManager::GetAssetInternal(const AssetId& assetId, [[maybe_unused]] const AssetType& assetType,
+    Asset<AssetData> AssetManager::GetAssetInternal(
+        const AssetId& assetId,
+        [[maybe_unused]] const AssetType& assetType,
+        AssetLoadBehavior assetReferenceLoadBehavior,
+        const AssetLoadParameters& loadParams,
+        AssetInfo assetInfo /*= () */,
+        bool signalLoaded /*= false */)
+    {
+        return GetAssetInternal(assetId, assetType, "", assetReferenceLoadBehavior, loadParams, assetInfo, signalLoaded);
+    }
+
+    Asset<AssetData> AssetManager::GetAssetInternal(
+        const AssetId& assetId, [[maybe_unused]] const AssetType& assetType, [[maybe_unused]] const AZStd::string& assetHint,
         AssetLoadBehavior assetReferenceLoadBehavior, const AssetLoadParameters& loadParams, AssetInfo assetInfo /*= () */, bool signalLoaded /*= false */)
     {
         AZ_PROFILE_FUNCTION(AzCore);
@@ -987,8 +1014,11 @@ namespace AZ::Data
             }
             else
             {
-                AZ_Warning("AssetManager", false, "GetAsset called for asset which does not exist in asset catalog and cannot be loaded. Asset may be missing, not processed or moved. AssetId: %s",
-                    assetId.ToString<AZStd::string>().c_str());
+                AZ_Warning("AssetManager", false,
+                    "GetAsset called for asset which does not exist in asset catalog and cannot be loaded. Asset may be missing, not processed or moved. AssetId: %s, AssetType: %s, AssetHint: %s",
+                    assetId.ToString<AZStd::string>().c_str(),
+                    assetType.ToString<AZStd::string>().c_str(),
+                    assetHint.c_str());
 
                 // If asset not found, use the id and type given.  We will create a valid asset, but it will likely get an error
                 // status below if the asset handler doesn't reroute it to a default asset.
