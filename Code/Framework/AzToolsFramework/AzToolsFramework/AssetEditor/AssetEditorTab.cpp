@@ -399,6 +399,7 @@ namespace AzToolsFramework
 
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, targetFilePath);
                     m_expectedAddedAssetPath = targetFilePath;
+                    AZStd::to_lower(m_expectedAddedAssetPath.begin(), m_expectedAddedAssetPath.end());
 
                     SourceControlCommandBus::Broadcast(
                         &SourceControlCommandBus::Events::RequestEdit,
