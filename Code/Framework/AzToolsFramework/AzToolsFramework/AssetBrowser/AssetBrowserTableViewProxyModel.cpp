@@ -69,21 +69,24 @@ namespace AzToolsFramework
                         }
                         return "";
                     case Vertices:
-                        if (assetBrowserEntry->GetNumVertices() > 0)
+                        if (!GetShowSearchResultsMode()  && assetBrowserEntry->GetNumVertices() > 0)
                         {
                             return assetBrowserEntry->GetNumVertices();
                         }
                         return "";
                     case ApproxSize:
-                        if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
+                        if (!GetShowSearchResultsMode())
                         {
-                            const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
-                            if (abs(dim.GetX())<1.0f && abs(dim.GetY())<1.0f && abs(dim.GetZ())<1.0f)
-                                return QString{ "%1 x %2 x %3" }.arg(dim.GetX()).arg(dim.GetY()).arg(dim.GetZ());
-                            return QString{ "%1 x %2 x %3" }
-                                .arg(static_cast<int>(dim.GetX()))
-                                .arg(static_cast<int>(dim.GetY()))
-                                .arg(static_cast<int>(dim.GetZ()));
+                            if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
+                            {
+                                const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
+                                if (abs(dim.GetX()) < 1.0f && abs(dim.GetY()) < 1.0f && abs(dim.GetZ()) < 1.0f)
+                                    return QString{ "%1 x %2 x %3" }.arg(dim.GetX()).arg(dim.GetY()).arg(dim.GetZ());
+                                return QString{ "%1 x %2 x %3" }
+                                    .arg(static_cast<int>(dim.GetX()))
+                                    .arg(static_cast<int>(dim.GetY()))
+                                    .arg(static_cast<int>(dim.GetZ()));
+                            }
                         }
                         return "";
                     default:

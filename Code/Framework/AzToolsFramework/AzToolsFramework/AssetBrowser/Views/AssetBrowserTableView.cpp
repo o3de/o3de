@@ -529,7 +529,20 @@ namespace AzToolsFramework
                         auto myCompFilter = const_cast<CompositeFilter*>(anyCompFilter);
                         myCompFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
                     }
+
                 }
+                using EntryType = AssetBrowserEntry::AssetEntryType;
+                EntryType types[] = { EntryType::Folder, EntryType::Root, EntryType::Source };
+                auto productFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
+                productFilter->SetName("NoProduct");
+                for (auto type : types)
+                {
+                    EntryTypeFilter* entryTypeFilter = new EntryTypeFilter();
+                    entryTypeFilter->SetEntryType(type);
+                    entryTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::None);
+                    productFilter->AddFilter(FilterConstType(entryTypeFilter));
+                }
+                filterCopy->AddFilter(FilterConstType(productFilter));
                 filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::None);
             }
             else
