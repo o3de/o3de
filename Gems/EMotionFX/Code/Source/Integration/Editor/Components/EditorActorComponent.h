@@ -65,6 +65,10 @@ namespace EMotionFX
             void SetActorAsset(AZ::Data::Asset<ActorAsset> actorAsset) override;
             void EnableInstanceUpdate(bool enable) override;
 
+            // Returns actor asset
+            AZ::Data::Asset<AZ::Data::AssetData> GetActorAsset() override; // carbonated EMotionFX_port
+
+
             // EditorActorComponentRequestBus overrides ...
             const AZ::Data::AssetId& GetActorAssetId() override;
             AZ::EntityId GetAttachedToEntityId() const override;

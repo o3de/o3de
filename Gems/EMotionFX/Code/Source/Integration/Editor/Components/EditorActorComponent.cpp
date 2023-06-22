@@ -576,6 +576,12 @@ namespace EMotionFX
             m_actorAsset = actorAsset;
             CheckActorCreation();
         }
+
+        AZ::Data::Asset<AZ::Data::AssetData> EditorActorComponent::GetActorAsset()
+        {
+            return m_actorAsset;
+        }
+
         void EditorActorComponent::EnableInstanceUpdate(bool enable)
         {
             if (m_actorInstance)
