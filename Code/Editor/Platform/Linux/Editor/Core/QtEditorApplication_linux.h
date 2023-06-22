@@ -9,6 +9,7 @@
 #if !defined(Q_MOC_RUN)
 #include <Editor/Core/QtEditorApplication.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzFramework/Input/Buses/Notifications/InputChannelNotificationBus.h>
 #endif
 
 using xcb_connection_t = struct xcb_connection_t;
@@ -18,6 +19,7 @@ namespace Editor
     class EditorQtApplicationXcb
         : public EditorQtApplication
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+		, public AzFramework::InputChannelNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -26,6 +28,7 @@ namespace Editor
         {
             // Connect bus to listen for OnStart/StopPlayInEditor events
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+			AzFramework::InputChannelNotificationBus::Handler::BusConnect();
         }
 
         xcb_connection_t* GetXcbConnectionFromQt();
@@ -37,5 +40,6 @@ namespace Editor
 
         // QAbstractNativeEventFilter:
         bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
+		void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override;
     };
 } // namespace Editor

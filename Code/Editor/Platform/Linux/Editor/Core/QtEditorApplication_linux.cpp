@@ -13,6 +13,8 @@
 #include <AzFramework/XcbConnectionManager.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <AzFramework/XcbEventHandler.h>
+#include <AzFramework/Input/Channels/InputChannel.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #endif
 
 namespace Editor
@@ -36,6 +38,7 @@ namespace Editor
         }
         return reinterpret_cast<xcb_connection_t*>(native->nativeResourceForIntegration(QByteArray("connection")));
     }
+
 
     void EditorQtApplicationXcb::OnStartPlayInEditor()
     {
@@ -76,4 +79,18 @@ namespace Editor
         }
         return false;
     }
+
+	void EditorQtApplicationXcb::OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed)
+	{
+		if(GetIEditor()->IsInGameMode())
+		{
+			if(inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::Escape)
+			{
+				hasBeenConsumed = true;
+				GetIEditor()->SetInGameMode(false);
+			}
+		}
+
+		InputChannelNotifications::OnInputChannelEvent(inputChannel, hasBeenConsumed);
+	}
 } // namespace Editor
