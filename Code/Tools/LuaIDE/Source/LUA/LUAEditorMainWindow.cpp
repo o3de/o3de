@@ -82,6 +82,17 @@ namespace LUAEditor
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ::IO::FixedMaxPath engineRootPath;
         settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+		GameEngineFolder = engineRootPath.String();
+
+		AZ::IO::Path projectPath;
+		settingsRegistry->Get(projectPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+		GameAssetFolder = projectPath.String();
+
+		if(m_lastOpenFilePath.empty())
+		{
+			m_lastOpenFilePath = GameAssetFolder;
+		}
+
         AzQtComponents::StyleManager* m_styleSheet = new AzQtComponents::StyleManager(this);
         m_styleSheet->initialize(qApp, engineRootPath);
 
@@ -821,7 +832,18 @@ namespace LUAEditor
         rootDir.setPath(rootDirString);
         rootDir.cdUp();
 
-        QString name = QFileDialog::getOpenFileName(this, "Open lua file", m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(), "Lua files (*.lua)");
+		QFileDialog dialog;
+
+		const QList<QUrl> bookmarks =
+		{
+			QUrl::fromLocalFile(GameAssetFolder.c_str()),
+			QUrl::fromLocalFile(GameEngineFolder.c_str())
+		};
+		dialog.setSidebarUrls(bookmarks);
+		QString name = dialog.getOpenFileName(this,
+											  tr("Open Lua File"),
+											  m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(),
+											  QString("Lua files (*.lua)"));
         if (name.isEmpty())
         {
             return;
@@ -1281,7 +1303,7 @@ namespace LUAEditor
             return;
         }
 
-        LUAEditorGoToLineDialog dlg(this);
+        LUAEditorGoToLineDialog dlg(nullptr);
 
         int lineNumber = 0, cursorColumn = 0;
         currentView->GetCursorPosition(lineNumber, cursorColumn);
@@ -1769,7 +1791,18 @@ namespace LUAEditor
         rootDir.setPath(rootDirString);
         rootDir.cdUp();
 
-        QString name = QFileDialog::getSaveFileName(this, QString(AZStd::string::format("Save File {%s}", assetName.c_str()).c_str()), m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(), QString("*.lua"));
+		QFileDialog dialog;
+
+		const QList<QUrl> bookmarks =
+		{
+			QUrl::fromLocalFile(GameAssetFolder.c_str()),
+			QUrl::fromLocalFile(GameEngineFolder.c_str())
+		};
+		dialog.setSidebarUrls(bookmarks);
+		QString name = dialog.getSaveFileName(this,
+											  QString(AZStd::string::format("Save File {%s}",assetName.c_str()).c_str()),
+											  m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(),
+											  QString("*.lua"));
         if (name.isEmpty())
         {
             return false;
@@ -1790,7 +1823,18 @@ namespace LUAEditor
         rootDir.setPath(rootDirString);
         rootDir.cdUp();
 
-        QString name = QFileDialog::getSaveFileName(this, QString(AZStd::string::format("Save File As {%s}", assetName.c_str()).c_str()), rootDir.absolutePath(), QString("*.lua"));
+		QFileDialog dialog;
+
+		const QList<QUrl> bookmarks =
+		{
+			QUrl::fromLocalFile(GameAssetFolder.c_str()),
+			QUrl::fromLocalFile(GameEngineFolder.c_str())
+		};
+		dialog.setSidebarUrls(bookmarks);
+		QString name = dialog.getSaveFileName(this,
+											  QString(AZStd::string::format("Save File {%s}",assetName.c_str()).c_str()),
+											  m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(),
+											  QString("*.lua"));
         if (name.isEmpty())
         {
             return false;

@@ -213,6 +213,9 @@ namespace LUAEditor
 
         void OnOptionsMenuRequested();
 
+		AZStd::string GameAssetFolder;
+		AZStd::string GameEngineFolder;
+
     public:
 
         void SetupLuaFilesPanel();
