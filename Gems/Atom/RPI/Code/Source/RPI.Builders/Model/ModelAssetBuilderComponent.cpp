@@ -164,7 +164,7 @@ namespace AZ
         SceneAPI::Events::ProcessingResult ModelAssetBuilderComponent::BuildModel(ModelAssetBuilderContext& context)
         {
             {
-                auto assetIdOutcome = RPI::AssetUtils::MakeAssetId("ResourcePools/DefaultVertexBufferPool.resourcepool", 0);
+                auto assetIdOutcome = RPI::AssetUtils::MakeAssetId(s_defaultVertexBufferPoolSourcePath, 0);
                 if (!assetIdOutcome.IsSuccess())
                 {
                     return SceneAPI::Events::ProcessingResult::Failure;
@@ -2420,5 +2420,61 @@ namespace AZ
 
             return transform;
         }
+
+        void ModelAssetDependenciesComponent::Reflect(ReflectContext* context)
+        {
+            if (auto* serialize = azrtti_cast<SerializeContext*>(context))
+            {
+                serialize->Class<ModelAssetDependenciesComponent, Component>()
+                    // If you have made changes to the model code and need to force scene files to reprocess,
+                    // change the version number in ModelAssetBuilderComponent, not this version number.
+                    ->Version(0)
+                    ->Attribute(
+                        Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
+            }
+        }
+
+        void ModelAssetDependenciesComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
+        {
+            provided.push_back(AZ_CRC_CE("ModelAssetDependenciesService"));
+        }
+
+        void ModelAssetDependenciesComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+        {
+            incompatible.push_back(AZ_CRC_CE("ModelAssetDependenciesService"));
+        }
+
+        void ModelAssetDependenciesComponent::Activate()
+        {
+            SceneAPI::SceneBuilderDependencyBus::Handler::BusConnect();
+        }
+
+        void ModelAssetDependenciesComponent::Deactivate()
+        {
+            SceneAPI::SceneBuilderDependencyBus::Handler::BusDisconnect();
+        }
+
+        void ModelAssetDependenciesComponent::ReportJobDependencies(
+            SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier)
+        {
+            // Currently, the only implicit job dependency in model building is the dependency on the DefaultVertexBufferPool asset.
+            // It needs to get listed here to ensure that models aren't marked as complete and loadable by the engine before the
+            // DefaultVertexBufferPool has been processed.
+
+            AssetBuilderSDK::SourceFileDependency defaultVertexBufferPoolSource;
+            defaultVertexBufferPoolSource.m_sourceFileDependencyPath = ModelAssetBuilderComponent::s_defaultVertexBufferPoolSourcePath;
+
+            constexpr AZ::u32 ResourcePoolDefaultSubId = 0;
+
+            AssetBuilderSDK::JobDependency jobDependency;
+            jobDependency.m_jobKey = "Model Asset Builder (Default Vertex Buffer Pool)";
+            jobDependency.m_sourceFile = defaultVertexBufferPoolSource;
+            jobDependency.m_platformIdentifier = platformIdentifier;
+            jobDependency.m_productSubIds.push_back(ResourcePoolDefaultSubId);
+            jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+
+            jobDependencyList.push_back(jobDependency);
+        }
+
     } // namespace RPI
 } // namespace AZ

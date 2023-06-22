@@ -33,5 +33,6 @@ public:
     void ConsumeEvents(size_t numEvents, const char **filePaths, const FSEventStreamEventFlags eventFlags[], const FSEventStreamEventId eventIds[]);
     
     FileWatcher* m_watcher = nullptr;
+    dispatch_queue_t m_dispatchQueue;
 };
 

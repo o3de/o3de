@@ -410,12 +410,12 @@ void AssetRequestHandler::ProcessAssetRequest(MessageData<RequestAssetStatus> me
 {
     if ((messageData.m_message->m_searchTerm.empty())&&(!messageData.m_message->m_assetId.IsValid()))
     {
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "Failed to decode incoming RequestAssetStatus - both path and uuid is empty\n");
+        AZ_Info(AssetProcessor::DebugChannel, "Failed to decode incoming RequestAssetStatus - both path and uuid is empty\n");
         SendAssetStatus(messageData.m_key, RequestAssetStatus::MessageType, AssetStatus_Unknown);
         return;
     }
     AssetRequestLine newLine(messageData.m_platform, QString::fromUtf8(messageData.m_message->m_searchTerm.c_str()), messageData.m_message->m_assetId, messageData.m_message->m_isStatusRequest, messageData.m_message->m_searchType);
-    AZ_TracePrintf(AssetProcessor::DebugChannel, "GetAssetStatus/CompileAssetSync: %s.\n", newLine.GetDisplayString().toUtf8().constData());
+    AZ_Info(AssetProcessor::DebugChannel, "GetAssetStatus/CompileAssetSync: %s.\n", newLine.GetDisplayString().toUtf8().constData());
 
     QString assetPath = QString::fromUtf8(messageData.m_message->m_searchTerm.c_str());  // utf8-decode just once here, reuse below
     m_pendingAssetRequests.insert(messageData.m_key, newLine);
@@ -485,11 +485,11 @@ void AssetRequestHandler::OnRequestAssetExistsResponse(NetworkRequestID groupID,
 
     if (located == m_pendingAssetRequests.end())
     {
-        AZ_Trace(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
+        AZ_Info(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
         return;
     }
 
-    AZ_Trace(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n",
+    AZ_Info(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n",
         located.value().GetDisplayString().toUtf8().constData(),
         exists ? "compiled already" : "missing" );
 

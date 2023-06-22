@@ -386,6 +386,9 @@ void Nodes::{{ nodeableNodeName }}::ConfigureSlots()
             outSlotConfiguration.m_toolTip = "{{item.attrib['Description']}}";
             outSlotConfiguration.m_displayGroup = "{{ itemDisplayGroup }}";
             outSlotConfiguration.SetConnectionType(ScriptCanvas::ConnectionType::Output);
+{%          if item.attrib['Hidden'] %}
+            outSlotConfiguration{{executionDirection}}.m_isVisible = false;
+{%          endif %}
             outSlotConfiguration.m_isLatent = false;
             out.name = outSlotConfiguration.m_name;
             SlotId outSlotId = AddSlot(outSlotConfiguration);
