@@ -362,6 +362,7 @@ namespace AzToolsFramework
             if (!m_sourceAssetId.IsValid())
             {
                 SaveAsDialog();
+                return;
             }
 
             if (!m_dirty)
