@@ -357,12 +357,6 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
                     tr("Failed to save"),
                     tr("An error has been encountered saving this file. See the logs for details."));
                 messageBox.exec();
-                // Delete the parent, because this window is nested inside another, dockable window.
-                // Just deleting this will leave the dockable window open.
-                // Requesting the panel that this is docked in to close, will result in issues on some re-open states,
-                // if only the panel is closed, then the next time it's opened, the scene settings won't be correctly loaded.
-                //m_isClosed = true;
-                //this->parent()->deleteLater();
             }
         });
 
