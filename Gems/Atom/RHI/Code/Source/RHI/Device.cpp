@@ -78,8 +78,6 @@ namespace AZ
             m_physicalDevice = &physicalDevice;
             m_deviceIndex = deviceIndex;
 
-            AZ_Assert(deviceIndex == 0, "Multi-device support is not implemented yet.");
-
             RHI::ResultCode resultCode = InitInternal(physicalDevice);
 
             if (resultCode == ResultCode::Success)
@@ -329,7 +327,7 @@ namespace AZ
             BindlessSrgDescriptor bindlessSrgDesc;
             bindlessSrgDesc.m_bindlesSrgBindingSlot = bindlessSrgLayout->GetBindingSlot();
 
-            // Cache indices associated with each bindless resource type
+            // Cache indices associated with each bindless resource type. But first check if Unbounded arrays are supported
             bool isUnboundedArraySupported = GetFeatures().m_unboundedArrays;
             if(isUnboundedArraySupported)
             {
@@ -364,7 +362,10 @@ namespace AZ
                     (bindlessSrgLayout->GetGroupSizeForImageUnboundedArrays() + bindlessSrgLayout->GetGroupSizeForBufferUnboundedArrays()) == static_cast<uint32_t>(BindlessResourceType::Count),
                     "Number of resource types supported in the shader mismatches with the BindlessResourceType enum");
             }
-            else
+
+            bool isSimulateBindlessUASupported = GetFeatures().m_simulateBindlessUA;
+            // Check to see if a RHI back-end simulated unbounded arrays for Bindless SRG
+            if (isSimulateBindlessUASupported)
             {
                 //If Unbounded array support is not present we can simulate it via bounding the array. This is currently the case for metal backend.
                 for (const RHI::ShaderInputImageDescriptor& shaderInputImageUnboundedArray : bindlessSrgLayout->GetShaderInputListForImages())
@@ -398,17 +399,18 @@ namespace AZ
                 }
             }
 
-            // No need for this validation given null rhi
-            if (!AZ::RHI::IsNullRHI())
-            {          
+            if (isUnboundedArraySupported || isSimulateBindlessUASupported)
+            {
                 AZ_Assert(bindlessSrgDesc.m_roTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only textures");
                 AZ_Assert(bindlessSrgDesc.m_rwTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write textures");
                 AZ_Assert(bindlessSrgDesc.m_roTextureCubeIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only cube textures");
                 AZ_Assert(bindlessSrgDesc.m_roBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only buffers");
                 AZ_Assert(bindlessSrgDesc.m_rwBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write buffers");
                 AZ_Assert(bindlessSrgDesc.m_bindlesSrgBindingSlot != AZ::RHI::InvalidIndex, "Invalid binding slot id for bindless srg");
+                return InitInternalBindlessSrg(bindlessSrgDesc);
             }
-            return InitInternalBindlessSrg(bindlessSrgDesc);
+
+            return ResultCode::Success;
         }
     }
 }

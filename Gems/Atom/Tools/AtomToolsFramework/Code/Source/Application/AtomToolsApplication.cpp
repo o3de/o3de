@@ -366,10 +366,6 @@ namespace AtomToolsFramework
             AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
         }
 
-        AZ_TracePrintf("AtomToolsApplication", "CriticalAssetsCompiled\n");
-
-        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
-
         // Reload the assetcatalog.xml at this point again
         // Start Monitoring Asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry = m_settingsRegistry.get()](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
@@ -382,6 +378,9 @@ namespace AtomToolsFramework
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+
+        // Only signal the event *after* the asset catalog has been loaded.
+        AZ::ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "CriticalAssetsCompiled", R"({})");
     }
 
     void AtomToolsApplication::SaveSettings()

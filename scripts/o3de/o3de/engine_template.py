@@ -2306,7 +2306,7 @@ def create_repo(repo_path: pathlib.Path,
                 origin_url: str = None,
                 summary: str = None,
                 additional_info: str = None,
-                force: bool = False,
+                force: bool = None,
                 replace: list = None,
                 no_register: bool = False) -> int:
 
@@ -2331,16 +2331,17 @@ def create_repo(repo_path: pathlib.Path,
         logger.error('Remote repository URI cannot be empty.')
         return 1
     
-    # check if a repo.json file already exist in directory - can only have one repo.json file per project
     repo_json_path = repo_path / 'repo.json'
+    # if a repo.json file already exist in directory - can only have one repo.json file per project
     if not force and repo_json_path.is_file():
-        logger.error(f'{repo_json_path} already exists.  Use the --force to overwrite the existing file.')
+        logger.error(f'{repo_json_path} already exists. If you want to edit the repo.json properties, use edit-repo-properties command.'
+                     'Use --force if you want to override the current repo.json file')
         return 1
     elif repo_path.is_file():
         logger.error(f'{repo_path} already exists and is a file instead of a directory.')
         return 1
-    else:
-        os.makedirs(repo_path, exist_ok=force)
+    elif not repo_path.is_dir():
+        os.makedirs(repo_path, exist_ok=True)
 
     if not repo_name:
         # repo name default is the last component of repo_path

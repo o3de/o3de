@@ -125,7 +125,7 @@ namespace AZ
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
                                     viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-            if (!viewDescriptor.m_isArray && !isDSRendertarget)
+            if (device.GetBindlessDescriptorPool().IsInitialized() && !viewDescriptor.m_isArray && !isDSRendertarget)
             {
                 if (!viewDescriptor.m_isCubemap)
                 {
@@ -178,19 +178,21 @@ namespace AZ
         {
             auto& device = static_cast<Device&>(GetDevice());
             const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
-
-            if (m_readIndex != InvalidBindlessIndex)
+            if (device.GetBindlessDescriptorPool().IsInitialized())
             {
-                if (!viewDescriptor.m_isCubemap)
+                if (m_readIndex != InvalidBindlessIndex)
                 {
-                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
-                }
-                else
-                {
-                    device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
-                }
+                    if (!viewDescriptor.m_isCubemap)
+                    {
+                        device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                    }
+                    else
+                    {
+                        device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
+                    }
 
-                m_readIndex = InvalidBindlessIndex;
+                    m_readIndex = InvalidBindlessIndex;
+                }
             }
 
             if (m_readWriteIndex != InvalidBindlessIndex)

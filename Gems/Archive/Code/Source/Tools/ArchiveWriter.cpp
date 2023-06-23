@@ -624,8 +624,9 @@ namespace Archive
             tocWriteSpan = compressResult.m_compressedTocSpan;
 
             // Update the archive header compressed toc metadata
-            m_archiveHeader.m_tocCompressedSize = tocWriteSpan.size();
-            m_archiveHeader.m_tocCompressionAlgoIndex = FindCompressionAlgorithmId(tocCompressionAlgorithmId, m_archiveHeader);
+            m_archiveHeader.m_tocCompressedSize = static_cast<AZ::u32>(tocWriteSpan.size());
+            m_archiveHeader.m_tocCompressionAlgoIndex = static_cast<AZ::u32>(FindCompressionAlgorithmId(
+                tocCompressionAlgorithmId, m_archiveHeader));
         }
         else
         {

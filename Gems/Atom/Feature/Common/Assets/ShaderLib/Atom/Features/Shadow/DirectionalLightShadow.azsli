@@ -8,6 +8,12 @@
 
 #pragma once
 
+#ifndef ENABLE_SHADOWS
+#define ENABLE_SHADOWS              1
+#endif
+
+#if ENABLE_SHADOWS
+
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/RPI/Math.azsli>
@@ -159,3 +165,4 @@ float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, f
     return color;
 }
 
+#endif // ENABLE_SHADOWS

@@ -1066,8 +1066,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         }
         AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Initializing additional systems\n");
 
-        InlineInitializationProcessing("CSystem::Init AIInit");
-
         //////////////////////////////////////////////////////////////////////////
         // LEVEL SYSTEM
         bool usePrefabSystemForLevels = false;
@@ -1085,8 +1083,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         }
 
         InlineInitializationProcessing("CSystem::Init Level System");
-
-        InlineInitializationProcessing("CSystem::Init InitLmbrAWS");
 
         // Az to Cry console binding
         AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors(
@@ -1113,12 +1109,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
         }
         EnableFloatExceptions(g_cvars.sys_float_exceptions);
     }
-
-    InlineInitializationProcessing("CSystem::Init End");
-
-#if defined(IS_PROSDK)
-    SDKEvaluation::InitSDKEvaluation(gEnv, &m_pUserCallback);
-#endif
 
     InlineInitializationProcessing("CSystem::Init End");
 
@@ -1405,12 +1395,6 @@ void CSystem::CreateSystemVars()
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F12", "Screenshot");
     m_env.pConsole->CreateKeyBind("alt_keyboard_key_function_F11", "RecordClip");
 
-    /*
-        // experimental feature? - needs to be created very early
-        m_sys_filecache = REGISTER_INT("sys_FileCache",0,0,
-            "To speed up loading from non HD media\n"
-            "0=off / 1=enabled");
-    */
     REGISTER_CVAR2("sys_trackview", &g_cvars.sys_trackview, 1, 0, "Enables TrackView Update");
 
     // Defines selected language.
@@ -1440,10 +1424,6 @@ void CSystem::CreateSystemVars()
 #if defined(WIN32) || defined(WIN64)
     REGISTER_INT("sys_screensaver_allowed", 0, VF_NULL, "Specifies if screen saver is allowed to start up while the game is running.");
 #endif
-
-    // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
-    // By default it is now enabled. Modify system.cfg or game.cfg to disable it
-    REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
 }
 
 /////////////////////////////////////////////////////////////////////

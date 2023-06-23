@@ -123,16 +123,31 @@ namespace AZ
                 m_visualizationBufferPools->Init(device);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
-                m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                    "Models/DiffuseProbeSphere.azmodel",
-                    AZ::RPI::AssetUtils::TraceLevel::Warning);
 
-                if (!m_visualizationModelAsset.IsReady())
+                // The asset ID for our visualization model has the ID from the lowercased relative path of the source asset
+                // and a sub ID that's generated based on the asset name.
+                // The asset sub id is hardcoded here because the sub id is generated based on the asset name
+                // and the generation method for models currently only exists in ModelAssetBuilderComponent::CreateAssetId().
+                // It isn't exposed to the engine.
+                // Note that there's technically a bug where if the DiffuseProbeSphere asset hasn't been processed by the Asset
+                // Processor by the time this loads, it will load the default missing asset (a cube) instead of the sphere asset
+                // until the next run of the Editor. This could be fixed by using the MeshFeatureProcessor to load the asset and
+                // using ConnectModelChangeEventHandler() to listen for model changes to refresh the visualization.
+                // However, since that will just cause the visualization to change from a cube to a sphere on the first run of the
+                // Editor, handling the edge case might be overkill.
+                Data::AssetId modelAssetId = Data::AssetId(AZ::Uuid::CreateName("models/diffuseprobesphere.fbx"), 268692035);
+                m_visualizationModelAsset =
+                    Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(modelAssetId, Data::AssetLoadBehavior::PreLoad);
+
+                if (m_visualizationModelAsset.GetId().IsValid())
                 {
-                    m_visualizationModelAsset.QueueLoad();
-                }
+                    if (!m_visualizationModelAsset.IsReady())
+                    {
+                        m_visualizationModelAsset.QueueLoad();
+                    }
 
-                Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                    Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                }
             }
 
             // query buffer attachmentId
@@ -891,6 +906,10 @@ namespace AZ
 
             m_visualizationModel = RPI::Model::FindOrCreate(modelAsset);
             AZ_Assert(m_visualizationModel.get(), "Failed to load DiffuseProbeGrid visualization model");
+            if (!m_visualizationModel)
+            {
+                return;
+            }
 
             const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_visualizationModel->GetLods();
             AZ_Assert(!modelLods.empty(), "Invalid DiffuseProbeGrid visualization model");
