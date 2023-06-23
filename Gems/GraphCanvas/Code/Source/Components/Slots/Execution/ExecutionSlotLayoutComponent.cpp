@@ -12,6 +12,8 @@
 
 #include <Components/Slots/Execution/ExecutionSlotConnectionPin.h>
 
+#include <Components/Slots/Execution/ExecutionSlotComponent.h>
+
 namespace GraphCanvas
 {
     ////////////////////////
@@ -28,6 +30,14 @@ namespace GraphCanvas
 
         m_slotConnectionPin = aznew ExecutionSlotConnectionPin(owner.GetEntityId());
         m_slotText = aznew GraphCanvasLabel();
+
+        if (const AZ::Entity* ownerEntity = owner.GetEntity())
+        {
+            if (const SlotComponent* slotComponent = ownerEntity->FindComponent<ExecutionSlotComponent>())
+            {
+                m_isNameHidden = slotComponent->IsNameHidden();
+            }
+        }
     }
 
     ExecutionSlotLayout::~ExecutionSlotLayout()
@@ -58,7 +68,7 @@ namespace GraphCanvas
         {
             m_connectionType = slotRequests->GetConnectionType();
 
-            m_slotText->SetLabel(slotRequests->GetName());
+            OnNameChanged(slotRequests->GetName());
             OnTooltipChanged(slotRequests->GetTooltip());
 
             const SlotConfiguration& configuration = slotRequests->GetSlotConfiguration();
@@ -85,7 +95,14 @@ namespace GraphCanvas
 
     void ExecutionSlotLayout::OnNameChanged(const AZStd::string& name)
     {
-        m_slotText->SetLabel(name);
+        if (m_isNameHidden)
+        {
+            m_slotText->SetLabel("");
+        }
+        else
+        {
+            m_slotText->SetLabel(name);
+        }
     }
 
     void ExecutionSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)

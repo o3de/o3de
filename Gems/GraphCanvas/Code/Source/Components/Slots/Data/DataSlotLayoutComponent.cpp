@@ -277,6 +277,14 @@ namespace GraphCanvas
         m_nodePropertyDisplay = aznew NodePropertyDisplayWidget();
         m_slotConnectionPin = aznew DataSlotConnectionPin(owner.GetEntityId());
         m_slotText = aznew GraphCanvasLabel();
+
+        if (const AZ::Entity* ownerEntity = owner.GetEntity())
+        {
+            if (const SlotComponent* slotComponent = ownerEntity->FindComponent<DataSlotComponent>())
+            {
+                m_isNameHidden = slotComponent->IsNameHidden();
+            }
+        }
     }
 
     DataSlotLayout::~DataSlotLayout()
@@ -337,7 +345,7 @@ namespace GraphCanvas
         {
             m_connectionType = slotRequests->GetConnectionType();
 
-            m_slotText->SetLabel(slotRequests->GetName());
+            OnNameChanged(slotRequests->GetName());
 
             OnTooltipChanged(slotRequests->GetTooltip());
 
@@ -392,7 +400,14 @@ namespace GraphCanvas
 
     void DataSlotLayout::OnNameChanged(const AZStd::string& name)
     {
-        m_slotText->SetLabel(name);
+        if (m_isNameHidden)
+        {
+            m_slotText->SetLabel("");
+        }
+        else
+        {
+            m_slotText->SetLabel(name);
+        }
     }
 
     void DataSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
