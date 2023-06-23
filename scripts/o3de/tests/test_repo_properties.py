@@ -121,6 +121,7 @@ def init_repo_json_data(request):
         def __init__(self):
             self.data = json.loads(TEST_TEMPLATE_REPO_JSON)
             self.path = None
+            self.backup_file_name = None
     request.cls.repo_json = RepoJsonData()
 
 @pytest.fixture(scope="session")
@@ -351,7 +352,7 @@ class TestEditRepoProperties:
                                      release_archive_path, force, download_prefix,  
                                      expected_result):
         def backup_file(file_name: str or pathlib.Path) -> None:
-            file_name = None
+            self.backup_file_name = file_name
 
         def get_repo_props(repo_path: str or pathlib.Path = None) -> dict or None:
             if not repo_path:

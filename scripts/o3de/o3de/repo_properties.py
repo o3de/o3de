@@ -9,6 +9,7 @@
 This file contains all the code that has to do with editing the remote repo template
 """
 import argparse
+import copy
 import pathlib
 import sys
 import json
@@ -298,6 +299,8 @@ def edit_repo_props(repo_path: pathlib.Path = None,
     if not repo_json:
         return 1
 
+    repo_json_original = copy.deepcopy(repo_json)
+
     if isinstance(repo_name, str):
         if not utils.validate_identifier(repo_name):
             logger.error(f'Repo name must be fewer than 64 characters, contain only alphanumeric, "_" or "-"'
@@ -306,16 +309,16 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         repo_json['repo_name'] = repo_name
 
     if add_gems or delete_gems or replace_gems:
-        utils.backup_file(repo_path)
         _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix)
 
     if add_projects or delete_projects or replace_projects:
-        utils.backup_file(repo_path)
         _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix)
 
     if add_templates or delete_templates or replace_templates:
-        utils.backup_file(repo_path)
         _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix)
+
+    if repo_json_original != repo_json:
+        utils.backup_file(repo_path)
 
     return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1
 
