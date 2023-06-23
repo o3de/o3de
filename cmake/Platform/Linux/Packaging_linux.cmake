@@ -25,15 +25,17 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
 
     set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
 
-    # get all the package dependencies, extracted from scripts\build\build_node\Platform\Linux\package-list.ubuntu-focal.txt
-    set(unversioned_package_dependencies
+    # Define all the debian package dependencies needed to build and run
+    set(package_dependencies
+        # Required Tools
+        "clang (>=12.0)"                        # Clang required (minimum version 12.0)
         ninja-build
         # Build Libraries
+        libstdc++-12-dev
         libglu1-mesa-dev                        # For Qt (GL dependency)
         libxcb-xinerama0                        # For Qt plugins at runtime
         libxcb-xinput0                          # For Qt plugins at runtime
         libfontconfig1-dev                      # For Qt plugins at runtime
-        libstdc++-12-dev
         libxcb-xkb-dev                          # For xcb keyboard input
         libxkbcommon-x11-dev                    # For xcb keyboard input
         libxkbcommon-dev                        # For xcb keyboard input
@@ -44,10 +46,7 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         libunwind-dev
         pkg-config
     )
-
-    list(JOIN unversioned_package_dependencies "," unversioned_package_dependencies_string)
-
-    string(CONCAT CPACK_DEBIAN_PACKAGE_DEPENDS "clang (>=12.0)," ${unversioned_package_dependencies_string})
+    list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
 
     # Post-installation and pre/post removal scripts
     configure_file("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Packaging/postinst.in"
