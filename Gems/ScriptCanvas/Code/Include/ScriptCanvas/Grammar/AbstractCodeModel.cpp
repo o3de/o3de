@@ -3822,7 +3822,7 @@ namespace ScriptCanvas
                     if (connectedNode.second != outSlot)
                     {
                         // If there are no connections to ignore yet, that must mean there are still more slots on this node to parse
-                        if (m_parsedImplicitConnections.size() == 0)
+                        if (m_parsedImplicitConnections.empty())
                         {
                             m_parsedImplicitConnections.push_back(AZStd::make_pair(outSlot, inSlot));
                             return true;
@@ -3830,7 +3830,7 @@ namespace ScriptCanvas
                         else
                         {
                             bool foundConnectionInParsed = false;
-                            for (auto connection : m_parsedImplicitConnections)
+                            for (const auto& connection : m_parsedImplicitConnections)
                             {
                                 if (connection.first == connectedNode.second && connection.second == inSlot)
                                 {
