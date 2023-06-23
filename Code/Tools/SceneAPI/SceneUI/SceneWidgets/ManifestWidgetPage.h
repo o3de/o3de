@@ -70,6 +70,7 @@ namespace AZ
 
             public slots:
                 void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
+                void EnableInspector(bool enableInspector);
 
             protected slots:
                 //! Callback that's triggered when the add button only has 1 entry.

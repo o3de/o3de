@@ -608,6 +608,11 @@ namespace AZ
                         emit AssignScript();
                     });
             }
+
+            void ManifestWidgetPage::EnableInspector(bool enableInspector)
+            {
+                ui->m_inspectButton->setVisible(enableInspector);
+            }
         } // namespace UI
     } // namespace SceneAPI
 } // namespace AZ

@@ -59,6 +59,10 @@ namespace AzToolsFramework
             void CreateProductDependencyTree(const AZStd::set<AZ::Data::AssetId> dependencyUuids, bool isOutgoing);
             // Adds the name and icon of an asset browser entry under a QTreeWidgetItem
             void AddAssetBrowserEntryToTree(const AssetBrowserEntry* entry, QTreeWidgetItem* headerItem);
+            // Processses the source asset and populates the FBX settings
+            void HandleSourceAsset(const AssetBrowserEntry* entry, const SourceAssetBrowserEntry* sourceEntry);
+            // Processes the product asset
+            void HandleProductAsset(const ProductAssetBrowserEntry* productEntry);
 
             const AssetBrowserEntry* m_currentEntry = nullptr;
 

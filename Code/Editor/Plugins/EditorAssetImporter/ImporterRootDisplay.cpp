@@ -89,6 +89,8 @@ ImporterRootDisplayWidget::ImporterRootDisplayWidget(AZ::SerializeContext* seria
         &ImporterRootDisplayWidget::AppendUnsavedChangesToTitle,
         m_manifestWidget.data(),
         &AZ::SceneAPI::UI::ManifestWidget::AppendUnsavedChangesToTitle);
+
+    connect(ui->m_closeButton, &QPushButton::clicked, this, [this]{ ui->m_pythonBuilderLayout->hide(); });
 }
 
 ImporterRootDisplayWidget::~ImporterRootDisplayWidget()
@@ -110,8 +112,8 @@ void ImporterRootDisplayWidget::SetSceneHeaderText(const QString& headerText)
 
 void ImporterRootDisplayWidget::SetPythonBuilderText(QString pythonBuilderText)
 {
-    //ui->m_pythonBuilderScript->setText(pythonBuilderText);
-    //ui->headerFrame->setVisible(!pythonBuilderText.isEmpty());
+    ui->m_pythonBuilder->setText(QString("<b>Assigned Python Builder Script:</b> %1").arg(pythonBuilderText));
+    ui->m_pythonBuilderLayout->setVisible(!pythonBuilderText.isEmpty());
 }
 
 QString ImporterRootDisplayWidget::GetHeaderFileName() const
@@ -186,11 +188,7 @@ void ImporterRootDisplayWidget::UpdateTimeStamp(const QString& manifestFilePath,
         ui->m_timeStampTitle->setVisible(false);
         ui->m_timeStamp->setVisible(false);
     }
-
-    if (enableInspector)
-    {
-        //ui->m_inspectButton->setVisible(true);
-    }
+    m_manifestWidget->SetInspectButtonVisibility(enableInspector);
 }
 
 void ImporterRootDisplayWidget::SetUnsavedChanges(bool hasUnsavedChanges)

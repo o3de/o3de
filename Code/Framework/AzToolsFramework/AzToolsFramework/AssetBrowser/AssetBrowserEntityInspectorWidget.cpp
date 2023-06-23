@@ -48,20 +48,30 @@ namespace AzToolsFramework
             // Create the buttons to switch between asset details and scene settings
             auto buttonLayout = new QHBoxLayout(m_populatedLayoutWidget);
             buttonLayout->setSpacing(0);
-            //auto horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Maximum);
             m_detailsButton = new QPushButton(m_populatedLayoutWidget);
-            m_detailsButton->setText("Details");
-            //m_detailsButton->setCheckable(true);
-            //m_detailsButton->setChecked(true);
-            //m_detailsButton->setStyleSheet("QPushButton {background-color: #333333; border: 1px solid #222222;} QPushButton::checked {background-color: #1E70EB; border: none;}");
+            m_detailsButton->setText(QObject::tr("Details"));
+            m_detailsButton->setCheckable(true);
+            m_detailsButton->setFlat(true);
+            m_detailsButton->setStyleSheet(
+                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
+                "border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-top-right-radius: 0px;"
+                "border-bottom-right-radius: 0px; font-size: 12px; height: 28px;}"
+                "QPushButton:checked {background-color: #1E70EB;}"
+                "QPushButton:hover:!checked {background-color: #444444;}"
+                "QPushButton:pressed:!checked: {background-color: #444444;}");
             m_sceneSettingsButton = new QPushButton(m_populatedLayoutWidget);
             m_sceneSettingsButton->setText("Scene Settings");
-            //m_sceneSettingsButton->setCheckable(true);
-            //m_sceneSettingsButton->setStyleSheet("QPushButton::checked {background-color: #1E70EB;}");
-            //buttonLayout->addSpacerItem(horizontalSpacer);
+            m_sceneSettingsButton->setCheckable(true);
+            m_sceneSettingsButton->setFlat(true);
+            m_sceneSettingsButton->setStyleSheet(
+                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
+                "border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 3px;"
+                "border-bottom-right-radius: 0px; margin-left: -1px; font-size: 12px; height: 28px;}"
+                "QPushButton:checked {background-color: #1E70EB;}"
+                "QPushButton:hover:!checked {background-color: #444444;}"
+                "QPushButton:pressed:!checked: {background-color: #444444;}");
             buttonLayout->addWidget(m_detailsButton);
             buttonLayout->addWidget(m_sceneSettingsButton);
-            //buttonLayout->addSpacerItem(horizontalSpacer);
 
             // Create the layout for the asset icon preview
             m_previewImage = new QLabel(m_populatedLayoutWidget);
@@ -72,7 +82,7 @@ namespace AzToolsFramework
             // Create the layout for the asset details card
             auto cardLayout = new QVBoxLayout(m_populatedLayoutWidget);
             m_detailsCard = new AzQtComponents::Card();
-            m_detailsCard->setTitle("Asset Details");
+            m_detailsCard->setTitle(QObject::tr("Asset Details"));
             m_detailsCard->header()->setHasContextMenu(false);
             m_detailsCard->hideFrame();
             cardLayout->addWidget(m_detailsCard);
@@ -103,6 +113,7 @@ namespace AzToolsFramework
             m_dependentProducts->setMinimumHeight(0);
             m_dependentAssetsCard->setContentWidget(m_dependentProducts);
 
+            // If opening the Scene Settings is successful, enable switching between the asset details and scene settings
             m_settingsSwitcher = new QStackedWidget(m_populatedLayoutWidget);
             m_detailsWidget = new QWidget(m_settingsSwitcher);
             m_detailsWidget->setLayout(cardLayout);
@@ -118,8 +129,8 @@ namespace AzToolsFramework
                     [this]
                     {
                         m_settingsSwitcher->setCurrentIndex(0);
-                        //m_detailsButton->setChecked(true);
-                        //m_sceneSettingsButton->setChecked(false);
+                        m_detailsButton->setChecked(true);
+                        m_sceneSettingsButton->setChecked(false);
                     });
 
                 connect(
@@ -129,18 +140,19 @@ namespace AzToolsFramework
                     [this]
                     {
                         m_settingsSwitcher->setCurrentIndex(1);
-                        //m_sceneSettingsButton->setChecked(true);
-                        //m_detailsButton->setChecked(false);
+                        m_sceneSettingsButton->setChecked(true);
+                        m_detailsButton->setChecked(false);
                     });
             }
 
+            // Create the QSplitter to resize the image preview and the details/settings
             QSplitter* splitter = new QSplitter(m_populatedLayoutWidget);
             splitter->setHandleWidth(2);
             splitter->setOrientation(Qt::Vertical);
             splitter->addWidget(m_previewImage);
             splitter->addWidget(m_settingsSwitcher);
 
-            // Add the image preview and the card layouts to a single layout, spacing them appropriately
+            // Add the buttons to switch settings, and the QSplitter to the main layout
             populatedLayout->addLayout(buttonLayout);
             populatedLayout->addWidget(splitter);
             m_populatedLayoutWidget->setLayout(populatedLayout);
@@ -215,11 +227,9 @@ namespace AzToolsFramework
                 m_settingsSwitcher->setCurrentWidget(m_detailsWidget);
             }
 
-            if (m_previewImage->isHidden())
-            {
-                m_previewImage->show();
-            }
-
+            m_previewImage->show();
+            m_detailsButton->setChecked(true);
+            m_sceneSettingsButton->setChecked(false);
             if (selectedEntry == m_currentEntry)
             {
                 return;
@@ -294,81 +304,13 @@ namespace AzToolsFramework
                 m_assetDetailLayout->addRow(QObject::tr("<b>Location:</b>"), clickableURL);
             }
 
-            QString fileType;
-            QString assetEntryType;
             if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
             {
-                const auto extension = sourceEntry->GetExtension();
-                fileType = QString::fromUtf8(extension.c_str(), static_cast<int>(extension.size()));
-                if (fileType.startsWith(QLatin1Char{ '.' }))
-                {
-                    fileType.remove(0, 1);
-                }
-                assetEntryType = QObject::tr("Source");
-
-                AZStd::vector<const ProductAssetBrowserEntry*> productChildren;
-                sourceEntry->GetChildren(productChildren);
-                if (!productChildren.empty())
-                {
-                    m_dependentAssetsCard->show();
-                    m_dependentAssetsCard->setExpanded(true);
-                    PopulateSourceDependencies(sourceEntry, productChildren);
-                    const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
-                    headerItem->setText(0, QObject::tr("Product Assets"));
-                    headerItem->setFont(0, m_headerFont);
-                    headerItem->setExpanded(true);
-                    for (const auto productChild : productChildren)
-                    {
-                        const auto assetEntry = azrtti_cast<const AssetBrowserEntry*>(productChild);
-                        AddAssetBrowserEntryToTree(assetEntry, headerItem);
-                    }
-                }
-                else
-                {
-                    m_dependentAssetsCard->hide();
-                }
-
-                if (m_sceneSettings)
-                {
-                    bool validSceneSettings = false;
-                    AssetBrowserPreviewRequestBus::BroadcastResult(validSceneSettings, &AssetBrowserPreviewRequest::PreviewSceneSettings, selectedEntry);
-                    if (validSceneSettings)
-                    {
-                        QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
-                        m_sceneSettingsButton->setText(QString("%1 Settings").arg(fileType.toUpper()));
-                        m_detailsButton->show();
-                        m_sceneSettingsButton->show();
-                    }
-                }
+                HandleSourceAsset(selectedEntry, sourceEntry);
             }
             else if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(selectedEntry))
             {
-                AZ::AssetTypeInfoBus::EventResult(fileType, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
-                assetEntryType = QObject::tr("Product");
-
-                if (PopulateProductDependencies(productEntry))
-                {
-                    m_dependentAssetsCard->show();
-                    m_dependentAssetsCard->setExpanded(true);
-                }
-                else
-                {
-                    m_dependentAssetsCard->hide();
-                }
-            }
-
-            if (!fileType.isEmpty())
-            {
-                const auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
-                fileTypeLabel->setText(fileType);
-                m_assetDetailLayout->addRow(QObject::tr("<b>File Type:</b>"), fileTypeLabel);
-            }
-
-            if (!assetEntryType.isEmpty())
-            {
-                const auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
-                assetTypeLabel->setText(assetEntryType);
-                m_assetDetailLayout->addRow(QObject::tr("<b>Asset Type:</b>"), assetTypeLabel);
+                HandleProductAsset(productEntry);
             }
 
             const float diskSize = static_cast<float>(selectedEntry->GetDiskSize());
@@ -395,6 +337,92 @@ namespace AzToolsFramework
                 const auto verticesLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
                 verticesLabel->setText(QString::number(vertices));
                 m_assetDetailLayout->addRow(QObject::tr("<b>Vertices:</b>"), verticesLabel);
+            }
+        }
+
+        void AssetBrowserEntityInspectorWidget::HandleSourceAsset(const AssetBrowserEntry* selectedEntry, const SourceAssetBrowserEntry* sourceEntry)
+        {
+            const auto extension = sourceEntry->GetExtension();
+            auto fileType = QString::fromUtf8(extension.c_str(), static_cast<int>(extension.size()));
+            if (!fileType.isEmpty())
+            {
+                if (fileType.startsWith(QLatin1Char{ '.' }))
+                {
+                    fileType.remove(0, 1);
+                }
+                const auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                fileTypeLabel->setText(fileType);
+                m_assetDetailLayout->addRow(QObject::tr("<b>File Type:</b>"), fileTypeLabel);
+            }
+
+            const auto assetEntryType = QObject::tr("Source");
+            const auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+            assetTypeLabel->setText(assetEntryType);
+            m_assetDetailLayout->addRow(QObject::tr("<b>Asset Type:</b>"), assetTypeLabel);
+
+            AZStd::vector<const ProductAssetBrowserEntry*> productChildren;
+            sourceEntry->GetChildren(productChildren);
+            if (!productChildren.empty())
+            {
+                m_dependentAssetsCard->show();
+                m_dependentAssetsCard->setExpanded(true);
+                PopulateSourceDependencies(sourceEntry, productChildren);
+                const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                headerItem->setText(0, QObject::tr("Product Assets"));
+                headerItem->setFont(0, m_headerFont);
+                headerItem->setExpanded(true);
+                for (const auto productChild : productChildren)
+                {
+                    const auto assetEntry = azrtti_cast<const AssetBrowserEntry*>(productChild);
+                    AddAssetBrowserEntryToTree(assetEntry, headerItem);
+                }
+            }
+            else
+            {
+                m_dependentAssetsCard->hide();
+            }
+
+            if (m_sceneSettings)
+            {
+                bool validSceneSettings = false;
+                AssetBrowserPreviewRequestBus::BroadcastResult(
+                    validSceneSettings, &AssetBrowserPreviewRequest::PreviewSceneSettings, selectedEntry);
+                if (validSceneSettings)
+                {
+                    QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
+                    m_sceneSettingsButton->setText(QString("%1 Settings").arg(fileType.toUpper()));
+                    m_detailsButton->show();
+                    m_detailsButton->setChecked(true);
+                    m_sceneSettingsButton->show();
+                    m_sceneSettingsButton->setChecked(false);
+                }
+            }
+        }
+
+        void AssetBrowserEntityInspectorWidget::HandleProductAsset(const ProductAssetBrowserEntry* productEntry)
+        {
+            QString fileType;
+            AZ::AssetTypeInfoBus::EventResult(fileType, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
+            if (!fileType.isEmpty())
+            {
+                const auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                fileTypeLabel->setText(fileType);
+                m_assetDetailLayout->addRow(QObject::tr("<b>File Type:</b>"), fileTypeLabel);
+            }
+
+            const auto assetEntryType = QObject::tr("Product");
+            const auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+            assetTypeLabel->setText(assetEntryType);
+            m_assetDetailLayout->addRow(QObject::tr("<b>Asset Type:</b>"), assetTypeLabel);
+
+            if (PopulateProductDependencies(productEntry))
+            {
+                m_dependentAssetsCard->show();
+                m_dependentAssetsCard->setExpanded(true);
+            }
+            else
+            {
+                m_dependentAssetsCard->hide();
             }
         }
 

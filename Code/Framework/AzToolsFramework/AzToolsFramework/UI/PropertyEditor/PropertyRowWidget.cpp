@@ -327,6 +327,10 @@ namespace AzToolsFramework
                 m_isSceneSetting = true;
                 setStyleSheet("QFrame {background-color: #555555; color: white;}");
                 setContentsMargins(0, 0, 8, 0);
+                if (m_treeDepth > 0)
+                {
+                    m_treeDepth = m_treeDepth - 1;
+                }
             }
 
             RefreshAttributesFromNode(true);

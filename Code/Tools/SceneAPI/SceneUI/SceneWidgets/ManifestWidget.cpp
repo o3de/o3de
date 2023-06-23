@@ -205,6 +205,12 @@ namespace AZ
                 connect(page, &ManifestWidgetPage::ClearChanges, this, &ManifestWidget::OnClearUnsavedChangesRequested);
                 connect(page, &ManifestWidgetPage::AssignScript, this, &ManifestWidget::OnAssignScript);
                 connect(this, &ManifestWidget::AppendUnsavedChangesToTitle, page, &ManifestWidgetPage::AppendUnsavedChangesToTitle);
+                connect(this, &ManifestWidget::EnableInspector, page, &ManifestWidgetPage::EnableInspector);
+            }
+
+            void ManifestWidget::SetInspectButtonVisibility(bool enableInspector)
+            {
+                emit EnableInspector(enableInspector);
             }
         } // namespace UI
     } // namespace SceneAPI

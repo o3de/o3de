@@ -59,6 +59,8 @@ namespace AZ
 
                 void ResetScene();
 
+                void SetInspectButtonVisibility(bool enableInspector);
+
                 //! Finds this ManifestWidget if the given widget is it's child, otherwise returns null.
                 static ManifestWidget* FindRoot(QWidget* child);
                 //! Finds this ManifestWidget if the given widget is it's child, otherwise returns null.
@@ -71,6 +73,7 @@ namespace AZ
                 void OnClearUnsavedChangesRequested();
                 void OnAssignScript();
                 void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
+                void EnableInspector(bool enableInspector);
 
             protected:
                 void BuildPages();
