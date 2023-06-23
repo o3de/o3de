@@ -90,7 +90,14 @@ namespace AZ
 
         namespace MultiDevice
         {
-            constexpr int DefaultDeviceIndex = 0;
+            //! "Strong typedef" such that device mask and index cannot be used interchangeably
+            enum class DeviceMask : uint32_t
+            {
+            };
+            constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
+            constexpr DeviceMask DefaultDevice{ 1u };
+
+            constexpr uint32_t DefaultDeviceIndex { 0 };
         }
 
         constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();

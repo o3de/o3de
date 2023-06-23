@@ -25,6 +25,8 @@
 									<xs:attribute name="Description" type="xs:string" use="required" />
 									<xs:attribute name="OutputName" type="xs:string" use="optional" />
 									<xs:attribute name="DisplayGroup" type="xs:string" use="optional" />
+									<xs:attribute name="Implicit" type="xs:boolean" use="optional"/>
+									<xs:attribute name="Hidden" type="xs:boolean" use="optional"/>
 								</xs:complexType>
 							</xs:element>
 							<xs:element name="Output" minOccurs="0" maxOccurs="unbounded" >
