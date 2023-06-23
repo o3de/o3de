@@ -18,7 +18,7 @@ QTreeView
 {
     /* Use opaque colours because the ::branch subcontrol background is painted slightly differently
        to the rest of the row */
-    alternate-background-color: rgb(77, 77, 77);
+    alternate-background-color: #272727;
 
     selection-background-color: rgb(101, 101, 101);
     selection-color: #ffffff;
@@ -96,9 +96,9 @@ QTreeView::branch:open:has-children:has-siblings  {
     padding: 10px 4px;
 }
 
-QTreeView::item:disabled 
-{ 
-    color: #777777; 
+QTreeView::item:disabled
+{
+    color: #777777;
 }
 
 AzQtComponents--TableView::branch:open:has-children,

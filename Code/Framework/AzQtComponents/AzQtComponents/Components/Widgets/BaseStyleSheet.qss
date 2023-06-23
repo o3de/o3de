@@ -26,7 +26,7 @@ QTreeView
 {
     /* give a background color to views without parent (completer popups)
        it is reset to transparent in the next setting for views with a parent */
-    background-color: #444444;
+    background-color: #212121;
 }
 
 QWidget > QTableView,
@@ -34,7 +34,7 @@ QWidget > QListView,
 QWidget > QTreeView
 {
     /* reset the background-color of views with parents to transparent */
-    background-color: transparent;
+    background-color: #212121;
 }
 
 /* Fix frame HLine and VLine drawing. Affects QFrame but not subclasses */
@@ -62,7 +62,7 @@ QDialog,
 QDockWidget
 {
     color: #cccccc;
-    background-color: #444444;
+    background-color: #212121;
 }
 
 QTextEdit,
@@ -76,11 +76,11 @@ QComboBox
     background-color: #CCCCCC;
     color: black;
     font-family: "Open Sans";
-    border-radius: 2px;
     border-width: 0px;
     border-color: #e9e9e9;
     font-size: 12px;
     line-height: 16px;
+    border-radius: 0px;
 }
 
 QTextEdit,

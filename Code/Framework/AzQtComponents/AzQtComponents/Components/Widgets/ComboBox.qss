@@ -24,7 +24,7 @@ QComboBox:hover
     margin: 0px;
     border-width: 1px;
     border-style: solid;
-    border-radius: 3px;
+    border-radius: 0px;
     border-color: rgba(0, 0, 0, 50);
 }
 
@@ -35,7 +35,7 @@ QComboBox[HasPopupOpen=true][HasPopupOpen=true]
     margin: 0px;
     border-width: 1px;
     border-style: solid;
-    border-radius: 3px;
+    border-radius: 0px;
     border-color: #94D2FF;
 
     background-color: #FFFFFF;
@@ -46,7 +46,7 @@ QComboBox[HasError=true]
     margin: 0px;
     border-width: 2px;
     border-style: solid;
-    border-radius: 4px;
+    border-radius: 0px;
     border-color: #E25243;
 }
 

@@ -40,7 +40,7 @@ AzQtComponents--Card[selected="true"] > #contentContainer
 
 AzQtComponents--Card #contentContainer
 {
-    background-color: #555555;
+    background-color: #3b3b3b;
 }
 
 AzQtComponents--Card[hideFrame=true]
@@ -152,14 +152,14 @@ AzQtComponents--CardHeader[class~="SectionCardHeader"]
 
 .primaryCardHeader
 {
-    background-color: #333333;
+    background-color: #2f2f2f;
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
 }
 
 .secondaryCardHeader
 {
-    background-color: #555555;
+    background-color: #444444;
     padding: 0px;
 }
 
@@ -258,7 +258,7 @@ AzQtComponents--CardHeader #Help
 
 .separator
 {
-    color: #999999;
+    color: #212121;
     margin: 0px;
     padding: 0px;
 }
@@ -271,7 +271,7 @@ AzQtComponents--Card #SeparatorContainer
 
 AzQtComponents--Card QLabel:disabled
 {
-    color: #999999;
+
 }
 
 /* Show expander arrow in card header at full opacity even when card is disabled */
