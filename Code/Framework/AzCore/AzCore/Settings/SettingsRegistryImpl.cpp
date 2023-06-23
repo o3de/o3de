@@ -1300,7 +1300,7 @@ namespace AZ
             {
                 mergeResult.Combine(MergeSettingsReturnCode::Failure);
                 mergeResult.m_operationMessages = AZStd::string::format(
-                    R"(Cannot merge settings registry JSON data to to root element field with a non-JSON Object)"
+                    R"(Cannot merge settings registry JSON data due to root element field with a non-JSON Object)"
                     R"( using the JSON Merge Patch approach. The JSON MergePatch algorithm would)"
                     R"( overwrite all settings at the supplied root-key path and therefore merging has been)"
                     R"( disallowed to prevent field destruction.)" "\n"
