@@ -1058,42 +1058,14 @@ namespace AzQtComponents
     {
         bool filtersActive = IsAnyFilterActive();
 
-        if (m_selectionCount && (m_filterTextButton->isVisible() || filtersActive))
+        if (m_selectionCount)
         {
-            QMenu menu(this);
-
-            menu.addAction(
-                QObject::tr("Selected Assets"),
-                [this]()
-                {
-                    emit addFavoriteEntriesPressed();
-                });
-            menu.addAction(
-                QObject::tr("Search/Filter"),
-                [this]()
-                {
-                    emit addFavoriteSearchPressed();
-                });
-            menu.addAction(
-                QObject::tr("All"),
-                [this]()
-                {
-                    emit addFavoriteEntriesPressed();
-                    emit addFavoriteSearchPressed();
-                });
-            menu.exec(QCursor::pos());
+            emit addFavoriteEntriesPressed();
         }
-        else
+        else if (m_filterTextButton->isVisible() || filtersActive)
         {
-            if (m_selectionCount)
-            {
-                emit addFavoriteEntriesPressed();
-            }
-            if (m_filterTextButton->isVisible() || filtersActive)
-            {
-                emit addFavoriteSearchPressed();
-            }
-        }
+            emit addFavoriteSearchPressed();
+        }        
     }
 
     void FilteredSearchWidget::RepositionFixedButtons()
