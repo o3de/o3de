@@ -251,6 +251,11 @@ namespace TestImpact
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
         const auto numTests = testEnumeration->GetNumEnabledTests();
         const auto numShards = std::min(m_maxConcurrency, numTests);
+        if (numShards == 0)
+        {
+            // If there are no shards, there is no work to be done
+            return {};
+        }
         ShardedTestsList shardTestList(numShards);
 
         size_t testIndex = 0;
@@ -283,6 +288,11 @@ namespace TestImpact
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
         const auto numFixtures = testEnumeration->GetNumEnabledTestSuites();
         const auto numShards = std::min(m_maxConcurrency, numFixtures);
+        if (numShards == 0)
+        {
+            // If there are no shards, there is no work to be done
+            return {};
+        }
         ShardedTestsList shardTestList(numShards);
 
         size_t fixtureIndex = 0;
