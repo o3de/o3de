@@ -321,6 +321,6 @@ namespace AZ::Vulkan
 
     bool BindlessDescriptorPool::IsInitialized() const
     {
-        return m_pool->IsInitialized();
+        return m_pool && m_pool->IsInitialized();
     }
 } // namespace AZ::Vulkan
