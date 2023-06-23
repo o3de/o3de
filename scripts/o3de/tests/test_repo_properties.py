@@ -397,6 +397,7 @@ class TestEditRepoProperties:
                 assert self.repo_json.data.get('repo_uri') == 'https://test.com'
                 assert self.repo_json.data.get('$schemaVersion') == '1.0.0'
                 assert self.repo_json.data.get('origin') == 'o3de'
+                assert self.backup_file_name == repo_path
 
                 for gem in self.repo_json.data.get('gems_data', []):
                     if release_archive_path:
