@@ -28,10 +28,10 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     # Define all the debian package dependencies needed to build and run
     set(package_dependencies
         # Required Tools
+        "cmake (>=3.22)"                        # Cmake required (minimum version 3.22.0)
         "clang (>=12.0)"                        # Clang required (minimum version 12.0)
         ninja-build
         # Build Libraries
-        libstdc++-12-dev
         libglu1-mesa-dev                        # For Qt (GL dependency)
         libxcb-xinerama0                        # For Qt plugins at runtime
         libxcb-xinput0                          # For Qt plugins at runtime
@@ -44,6 +44,7 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         zlib1g-dev
         mesa-common-dev
         libunwind-dev
+        libzstd-dev
         pkg-config
     )
     list(JOIN package_dependencies "," CPACK_DEBIAN_PACKAGE_DEPENDS)
