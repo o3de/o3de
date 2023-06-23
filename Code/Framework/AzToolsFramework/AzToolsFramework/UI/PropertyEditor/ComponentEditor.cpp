@@ -158,6 +158,9 @@ namespace AzToolsFramework
         {
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
+
+            // this DPE is going into a scroll area, don't allow it to provide its own scrollbar
+            m_dpe->SetAllowVerticalScroll(false);
             m_filterAdapter->SetSourceAdapter(m_adapter);
             m_dpe->SetAdapter(m_filterAdapter);
             setContentWidget(m_dpe);
@@ -566,7 +569,7 @@ namespace AzToolsFramework
     {
         if (m_dpe)
         {
-            return !m_filterAdapter->IsEmpty();
+            return !m_filterAdapter->FilterIsActive() || !m_filterAdapter->IsEmpty() || GetHeader()->TitleMatchesFilter();
         }
         else
         {

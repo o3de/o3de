@@ -35,8 +35,8 @@ namespace AZ
             Data::Instance<RPI::AttachmentImagePool> pool = RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
 
             // retrieve the previous frame image attachment from the pass
-            AZ_Assert(m_ownedAttachments.size() == 4, "ReflectionScreenSpaceTracePass must have the following attachment images defined: ReflectionImage, TraceCoordsImage, DownSampledDepthImage, and PreviousFrameImage");
-            RPI::Ptr<RPI::PassAttachment> previousFrameImageAttachment = m_ownedAttachments[3];
+            AZ_Assert(m_ownedAttachments.size() == 3, "ReflectionScreenSpaceTracePass must have the following attachment images defined: ReflectionImage, TraceCoordsImage, and PreviousFrameImage");
+            RPI::Ptr<RPI::PassAttachment> previousFrameImageAttachment = m_ownedAttachments[2];
             
             // update the image attachment descriptor to sync up size and format
             previousFrameImageAttachment->Update();

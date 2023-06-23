@@ -8,6 +8,7 @@
 #pragma once
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <AzCore/std/limits.h>
 
 namespace AZ
 {
@@ -35,6 +36,7 @@ namespace AZ
                 constexpr uint32_t MultiSampleCustomLocationGridSize = 16;
                 constexpr uint32_t SubpassCountMax = 10;
                 constexpr uint32_t RenderAttachmentCountMax = 2 * AttachmentColorCountMax + 2; // RenderAttachments + ResolveAttachments + DepthStencilAttachment +  ShadingRateAttachment
+                constexpr uint32_t UnboundedArraySize = 100000u;
             }
 
             namespace Device
@@ -88,7 +90,16 @@ namespace AZ
 
         namespace MultiDevice
         {
-            constexpr int DefaultDeviceIndex = 0;
+            //! "Strong typedef" such that device mask and index cannot be used interchangeably
+            enum class DeviceMask : uint32_t
+            {
+            };
+            constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
+            constexpr DeviceMask DefaultDevice{ 1u };
+
+            constexpr uint32_t DefaultDeviceIndex { 0 };
         }
+
+        constexpr uint32_t InvalidIndex = AZStd::numeric_limits<uint32_t>::max();
     }
 }

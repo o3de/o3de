@@ -12,6 +12,8 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -20,6 +22,7 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderTableView.h>
+#include <AzQtComponents/DragAndDrop/MainWindowDragAndDrop.h>
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -27,6 +30,7 @@
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
 #include <QtWidgets/QApplication>
+#include <QDragMoveEvent>
 #include <QHeaderView>
 #include <QLineEdit>
 #include <QMenu>
@@ -63,8 +67,18 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    if (indexData->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
+                    }
                     emit entryClicked(indexData);
+                });
+
+             connect(
+                m_expandedTableViewWidget,
+                &AzQtComponents::AssetFolderTableView::rowDeselected, this, []
+                {
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::ClearPreview);
                 });
 
              connect(
@@ -109,14 +123,7 @@ namespace AzToolsFramework
                      AfterRename(name);
                  });
 
-              if (AzToolsFramework::IsNewActionManagerEnabled())
-              {
-                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                {
-                    // Assign this widget to the Editor Asset Browser Action Context.
-                    hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                }
-              }
+              AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
 
               QAction* deleteAction = new QAction("Delete Action", this);
               deleteAction->setShortcut(QKeySequence::Delete);
@@ -177,18 +184,13 @@ namespace AzToolsFramework
             auto layout = new QVBoxLayout();
             layout->addWidget(m_expandedTableViewWidget);
             setLayout(layout);
+
+            setAcceptDrops(true);
         }
 
         AssetBrowserTableView::~AssetBrowserTableView()
         {
-            if (AzToolsFramework::IsNewActionManagerEnabled())
-            {
-                if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                {
-                    hotKeyManagerInterface->RemoveWidgetFromActionContext(
-                        EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                }
-            }
+            RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
         }
 
         AzQtComponents::AssetFolderTableView* AssetBrowserTableView::GetExpandedTableViewWidget() const
@@ -289,12 +291,66 @@ namespace AzToolsFramework
 
             if (proxyIndex.isValid())
             {
-                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+                m_expandedTableViewWidget->selectionModel()->select(proxyIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect | QItemSelectionModel::Rows);
 
                 m_expandedTableViewWidget->scrollTo(proxyIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
                 RenameEntry();
             }
+        }
+
+        void AssetBrowserTableView::dragEnterEvent(QDragEnterEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragEnter, event, context);
+        }
+
+        void AssetBrowserTableView::dragMoveEvent(QDragMoveEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragMove, event, context);
+        }
+
+        void AssetBrowserTableView::dropEvent(QDropEvent* event)
+        {
+            if (event->mimeData()->hasFormat(SourceAssetBrowserEntry::GetMimeType()) ||
+                event->mimeData()->hasFormat(ProductAssetBrowserEntry::GetMimeType()))
+            {
+                event->accept();
+                return;
+            }
+
+            const AssetBrowserEntry* item = m_expandedTableViewProxyModel->mapToSource(m_expandedTableViewProxyModel->GetRootIndex())
+                                                .data(AssetBrowserModel::Roles::EntryRole)
+                                                .value<const AssetBrowserEntry*>();
+            AZStd::string pathName = item->GetFullPath();
+
+            using namespace AzQtComponents;
+            DragAndDropContextBase context;
+            DragAndDropEventsBus::Event(
+                DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DropAtLocation, event, context, QString(pathName.data()));
+        }
+
+        void AssetBrowserTableView::dragLeaveEvent(QDragLeaveEvent* event)
+        {
+            using namespace AzQtComponents;
+            DragAndDropEventsBus::Event(DragAndDropContexts::EditorMainWindow, &DragAndDropEvents::DragLeave, event);
         }
 
         void AssetBrowserTableView::SetAssetTreeView(AssetBrowserTreeView* treeView)

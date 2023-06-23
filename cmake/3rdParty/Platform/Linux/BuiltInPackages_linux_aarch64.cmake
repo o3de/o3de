@@ -18,7 +18,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 # platform-specific:
 ly_associate_package(PACKAGE_NAME expat-2.4.2-rev2-linux-aarch64                             TARGETS expat                       PACKAGE_HASH 934a535c1492d11906789d7ddf105b1a530cf8d8fb126063ffde16c5caeb0179)
 ly_associate_package(PACKAGE_NAME assimp-5.2.5-rev1-linux-aarch64                            TARGETS assimplib                   PACKAGE_HASH 0e497e129f9868088c81891e87b778894c12486b039a5b7bd8a47267275b640f)
-ly_associate_package(PACKAGE_NAME AWSGameLiftServerSDK-3.4.2-rev1-linux-aarch64              TARGETS AWSGameLiftServerSDK        PACKAGE_HASH f4ac3f8e6e9e0fce66bb3a486d0e36078d3f3d37204a9e3e95031348a021865f)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev3-linux-aarch64                     TARGETS AWSNativeSDK                PACKAGE_HASH d03fc208ff2fc08b18568f3b6f072cb0de7605ab1dd314118b175f3f67aa04b3)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-rev1-linux-aarch64                            TARGETS cityhash                    PACKAGE_HASH c4fafa13add81c6ca03338462af78eabbdea917de68c599f11c4a36b0982cec2)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-rev3-linux-aarch64                           TARGETS TIFF                        PACKAGE_HASH 429461014b21a530dcad597c2d91072ae39d937a04b7bbbf5c34491c41767f7f)
 ly_associate_package(PACKAGE_NAME freetype-2.11.1-rev1-linux-aarch64                         TARGETS Freetype                    PACKAGE_HASH b4e3069acdcdae2f977108679d0986fb57371b9a7d4a3a496ab16909feabcba6)
@@ -51,13 +51,4 @@ if(AZ_USE_PHYSX5)
     ly_associate_package(PACKAGE_NAME PhysX-5.1.1-rev1-linux-aarch64                         TARGETS PhysX                       PACKAGE_HASH ba14e96fc4b85d5ef5dcf8c8ee58fd37ab92cfef790872d67c9a389aeca24c19)
 else()
     ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev5-linux-aarch64                TARGETS PhysX                       PACKAGE_HASH 7fa00d7d4f7532cf068246d4e424ce319529dfa09fb759d251676f2c59f6d50c)
-endif()
-
-# Certain packages are built against OpenSSL, so we must associate the proper ones based on their OpenSSL (Major) versions
-if ("${OPENSSL_VERSION}" STREQUAL "")
-    message(FATAL_ERROR "OpenSSL not detected. The OpenSSL dev package is required for O3DE")
-elseif ("${OPENSSL_VERSION}" VERSION_LESS "3.0.0")
-    ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev2-linux-openssl-1-aarch64       TARGETS AWSNativeSDK                PACKAGE_HASH db83fb53946602495e586dfb1ef2dd52018d38d36e0f12c8baea3d1d87518e77)
-else()
-    ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.9.50-rev2-linux-openssl-3-aarch64       TARGETS AWSNativeSDK                PACKAGE_HASH 963d97090bf1a9347a4c8d512c393ff34961d3faba4eaa3a2d00e26b54ff36d4)
 endif()

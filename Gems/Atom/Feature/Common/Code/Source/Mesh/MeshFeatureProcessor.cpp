@@ -6,20 +6,23 @@
  *
  */
 
-#include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
-#include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
+#include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RPI.Public/AssetQuality.h>
+#include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
-#include <Atom/RPI.Public/Scene.h>
-#include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
-#include <Atom/RPI.Public/AssetQuality.h>
+#include <Atom/RPI.Public/Scene.h>
+
+#include <Material/ConvertEmissiveUnitFunctor.h>
 
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
@@ -30,6 +33,7 @@
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobCompletion.h>
@@ -39,8 +43,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Name/NameDictionary.h>
+
 
 #include <algorithm>
 
@@ -64,6 +67,7 @@ namespace AZ
         static AZ::Name s_emissive_color_Name = AZ::Name::FromStringLiteral("emissive.color", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_emissive_intensity_Name =
             AZ::Name::FromStringLiteral("emissive.intensity", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_emissive_unit_Name = AZ::Name::FromStringLiteral("emissive.unit", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_baseColor_textureMap_Name =
             AZ::Name::FromStringLiteral("baseColor.textureMap", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_normal_textureMap_Name =
@@ -89,8 +93,7 @@ namespace AZ
             AZ::Name::FromStringLiteral("m_rootConstantInstanceDataOffset", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_o_meshInstancingIsEnabled_Name =
             AZ::Name::FromStringLiteral("o_meshInstancingIsEnabled", AZ::Interface<AZ::NameDictionary>::Get());
-        static AZ::Name s_transparent_Name =
-            AZ::Name::FromStringLiteral("transparent", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_transparent_Name = AZ::Name::FromStringLiteral("transparent", AZ::Interface<AZ::NameDictionary>::Get());
 
         static void CacheRootConstantInterval(MeshInstanceGroupData& meshInstanceGroupData)
         {
@@ -115,9 +118,7 @@ namespace AZ
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext
-                    ->Class<MeshFeatureProcessor, FeatureProcessor>()
-                    ->Version(1);
+                serializeContext->Class<MeshFeatureProcessor, FeatureProcessor>()->Version(1);
             }
         }
 
@@ -2227,10 +2228,45 @@ namespace AZ
                                 subMesh.m_emissiveColor = material->GetPropertyValue<AZ::Color>(propertyIndex);
                             }
 
+                            // When we have an emissive intensity, the unit of the intensity is defined in the material settings.
+                            // For non-raytracing materials, the intensity is converted, and set in the shader, by a Functor.
+                            // This (and the other) Functors are normally called in the Compile function of the Material
+                            // We can't use the Compile function here, because the raytracing material behaves bit differently
+                            // Therefor we need to look for the right Functor to convert the intensity here
                             propertyIndex = material->FindPropertyIndex(s_emissive_intensity_Name);
                             if (propertyIndex.IsValid())
                             {
-                                subMesh.m_emissiveColor *= material->GetPropertyValue<float>(propertyIndex);
+                                auto unitPropertyIndex = material->FindPropertyIndex(s_emissive_unit_Name);
+                                AZ_WarningOnce(
+                                    "MeshFeatureProcessor",
+                                    propertyIndex.IsValid(),
+                                    "Emissive intensity property missing in material %s. Materials with an emissive intensity need a unit for the intensity.",
+                                    material->GetAsset()->GetId().ToFixedString().c_str());
+                                if (unitPropertyIndex.IsValid())
+                                {
+                                    auto intensity = material->GetPropertyValue<float>(propertyIndex);
+                                    auto unit = material->GetPropertyValue<uint32_t>(unitPropertyIndex);
+                                    bool foundEmissiveUnitFunctor = false;
+                                    for (const auto& functor : material->GetAsset()->GetMaterialFunctors())
+                                    {
+                                        auto emissiveFunctor = azdynamic_cast<ConvertEmissiveUnitFunctor*>(functor);
+                                        if (emissiveFunctor != nullptr)
+                                        {
+                                            intensity = emissiveFunctor->GetProcessedValue(intensity, unit);
+                                            foundEmissiveUnitFunctor = true;
+                                            break;
+                                        }
+                                    }
+                                    AZ_WarningOnce(
+                                        "MeshFeatureProcessor",
+                                        foundEmissiveUnitFunctor,
+                                        "Could not find ConvertEmissiveUnitFunctor for material %s",
+                                        material->GetAsset()->GetId().ToFixedString().c_str());
+                                    if (foundEmissiveUnitFunctor)
+                                    {
+                                        subMesh.m_emissiveColor *= intensity;
+                                    }
+                                }
                             }
                         }
                     }

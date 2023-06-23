@@ -76,6 +76,9 @@ namespace AZ
             //! Whether Unbounded Array support is available.
             bool m_unboundedArrays = false;
 
+            //! Whether Unbounded Array support is simulated for Bindless Srg.
+            bool m_simulateBindlessUA = false;
+
             //! Whether PipelineLibrary related serialized data needs to be loaded/saved explicitly as drivers (like dx12/vk) do not support it internally
             bool m_isPsoCacheFileOperationsNeeded = true;
 
@@ -94,6 +97,9 @@ namespace AZ
             
             //! Whether the adapter supports wave/subgroup operation
             bool m_waveOperation = false;
+                        
+            //! Whether swapchain scaling support is available.
+            RHI::ScalingFlags m_swapchainScalingFlags = RHI::ScalingFlags::None;
 
             /// Additional features here.
         };

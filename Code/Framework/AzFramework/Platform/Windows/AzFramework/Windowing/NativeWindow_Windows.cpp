@@ -44,6 +44,7 @@ namespace AzFramework
 
     private:
         RECT GetMonitorRect() const;
+        static HWND GetWindowedPriority();
 
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
         static LRESULT CALLBACK WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -189,6 +190,20 @@ namespace AzFramework
     {
         return m_win32Handle;
     }
+    HWND NativeWindowImpl_Win32::GetWindowedPriority()
+    {
+        // If a debugger is attached and we're running in Windowed mode instead of Fullscreen mode,
+        // don't make the window TOPMOST. Otherwise, the window will stay on top of the debugger window
+        // at every breakpoint, crash, etc, making it extremely difficult to debug when working on a single monitor system.
+        bool allowTopMost = !AZ::Debug::Trace::Instance().IsDebuggerPresent();
+
+        // If we are launching with pix enabled we are probably trying to do a gpu capture and hence need to be able to
+        // access RenderDoc or Pix behind the O3de app.
+#if defined(USE_PIX)
+        allowTopMost = false;
+#endif
+        return allowTopMost ? HWND_TOPMOST : HWND_NOTOPMOST;
+    }
 
     void NativeWindowImpl_Win32::SetWindowTitle(const AZStd::string& title)
     {
@@ -330,18 +345,22 @@ namespace AzFramework
             }
             else
             {
+                // When running in Windowed mode, we might want either NOTOPMOST or TOPMOST, depending on whether or not a debugger is attached.
+                HWND windowPriority = GetWindowedPriority();
+
                 if (!windowFullScreenState && nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate)
                 {
                     nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
                     nativeWindowImpl->SetFullScreenState(true);
+
+                    // If we're going to fullscreen, then we presumably want to be TOPMOST whether or not a debugger is attached.
+                    windowPriority = HWND_TOPMOST;
                 }
-                else
-                {
-                    // When becoming active again, transition from NOTOPMOST to TOPMOST.
-                    SetWindowPos(
-                        nativeWindowImpl->m_win32Handle,
-                        HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
-                }
+
+                // When becoming active again, transition from NOTOPMOST to TOPMOST. (Or stay NOTOPMOST if a debugger is attached)
+                SetWindowPos(
+                    nativeWindowImpl->m_win32Handle,
+                    windowPriority, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
             }
             break;
         }
@@ -413,6 +432,10 @@ namespace AzFramework
             if (m_activated)
             {
                 WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnWindowResized, width, height);
+                if (!m_enableCustomizedResolution)
+                {
+                    WindowNotificationBus::Event(m_win32Handle, &WindowNotificationBus::Events::OnResolutionChanged, width, height);
+                }
             }
         }
     }
@@ -441,8 +464,12 @@ namespace AzFramework
         // and then the WM_GETMINMAXINFO message, so that the window size will be clipped to the screen max size.
         // https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-windowposchanging
         // https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-getminmaxinfo
-        UINT flag = SWP_NOMOVE | (options.m_ignoreScreenSizeLimit ? SWP_NOSENDCHANGING : 0);
-        SetWindowPos(m_win32Handle, HWND_TOPMOST, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flag);
+        const UINT flag = SWP_NOMOVE | (options.m_ignoreScreenSizeLimit ? SWP_NOSENDCHANGING : 0);
+
+        // When running in Windowed mode, we might want either NOTOPMOST or TOPMOST, depending on whether or not a debugger is attached.
+        const HWND windowPriority = GetWindowedPriority();
+
+        SetWindowPos(m_win32Handle, windowPriority, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, flag);
     }
 
     bool NativeWindowImpl_Win32::GetFullScreenState() const
@@ -571,7 +598,7 @@ namespace AzFramework
         SetWindowLong(m_win32Handle, GWL_STYLE, m_windowStyleToRestoreOnFullScreenExit);
         SetWindowLong(m_win32Handle, GWL_EXSTYLE, m_windowExtendedStyleToRestoreOnFullScreenExit);
         SetWindowPos(m_win32Handle,
-                        HWND_TOPMOST,
+                        GetWindowedPriority(),
                         m_windowRectToRestoreOnFullScreenExit.left,
                         m_windowRectToRestoreOnFullScreenExit.top,
                         m_windowRectToRestoreOnFullScreenExit.right - m_windowRectToRestoreOnFullScreenExit.left,
@@ -582,7 +609,7 @@ namespace AzFramework
         // Sometimes, the above code doesn't set the window above the taskbar, even though other times it does.
         // This might be a bug in the Windows SDK?
         // By setting topmost a second time with ASYNCWINDOWPOS, the topmost setting seems to apply correctly 100% of the time.
-        SetWindowPos(m_win32Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
+        SetWindowPos(m_win32Handle, GetWindowedPriority(), 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
 
         WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnFullScreenModeChanged, false);
     }

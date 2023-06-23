@@ -33,7 +33,7 @@ choco install corretto8jdk -y --ia INSTALLDIR="c:\jdk8" # Custom directory to ha
 [Environment]::SetEnvironmentVariable("JENKINS_JAVA_CMD", "c:\jdk11", [EnvironmentVariableTarget]::Machine)
 
 # Install CMake
-choco install cmake --version=3.24.0 -y --installargs 'ADD_CMAKE_TO_PATH=System'
+choco install cmake --version=3.22.1 -y --installargs 'ADD_CMAKE_TO_PATH=System'
 
 # Install Windows Installer XML toolkit (WiX)
 choco install wixtoolset -y

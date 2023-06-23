@@ -80,7 +80,6 @@
 #include <LmbrCentral/Scripting/EditorTagComponentBus.h>
 
 // Sandbox imports.
-#include <Editor/ActionManager.h>
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
@@ -189,22 +188,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-
-    if (!AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
-            ID_FILE_SAVE_SLICE_TO_ROOT,
-            [this]()
-            {
-                SaveSlice(false);
-            });
-        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
-            ID_FILE_SAVE_SELECTED_SLICE,
-            [this]()
-            {
-                SaveSlice(true);
-            });
-    }
 
     // Keep a reference to the interface EditorEntityUiInterface.
     // This is used to register layer entities to their UI handler when the layer component is activated.

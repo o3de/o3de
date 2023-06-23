@@ -74,6 +74,7 @@ namespace AzToolsFramework
             QStringList mimeTypes() const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
             QModelIndex parent(const QModelIndex& child) const override;
+            bool canDropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const override;
 
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserModelRequestBus

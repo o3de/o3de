@@ -34,6 +34,7 @@ namespace AZ
             DescriptorIndexing,
             BufferDeviceAddress,
             SubgroupOperation,
+            MemoryBudget,
             Count // Must be last
         };
 
@@ -110,7 +111,6 @@ namespace AZ
             void LoadSupportedFeatures(const GladVulkanContext& context);
             //! Filter optional extensions based on what the physics device support.
             RawStringList FilterSupportedOptionalExtensions();
-            void CompileMemoryStatistics(const GladVulkanContext& context, RHI::MemoryStatisticsBuilder& builder) const;
 
         private:
             

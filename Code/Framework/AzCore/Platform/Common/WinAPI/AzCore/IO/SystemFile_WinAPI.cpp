@@ -758,3 +758,11 @@ namespace AZ::IO
         // At this point it is now safe to call Start() again on this Capturer
     }
 } // namespace AZ::IO
+
+namespace AZ::IO::Posix
+{
+    int Fileno(FILE* stream)
+    {
+        return _fileno(stream);
+    }
+}

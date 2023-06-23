@@ -663,7 +663,9 @@
       <DisplayString Condition="!has_value()">Error = {error()}</DisplayString>
       <Expand>
           <Item Name="has_value">has_value()</Item>
-          <Item Name="value" Condition="has_value()">Success</Item>
+          <Synthetic Name="value" Condition="has_value()">
+              <DisplayString>Success</DisplayString>
+          </Synthetic>
           <Item Name="error" Condition="!has_value()">error()</Item>
       </Expand>
   </Type>
@@ -688,7 +690,9 @@
         <DisplayString Condition="!has_value()">{{Error = {error()}}}</DisplayString>
         <Expand>
             <Item Name="IsSuccess">has_value()</Item>
-            <Item Name="Value" Condition="has_value()">Success</Item>
+            <Synthetic Name="Value" Condition="has_value()">
+                <DisplayString>Success</DisplayString>
+            </Synthetic>
             <Item Name="Error" Condition="!has_value()">error()</Item>
         </Expand>
     </Type>

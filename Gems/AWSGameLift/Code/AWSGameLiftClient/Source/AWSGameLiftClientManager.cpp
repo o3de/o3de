@@ -33,10 +33,6 @@
 
 namespace AWSGameLift
 {
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-    AZ_CVAR(AZ::CVarFixedString, cl_gameliftLocalEndpoint, "", nullptr, AZ::ConsoleFunctorFlags::Null, "The local endpoint to test with GameLiftLocal SDK.");
-#endif
-
     void AWSGameLiftClientManager::ActivateManager()
     {
         AZ::Interface<IAWSGameLiftRequests>::Register(this);
@@ -86,16 +82,7 @@ namespace AWSGameLift
         }
 
         // Set up client endpoint or region
-        AZStd::string localEndpoint = "";
-#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
-        localEndpoint = static_cast<AZ::CVarFixedString>(cl_gameliftLocalEndpoint);
-#endif
-        if (!localEndpoint.empty())
-        {
-            // The attribute needs to override to interact with GameLiftLocal
-            clientConfig.endpointOverride = localEndpoint.c_str();
-        }
-        else if (!region.empty())
+        if (!region.empty())
         {
             clientConfig.region = region.c_str();
         }
@@ -114,11 +101,7 @@ namespace AWSGameLift
         // Fetch AWS credential for client
         AWSCore::AWSCredentialResult credentialResult;
         AWSCore::AWSCredentialRequestBus::BroadcastResult(credentialResult, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
-        if (!localEndpoint.empty())
-        {
-            credentialResult.result = std::make_shared<Aws::Auth::AnonymousAWSCredentialsProvider>();
-        }
-        else if (!credentialResult.result)
+        if (!credentialResult.result)
         {
             AZ_Error(AWSGameLiftClientManagerName, false, AWSGameLiftClientCredentialMissingErrorMessage);
             return false;

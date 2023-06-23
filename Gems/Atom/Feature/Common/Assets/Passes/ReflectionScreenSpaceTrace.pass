@@ -91,23 +91,6 @@
                         },
                         "LoadAction": "Clear"
                     }
-                },
-                {
-                    "Name": "DownsampledDepthOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "DepthStencil",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Type": "DepthStencil",
-                            "Value": [
-                                1.0,
-                                {},
-                                {},
-                                {}
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
                 }
             ],
             "ImageAttachments": [
@@ -151,27 +134,6 @@
                     }
                 },
                 {
-                    "Name": "DownsampledDepthImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "DepthStencilInput"
-                        },
-                        "Multipliers": {
-                            "WidthMultiplier": 0.5,
-                            "HeightMultiplier": 0.5
-                        }
-                    },
-                    "FormatSource": {
-                        "Pass": "Parent",
-                        "Attachment": "DepthStencilInput"
-                    },
-                    "ImageDescriptor": {
-                        "MipLevels": 4,
-                        "SharedQueueMask": "Graphics"
-                    }
-                },
-                {
                     "Name": "PreviousFrameImage",
                     "SizeSource": {
                         "Source": {
@@ -198,13 +160,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "TraceCoordsImage"
-                    }
-                },
-                {
-                    "LocalSlot": "DownsampledDepthOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "DownsampledDepthImage"
                     }
                 },
                 {

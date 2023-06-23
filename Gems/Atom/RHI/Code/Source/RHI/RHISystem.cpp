@@ -37,15 +37,21 @@ namespace AZ
             return Interface<RHIMemoryStatisticsInterface>::Get();
         }
 
-        ResultCode RHISystem::InitDevice()
+        ResultCode RHISystem::InitDevices(InitDevicesFlags initializationVariant)
         {
             Interface<RHISystemInterface>::Register(this);
             Interface<RHIMemoryStatisticsInterface>::Register(this);
-            return InitInternalDevices();
+            return InitInternalDevices(initializationVariant);
         }
     
-        void RHISystem::Init()
+        void RHISystem::Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout)
         {
+            //! If a bindless srg layout is not provided we simply skip initialization with the assumption that no one will use bindless srg
+            if (bindlessSrgLayout && m_devices[MultiDevice::DefaultDeviceIndex]->InitBindlessSrg(bindlessSrgLayout) != RHI::ResultCode::Success)
+            {
+                AZ_Assert(false, "RHISystem", "Bindless SRG was not initialized.\n");
+            }
+
             Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_devices[MultiDevice::DefaultDeviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
 
             RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;
@@ -94,7 +100,7 @@ namespace AZ
             m_frameScheduler.Init(*m_devices[MultiDevice::DefaultDeviceIndex], frameSchedulerDescriptor);
         }
 
-        ResultCode RHISystem::InitInternalDevices()
+        ResultCode RHISystem::InitInternalDevices(InitDevicesFlags initializationVariant)
         {
             RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
 
@@ -106,12 +112,9 @@ namespace AZ
                 return ResultCode::Fail;
             }
 
-            static const char* MultiGPUCommandLineOption = "rhi-multiple-devices";
-            AZStd::string multipleDevicesValue = RHI::GetCommandLineValue(MultiGPUCommandLineOption);
-
             RHI::PhysicalDeviceList usePhysicalDevices;
 
-            if (AzFramework::StringFunc::Equal(multipleDevicesValue.c_str(), "enable"))
+            if (initializationVariant == InitDevicesFlags::MultiDevice)
             {
                 AZ_Printf("RHISystem", "\tUsing multiple devices\n");
 

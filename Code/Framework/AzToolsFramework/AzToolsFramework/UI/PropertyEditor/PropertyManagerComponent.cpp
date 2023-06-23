@@ -8,6 +8,7 @@
 #include "PropertyManagerComponent.h"
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrlTypes.h>
@@ -183,6 +184,20 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
         {
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch,
+                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                    m_currentUndoBatch,
+                    "Modify Property");
+            }
+            else
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Property");
+            }
+
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
@@ -193,6 +208,12 @@ namespace AzToolsFramework
             IndividualPropertyHandlerEditNotifications::Bus::Event(
                 editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
                 AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
+
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
+                m_currentUndoBatch = nullptr;
+            }
         }
 
         void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)

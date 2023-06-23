@@ -9,7 +9,10 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+#if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
 
 #if ENABLE_DISK_LIGHTS
 enum DiskLightFlag
@@ -31,7 +34,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
     // Only calculate shading if light is in range
     if (falloff < 1.0f && angleFalloff > 0.0f)
     {
-        bool useConeAngle = light.m_flags & DiskLightFlag::UseConeAngle;
+        bool useConeAngle = light.m_flags & UseConeAngle;
         float3 dirToConeTip;
         float dotWithDirection;
 

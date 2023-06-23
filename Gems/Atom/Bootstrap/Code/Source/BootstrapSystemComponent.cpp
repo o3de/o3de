@@ -46,13 +46,42 @@
 #include <AzCore/Console/IConsole.h>
 #include <BootstrapSystemComponent_Traits_Platform.h>
 
-AZ_CVAR(AZ::CVarFixedString, r_default_pipeline_name, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default render pipeline name");
+void cvar_r_renderPipelinePath_Changed(const AZ::CVarFixedString& newPipelinePath)
+{
+    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!viewportContextManager)
+    {
+        return;
+    }
+    auto viewportContext = viewportContextManager->GetDefaultViewportContext();
+    if (!viewportContext)
+    {
+        return;
+    }
+
+    AZ::Data::Asset<AZ::RPI::AnyAsset> pipelineAsset =
+        AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>(newPipelinePath.data(), AZ::RPI::AssetUtils::TraceLevel::Error);
+    if (pipelineAsset)
+    {
+        AZ::RPI::RenderPipelineDescriptor renderPipelineDescriptor =
+            *AZ::RPI::GetDataFromAnyAsset<AZ::RPI::RenderPipelineDescriptor>(pipelineAsset); // Copy descriptor from asset
+
+        AZ::Render::Bootstrap::RequestBus::Broadcast(&AZ::Render::Bootstrap::RequestBus::Events::SwitchRenderPipeline, renderPipelineDescriptor, viewportContext);
+    }
+    else
+    {
+        AZ_Warning("SetDefaultPipeline", false, "Failed to switch default render pipeline to %s: can't load the asset", newPipelinePath.data());
+    }
+}
+
+AZ_CVAR(AZ::CVarFixedString, r_renderPipelinePath, AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME, cvar_r_renderPipelinePath_Changed, AZ::ConsoleFunctorFlags::DontReplicate, "The asset (.azasset) path for default render pipeline");
 AZ_CVAR(AZ::CVarFixedString, r_default_openxr_pipeline_name, "passes/MultiViewRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr render pipeline name");
 AZ_CVAR(AZ::CVarFixedString, r_default_openxr_left_pipeline_name, "passes/XRLeftRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr Left eye render pipeline name");
 AZ_CVAR(AZ::CVarFixedString, r_default_openxr_right_pipeline_name, "passes/XRRightRenderPipeline.azasset", nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default openXr Right eye render pipeline name");
 AZ_CVAR(uint32_t, r_width, 1920, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window width in pixels.");
 AZ_CVAR(uint32_t, r_height, 1080, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting window height in pixels.");
 AZ_CVAR(uint32_t, r_fullscreen, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Starting fullscreen state.");
+AZ_CVAR(uint32_t, r_resolutionMode, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "0: render resolution same as window client area size, 1: render resolution use the values specified by r_width and r_height");
 
 namespace AZ
 {
@@ -178,6 +207,23 @@ namespace AZ
                     }
                 }
 
+                const AZStd::string resolutionModeCvarName("r_resolutionMode");
+                if (pCmdLine->HasSwitch(resolutionModeCvarName))
+                {
+                    auto numValues = pCmdLine->GetNumSwitchValues(resolutionModeCvarName);
+                    if (numValues > 0)
+                    {
+                        auto valueStr = pCmdLine->GetSwitchValue(resolutionModeCvarName);
+                        if (AZ::StringFunc::LooksLikeInt(valueStr.c_str()))
+                        {
+                            auto resolutionMode = AZ::StringFunc::ToInt(valueStr.c_str());
+                            if (resolutionMode >= 0)
+                            {
+                                r_resolutionMode = resolutionMode;
+                            }
+                        }
+                    }
+                }
             }
 
             void BootstrapSystemComponent::Activate()
@@ -230,6 +276,15 @@ namespace AZ
                         if (m_nativeWindow)
                         {
                             // wait until swapchain has been created before setting fullscreen state
+                            if (r_resolutionMode > 0u)
+                            {
+                                m_nativeWindow->SetEnableCustomizedResolution(true);
+                                m_nativeWindow->SetRenderResolution(AzFramework::WindowSize(r_width, r_height));
+                            }
+                            else
+                            {
+                                m_nativeWindow->SetEnableCustomizedResolution(false);
+                            }
                             m_nativeWindow->SetFullScreenState(r_fullscreen);
                         }
                     });
@@ -400,7 +455,7 @@ namespace AZ
                 // Load the main default pipeline if applicable
                 if (loadDefaultRenderPipeline)
                 {
-                    AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_default_pipeline_name);
+                    AZ::CVarFixedString pipelineName = static_cast<AZ::CVarFixedString>(r_renderPipelinePath);
                     if (xrSystem)
                     {
                         // When running launcher on PC having an XR system present then the default render pipeline is suppose to reflect
@@ -484,6 +539,38 @@ namespace AZ
                 }
 
                 return true;
+            }
+
+            void BootstrapSystemComponent::SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext)
+            {
+                AZ::RPI::RenderPipelineDescriptor pipelineDescriptor = newRenderPipelineDesc;
+                pipelineDescriptor.m_name =
+                    AZStd::string::format("%s_%i", pipelineDescriptor.m_name.c_str(), viewportContext->GetId());
+
+                if (pipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount &&
+                    !RHI::RHISystemInterface::Get()->GetDevice()->GetFeatures().m_customSamplePositions)
+                {
+                    // Disable custom sample positions because they are not supported
+                    AZ_Warning(
+                        "BootstrapSystemComponent",
+                        false,
+                        "Disabling custom sample positions for pipeline %s because they are not supported on this device",
+                        pipelineDescriptor.m_name.c_str());
+                    pipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositions = {};
+                    pipelineDescriptor.m_renderSettings.m_multisampleState.m_customPositionsCount = 0;
+                }
+
+                // Create new render pipeline
+                auto oldRenderPipeline = viewportContext->GetRenderScene()->GetDefaultRenderPipeline();
+                RPI::RenderPipelinePtr newRenderPipeline = RPI::RenderPipeline::CreateRenderPipelineForWindow(
+                        pipelineDescriptor, *viewportContext->GetWindowContext().get(), AZ::RPI::ViewType::Default);
+
+                // Switch render pipeline
+                viewportContext->GetRenderScene()->RemoveRenderPipeline(oldRenderPipeline->GetId());
+                viewportContext->GetRenderScene()->AddRenderPipeline(newRenderPipeline);
+                newRenderPipeline->SetDefaultView(oldRenderPipeline->GetDefaultView());
+
+                AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(newRenderPipeline->GetRenderSettings().m_multisampleState);
             }
 
             RPI::RenderPipelinePtr BootstrapSystemComponent::LoadPipeline( AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext,

@@ -11,6 +11,7 @@
 
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 
 namespace AZ::Render::Bootstrap
 {
@@ -23,6 +24,7 @@ namespace AZ::Render::Bootstrap
 
         virtual AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) = 0;
         virtual bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) = 0;
+        virtual void SwitchRenderPipeline(const AZ::RPI::RenderPipelineDescriptor& newRenderPipelineDesc, AZ::RPI::ViewportContextPtr viewportContext) = 0;
 
     protected:
         ~Request() = default;

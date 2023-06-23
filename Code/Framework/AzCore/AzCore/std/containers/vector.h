@@ -1299,7 +1299,7 @@ namespace AZStd
     template <class T, class Allocator>
     AZ_FORCE_INLINE bool operator==(const vector<T, Allocator>& a, const vector<T, Allocator>& b)
     {
-        return (a.size() == b.size() && equal(a.begin(), a.end(), b.begin()));
+        return (a.size() == b.size() && AZStd::equal(a.begin(), a.end(), b.begin(), b.end()));
     }
 
     template <class T, class Allocator>

@@ -7,6 +7,14 @@
 set(FILES
     Source/ArchiveModuleInterface.cpp
     Source/ArchiveModuleInterface.h
+    Source/Clients/ArchiveReader.cpp
+    Source/Clients/ArchiveReader.h
+    Source/Clients/ArchiveReaderFactory.cpp
+    Source/Clients/ArchiveReaderFactory.h
     Source/Clients/ArchiveSystemComponent.cpp
     Source/Clients/ArchiveSystemComponent.h
+    Source/Clients/ArchiveTOC.h
+    Source/Clients/ArchiveTOC.inl
+    Source/Clients/ArchiveTOCView.h
+    Source/Clients/ArchiveTOCView.inl
 )

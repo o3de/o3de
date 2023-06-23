@@ -115,6 +115,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     AZ_Assert(m_assetBrowserModel, "Failed to get filebrowser model");
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
+    // Turn off DynamicSort as sorting is now manual.
+    m_filterModel->setDynamicSortFilter(false);
 
     m_ui->m_assetBrowserListViewWidget->setVisible(false);
     m_ui->m_toolsMenuButton->setVisible(false);
@@ -302,8 +304,14 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget,
         &QAbstractItemView::clicked,
         this,
-        [this](const QModelIndex&)
+        [this](const QModelIndex& idx)
         {
+            using namespace AzToolsFramework::AssetBrowser;
+            auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+            {
+                AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
+            }
             m_ui->m_searchWidget->ClearStringFilter();
         });
 
@@ -321,6 +329,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         this,
         [this](const QModelIndex& index)
         {
+            // If multiple AssetBrowsers are open, only the focused browser should perform the rename.
+            QWidget* focusWidget = QApplication::focusWidget();
+            if (!isAncestorOf(focusWidget))
+            {
+                return;
+            }
+
             if (m_ui->m_thumbnailView->GetThumbnailActiveView())
             {
                 m_ui->m_thumbnailView->OpenItemForEditing(index);
@@ -407,9 +422,6 @@ void AzAssetBrowserWindow::RegisterViewClass()
     AzToolsFramework::ViewPaneOptions options;
     options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
-
-    options.preferedDockingArea = Qt::BottomDockWidgetArea;
-    AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
 
     options.showInMenu = false;
     const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
@@ -725,6 +737,8 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
 
     if (entryType == AssetBrowserEntry::AssetEntryType::Folder)
     {
+        m_ui->m_searchWidget->ClearStringFilter();
+
         auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
         auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
 
@@ -737,6 +751,14 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
             targetIndexAncestor = targetIndexAncestor.parent();
         }
 
+        if (m_ui->m_thumbnailView->GetThumbnailActiveView())
+        {
+            m_ui->m_thumbnailView->GetThumbnailViewWidget()->selectionModel()->clearSelection();
+        }
+        else if (m_ui->m_tableView->GetTableViewActive())
+        {
+            m_ui->m_tableView->GetExpandedTableViewWidget()->selectionModel()->clearSelection();
+        }
         m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
     else if (entryType == AssetBrowserEntry::AssetEntryType::Product || entryType == AssetBrowserEntry::AssetEntryType::Source)
@@ -847,7 +869,6 @@ void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
     auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
     UpdateBreadcrumbs(entry);
-    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
 }
 
 // while its tempting to use Activated here, we don't actually want it to count as activation

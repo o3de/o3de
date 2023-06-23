@@ -95,8 +95,8 @@ namespace AZ
                 }
             }
 
-            //Init RHI device
-            m_rhiSystem.InitDevice();
+            // Init RHI device(s)
+            m_rhiSystem.InitDevices(AzFramework::StringFunc::Equal(RHI::GetCommandLineValue("enableMultipleDevices").c_str(), "enable") ? RHI::InitDevicesFlags::MultiDevice : RHI::InitDevicesFlags::SingleDevice);
 
             // Gather asset handlers from sub-systems.
             ImageSystem::GetAssetHandlers(m_assetHandlers);
@@ -411,8 +411,19 @@ namespace AZ
                     m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Bindless);
+            if (!bindlessSrgLayout)
+            {
+                AZ_Error(
+                    "RPISystem",
+                    false,
+                    "Failed to find BindlessSrg by slot=<%u> from shader asset at path <%s>",
+                    SrgBindingSlot::Bindless,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                return;
+            }
 
-            m_rhiSystem.Init();
+            m_rhiSystem.Init(bindlessSrgLayout);
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);

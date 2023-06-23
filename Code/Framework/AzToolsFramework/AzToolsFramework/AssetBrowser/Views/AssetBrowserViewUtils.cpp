@@ -28,6 +28,7 @@
 
 #include <QDir>
 #include <QPushButton>
+#include <QSettings>
 #include <QWidget>
 #include <QtWidgets/QMessageBox>
 
@@ -528,7 +529,26 @@ namespace AzToolsFramework
                 }
             }
         }
-        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry)
+
+        void AssetBrowserViewUtils::CopyEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder)
+        {
+            using namespace AZ::IO;
+            Path oldPath = fromPath.data();
+            Path newPath = toPath.data();
+
+            if (oldPath == newPath)
+            {
+                newPath = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(AZ::IO::PathView(oldPath.Native()), "-copy");
+            }
+
+            if (!isFolder)
+            {
+                QFile::copy(oldPath.c_str(), newPath.c_str());
+            }
+
+        }
+
+        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon)
         {
             // Check if this entry is a folder
             QString iconPathToUse;
@@ -550,20 +570,22 @@ namespace AzToolsFramework
             }
 
             // Check if this entry has a custom previewer, if so use that thumbnail
-            AZ::EBusAggregateResults<const PreviewerFactory*> factories;
-            PreviewerRequestBus::BroadcastResult(factories, &PreviewerRequests::GetPreviewerFactory, entry);
-            for (const auto factory : factories.values)
+            if (!returnIcon)
             {
-                if (factory)
+                AZ::EBusAggregateResults<const PreviewerFactory*> factories;
+                PreviewerRequestBus::BroadcastResult(factories, &PreviewerRequests::GetPreviewerFactory, entry);
+                for (const auto factory : factories.values)
                 {
-                    SharedThumbnail thumbnail;
-
-                    ThumbnailerRequestBus::BroadcastResult(
-                        thumbnail, &ThumbnailerRequests::GetThumbnail, entry->GetThumbnailKey());
-                    AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
-                    if (thumbnail && thumbnail->GetState() != Thumbnail::State::Failed)
+                    if (factory)
                     {
-                        return thumbnail->GetPixmap();
+                        SharedThumbnail thumbnail;
+
+                        ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, entry->GetThumbnailKey());
+                        AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
+                        if (thumbnail && thumbnail->GetState() != Thumbnail::State::Failed)
+                        {
+                            return thumbnail->GetPixmap();
+                        }
                     }
                 }
             }
@@ -631,6 +653,46 @@ namespace AzToolsFramework
                 iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
             }
             return iconPathToUse;
+        }
+
+        Qt::DropAction AssetBrowserViewUtils::SelectDropActionForEntries(const AZStd::vector<const AssetBrowserEntry*>& entries)
+        {
+            QSettings settings;
+
+            QVariant defaultDropMethod = settings.value("AssetBrowserDropAction", Qt::CopyAction);
+
+            QString actionMessage = QObject::tr("Do you want to move or copy this asset?");
+            if (entries.size() > 1)
+            {
+                actionMessage = QObject::tr("Do you want to move or copy these assets?");
+            }
+
+            QMessageBox messageBox;
+            messageBox.setWindowTitle("Asset drop");
+            messageBox.setText(actionMessage);
+            messageBox.setIcon(QMessageBox::Question);
+            messageBox.addButton(QMessageBox::Cancel);
+            auto* moveButton = messageBox.addButton(QObject::tr("Move"), QMessageBox::YesRole);
+            auto* copyButton = messageBox.addButton(QObject::tr("Copy"), QMessageBox::NoRole);
+            messageBox.setDefaultButton(defaultDropMethod == Qt::MoveAction?moveButton:copyButton);
+            messageBox.setFixedWidth(600);
+
+            messageBox.exec();
+
+            if (messageBox.clickedButton() == moveButton)
+            {
+                settings.setValue("AssetBrowserDropAction", Qt::MoveAction);
+                return Qt::MoveAction;
+            }
+            else if (messageBox.clickedButton() == copyButton)
+            {
+                settings.setValue("AssetBrowserDropAction", Qt::CopyAction);
+                return Qt::CopyAction;
+            }
+            else
+            {
+                return Qt::IgnoreAction;
+            }
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

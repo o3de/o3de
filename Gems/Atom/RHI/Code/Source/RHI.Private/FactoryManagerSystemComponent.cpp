@@ -207,5 +207,16 @@ namespace AZ
             m_validationMode = AZ::RHI::ReadValidationMode();
         }
 
+        void FactoryManagerSystemComponent::EnumerateFactories(AZStd::function<bool(Factory* factory)> callback)
+        {
+            for (auto& factory : m_registeredFactories)
+            {
+                if (!callback(factory))
+                {
+                    break;
+                }
+            }
+        }
+
     } // namespace RHI
 } // namespace AZ

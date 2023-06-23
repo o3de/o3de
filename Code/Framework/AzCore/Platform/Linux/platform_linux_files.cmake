@@ -35,6 +35,7 @@ set(FILES
     ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h

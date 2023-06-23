@@ -32,6 +32,7 @@ namespace AzQtComponents
     signals:
         void tableRootIndexChanged(const QModelIndex& idx);
         void showInTableFolderTriggered(const QModelIndex& idx);
+        void rowDeselected();
 
     protected:
         void mousePressEvent(QMouseEvent* event) override;

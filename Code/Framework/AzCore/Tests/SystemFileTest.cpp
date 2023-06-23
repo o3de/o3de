@@ -339,7 +339,7 @@ namespace UnitTest
         // Read 0 bytes to validate that the stdin handle is open
         // as well to avoid needing stdin to have data within it
         // This call should block.
-        EXPECT_EQ(0, stdinHandle.Read(static_cast<size_t>(0), buffer));
+        EXPECT_EQ(0, stdinHandle.Read(static_cast<AZ::IO::SizeType>(0), buffer));
     }
 
 }   // namespace UnitTest

@@ -24,6 +24,14 @@ namespace AZ
     {
         class Scene;
 
+        //! Initialization flags passed to RHISystem::InitDevices to signal if all available devices should be initialized 
+        //! or just one (potentially preferred) adapter
+        enum class InitDevicesFlags : uint32_t
+        {
+            SingleDevice = 0,
+            MultiDevice
+        };
+
         class RHISystem final
             : public RHISystemInterface
             , public RHIMemoryStatisticsInterface
@@ -31,10 +39,11 @@ namespace AZ
         public:
             //! This function just initializes the native device and RHI::Device as a result.
             //! We can use this device to then query for device capabilities.
-            ResultCode InitDevice();
+            ResultCode InitDevices(InitDevicesFlags initializationVariant = InitDevicesFlags::SingleDevice);
 
-            //! This function initializes the rest of the RHI/RHI backend. 
-            void Init();
+            //! This function initializes the rest of the RHI/RHI backend.
+            //! bindlessSrgLayout in this case is layout associated with the bindless srg (Bindless.azsli).
+            void Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout = nullptr);
             void Shutdown();
 
             //! An external callback to build the frame graph.
@@ -82,8 +91,8 @@ namespace AZ
 
         private:
 
-            //Enumerates the Physical devices and picks one to be used to initialize the RHI::Device with
-            ResultCode InitInternalDevices();
+            //! Enumerates the Physical devices and picks one (or multiple) to be used to initialize the RHI::Device(s) with
+            ResultCode InitInternalDevices(InitDevicesFlags initializationVariant);
 
             AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
             RHI::FrameScheduler m_frameScheduler;

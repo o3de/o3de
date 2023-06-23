@@ -28,7 +28,7 @@ namespace AZ
             AzFramework::WindowRequestBus::EventResult(
                 m_viewportSize,
                 nativeWindow,
-                &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                &AzFramework::WindowRequestBus::Events::GetRenderResolution);
             AzFramework::WindowRequestBus::EventResult(
                 m_viewportDpiScaleFactor,
                 nativeWindow,
@@ -404,7 +404,7 @@ namespace AZ
             }
         }
 
-        void ViewportContext::OnWindowResized(uint32_t width, uint32_t height)
+        void ViewportContext::OnResolutionChanged(uint32_t width, uint32_t height)
         {
             if (m_viewportSize.m_width != width || m_viewportSize.m_height != height)
             {
