@@ -112,6 +112,19 @@ namespace AZ
             }
         }
 
+        void RemoveRawStringList(RawStringList& removeFrom, const RawStringList& toRemove)
+        {
+            removeFrom.erase(
+                AZStd::remove_if(
+                    removeFrom.begin(),
+                    removeFrom.end(),
+                    [&](const auto& x)
+                    {
+                        return AZStd::find(toRemove.begin(), toRemove.end(), x) != toRemove.end();
+                    }),
+                removeFrom.end());
+        }
+
         RawStringList FilterList(const RawStringList& source, const StringList& filter)
         {
             RawStringList filteredList;
@@ -425,6 +438,18 @@ namespace AZ
 #endif
                 }
                 return RawStringList{};
+            }
+
+            RawStringList GetValidationExtensions()
+            {
+                if (Instance::GetInstance().GetValidationMode() != RHI::ValidationMode::Disabled)
+                {
+                    return
+                    { {
+                            VK_EXT_DEBUG_REPORT_EXTENSION_NAME
+                    } };
+                }
+                return RawStringList();
             }
 
             VkDebugUtilsLabelEXT CreateVkDebugUtilLabel(const char* label, const AZ::Color color)
