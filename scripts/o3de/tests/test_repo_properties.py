@@ -13,7 +13,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import download, repo_properties
+from o3de import download, repo_properties, utils
 
 TEST_TEMPLATE_REPO_JSON = '''{
     "repo_name": "repotest",
@@ -350,7 +350,9 @@ class TestEditRepoProperties:
                                      add_templates, delete_templates, replace_templates, expected_templates,
                                      release_archive_path, force, download_prefix,  
                                      expected_result):
-        
+        def backup_file(file_name: str or pathlib.Path) -> None:
+            file_name = None
+
         def get_repo_props(repo_path: str or pathlib.Path = None) -> dict or None:
             if not repo_path:
                 self.repo_json.data = None
@@ -379,6 +381,7 @@ class TestEditRepoProperties:
 
         with patch('o3de.repo_properties.get_repo_props', side_effect=get_repo_props) as get_repo_props_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch, \
+                patch('o3de.utils.backup_file', side_effect=backup_file) as backup_file_patch, \
                 patch('o3de.manifest.get_json_data', side_effect=get_json_data) as get_json_data_patch:
             if release_archive_path:
                 add_gems = [temp_folder / 'gem']
