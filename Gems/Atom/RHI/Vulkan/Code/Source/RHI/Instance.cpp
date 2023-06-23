@@ -127,7 +127,7 @@ namespace AZ
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
 
             //For instance creation/destruction use nullptr for VkAllocationCallbacks* as using VkSystemAllocator::Get() crashes RenderDoc when used with openxr
-            //enabled projects. We think its because RenderDoc maybe injecting something when doing allocations. Using nullptr when USE_RENDERDOC or enableRenderDoc
+            //enabled projects. We think its because RenderDoc is maybe injecting something when doing allocations. Using nullptr when USE_RENDERDOC or enableRenderDoc
             //is enabled is another option but it will not work for Android easily and will require further work, not to mention manually enabling this for Android renderdoc.
             VkResult result = m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance);
 
