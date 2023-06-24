@@ -211,7 +211,6 @@ CSystem::CSystem()
     m_pUserCallback = NULL;
     m_sys_firstlaunch = NULL;
 
-    //  m_sys_filecache = NULL;
     m_gpu_particle_physics = NULL;
 
     m_bInitializedSuccessfully = false;

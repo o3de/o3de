@@ -63,7 +63,7 @@ def merge_json_data(json_path: pathlib.Path, json_data: dict) -> dict:
 
 def create_remote_object_archive(src_data_path: pathlib.Path, 
                    json_data_path: pathlib.Path, 
-                   archive_filename: pathlib.PurePath, 
+                   archive_filename: str, 
                    releases_path: pathlib.Path, 
                    repo_uri:str,
                    force: bool,
@@ -90,7 +90,10 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         FileNotFoundError: If the json_data_path does not exist.
         ValueError: If the json_data_path is not a dict.
     """
-
+    if download_prefix is None:
+        logger.error('The --download-prefix argument must be provided. A url prefix for a file attached to a Github release might look like this:'
+                     '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
+        return {}
     zip_path = releases_path / archive_filename
     # check if a object.zip folder already exist in the path - ask user if they want to overwrite the current zip
     if not force and zip_path.exists():
@@ -106,7 +109,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
 
         logging.info(f"Creating '{releases_path / archive_filename}'")
 
-        shutil.make_archive(releases_path / archive_filename.stem, 'zip', src_data_path)
+        shutil.make_archive(releases_path / pathlib.Path(archive_filename).stem, 'zip', src_data_path)
         with zip_path.open('rb') as f:
             json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
 
@@ -171,8 +174,9 @@ def _edit_objects(object_typename:str,
                 # for a project called TestProject that is version 1.0.0, 
                 # --release_archive_path would create a filename of `testproject-1.0.0-project.zip`
                 if release_archive_path:
+                    object_path = pathlib.Path(object_path)
                     version = json_data.get('version','0.0.0')
-                    archive_filename = pathlib.PurePath(f"{json_data[f'{object_typename}_name']}-{version}-{object_typename}.zip".lower())
+                    archive_filename = f"{json_data[f'{object_typename}_name']}-{version}-{object_typename}.zip".lower()
                     json_data = create_remote_object_archive(object_path, 
                                 object_path / f'{object_typename}.json', 
                                 archive_filename, 

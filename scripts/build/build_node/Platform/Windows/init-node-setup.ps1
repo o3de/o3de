@@ -26,16 +26,3 @@ choco install Carbon -y
 choco install awscli -y
 refreshenv
 
-# Grab credentials from parameter store (assumes AWS cli is installed and correct IAM policy is setup)
-$az = curl http://169.254.169.254/latest/meta-data/placement/availability-zone -UseBasicParsing
-$region = $az.Content -replace ".$"
-$username = aws ssm get-parameters --names "shared.builderuser" --region $region --with-decryption | ConvertFrom-Json
-$username = $username.Parameters.Value.ToString()
-$password = aws ssm get-parameters --names "shared.builderpass" --region $region --with-decryption | ConvertFrom-Json
-$password = ConvertTo-SecureString $password.Parameters.Value.ToString() -AsPlainText -Force
-$credential = New-Object System.Management.Automation.PSCredential -ArgumentList $username, $password
-
-Write-Host "Adding builder user"
-Import-Module 'Carbon'
-Install-User -Credential $credential -FullName "$($username)" -Description "Builder account for LY"
-Add-GroupMember -Name "Administrators" -Member "$($username)"
