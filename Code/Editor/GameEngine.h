@@ -24,6 +24,12 @@ struct IInitializeUIInfo;
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 
+// carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
+#if defined(CARBONATED)
+#include <CryCommon/IEditorGame.h>
+#endif
+// carbonated end
+
 class ThreadedOnErrorHandler : public QObject
 {
     Q_OBJECT
@@ -137,6 +143,11 @@ private:
     bool m_bJustCreated;
     bool m_bIgnoreUpdates;
     ISystem* m_pISystem;
+    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
+#if defined(CARBONATED)
+    IEditorGame* m_pEditorGame;
+#endif
+    // carbonated end
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Matrix34 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;

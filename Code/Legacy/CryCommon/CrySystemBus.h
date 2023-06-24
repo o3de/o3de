@@ -32,6 +32,13 @@ public:
     //! In-Editor systems have been created and initialized.
     virtual void OnCryEditorInitialized() {}
 
+    // carbonated begin (akostin/mp226): revert this LY event to subscribe to Editor Game Initialize.
+#if defined(CARBONATED)
+    //! In-Editor systems initialize game.
+    virtual void OnCryEditorGameInitialize() {}
+#endif
+    // carbonated end
+
     //! Editor has started a level export
     virtual void OnCryEditorBeginLevelExport() {}
 
