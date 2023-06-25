@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
@@ -632,7 +633,7 @@ namespace AZ
                     {
                         baseAlbedoName = pRenderSettings->m_BaseAlbedoName;
                     }
-                    m_baseAlbedo = UtilityClass::LoadStreamingImage(baseAlbedoName.c_str(), "Hair Gem");
+                    m_baseAlbedo = AZ::RPI::LoadStreamingTexture(baseAlbedoName.c_str());
                 }
                 if (!m_strandAlbedo)
                 {
@@ -641,7 +642,7 @@ namespace AZ
                     {
                         strandAlbedoName = pRenderSettings->m_StrandAlbedoName;
                     }
-                    m_strandAlbedo = UtilityClass::LoadStreamingImage(strandAlbedoName.c_str(), "Hair Gem");
+                    m_strandAlbedo = AZ::RPI::LoadStreamingTexture(strandAlbedoName.c_str());
                 }
 
                 // Bind the Srg resources
