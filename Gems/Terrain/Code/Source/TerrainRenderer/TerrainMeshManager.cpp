@@ -177,14 +177,6 @@ namespace Terrain
         m_rayTracedItems.clear();
     }
 
-    void TerrainMeshManager::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
-    {
-        if (changeType == RenderPipelineChangeType::Added || changeType == RenderPipelineChangeType::PassChanged)
-        {
-            m_rebuildDrawPackets = true;
-        }
-    }
-
     void TerrainMeshManager::Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg)
     {
         if (m_rebuildDrawPackets)
@@ -542,6 +534,11 @@ namespace Terrain
 
     }
 
+    void TerrainMeshManager::SetRebuildDrawPackets()
+    {
+        m_rebuildDrawPackets = true;
+    }
+
     void TerrainMeshManager::RebuildDrawPackets()
     {
         m_materialInstance->ApplyGlobalShaderOptions();
@@ -579,8 +576,8 @@ namespace Terrain
 
             if (!m_parentScene->HasOutputForPipelineState(drawListTag))
             {
-                // drawListTag not found in this scene, so don't render this item
-                return;
+                // drawListTag not found in this scene, so skip this item
+                continue;
             }
 
             // Set all unspecified shader options to default values, so that we get the most specialized variant possible.

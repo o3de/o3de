@@ -138,6 +138,10 @@ namespace Terrain
         [[maybe_unused]] AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
     {
         CachePasses();
+        if (changeType == RenderPipelineChangeType::Added || changeType == RenderPipelineChangeType::PassChanged)
+        {
+            m_meshManager.SetRebuildDrawPackets();
+        }
     }
 
     void TerrainFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
