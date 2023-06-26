@@ -609,7 +609,6 @@ namespace AZ
                 }
                 else
                 {
-                    using ReporterString = AZStd::fixed_string<1024>;
                     status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown,
                         ReporterString::format("Serialization information for target type %s not found.", loadedTypeId.m_typeId.ToString<ReporterString>().c_str()));
                     return ResolvePointerResult::FullyProcessed;

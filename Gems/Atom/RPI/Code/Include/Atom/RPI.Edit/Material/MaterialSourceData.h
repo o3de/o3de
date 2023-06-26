@@ -19,6 +19,11 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 
+namespace AZ::RPI::MaterialUtils
+{
+    using ImportedJsonFiles = AZStd::unordered_set<AZ::IO::Path>;
+}
+
 namespace AZ
 {
     class ReflectContext;
@@ -98,7 +103,7 @@ namespace AZ
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
-                AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
+                MaterialUtils::ImportedJsonFiles* sourceDependencies = nullptr) const;
 
         private:
 
