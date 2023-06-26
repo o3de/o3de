@@ -21,6 +21,11 @@
 #include <AzFramework/CommandLine/CommandLine.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
+// carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+#if defined(CARBONATED)
+#include <AzFramework/Network/NetSystemBus.h>
+#endif
+// carbonated end
 
 namespace AZ
 {
@@ -45,6 +50,11 @@ namespace AzFramework
         : public AZ::ComponentApplication
         , public AZ::UserSettingsFileLocatorBus::Handler
         , public ApplicationRequests::Bus::Handler
+        // carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+#if defined(CARBONATED)
+        , public NetSystemRequestBus::Handler
+#endif
+        // carbonated end
     {
     public:
         // Base class for platform specific implementations of the application.
@@ -131,6 +141,15 @@ namespace AzFramework
 
         // Convenience function that should be called instead of the standard exit() function to ensure platform requirements are met.
         static void Exit(int errorCode) { ApplicationRequests::Bus::Broadcast(&ApplicationRequests::TerminateOnError, errorCode); }
+
+        // carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+#if defined(CARBONATED)
+        //////////////////////////////////////////////////////////////////////////
+        //! NetSystemEventBus::Handler
+        //////////////////////////////////////////////////////////////////////////
+        NetworkContext* GetNetworkContext() override;
+#endif
+        // carbonated end
 
     protected:
 
