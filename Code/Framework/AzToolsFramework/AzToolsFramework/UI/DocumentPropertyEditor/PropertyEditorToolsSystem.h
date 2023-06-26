@@ -35,5 +35,7 @@ namespace AzToolsFramework
         AZStd::vector<PropertyHandlerId> m_defaultHandlers;
         // PropertyEditorSystem contains all non-UI system logic for the DPE, like the DOM schema
         AZ::DocumentPropertyEditor::PropertyEditorSystem m_lowLevelSystem;
+
+        PropertyHandlerId GetPropertyHandlerForType(AZStd::string_view handlerName, const AZ::TypeId& typeId);
     };
 } // namespace AzToolsFramework

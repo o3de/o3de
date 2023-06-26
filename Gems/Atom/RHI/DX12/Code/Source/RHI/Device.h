@@ -149,9 +149,6 @@ namespace AZ
 
             bool IsAftermathInitialized() const;
 
-            //! Indicate that we need to compact the shader visible srv/uav/cbv shader visible heap. 
-            void DescriptorHeapCompactionNeeded();
-
             //! Check the opResult return true if it was success
             //! If it's device lost, triggers device removal handling
             bool AssertSuccess(HRESULT opResult);
@@ -183,7 +180,6 @@ namespace AZ
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
-            RHI::ResultCode CompactSRGMemory() override;
             RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
@@ -233,9 +229,6 @@ namespace AZ
             AZStd::mutex m_samplerCacheMutex;
 
             bool m_isAftermathInitialized = false;
-
-            // Boolean used to compact the view specific shader visible heap
-            bool m_isDescriptorHeapCompactionNeeded = false;
 
             // device remover fence            
             RHI::Ptr<ID3D12Fence> m_deviceFence;

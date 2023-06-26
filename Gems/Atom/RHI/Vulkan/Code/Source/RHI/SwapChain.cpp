@@ -509,6 +509,7 @@ namespace AZ
             createInfo.imageExtent = extent;
             createInfo.imageArrayLayers = 1; // non-stereoscopic
             createInfo.imageUsage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+            createInfo.imageUsage = RHI::FilterBits(createInfo.imageUsage, m_surfaceCapabilities.supportedUsageFlags);
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
             createInfo.queueFamilyIndexCount = aznumeric_cast<uint32_t>(familyIndices.size());
             createInfo.pQueueFamilyIndices = familyIndices.empty() ? nullptr : familyIndices.data();

@@ -469,53 +469,42 @@ namespace AZ
                 m_prepareSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_prepareSrg.get(), "Failed to create Prepare shader resource group");
             }
-
-            m_prepareSrg->SetBufferView(m_renderData->m_prepareSrgGridDataNameIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgGridDataInitializedNameIndex, m_gridDataInitialized);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridOriginNameIndex, m_transform.GetTranslation());
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridRotationNameIndex, m_transform.GetRotation());
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeRayRotationNameIndex, m_probeRayRotation);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridMovementTypeNameIndex, (uint32_t)m_scrolling);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeSpacingNameIndex, m_probeSpacing);
-
-            uint32_t probeGridCounts[3];
-            probeGridCounts[0] = m_probeCountX;
-            probeGridCounts[1] = m_probeCountY;
-            probeGridCounts[2] = m_probeCountZ;
-            m_prepareSrg->SetConstantRaw(m_renderData->m_prepareSrgProbeGridProbeCountsNameIndex, &probeGridCounts[0], sizeof(probeGridCounts));
-
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeNumRaysNameIndex, GetNumRaysPerProbe().m_rayCount);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeNumIrradianceTexelsNameIndex, DefaultNumIrradianceTexels);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeNumDistanceTexelsNameIndex, DefaultNumDistanceTexels);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeHysteresisNameIndex, m_probeHysteresis);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeMaxRayDistanceNameIndex, m_probeMaxRayDistance);
-
+        
             // scale the normal bias based on the grid density to reduce artifacts on thin geometry, less density results in more bias
             float scaledNormalBias = m_normalBias + 0.15f * (m_probeSpacing.GetMaxElement() / 2.0f);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeNormalBiasNameIndex, scaledNormalBias);
-
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeViewBiasNameIndex, m_viewBias);
-
+        
             // scale the probe distance exponent based on the grid density to reduce artifacts on thin geometry
             static const float MinProbeDistanceExponent = 50.0f;
             float scaledProbeDistanceExponent = AZStd::max(m_probeDistanceExponent * (m_probeSpacing.GetMaxElement() / 1.5f), MinProbeDistanceExponent);
+        
+            // setup packed data
+            uint32_t packed0 = m_probeCountX | (m_probeCountY << 8) | (m_probeCountZ << 16);
+            uint32_t packed1 = aznumeric_cast<uint32_t>(m_probeRandomRayBackfaceThreshold * 65535) | (aznumeric_cast<uint32_t>(m_probeFixedRayBackfaceThreshold * 65535) << 16);
+            uint32_t packed2 = GetNumRaysPerProbe().m_rayCount | (DefaultNumIrradianceTexels << 16) | (DefaultNumDistanceTexels << 24);
+            uint32_t packed3 = 0;
+            uint32_t packed4 = (m_scrolling << 16) | (1 << 17) | (1 << 18) | (1 << 19) | (1 << 20); // scrolling, rayFormat, irradianceFormat, relocation, classification
+        
+            m_prepareSrg->SetBufferView(m_renderData->m_prepareSrgGridDataNameIndex, m_gridDataBuffer->GetBufferView(m_renderData->m_gridDataBufferViewDescriptor).get());
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgGridDataInitializedNameIndex, m_gridDataInitialized);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridOriginNameIndex, m_transform.GetTranslation());
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeHysteresisNameIndex, m_probeHysteresis);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridRotationNameIndex, m_transform.GetRotation());
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeRayRotationNameIndex, m_probeRayRotation);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeMaxRayDistanceNameIndex, m_probeMaxRayDistance);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeNormalBiasNameIndex, scaledNormalBias);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeViewBiasNameIndex, m_viewBias);
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeDistanceExponentNameIndex, scaledProbeDistanceExponent);
-
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeSpacingNameIndex, m_probeSpacing);           
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridPacked0NameIndex, packed0);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeIrradianceEncodingGammaNameIndex, m_probeIrradianceEncodingGamma);
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeIrradianceThresholdNameIndex, m_probeIrradianceThreshold);
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeBrightnessThresholdNameIndex, m_probeBrightnessThreshold);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeIrradianceEncodingGammaNameIndex, m_probeIrradianceEncodingGamma);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeRandomRayBackfaceThresholdNameIndex, m_probeRandomRayBackfaceThreshold);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeFixedRayBackfaceThresholdNameIndex, m_probeFixedRayBackfaceThreshold);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridPacked1NameIndex, packed1);
             m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeMinFrontfaceDistanceNameIndex, m_probeMinFrontfaceDistance);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeScrollOffsetsNameIndex, Vector3::CreateZero());
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeRayDataFormatNameIndex, 1);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeIrradianceFormatNameIndex, 1);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeRelocationEnabledNameIndex, true);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeClassificationEnabledNameIndex, true);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeScrollClear0NameIndex, false);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeScrollClear1NameIndex, false);
-            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridProbeScrollClear2NameIndex, false);
-
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridPacked2NameIndex, packed2);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridPacked3NameIndex, packed3);
+            m_prepareSrg->SetConstant(m_renderData->m_prepareSrgProbeGridPacked4NameIndex, packed4);
+        
             m_gridDataInitialized = true;
         }
 

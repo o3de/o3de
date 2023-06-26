@@ -80,6 +80,7 @@ namespace AZ
                 void OnAssetError(Data::Asset<Data::AssetData> asset) override;
 
                 // AssetCatalogEventBus::Handler overrides...
+                void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
                 void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
                 void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
 

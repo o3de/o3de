@@ -115,6 +115,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     AZ_Assert(m_assetBrowserModel, "Failed to get filebrowser model");
     m_filterModel->setSourceModel(m_assetBrowserModel);
     m_filterModel->SetFilter(m_ui->m_searchWidget->GetFilter());
+    // Turn off DynamicSort as sorting is now manual.
+    m_filterModel->setDynamicSortFilter(false);
 
     m_ui->m_assetBrowserListViewWidget->setVisible(false);
     m_ui->m_toolsMenuButton->setVisible(false);
@@ -327,6 +329,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         this,
         [this](const QModelIndex& index)
         {
+            // If multiple AssetBrowsers are open, only the focused browser should perform the rename.
+            QWidget* focusWidget = QApplication::focusWidget();
+            if (!isAncestorOf(focusWidget))
+            {
+                return;
+            }
+
             if (m_ui->m_thumbnailView->GetThumbnailActiveView())
             {
                 m_ui->m_thumbnailView->OpenItemForEditing(index);

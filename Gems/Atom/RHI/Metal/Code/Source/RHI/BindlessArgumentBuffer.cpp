@@ -21,7 +21,13 @@ namespace AZ::Metal
         m_device = device;
         m_bindlessSrgDesc = bindlessSrgDesc;
         m_unboundedArraySupported = device->GetFeatures().m_unboundedArrays;
-        
+        m_unboundedArraySimulated = device->GetFeatures().m_simulateBindlessUA;
+
+        if (!m_unboundedArraySupported && !m_unboundedArraySimulated)
+        {
+            return RHI::ResultCode::Success;
+        }
+
         AZStd::vector<id<MTLBuffer>> mtlArgBuffers;
         AZStd::vector<NSUInteger> mtlArgBufferOffsets;
         AZStd::vector<MTLArgumentDescriptor*> argBufferDescriptors;
@@ -84,7 +90,7 @@ namespace AZ::Metal
             argDescriptor.dataType = MTLDataTypePointer;
             argDescriptor.index = 0;
             argDescriptor.access = MTLArgumentAccessReadOnly;
-            argDescriptor.arrayLength = static_cast<uint32_t>(BindlessResourceType::Count) - 1;
+            argDescriptor.arrayLength = static_cast<uint32_t>(RHI::BindlessResourceType::Count) - 1;
             argBufferDescriptors[0] = argDescriptor;
             m_rootArgBuffer->Init(device, argBufferDescriptors, "ArgumentBuffer_BindlessRoot");
             [argDescriptor release] ;
@@ -95,11 +101,11 @@ namespace AZ::Metal
                                                   offsets:    mtlArgBufferOffsets.data()
                                                   withRange:  range];
         }
-        else
+        else if (m_unboundedArraySimulated)
         {
             m_boundedArgBuffer = ArgumentBuffer::Create();
             //For the bounded approach we have one AB that holds all the bindless resource types
-            for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+            for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
             {
                 MTLArgumentDescriptor* resourceArgDescriptor = [[MTLArgumentDescriptor alloc] init];
                 
@@ -147,7 +153,7 @@ namespace AZ::Metal
         }
 
         //Init the free list allocator related to the unbounded arrays for each resource type
-        for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
         {
             RHI::FreeListAllocator::Descriptor desc;
             desc.m_capacityInBytes = RHI::Limits::Pipeline::UnboundedArraySize;
@@ -406,7 +412,7 @@ namespace AZ::Metal
 
     void BindlessArgumentBuffer::GarbageCollect()
     {
-        for (uint32_t i = 0; i < static_cast<uint32_t>(BindlessResourceType::Count); ++i)
+        for (uint32_t i = 0; i < static_cast<uint32_t>(RHI::BindlessResourceType::Count); ++i)
         {
             m_allocators[i].GarbageCollect();
         }
@@ -415,6 +421,11 @@ namespace AZ::Metal
     uint32_t BindlessArgumentBuffer::GetBindlessSrgBindingSlot()
     {
         return m_bindlessSrgDesc.m_bindlesSrgBindingSlot;
+    }
+
+    bool BindlessArgumentBuffer::IsInitialized() const
+    {
+        return m_rootArgBuffer || m_boundedArgBuffer;
     }
 }
 

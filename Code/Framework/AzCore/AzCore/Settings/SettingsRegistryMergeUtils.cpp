@@ -264,7 +264,7 @@ namespace AZ::Internal
             return AZ::Success();
         }
 
-        // If the engine has no version information or is not known incompatible then assume compatible 
+        // If the engine has no version information or is not known incompatible then assume compatible
         const auto engineVersionKey = FixedValueString::format("%s/version", EngineSettingsRootKey);
         if(FixedValueString engineVersionValue; settingsRegistry.Get(engineVersionValue, engineVersionKey))
         {
@@ -341,7 +341,7 @@ namespace AZ::Internal
         // Visit over the engine paths list and merge the engine.json files to settings registry.
         // Merge project.json to settings registry.  The "engine" key contains the engine name and optional version specifier.
         // When we find a match for "engine_name" value against the "engine" we check if the engine "version" is compatible
-        // with any version specifier in the project's "engine" key. 
+        // with any version specifier in the project's "engine" key.
         // If the engine is compatible we check if it is more compatible than the previously found most compatible engine.
         // Finally, merge in the engine and project settings for the most compatible engine into the registry and
         // return the path of the most compatible engine
@@ -393,7 +393,7 @@ namespace AZ::Internal
                 EngineInfo mostCompatibleEngineInfo;
                 AZ::IO::FixedMaxPath projectUserPath;
                 settingsRegistry.Get(projectUserPath.Native(), FilePathKey_ProjectUserPath);
-        
+
                 AZ::SettingsRegistryImpl scratchSettingsRegistry;
 
                 // Look through the manifest engines for the most compatible engine
@@ -871,14 +871,19 @@ namespace AZ::SettingsRegistryMergeUtils
         registry.Visit(visitor, SpecializationsRootKey);
     }
 
-    void MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(SettingsRegistryInterface& registry, AZStd::string_view targetName)
+    void MergeSettingsToRegistry_AddSpecialization(SettingsRegistryInterface& registry, AZStd::string_view value)
+    {
+        auto targetSpecialization = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%.*s",
+            SpecializationsRootKey, AZ_STRING_ARG(value));
+        registry.Set(targetSpecialization, true);
+    }
+
+    void MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(SettingsRegistryInterface& registry,
+        AZStd::string_view targetName)
     {
         registry.Set(BuildTargetNameKey, targetName);
-
         // Add specializations to the target registry based on the name of the Build System Target
-        auto targetSpecialization = AZ::SettingsRegistryInterface::FixedValueString::format("%s/%.*s",
-            SpecializationsRootKey, aznumeric_cast<int>(targetName.size()), targetName.data());
-        registry.Set(targetSpecialization, true);
+        MergeSettingsToRegistry_AddSpecialization(registry, targetName);
     }
 
     bool MergeSettingsToRegistry_ConfigFile(SettingsRegistryInterface& registry, AZStd::string_view filePath,
@@ -933,7 +938,7 @@ namespace AZ::SettingsRegistryMergeUtils
             // While all parsing and formatting errors are actual errors, config files that are not present
             // is not an error as they are always optional.  In this case, show a brief trace message
             // that indicates the location the file could be placed at in order to run it.
-            AZ_TracePrintf("SettingsRegistryMergeUtils", "Optional config file \"%s\" not found.\n", configPath.c_str());
+            AZ_Trace("SettingsRegistryMergeUtils", "Optional config file \"%s\" not found.\n", configPath.c_str());
             return false;
         }
 
@@ -1410,7 +1415,7 @@ namespace AZ::SettingsRegistryMergeUtils
         // Provide mappings for the engine root directroy, project product directory(<project-root>/Cache/<asset-platform>),
         // project user directory (<project-root>/user), project log directory (<project-root>/user/log)
         // command line options to regset options
-        // 
+        //
         // A mapping for the project-build-path option which represents the CMake binary directory
         // supplied during configure is also available to be mapped to a regset setting
         //

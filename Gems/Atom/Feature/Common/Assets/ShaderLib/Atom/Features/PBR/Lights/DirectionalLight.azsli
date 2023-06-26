@@ -9,7 +9,10 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+#if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+#endif
 
 void ApplyDirectionalLights(Surface surface, inout LightingData lightingData, float4 screenUv)
 {

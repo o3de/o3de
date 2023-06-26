@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
@@ -40,9 +41,6 @@ namespace AZ
 {
     namespace RPI
     {
-        AZ_CVAR(bool, r_CullInParallel, true, nullptr, ConsoleFunctorFlags::Null, "");
-        AZ_CVAR(uint32_t, r_CullWorkPerBatch, 500, nullptr, ConsoleFunctorFlags::Null, "");
-
         // Entry work lists
         AZ_CVAR(bool, r_useEntryWorkListsForCulling, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use entity work lists instead of node work lists for job distribution");
         AZ_CVAR(uint32_t, r_numEntriesPerCullingJob, 750, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of entries to collect for jobs when using entry work lists");
@@ -53,6 +51,11 @@ namespace AZ
 
         // Node work lists using node count
         AZ_CVAR(uint32_t, r_numNodesPerCullingJob, 25, nullptr, AZ::ConsoleFunctorFlags::Null, "Controls amount of nodes to collect for jobs when not using the entry count");
+
+        // This value dictates the amount to extrude the octree node OBB when doing a frustum intersection test against the camera frustum to help cut draw calls for shadow cascade passes.
+        // Default is set to -1 as this is optimization needs to be triggered by the content developer by setting a reasonable non-negative value applicable for their content. 
+        AZ_CVAR(int, r_shadowCascadeExtrusionAmount, -1, nullptr, AZ::ConsoleFunctorFlags::Null, "The amount of meters to extrude the Obb towards light direction when doing frustum overlap test against camera frustum");
+
 
 #ifdef AZ_CULL_DEBUG_ENABLED
         void DebugDrawWorldCoordinateAxes(AuxGeomDraw* auxGeom)
@@ -156,6 +159,7 @@ namespace AZ
             const Scene* m_scene = nullptr;
             View* m_view = nullptr;
             Frustum m_frustum;
+            Frustum m_cameraFrustum;
             Frustum m_excludeFrustum;
             AZ::Job* m_parentJob = nullptr;
             AZ::TaskGraphEvent* m_taskGraphEvent = nullptr;
@@ -163,13 +167,14 @@ namespace AZ
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
 #endif
             bool m_hasExcludeFrustum = false;
+            bool m_applyCameraFrustumIntersectionTest = false;
 #ifdef AZ_CULL_DEBUG_ENABLED
 
             AuxGeomDrawPtr GetAuxGeomPtr()
             {
                 if (m_debugCtx->m_debugDraw && (m_view->GetName() == m_debugCtx->m_currentViewSelectionName))
                 {
-                    AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_scene);
+                    return AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_scene);
                 }
                 return nullptr;
             }
@@ -585,10 +590,51 @@ namespace AZ
             {
                 worklistData->m_hasExcludeFrustum = true;
                 worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
+
+                // Get the render pipeline associated with the shadow pass of the given view
+                RenderPipelinePtr renderPipeline = scene.GetRenderPipeline(view.GetShadowPassRenderPipelineId());             
+                //Only apply this optimization if you only have one view available.
+                if (renderPipeline && renderPipeline->GetViews(renderPipeline->GetMainViewTag()).size() == 1)
+                {
+                    RPI::ViewPtr cameraView = renderPipeline->GetDefaultView();
+                    const Matrix4x4& cameraWorldToClip = cameraView->GetWorldToClipMatrix();
+                    worklistData->m_cameraFrustum = Frustum::CreateFromMatrixColumnMajor(cameraWorldToClip);
+                    worklistData->m_applyCameraFrustumIntersectionTest = true;
+                }
             }
             
             auto nodeVisitorLambda = [worklistData, taskGraph, parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
+                // For shadow cascades that are greater than index 0 we can do another check to see if we can reject any Octree node that do not
+                // intersect with the camera frustum. We do this by checking for an overlap between the camera frustum and the Obb created
+                // from the node's AABB but rotated and extended towards light direction. This optimization is only activated when someone sets
+                // a non-negative extrusion value (i.e r_shadowCascadeExtrusionAmount) for their given content.
+                if (r_shadowCascadeExtrusionAmount >= 0 && worklistData->m_applyCameraFrustumIntersectionTest && worklistData->m_hasExcludeFrustum)
+                {
+                    // Build an Obb from the Octree node's aabb
+                    AZ::Obb extrudedBounds = AZ::Obb::CreateFromAabb(nodeData.m_bounds);
+
+                    // Rotate the Obb in the direction of the light
+                    AZ::Quaternion directionalLightRot = worklistData->m_view->GetCameraTransform().GetRotation();
+                    extrudedBounds.SetRotation(directionalLightRot);
+                    
+                    AZ::Vector3 halfLength = 0.5f * nodeData.m_bounds.GetExtents();
+                    // After converting AABB to OBB we apply a rotation and this can incorrectly fail intersection test. If you have an OBB cube built from an octree node,
+                    // rotating it can cause it to not encapsulate meshes it encapsulated beforehand. The type of shape we want here is essentially a capsule that starts from the
+                    // light and wraps the aabb of the octree node cube and extends towards light direction. This capsule's diameter needs to the size of the body diagonal
+                    // of the cube. Since using capsule shape will make intersection test expensive we simply expand the Obb to have each side be at least the size of the body diagonal
+                    // which is sqrt(3) * side size. Hence we expand the Obb by 73%. Since this is half length, we expand it by 73% / 2, or 36.5%.
+                    halfLength *= Vector3(1.365f);
+                    
+                    // Next we extrude the Obb in the direction of the light in order to ensure we capture meshes that are behind the camera but cast a shadow within it's frustum
+                    halfLength.SetY(halfLength.GetY() + r_shadowCascadeExtrusionAmount);
+                    extrudedBounds.SetHalfLengths(halfLength);
+                    if (!AZ::ShapeIntersection::Overlaps(worklistData->m_cameraFrustum, extrudedBounds))
+                    {
+                        return;
+                    }
+                }
+
                 auto entriesInNode = nodeData.m_entries.size();
                 AZ_Assert(entriesInNode > 0, "should not get called with 0 entries");
 
@@ -843,6 +889,17 @@ namespace AZ
             m_visScene = parentScene->GetVisibilityScene();
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+
+            if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+            {
+                // Start with default value
+                int shadowCascadeExtrusionAmount = r_shadowCascadeExtrusionAmount;
+                // Get the cvar value from settings registry
+                console->GetCvarValue("r_shadowCascadeExtrusionAmount", shadowCascadeExtrusionAmount);
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(
+                    AZStd::string::format("r_shadowCascadeExtrusionAmount %i", shadowCascadeExtrusionAmount).c_str());
+            }
 
 #ifdef AZ_CULL_DEBUG_ENABLED
             AZ_Assert(CountObjectsInScene() == 0, "The culling system should start with 0 entries in this scene.");

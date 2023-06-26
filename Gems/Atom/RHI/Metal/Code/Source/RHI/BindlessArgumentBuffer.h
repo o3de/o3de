@@ -86,6 +86,9 @@ namespace AZ
             //! Return the binding slot for the bindless srg
             uint32_t GetBindlessSrgBindingSlot();
 
+            //! Boolean to return true if the pool is initialized
+            bool IsInitialized() const;
+
         private:
 
             //Bindless ABs + the rootAB which will act as a container. This is used for unbounded arrays.
@@ -100,9 +103,15 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> m_boundedArgBuffer;
 
             // Free list allocator per bindless resource type
-            RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(BindlessResourceType::Count)];
+            RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::BindlessResourceType::Count)];
             Device* m_device = nullptr;
+
+            // Boolean to indicate that native unbounded array support exists 
             bool m_unboundedArraySupported = false;
+
+            // Boolean to indiacate that simulated unbounded array support exists
+            bool m_unboundedArraySimulated = false;
+
             // Mutex to protect bindless heap related updates
             AZStd::mutex m_mutex;
 

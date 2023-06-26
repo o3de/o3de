@@ -289,6 +289,8 @@ namespace AtomToolsFramework
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, uiWindowSize.width(), uiWindowSize.height());
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
@@ -411,7 +413,8 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetClientAreaSize() const
     {
-        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
+        const auto pixelRatio = devicePixelRatioF();
+        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()*pixelRatio), aznumeric_cast<uint32_t>(height()*pixelRatio)};
     }
 
     void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize, [[maybe_unused]] const AzFramework::WindowPosOptions& options)
@@ -445,6 +448,26 @@ namespace AtomToolsFramework
     void RenderViewportWidget::ToggleFullScreenState()
     {
         // The RenderViewportWidget does not currently support full screen.
+    }
+
+    void RenderViewportWidget::SetEnableCustomizedResolution([[maybe_unused]]bool enable)
+    {
+        // The RenderViewportWidget does not currently support customized render resolution.
+    }
+
+    bool RenderViewportWidget::IsCustomizedResolutionEnabled() const
+    {
+        return false;
+    }
+
+    AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
+    {
+        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
+    }
+
+    void RenderViewportWidget::SetRenderResolution([[maybe_unused]]AzFramework::WindowSize resolution)
+    {
+        // The RenderViewportWidget does not currently support customized render resolution.
     }
 
     float RenderViewportWidget::GetDpiScaleFactor() const

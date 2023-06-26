@@ -30,7 +30,6 @@
 #include "EditorPreferencesPageViewportManipulator.h"
 #include "EditorPreferencesPageViewportCamera.h"
 #include "EditorPreferencesPageViewportDebug.h"
-#include "EditorPreferencesPageExperimentalLighting.h"
 #include "EditorPreferencesPageAWS.h"
 #include "LyViewPaneNames.h"
 
@@ -68,7 +67,6 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
             CEditorPreferencesPage_ViewportManipulator::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportCamera::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportDebug::Reflect(*serializeContext);
-            CEditorPreferencesPage_ExperimentalLighting::Reflect(*serializeContext);
             CEditorPreferencesPage_AWS::Reflect(*serializeContext);
         }
     }

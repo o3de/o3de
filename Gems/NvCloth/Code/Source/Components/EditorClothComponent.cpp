@@ -71,8 +71,8 @@ namespace NvCloth
                     // Mesh Node
                     ->DataElement(Editor::MeshNodeSelector, &ClothConfiguration::m_meshNode, "Mesh node", 
                         "List of mesh nodes with cloth simulation data. These are the nodes selected inside Cloth Modifiers in Scene Settings.")
-                        ->Attribute(AZ::Edit::UIHandlers::EntityId, &ClothConfiguration::GetEntityId)
-                        ->Attribute(AZ::Edit::Attributes::StringList, &ClothConfiguration::PopulateMeshNodeList)
+                        ->Attribute(AZ::Edit::UIHandlers::EntityId, &ClothConfiguration::m_entityId)
+                        ->Attribute(AZ::Edit::Attributes::StringList, &ClothConfiguration::m_meshNodeList)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     // Mass and Gravity
@@ -117,20 +117,20 @@ namespace NvCloth
                     
                     // Backstop
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Backstop")
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::HasBackstopData)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::m_hasBackstopData)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_backstopRadius, "Radius",
                         "Maximum radius that will prevent the associated cloth particle from moving into that area.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, Internal::AttributeSuffixMetersUnit)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::HasBackstopData)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::m_hasBackstopData)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_backstopBackOffset, "Back offset",
                         "Maximum offset for backstop spheres behind the cloth.")
                         ->Attribute(AZ::Edit::Attributes::Suffix, Internal::AttributeSuffixMetersUnit)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::HasBackstopData)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::m_hasBackstopData)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &ClothConfiguration::m_backstopFrontOffset, "Front offset",
                         "Maximum offset for backstop spheres in front of the cloth.")
                         ->Attribute(AZ::Edit::Attributes::Suffix, Internal::AttributeSuffixMetersUnit)
-                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::HasBackstopData)
+                        ->Attribute(AZ::Edit::Attributes::Visibility, &ClothConfiguration::m_hasBackstopData)
 
                     // Damping
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Damping")
@@ -388,19 +388,7 @@ namespace NvCloth
     EditorClothComponent::EditorClothComponent()
     {
         m_meshNodeList = { {Internal::StatusMessageNoAsset} };
-        m_config.m_populateMeshNodeListCallback = [this]()
-            {
-                return m_meshNodeList;
-            };
-        m_config.m_hasBackstopDataCallback = [this]()
-            {
-                auto meshNodeIt = m_meshNodesWithBackstopData.find(m_config.m_meshNode);
-                return meshNodeIt != m_meshNodesWithBackstopData.end();
-            };
-        m_config.m_getEntityIdCallback = [this]()
-            {
-                return GetEntityId();
-            };
+        m_config.m_meshNodeList = m_meshNodeList;
     }
 
     EditorClothComponent::~EditorClothComponent() = default;
@@ -440,6 +428,8 @@ namespace NvCloth
         AzToolsFramework::Components::EditorComponentBase::Activate();
 
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
+
+        m_config.m_entityId = GetEntityId();
     }
 
     void EditorClothComponent::Deactivate()
@@ -514,6 +504,8 @@ namespace NvCloth
             m_clothComponentMesh = AZStd::make_unique<ClothComponentMesh>(GetEntityId(), m_config);
         }
 
+        UpdateConfigMeshNodeData();
+
         // Refresh UI
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay,
@@ -535,6 +527,8 @@ namespace NvCloth
         m_clothComponentMesh.reset();
 
         m_meshNodesWithBackstopData.clear();
+
+        UpdateConfigMeshNodeData();
 
         // Refresh UI
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
@@ -598,5 +592,14 @@ namespace NvCloth
                 const float backstopRadius = backstop.GetY();
                 return backstopRadius > 0.0f;
             });
+    }
+
+    void EditorClothComponent::UpdateConfigMeshNodeData()
+    {
+        // Update our config mesh node data based on changes to the associated Mesh component
+        // This gets called after updating our internal data on OnModelReady and OnModelPreDestroy
+        m_config.m_meshNodeList = m_meshNodeList;
+        auto meshNodeIt = m_meshNodesWithBackstopData.find(m_config.m_meshNode);
+        m_config.m_hasBackstopData = (meshNodeIt != m_meshNodesWithBackstopData.end());
     }
 } // namespace NvCloth

@@ -40,6 +40,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
     {
         system->RegisterNode<NodeWithVisiblityControl>();
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::SetTrueLabel);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::SetFalseLabel);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 
@@ -67,6 +71,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
         system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::ContainerCanBeModified);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);

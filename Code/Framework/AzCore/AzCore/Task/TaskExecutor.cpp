@@ -414,7 +414,6 @@ namespace AZ
 
     void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph, TaskGraphEvent* event)
     {
-        ++m_graphsRemaining;
 
         if (event)
         {
@@ -427,11 +426,18 @@ namespace AZ
         // to be signaled to release the semaphore so that the TaskGraphEvent::Wait
         // function does not deadlock
         auto& compiledTasks = graph.Tasks();
-        if (compiledTasks.empty() && event)
+        if (compiledTasks.empty())
         {
-            event->Signal();
+            if (event != nullptr)
+            {
+                event->Signal();
+            }
             return;
         }
+
+        // Since there is at least one compiled task, it is safe
+        // to increment the graphs remaining member
+        ++m_graphsRemaining;
 
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : compiledTasks)

@@ -97,7 +97,7 @@ def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path
         game_launcher.args.extend([ f'--rhi={rhi} ',
                                     f'--run-automation-suite={test_script} ',
                                     '--exit-on-automation-end ',
-                                    f'--r_default_pipeline_name={render_pipeline}',
+                                    f'--r_renderPipelinePath={render_pipeline}',
                                     f'--regset-file={setreg_file.name}'])
         game_launcher.start()
         waiter.wait_for(lambda: process_utils.process_exists(launcher_name, ignore_extensions=True))

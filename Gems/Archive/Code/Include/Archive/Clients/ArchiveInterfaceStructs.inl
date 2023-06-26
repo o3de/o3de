@@ -49,11 +49,49 @@ namespace Archive
         return m_value;
     }
 
-    // ArchiveHeader constructor implementation
+    // ArchiveHeader constructor implementations
     inline ArchiveHeader::ArchiveHeader()
         : m_tocCompressedSize{}
         , m_tocCompressionAlgoIndex{ UncompressedAlgorithmIndex }
     {}
+
+    inline ArchiveHeader::ArchiveHeader(const ArchiveHeader& other)
+        : m_minorVersion(other.m_minorVersion)
+        , m_majorVersion(other.m_majorVersion)
+        , m_revision(other.m_revision)
+        , m_layout(other.m_layout)
+        , m_fileCount(other.m_fileCount)
+        , m_tocOffset(other.m_tocOffset)
+        , m_tocCompressedSize(other.m_tocCompressedSize)
+        , m_tocCompressionAlgoIndex(other.m_tocCompressionAlgoIndex)
+        , m_tocFileMetadataTableUncompressedSize(other.m_tocFileMetadataTableUncompressedSize)
+        , m_tocPathIndexTableUncompressedSize(other.m_tocPathIndexTableUncompressedSize)
+        , m_tocPathBlobUncompressedSize(other.m_tocPathBlobUncompressedSize)
+        , m_tocBlockOffsetTableUncompressedSize(other.m_tocBlockOffsetTableUncompressedSize)
+        , m_compressionThreshold(other.m_compressionThreshold)
+        , m_compressionAlgorithmsIds(other.m_compressionAlgorithmsIds)
+        , m_firstDeletedBlockOffset(other.m_firstDeletedBlockOffset)
+    {}
+    inline ArchiveHeader& ArchiveHeader::operator=(const ArchiveHeader& other)
+    {
+        m_minorVersion = other.m_minorVersion;
+        m_majorVersion = other.m_majorVersion;
+        m_revision = other.m_revision;
+        m_layout = other.m_layout;
+        m_fileCount = other.m_fileCount;
+        m_tocOffset = other.m_tocOffset;
+        m_tocCompressedSize = other.m_tocCompressedSize;
+        m_tocCompressionAlgoIndex = other.m_tocCompressionAlgoIndex;
+        m_tocFileMetadataTableUncompressedSize = other.m_tocFileMetadataTableUncompressedSize;
+        m_tocPathIndexTableUncompressedSize = other.m_tocPathIndexTableUncompressedSize;
+        m_tocPathBlobUncompressedSize = other.m_tocPathBlobUncompressedSize;
+        m_tocBlockOffsetTableUncompressedSize = other.m_tocBlockOffsetTableUncompressedSize;
+        m_compressionThreshold = other.m_compressionThreshold;
+        m_compressionAlgorithmsIds = other.m_compressionAlgorithmsIds;
+        m_firstDeletedBlockOffset = other.m_firstDeletedBlockOffset;
+
+        return *this;
+    }
 
     // Get the total uncompressed size of the Table of Contents
     inline AZ::u64 ArchiveHeader::GetUncompressedTocSize() const
@@ -104,7 +142,7 @@ namespace Archive
         {
             result.m_errorCode = ArchiveHeaderErrorCode::InvalidMagicBytes;
             result.m_errorMessage = ArchiveHeaderValidationResult::ErrorString::format(
-                "Archive header has invalid magic byte sequence %u",
+                "Archive header has invalid magic byte sequence %x",
                 archiveHeader.m_magicBytes);
         }
         return result;
@@ -131,17 +169,17 @@ namespace Archive
     // The ArchiveBlockLine constructor zero initializes each block line
     // Block lines are made up of 3 blocks at a time
     inline ArchiveBlockLine::ArchiveBlockLine()
-        : m_block1{}
+        : m_block0{}
+        , m_block1{}
         , m_block2{}
-        , m_block3{}
         , m_blockUsed{ 1 }
     {}
 
     // ArchiveBlockLineJump constructor
     inline ArchiveBlockLineJump::ArchiveBlockLineJump()
         : m_blockJump{}
+        , m_block0{}
         , m_block1{}
-        , m_block2{}
         , m_blockUsed{ 1 }
     {}
 
@@ -283,5 +321,195 @@ namespace Archive
         "28 MiB + 1 byte file if compressed should have its compressed sizes fit in 6 block lines");
     static_assert(GetBlockLineCountIfCompressed(MaxFileSizeForMinBlockLinesWithJumpEntry + (2 * MaxBlockLineSize)) == 6,
         "34 MiB file if compressed should have its compressed sizes fit in 6 block lines");
+
+
+    //! The blockLineIndexForOffset and blockLineSentinelForBytesToRead values
+    //! form a range of offsets blocks to read from the archive
+    //! The mathematical range is [blockLineIndexForOffset, blockLineSentinelForBytesToRead)
+    //!
+    //! For example given a start offset to read from a file that is = 4 MiB - 1
+    //! and the read amount is = 4 MiB + 2
+    //! The first block to read would be at index 1 which is calculated as follows
+    //! AlignedDownTo2MiB(4 MiB - 1) = 2 MiB
+    //! Next divide the value that was aligned down by 2 MiB = 1
+    //! This makes sure the block containing the start offset is read
+    //!
+    //! The last block to read would would be at index 4 using the following calculations
+    //! AlignedUpTo2MiB(4 MiB - 1 + 4 MiB + 2) == AlignedUpTo2MiB(8 MiB + 1) = 10 MiB
+    //! Next that aligned up value is divided by 2 MiB = 5
+    //! This makes sure the last block containing the the bytes to read is included before
+    //! the sentinel value
+    //!
+    //! This forms a range of [1, 5), therefore the blocks of 1, 2, 3, 4 are read
+    //! The final byte from block index 1 is read (running count = 1)
+    //! All bytes from block index 2 and 3 are read (running count = 1 + 2 MiB * 2 = 4 MiB + 1)
+    //! The first byte from block index 4 is read (final count = 4 MiB + 2)
+    //! As 4 MiB + 2 is the amount of bytes requested to be read from the user it is returned.
+    constexpr AZStd::pair<AZ::u64, AZ::u64> GetBlockRangeToRead(AZ::u64 uncompressedOffset, AZ::u64 bytesToRead)
+    {
+        // Index value that contains the first block to read for the file
+        AZ::u64 blockLineIndexForOffset = AZ_SIZE_ALIGN_DOWN(uncompressedOffset, ArchiveBlockSizeForCompression)
+            / ArchiveBlockSizeForCompression;
+
+        // Sentinel index value that is one above the last compressed block to read
+        AZ::u64 blockLineSentinelForBytesToRead = AZ_SIZE_ALIGN_UP(uncompressedOffset + bytesToRead, ArchiveBlockSizeForCompression)
+            / ArchiveBlockSizeForCompression;
+
+        return { blockLineIndexForOffset, blockLineSentinelForBytesToRead };
+    }
+
+    // Use an immediate invoked lambda expression to test the GetBlockRangeToRead
+    // condition at compile time
+    static_assert([]() {
+        auto blockRange = GetBlockRangeToRead(4_mib - 1, 4_mib + 2);
+        return blockRange.first == 1 && blockRange.second == 5;
+    }(), "A start offset of 4 MiB - 1 and a read size of 4 MiB + 2, should result in a block range of [1, 5)");
+
+
+    // Implementation of the GetBlockLineFromBlockIndex function
+    constexpr GetBlockLineIndexResult::operator bool() const
+    {
+        return m_errorMessage.empty();
+    }
+
+    constexpr GetBlockLineIndexResult GetBlockLineIndexFromBlockIndex(AZ::u64 blockCount, AZ::u64 blockIndex)
+    {
+        GetBlockLineIndexResult result;
+        if (blockIndex >= blockCount)
+        {
+            result.m_errorMessage = "Block index is out of range of the number of block count."
+                " A block line index cannot be returned.";
+            return result;
+        }
+
+        auto GetFirstIndexForFinalBlockLineSetOf3 = [](AZ::u64 blockCount) constexpr
+        {
+            auto GetFinalIndexForFinalBlockLineSetOf3 = [](AZ::u64 blockCount) constexpr
+            {
+                return AZ_SIZE_ALIGN_UP(blockCount - MaxBlocksNoJumpEntry, BlocksToSkipWithJumpEntry) + MaxBlocksNoJumpEntry;
+            };
+
+            return blockCount <= MaxBlocksNoJumpEntry ? 0 : GetFinalIndexForFinalBlockLineSetOf3(blockCount) - MaxBlocksNoJumpEntry;
+        };
+
+        // To calculate the block line index for a block index that is before the final set of 3 block lines which do not
+        // include a jump entry, the formula is
+        // BlocksToSkipWithJump = 8
+        // BlockLinesToSkipWithJump = 3
+        // f(x) = (blockIndex / BlocksToSkipWithJump) % BlockLinesToSkipWithJump
+        //
+        // When the block index is within the final set of 3 block lines, there is no jump entry involved
+        // and the formula is split into two parts
+        // A calculation using the above formula using the value of the "first index in the final block line set"
+        // plus the difference between the blockIndex and the value of the "first index in the final block line set"
+        // followed by divided by the number of blocks per line
+        // As the final 3 block lines have no jump entries, there is exactly 3 block per block line, so that part of the equation is simple
+        //
+        // BlocksPerBlockLine = 3
+        // blockLineIndexBeforeFinalSet = GetFirstIndexForFinalBlockLineSetOf3(blockCount)
+        // f(x) = (blockLineIndexBeforeFinalSet % BlocksToSkipWithJump) %BlockLinesToSkipWithJump
+        // g(x) = (blockIndex - blockLineIndexBeforeFinalSet) / BlocksPerLine
+        // h(x) = f(x) + g(x)
+
+        if (const AZ::u64 firstIndexForFinalBlockLineSetOf3 = GetFirstIndexForFinalBlockLineSetOf3(blockCount);
+            blockIndex < firstIndexForFinalBlockLineSetOf3)
+        {
+            // Convert the blocks to skip with a jump entry -> block lines to skip with a jump entry
+            const AZ::u64 skippedBlockLines = blockIndex / BlocksToSkipWithJumpEntry * BlockLinesToSkipWithJumpEntry;
+            result.m_blockLineIndex = skippedBlockLines +
+                ((blockIndex % BlocksToSkipWithJumpEntry) + 1) / BlockLinesToSkipWithJumpEntry;
+            // For block lines sets of 3 that include a jump entries, the blocks per line area layout is
+            // 2 -> 3 -> 3
+            // block line 0 -> block line 1 -> block line 2
+            // A phase shift is used here to pivot the relative block index to 0 and then modulo arithmetic with
+            // the blocks per block line (which is 3) is used to determine the offset within a block
+            // If the block index < 2 then its value is used directly
+            const AZ::u64 relativeBlockIndex = blockIndex % BlocksToSkipWithJumpEntry;
+
+            result.m_offsetInBlockLine = relativeBlockIndex < BlocksPerBlockLineWithJump
+                ? relativeBlockIndex
+                : (relativeBlockIndex - BlocksPerBlockLineWithJump) % BlocksPerBlockLine;
+        }
+        else
+        {
+            const AZ::u64 skippedBlockLines = firstIndexForFinalBlockLineSetOf3
+                / BlocksToSkipWithJumpEntry * BlockLinesToSkipWithJumpEntry;
+            const AZ::u64 blockLineIndexRelativeToFinalSetOf3 = (blockIndex - firstIndexForFinalBlockLineSetOf3) / BlocksPerBlockLine;
+            result.m_blockLineIndex = skippedBlockLines + blockLineIndexRelativeToFinalSetOf3;
+            // The operation of blockIndex - firstIndexForFinalBlockLineSetOf3 will returns a value in the range of [0, 9)
+            // By taking that value modulo 3, the offset within the block line is returned
+            const AZ::u64 offsetInBlockLineRelativeToFinalSetOf3 = (blockIndex - firstIndexForFinalBlockLineSetOf3)
+                % BlocksPerBlockLine;
+            result.m_offsetInBlockLine = offsetInBlockLineRelativeToFinalSetOf3;
+        }
+
+        return result;
+    }
+
+    // Verify a small set of known block line indices and offsets within those block liens
+    static_assert(!GetBlockLineIndexFromBlockIndex(0, 0),
+        "The block index is out of range of the block count, so an error should be returned");
+
+    // Used to validate GetBlockLineIndexResult structure
+    constexpr bool ValidateBlockLineAndBlockOffset(AZ::u64 blockCount, AZ::u64 blockIndex,
+        AZ::u64 expectedBlockCount, AZ::u64 expectedOffsetInBlockLine)
+    {
+        auto blockLineIndexResult = GetBlockLineIndexFromBlockIndex(blockCount, blockIndex);
+        return blockLineIndexResult.m_blockLineIndex == expectedBlockCount
+            && blockLineIndexResult.m_offsetInBlockLine == expectedOffsetInBlockLine;
+    };
+    static_assert(ValidateBlockLineAndBlockOffset(1, 0, 0, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 0, 0, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 1, 0, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 2, 0, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 3, 1, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 4, 1, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 5, 1, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 6, 2, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 7, 2, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(9, 8, 2, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 0, 0, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 1, 0, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 2, 1, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 3, 1, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 4, 1, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 5, 2, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 6, 2, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 7, 2, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 8, 3, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(10, 9, 3, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(11, 10, 3, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(17, 8, 3, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(17, 9, 3, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(17, 10, 3, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(17, 16, 5, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(18, 16, 6, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(18, 17, 6, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(19, 18, 6, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 0, 0, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 1, 0, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 2, 1, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 3, 1, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 4, 1, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 5, 2, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 6, 2, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 7, 2, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 8, 3, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 9, 3, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 10, 4, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 11, 4, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 12, 4, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 13, 5, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 14, 5, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 15, 5, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 16, 6, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 17, 6, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 18, 6, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 19, 7, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 20, 7, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 21, 7, 2));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 22, 8, 0));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 23, 8, 1));
+    static_assert(ValidateBlockLineAndBlockOffset(25, 24, 8, 2));
 } // namespace Archive
 

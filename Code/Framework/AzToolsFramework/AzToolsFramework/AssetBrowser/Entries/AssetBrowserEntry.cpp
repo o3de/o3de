@@ -203,6 +203,11 @@ namespace AzToolsFramework
             return m_diskSize;
         }
 
+        const AZ::u64 AssetBrowserEntry::GetModificationTime() const
+        {
+            return m_modificationTime;
+        }
+
         const AZ::Vector3& AssetBrowserEntry::GetDimension() const
         {
             return m_dimension;

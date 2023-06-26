@@ -1129,6 +1129,7 @@ namespace AZ
                             });
 
                         segment.m_view = RPI::View::CreateView(viewName, usageFlags);
+                        segment.m_view->SetShadowPassRenderPipelineId(pipeline->GetId());
                     }
                 }
             }
