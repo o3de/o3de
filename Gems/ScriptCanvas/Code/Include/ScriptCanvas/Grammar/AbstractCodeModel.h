@@ -348,6 +348,8 @@ namespace ScriptCanvas
 
             void ParseExecutionMultipleOutSyntaxSugar(ExecutionTreePtr execution, const EndpointsResolved& executionOutNodes, const AZStd::vector<const Slot*>& outSlots);
 
+            bool HasUnparsedImplicitConnections(const Slot* outSlot, const Slot* inSlot);
+
             void ParseExecutionMultipleOutSyntaxSugarOfSequencNode(ExecutionTreePtr sequence);
 
             void ParseExecutionOnce(ExecutionTreePtr execution);
@@ -584,6 +586,8 @@ namespace ScriptCanvas
             VariableUseage m_variableUse;
 
             ParsedRuntimeInputs m_runtimeInputs;
+
+            AZStd::vector<AZStd::pair<const Slot*, const Slot*>> m_parsedImplicitConnections;
 
             AZStd::vector<VariablePtr> FindUserImmediateInput(ExecutionTreePtr call) const;
 
