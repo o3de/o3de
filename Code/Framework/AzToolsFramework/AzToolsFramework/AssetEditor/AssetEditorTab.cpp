@@ -159,7 +159,8 @@ namespace AzToolsFramework
             setObjectName("AssetEditorTab");
 
             QWidget* propertyEditor = nullptr;
-            m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
+            // TODO: Re-enable the DPE in the Asset Editor
+            //m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);
