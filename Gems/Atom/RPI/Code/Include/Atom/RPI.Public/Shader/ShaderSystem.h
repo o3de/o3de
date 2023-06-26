@@ -43,7 +43,9 @@ namespace AZ
             void Connect(GlobalShaderOptionUpdatedEvent::Handler& handler) override;
             void SetSupervariantName(const AZ::Name& supervariantName) override;
             const AZ::Name& GetSupervariantName() const override;
+            void PrintShaderInstanceInfo() const override;
             ///////////////////////////////////////////////////////////////////
+
 
         private:
             AZStd::unordered_map<Name, ShaderOptionValue> m_globalShaderOptionValues;

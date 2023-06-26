@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+  
+#include <AzCore/Console/Console.h>
 
 #include <Atom/RPI.Public/Shader/ShaderSystem.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -26,6 +28,20 @@ namespace AZ
 {
     namespace RPI
     {
+        AZ_CVAR(bool,
+            r_debugOutputShaderInstance,
+            false,
+            [](const bool& value)
+            {
+                if (value)
+                {
+                    ShaderSystemInterface::Get()->PrintShaderInstanceInfo();
+                }
+            },
+            ConsoleFunctorFlags::Null,
+            "r_debugOutputShaderInstance"
+        );
+
         void ShaderSystem::Reflect(ReflectContext* context)
         {
             ShaderOptionDescriptor::Reflect(context);
@@ -156,7 +172,17 @@ namespace AZ
         {
             return m_supervariantName;
         }
-        ///////////////////////////////////////////////////////////////////
+
+        void ShaderSystem::PrintShaderInstanceInfo() const
+        {
+            AZ_Info("ShaderSystem", "Start ShaderInstanceInfo. Super variant: %s\n", m_supervariantName.GetCStr());
+            Data::InstanceDatabase<Shader>::Instance().ForEach([](const Shader& shader)
+                {
+                    AZ_Info("ShaderSystem", "Shader [%s] super variant index %d\n", shader.GetAsset().GetHint().c_str(), shader.GetSupervariantIndex().GetIndex());
+                });
+            AZ_Info("ShaderSystem", "End ShaderInstanceInfo\n");
+            r_debugOutputShaderInstance = false;
+        }
 
     } // namespace RPI
 } // namespace AZ

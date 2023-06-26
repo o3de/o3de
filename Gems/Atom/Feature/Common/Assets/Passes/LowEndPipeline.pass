@@ -282,6 +282,41 @@
                     ]
                 },
                 {
+                    "Name": "DeferredFogPass",
+                    "TemplateName": "DeferredFogPassTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputLinearDepth",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "DepthLinear"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "DepthPrePass",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "InputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "FullscreenTrianglePassData",
+                        "ShaderAsset": {
+                            "FilePath": "Shaders/ScreenSpace/DeferredFog.shader"
+                        },
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
                     "Name": "LightAdaptation",
                     "TemplateName": "LightAdaptationParentTemplate",
                     "Connections": [
