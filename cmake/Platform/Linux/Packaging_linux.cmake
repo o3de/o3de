@@ -41,6 +41,7 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         libxkbcommon-dev                        # For xcb keyboard input
         libxcb-xfixes0-dev                      # For mouse input
         libxcb-xinput-dev                       # For mouse input
+        libpcre2-16-0
         zlib1g-dev
         mesa-common-dev
         libunwind-dev
