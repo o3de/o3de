@@ -219,43 +219,45 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::AggregateNode::ShiftChildIndices(size_t adapterIndex, size_t startIndex, int delta)
     {
-        AZ_Assert(adapterIndex < m_pathIndexToChildMaps.size(), "m_pathIndexToChildMaps is not correctly sized!");
-        auto& adapterChildMap = m_pathIndexToChildMaps[adapterIndex];
-
-        auto firstEntry = adapterChildMap.lower_bound(startIndex);
-        if (firstEntry != adapterChildMap.end())
+        if(adapterIndex < m_pathIndexToChildMaps.size())
         {
-            auto applyDelta = [adapterIndex, delta, &adapterChildMap](auto& iterator)
-            {
-                // make an iterator that points to the next element for the re-insertion hint
-                auto reinsertPos = iterator;
-                ++reinsertPos;
+            auto& adapterChildMap = m_pathIndexToChildMaps[adapterIndex];
 
-                auto entry = adapterChildMap.extract(iterator);
-                entry.mapped()->m_pathEntries[adapterIndex] += delta;
-                entry.key() += delta;
-                iterator = adapterChildMap.insert(reinsertPos, AZStd::move(entry));
-            };
+            auto firstEntry = adapterChildMap.lower_bound(startIndex);
+            if (firstEntry != adapterChildMap.end())
+            {
+                auto applyDelta = [adapterIndex, delta, &adapterChildMap](auto& iterator)
+                {
+                    // make an iterator that points to the next element for the re-insertion hint
+                    auto reinsertPos = iterator;
+                    ++reinsertPos;
 
-            const bool incrementing = (delta > 0);
-            if (incrementing)
-            {
-                /* we don't want the map entries to pass each other and require the internal map to change structure,
-                   so start at the end and move backwards if we're incrementing the indices */
-                auto mapIter = adapterChildMap.end();
-                do
+                    auto entry = adapterChildMap.extract(iterator);
+                    entry.mapped()->m_pathEntries[adapterIndex] += delta;
+                    entry.key() += delta;
+                    iterator = adapterChildMap.insert(reinsertPos, AZStd::move(entry));
+                };
+
+                const bool incrementing = (delta > 0);
+                if (incrementing)
                 {
-                    // we want to applyDelta up to and including the firstEntry
-                    --mapIter;
-                    applyDelta(mapIter);
-                } while (mapIter != firstEntry);
-            }
-            else
-            {
-                // not incrementing, so we're removing from the front this time
-                for (auto mapIter = firstEntry; mapIter != adapterChildMap.end(); ++mapIter)
+                    /* we don't want the map entries to pass each other and require the internal map to change structure,
+                       so start at the end and move backwards if we're incrementing the indices */
+                    auto mapIter = adapterChildMap.end();
+                    do
+                    {
+                        // we want to applyDelta up to and including the firstEntry
+                        --mapIter;
+                        applyDelta(mapIter);
+                    } while (mapIter != firstEntry);
+                }
+                else
                 {
-                    applyDelta(mapIter);
+                    // not incrementing, so we're removing from the front this time
+                    for (auto mapIter = firstEntry; mapIter != adapterChildMap.end(); ++mapIter)
+                    {
+                        applyDelta(mapIter);
+                    }
                 }
             }
         }
@@ -352,28 +354,25 @@ namespace AZ::DocumentPropertyEditor
             }
             else if (patchOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
-                auto destinationPath = patchPath;
-                auto lastPathEntry = destinationPath.Back();
-                destinationPath.Pop();
-
                 Dom::Path leftoverPath;
-                auto rowNode = GetNodeAtAdapterPath(adapterIndex, destinationPath, leftoverPath);
+                auto rowNode = GetNodeAtAdapterPath(adapterIndex, patchPath, leftoverPath);
+                const bool rowIsDirectParent = (leftoverPath.Size() == 1);
 
-                if (leftoverPath.IsEmpty() && IsRow(patchOperation.GetValue()))
+                if (rowIsDirectParent && IsRow(patchOperation.GetValue()))
                 {
                     // adding a full row to the root or another row
-                    AZ_Assert(lastPathEntry.IsIndex(), "new addition is a row, it must be addressed by index!");
-                    const auto childIndex = lastPathEntry.GetIndex();
+                    AZ_Assert(leftoverPath.Back().IsIndex(), "new addition is a row, it must be addressed by index!");
+                    const auto childIndex = leftoverPath.Back().GetIndex();
                     AddChildRow(adapterIndex, rowNode, patchOperation.GetValue(), childIndex, &outgoingPatch);
                 }
                 else
                 {
                     // either a column or an attribute was added, update the nearest row as necessary
-                    if (leftoverPath.Size() == 1)
+                    if (rowIsDirectParent)
                     {
                         // the added child was not a full row, but it was the immediate child of a row
                         // this addition shifts subsequent entries, so account for that in the parent
-                        rowNode->ShiftChildIndices(adapterIndex, destinationPath.Back().GetIndex(), 1);
+                        rowNode->ShiftChildIndices(adapterIndex, patchPath.Back().GetIndex(), 1);
                     }
                     UpdateAndPatchNode(rowNode, adapterIndex, patchOperation, leftoverPath, outgoingPatch);
                 }
