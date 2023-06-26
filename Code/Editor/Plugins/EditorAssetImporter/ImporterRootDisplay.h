@@ -123,6 +123,5 @@ private:
     QScopedPointer<AZ::SceneAPI::UI::ManifestWidget> m_manifestWidget;
     bool m_hasUnsavedChanges;
     QString m_filePath;
-    QMenu* m_editMenu;
     AZStd::shared_ptr<SceneSettingsRootDisplayScriptRequestHandler> m_requestHandler;
 };
