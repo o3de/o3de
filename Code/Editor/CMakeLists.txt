@@ -16,7 +16,6 @@ if(CARBONATED)
 set(azcommonaddon_dependency Legacy::CryCommonAddon)
 endif()
 
-
 ly_add_target(
     NAME EditorCore SHARED
     NAMESPACE Legacy
