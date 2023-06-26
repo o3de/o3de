@@ -204,6 +204,7 @@ namespace AzToolsFramework
         void SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);
         bool GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
         bool HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
+        bool ShouldEraseExpanderStateWhenRowRemoved() const;
         void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
         void ExpandAll();
         void CollapseAll();

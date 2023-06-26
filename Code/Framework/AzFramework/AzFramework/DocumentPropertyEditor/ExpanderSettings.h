@@ -49,6 +49,10 @@ namespace AZ::DocumentPropertyEditor
         void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
 
         bool WereSettingsLoaded() const { return m_wereSettingsLoaded; };
+        bool ShouldEraseStateWhenRowRemoved() const
+        {
+            return m_eraseStateWhenRowRemoved;
+        }
 
         void SetCleanExpanderStateCallback(CleanExpanderStateCallback function);
 
@@ -73,6 +77,7 @@ namespace AZ::DocumentPropertyEditor
 
         bool m_wereSettingsLoaded = false;
         bool m_shouldSettingsPersist = false;
+        bool m_eraseStateWhenRowRemoved = false;
 
         SettingsRegistrar m_settingsRegistrar;
 

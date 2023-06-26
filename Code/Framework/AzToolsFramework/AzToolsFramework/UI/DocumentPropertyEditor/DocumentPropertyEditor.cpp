@@ -656,7 +656,10 @@ namespace AzToolsFramework
             {
                 // we're removing a row, remove any associated saved expander state
                 auto dpe = GetDPE();
-                dpe->RemoveExpanderStateForRow(rowToRemove->BuildDomPath());
+                if (dpe->ShouldEraseExpanderStateWhenRowRemoved())
+                {
+                    dpe->RemoveExpanderStateForRow(rowToRemove->BuildDomPath());
+                }
                 if (!newOwner)
                 {
                     DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
@@ -1507,6 +1510,11 @@ namespace AzToolsFramework
             return m_dpeSettings->HasSavedExpanderStateForRow(rowPath);
         }
         return false;
+    }
+
+    bool DocumentPropertyEditor::ShouldEraseExpanderStateWhenRowRemoved() const
+    {
+        return (m_dpeSettings && m_dpeSettings->ShouldEraseStateWhenRowRemoved());
     }
 
     void DocumentPropertyEditor::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
