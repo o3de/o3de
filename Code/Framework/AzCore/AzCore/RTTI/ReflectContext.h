@@ -269,7 +269,7 @@ namespace AZ
             return {};
         }
 
-        /// Gets a marshaleld Dom::Value representation of this attribute bound to a given instance.
+        /// Gets a marshalled Dom::Value representation of this attribute bound to a given instance.
         /// By default this is just abbreviated to a marshalled version of the data stored in the attribute,
         /// but for invokable attributes, override this method to serializes a pointer to the instance and this attribute
         virtual AZ::Dom::Value GetAsDomValue([[maybe_unused]] void* instance)

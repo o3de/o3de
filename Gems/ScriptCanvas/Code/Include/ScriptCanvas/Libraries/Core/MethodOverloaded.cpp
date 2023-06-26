@@ -436,7 +436,9 @@ namespace ScriptCanvas
 
                     if (m_overloadSelection.m_availableIndexes.empty())
                     {
-                        AZ_Warning("ScriptCanvas", false, "Method Overloaded[%s] to an invalid configuration.", GetRawMethodName().c_str());
+                        AZ_Warning(
+                            "ScriptCanvas", false, "Method [%s] is overloaded with an invalid configuration.",
+                            lookUpMethod->m_name.c_str());
 
                         /* Debug information to spew out the non-found configuration. Useful in debugging, and kind of tedious to write.
                            Keeping here as a quick ref commented out, since not useful in the general case.

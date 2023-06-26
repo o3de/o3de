@@ -11,6 +11,7 @@
 
 #include <Atom/RPI.Public/Shader/Shader.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetView.h>
 
 // Hair specific
@@ -155,41 +156,6 @@ namespace AZ
                 }
                 return rhiImage;
             }
-
-            Data::Instance<RPI::StreamingImage> UtilityClass::LoadStreamingImage(
-                const char* textureFilePath, [[maybe_unused]] const char* sampleName)
-            {
-                Data::AssetId streamingImageAssetId;
-                Data::AssetCatalogRequestBus::BroadcastResult(
-                    streamingImageAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                    textureFilePath, azrtti_typeid<RPI::StreamingImageAsset>(), false);
-
-                if (!streamingImageAssetId.IsValid())
-                {
-                    AZ_Error(sampleName, false, "Failed to get streaming image asset id with path %s", textureFilePath);
-                    return nullptr;
-                }
-
-                auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(
-                    streamingImageAssetId,
-                    Data::AssetLoadBehavior::PreLoad);
-                streamingImageAsset.BlockUntilLoadComplete();
-
-                if (!streamingImageAsset.IsReady())
-                {
-                    AZ_Error(sampleName, false, "Failed to get streaming image asset '%s'", textureFilePath);
-                    return nullptr;
-                }
-
-                auto image = RPI::StreamingImage::FindOrCreate(streamingImageAsset);
-                if (!image)
-                {
-                    AZ_Error(sampleName, false, "Failed to find or create an image instance from image asset '%s'", textureFilePath);
-                    return nullptr;
-                }
-                return image;
-            }
-
         } // namespace Hair
     } // namespace Render
 } // namespace AZ

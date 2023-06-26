@@ -77,10 +77,6 @@ namespace AZ
                     Data::Instance<RPI::ShaderResourceGroup> srg=nullptr
                 );
 
-                static Data::Instance<RPI::StreamingImage> LoadStreamingImage(
-                    const char* textureFilePath, [[maybe_unused]] const char* sampleName
-                );
-
                 static Data::Instance<RHI::ImagePool> CreateImagePool(
                     RHI::ImagePoolDescriptor& imagePoolDesc);
 

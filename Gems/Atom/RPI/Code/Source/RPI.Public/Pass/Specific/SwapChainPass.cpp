@@ -97,7 +97,7 @@ namespace AZ
                 outputBinding.m_slotType = PassSlotType::Output;
                 outputBinding.m_scopeAttachmentUsage = RHI::ScopeAttachmentUsage::RenderTarget;
                 outputBinding.SetAttachment(m_swapChainAttachment);
-                m_attachmentBindings.push_back(outputBinding);
+                AddAttachmentBinding(outputBinding);
 
                 // create an intermediate attachment which has window render resolution
                 RHI::ImageDescriptor outputImageDesc;
@@ -109,7 +109,8 @@ namespace AZ
                 m_pipelinOutputAttachment->m_descriptor = outputImageDesc;
                 m_pipelinOutputAttachment->m_name = "PipelineOutput";
                 m_pipelinOutputAttachment->ComputePathName(GetPathName());
-                // Note: do not add m_pipelinOutputAttachment to m_ownedAttachments so it won't be imported to frame graph's attachment database
+                // Note: do not add m_pipelinOutputAttachment to m_ownedAttachments so it won't be imported to frame graph's attachment database. 
+                // This is because this attachment is only used for pass reference, but not used for RHI frame graph
 
                 // use the intermediate attachment as pipeline's output
                 pipelineOutput->SetAttachment(m_pipelinOutputAttachment);

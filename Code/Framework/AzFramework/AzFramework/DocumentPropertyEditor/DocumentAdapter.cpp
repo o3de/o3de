@@ -11,6 +11,7 @@
 #include <AzCore/DOM/DomUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzFramework/DocumentPropertyEditor/PropertyEditorNodes.h>
 
 AZ_CVAR(
@@ -88,6 +89,12 @@ namespace AZ::DocumentPropertyEditor
     {
         const auto& contents = GetContents();
         return contents.IsArrayEmpty();
+    }
+
+    ExpanderSettings* DocumentAdapter::CreateExpanderSettings(
+        DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
+    {
+        return new ExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
     }
 
     void DocumentAdapter::NotifyResetDocument(DocumentResetType resetType)
