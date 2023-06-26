@@ -56,6 +56,7 @@ Q_SIGNALS:
 public Q_SLOTS:
     void OnStartAssetImporter();
     void OnStopAssetImporter();
+    void OnAssetImportingComplete();
 
 private:
     bool m_isAssetImporterRunning = false;
