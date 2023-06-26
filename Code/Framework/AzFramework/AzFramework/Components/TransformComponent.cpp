@@ -123,30 +123,24 @@ namespace AzFramework
 
         void SetLocalTM(const AZ::Transform& t)
         {
-            // Gruber patch begin // FIXME // AVK -- missed ExtractScaleExact, CreateFromTransform
-            (void)t;
-
-            AZ_Assert(false, "Must be fixed");
-#if 0
+            // Gruber patch begin // VMED -- missed ExtractScaleExact, CreateFromTransform are replaced
             AZ::Transform copy = t;
-            const AZ::Vector3 scale = copy.ExtractScaleExact();
-            m_localScale.Set(scale);
+            const float uniformScale = copy.GetUniformScale();
+            m_localScale.Set(AZ::Vector3(uniformScale, uniformScale, uniformScale));
 #if defined(CARBONATED)
             AZ_Assert(copy.GetTranslation().IsFinite(), "SetLocalTM: Transform is invalid");
 #endif
             m_localTranslation.Set(copy.GetTranslation());
-            m_localRotation.Set(AZ::Quaternion::CreateFromTransform(copy));
-#endif
-            // Gruber patch end // FIXME // AVK
+            m_localRotation.Set(copy.GetRotation());
+            // Gruber patch end // VMED
         }
 
         AZ::Transform GetLocalTransform() const
         {
             AZ::Transform newXform = AZ::Transform::CreateFromQuaternionAndTranslation(m_localRotation.Get(), m_localTranslation.Get());
-            // Gruber patch begin // FIXME // AVK -- missed MultiplyByScale
-            AZ_Assert(false, "Must be fixed");
-            //newXform.MultiplyByScale(m_localScale.Get());
-            //  Gruber patch end // FIXME // AVK
+            // Gruber patch begin // VMED -- missed MultiplyByScale is replaced
+            newXform.MultiplyByUniformScale(m_localScale.Get().GetX()); // local scale is setup as uniform scale
+            //  Gruber patch end // VMED
             return newXform;
         }
 
