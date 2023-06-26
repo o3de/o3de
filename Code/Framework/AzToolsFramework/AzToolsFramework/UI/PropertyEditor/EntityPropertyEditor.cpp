@@ -1346,6 +1346,7 @@ namespace AzToolsFramework
                 BuildSharedComponentUI(sharedComponentArray);
             }
 
+
             UpdateEntityIcon();
             UpdateEntityDisplay();
         }
