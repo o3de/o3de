@@ -390,7 +390,7 @@ namespace AzToolsFramework
                 if (validSceneSettings)
                 {
                     QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
-                    m_sceneSettingsButton->setText(QString("%1 Settings").arg(fileType.toUpper()));
+                    m_sceneSettingsButton->setText(QObject::tr("%1 Settings").arg(fileType.toUpper()));
                     m_detailsButton->show();
                     m_detailsButton->setChecked(true);
                     m_sceneSettingsButton->show();

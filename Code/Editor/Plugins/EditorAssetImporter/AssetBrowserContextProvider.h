@@ -31,17 +31,13 @@ namespace AZ
         AssetBrowserContextProvider();
         ~AssetBrowserContextProvider() override;
      
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+        // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler overrides ...
         AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
-        /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        //////////////////////////////////////////////////////////////////////////
-        // AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler
+        // AzToolsFramework::AssetBrowser::AssetBrowserPreviewRequestBus::Handler overrides ...
         bool PreviewSceneSettings(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) override;
         QMainWindow* GetSceneSettings() override;
         bool SaveBeforeClosing() override;
-        //////////////////////////////////////////////////////////////////////////
 
     protected:
         bool HandlesSource(const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* entry) const; // return true if we care about this kind of source file.
