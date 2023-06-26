@@ -33,6 +33,11 @@ namespace AZ::DocumentPropertyEditor
             m_generateDiffRows = generateDiffRows;
         }
 
+        ExpanderSettings* CreateExpanderSettings(
+            DocumentAdapter* referenceAdapter,
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string()) override;
+
     protected:
         struct AggregateNode
         {
