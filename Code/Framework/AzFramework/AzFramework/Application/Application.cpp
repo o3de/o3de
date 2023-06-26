@@ -80,6 +80,12 @@
 #include <cctype>
 #include <stdio.h>
 
+// carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+#if defined(CARBONATED)
+#include <AzFramework/Network/NetworkContext.h>
+#endif
+// carbonated end
+
 [[maybe_unused]] static const char* s_azFrameworkWarningWindow = "AzFramework";
 
 namespace AzFramework
@@ -150,6 +156,12 @@ namespace AzFramework
 
         ApplicationRequests::Bus::Handler::BusConnect();
         AZ::UserSettingsFileLocatorBus::Handler::BusConnect();
+
+        // carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+        #if defined(CARBONATED)
+        NetSystemRequestBus::Handler::BusConnect();
+        #endif
+        // carbonated end
     }
 
     Application::~Application()
@@ -158,6 +170,12 @@ namespace AzFramework
         {
             Stop();
         }
+
+        // carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+        #if defined(CARBONATED)
+        NetSystemRequestBus::Handler::BusDisconnect();
+        #endif
+        // carbonated end
 
         AZ::UserSettingsFileLocatorBus::Handler::BusDisconnect();
         ApplicationRequests::Bus::Handler::BusDisconnect();
@@ -797,5 +815,22 @@ namespace AzFramework
         }
         return value;
     }
+
+    // carbonated begin (akostin/mp226): Add NetworkContext to ReflectionManager instance
+#if defined(CARBONATED)
+    ////////////////////////////////////////////////////////////////////////////
+    NetworkContext* Application::GetNetworkContext()
+    {
+        NetworkContext* result = nullptr;
+
+        if (auto reflectionManager = AZ::ReflectionEnvironment::GetReflectionManager())
+        {
+            result = reflectionManager->GetReflectContext<AzFramework::NetworkContext>();
+        }
+
+        return result;
+    }
+#endif
+    // carbonated end
 
 } // namespace AzFramework

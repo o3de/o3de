@@ -35,6 +35,11 @@
 
 // CryCommon
 #include <CryCommon/MainThreadRenderRequestBus.h>
+// carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
+#if defined(CARBONATED)
+#include <CryCommon/IEditorGameEvents.h>
+#endif
+//carbonated end
 
 // Editor
 #include "CryEdit.h"
@@ -238,6 +243,12 @@ CGameEngine::CGameEngine()
     : m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
+    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
+#if defined(CARBONATED)
+    , m_pEditorGame(nullptr)
+#endif
+    // carbonated end
+
 AZ_POP_DISABLE_WARNING
 {
     m_pISystem = nullptr;
@@ -442,6 +453,12 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
 bool CGameEngine::InitGame(const char*)
 {
+    // carbonated begin (akostin/mp226): broadcast OnCryEditorGameInitialize
+#if defined(CARBONATED)
+    CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorGameInitialize);
+#endif
+    // carbonated end
+
     m_pISystem->ExecuteCommandLine();
 
     return true;
@@ -825,6 +842,52 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
         }
     }
     break;
+    }
+
+    // carbonated begin (akostin/mp226): IEditorGame* to dispatch notifications to NetContext
+#if defined(CARBONATED)
+    if (!m_pEditorGame)
+    {
+        EditorGameRequestBus::BroadcastResult(m_pEditorGame, &EditorGameRequestBus::Events::GetEditorGame);
+    }
+
+    switch (event)
+    {
+    case eNotify_OnBeginNewScene:
+    case eNotify_OnBeginSceneOpen:
+    {
+        if (m_pEditorGame)
+        {
+            m_pEditorGame->OnBeforeLevelLoad();
+        }
+    }
+    break;
+    case eNotify_OnEndSceneOpen:
+    {
+        if (m_pEditorGame)
+        {
+            // This method must be called so we will have a player to start game mode later.
+            m_pEditorGame->OnAfterLevelLoad(m_levelName.toUtf8().data(), m_levelPath.toUtf8().data());
+        }
+    }
+    case eNotify_OnEndNewScene: // intentional fall-through?
+    {
+        if (m_pEditorGame)
+        {
+            m_pEditorGame->OnAfterLevelInit(m_levelName.toUtf8().data(), m_levelPath.toUtf8().data());
+        }
+    }
+    break;
+    case eNotify_OnCloseScene:
+    {
+        if (m_pEditorGame)
+        {
+            m_pEditorGame->OnCloseLevel();
+        }
+    }
+    break;
+#endif
+    // carbonated end
     }
 }
 

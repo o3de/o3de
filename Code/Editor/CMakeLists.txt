@@ -12,6 +12,10 @@ endif()
 
 add_subdirectory(Plugins)
 
+if(CARBONATED)
+set(azcommonaddon_dependency Legacy::CryCommonAddon)
+endif()
+
 ly_add_target(
     NAME EditorCore SHARED
     NAMESPACE Legacy
@@ -38,6 +42,7 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             AZ::AzToolsFramework
+            ${azcommonaddon_dependency}
 )
 
 # Header only target to prevent linkage against editor libraries when is not needed. Eventually the targets that depend
@@ -104,6 +109,7 @@ ly_add_target(
             3rdParty::Qt::Concurrent
             3rdParty::TIFF
             Legacy::CryCommon
+            ${azcommonaddon_dependency}
             Legacy::EditorCommon
             AZ::AzCore
             AZ::AzToolsFramework
@@ -165,6 +171,7 @@ ly_add_target(
         PRIVATE
             3rdParty::Qt::Core
             Legacy::CryCommon
+            ${azcommonaddon_dependency}
     RUNTIME_DEPENDENCIES
         Legacy::CrySystem
         Legacy::EditorLib
@@ -211,6 +218,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::Qt::Widgets
                 Legacy::EditorCore
                 Legacy::CryCommon
+                ${azcommonaddon_dependency}
                 AZ::AzCore
     )
     ly_add_googletest(
@@ -239,6 +247,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::Qt::Widgets
                 3rdParty::Qt::Test
                 Legacy::CryCommon
+                ${azcommonaddon_dependency}
                 AZ::AzToolsFramework
                 AZ::AzToolsFramework.Tests
                 AZ::AzFrameworkTestShared
