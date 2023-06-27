@@ -384,7 +384,8 @@ namespace AZ
             
             m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
             m_features.m_unboundedArrays = false; //Remove this when unbounded array support is added to spirv-cross
-            
+            m_features.m_simulateBindlessUA = true; // Simulate unbounded arrays for Bindless srg
+
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
             m_limits.m_maxImageDimension2D = 8192;

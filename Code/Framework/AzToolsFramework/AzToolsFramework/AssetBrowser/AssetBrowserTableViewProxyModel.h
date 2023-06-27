@@ -47,9 +47,12 @@ namespace AzToolsFramework
             bool GetShowSearchResultsMode() const;
             void SetShowSearchResultsMode(bool searchMode);
 
+            void SetSearchString(const QString& searchString);
         private:
             QPersistentModelIndex m_rootIndex;
             bool m_searchResultsMode;
+
+            AZStd::string m_searchString = "";
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

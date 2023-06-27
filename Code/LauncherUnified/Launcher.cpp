@@ -129,6 +129,7 @@ namespace
 namespace O3DELauncher
 {
     inline constexpr AZStd::string_view LauncherTypeTag = "/O3DE/Runtime/LauncherType";
+    inline constexpr AZStd::string_view LauncherFilenameTag = "launcher";
 
     AZ_CVAR(bool, bg_ConnectToAssetProcessor, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "If true, the process will launch and connect to the asset processor");
 
@@ -418,6 +419,8 @@ namespace O3DELauncher
         settingsRegistry->Set(LauncherTypeTag, launcherType);
         // Also add the launcher type as a specialization as well
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, launcherType);
+        // Finally add the "launcher" specialization tag into the Settings Registry
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 
         AZ_TracePrintf("Launcher", R"(Running project "%.*s")" "\n"
             R"(The project name has been successfully set in the Settings Registry at key "%s/project_name")"

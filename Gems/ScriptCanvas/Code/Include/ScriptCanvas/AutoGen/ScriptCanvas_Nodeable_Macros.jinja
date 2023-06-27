@@ -226,6 +226,12 @@ false
 {% else %}
         slotConfiguration{{executionDirection}}.m_displayGroup = "{{ slotName }}";
 {% endif %}
+{% if tag.attrib['Implicit'] %}
+        slotConfiguration{{executionDirection}}.m_createsImplicitConnections = true;
+{% endif %}
+{% if tag.attrib['Hidden'] %}
+        slotConfiguration{{executionDirection}}.m_isVisible = false;
+{% endif %}
 {% if isLatent is defined or executionDirection == "Output" %}
         slotConfiguration{{executionDirection}}.m_isLatent = true;
 {% endif %}

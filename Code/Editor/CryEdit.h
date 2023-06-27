@@ -26,9 +26,6 @@ class CCryEditDoc;
 class CEditCommandLineInfo;
 class CMainFrame;
 class CConsoleDialog;
-struct mg_connection;
-struct mg_request_info;
-struct mg_context;
 class QAction;
 class MainWindow;
 class QSharedMemory;
@@ -56,9 +53,6 @@ public:
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     QSettings m_settings;
 };
-
-
-#define PROJECT_CONFIGURATOR_GEM_PAGE "Gems Settings"
 
 
 /**
@@ -163,8 +157,8 @@ public:
 
     QString GetRootEnginePath() const;
     void RedirectStdoutToNull();
+
     // Overrides
-    // ClassWizard generated virtual function overrides
 public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);

@@ -776,6 +776,11 @@ namespace AzToolsFramework
         {
             return m_attachedTableView;
         }
+
+        void AssetBrowserTreeView::SetSearchString(const QString& searchString)
+        {
+            m_delegate->SetSearchString(searchString);
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

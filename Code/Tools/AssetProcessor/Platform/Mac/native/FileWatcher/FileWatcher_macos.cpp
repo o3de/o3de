@@ -60,6 +60,8 @@ bool FileWatcher::PlatformStart()
 
     AZ_Error("FileWatcher", (m_platformImpl->m_stream != nullptr), "FSEventStreamCreate returned a nullptr. No file events will be reported.");
 
+    m_platformImpl->m_dispatchQueue = dispatch_queue_create("EventStreamQueue", DISPATCH_QUEUE_CONCURRENT);
+    
     const CFIndex pathCount = CFArrayGetCount(pathsToWatch);
     for(CFIndex i = 0; i < pathCount; ++i)
     {
@@ -93,7 +95,7 @@ void FileWatcher::WatchFolderLoop()
     static const CFTimeInterval secondsToProcess = 0.5;
 
     m_platformImpl->m_runLoop = CFRunLoopGetCurrent();
-    FSEventStreamScheduleWithRunLoop(m_platformImpl->m_stream, m_platformImpl->m_runLoop, kCFRunLoopDefaultMode);
+    FSEventStreamSetDispatchQueue(m_platformImpl->m_stream, m_platformImpl->m_dispatchQueue);
     FSEventStreamStart(m_platformImpl->m_stream);
 
     const bool returnAfterFirstEventHandled = false;

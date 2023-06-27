@@ -20,10 +20,10 @@
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
     Texture2D<float4>   m_reflection;
-    Texture2D<float>    m_downsampledDepth;
+    Texture2D<float>    m_depthLinear;
+    Texture2D<float2>   m_downsampledDepthLinear;
     Texture2DMS<float4> m_normal;       // RGB10 = Normal (Encoded), A2 = Flags
     Texture2DMS<float4> m_specularF0;   // RGB8 = SpecularF0, A8 = Roughness
-    Texture2DMS<float>  m_depth;
 
     // output image scale and dimensions    
     float m_outputScale;
@@ -45,11 +45,11 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 }
 
 float3 SampleReflection(float2 reflectionUV, float depth, float3 normal, uint2 invDimensions)
-{  
+{
     const float DepthTolerance = 0.001f;
 
     // attempt to trivially accept the downsampled reflection texel
-    float downsampledDepth = PassSrg::m_downsampledDepth.SampleLevel(PassSrg::LinearSampler, reflectionUV, 0).r;
+    float downsampledDepth = PassSrg::m_downsampledDepthLinear.SampleLevel(PassSrg::LinearSampler, reflectionUV, 0).r;
     if (abs(depth - downsampledDepth) <= DepthTolerance)
     {
         // use this reflection sample
@@ -65,7 +65,7 @@ float3 SampleReflection(float2 reflectionUV, float depth, float3 normal, uint2 i
         for (int x = -4; x <= 4; ++x)
         {
             float2 offsetUV = float2(x * invDimensions.x, y * invDimensions.y);
-            float downsampledDepth = PassSrg::m_downsampledDepth.SampleLevel(PassSrg::LinearSampler, reflectionUV + offsetUV, 0).r;
+            float downsampledDepth = PassSrg::m_downsampledDepthLinear.SampleLevel(PassSrg::LinearSampler, reflectionUV + offsetUV, 0).r;
             float depthDelta = abs(depth - downsampledDepth);
 
             if (depthDelta <= DepthTolerance)
@@ -116,7 +116,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     float3 normalWS = DecodeNormalSignedOctahedron(encodedNormal.rgb);
     
     // upsample reflection color
-    float depth = PassSrg::m_depth.Load(fullScreenCoords, sampleIndex).r;
+    float depth = PassSrg::m_depthLinear.Load(uint3(fullScreenCoords, 0)).r;
     float3 reflectionColor = SampleReflection(IN.m_texCoord, depth, normalWS, invDimensions);
 
     PSOutput OUT;

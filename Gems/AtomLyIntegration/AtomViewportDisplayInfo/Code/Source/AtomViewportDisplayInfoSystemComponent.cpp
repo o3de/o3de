@@ -220,6 +220,8 @@ namespace AZ::Render
             viewportContext->GetViewportSize().m_height,
             multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
         ));
+                
+        DrawLine(AZStd::string::format("Render pipeline: %s", viewportContext->GetCurrentPipeline()->GetId().GetCStr()));
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
@@ -252,15 +254,12 @@ namespace AZ::Render
             return;
         }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
-        const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
 
         RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
 
         DrawLine(AZStd::string::format(
-            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
-            passSystemFrameStatistics.m_numRenderPassesExecuted,
-            aznumeric_cast<long long>(stats.m_vertexCount),
-            aznumeric_cast<long long>(stats.m_primitiveCount)
+            "RenderPasses: %d",
+            passSystemFrameStatistics.m_numRenderPassesExecuted
         ));
         DrawLine(AZStd::string::format(
             "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
@@ -357,7 +356,7 @@ namespace AZ::Render
         }
 
         DrawLine(
-            AZStd::string::format("StreamingImagePool %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            AZStd::string::format("Texture %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
             fontColor
         );
     }

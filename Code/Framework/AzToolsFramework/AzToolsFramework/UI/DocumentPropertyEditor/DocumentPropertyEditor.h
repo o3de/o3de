@@ -11,8 +11,8 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Instance/InstancePool.h>
 #include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
+#include <AzFramework/DocumentPropertyEditor/ExpanderSettings.h>
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/IPropertyEditor.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
@@ -137,8 +137,10 @@ namespace AzToolsFramework
         void AddRowChild(DPERowWidget* rowWidget, size_t domIndex);
         void PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex);
 
-        AZ::Dom::Path BuildDomPath();
+        AZ::Dom::Path BuildDomPath() const;
         void SaveExpanderStatesForChildRows(bool isExpanded);
+
+        static bool ValueHasChildRows(const AZ::Dom::Value& rowValue);
 
         DPERowWidget* m_parentRow = nullptr;
         int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
@@ -160,6 +162,8 @@ namespace AzToolsFramework
         };
         AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToCachedAttributeInfo;
         AttributeInfo* GetCachedAttributes(size_t domIndex);
+
+        bool m_expandingProgrammatically = false; //!< indicates whether an expansion is in progress
 
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;
@@ -190,17 +194,24 @@ namespace AzToolsFramework
         {
             return m_adapter;
         }
+
+        const auto GetAdapter() const
+        {
+            return m_adapter;
+        }
         void AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd);
 
         void SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);
         bool GetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
         bool HasSavedExpanderStateForRow(const AZ::Dom::Path& rowPath) const;
+        bool ShouldEraseExpanderStateWhenRowRemoved() const;
         void RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath);
         void ExpandAll();
         void CollapseAll();
 
         // IPropertyEditor overrides
         void SetSavedStateKey(AZ::u32 key, AZStd::string propertyEditorName = {}) override;
+        void ClearInstances() override;
 
         AZ::Dom::Value GetDomValueForRow(DPERowWidget* row) const;
 
@@ -221,7 +232,7 @@ namespace AzToolsFramework
             return "ed_enableCVarDPE";
         }
 
-        AZStd::vector<size_t> GetPathToRoot(DPERowWidget* row) const;
+        AZStd::vector<size_t> GetPathToRoot(const DPERowWidget* row) const;
         bool IsRecursiveExpansionOngoing() const;
         void SetRecursiveExpansionOngoing(bool isExpanding);
 
@@ -273,7 +284,7 @@ namespace AzToolsFramework
         QVBoxLayout* m_layout = nullptr;
         bool m_allowVerticalScroll = true;
 
-        AZStd::unique_ptr<DocumentPropertyEditorSettings> m_dpeSettings;
+        AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings> m_dpeSettings;
         bool m_isRecursiveExpansionOngoing = false;
         bool m_spawnDebugView = false;
 
