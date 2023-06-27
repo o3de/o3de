@@ -58,7 +58,8 @@ namespace Editor
                 &AzFramework::XcbEventHandler::HandleXcbEvent, static_cast<xcb_generic_event_t*>(message));
 
             const auto event = static_cast<xcb_generic_event_t*>(message);
-            if ((event->response_type & AzFramework::s_XcbResponseTypeMask) == XCB_CLIENT_MESSAGE)
+            const auto responseType = event->response_type & AzFramework::s_XcbResponseTypeMask;
+            if (responseType == XCB_CLIENT_MESSAGE)
             {
                 // Do not filter out XCB_CLIENT_MESSAGE events. These include
                 // _NET_WM_PING events, which window managers use to detect if
@@ -69,6 +70,13 @@ namespace Editor
                 // event, Qt processes the ping event normally, so that window
                 // managers do not think that the Editor has stopped
                 // responding.
+                return false;
+            }
+            else if (responseType == XCB_KEY_PRESS)
+            {
+                // Do not filter out the keyboard input events which are used 
+                // to trigger QActions that allow the user to leave game mode
+                // and interact with the console window
                 return false;
             }
 #endif
