@@ -127,10 +127,10 @@ namespace AZ
         // Within each of those submatrices, the elements are laid out in column major ordering
         // This allows us to perform vector-matrix multiplication in a highly efficient manner
         // The final result means the values of the larger matrix are actually laid out in a tiled manner in memory
-        const AZStd::size_t m_rowCount = 0;
-        const AZStd::size_t m_colCount = 0;
-        const AZStd::size_t m_numRowGroups = 0; // (RowCount + 3) / 4
-        const AZStd::size_t m_numColGroups = 0; // (ColCount + 3) / 4
+        AZStd::size_t m_rowCount = 0;
+        AZStd::size_t m_colCount = 0;
+        AZStd::size_t m_numRowGroups = 0; // (RowCount + 3) / 4
+        AZStd::size_t m_numColGroups = 0; // (ColCount + 3) / 4
         AZStd::vector<Matrix4x4> m_values;
     };
 

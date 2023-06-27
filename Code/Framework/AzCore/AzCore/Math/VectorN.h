@@ -141,7 +141,7 @@ namespace AZ
 
     private:
 
-        const AZStd::size_t m_numElements = 0;
+        AZStd::size_t m_numElements = 0;
         AZStd::vector<Vector4> m_values;
     };
 }
