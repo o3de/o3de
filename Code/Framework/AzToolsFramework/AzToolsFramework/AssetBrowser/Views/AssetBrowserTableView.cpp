@@ -218,13 +218,13 @@ namespace AzToolsFramework
         {
             switch (columnIndex)
             {
-            case 1:
+            case AssetBrowserTableViewProxyModel::Type:
                 return AssetBrowserEntry::AssetEntrySortMode::FileType;
-            case 2:
+            case AssetBrowserTableViewProxyModel::DiskSize:
                 return AssetBrowserEntry::AssetEntrySortMode::Size;
-            case 3:
+            case AssetBrowserTableViewProxyModel::Vertices:
                 return AssetBrowserEntry::AssetEntrySortMode::Vertices;
-            case 4:
+            case AssetBrowserTableViewProxyModel::ApproxSize:
                 return AssetBrowserEntry::AssetEntrySortMode::Dimensions;
             default:
                 return AssetBrowserEntry::AssetEntrySortMode::Name;
@@ -236,13 +236,13 @@ namespace AzToolsFramework
             switch (sortMode)
             {
             case AssetBrowserEntry::AssetEntrySortMode::FileType:
-                return 1;
+                return AssetBrowserTableViewProxyModel::Type;
             case AssetBrowserEntry::AssetEntrySortMode::Size:
-                return 1;
+                return AssetBrowserTableViewProxyModel::DiskSize;
             case AssetBrowserEntry::AssetEntrySortMode::Vertices:
-                return 1;
+                return AssetBrowserTableViewProxyModel::Vertices;
             case AssetBrowserEntry::AssetEntrySortMode::Dimensions:
-                return 1;
+                return AssetBrowserTableViewProxyModel::ApproxSize;
             default:
                 return 0;
             }
