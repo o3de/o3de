@@ -410,24 +410,26 @@ namespace AzToolsFramework
                 }
                 return GetNumVertices() > other->GetNumVertices();
             case AssetEntrySortMode::Dimensions:
-                AZ::Vector3 leftDimension = GetDimension();
-                AZ::Vector3 rightDimension = other->GetDimension();
+                {
+                    AZ::Vector3 leftDimension = GetDimension();
+                    AZ::Vector3 rightDimension = other->GetDimension();
 
-                if (AZStd::isnan(leftDimension.GetX()) && AZStd::isnan(rightDimension.GetX()))
-                {
-                    return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
-                }
-                if (AZStd::isnan(leftDimension.GetX()) && !AZStd::isnan(rightDimension.GetX()))
-                {
-                    return false;
-                }
-                if (!AZStd::isnan(leftDimension.GetX()) && AZStd::isnan(rightDimension.GetX()))
-                {
-                    return true;
-                }
+                    if (AZStd::isnan(leftDimension.GetX()) && AZStd::isnan(rightDimension.GetX()))
+                    {
+                        return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
+                    }
+                    if (AZStd::isnan(leftDimension.GetX()) && !AZStd::isnan(rightDimension.GetX()))
+                    {
+                        return false;
+                    }
+                    if (!AZStd::isnan(leftDimension.GetX()) && AZStd::isnan(rightDimension.GetX()))
+                    {
+                        return true;
+                    }
 
-                return leftDimension.GetX() * leftDimension.GetY() * leftDimension.GetZ() >
-                    rightDimension.GetX() * rightDimension.GetY() * rightDimension.GetZ();
+                    return leftDimension.GetX() * leftDimension.GetY() * leftDimension.GetZ() >
+                        rightDimension.GetX() * rightDimension.GetY() * rightDimension.GetZ();
+                }
             default:
                 // if both entries are of same type, sort alphabetically
                 return collator.compare(GetDisplayName(), other->GetDisplayName()) > 0;
