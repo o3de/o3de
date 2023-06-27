@@ -25,13 +25,14 @@ namespace HttpRequestor
 {
     // A callback function for processing JSON return values from an HTTP request. This callback is responsible for correctly interpreting
     // the HTTP response code and setting any internal information from the returned JSON object.
-    using Callback = AZStd::function<void(const Aws::Utils::Json::JsonView&, Aws::Http::HttpResponseCode, AZStd::chrono::milliseconds)>;
-
+    // The time taken to send and receive the HTTP request is returned in milliseconds.
+    using Callback = AZStd::function<void(const Aws::Utils::Json::JsonView&, Aws::Http::HttpResponseCode, AZStd::chrono::milliseconds roundTripTime)>;
 
     // A callback function for processing HTTP response as raw text. This callback is responsible for correctly interpreting the HTTP
     // response code and setting any internal information from the returned data. If the data includes a JSON fragment, the callback is
     // responsible for parsing it.
-    using TextCallback = AZStd::function<void(const AZStd::string&, Aws::Http::HttpResponseCode, AZStd::chrono::milliseconds)>;
+    // The time taken to send and receive the HTTP request is returned in milliseconds.
+    using TextCallback = AZStd::function<void(const AZStd::string&, Aws::Http::HttpResponseCode, AZStd::chrono::milliseconds roundTripTime)>;
 
     // A map of REST headers.
     using Headers = AZStd::map<AZStd::string, AZStd::string>;

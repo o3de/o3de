@@ -18,6 +18,7 @@
 #include <aws/identity-management/auth/CognitoCachingCredentialsProvider.h>
 #include <aws/identity-management/auth/PersistentCognitoIdentityProvider.h>
 
+
 namespace AWSClientAuth
 {
     static const char* AUTH_LOG_TAG = "AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider";
