@@ -114,17 +114,19 @@ namespace AzToolsFramework
             case Qt::DisplayRole:
                 if (orientation == Qt::Horizontal)
                 {
-                    int section2 = section ? section + aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
+                    const int sourceID = aznumeric_cast<int>(AssetBrowserEntry::Column::SourceID);
+                    const int path = aznumeric_cast<int>(AssetBrowserEntry::Column::Path);
+                    const int columnNameRequired = section ? section + aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
                     if (GetShowSearchResultsMode())
                     {
-                        if (section < 3)
+                        if (section <= sourceID)
                         {
-                            return tr(AssetBrowserEntry::m_columnNames[section == 2 ? 1 : section2]);
+                            return tr(AssetBrowserEntry::m_columnNames[section == sourceID ? path : columnNameRequired]);
                         }
                     }
                     else
                     {
-                        return tr(AssetBrowserEntry::m_columnNames[section2]);
+                        return tr(AssetBrowserEntry::m_columnNames[columnNameRequired]);
                     }
                 }
                 break;

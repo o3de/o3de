@@ -614,13 +614,13 @@ namespace AzToolsFramework
 
             const QModelIndex index1 = mapFromSource(srcParent);
             const QModelIndex index2 = mapFromSource(destParent);
-            emit dataChanged(index1, index1);
+            const QModelIndex lastIndex1 = mapFromSource(sourceModel()->index(sourceModel()->rowCount(srcParent) - 1, 0, srcParent));
+            const QModelIndex lastIndex2 = mapFromSource(sourceModel()->index(sourceModel()->rowCount(destParent) - 1, 0, destParent));
+            emit dataChanged(index1, lastIndex1);
             if (index1 != index2)
             {
-                emit dataChanged(index2, index2);
+                emit dataChanged(index2, lastIndex2);
             }
-            const QModelIndex lastIndex = mapFromSource(sourceModel()->index(sourceModel()->rowCount(srcParent) - 1, 0, srcParent));
-            emit dataChanged(lastIndex, lastIndex);
 
             if (srcStart > 0)
             {

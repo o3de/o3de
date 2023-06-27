@@ -691,13 +691,11 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_tableView->SetTableViewActive(false);
-        m_ui->m_searchWidget->setEnabled(true);
     }
     else if (tableView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(true);
-        m_ui->m_searchWidget->setEnabled(true);
     }
 }
 
@@ -714,7 +712,6 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         }
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(false);
-        m_ui->m_searchWidget->setEnabled(true);
     }
 }
 
