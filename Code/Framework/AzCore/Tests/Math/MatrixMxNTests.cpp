@@ -161,7 +161,8 @@ namespace UnitTest
             }
         }
 
-        testMatrix *= testMatrix;
+        AZ::MatrixMxN extraMatrix1 = testMatrix; // Need a useless temporary because clang errors/warns over self assignment [-Wself-assign-overloaded]
+        testMatrix *= extraMatrix1;
         for (AZStd::size_t rowIter = 0; rowIter < testMatrix.GetRowCount(); ++rowIter)
         {
             for (AZStd::size_t colIter = 0; colIter < testMatrix.GetColumnCount(); ++colIter)
@@ -170,7 +171,8 @@ namespace UnitTest
             }
         }
 
-        testMatrix /= testMatrix;
+        AZ::MatrixMxN extraMatrix2 = testMatrix;
+        testMatrix /= extraMatrix2;
         for (AZStd::size_t rowIter = 0; rowIter < testMatrix.GetRowCount(); ++rowIter)
         {
             for (AZStd::size_t colIter = 0; colIter < testMatrix.GetColumnCount(); ++colIter)
