@@ -64,6 +64,8 @@ namespace AzToolsFramework
 
             void SetSortMode(const AssetBrowserSortMode sortMode);
             AssetBrowserSortMode GetSortMode() const;
+
+            void SetSearchString(const QString& searchString);
         Q_SIGNALS:
             void filterChanged();
             //////////////////////////////////////////////////////////////////////////
@@ -92,6 +94,7 @@ namespace AzToolsFramework
             bool m_invalidateFilter = false;
             bool m_isTableView{ false };
             AssetBrowserSortMode m_sortMode = AssetBrowserSortMode::Name;
+            AZStd::string m_searchString = "";
         };
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

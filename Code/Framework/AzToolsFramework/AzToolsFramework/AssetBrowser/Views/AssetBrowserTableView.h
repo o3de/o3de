@@ -92,6 +92,7 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             void OnAssetBrowserComponentReady() override;
 
+            void SetSearchString(const QString& searchString);
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);
