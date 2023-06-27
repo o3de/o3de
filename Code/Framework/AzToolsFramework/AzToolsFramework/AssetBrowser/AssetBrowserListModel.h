@@ -58,10 +58,10 @@ namespace AzToolsFramework
 
             void StartUpdateModelMapTimer();
             AssetBrowserEntry* GetAssetEntry(QModelIndex index) const;
-            int BuildTableModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
+            int BuildListModelMap(const QAbstractItemModel* model, const QModelIndex& parent = QModelIndex(), int row = 0);
 
         public slots:
-            void UpdateTableModelMaps();
+            void UpdateListModelMaps();
 
         private slots:
             void SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
