@@ -8,11 +8,10 @@
 
 #include <QCoreApplication>
 
+#include <Components/Slots/Execution/ExecutionSlotComponent.h>
+#include <Components/Slots/Execution/ExecutionSlotConnectionPin.h>
 #include <Components/Slots/Execution/ExecutionSlotLayoutComponent.h>
 
-#include <Components/Slots/Execution/ExecutionSlotConnectionPin.h>
-
-#include <Components/Slots/Execution/ExecutionSlotComponent.h>
 
 namespace GraphCanvas
 {
@@ -95,14 +94,7 @@ namespace GraphCanvas
 
     void ExecutionSlotLayout::OnNameChanged(const AZStd::string& name)
     {
-        if (m_isNameHidden)
-        {
-            m_slotText->SetLabel("");
-        }
-        else
-        {
-            m_slotText->SetLabel(name);
-        }
+        m_slotText->SetLabel(m_isNameHidden ? "" : name);
     }
 
     void ExecutionSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)

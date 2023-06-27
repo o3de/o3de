@@ -400,14 +400,7 @@ namespace GraphCanvas
 
     void DataSlotLayout::OnNameChanged(const AZStd::string& name)
     {
-        if (m_isNameHidden)
-        {
-            m_slotText->SetLabel("");
-        }
-        else
-        {
-            m_slotText->SetLabel(name);
-        }
+        m_slotText->SetLabel(m_isNameHidden ? "" : name);
     }
 
     void DataSlotLayout::OnTooltipChanged(const AZStd::string& tooltip)
