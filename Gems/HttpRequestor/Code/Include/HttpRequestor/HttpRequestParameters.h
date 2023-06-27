@@ -85,13 +85,7 @@ namespace HttpRequestor
             return m_callback;
         }
 
-        AZStd::string GetUUID() const
-        {
-            return m_uuid_.ToFixedString().c_str();
-        }
-
     private:
-        AZ::Uuid m_uuid_;
         Aws::String m_URI;
         Aws::Http::HttpMethod m_method;
         Headers m_headers;
