@@ -18,7 +18,6 @@
 #include <aws/identity-management/auth/CognitoCachingCredentialsProvider.h>
 #include <aws/identity-management/auth/PersistentCognitoIdentityProvider.h>
 
-#pragma optimize("",off)
 namespace AWSClientAuth
 {
     static const char* AUTH_LOG_TAG = "AWSClientAuthCognitoCachingAuthenticatedCredentialsProvider";
@@ -115,9 +114,8 @@ namespace AWSClientAuth
     Aws::CognitoIdentity::Model::GetCredentialsForIdentityOutcome AWSClientAuthCachingAnonymousCredsProvider::
         GetCredentialsFromCognito() const
     {
-         return FetchCredsFromCognito(*m_cognitoIdentityClient, *m_identityRepository, ANON_LOG_TAG, false);
+        return FetchCredsFromCognito(*m_cognitoIdentityClient, *m_identityRepository, ANON_LOG_TAG, false);
     }
 
 
 } // namespace AWSClientAuth
-#pragma optimize("",on)
