@@ -407,8 +407,6 @@ set(FILES
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
     UI/DocumentPropertyEditor/DocumentPropertyEditor.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
@@ -423,8 +421,6 @@ set(FILES
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/SettingsRegistrar.cpp
-    UI/DocumentPropertyEditor/SettingsRegistrar.h
     UI/DocumentPropertyEditor/ValueStringFilter.cpp
     UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DPEDebugViewer/DPEDebugModel.cpp

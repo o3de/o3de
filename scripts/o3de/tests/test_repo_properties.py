@@ -13,7 +13,7 @@ import pytest
 import pathlib
 from unittest.mock import patch
 
-from o3de import download, repo_properties
+from o3de import download, repo_properties, utils
 
 TEST_TEMPLATE_REPO_JSON = '''{
     "repo_name": "repotest",
@@ -121,6 +121,7 @@ def init_repo_json_data(request):
         def __init__(self):
             self.data = json.loads(TEST_TEMPLATE_REPO_JSON)
             self.path = None
+            self.backup_file_name = None
     request.cls.repo_json = RepoJsonData()
 
 @pytest.fixture(scope="session")
@@ -350,7 +351,9 @@ class TestEditRepoProperties:
                                      add_templates, delete_templates, replace_templates, expected_templates,
                                      release_archive_path, force, download_prefix,  
                                      expected_result):
-        
+        def backup_file(file_name: str or pathlib.Path) -> None:
+            self.backup_file_name = file_name
+
         def get_repo_props(repo_path: str or pathlib.Path = None) -> dict or None:
             if not repo_path:
                 self.repo_json.data = None
@@ -379,6 +382,7 @@ class TestEditRepoProperties:
 
         with patch('o3de.repo_properties.get_repo_props', side_effect=get_repo_props) as get_repo_props_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch, \
+                patch('o3de.utils.backup_file', side_effect=backup_file) as backup_file_patch, \
                 patch('o3de.manifest.get_json_data', side_effect=get_json_data) as get_json_data_patch:
             if release_archive_path:
                 add_gems = [temp_folder / 'gem']
@@ -393,6 +397,7 @@ class TestEditRepoProperties:
                 assert self.repo_json.data.get('repo_uri') == 'https://test.com'
                 assert self.repo_json.data.get('$schemaVersion') == '1.0.0'
                 assert self.repo_json.data.get('origin') == 'o3de'
+                assert self.backup_file_name == repo_path
 
                 for gem in self.repo_json.data.get('gems_data', []):
                     if release_archive_path:

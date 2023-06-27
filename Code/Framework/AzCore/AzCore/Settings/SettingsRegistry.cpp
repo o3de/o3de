@@ -123,7 +123,7 @@ namespace AZ
 
     SettingsRegistryInterface::MergeSettingsResult::operator bool() const
     {
-        return m_returnCode > MergeSettingsReturnCode::Unset;
+        return m_returnCode >= MergeSettingsReturnCode::Unset;
     }
 
     auto SettingsRegistryInterface::MergeSettingsResult::Combine(MergeSettingsResult other) &
@@ -180,6 +180,12 @@ namespace AZ
         -> MergeSettingsResult
     {
         return static_cast<MergeSettingsResult&>(*this).Combine(AZStd::move(other));
+    }
+
+    auto SettingsRegistryInterface::MergeSettingsResult::Combine(MergeSettingsReturnCode otherReturnCode)
+        -> MergeSettingsResult
+    {
+        return Combine(MergeSettingsResult{ otherReturnCode });
     }
 
     const AZStd::string& SettingsRegistryInterface::MergeSettingsResult::GetMessages() const
