@@ -288,6 +288,24 @@
             ]
         },
         {
+            "name": "linux-clang-default",
+            "displayName": "Linux",
+            "description": "Builds all targets for Linux using the Clang compiler",
+            "configurePreset": "linux-clang-default",
+            "inherits":[
+                "host-linux"
+            ]
+        },
+        {
+            "name": "linux-gcc-default",
+            "displayName": "Linux",
+            "description": "Builds all targets for Linux using the GCC compiler",
+            "configurePreset": "linux-gcc-default",
+            "inherits":[
+                "host-linux"
+            ]
+        },
+        {
             "name": "linux-editor",
             "displayName": "Linux Editor",
             "description": "Builds the Editor application for Linux",
