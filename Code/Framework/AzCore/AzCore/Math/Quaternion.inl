@@ -431,7 +431,8 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return (fabsf(m_x) <= tolerance) && (fabsf(m_y) <= tolerance) && (fabsf(m_z) <= tolerance) && (fabsf(m_w) <= tolerance);
 #else
-        return IsClose(CreateZero(), tolerance);
+        Simd::Vec4::FloatType absDiff = Simd::Vec4::Abs(m_value);
+        return Simd::Vec4::CmpAllLt(absDiff, Simd::Vec4::Splat(tolerance));
 #endif
     }
 

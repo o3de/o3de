@@ -185,8 +185,9 @@ namespace AZ
 
             static void Mat4x4InverseFast(const FloatType* __restrict rows, FloatType* __restrict out);
             static void Mat4x4Transpose(const FloatType* __restrict rows, FloatType* __restrict out);
-            static void Mat4x4Multiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out);
-            static void Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out);
+            static void Mat4x4Multiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Basic 4x4 matrix multiplication
+            static void Mat4x4MultiplyAdd(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Same as Mat4x4Multiply, but accumulates the results into out rather than overwriting
+            static void Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Multiplies two four by four matrices, assuming they are transposed to column major
             static FloatType Mat4x4TransformVector(const FloatType* __restrict rows, FloatArgType vector);
             static FloatType Mat4x4TransposeTransformVector(const FloatType* __restrict rows, FloatArgType vector);
             static Vec3::FloatType Mat4x4TransformPoint3(const FloatType* __restrict rows, Vec3::FloatArgType vector);

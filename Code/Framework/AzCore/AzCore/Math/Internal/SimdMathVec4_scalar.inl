@@ -945,6 +945,21 @@ namespace AZ
         }
 
 
+        AZ_MATH_INLINE void Vec4::Mat4x4MultiplyAdd(const FloatType* rowsA, const FloatType* rowsB, FloatType* out)
+        {
+            for (int32_t row = 0; row < 4; ++row)
+            {
+                for (int32_t col = 0; col < 4; col++)
+                {
+                    for (int32_t k = 0; k < 4; ++k)
+                    {
+                        out[row].v[col] += rowsA[row].v[k] * rowsB[k].v[col];
+                    }
+                }
+            }
+        }
+
+
         AZ_MATH_INLINE void Vec4::Mat4x4TransposeMultiply(const FloatType* rowsA, const FloatType* rowsB, FloatType* out)
         {
             const FloatType bc0 = {{ rowsB[0].v[0], rowsB[1].v[0], rowsB[2].v[0], rowsB[3].v[0] }};

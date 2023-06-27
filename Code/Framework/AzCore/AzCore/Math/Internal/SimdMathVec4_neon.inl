@@ -701,6 +701,11 @@ namespace AZ
             Common::Mat4x4Multiply<Vec4>(rowsA, rowsB, out);
         }
 
+        AZ_MATH_INLINE void Vec4::Mat4x4MultiplyAdd(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out)
+        {
+            Common::Mat4x4MultiplyAdd<Vec4>(rowsA, rowsB, out);
+        }
+
         AZ_MATH_INLINE void Vec4::Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out)
         {
             Common::Mat4x4TransposeMultiply<Vec4>(rowsA, rowsB, out);

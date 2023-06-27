@@ -538,6 +538,16 @@ namespace AZ
 
 
             template <typename VecType>
+            AZ_MATH_INLINE void Mat4x4MultiplyAdd(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
+            {
+                out[0] = VecType::Madd(VecType::SplatFourth(rowsA[0]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[0]), rowsB[1], VecType::Madd(VecType::SplatFirst(rowsA[0]), rowsB[0], out[0]))));
+                out[1] = VecType::Madd(VecType::SplatFourth(rowsA[1]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatFirst(rowsA[1]), rowsB[0], out[1]))));
+                out[2] = VecType::Madd(VecType::SplatFourth(rowsA[2]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[2]), rowsB[1], VecType::Madd(VecType::SplatFirst(rowsA[2]), rowsB[0], out[2]))));
+                out[3] = VecType::Madd(VecType::SplatFourth(rowsA[3]), rowsB[3], VecType::Madd(VecType::SplatThird(rowsA[3]), rowsB[2], VecType::Madd(VecType::SplatSecond(rowsA[3]), rowsB[1], VecType::Madd(VecType::SplatFirst(rowsA[3]), rowsB[0], out[3]))));
+            }
+
+
+            template <typename VecType>
             AZ_MATH_INLINE void Mat4x4TransposeMultiply(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
             {
                 out[0] = VecType::Madd(VecType::SplatFirst (rowsA[0]), rowsB[0], VecType::Madd(VecType::SplatFirst (rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatFirst (rowsA[2]), rowsB[2], VecType::Mul(VecType::SplatFirst (rowsA[3]), rowsB[3]))));
