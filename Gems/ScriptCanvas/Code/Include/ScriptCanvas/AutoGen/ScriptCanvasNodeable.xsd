@@ -15,12 +15,18 @@
 												<xs:attribute name="Type" type="xs:string" use="required" />
 												<xs:attribute name="DefaultValue" type="xs:string" use="optional" />
 												<xs:attribute name="Description" type="xs:string" use="required" />
+												<xs:attribute name="HideInputField" type="xs:boolean" use="optional" />
+												<xs:attribute name="HideName" type="xs:boolean" use="optional"/>
+												<xs:attribute name="DisplayGroup" type="xs:string" use="optional"/>
 											</xs:complexType>
 										</xs:element>
 									</xs:sequence>
 									<xs:attribute name="Name" type="xs:string" use="required" />
 									<xs:attribute name="Description" type="xs:string" use="required" />
 									<xs:attribute name="OutputName" type="xs:string" use="optional" />
+									<xs:attribute name="DisplayGroup" type="xs:string" use="optional" />
+									<xs:attribute name="Implicit" type="xs:boolean" use="optional"/>
+									<xs:attribute name="Hidden" type="xs:boolean" use="optional"/>
 								</xs:complexType>
 							</xs:element>
 							<xs:element name="Output" minOccurs="0" maxOccurs="unbounded" >
@@ -32,11 +38,14 @@
 												<xs:attribute name="Type" type="xs:string" use="required" />
 												<xs:attribute name="Description" type="xs:string" use="required" />
 												<xs:attribute name="DefaultValue" type="xs:string" use="optional" />
+												<xs:attribute name="HideName" type="xs:boolean" use="optional"/>
+												<xs:attribute name="DisplayGroup" type="xs:string" use="optional"/>
 											</xs:complexType>
 										</xs:element>
 									</xs:sequence>
 									<xs:attribute name="Name" type="xs:string" use="required" />
 									<xs:attribute name="Description" type="xs:string" use="required" />
+									<xs:attribute name="DisplayGroup" type="xs:string" use="optional" />
 								</xs:complexType>
 							</xs:element>
 							<xs:element maxOccurs="unbounded" minOccurs="0" name="PropertyInterface">
@@ -56,6 +65,7 @@
 						<xs:attribute name="Namespace" type="xs:string" use="required" />
 						<xs:attribute name="Description" type="xs:string" use="required" />
 						<xs:attribute name="Base" type="xs:string" use="optional" />
+						<xs:attribute name="Style" type="xs:string" use="optional" />
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>

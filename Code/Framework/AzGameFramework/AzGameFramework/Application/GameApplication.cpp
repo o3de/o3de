@@ -72,15 +72,25 @@ namespace AzGameFramework
 
         MergeSharedSettings(registry, specializations, scratchBuffer);
 
-        // Used the lowercase the platform name since the bootstrap.game.<config>.setreg is being loaded
-        // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
-        static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE  ".setreg";
-
-        AZ::IO::FixedMaxPath cacheRootPath;
-        if (registry.Get(cacheRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+        // Query the launcher type from the registry
+        constexpr AZStd::string_view LauncherTypeTag = "/O3DE/Runtime/LauncherType";
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        if (FixedValueString launcherType; registry.Get(launcherType, LauncherTypeTag)
+            && !launcherType.empty())
         {
-            cacheRootPath /= filename;
-            registry.MergeSettingsFile(cacheRootPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", &scratchBuffer);
+            // The bootstrap setreg file that is loaded is in the form of
+            // bootstrap.<launcher-type-lower>.<config-lower>.setreg
+            AZ::IO::FixedMaxPath filename = "bootstrap.";
+            filename.Native() += launcherType;
+            filename.Native() += '.';
+            filename.Native() += AZ_BUILD_CONFIGURATION_TYPE ".setreg";
+
+            AZ::IO::FixedMaxPath cacheRootPath;
+            if (registry.Get(cacheRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+            {
+                cacheRootPath /= filename;
+                registry.MergeSettingsFile(cacheRootPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "", &scratchBuffer);
+            }
         }
 
         MergeUserSettings(registry, specializations, scratchBuffer);

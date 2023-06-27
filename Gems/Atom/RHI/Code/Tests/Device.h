@@ -10,9 +10,13 @@
 #include <AzCore/UnitTest/TestTypes.h>
 #include <Atom/RHI/Device.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <Atom/RHI.Reflect/Limits.h>
 
 namespace UnitTest
 {
+    static constexpr auto DeviceCount{8};
+    static constexpr AZ::RHI::MultiDevice::DeviceMask DeviceMask{AZ::RHI::MultiDevice::AllDevices};
+
     class PhysicalDevice
         : public AZ::RHI::PhysicalDevice
     {

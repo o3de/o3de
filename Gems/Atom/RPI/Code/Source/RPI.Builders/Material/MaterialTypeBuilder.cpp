@@ -110,7 +110,7 @@ namespace AZ
             for (auto& importedJsonFile : importedJsonFiles)
             {
                 AssetBuilderSDK::SourceFileDependency sourceDependency;
-                sourceDependency.m_sourceFileDependencyPath = importedJsonFile;
+                sourceDependency.m_sourceFileDependencyPath = importedJsonFile.Native();
                 response.m_sourceFileDependencyList.push_back(sourceDependency);
             }
 

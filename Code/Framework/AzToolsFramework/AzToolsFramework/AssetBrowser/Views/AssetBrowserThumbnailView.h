@@ -11,6 +11,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+
 #include <QItemSelection>
 #include <QWidget>
 #include <QMenu>
@@ -68,6 +70,10 @@ namespace AzToolsFramework
 
             void SelectEntry(QString assetName);
 
+            void SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode);
+            AssetBrowserFilterModel::AssetBrowserSortMode GetSortMode() const;
+
+            void SetSearchString(const QString& searchString);
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);

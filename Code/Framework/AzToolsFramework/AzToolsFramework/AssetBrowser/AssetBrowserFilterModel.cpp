@@ -6,10 +6,13 @@
  *
  */
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include <AzCore/Console/IConsole.h>
 
@@ -82,7 +85,28 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserFilterModel::data(const QModelIndex& index, int role) const
         {
-            if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
+            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
+            if (!assetBrowserEntry)
+            {
+                return tr(" No Data ");
+            }
+
+            if (role == Qt::DisplayRole)
+            {
+                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
+                {
+                    QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+
+                    if (!m_searchString.empty())
+                    {
+                        name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                    }
+                    return name;
+                }
+                
+            }
+            else if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
             {
                 auto entry = static_cast<AssetBrowserEntry*>(mapToSource(index).internalPointer());
                 if (!m_filter)
@@ -93,6 +117,11 @@ namespace AzToolsFramework
             }
 
             return QSortFilterProxyModel::data(index, role);
+        }
+
+        void AssetBrowserFilterModel::SetSearchString(const QString& searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
@@ -137,6 +166,9 @@ namespace AzToolsFramework
                     auto leftEntry = qvariant_cast<const AssetBrowserEntry*>(leftData);
                     auto rightEntry = qvariant_cast<const AssetBrowserEntry*>(rightData);
 
+                    const SourceAssetBrowserEntry* leftSource = azrtti_cast<const SourceAssetBrowserEntry*>(leftEntry);
+                    const SourceAssetBrowserEntry* rightSource = azrtti_cast<const SourceAssetBrowserEntry*>(rightEntry);
+
                     // folders should always come first
                     if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry) && azrtti_istypeof<const SourceAssetBrowserEntry*>(rightEntry))
                     {
@@ -148,7 +180,32 @@ namespace AzToolsFramework
                     }
 
                     // if both entries are of same type, sort alphabetically
-                    return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry))
+                    {
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    }
+                    switch (m_sortMode)
+                    {
+                    case AssetBrowserSortMode::FileType:
+                        if (leftSource && rightSource)
+                        {
+                            if (leftSource->GetExtension() != rightSource->GetExtension())
+                            {
+                                return leftSource->GetExtension() > rightSource->GetExtension();
+                            }
+                        }
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    case AssetBrowserSortMode::LastModified:
+                        return leftEntry->GetModificationTime() < rightEntry->GetModificationTime();
+                    case AssetBrowserSortMode::Size:
+                        if (leftEntry->GetDiskSize() == rightEntry->GetDiskSize())
+                        {
+                            return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                        }
+                        return leftEntry->GetDiskSize() < rightEntry->GetDiskSize();
+                    default:
+                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
+                    }
                 }
             }
             return QSortFilterProxyModel::lessThan(source_left, source_right);
@@ -232,6 +289,15 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserFilterModel::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+        {
+            m_sortMode = sortMode;
+        }
+
+        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserFilterModel::GetSortMode() const
+        {
+            return m_sortMode;
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

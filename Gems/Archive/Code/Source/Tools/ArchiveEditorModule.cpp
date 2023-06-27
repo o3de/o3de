@@ -9,6 +9,7 @@
 #include <Archive/ArchiveTypeIds.h>
 #include <ArchiveModuleInterface.h>
 #include "ArchiveEditorSystemComponent.h"
+#include "ArchiveWriterFactory.h"
 
 namespace Archive
 {
@@ -27,7 +28,15 @@ namespace Archive
             // This happens through the [MyComponent]::Reflect() function.
             m_descriptors.insert(m_descriptors.end(), {
                 ArchiveEditorSystemComponent::CreateDescriptor(),
-            });
+                });
+
+            m_archiveWriterFactory = AZStd::make_unique<ArchiveWriterFactory>();
+            ArchiveWriterFactoryInterface::Register(m_archiveWriterFactory.get());
+        }
+
+        ~ArchiveEditorModule()
+        {
+            ArchiveWriterFactoryInterface::Unregister(m_archiveWriterFactory.get());
         }
 
         /**
@@ -40,6 +49,11 @@ namespace Archive
                 azrtti_typeid<ArchiveEditorSystemComponent>(),
             };
         }
+
+    private:
+        // ArchiveWriterFactory instance for the Tools module that allows
+        // external gem modules to create ArchiveWriter instances
+        AZStd::unique_ptr<IArchiveWriterFactory> m_archiveWriterFactory;
     };
 }// namespace Archive
 

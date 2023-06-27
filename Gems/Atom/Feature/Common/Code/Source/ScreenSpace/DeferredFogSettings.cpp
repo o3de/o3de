@@ -11,6 +11,7 @@
 
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <ScreenSpace/DeferredFogSettings.h>
 #include <ScreenSpace/DeferredFogPass.h>
@@ -25,41 +26,10 @@ namespace AZ
         DeferredFogSettings::DeferredFogSettings()
             : PostProcessBase(nullptr) {}
 
-        // [GXF TODO][ATOM-13418]
-        // Move this method to be a global utility function - also implement similar method using AssetId.
         AZ::Data::Instance<AZ::RPI::StreamingImage> DeferredFogSettings::LoadStreamingImage(
             const char* textureFilePath, [[maybe_unused]] const char* sampleName)
         {
-            using namespace AZ;
-
-            Data::AssetId streamingImageAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                streamingImageAssetId, &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                textureFilePath, azrtti_typeid<RPI::StreamingImageAsset>(), false);
-            if (!streamingImageAssetId.IsValid())
-            {
-                AZ_Error(sampleName, false, "Failed to get streaming image asset id with path %s", textureFilePath);
-                return nullptr;
-            }
-
-            auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(
-                streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-            streamingImageAsset.BlockUntilLoadComplete();
-
-            if (!streamingImageAsset.IsReady())
-            {
-                AZ_Error(sampleName, false, "Failed to get streaming image asset '%s'", textureFilePath);
-                return nullptr;
-            }
-
-            auto image = RPI::StreamingImage::FindOrCreate(streamingImageAsset);
-            if (!image)
-            {
-                AZ_Error(sampleName, false, "Failed to find or create an image instance from image asset '%s'", textureFilePath);
-                return nullptr;
-            }
-
-            return image;
+            return AZ::RPI::LoadStreamingTexture(textureFilePath);
         }
 
         void DeferredFogSettings::OnSettingsChanged()

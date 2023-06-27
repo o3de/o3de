@@ -841,9 +841,9 @@ namespace AzFramework
                     }
 
 #if defined(AZ_ENABLE_TRACING)
-                    if (message.m_assetType == AZ::Data::s_invalidAssetType)
+                    if (isNewAsset && (message.m_assetType == AZ::Data::s_invalidAssetType))
                     {
-                        AZ_TracePrintf(
+                        AZ_Info(
                             "AssetCatalog",
                             "Received `AssetNotificationMessage` network message with no AssetType.  Asset \"%s\" will be registered without a type.\n",
                             relativePath.c_str());

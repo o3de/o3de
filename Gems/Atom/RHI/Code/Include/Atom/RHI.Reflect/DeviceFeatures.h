@@ -76,6 +76,9 @@ namespace AZ
             //! Whether Unbounded Array support is available.
             bool m_unboundedArrays = false;
 
+            //! Whether Unbounded Array support is simulated for Bindless Srg.
+            bool m_simulateBindlessUA = false;
+
             //! Whether PipelineLibrary related serialized data needs to be loaded/saved explicitly as drivers (like dx12/vk) do not support it internally
             bool m_isPsoCacheFileOperationsNeeded = true;
 

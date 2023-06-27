@@ -163,12 +163,12 @@ namespace UnitTest
 
     AZ::RHI::Ptr<AZ::RHI::IndirectBufferSignature> Factory::CreateIndirectBufferSignature()
     {
-        return aznew IndirectBufferSignature;
+        return aznew NiceIndirectBufferSignature;
     }
 
     AZ::RHI::Ptr<AZ::RHI::IndirectBufferWriter> Factory::CreateIndirectBufferWriter()
     {
-        return aznew IndirectBufferWriter;
+        return aznew NiceIndirectBufferWriter;
     }
 
     AZ::RHI::Ptr<AZ::RHI::RayTracingBufferPools> Factory::CreateRayTracingBufferPools()

@@ -12,13 +12,14 @@
 #include "Device.h"
 #include "ImageView.h"
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <Atom/RHI/ShaderResourceGroupData.h>
 #include <vulkan/vulkan.h>
 
 namespace AZ::Vulkan
 {
     
-    void BindlessDescriptorPool::Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+    RHI::ResultCode BindlessDescriptorPool::Init(Device& device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
     {
         m_device = &device;
 
@@ -88,8 +89,13 @@ namespace AZ::Vulkan
             layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
             layoutInfo.pBindings = bindings;
 
-            m_device->GetContext().CreateDescriptorSetLayout(
+            VkResult result = m_device->GetContext().CreateDescriptorSetLayout(
                 m_device->GetNativeDevice(), &layoutInfo, VkSystemAllocator::Get(), &m_descriptorSetLayout);
+            if (result != VK_SUCCESS)
+            {
+                AssertSuccess(result);
+                return ConvertResult(result);
+            }
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -97,7 +103,12 @@ namespace AZ::Vulkan
             allocInfo.descriptorSetCount = 1;
             allocInfo.pSetLayouts = &m_descriptorSetLayout;
 
-            m_device->GetContext().AllocateDescriptorSets(m_device->GetNativeDevice(), &allocInfo, &m_set);
+            result = m_device->GetContext().AllocateDescriptorSets(m_device->GetNativeDevice(), &allocInfo, &m_set);
+            if (result != VK_SUCCESS)
+            {
+                AssertSuccess(result);
+                return ConvertResult(result);
+            }
         }
 
         for (size_t i = 0; i != MaxBindlessIndices; ++i)
@@ -109,6 +120,8 @@ namespace AZ::Vulkan
             desc.m_policy = RHI::FreeListAllocatorPolicy::FirstFit;
             m_allocators[i].Init(desc);
         }
+
+        return RHI::ResultCode::Success;
     }
 
     void BindlessDescriptorPool::Shutdown()
@@ -304,5 +317,10 @@ namespace AZ::Vulkan
     uint32_t BindlessDescriptorPool::GetBindlessSrgBindingSlot()
     {
         return m_bindlessSrgDesc.m_bindlesSrgBindingSlot;
+    }
+
+    bool BindlessDescriptorPool::IsInitialized() const
+    {
+        return m_pool && m_pool->IsInitialized();
     }
 } // namespace AZ::Vulkan

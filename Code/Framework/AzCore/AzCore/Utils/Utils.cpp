@@ -9,6 +9,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/Path/Path.h>
@@ -311,13 +312,13 @@ namespace AZ::Utils
     template<typename Container>
     AZ::Outcome<Container, AZStd::string> ReadFile(AZStd::string_view filePath, size_t maxFileSize)
     {
-        IO::FileIOStream file;
-        if (!file.Open(filePath.data(), IO::OpenMode::ModeRead))
+        IO::FileReader file;
+        if (!file.Open(AZ::IO::FileIOBase::GetInstance(), filePath.data()))
         {
             return AZ::Failure(AZStd::string::format("Failed to open '%.*s'.", AZ_STRING_ARG(filePath)));
         }
 
-        AZ::IO::SizeType length = file.GetLength();
+        AZ::IO::SizeType length = file.Length();
 
         if (length > maxFileSize)
         {

@@ -27,7 +27,7 @@ logger.setLevel(logging.INFO)
 def get_this_engine_path() -> pathlib.Path:
     # When running from SNAP, __file__ was returning an incorrect (temporary) folder so
     # we manually build the correct path from env variables here when running from snap
-    if "SNAP" in os.environ:
+    if "SNAP" in os.environ and "SNAP_BUILD" in os.environ:
         return pathlib.Path(os.environ.get('SNAP')) / os.environ.get('SNAP_BUILD')
     else:
         return pathlib.Path(os.path.realpath(__file__)).parents[3].resolve()

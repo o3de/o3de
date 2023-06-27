@@ -27,8 +27,10 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Viewport/ViewportBus.h>
+#include <CrySystem/System.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
+#include <ISystem.h>
 #include <sstream>
 #include <string>
 
@@ -451,6 +453,21 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
             if (inputChannelId == InputDeviceKeyboard::Key::PunctuationTilde)
             {
                 ToggleThroughImGuiVisibleState();
+            }
+
+            if (inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::Escape)
+            {
+                CSystem* cSys = static_cast<CSystem*>(GetISystem());
+                if (cSys)
+                {
+                    ISystemUserCallback* pCallback = cSys->GetUserCallback();
+                    {
+                        if (pCallback)
+                        {
+                            pCallback->OnProcessSwitch();
+                        }
+                    }
+                }
             }
         }
 

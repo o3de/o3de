@@ -33,6 +33,12 @@ namespace CompressionTest
         {
             return GetTestCompressionAlgorithmId();
         }
+
+        AZStd::string_view GetCompressionAlgorithmName() const override
+        {
+            return "TestCompressor";
+        }
+
         //! Compresses the uncompressed data into the compressed buffer
         //! @return a CompressionResultData instance to indicate if compression operation has succeeded
         [[nodiscard]] Compression::CompressionResultData CompressBlock(

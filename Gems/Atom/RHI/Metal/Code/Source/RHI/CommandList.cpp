@@ -426,29 +426,29 @@ namespace AZ
             return true;
         }
 
-        CommandList::ResourceProperties CommandList::GetResourceInfo(BindlessResourceType resourceType,
+        CommandList::ResourceProperties CommandList::GetResourceInfo(RHI::BindlessResourceType resourceType,
                                                                     const RHI::ResourceView* resourceView)
         {
             id<MTLResource> mtlResourceView = nil;
             bool isReadOnlyResource = false;
             switch(resourceType)
             {
-                case BindlessResourceType::m_Texture2D:
-                case BindlessResourceType::m_TextureCube:
+                case RHI::BindlessResourceType::m_Texture2D:
+                case RHI::BindlessResourceType::m_TextureCube:
                 {
                     isReadOnlyResource = true;
                 }
-                case BindlessResourceType::m_RWTexture2D:
+                case RHI::BindlessResourceType::m_RWTexture2D:
                 {
                     const ImageView* imageView = static_cast<const ImageView*>(resourceView);
                     mtlResourceView = imageView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
                     break;
                 }
-                case BindlessResourceType::m_ByteAddressBuffer:
+                case RHI::BindlessResourceType::m_ByteAddressBuffer:
                 {
                     isReadOnlyResource = true;
                 }
-                case BindlessResourceType::m_RWByteAddressBuffer:
+                case RHI::BindlessResourceType::m_RWByteAddressBuffer:
                 {
                     const BufferView* bufferView = static_cast<const BufferView*>(resourceView);
                     mtlResourceView = bufferView->GetMemoryView().GetGpuAddress<id<MTLResource>>();
