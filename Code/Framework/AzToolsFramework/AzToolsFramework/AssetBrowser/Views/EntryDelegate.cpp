@@ -146,6 +146,7 @@ namespace AzToolsFramework
 
                 auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
 
+
                 paintAssetBrowserEntry(painter, index.column(), entry, option, style);
             }
         }
@@ -216,6 +217,11 @@ namespace AzToolsFramework
                 }
             }
             return m_iconSize;
+        }
+
+        void EntryDelegate::SetSearchString(QString searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
         }
 
         SearchEntryDelegate::SearchEntryDelegate(QWidget* parent)

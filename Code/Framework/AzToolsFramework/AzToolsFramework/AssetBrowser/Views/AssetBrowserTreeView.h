@@ -123,6 +123,7 @@ namespace AzToolsFramework
 
             void SetApplySnapshot(bool applySnapshot);
 
+            void SetSearchString(const QString& searchString);
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();

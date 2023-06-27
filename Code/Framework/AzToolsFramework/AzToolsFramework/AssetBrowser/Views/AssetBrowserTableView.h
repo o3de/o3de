@@ -84,6 +84,7 @@ namespace AzToolsFramework
 
             void SelectEntry(QString assetName);
 
+            void SetSearchString(const QString& searchString);
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);

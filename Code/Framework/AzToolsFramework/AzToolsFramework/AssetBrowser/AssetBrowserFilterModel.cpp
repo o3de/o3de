@@ -6,10 +6,13 @@
  *
  */
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 #include <AzCore/Console/IConsole.h>
 
@@ -82,7 +85,28 @@ namespace AzToolsFramework
 
         QVariant AssetBrowserFilterModel::data(const QModelIndex& index, int role) const
         {
-            if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
+            auto assetBrowserEntry = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            AZ_Assert(assetBrowserEntry, "Couldn't fetch asset entry for the given index.");
+            if (!assetBrowserEntry)
+            {
+                return tr(" No Data ");
+            }
+
+            if (role == Qt::DisplayRole)
+            {
+                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
+                {
+                    QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+
+                    if (!m_searchString.empty())
+                    {
+                        name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                    }
+                    return name;
+                }
+                
+            }
+            else if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
             {
                 auto entry = static_cast<AssetBrowserEntry*>(mapToSource(index).internalPointer());
                 if (!m_filter)
@@ -93,6 +117,11 @@ namespace AzToolsFramework
             }
 
             return QSortFilterProxyModel::data(index, role);
+        }
+
+        void AssetBrowserFilterModel::SetSearchString(const QString& searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const

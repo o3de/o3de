@@ -42,6 +42,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::Visibility);
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::ReadOnly);
         system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::NameLabelOverride);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::SetTrueLabel);
+        system->RegisterNodeAttribute<NodeWithVisiblityControl>(NodeWithVisiblityControl::SetFalseLabel);
 
         system->RegisterNode<Adapter, NodeWithVisiblityControl>();
 

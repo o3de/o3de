@@ -501,7 +501,14 @@ namespace AZ
 
             case RHI::DrawType::Indirect:
             {
-                ExecuteIndirect(drawItem.m_arguments.m_indirect);
+                const auto& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
+                if (layout.GetType() == RHI::IndirectBufferLayoutType::IndexedDraw)
+                {
+                    AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
+                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                }
+                ExecuteIndirect(indirect);
                 break;
             }
             default:

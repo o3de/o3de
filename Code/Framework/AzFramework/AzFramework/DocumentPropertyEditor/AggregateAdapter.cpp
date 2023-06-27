@@ -64,6 +64,13 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
+    ExpanderSettings* RowAggregateAdapter::CreateExpanderSettings(
+        DocumentAdapter* referenceAdapter, const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName)
+    {
+        AZ_Assert(!m_adapters.empty(), "RowAggregateAdapter::CreateExpanderSettings called before any adapters were added!");
+        return m_adapters[0]->adapter->CreateExpanderSettings(referenceAdapter, settingsRegistryKey, propertyEditorName);
+    }
+
     bool RowAggregateAdapter::AggregateNode::HasEntryForAdapter(size_t adapterIndex)
     {
         return (m_pathEntries.size() > adapterIndex && m_pathEntries[adapterIndex] != InvalidEntry);

@@ -33,15 +33,15 @@ ShaderResourceGroup RayTracingMaterialSrg : SRG_RayTracingMaterial
     struct MaterialInfo
     {
         float4 m_baseColor;
+        float3 m_emissiveColor;
         float  m_metallicFactor;
         float  m_roughnessFactor;
-        float3 m_emissiveColor;
         uint   m_textureFlags;
         uint   m_textureStartIndex;
+        uint   m_padding0;
 
         ReflectionProbeData m_reflectionProbeData;
         uint   m_reflectionProbeCubeMapIndex;
-        float  m_padding0;
         float  m_padding1;
     };
     
