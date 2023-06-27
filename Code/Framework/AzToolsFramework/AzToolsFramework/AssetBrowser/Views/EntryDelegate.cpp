@@ -82,7 +82,6 @@ namespace AzToolsFramework
             if (data.canConvert<const AssetBrowserEntry*>())
             {
                 bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (option.state & QStyle::State_Selected) != 0;
 
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
@@ -127,10 +126,12 @@ namespace AzToolsFramework
                     ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
                     : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                style->drawItemText(
-                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
-                    displayString,
-                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                if (!m_searchString.empty())
+                {
+                    displayString = AzToolsFramework::RichTextHighlighter::HighlightText(displayString, m_searchString.c_str());
+                }
+
+                RichTextHighlighter::PaintHighlightedRichText(displayString, painter, option, remainingRect);
             }
         }
 
@@ -195,6 +196,11 @@ namespace AzToolsFramework
                 }
             }
             return m_iconSize;
+        }
+
+        void EntryDelegate::SetSearchString(QString searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
         }
 
         SearchEntryDelegate::SearchEntryDelegate(QWidget* parent)

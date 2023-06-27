@@ -12,6 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 namespace AzToolsFramework
 {
@@ -40,7 +41,16 @@ namespace AzToolsFramework
                     switch (index.column())
                     {
                     case Name:
-                        return static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+                        {
+                            QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+
+                            if (!m_searchString.empty())
+                            {
+                                // highlight characters in filter
+                                name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                            }
+                            return name;
+                        }
                     case Type:
                         {
                             switch (assetBrowserEntry->GetEntryType())
@@ -56,27 +66,37 @@ namespace AzToolsFramework
                             }
                         }
                     case DiskSize:
-                        if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                        if (GetShowSearchResultsMode())
                         {
-                            return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
+                            return assetBrowserEntry->GetDisplayPath();
+                        }
+                        else
+                        {
+                            if (assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                            {
+                                return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
+                            }
                         }
                         return "";
                     case Vertices:
-                        if (assetBrowserEntry->GetNumVertices() > 0)
+                        if (!GetShowSearchResultsMode()  && assetBrowserEntry->GetNumVertices() > 0)
                         {
                             return assetBrowserEntry->GetNumVertices();
                         }
                         return "";
                     case ApproxSize:
-                        if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
+                        if (!GetShowSearchResultsMode())
                         {
-                            const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
-                            if (abs(dim.GetX())<1.0f && abs(dim.GetY())<1.0f && abs(dim.GetZ())<1.0f)
-                                return QString{ "%1 x %2 x %3" }.arg(dim.GetX()).arg(dim.GetY()).arg(dim.GetZ());
-                            return QString{ "%1 x %2 x %3" }
-                                .arg(static_cast<int>(dim.GetX()))
-                                .arg(static_cast<int>(dim.GetY()))
-                                .arg(static_cast<int>(dim.GetZ()));
+                            if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
+                            {
+                                const AZ::Vector3& dim{ assetBrowserEntry->GetDimension() };
+                                if (abs(dim.GetX()) < 1.0f && abs(dim.GetY()) < 1.0f && abs(dim.GetZ()) < 1.0f)
+                                    return QString{ "%1 x %2 x %3" }.arg(dim.GetX()).arg(dim.GetY()).arg(dim.GetZ());
+                                return QString{ "%1 x %2 x %3" }
+                                    .arg(static_cast<int>(dim.GetX()))
+                                    .arg(static_cast<int>(dim.GetY()))
+                                    .arg(static_cast<int>(dim.GetZ()));
+                            }
                         }
                         return "";
                     default:
@@ -84,7 +104,7 @@ namespace AzToolsFramework
                     }
                 }
             case Qt::TextAlignmentRole:
-                if (index.column() == DiskSize || index.column() == Vertices)
+                if ((index.column() == DiskSize && !GetShowSearchResultsMode()) || index.column() == Vertices)
                 {
                     return QVariant(Qt::AlignRight | Qt::AlignVCenter);
                 }
@@ -104,12 +124,24 @@ namespace AzToolsFramework
             case Qt::DisplayRole:
                 if (orientation == Qt::Horizontal)
                 {
-                    section += section ? aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
-                    return tr(AssetBrowserEntry::m_columnNames[section]);
+                    const int sourceID = aznumeric_cast<int>(AssetBrowserEntry::Column::SourceID);
+                    const int path = aznumeric_cast<int>(AssetBrowserEntry::Column::Path);
+                    const int columnNameRequired = section ? section + aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
+                    if (GetShowSearchResultsMode())
+                    {
+                        if (section <= sourceID)
+                        {
+                            return tr(AssetBrowserEntry::m_columnNames[section == sourceID ? path : columnNameRequired]);
+                        }
+                    }
+                    else
+                    {
+                        return tr(AssetBrowserEntry::m_columnNames[columnNameRequired]);
+                    }
                 }
                 break;
             case Qt::TextAlignmentRole:
-                if (section == DiskSize || section == Vertices)
+                if ((section == DiskSize  && !GetShowSearchResultsMode())|| section == Vertices)
                 {
                     return QVariant(Qt::AlignRight | Qt::AlignVCenter);
                 }
@@ -120,6 +152,10 @@ namespace AzToolsFramework
 
         bool AssetBrowserTableViewProxyModel::hasChildren(const QModelIndex& parent) const
         {
+            if (m_searchResultsMode)
+            {
+                return (rowCount(parent) > 0) && (columnCount(parent) > 0);
+            }
             if (parent != m_rootIndex)
             {
                 return false;
@@ -273,6 +309,11 @@ namespace AzToolsFramework
                 }
             }
             return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+        }
+
+        void AssetBrowserTableViewProxyModel::SetSearchString(const QString& searchString)
+        {
+             m_searchString = searchString.toUtf8().data();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
