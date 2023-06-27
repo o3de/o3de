@@ -123,7 +123,6 @@ def AssetBrowser_SearchFiltering():
         clear_search = asset_browser.findChild(QtWidgets.QToolButton, "ClearToolButton")
         clear_search.click()
         
-        print("test1")
         # 5) Select an asset type to filter by (Animation)
         tool_button = asset_browser.findChild(QtWidgets.QToolButton, "assetTypeSelector")
         pyside_utils.click_button_async(tool_button)

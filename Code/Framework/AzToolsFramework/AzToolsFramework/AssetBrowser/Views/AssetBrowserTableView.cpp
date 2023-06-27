@@ -555,7 +555,6 @@ namespace AzToolsFramework
                 optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
 
                 RichTextHighlighter::PaintHighlightedRichText(text.toString(), painter, optionV4, textRect);
-
             }
         }
 
