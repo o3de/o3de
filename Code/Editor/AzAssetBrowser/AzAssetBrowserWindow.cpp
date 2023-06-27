@@ -636,7 +636,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     if (ed_useNewAssetBrowserListView)
     {
         auto thumbnailWidget = m_ui->m_thumbnailView->GetThumbnailViewWidget();
-        auto tableWidget = m_ui->m_tableView->GetExpandedTableViewWidget();
+        auto tableWidget = m_ui->m_tableView->GetTableViewWidget();
 
         if (hasFilter)
         {
@@ -658,7 +658,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             {
                 m_ui->m_thumbnailView->SetSearchString("");
             }
-            if (expandedTableWidget)
+            if (tableWidget)
             {
                 m_ui->m_tableView->SetSearchString("");
             }
