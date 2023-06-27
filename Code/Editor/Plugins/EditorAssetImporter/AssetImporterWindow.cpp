@@ -275,11 +275,10 @@ SceneSettingsCard* AssetImporterWindow::CreateSceneSettingsCard(
     SceneSettingsCard::Layout layout,
     SceneSettingsCard::State state)
 {
-    QLayoutItem* previousCard;
-    while ((previousCard = ui->m_cardAreaLayout->takeAt(0)) != nullptr)
+    while (QLayoutItem* cardToDelete = ui->m_cardAreaLayout->takeAt(0))
     {
-        delete previousCard->widget();
-        delete previousCard;
+        delete cardToDelete->widget();
+        delete cardToDelete;
     }
 
     SceneSettingsCard* card = new SceneSettingsCard(s_browseTag, fileName, layout, ui->m_cardAreaLayoutWidget);
@@ -335,8 +334,8 @@ bool AssetImporterWindow::IsAllowedToChangeSourceFile()
 
     const int result = QMessageBox::question(
         this,
-        tr("Save Changes?"),
-        tr("Changes have been made to the asset during this session. Would you like to save prior to switching assets?"),
+        tr("Save Asset Changes?"),
+        tr("Changes have been made to the asset in the Inspector Scene Settings. Would you like to save these changes prior to switching assets?"),
         QMessageBox::Yes,
         QMessageBox::No);
 
@@ -372,8 +371,8 @@ bool AssetImporterWindow::ShouldSaveBeforeClose()
 
     const int result = QMessageBox::question(
         this,
-        tr("Save Changes?"),
-        tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
+        tr("Save Asset Changes?"),
+        tr("Changes have been made to the asset in the Inspector Scene Settings. Would you like to save these changes prior to closing the window?"),
         QMessageBox::Yes,
         QMessageBox::No);
 

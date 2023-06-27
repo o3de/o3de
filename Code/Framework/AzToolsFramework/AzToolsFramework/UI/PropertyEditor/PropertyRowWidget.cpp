@@ -987,6 +987,9 @@ namespace AzToolsFramework
         }
         else if (attributeName == AZ::Edit::Attributes::CategoryStyle)
         {
+            //! The "display divider" attribute is used to separate the header of a group from the rest of the body in the scene settings tool,
+            //! Set the style of this row to emulate the style of a component card header,
+            //! And notify the PropertyRowWidget that we are parsing over the scene settings reflection data.
             AZStd::string categoryAttributeValue;
             reader.Read<AZStd::string>(categoryAttributeValue);
             if (categoryAttributeValue.compare("display divider") == 0)

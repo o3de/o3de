@@ -304,7 +304,6 @@ namespace AZ
                 else if (m_classTypeIds.size() == 1)
                 {
                     AZStd::string className = ClassIdToName(m_classTypeIds[0]);
-                    AZStd::to_lower(className.begin(), className.end());
 
                     AZ::SerializeContext* serializeContext = nullptr;
                     AZ::ComponentApplicationBus::BroadcastResult(
@@ -572,13 +571,13 @@ namespace AZ
             {
                 QString title(ui->m_saveButton->text());
 
-                if (hasUnsavedChanges && title.front() != "*")
+                if (hasUnsavedChanges && title.back() != "*")
                 {
-                    title.push_front("*");
+                    title.push_back("*");
                 }
-                else if (!hasUnsavedChanges && title.front() == "*")
+                else if (!hasUnsavedChanges && title.back() == "*")
                 {
-                    title.remove(0, 1);
+                    title.remove(title.size() - 1, 1);
                 }
                 ui->m_saveButton->setText(title);
             }
