@@ -152,28 +152,28 @@ namespace HttpRequestor
 
         AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         const auto httpResponse = httpClient->MakeRequest(httpRequest);
-        const auto difference = AZStd::chrono::duration_cast<AZStd::chrono::duration<float, AZStd::milli> >(AZStd::chrono::steady_clock::now() - start) / 2.0f;;
+        const auto roundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
 
         if (!httpResponse)
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, roundTripTime);
             return;
         }
 
         if (httpResponse->GetResponseCode() != Aws::Http::HttpResponseCode::OK)
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), httpResponse->GetResponseCode(), httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), httpResponse->GetResponseCode(), roundTripTime);
             return;
         }
 
         Aws::Utils::Json::JsonValue json(httpResponse->GetResponseBody());
         if (json.WasParseSuccessful())
         {
-            httpRequestParameters.GetCallback()(AZStd::move(json), httpResponse->GetResponseCode(), httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
+            httpRequestParameters.GetCallback()(AZStd::move(json), httpResponse->GetResponseCode(), roundTripTime);
         }
         else
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, httpRequestParameters.GetUUID(), static_cast<uint32_t>(difference.count()));
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, roundTripTime);
         }
     }
 
@@ -196,17 +196,19 @@ namespace HttpRequestor
             httpRequest->AddContentBody(httpRequestParameters.GetBodyStream());
         }
 
+        AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         const auto httpResponse = httpClient->MakeRequest(httpRequest);
+        const auto roundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
 
         if (!httpResponse)
         {
-            httpRequestParameters.GetCallback()(AZStd::string(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR);
+            httpRequestParameters.GetCallback()(AZStd::string(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, roundTripTime);
             return;
         }
 
         if (httpResponse->GetResponseCode() != Aws::Http::HttpResponseCode::OK)
         {
-            httpRequestParameters.GetCallback()(AZStd::string(), httpResponse->GetResponseCode());
+            httpRequestParameters.GetCallback()(AZStd::string(), httpResponse->GetResponseCode(), roundTripTime);
             return;
         }
 
@@ -214,6 +216,6 @@ namespace HttpRequestor
         // TODO(aaj): it feels like there should be some limit maybe 1 MB?
         std::istreambuf_iterator<char> eos;
         AZStd::string data(std::istreambuf_iterator<char>(httpResponse->GetResponseBody()), eos);
-        httpRequestParameters.GetCallback()(AZStd::move(data), httpResponse->GetResponseCode());
+        httpRequestParameters.GetCallback()(AZStd::move(data), httpResponse->GetResponseCode(), roundTripTime);
     }
 } // namespace HttpRequestor

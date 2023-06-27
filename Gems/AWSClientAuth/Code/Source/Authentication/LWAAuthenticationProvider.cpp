@@ -83,7 +83,7 @@ namespace AWSClientAuth
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthCodeURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
             , [this](const Aws::Utils::Json::JsonView& jsonView, Aws::Http::HttpResponseCode responseCode,
-                [[maybe_unused]]const AZStd::string& uuid, [[maybe_unused]] uint32_t duration)
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
             {
                 if (responseCode == Aws::Http::HttpResponseCode::OK)
                 {
@@ -118,7 +118,7 @@ namespace AWSClientAuth
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
             , [this](const Aws::Utils::Json::JsonView& jsonView, Aws::Http::HttpResponseCode responseCode,
-                [[maybe_unused]] const AZStd::string& uuid, [[maybe_unused]] uint32_t duration)
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
             {
                 if (responseCode == Aws::Http::HttpResponseCode::OK)
                 {
@@ -154,7 +154,7 @@ namespace AWSClientAuth
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
             , [this](const Aws::Utils::Json::JsonView& jsonView, Aws::Http::HttpResponseCode responseCode,
-               [[maybe_unused]] const AZStd::string& requestUUID, [[maybe_unused]] uint32_t duration)
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             if (responseCode == Aws::Http::HttpResponseCode::OK)
             {
