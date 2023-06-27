@@ -49,7 +49,14 @@ namespace Twitch
     {
         AZStd::string url( BuildKrakenURL("user") );
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& json, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& json,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             UserInfo userinfo;
@@ -69,7 +76,14 @@ namespace Twitch
     {
         AZStd::string url( BuildBaseURL("users", friendID) + "/friends/notifications");
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt](const Aws::Utils::Json::JsonView& /*json*/, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_DELETE,
+            GetDefaultHeaders(),
+            [receipt](
+                [[maybe_unused]] const Aws::Utils::Json::JsonView& json,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -87,7 +101,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users", friendID) + "/friends/notifications");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt](const Aws::Utils::Json::JsonView& json, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt](
+                const Aws::Utils::Json::JsonView& json,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             AZ::s64 count = 0;
@@ -110,7 +131,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users", friendID) + "/friends/recommendations");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             FriendRecommendationList returnRecommendations;
@@ -148,7 +176,14 @@ namespace Twitch
         if( !cursor.empty() )
             AddToHeader(headers, "cursor", cursor);
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, headers, [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            headers,
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             GetFriendReturn friendReturn;
@@ -182,7 +217,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users", sourceFriendID) + "/friends/relationships/" + targetFriendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             FriendStatus friendStatus;
@@ -203,7 +245,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/friends/relationships/" + friendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, GetDefaultHeaders(), [receipt]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_PUT,
+            GetDefaultHeaders(),
+            [receipt](
+                [[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -228,7 +277,14 @@ namespace Twitch
         if (!cursor.empty())
             AddToHeader(headers, "cursor", cursor);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, headers, [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            headers,
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             FriendRequestResult requestResult;
@@ -265,7 +321,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/friends/requests/" + friendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, GetDefaultHeaders(), [receipt]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_PUT,
+            GetDefaultHeaders(),
+            [receipt](
+                [[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -282,7 +345,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/friends/requests/" + friendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_DELETE,
+            GetDefaultHeaders(),
+            [receipt](
+                [[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -333,7 +403,15 @@ namespace Twitch
 
             Aws::String body(jsonBody.View().WriteCompact());
                 
-            AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_POST, headers, body.c_str(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+            AddHTTPRequest(
+                url,
+                Aws::Http::HttpMethod::HTTP_POST,
+                headers,
+                body.c_str(),
+                [receipt, this](
+                    const Aws::Utils::Json::JsonView& jsonDoc,
+                    Aws::Http::HttpResponseCode httpCode,
+                    [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
             {
                 ResultCode rc(ResultCode::TwitchRESTError);
                 AZ::s64 pollIntervalSeconds = 0;
@@ -358,7 +436,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/status/friends");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             PresenceStatusList statusList;
@@ -392,7 +477,14 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/status/settings");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             PresenceSettings presenceSettings;
@@ -422,7 +514,15 @@ namespace Twitch
 
         Aws::String body(jsonBody.View().WriteCompact());
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_POST, headers, body.c_str(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_POST,
+            headers,
+            body.c_str(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             PresenceSettings presenceSettings;
@@ -451,7 +551,14 @@ namespace Twitch
     {
         AZStd::string url(BuildKrakenURL("channels") + "/" + (channelID.empty() ? "0000000" : channelID));
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetClientIDHeader(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetClientIDHeader(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             ChannelInfo channelInfo;
@@ -520,7 +627,15 @@ namespace Twitch
 
             Aws::String body(jsonBody.View().WriteCompact());
 
-            AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, headers, body.c_str(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+            AddHTTPRequest(
+                url,
+                Aws::Http::HttpMethod::HTTP_PUT,
+                headers,
+                body.c_str(),
+                [receipt, this](
+                    const Aws::Utils::Json::JsonView& jsonDoc,
+                    Aws::Http::HttpResponseCode httpCode,
+                    [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
             {
                 ResultCode rc(ResultCode::TwitchRESTError);
                 ChannelInfo retChannelInfo;
@@ -541,7 +656,14 @@ namespace Twitch
     {
         AZStd::string url(BuildKrakenURL("channels") + "/" + channelID + "/editors");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             UserInfoList userList;
@@ -579,7 +701,14 @@ namespace Twitch
             url += AZStd::to_string(offset);
         }
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetClientIDHeader(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetClientIDHeader(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             FollowerResult followerResult;
@@ -614,7 +743,14 @@ namespace Twitch
     {
         AZStd::string url(BuildKrakenURL("channels") + "/" + channelID + "/teams");
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetClientIDHeader(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetClientIDHeader(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             TeamInfoList teamInfoList;
@@ -650,7 +786,14 @@ namespace Twitch
             url += AZStd::to_string(offset);
         }
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             Subscription subscription;
@@ -684,7 +827,14 @@ namespace Twitch
     {
         AZStd::string url(BuildKrakenURL("channels") + "/" + channelID + "/subscriptions/" + userID);
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             SubscriberInfo si;
@@ -726,7 +876,14 @@ namespace Twitch
         
         }
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             VideoReturn videoReturn;
@@ -788,7 +945,15 @@ namespace Twitch
 
         Aws::String body(jsonBody.View().WriteCompact());
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_POST, headers, body.c_str(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_POST,
+            headers,
+            body.c_str(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             StartChannelCommercialResult cr;
@@ -810,7 +975,14 @@ namespace Twitch
     {
         AZStd::string url(BuildKrakenURL("channels") + "/" + channelID + "/stream_key");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_DELETE,
+            GetDefaultHeaders(),
+            [receipt, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             ChannelInfo ci;
@@ -858,7 +1030,14 @@ namespace Twitch
     {
         AZStd::string url(BuildKrakenURL("channel"));
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, callback, this](const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(
+            url,
+            Aws::Http::HttpMethod::HTTP_GET,
+            GetDefaultHeaders(),
+            [receipt, callback, this](
+                const Aws::Utils::Json::JsonView& jsonDoc,
+                Aws::Http::HttpResponseCode httpCode,
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             ChannelInfo channelInfo;

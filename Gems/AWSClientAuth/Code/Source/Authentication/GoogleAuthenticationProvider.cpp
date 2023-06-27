@@ -119,7 +119,7 @@ namespace AWSClientAuth
         HttpRequestor::HttpRequestorRequestBus::Broadcast(&HttpRequestor::HttpRequestorRequests::AddRequestWithHeadersAndBody, m_settings->m_oAuthTokensURL
             , Aws::Http::HttpMethod::HTTP_POST, headers, body
             , [this](const Aws::Utils::Json::JsonView& jsonView, Aws::Http::HttpResponseCode responseCode,
-                [[maybe_unused]]  AZStd::chrono::milliseconds roundTripTime)
+                [[maybe_unused]] AZStd::chrono::milliseconds roundTripTime)
             {
                 if (responseCode == Aws::Http::HttpResponseCode::OK)
                 {
