@@ -447,10 +447,10 @@ namespace AZ
         for (AZStd::size_t colIter = 0; colIter < matrix.GetColumnGroups(); ++colIter)
         {
             Simd::Vec4::FloatType vectorElement = vector.GetVectorValues()[colIter].GetSimdValue();
-            Simd::Vec4::FloatType splat0 = Simd::Vec4::SplatFirst (vectorElement);
-            Simd::Vec4::FloatType splat1 = Simd::Vec4::SplatSecond(vectorElement);
-            Simd::Vec4::FloatType splat2 = Simd::Vec4::SplatThird (vectorElement);
-            Simd::Vec4::FloatType splat3 = Simd::Vec4::SplatFourth(vectorElement);
+            Simd::Vec4::FloatType splat0 = Simd::Vec4::SplatIndex0(vectorElement);
+            Simd::Vec4::FloatType splat1 = Simd::Vec4::SplatIndex1(vectorElement);
+            Simd::Vec4::FloatType splat2 = Simd::Vec4::SplatIndex2(vectorElement);
+            Simd::Vec4::FloatType splat3 = Simd::Vec4::SplatIndex3(vectorElement);
             for (AZStd::size_t rowIter = 0; rowIter < matrix.GetRowGroups(); ++rowIter)
             {
                 Vector4& outputElement = output.GetVectorValues()[rowIter];

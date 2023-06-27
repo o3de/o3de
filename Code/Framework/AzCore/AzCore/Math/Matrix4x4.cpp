@@ -438,8 +438,8 @@ namespace AZ
         // FOV's exactly
         Simd::Vec4::FloatType angles = Simd::Vec4::LoadImmediate(0.5f * fovX, 0.5f * fovX, 0.5f * fovY, 0.5f * fovY);
         Simd::Vec4::FloatType values = Simd::Vec4::SinCos(angles);
-        float cotX = Simd::Vec4::SelectSecond(values) / Simd::Vec4::SelectFirst(values);
-        float cotY = Simd::Vec4::SelectFourth(values) / Simd::Vec4::SelectThird(values);
+        float cotX = Simd::Vec4::SelectIndex1(values) / Simd::Vec4::SelectIndex0(values);
+        float cotY = Simd::Vec4::SelectIndex3(values) / Simd::Vec4::SelectIndex2(values);
         return CreateProjectionInternal(cotX, cotY, nearDist, farDist);
     }
 

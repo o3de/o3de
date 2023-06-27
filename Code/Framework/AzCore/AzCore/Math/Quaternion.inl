@@ -279,7 +279,7 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return m_x * q.m_x + m_y * q.m_y + m_z * q.m_z + m_w * q.m_w;
 #else
-        return Simd::Vec1::SelectFirst(Simd::Vec4::Dot(m_value, q.m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec4::Dot(m_value, q.m_value));
 #endif
     }
 
@@ -293,28 +293,28 @@ namespace AZ
     AZ_MATH_INLINE float Quaternion::GetLength() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtEstimate(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthReciprocal() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(lengthSq));
     }
 
 
     AZ_MATH_INLINE float Quaternion::GetLengthReciprocalEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec4::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInvEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInvEstimate(lengthSq));
     }
 
 
@@ -344,7 +344,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLength()
     {
-        const float length = Simd::Vec1::SelectFirst(
+        const float length = Simd::Vec1::SelectIndex0(
             Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value)));
         m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
         return length;
@@ -353,7 +353,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Quaternion::NormalizeWithLengthEstimate()
     {
-        const float length = Simd::Vec1::SelectFirst(
+        const float length = Simd::Vec1::SelectIndex0(
             Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value)));
         m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
         return length;

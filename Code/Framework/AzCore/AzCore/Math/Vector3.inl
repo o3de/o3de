@@ -191,25 +191,25 @@ namespace AZ
     AZ_MATH_INLINE float Vector3::GetLength() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec3::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(lengthSq));
     }
 
     AZ_MATH_INLINE float Vector3::GetLengthEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec3::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtEstimate(lengthSq));
     }
 
     AZ_MATH_INLINE float Vector3::GetLengthReciprocal() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec3::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(lengthSq));
     }
 
     AZ_MATH_INLINE float Vector3::GetLengthReciprocalEstimate() const
     {
         const Simd::Vec1::FloatType lengthSq = Simd::Vec3::Dot(m_value, m_value);
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInvEstimate(lengthSq));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInvEstimate(lengthSq));
     }
 
     AZ_MATH_INLINE Vector3 Vector3::GetNormalized() const
@@ -234,7 +234,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector3::NormalizeWithLength()
     {
-        const float length = Simd::Vec1::SelectFirst(
+        const float length = Simd::Vec1::SelectIndex0(
             Simd::Vec1::Sqrt(Simd::Vec3::Dot(m_value, m_value)));
         m_value = Simd::Vec3::Div(m_value, Simd::Vec3::Splat(length));
         return length;
@@ -242,7 +242,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector3::NormalizeWithLengthEstimate()
     {
-        const float length = Simd::Vec1::SelectFirst(
+        const float length = Simd::Vec1::SelectIndex0(
             Simd::Vec1::SqrtEstimate(Simd::Vec3::Dot(m_value, m_value)));
         m_value = Simd::Vec3::Div(m_value, Simd::Vec3::Splat(length));
         return length;
@@ -271,15 +271,15 @@ namespace AZ
     AZ_MATH_INLINE float Vector3::NormalizeSafeWithLength(float tolerance)
     {
         const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec3::Dot(m_value, m_value));
-        m_value = (Simd::Vec1::SelectFirst(length) < tolerance) ? Simd::Vec3::ZeroFloat() : Simd::Vec3::Div(m_value, Simd::Vec3::SplatFirst(Simd::Vec3::FromVec1(length)));
-        return Simd::Vec1::SelectFirst(length);
+        m_value = (Simd::Vec1::SelectIndex0(length) < tolerance) ? Simd::Vec3::ZeroFloat() : Simd::Vec3::Div(m_value, Simd::Vec3::SplatIndex0(Simd::Vec3::FromVec1(length)));
+        return Simd::Vec1::SelectIndex0(length);
     }
 
     AZ_MATH_INLINE float Vector3::NormalizeSafeWithLengthEstimate(float tolerance)
     {
         const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec3::Dot(m_value, m_value));
-        m_value = (Simd::Vec1::SelectFirst(length) < tolerance) ? Simd::Vec3::ZeroFloat() : Simd::Vec3::Div(m_value, Simd::Vec3::SplatFirst(Simd::Vec3::FromVec1(length)));
-        return Simd::Vec1::SelectFirst(length);
+        m_value = (Simd::Vec1::SelectIndex0(length) < tolerance) ? Simd::Vec3::ZeroFloat() : Simd::Vec3::Div(m_value, Simd::Vec3::SplatIndex0(Simd::Vec3::FromVec1(length)));
+        return Simd::Vec1::SelectIndex0(length);
     }
 
     AZ_MATH_INLINE bool Vector3::IsNormalized(float tolerance) const
@@ -328,8 +328,8 @@ namespace AZ
         const Simd::Vec3::FloatType relativeVec = Simd::Vec3::Sub(dest.GetSimdValue(), Simd::Vec3::Mul(GetSimdValue(), Simd::Vec3::FromVec1(dot)));
         const Simd::Vec3::FloatType relVecNorm = Simd::Vec3::NormalizeSafe(relativeVec, Constants::Tolerance);
         const Simd::Vec3::FloatType sinCos = Simd::Vec3::FromVec2(Simd::Vec2::SinCos(theta));
-        const Simd::Vec3::FloatType relVecSinTheta = Simd::Vec3::Mul(relVecNorm, Simd::Vec3::SplatFirst(sinCos));
-        return Vector3(Simd::Vec3::Madd(GetSimdValue(), Simd::Vec3::SplatSecond(sinCos), relVecSinTheta));
+        const Simd::Vec3::FloatType relVecSinTheta = Simd::Vec3::Mul(relVecNorm, Simd::Vec3::SplatIndex0(sinCos));
+        return Vector3(Simd::Vec3::Madd(GetSimdValue(), Simd::Vec3::SplatIndex1(sinCos), relVecSinTheta));
     }
 
     AZ_MATH_INLINE Vector3 Vector3::Nlerp(const Vector3& dest, float t) const
@@ -342,7 +342,7 @@ namespace AZ
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
         return (m_x * rhs.m_x + m_y * rhs.m_y + m_z * rhs.m_z);
 #else
-        return Simd::Vec1::SelectFirst(Simd::Vec3::Dot(GetSimdValue(), rhs.GetSimdValue()));
+        return Simd::Vec1::SelectIndex0(Simd::Vec3::Dot(GetSimdValue(), rhs.GetSimdValue()));
 #endif
     }
 
@@ -628,7 +628,7 @@ namespace AZ
     AZ_MATH_INLINE bool Vector3::IsPerpendicular(const Vector3& v, float tolerance) const
     {
         Simd::Vec1::FloatType absLengthSq = Simd::Vec1::Abs(Simd::Vec3::Dot(m_value, v.m_value));
-        return Simd::Vec1::SelectFirst(absLengthSq) < tolerance;
+        return Simd::Vec1::SelectIndex0(absLengthSq) < tolerance;
     }
 
     AZ_MATH_INLINE Vector3 Vector3::GetOrthogonalVector() const

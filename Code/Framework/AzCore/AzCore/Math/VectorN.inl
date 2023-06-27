@@ -466,7 +466,6 @@ namespace AZ
 
     AZ_MATH_INLINE void VectorN::FixLastVectorElement()
     {
-        const Simd::Vec4::FloatType zero = Simd::Vec4::ZeroFloat();
         const uint32_t masks[] =
         {
             0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF,

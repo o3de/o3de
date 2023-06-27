@@ -162,22 +162,22 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector2::GetLength() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(Simd::Vec2::Dot(m_value, m_value)));
     }
 
     AZ_MATH_INLINE float Vector2::GetLengthEstimate() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtEstimate(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtEstimate(Simd::Vec2::Dot(m_value, m_value)));
     }
 
     AZ_MATH_INLINE float Vector2::GetLengthReciprocal() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(Simd::Vec2::Dot(m_value, m_value)));
     }
 
     AZ_MATH_INLINE float Vector2::GetLengthReciprocalEstimate() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInvEstimate(Simd::Vec2::Dot(m_value, m_value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInvEstimate(Simd::Vec2::Dot(m_value, m_value)));
     }
 
     AZ_MATH_INLINE Vector2 Vector2::GetNormalized() const
@@ -237,15 +237,15 @@ namespace AZ
     AZ_MATH_INLINE float Vector2::NormalizeSafeWithLength(float tolerance)
     {
         const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec2::Dot(m_value, m_value));
-        m_value = (Simd::Vec1::SelectFirst(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatFirst(Simd::Vec2::FromVec1(length)));
-        return Simd::Vec1::SelectFirst(length);
+        m_value = (Simd::Vec1::SelectIndex0(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatIndex0(Simd::Vec2::FromVec1(length)));
+        return Simd::Vec1::SelectIndex0(length);
     }
 
     AZ_MATH_INLINE float Vector2::NormalizeSafeWithLengthEstimate(float tolerance)
     {
         const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec2::Dot(m_value, m_value));
-        m_value = (Simd::Vec1::SelectFirst(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatFirst(Simd::Vec2::FromVec1(length)));
-        return Simd::Vec1::SelectFirst(length);
+        m_value = (Simd::Vec1::SelectIndex0(length) < tolerance) ? Simd::Vec2::ZeroFloat() : Simd::Vec2::Div(m_value, Simd::Vec2::SplatIndex0(Simd::Vec2::FromVec1(length)));
+        return Simd::Vec1::SelectIndex0(length);
     }
 
     AZ_MATH_INLINE bool Vector2::IsNormalized(float tolerance) const
@@ -294,8 +294,8 @@ namespace AZ
         const Simd::Vec2::FloatType relativeVec = Simd::Vec2::Sub(dest.GetSimdValue(), Simd::Vec2::Mul(GetSimdValue(), Simd::Vec2::FromVec1(dot)));
         const Simd::Vec2::FloatType relVecNorm = Simd::Vec2::NormalizeSafe(relativeVec, Constants::Tolerance);
         const Simd::Vec2::FloatType sinCos = Simd::Vec2::SinCos(theta);
-        const Simd::Vec2::FloatType relVecSinTheta = Simd::Vec2::Mul(relVecNorm, Simd::Vec2::SplatFirst(sinCos));
-        return Vector2(Simd::Vec2::Madd(GetSimdValue(), Simd::Vec2::SplatSecond(sinCos), relVecSinTheta));
+        const Simd::Vec2::FloatType relVecSinTheta = Simd::Vec2::Mul(relVecNorm, Simd::Vec2::SplatIndex0(sinCos));
+        return Vector2(Simd::Vec2::Madd(GetSimdValue(), Simd::Vec2::SplatIndex1(sinCos), relVecSinTheta));
     }
 
     AZ_MATH_INLINE Vector2 Vector2::Nlerp(const Vector2& dest, float t) const
@@ -509,7 +509,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector2::GetAtan2() const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec2::Atan2(m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec2::Atan2(m_value));
     }
 
     AZ_MATH_INLINE Vector2 Vector2::GetAngleMod() const
@@ -553,7 +553,7 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector2::Dot(const Vector2& rhs) const
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec2::Dot(m_value, rhs.m_value));
+        return Simd::Vec1::SelectIndex0(Simd::Vec2::Dot(m_value, rhs.m_value));
     }
 
     AZ_MATH_INLINE Vector2 Vector2::GetMadd(const Vector2& mul, const Vector2& add)

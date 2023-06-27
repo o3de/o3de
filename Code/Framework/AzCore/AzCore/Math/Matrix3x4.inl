@@ -591,7 +591,7 @@ namespace AZ
 
     AZ_MATH_INLINE void Matrix3x4::MultiplyByScale(const Vector3& scale)
     {
-        const Simd::Vec4::FloatType vector4Scale = Simd::Vec4::ReplaceFourth(Simd::Vec4::FromVec3(scale.GetSimdValue()), 1.0f);
+        const Simd::Vec4::FloatType vector4Scale = Simd::Vec4::ReplaceIndex3(Simd::Vec4::FromVec3(scale.GetSimdValue()), 1.0f);
         m_rows[0].Set(Simd::Vec4::Mul(m_rows[0].GetSimdValue(), vector4Scale));
         m_rows[1].Set(Simd::Vec4::Mul(m_rows[1].GetSimdValue(), vector4Scale));
         m_rows[2].Set(Simd::Vec4::Mul(m_rows[2].GetSimdValue(), vector4Scale));
