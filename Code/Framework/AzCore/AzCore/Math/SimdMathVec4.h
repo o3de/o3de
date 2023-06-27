@@ -59,10 +59,10 @@ namespace AZ
             static float SelectIndex1(FloatArgType value);
             static float SelectIndex2(FloatArgType value);
             static float SelectIndex3(FloatArgType value);
-            static float AZ_MATH_INLINE SelectFirst (FloatArgType value) { return SelectIndex0(value); } // Deprecated
-            static float AZ_MATH_INLINE SelectSecond(FloatArgType value) { return SelectIndex1(value); } // Deprecated
-            static float AZ_MATH_INLINE SelectThird (FloatArgType value) { return SelectIndex2(value); } // Deprecated
-            static float AZ_MATH_INLINE SelectFourth(FloatArgType value) { return SelectIndex3(value); } // Deprecated
+            static float AZ_MATH_INLINE SelectFirst (FloatArgType value) { return SelectIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectSecond(FloatArgType value) { return SelectIndex1(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectThird (FloatArgType value) { return SelectIndex2(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static float AZ_MATH_INLINE SelectFourth(FloatArgType value) { return SelectIndex3(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType Splat(float value);
             static Int32Type Splat(int32_t value);
@@ -71,10 +71,10 @@ namespace AZ
             static FloatType SplatIndex1(FloatArgType value);
             static FloatType SplatIndex2(FloatArgType value);
             static FloatType SplatIndex3(FloatArgType value);
-            static FloatType AZ_MATH_INLINE SplatFirst (FloatArgType value) { return SplatIndex0(value); } // Deprecated
-            static FloatType AZ_MATH_INLINE SplatSecond(FloatArgType value) { return SplatIndex1(value); } // Deprecated
-            static FloatType AZ_MATH_INLINE SplatThird (FloatArgType value) { return SplatIndex2(value); } // Deprecated
-            static FloatType AZ_MATH_INLINE SplatFourth(FloatArgType value) { return SplatIndex3(value); } // Deprecated
+            static FloatType AZ_MATH_INLINE SplatFirst (FloatArgType value) { return SplatIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatSecond(FloatArgType value) { return SplatIndex1(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatThird (FloatArgType value) { return SplatIndex2(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE SplatFourth(FloatArgType value) { return SplatIndex3(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType ReplaceIndex0(FloatArgType a, float b);
             static FloatType ReplaceIndex0(FloatArgType a, FloatArgType b);
@@ -84,14 +84,14 @@ namespace AZ
             static FloatType ReplaceIndex2(FloatArgType a, FloatArgType b);
             static FloatType ReplaceIndex3(FloatArgType a, float b);
             static FloatType ReplaceIndex3(FloatArgType a, FloatArgType b);
-            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a,        float b) { return ReplaceIndex0(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a, FloatArgType b) { return ReplaceIndex0(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a,        float b) { return ReplaceIndex1(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a, FloatArgType b) { return ReplaceIndex1(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceThird (FloatArgType a,        float b) { return ReplaceIndex2(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceThird (FloatArgType a, FloatArgType b) { return ReplaceIndex2(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceFourth(FloatArgType a,        float b) { return ReplaceIndex3(a, b); } // Deprecated
-            static FloatType AZ_MATH_INLINE ReplaceFourth(FloatArgType a, FloatArgType b) { return ReplaceIndex3(a, b); } // Deprecated
+            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a,        float b) { return ReplaceIndex0(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFirst (FloatArgType a, FloatArgType b) { return ReplaceIndex0(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a,        float b) { return ReplaceIndex1(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceSecond(FloatArgType a, FloatArgType b) { return ReplaceIndex1(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceThird (FloatArgType a,        float b) { return ReplaceIndex2(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceThird (FloatArgType a, FloatArgType b) { return ReplaceIndex2(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFourth(FloatArgType a,        float b) { return ReplaceIndex3(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
+            static FloatType AZ_MATH_INLINE ReplaceFourth(FloatArgType a, FloatArgType b) { return ReplaceIndex3(a, b); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType LoadImmediate(float x, float y, float z, float w);
             static Int32Type LoadImmediate(int32_t x, int32_t y, int32_t z, int32_t w);
@@ -202,7 +202,7 @@ namespace AZ
             static void Mat4x4InverseFast(const FloatType* __restrict rows, FloatType* __restrict out);
             static void Mat4x4Transpose(const FloatType* __restrict rows, FloatType* __restrict out);
             static void Mat4x4Multiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Basic 4x4 matrix multiplication
-            static void Mat4x4MultiplyAdd(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Same as Mat4x4Multiply, but accumulates the results into out rather than overwriting
+            static void Mat4x4MultiplyAdd(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, const FloatType* __restrict add, FloatType* __restrict out); // Same as Mat4x4Multiply, but adds the input add into the results
             static void Mat4x4TransposeMultiply(const FloatType* __restrict rowsA, const FloatType* __restrict rowsB, FloatType* __restrict out); // Multiplies two four by four matrices, assuming they are transposed to column major
             static FloatType Mat4x4TransformVector(const FloatType* __restrict rows, FloatArgType vector);
             static FloatType Mat4x4TransposeTransformVector(const FloatType* __restrict rows, FloatArgType vector);

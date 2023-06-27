@@ -57,6 +57,9 @@ namespace AZ
         //! Returns the number of columns in the matrix.
         AZStd::size_t GetColumnCount() const;
 
+        //! Resizes the matrix to the provided row and column count.
+        void Resize(AZStd::size_t rowCount, AZStd::size_t colCount);
+
         //! Indexed accessor functions.
         //! @{
         float GetElement(AZStd::size_t row, AZStd::size_t col) const;
@@ -90,7 +93,6 @@ namespace AZ
         MatrixMxN GetSquare() const;
 
         //! These operators perform basic arithmetic on the individual elements within the respective matrices.
-        //! These are intentionally not written as operators since they work on individual elements.
         //! @{
         MatrixMxN& operator+=(const MatrixMxN& rhs);
         MatrixMxN& operator-=(const MatrixMxN& rhs);
@@ -120,6 +122,9 @@ namespace AZ
 
         //! Zeros out unused components of any submatrices
         void FixUnusedElements();
+
+        //! Updates the matrix internals to reflect the current row and column counts.
+        void OnSizeChanged();
 
         // Note that we compose the larger matrix out of a set of smaller 4x4 submatrices (blocked matrix)
         // Those blocks of 4x4 submatrices are arranged in a column-priority layout

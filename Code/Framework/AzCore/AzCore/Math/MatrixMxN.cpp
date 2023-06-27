@@ -31,10 +31,10 @@ namespace AZ
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->DataElement(
                         Edit::UIHandlers::Default, &MatrixMxN::m_rowCount, "Total Rows", "The total number of rows in the matrix")
+                        ->Attribute(Edit::Attributes::ChangeNotify, &MatrixMxN::OnSizeChanged)
                     ->DataElement(
                         Edit::UIHandlers::Default, &MatrixMxN::m_colCount, "Total Columns", "The total number of columns in the matrix")
-                    ->DataElement(
-                        Edit::UIHandlers::Default, &MatrixMxN::m_values, "Array of values", "The array of values in the matrix")
+                        ->Attribute(Edit::Attributes::ChangeNotify, &MatrixMxN::OnSizeChanged)
                     ;
             }
         }

@@ -48,7 +48,7 @@ namespace AZ
             static void StreamAligned(int32_t* __restrict addr, Int32ArgType value); // addr *must* be 16-byte aligned
 
             static float SelectIndex0(FloatArgType value);
-            static float AZ_MATH_INLINE SelectFirst(FloatArgType value) { return SelectIndex0(value); } // Deprecated
+            static float AZ_MATH_INLINE SelectFirst(FloatArgType value) { return SelectIndex0(value); } // O3DE_DEPRECATION_NOTICE(PR-16251)
 
             static FloatType Splat(float value);
             static Int32Type Splat(int32_t value);

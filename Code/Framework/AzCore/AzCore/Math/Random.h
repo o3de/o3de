@@ -84,7 +84,7 @@ namespace AZ
         }
 
         // Gets four random ints in the range [0, 2^31)
-        Simd::Vec4::Int32Type GetRandomInt()
+        Simd::Vec4::Int32Type GetRandomInt4()
         {
             const Simd::Vec4::Int32Type scalar = Simd::Vec4::Splat(1103515245);
             const Simd::Vec4::Int32Type constant = Simd::Vec4::Splat(12345);
@@ -94,9 +94,9 @@ namespace AZ
         }
 
         // Gets four random floats in the range [0,1)
-        Simd::Vec4::FloatType GetRandomFloat()
+        Simd::Vec4::FloatType GetRandomFloat4()
         {
-            Simd::Vec4::Int32Type randVal = GetRandomInt();
+            Simd::Vec4::Int32Type randVal = GetRandomInt4();
             randVal = Simd::Vec4::And(randVal, Simd::Vec4::Splat(0x007fffff)); // Sets mantissa to random bits
             randVal = Simd::Vec4::Or(randVal, Simd::Vec4::Splat(0x3f800000)); // Result is in [1,2), uniformly distributed
             return Simd::Vec4::Sub(Simd::Vec4::CastToFloat(randVal), Simd::Vec4::Splat(1.0f));

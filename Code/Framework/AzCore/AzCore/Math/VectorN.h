@@ -54,6 +54,9 @@ namespace AZ
         //! Returns the dimensionality of the vector.
         AZStd::size_t GetDimensionality() const;
 
+        //! Changes the dimensionality of the vector.
+        void Resize(AZStd::size_t size);
+
         //! Returns the value at the requested index.
         float GetElement(AZStd::size_t index) const;
 
@@ -140,6 +143,9 @@ namespace AZ
         void FixLastVectorElement();
 
     private:
+
+        //! Updates the vector internals to match the current dimensionality.
+        void OnSizeChanged();
 
         AZStd::size_t m_numElements = 0;
         AZStd::vector<Vector4> m_values;

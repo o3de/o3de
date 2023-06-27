@@ -28,8 +28,7 @@ namespace AZ
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                     ->DataElement(
                         Edit::UIHandlers::Default, &VectorN::m_numElements, "Total Elements", "The total number of elements in the vector")
-                    ->DataElement(
-                        Edit::UIHandlers::Default, &VectorN::m_values, "Array of values", "The array of values in the vector")
+                            ->Attribute(Edit::Attributes::ChangeNotify, &VectorN::OnSizeChanged)
                     ;
             }
         }

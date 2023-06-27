@@ -13,7 +13,7 @@ namespace AZ
     AZ_MATH_INLINE VectorN::VectorN(AZStd::size_t numElements)
         : m_numElements(numElements)
     {
-        m_values.resize((numElements + 3) / 4);
+        OnSizeChanged();
     }
 
     AZ_MATH_INLINE VectorN::VectorN(AZStd::size_t numElements, float x)
@@ -59,7 +59,7 @@ namespace AZ
         VectorN returnValue(numElements);
         for (Vector4& element : returnValue.m_values)
         {
-            element.SetSimdValue(randGen.GetRandomFloat());
+            element.SetSimdValue(randGen.GetRandomFloat4());
         }
         returnValue.FixLastVectorElement();
         return returnValue;
@@ -68,6 +68,12 @@ namespace AZ
     AZ_MATH_INLINE AZStd::size_t VectorN::GetDimensionality() const
     {
         return m_numElements;
+    }
+
+    AZ_MATH_INLINE void VectorN::Resize(AZStd::size_t size)
+    {
+        m_numElements = size;
+        OnSizeChanged();
     }
 
     AZ_MATH_INLINE float VectorN::GetElement(AZStd::size_t index) const
@@ -479,5 +485,11 @@ namespace AZ
         const Simd::Vec4::FloatType mask = Simd::Vec4::LoadAligned(reinterpret_cast<const float*>(&masks[trailingZeroElements]));
 
         m_values[lastElement].SetSimdValue(Simd::Vec4::And(m_values[lastElement].GetSimdValue(), mask));
+    }
+
+    AZ_MATH_INLINE void VectorN::OnSizeChanged()
+    {
+        m_values.resize((m_numElements + 3) / 4);
+        FixLastVectorElement();
     }
 }

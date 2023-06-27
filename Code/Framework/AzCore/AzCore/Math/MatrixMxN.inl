@@ -11,10 +11,8 @@ namespace AZ
     AZ_MATH_INLINE MatrixMxN::MatrixMxN(AZStd::size_t rowCount, AZStd::size_t colCount)
         : m_rowCount(rowCount)
         , m_colCount(colCount)
-        , m_numRowGroups((rowCount + 3) / 4)
-        , m_numColGroups((colCount + 3) / 4)
     {
-        m_values.resize(m_numColGroups * m_numRowGroups);
+        OnSizeChanged();
     }
 
     AZ_MATH_INLINE MatrixMxN::MatrixMxN(AZStd::size_t rowCount, AZStd::size_t colCount, float value)
@@ -77,10 +75,10 @@ namespace AZ
         for (Matrix4x4& element : returnValue.m_values)
         {
             Simd::Vec4::FloatType* elements = element.GetSimdValues();
-            elements[0] = randGen.GetRandomFloat();
-            elements[1] = randGen.GetRandomFloat();
-            elements[2] = randGen.GetRandomFloat();
-            elements[3] = randGen.GetRandomFloat();
+            elements[0] = randGen.GetRandomFloat4();
+            elements[1] = randGen.GetRandomFloat4();
+            elements[2] = randGen.GetRandomFloat4();
+            elements[3] = randGen.GetRandomFloat4();
         }
         returnValue.FixUnusedElements();
         return returnValue;
@@ -94,6 +92,13 @@ namespace AZ
     AZ_MATH_INLINE AZStd::size_t MatrixMxN::GetColumnCount() const
     {
         return m_colCount;
+    }
+
+    AZ_MATH_INLINE void MatrixMxN::Resize(AZStd::size_t rowCount, AZStd::size_t colCount)
+    {
+        m_rowCount = rowCount;
+        m_colCount = colCount;
+        OnSizeChanged();
     }
 
     AZ_MATH_INLINE float MatrixMxN::GetElement(AZStd::size_t row, AZStd::size_t col) const
@@ -484,9 +489,17 @@ namespace AZ
                     const Matrix4x4& rhsElement = rhs.GetSubmatrix(subIter, colIter);
                     // The submatrices are in column-major orientation, however Mat4x4Multiply expects row-major orientation
                     // For this reason, we swap the order of operands to produce the correct calcuations
-                    Simd::Vec4::Mat4x4MultiplyAdd(rhsElement.GetSimdValues(), lhsElement.GetSimdValues(), outputElement.GetSimdValues());
+                    Simd::Vec4::Mat4x4MultiplyAdd(rhsElement.GetSimdValues(), lhsElement.GetSimdValues(), outputElement.GetSimdValues(), outputElement.GetSimdValues());
                 }
             }
         }
+    }
+
+    AZ_MATH_INLINE void MatrixMxN::OnSizeChanged()
+    {
+        m_numRowGroups = (m_rowCount + 3) / 4;
+        m_numColGroups = (m_colCount + 3) / 4;
+        m_values.resize(m_numColGroups * m_numRowGroups);
+        FixUnusedElements();
     }
 }

@@ -538,12 +538,12 @@ namespace AZ
 
 
             template <typename VecType>
-            AZ_MATH_INLINE void Mat4x4MultiplyAdd(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, typename VecType::FloatType* __restrict out)
+            AZ_MATH_INLINE void Mat4x4MultiplyAdd(const typename VecType::FloatType* __restrict rowsA, const typename VecType::FloatType* __restrict rowsB, const typename VecType::FloatType* __restrict add, typename VecType::FloatType* __restrict out)
             {
-                out[0] = VecType::Madd(VecType::SplatIndex3(rowsA[0]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[0]), rowsB[0], out[0]))));
-                out[1] = VecType::Madd(VecType::SplatIndex3(rowsA[1]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[1]), rowsB[0], out[1]))));
-                out[2] = VecType::Madd(VecType::SplatIndex3(rowsA[2]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[2]), rowsB[0], out[2]))));
-                out[3] = VecType::Madd(VecType::SplatIndex3(rowsA[3]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[3]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[3]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[3]), rowsB[0], out[3]))));
+                out[0] = VecType::Madd(VecType::SplatIndex3(rowsA[0]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[0]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[0]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[0]), rowsB[0], add[0]))));
+                out[1] = VecType::Madd(VecType::SplatIndex3(rowsA[1]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[1]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[1]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[1]), rowsB[0], add[1]))));
+                out[2] = VecType::Madd(VecType::SplatIndex3(rowsA[2]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[2]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[2]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[2]), rowsB[0], add[2]))));
+                out[3] = VecType::Madd(VecType::SplatIndex3(rowsA[3]), rowsB[3], VecType::Madd(VecType::SplatIndex2(rowsA[3]), rowsB[2], VecType::Madd(VecType::SplatIndex1(rowsA[3]), rowsB[1], VecType::Madd(VecType::SplatIndex0(rowsA[3]), rowsB[0], add[3]))));
             }
 
 
