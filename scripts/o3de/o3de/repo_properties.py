@@ -10,6 +10,7 @@ This file contains all the code that has to do with editing the remote repo temp
 """
 import argparse
 import copy
+import os
 import pathlib
 import sys
 import json
@@ -263,6 +264,32 @@ def _edit_objects(object_typename:str,
 
     repo_json[f'{object_typename}s_data'] = repo_objects_data
 
+def _auto_update_json(object_type: str or list,
+                      repo_path: pathlib.Path = None,
+                      repo_json: dict = None,
+                      ):
+    
+    repo_directory = os.path.dirname(repo_path)
+    expected_files = {"project.json": [],
+                      "gem.json": [],
+                      "template.json": []}
+    for directory, sub_directory, files, in os.walk(repo_directory):
+        current_depth = directory[len(repo_directory):].count(os.sep)
+        for filename in files:
+            if filename in expected_files.keys() and current_depth < 3:
+                file_path = pathlib.Path(directory)
+                expected_files[filename].append(file_path)
+    
+    objects = object_type.split() if isinstance(object_type, str) else object_type
+    for object_name in objects:
+        if object_name == 'gem':
+            _edit_objects(object_name, validation.valid_o3de_gem_json, repo_json, expected_files.get("gem.json"))
+        if object_name == 'project':
+            _edit_objects(object_name, validation.valid_o3de_project_json, repo_json, expected_files.get("project.json"))
+        if object_name == 'template':
+            _edit_objects(object_name, validation.valid_o3de_template_json, repo_json, expected_files.get("template.json"))
+    return 0
+
 def edit_repo_props(repo_path: pathlib.Path = None,
                        repo_name: str = None,
                        add_gems: pathlib.Path or list = None,
@@ -274,6 +301,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        add_templates: pathlib.Path or list = None,
                        delete_templates: str or list = None,
                        replace_templates: pathlib.Path or list = None,
+                       auto_update: str or list = None,
                        release_archive_path: pathlib.Path = None,
                        force: bool = None,
                        download_prefix: str = None
@@ -291,7 +319,9 @@ def edit_repo_props(repo_path: pathlib.Path = None,
     :add_templates: Any template paths to be added to the list
     :delete_templates: Any template names to be removed from the list
     :replace_templates: A list of template paths that will completely replace the current list of path
+    :auto_update: Automatically updates your selected gem/project/template to your remote repository
     :release_archive_path: Path where you want your release to be located
+    :force: Replaces current directory with new user input directory or file
     :download_prefix: The string prefix of the download uri
     """
     repo_json = get_repo_props(repo_path)
@@ -307,6 +337,13 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                          f' characters, and start with a letter.  {repo_name}')
             return 1
         repo_json['repo_name'] = repo_name
+
+    if auto_update is not None and len(auto_update) == 0:
+        logger.error('No object type specified with --auto-update. Please provide one or more object types.')
+        return 1
+    
+    if auto_update:
+        _auto_update_json(auto_update, repo_path, repo_json)
 
     if add_gems or delete_gems or replace_gems:
         _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix)
@@ -338,7 +375,8 @@ def _edit_repo_props(args: argparse) -> int:
                               add_templates=args.add_templates,
                               delete_templates=args.delete_templates,
                               replace_templates=args.replace_templates,
-
+                              
+                              auto_update=args.auto_update,
                               release_archive_path=args.release_archive_path,
                               force=args.force,
                               download_prefix=args.download_prefix
@@ -352,7 +390,13 @@ def add_parser_args(parser):
     group = parser.add_argument_group('properties', 'arguments for modifying individual remote repo properties.')
     group.add_argument('--repo-name','-rn',  type=str, required=False,
                        help='The name of the remote repository.')
-    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('--auto-update', '-au', type=str, nargs='*', required=False,
+                       help='Checks for any new Gems/Projects/Templates in the asscoiated directories that has not been added'
+                       ' to your repo.json fields.'
+                       ' Pass in lower case object type as args that should look like this: gem/ project/ template'
+                       ' Note: This does not update the deleted gems/projects/templates, please use'
+                        '--delete-gems if you want to delete data from repo.json file')
+    
     group.add_argument('--add-gems', '-ag', type=pathlib.Path, nargs='*', required=False,
                        help="Adds gem(s) to the 'gems_data' property. Space delimited list (ex. -ag c:/gem1 c:/gem2)")
     group.add_argument('--delete-gems', '-dg', type=str, nargs='*', required=False,
