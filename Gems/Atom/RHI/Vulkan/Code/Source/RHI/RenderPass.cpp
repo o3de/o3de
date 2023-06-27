@@ -158,7 +158,7 @@ namespace AZ
 
                 // Builds all attachment descriptions from the descriptor.
                 void BuildAttachmentDescriptions(AZStd::vector<VkAttachmentDescriptionType>& attachmentDescriptions) const
-                {           
+                {
                     for (uint32_t i = 0; i < m_descriptor->m_attachmentCount; ++i)
                     {
                         const RenderPass::AttachmentBinding& binding = m_descriptor->m_attachments[i];
@@ -197,8 +197,8 @@ namespace AZ
                 void BuildAttachmentReferences(uint32_t subpassIndex, SubpassInfo& subpassInfo) const
                 {
                     // A template cannot be specialized inside of another template
-                    // therefore if constexpr is used to filter the Preserve AttachmentType functionality
-                    // in the template member function
+                    // therefore the `if constexpr` statement is used to filter the Preserve AttachmentType functionality
+                    // in this single template member function
                     if constexpr (type == AttachmentType::Preserve)
                     {
                         auto& subpassDescriptor = const_cast<RenderPass::SubpassDescriptor&>(m_descriptor->m_subpassDescriptors[subpassIndex]);
@@ -334,7 +334,7 @@ namespace AZ
                             RHI::FilterBits(subpassDependency.srcAccessMask, GetSupportedAccessFlags(subpassDependency.srcStageMask));
                         dependency.dstAccessMask =
                             RHI::FilterBits(subpassDependency.dstAccessMask, GetSupportedAccessFlags(subpassDependency.dstStageMask));
-                        dependency.dependencyFlags = subpassDependency.dependencyFlags;                            
+                        dependency.dependencyFlags = subpassDependency.dependencyFlags;
                     }
                 }
 
@@ -568,7 +568,7 @@ namespace AZ
             }
 
             return renderPassDesc;
-        }        
+        }
 
         void RenderPass::SetNameInternal(const AZStd::string_view& name)
         {
@@ -587,7 +587,7 @@ namespace AZ
                 m_nativeRenderPass = VK_NULL_HANDLE;
             }
             Base::Shutdown();
-        }       
+        }
     }
 }
 

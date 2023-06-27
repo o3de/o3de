@@ -202,11 +202,10 @@ namespace AZ
 
             if (desc.stride == 0)
             {
-                const auto& streamChannels = inputStreamLayout.GetStreamChannels();
+                const auto streamChannels = inputStreamLayout.GetStreamChannels();
 
                 for (uint32_t channelIndex = 0; channelIndex < streamChannels.size(); ++channelIndex)
                 {
-                    const auto streamChannels = inputStreamLayout.GetStreamChannels();
                     const RHI::StreamChannelDescriptor& chanDesc = streamChannels[channelIndex];
                     if (chanDesc.m_bufferIndex == index)
                     {
