@@ -92,7 +92,6 @@ namespace AzToolsFramework
             bool m_isTableView{ false };
             AssetBrowserEntry::AssetEntrySortMode m_sortMode = AssetBrowserEntry::AssetEntrySortMode::Name;
             Qt::SortOrder m_sortOrder = Qt::DescendingOrder;
-            bool m_isTableView{ false };
  
             AZStd::string m_searchString = "";
         };

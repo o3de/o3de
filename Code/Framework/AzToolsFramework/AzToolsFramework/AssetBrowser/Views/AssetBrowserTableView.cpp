@@ -58,14 +58,12 @@ namespace AzToolsFramework
             AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
 
-            m_expandedTableViewProxyModel->setSourceModel(m_assetFilterModel);
+            m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
             m_tableViewWidget->setSortingEnabled(false);
             m_tableViewWidget->header()->setSectionsClickable(true);
             m_tableViewWidget->header()->setSortIndicatorShown(true);
             m_tableViewWidget->setModel(m_tableViewProxyModel);
             m_tableViewWidget->setItemDelegateForColumn(0, m_tableViewDelegate);
-            for (int i = 0; i < m_tableViewWidget->header()->count(); ++i)
-
 
             for (int i = 0; i < m_tableViewWidget->header()->count(); ++i)
             {
@@ -73,7 +71,7 @@ namespace AzToolsFramework
             }
 
             connect(
-                m_expandedTableViewWidget->header(),
+                m_tableViewWidget->header(),
                 &QHeaderView::sortIndicatorChanged,
                 this,
                 [this](const int index, Qt::SortOrder order)
@@ -640,7 +638,7 @@ namespace AzToolsFramework
 
             m_assetFilterModel->sort(0, m_assetFilterModel->GetSortOrder());
 
-            m_expandedTableViewWidget->header()->setSortIndicator(SortModeToColumn(m_assetFilterModel->GetSortMode()), m_assetFilterModel->GetSortOrder());
+            m_tableViewWidget->header()->setSortIndicator(SortModeToColumn(m_assetFilterModel->GetSortMode()), m_assetFilterModel->GetSortOrder());
         }
 
         AssetBrowserEntry::AssetEntrySortMode AssetBrowserTableView::GetSortMode() const
