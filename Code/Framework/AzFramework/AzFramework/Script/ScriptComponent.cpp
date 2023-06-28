@@ -18,6 +18,15 @@
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+// carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+#include <AzFramework/Script/ScriptNetBindings.h>
+#include <AzFramework/Network/NetworkContext.h>
+#include <GridMate/Replica/ReplicaChunk.h>
+#endif
+// carbonated end
+
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/string/conversions.h>
@@ -448,6 +457,9 @@ namespace AzFramework
         , m_contextId(AZ::ScriptContextIds::DefaultScriptContextId)
         , m_script(AZ::Data::AssetLoadBehavior::PreLoad)
         , m_table(LUA_NOREF)
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        , m_netBindingTable(nullptr)
+        // carbonated end
     {
         m_properties.m_name = "Properties";
     }
@@ -459,6 +471,10 @@ namespace AzFramework
     ScriptComponent::~ScriptComponent()
     {
         m_properties.Clear();
+
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        delete m_netBindingTable;
+        // carbonated end
     }
 
     //=========================================================================
@@ -899,6 +915,12 @@ namespace AzFramework
                 AZ::ScriptProperties::Reflect(reflection);
             }
         }
+
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        ScriptNetBindingTable::Reflect(reflection);
+#endif
+        // carbonated end
     }
 
     //=========================================================================
@@ -963,6 +985,63 @@ namespace AzFramework
 
         return *this;
     }
+
+    // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+
+    const char* ScriptComponent::NetRPCFieldName = "NetRPCs";
+
+    //=========================================================================
+    // ScriptComponent::GetNetworkBinding
+    //=========================================================================
+    GridMate::ReplicaChunkPtr ScriptComponent::GetNetworkBinding()
+    {
+        if (m_netBindingTable == nullptr)
+        {
+            m_netBindingTable = aznew ScriptNetBindingTable();
+        }
+
+        return m_netBindingTable->GetNetworkBinding();
+    }
+
+    //=========================================================================
+    // ScriptComponent::SetNetworkBinding
+    //=========================================================================
+    void ScriptComponent::SetNetworkBinding(GridMate::ReplicaChunkPtr chunk)
+    {
+        if (m_netBindingTable == nullptr)
+        {
+            m_netBindingTable = aznew ScriptNetBindingTable();
+        }
+
+        m_netBindingTable->SetNetworkBinding(chunk);
+    }
+
+    //=========================================================================
+    // ScriptComponent::UnbindFromNetwork
+    //=========================================================================
+    void ScriptComponent::UnbindFromNetwork()
+    {
+        if (m_netBindingTable)
+        {
+            m_netBindingTable->UnbindFromNetwork();
+        }
+    }
+
+    //=========================================================================
+    // CreateNetworkBindingTable
+    // [6/27/2016]
+    //=========================================================================
+    void ScriptComponent::CreateNetworkBindingTable(int baseTableStack, int entityTableStack)
+    {
+        if (m_netBindingTable)
+        {
+            m_netBindingTable->CreateNetworkBindingTable(m_context, baseTableStack, entityTableStack);
+        }
+    }
+
+#endif
+    // carbonated end
 }   // namespace AzFramework
 
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)

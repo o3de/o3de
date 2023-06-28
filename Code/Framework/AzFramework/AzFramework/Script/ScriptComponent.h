@@ -15,6 +15,12 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
+// carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+#include <AzFramework/Network/NetBindable.h>
+#endif
+// carbonated end
+
 namespace AZ
 {
     class ScriptProperty;
@@ -31,6 +37,12 @@ namespace AzToolsFramework
 namespace AzFramework
 {
     struct ScriptCompileRequest;
+
+    // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+    class ScriptNetBindingTable;
+#endif
+    // carbonated end
 
     struct ScriptCompileRequest
     {
@@ -79,13 +91,29 @@ namespace AzFramework
     class ScriptComponent
         : public AZ::Component
         , private AZ::Data::AssetBus::Handler
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        , public AzFramework::NetBindable
+#endif
+        // carbonated end
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
     public:
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        static const char* NetRPCFieldName;
+#endif
+        // carbonated end
         static const char* DefaultFieldName;
 
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        AZ_COMPONENT(AzFramework::ScriptComponent, "{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}", NetBindable);
+#else
         AZ_COMPONENT(AzFramework::ScriptComponent, "{8D1BC97E-C55D-4D34-A460-E63C57CD0D4B}", AZ::Component);
+#endif
+        // carbonated end
 
         /// \red ComponentDescriptor::Reflect
         static void Reflect(AZ::ReflectContext* reflection);        
@@ -116,12 +144,28 @@ namespace AzFramework
         void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         //////////////////////////////////////////////////////////////////////////
 
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        //////////////////////////////////////////////////////////////////////////
+        // NetBindable
+        GridMate::ReplicaChunkPtr GetNetworkBinding() override;
+        void SetNetworkBinding(GridMate::ReplicaChunkPtr chunk) override;
+        void UnbindFromNetwork() override;
+        //////////////////////////////////////////////////////////////////////////
+#endif
+        // carbonated end
 
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
 
         void CreateEntityTable();
         void DestroyEntityTable();
+
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        void CreateNetworkBindingTable(int baseTableIndex, int entityTableIndex);
+#endif
+        // carbonated end
         
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 
@@ -130,5 +174,12 @@ namespace AzFramework
         AZ::Data::Asset<AZ::ScriptAsset>    m_script;               ///< Reference to the script asset used for this component.
         int                                 m_table;                ///< Cached table index
         ScriptPropertyGroup                 m_properties;           ///< List with all properties that were tweaked in the editor and should override values in the m_sourceScriptName class inside m_script.
+
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+        ScriptNetBindingTable* m_netBindingTable; ///< Table that will hold our networked script values, and manage callbacks
+#endif
+        // carbonated end
+
     };        
 }   // namespace AZ

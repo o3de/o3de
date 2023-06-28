@@ -524,6 +524,8 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertyEntityRef.h
+    Script/ScriptPropertyEntityRef.cpp
     Script/ScriptPropertySerializer.h
     Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
