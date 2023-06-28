@@ -79,11 +79,23 @@ namespace AZ
                 return;
             }
 
+            AZ::Data::AssetId shaderAssetId = passData->m_shaderAsset.m_assetId;
+            if (!shaderAssetId.IsValid())
+            {
+                // This case may happen when the PassData comes from PassRequest defined insize an *.azasset.
+                // Unlike the PassBuilder, the AnyAssetBuilder doesn't record the AssetId, so we have to discover the asset id at runtime.
+                AZStd::string azshaderPath = passData->m_shaderAsset.m_filePath;
+                AZ::StringFunc::Path::ReplaceExtension(azshaderPath, "azshader");
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    shaderAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, azshaderPath.c_str(),
+                    azrtti_typeid<ShaderAsset>(), false /*autoRegisterIfNotFound*/);
+            }
+
             // Load Shader
             Data::Asset<ShaderAsset> shaderAsset;
-            if (passData->m_shaderAsset.m_assetId.IsValid())
+            if (shaderAssetId.IsValid())
             {
-                shaderAsset = RPI::FindShaderAsset(passData->m_shaderAsset.m_assetId, passData->m_shaderAsset.m_filePath);
+                shaderAsset = RPI::FindShaderAsset(shaderAssetId, passData->m_shaderAsset.m_filePath);
             }
 
             if (!shaderAsset.GetId().IsValid())
