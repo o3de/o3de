@@ -219,6 +219,7 @@ namespace Terrain
             AZ::RHI::DrawListTag m_drawListTag;
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             AZ::RPI::ShaderVariant m_shaderVariant;
+            AZ::Name m_materialPipelineName;
         };
 
         struct HeightNormalVertex

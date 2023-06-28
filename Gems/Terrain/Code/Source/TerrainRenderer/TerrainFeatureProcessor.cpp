@@ -160,16 +160,21 @@ namespace Terrain
     {
         m_terrainSrg = {};
 
-        for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
-        {
-            if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
+        m_materialInstance->ForAllShaderItems(
+            [&](const AZ::Name&, const AZ::RPI::ShaderCollection::Item& shaderItem)
             {
-                const auto& shaderAsset = shaderItem.GetShaderAsset();
-                m_terrainSrg = AZ::RPI::ShaderResourceGroup::Create(shaderItem.GetShaderAsset(), shaderAsset->GetSupervariantIndex(AZ::Name()), AZ::Name{"TerrainSrg"});
-                AZ_Error(TerrainFPName, m_terrainSrg, "Failed to create Terrain shader resource group");
-                break;
-            }
-        }
+                if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
+                {
+                    const auto& shaderAsset = shaderItem.GetShaderAsset();
+                    m_terrainSrg = AZ::RPI::ShaderResourceGroup::Create(
+                        shaderItem.GetShaderAsset(), shaderAsset->GetSupervariantIndex(AZ::Name()), AZ::Name{ "TerrainSrg" });
+                    AZ_Error(TerrainFPName, m_terrainSrg, "Failed to create Terrain shader resource group");
+
+                    // skip the rest of shader items
+                    return false;
+                }
+                return true;                     
+            });
 
         AZ_Error(TerrainFPName, m_terrainSrg, "Terrain Srg not found on any shader in the terrain material");
 
