@@ -53,17 +53,7 @@ namespace AzToolsFramework
                         }
                     case Type:
                         {
-                            switch (assetBrowserEntry->GetEntryType())
-                            {
-                            case AssetBrowserEntry::AssetEntryType::Root:
-                                return tr("Root");
-                            case AssetBrowserEntry::AssetEntryType::Folder:
-                                return tr("Folder");
-                            case AssetBrowserEntry::AssetEntryType::Source:
-                                return ExtensionToType(static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetExtension()).c_str();
-                            case AssetBrowserEntry::AssetEntryType::Product:
-                                return tr("Product");
-                            }
+                            return assetBrowserEntry->GetEntryTypeAsString();
                         }
                     case DiskSize:
                         if (GetShowSearchResultsMode())
@@ -192,66 +182,7 @@ namespace AzToolsFramework
                 endResetModel();
             }
         }
-        inline constexpr auto operator"" _hash(const char* str, size_t len)
-        {
-            return AZStd::hash<AZStd::string_view>{}(AZStd::string_view{ str, len });
-        }
-
-        const AZStd::string AssetBrowserTableViewProxyModel::ExtensionToType(AZStd::string_view str) const
-        {
-            switch (AZStd::hash<AZStd::string_view>{}(str))
-            {
-            case ".png"_hash:
-                return "PNG";
-            case ".scriptcanvas"_hash:
-                return "Script Canvas";
-            case ".fbx"_hash:
-                return "FBX";
-            case ".mtl"_hash:
-                return "Material";
-            case ".animgraph"_hash:
-                return "Anim Graph";
-            case ".motionset"_hash:
-                return "Motion Set";
-            case ".assetinfo"_hash:
-                return "Asset Info";
-            case ".py"_hash:
-                return "Python Script";
-            case ".lua"_hash:
-                return "Lua Script";
-            case ".tif"_hash:
-            case ".tiff"_hash:
-                return "TIF";
-            case ".physxmaterial"_hash:
-                return "PhysX Material";
-            case ".prefab"_hash:
-                return "Prefab";
-            case ".dds"_hash:
-                return "DDS";
-            case ".font"_hash:
-                return "Font";
-            case ".xml"_hash:
-                return "XML";
-            case ".json"_hash:
-                return "JSON";
-            case ".exr"_hash:
-                return "EXR";
-            case ".wav"_hash:
-                return "WAV";
-            case ".uicanvas"_hash:
-                return "UI Canvas";
-            case ".wwu"_hash:
-                return "Wwise Work Unit";
-            case ".wproj"_hash:
-                return "Wwise Project File";
-            default:
-                if (str.length() > 0)
-                {
-                    str.remove_prefix(1);
-                }
-                return str;
-            }
-        }
+        
 
         bool AssetBrowserTableViewProxyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
         {

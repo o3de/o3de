@@ -12,6 +12,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+
 #include <QItemSelection>
 #include <QWidget>
 #include <QAbstractItemView>
@@ -60,6 +62,9 @@ namespace AzToolsFramework
             explicit AssetBrowserTableView(QWidget* parent = nullptr);
             ~AssetBrowserTableView() override;
 
+            AssetBrowserEntry::AssetEntrySortMode ColumnToSortMode(const int columnIndex) const;
+            int SortModeToColumn(const AssetBrowserEntry::AssetEntrySortMode sortMode) const;
+
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
 
             void SetName(const QString& name);
@@ -92,7 +97,10 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             void OnAssetBrowserComponentReady() override;
 
+            void SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode);
+            AssetBrowserEntry::AssetEntrySortMode GetSortMode() const;
             void SetSearchString(const QString& searchString);
+            
         signals:
             void entryClicked(const AssetBrowserEntry* entry);
             void entryDoubleClicked(const AssetBrowserEntry* entry);
