@@ -16,6 +16,7 @@
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
+#include <QCollator>
 #include <QObject>
 #include <QModelIndex>
 #endif
@@ -46,6 +47,16 @@ namespace AzToolsFramework
 
             Q_OBJECT
         public:
+            enum class AssetEntrySortMode
+            {
+                Name,
+                FileType,
+                LastModified,
+                Size,
+                Vertices,
+                Dimensions
+            };
+
             enum class AssetEntryType
             {
                 Root,
@@ -123,6 +134,9 @@ namespace AzToolsFramework
             //! Returns the number of vertices in the model
             const uint32_t GetNumVertices() const;
 
+            const QString& GetEntryTypeAsString() const;
+            static const AZStd::string ExtensionToType(AZStd::string_view str);
+
             //! Get immediate children of specific type
             template<typename EntryType>
             void GetChildren(AZStd::vector<const EntryType*>& entries) const;
@@ -147,10 +161,14 @@ namespace AzToolsFramework
             void SetThumbnailKey(SharedThumbnailKey thumbnailKey);
             virtual SharedThumbnailKey CreateThumbnailKey() = 0;
 
+            bool lessThan(const AssetBrowserEntry* other, const AssetBrowserEntry::AssetEntrySortMode sortColumn, const QCollator& collator) const;
+            void SetFullPath(const AZ::IO::Path& fullPath);
+
         protected:
             AZStd::string m_name;
             QString m_displayName;
             QString m_displayPath;
+            QString m_entryType;
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;

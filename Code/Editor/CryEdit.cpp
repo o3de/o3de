@@ -2519,12 +2519,6 @@ void CCryEditApp::OnViewSwitchToGameFullScreen()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnOpenAssetImporter()
-{
-    QtViewPaneManager::instance()->OpenPane(LyViewPane::SceneSettings);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSelected(QAction* action)
 {
     action->setEnabled(!GetIEditor()->GetSelection()->IsEmpty());

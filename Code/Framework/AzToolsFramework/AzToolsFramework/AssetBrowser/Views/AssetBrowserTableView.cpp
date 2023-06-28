@@ -57,7 +57,11 @@ namespace AzToolsFramework
             using namespace AzToolsFramework::AssetBrowser;
             AssetBrowserComponentRequestBus::BroadcastResult(m_assetBrowserModel, &AssetBrowserComponentRequests::GetAssetBrowserModel);
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
+
             m_tableViewProxyModel->setSourceModel(m_assetFilterModel);
+            m_tableViewWidget->setSortingEnabled(false);
+            m_tableViewWidget->header()->setSectionsClickable(true);
+            m_tableViewWidget->header()->setSortIndicatorShown(true);
             m_tableViewWidget->setModel(m_tableViewProxyModel);
             m_tableViewWidget->setItemDelegateForColumn(0, m_tableViewDelegate);
 
@@ -65,6 +69,24 @@ namespace AzToolsFramework
             {
                 m_tableViewWidget->header()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
             }
+
+            connect(
+                m_tableViewWidget->header(),
+                &QHeaderView::sortIndicatorChanged,
+                this,
+                [this](const int index, Qt::SortOrder order)
+                {
+                    m_assetFilterModel->sort(index, order);
+                });
+
+            connect(
+                m_tableViewWidget->header(),
+                &QHeaderView::sectionClicked,
+                this,
+                [this](const int index)
+                {
+                    SetSortMode(ColumnToSortMode(index));
+                });
 
             connect(
                 m_tableViewWidget,
@@ -199,6 +221,40 @@ namespace AzToolsFramework
         {
             AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
             RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+        }
+
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserTableView::ColumnToSortMode(const int columnIndex) const
+        {
+            switch (columnIndex)
+            {
+            case AssetBrowserTableViewProxyModel::Type:
+                return AssetBrowserEntry::AssetEntrySortMode::FileType;
+            case AssetBrowserTableViewProxyModel::DiskSize:
+                return AssetBrowserEntry::AssetEntrySortMode::Size;
+            case AssetBrowserTableViewProxyModel::Vertices:
+                return AssetBrowserEntry::AssetEntrySortMode::Vertices;
+            case AssetBrowserTableViewProxyModel::ApproxSize:
+                return AssetBrowserEntry::AssetEntrySortMode::Dimensions;
+            default:
+                return AssetBrowserEntry::AssetEntrySortMode::Name;
+            }
+        }
+
+        int AssetBrowserTableView::SortModeToColumn(const AssetBrowserEntry::AssetEntrySortMode sortMode) const
+        {
+            switch (sortMode)
+            {
+            case AssetBrowserEntry::AssetEntrySortMode::FileType:
+                return AssetBrowserTableViewProxyModel::Type;
+            case AssetBrowserEntry::AssetEntrySortMode::Size:
+                return AssetBrowserTableViewProxyModel::DiskSize;
+            case AssetBrowserEntry::AssetEntrySortMode::Vertices:
+                return AssetBrowserTableViewProxyModel::Vertices;
+            case AssetBrowserEntry::AssetEntrySortMode::Dimensions:
+                return AssetBrowserTableViewProxyModel::ApproxSize;
+            default:
+                return 0;
+            }
         }
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
@@ -384,6 +440,8 @@ namespace AzToolsFramework
 
             m_assetTreeView = treeView;
 
+            m_assetTreeView->SetAttachedTableView(this);
+
             if (!m_assetTreeView)
             {
                 return;
@@ -563,6 +621,31 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserTableView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
+        {
+            if (mode == m_assetFilterModel->GetSortMode())
+            {
+                if (m_assetFilterModel->GetSortOrder() == Qt::DescendingOrder)
+                {
+                    m_assetFilterModel->SetSortOrder(Qt::AscendingOrder);
+                }
+                else
+                {
+                    m_assetFilterModel->SetSortOrder(Qt::DescendingOrder);
+                }
+            }
+            m_assetFilterModel->SetSortMode(mode);
+
+            m_assetFilterModel->sort(0, m_assetFilterModel->GetSortOrder());
+
+            m_tableViewWidget->header()->setSortIndicator(SortModeToColumn(m_assetFilterModel->GetSortMode()), m_assetFilterModel->GetSortOrder());
+        }
+
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserTableView::GetSortMode() const
+        {
+            return m_assetFilterModel->GetSortMode();
+        }
+
         void AssetBrowserTableView::SetSearchString(const QString& searchString)
         {
             m_tableViewProxyModel->SetSearchString(searchString);
@@ -632,6 +715,5 @@ namespace AzToolsFramework
             }
             return widget;
         }
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

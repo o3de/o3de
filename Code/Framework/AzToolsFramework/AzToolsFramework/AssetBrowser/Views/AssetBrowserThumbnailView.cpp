@@ -484,14 +484,14 @@ namespace AzToolsFramework
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
 
-        void AssetBrowserThumbnailView::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode)
+        void AssetBrowserThumbnailView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
         {
             m_assetFilterModel->SetSortMode(mode);
 
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
         }
 
-        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserThumbnailView::GetSortMode() const
+       AssetBrowserEntry::AssetEntrySortMode AssetBrowserThumbnailView::GetSortMode() const
         {
             return m_assetFilterModel->GetSortMode();
         }
