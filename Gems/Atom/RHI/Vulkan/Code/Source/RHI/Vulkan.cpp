@@ -19,6 +19,7 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/Limits.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #define VMA_IMPLEMENTATION
 
@@ -114,15 +115,19 @@ namespace AZ
 
         void RemoveRawStringList(RawStringList& removeFrom, const RawStringList& toRemove)
         {
-            removeFrom.erase(
-                AZStd::remove_if(
-                    removeFrom.begin(),
-                    removeFrom.end(),
-                    [&](const auto& x)
-                    {
-                        return AZStd::find(toRemove.begin(), toRemove.end(), x) != toRemove.end();
-                    }),
-                removeFrom.end());
+            AZStd::erase_if(
+                removeFrom,
+                [&](const auto& x)
+                {
+                    return AZStd::find_if(
+                               toRemove.begin(),
+                               toRemove.end(),
+                               [&](const auto& y)
+                               {
+                                   return AZ::StringFunc::Equal(x, y);
+                               }
+                    ) != toRemove.end();
+                });
         }
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter)

@@ -136,7 +136,7 @@ namespace AZ
             {
                 // Remove all validation layers and extensions and try again to create the Vulkan instance.
                 // Some drivers report the validation layers as available but they fail to load them when creating the instance.
-                AZ_Warning("Vulkan", false, "Disabling validation due to Instance creation failure. Error = '%s'.", GetResultString(result));
+                AZ_Warning("Vulkan", false, R"(Disabling validation due to Instance creation failure. Error = "%s".)", GetResultString(result));
                 RawStringList validationLayers = Debug::GetValidationLayers();
                 RemoveRawStringList(m_descriptor.m_requiredLayers, validationLayers);
                 RawStringList validationExtension = Debug::GetValidationExtensions();
