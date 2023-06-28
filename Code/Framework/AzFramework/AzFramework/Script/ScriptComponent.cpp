@@ -457,6 +457,9 @@ namespace AzFramework
         , m_contextId(AZ::ScriptContextIds::DefaultScriptContextId)
         , m_script(AZ::Data::AssetLoadBehavior::PreLoad)
         , m_table(LUA_NOREF)
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        , m_netBindingTable(nullptr)
+        // carbonated end
     {
         m_properties.m_name = "Properties";
     }
