@@ -33,7 +33,7 @@ namespace HttpRequestor
         void AddTextRequest(TextParameters && httpTextRequestParameters);
 
         // The last round trip time taken to make the http request and get a response.
-        AZStd::chrono::milliseconds LastRoundTripTime() const;
+        AZStd::chrono::milliseconds GetLastRoundTripTime() const;
 
     private:
         // RequestManager thread loop.

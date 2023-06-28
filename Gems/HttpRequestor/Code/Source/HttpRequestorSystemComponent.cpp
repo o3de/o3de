@@ -61,11 +61,11 @@ namespace HttpRequestor
         }
     }
 
-    AZStd::chrono::milliseconds HttpRequestorSystemComponent::LastRoundTripTime() const
+    AZStd::chrono::milliseconds HttpRequestorSystemComponent::GetLastRoundTripTime() const
     {
         if (m_httpManager != nullptr)
         {
-            return m_httpManager->LastRoundTripTime();
+            return m_httpManager->GetLastRoundTripTime();
         }
 
         return {};

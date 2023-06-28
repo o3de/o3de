@@ -40,7 +40,7 @@ namespace HttpRequestor
         void AddTextRequestWithHeaders(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const TextCallback& callback) override;
         void AddTextRequestWithHeadersAndBody(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers & headers, const AZStd::string& body, const TextCallback& callback) override;
 
-        AZStd::chrono::milliseconds LastRoundTripTime() const override;
+        AZStd::chrono::milliseconds GetLastRoundTripTime() const override;
 
         ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation

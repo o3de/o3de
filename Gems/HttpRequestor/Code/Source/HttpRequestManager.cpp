@@ -84,7 +84,7 @@ namespace HttpRequestor
         m_requestConditionVar.notify_all();
     }
 
-    AZStd::chrono::milliseconds Manager::LastRoundTripTime() const
+    AZStd::chrono::milliseconds Manager::GetLastRoundTripTime() const
     {
         return m_lastRoundTripTime;
     }
