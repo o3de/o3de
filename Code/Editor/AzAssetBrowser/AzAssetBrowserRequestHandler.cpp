@@ -389,7 +389,7 @@ void AzAssetBrowserRequestHandler::CreateSortAction(
     AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
     AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
     QString name,
-    AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+    AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntrySortMode sortMode)
 {
     QAction* action = menu->addAction(
         name,
@@ -439,9 +439,22 @@ void AzAssetBrowserRequestHandler::CreateSortAction(
 void AzAssetBrowserRequestHandler::AddSortMenu(
     QMenu* menu,
     AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
-    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView)
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView)
 {
     using namespace AzToolsFramework::AssetBrowser;
+
+    //TableView handles its own sorting.
+    if (tableView)
+    {
+        return;
+    }
+
+    // Check for the menu being called from the treeview when a tableview is active.
+    if (treeView && treeView->GetAttachedTableView() && treeView->GetAttachedTableView()->GetTableViewActive())
+    {
+        return;
+    }
 
     QMenu* sortMenu = menu->addMenu(QObject::tr("Sort by"));
     
@@ -449,27 +462,25 @@ void AzAssetBrowserRequestHandler::AddSortMenu(
         sortMenu,
         thumbnailView,
         treeView,
-        QObject::tr("Name"),
-        AssetBrowserFilterModel::AssetBrowserSortMode::Name);
+        QObject::tr("Name"), AssetBrowserEntry::AssetEntrySortMode::Name);
     
     CreateSortAction(
         sortMenu,
         thumbnailView,
         treeView,
-        QObject::tr("Type"), AssetBrowserFilterModel::AssetBrowserSortMode::FileType);
+        QObject::tr("Type"), AssetBrowserEntry::AssetEntrySortMode::FileType);
 
     CreateSortAction(
         sortMenu,
         thumbnailView,
         treeView,
-        QObject::tr("Date"),
-        AssetBrowserFilterModel::AssetBrowserSortMode::LastModified);
+        QObject::tr("Date"), AssetBrowserEntry::AssetEntrySortMode::LastModified);
 
     CreateSortAction(
         sortMenu,
         thumbnailView,
         treeView,
-        QObject::tr("Size"), AssetBrowserFilterModel::AssetBrowserSortMode::Size);
+        QObject::tr("Size"), AssetBrowserEntry::AssetEntrySortMode::Size);
 }
 
 void AzAssetBrowserRequestHandler::AddCreateMenu(QMenu* menu, AZStd::string fullFilePath)
@@ -544,7 +555,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
     if (calledFromAssetBrowser)
     {
-        AddSortMenu(menu, thumbnailView, treeView);
+        AddSortMenu(menu, thumbnailView, treeView, tableView);
     }
 
     size_t numOfEntries = entries.size();

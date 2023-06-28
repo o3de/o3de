@@ -72,10 +72,11 @@ public:
         AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
         AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
         QString name,
-        AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode);
+        AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntrySortMode sortMode);
     void AddSortMenu(QMenu* menu,
         AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
-        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView
         );
 
 protected:
