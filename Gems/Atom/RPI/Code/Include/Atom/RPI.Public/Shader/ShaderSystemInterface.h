@@ -49,8 +49,6 @@ namespace AZ
             //! Currently this is used for NoMSAA supervariant support.
             virtual void SetSupervariantName(const AZ::Name& supervariantName) = 0;
             virtual const AZ::Name& GetSupervariantName() const = 0;
-
-            virtual void PrintShaderInstanceInfo() const = 0;
         };
 
     }   // namespace RPI
