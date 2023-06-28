@@ -391,15 +391,15 @@ class TestEditRepoProperties:
                          None, None, None, None,
                          'project', None, None, None,
                          0),
-            # Test Auto update a project 
-            pytest.param(pathlib.Path('F:/repotest'),'testAutoUpdateProject',
+            # Test Auto update a template 
+            pytest.param(pathlib.Path('F:/repotest'),'testAutoUpdateTemplate',
                          None, None, None, None,
                          None, None, None, None,
                          None, None, None, None,
                          'template', None, None, None,
                          0),
             # Test Auto update all object types 
-            pytest.param(pathlib.Path('F:/repotest'),'testAutoUpdateProject',
+            pytest.param(pathlib.Path('F:/repotest'),'testAutoUpdateAll',
                          None, None, None, None,
                          None, None, None, None,
                          None, None, None, None,

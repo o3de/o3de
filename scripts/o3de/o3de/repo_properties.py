@@ -265,8 +265,8 @@ def _edit_objects(object_typename:str,
     repo_json[f'{object_typename}s_data'] = repo_objects_data
 
 def _auto_update_json(object_type: str or list,
-                      repo_path: pathlib.Path = None,
-                      repo_json: dict = None,
+                      repo_path: pathlib.Path,
+                      repo_json: dict,
                       ):
     
     repo_directory = os.path.dirname(repo_path)
@@ -281,7 +281,8 @@ def _auto_update_json(object_type: str or list,
                 expected_files[filename].append(file_path)
     
     objects = object_type.split() if isinstance(object_type, str) else object_type
-    for object_name in objects:
+    for object in objects:
+        object_name = object.lower()
         if object_name == 'gem':
             _edit_objects(object_name, validation.valid_o3de_gem_json, repo_json, expected_files.get("gem.json"))
         if object_name == 'project':
@@ -319,7 +320,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
     :add_templates: Any template paths to be added to the list
     :delete_templates: Any template names to be removed from the list
     :replace_templates: A list of template paths that will completely replace the current list of path
-    :auto_update: Automatically updates your selected gem/project/template to your remote repository
+    :auto_update: List of object types (gem/project/template) to automatically to your remote repository. `None` if no auto update is desired.
     :release_archive_path: Path where you want your release to be located
     :force: Replaces current directory with new user input directory or file
     :download_prefix: The string prefix of the download uri
@@ -391,7 +392,7 @@ def add_parser_args(parser):
     group.add_argument('--repo-name','-rn',  type=str, required=False,
                        help='The name of the remote repository.')
     group.add_argument('--auto-update', '-au', type=str, nargs='*', required=False,
-                       help='Checks for any new Gems/Projects/Templates in the asscoiated directories that has not been added'
+                       help='Checks for any new Gems/Projects/Templates in the associated directories that have not been added'
                        ' to your repo.json fields.'
                        ' Pass in lower case object type as args that should look like this: gem/ project/ template'
                        ' Note: This does not update the deleted gems/projects/templates, please use'
