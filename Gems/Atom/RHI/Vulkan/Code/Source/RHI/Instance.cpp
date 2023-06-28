@@ -153,7 +153,7 @@ namespace AZ
 
             if (result != VK_SUCCESS)
             {
-                AZ_Warning("Vulkan", false, "Failed to create Vulkan instance. Error = '%s'", GetResultString(result));
+                AZ_Warning("Vulkan", false, R"(Failed to create Vulkan instance. Error = "%s")", GetResultString(result));
                 return false;
             }
 
