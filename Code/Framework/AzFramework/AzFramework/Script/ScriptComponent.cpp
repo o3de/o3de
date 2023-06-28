@@ -468,6 +468,10 @@ namespace AzFramework
     ScriptComponent::~ScriptComponent()
     {
         m_properties.Clear();
+
+        // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        delete m_netBindingTable;
+        // carbonated end
     }
 
     //=========================================================================
