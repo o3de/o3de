@@ -86,7 +86,7 @@ namespace HttpRequestor
 
     AZStd::chrono::milliseconds Manager::GetLastRoundTripTime() const
     {
-        return m_lastRoundTripTime;
+        return m_lastRoundTripTime.load(AZStd::memory_order_relaxed);
     }
 
     void Manager::ThreadFunction()
@@ -157,7 +157,9 @@ namespace HttpRequestor
 
         AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         const auto httpResponse = httpClient->MakeRequest(httpRequest);
-        m_lastRoundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
+        m_lastRoundTripTime.store(
+            AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start),
+            AZStd::memory_order_relaxed);
 
         if (!httpResponse)
         {
@@ -203,7 +205,9 @@ namespace HttpRequestor
 
         AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         const auto httpResponse = httpClient->MakeRequest(httpRequest);
-        m_lastRoundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
+        m_lastRoundTripTime.store(
+            AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start),
+            AZStd::memory_order_relaxed);
 
         if (!httpResponse)
         {

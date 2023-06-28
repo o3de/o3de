@@ -57,7 +57,7 @@ namespace HttpRequestor
         AZStd::thread                           m_thread;                           // This is the thread that will be used for all async operations
         static const char*                      s_loggingName;                      // Name to use for log messages etc...
         bool                                    m_ownsAwsNativeInitialization = false; // Whether or not this module initialized the native layer
-        AZStd::chrono::milliseconds             m_lastRoundTripTime; // The last round trip time taken to make the http request and get a response.
+        AZStd::atomic<AZStd::chrono::milliseconds> m_lastRoundTripTime; // The last round trip time taken to make the http request and get a response.
     };
 
     using ManagerPtr = AZStd::shared_ptr<Manager>;
