@@ -700,14 +700,14 @@ set(FILES
     AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
-    AssetBrowser/AssetBrowserTableFilterModel.cpp
-    AssetBrowser/AssetBrowserTableFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
     AssetBrowser/AssetBrowserListModel.cpp
     AssetBrowser/AssetBrowserListModel.h
     AssetBrowser/AssetBrowserTableViewProxyModel.cpp
     AssetBrowser/AssetBrowserTableViewProxyModel.h
+    AssetBrowser/AssetBrowserTreeToTableProxyModel.cpp
+    AssetBrowser/AssetBrowserTreeToTableProxyModel.h
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp

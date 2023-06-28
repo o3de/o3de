@@ -102,7 +102,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::AzAssetBrowserWindowClass())
     , m_filterModel(new AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent))
-    , m_tableModel(new AzToolsFramework::AssetBrowser::AssetBrowserListModel(parent))
+    , m_listModel(new AzToolsFramework::AssetBrowser::AssetBrowserListModel(parent))
 {
     m_ui->setupUi(this);
     m_ui->m_searchWidget->Setup(true, true, true);
@@ -167,10 +167,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_toolsMenuButton->setAutoRaise(true);
         m_ui->m_toolsMenuButton->setIcon(QIcon(AzAssetBrowser::MenuIcon));
 
-        m_tableModel->setFilterRole(Qt::DisplayRole);
-        m_tableModel->setSourceModel(m_filterModel.data());
-        m_tableModel->setDynamicSortFilter(true);
-        m_ui->m_assetBrowserListViewWidget->setModel(m_tableModel.data());
+        m_listModel->setFilterRole(Qt::DisplayRole);
+        m_listModel->setSourceModel(m_filterModel.data());
+        m_listModel->setDynamicSortFilter(true);
+        m_ui->m_assetBrowserListViewWidget->setModel(m_listModel.data());
 
         m_createMenu = new QMenu("Create New Asset Menu", this);
         m_ui->m_createButton->setMenu(m_createMenu);
@@ -317,7 +317,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
             const bool selectFirstFilteredIndex = false;
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
-            m_ui->m_tableViewButton->setDisabled(hasFilter);
         });
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
@@ -487,7 +486,7 @@ bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
 {
-    // leftLayout is the parent of the tableView
+    // leftLayout is the parent of the listView
     // rightLayout is the parent of the preview window.
     // Workaround: When docking windows this event keeps holding the old size of the widgets instead of the new one
     // but the resizeEvent holds the new size of the whole widget
@@ -560,6 +559,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_ui->m_assetBrowserListViewWidget->setVisible(false);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(true);
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
+        m_ui->m_tableView->SetTableViewActive(false);
     }
     else
     {
@@ -677,7 +677,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
     if (ed_useNewAssetBrowserListView)
     {
         auto thumbnailWidget = m_ui->m_thumbnailView->GetThumbnailViewWidget();
-        auto expandedTableWidget = m_ui->m_tableView->GetExpandedTableViewWidget();
+        auto tableWidget = m_ui->m_tableView->GetTableViewWidget();
 
         if (hasFilter)
         {
@@ -686,9 +686,9 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
                 thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
                 m_ui->m_thumbnailView->SetSearchString(m_ui->m_searchWidget->GetFilterString());
             }
-            if (expandedTableWidget)
+            if (tableWidget)
             {
-                expandedTableWidget->setRootIndex(expandedTableWidget->model()->index(0, 0, {}));
+                tableWidget->setRootIndex(tableWidget->model()->index(0, 0, {}));
                 m_ui->m_tableView->SetSearchString(m_ui->m_searchWidget->GetFilterString());
             }
             m_ui->m_assetBrowserTreeViewWidget->SetSearchString(m_ui->m_searchWidget->GetFilterString());
@@ -699,7 +699,7 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
             {
                 m_ui->m_thumbnailView->SetSearchString("");
             }
-            if (expandedTableWidget)
+            if (tableWidget)
             {
                 m_ui->m_tableView->SetSearchString("");
             }
@@ -749,15 +749,12 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_tableView->SetTableViewActive(false);
-        m_ui->m_searchWidget->setEnabled(true);
         m_ui->m_searchWidget->SetSelectionCount(m_ui->m_thumbnailView->GetSelectedAssets().size());
     }
     else if (tableView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(true);
-        m_ui->m_searchWidget->setDisabled(true);
-        m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(true);
         m_ui->m_searchWidget->SetSelectionCount(m_ui->m_tableView->GetSelectedAssets().size());
     }
 }
@@ -775,8 +772,6 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         }
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(false);
-        m_ui->m_searchWidget->setEnabled(true);
-        m_ui->m_assetBrowserFavoritesWidget->SetSearchDisabled(false);
         m_ui->m_searchWidget->SetSelectionCount(m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size());
     }
 }
@@ -839,7 +834,7 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
         }
         else if (m_ui->m_tableView->GetTableViewActive())
         {
-            m_ui->m_tableView->GetExpandedTableViewWidget()->selectionModel()->clearSelection();
+            m_ui->m_tableView->GetTableViewWidget()->selectionModel()->clearSelection();
         }
         m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
