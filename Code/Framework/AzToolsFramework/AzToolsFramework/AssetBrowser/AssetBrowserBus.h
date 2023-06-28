@@ -12,10 +12,11 @@
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
-AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option") 
+AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
 AZ_POP_DISABLE_WARNING
 
+class QMainWindow;
 class QMimeData;
 class QWidget;
 class QImage;
@@ -331,18 +332,26 @@ namespace AzToolsFramework
         using AssetBrowserViewRequestBus = AZ::EBus<AssetBrowserViewRequests>;
 
         //! Preview the currently selected Asset in a PreviewFrame
-        class AssetBrowserPreviewRequest
-            : public AZ::EBusTraits
+        class AssetBrowserPreviewRequest : public AZ::EBusTraits
         {
         public:
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
             //! Updates the asset browser inspector panel with data about the passed entry.
             //! Clears the panel if nullptr is passed
-            virtual void PreviewAsset(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) = 0;
+            virtual void PreviewAsset([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){};
 
             //! Clears the asset browser inspector panel
             virtual void ClearPreview(){};
+
+            //! Preview the selected entry in the scene settings window, returns true if successful 
+            virtual bool PreviewSceneSettings([[maybe_unused]]const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry){ return false; };
+
+            //! Opens and returns the scene settings window
+            virtual QMainWindow* GetSceneSettings() { return nullptr; }
+
+            //! return true if the asset browser inspector panel has unsaved changes and must save before closing
+            virtual bool SaveBeforeClosing() { return false; };
         };
         using AssetBrowserPreviewRequestBus = AZ::EBus<AssetBrowserPreviewRequest>;
 
