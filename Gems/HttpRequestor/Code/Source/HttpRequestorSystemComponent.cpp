@@ -60,7 +60,17 @@ namespace HttpRequestor
             m_httpManager->AddTextRequest(TextParameters(URI, method, headers, body, callback));
         }
     }
-    
+
+    AZStd::chrono::milliseconds HttpRequestorSystemComponent::LastRoundTripTime() const
+    {
+        if (m_httpManager != nullptr)
+        {
+            return m_httpManager->LastRoundTripTime();
+        }
+
+        return {};
+    }
+
     void HttpRequestorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serialize = azrtti_cast<AZ::SerializeContext*>(context))

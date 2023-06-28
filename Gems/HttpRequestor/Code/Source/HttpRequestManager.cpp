@@ -84,6 +84,11 @@ namespace HttpRequestor
         m_requestConditionVar.notify_all();
     }
 
+    AZStd::chrono::milliseconds Manager::LastRoundTripTime() const
+    {
+        return m_lastRoundTripTime;
+    }
+
     void Manager::ThreadFunction()
     {
         // Run the thread as long as directed
@@ -152,28 +157,28 @@ namespace HttpRequestor
 
         AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         const auto httpResponse = httpClient->MakeRequest(httpRequest);
-        const auto roundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
+        m_lastRoundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
 
         if (!httpResponse)
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, roundTripTime);
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR);
             return;
         }
 
         if (httpResponse->GetResponseCode() != Aws::Http::HttpResponseCode::OK)
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), httpResponse->GetResponseCode(), roundTripTime);
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), httpResponse->GetResponseCode());
             return;
         }
 
         Aws::Utils::Json::JsonValue json(httpResponse->GetResponseBody());
         if (json.WasParseSuccessful())
         {
-            httpRequestParameters.GetCallback()(AZStd::move(json), httpResponse->GetResponseCode(), roundTripTime);
+            httpRequestParameters.GetCallback()(AZStd::move(json), httpResponse->GetResponseCode());
         }
         else
         {
-            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, roundTripTime);
+            httpRequestParameters.GetCallback()(Aws::Utils::Json::JsonValue(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -198,17 +203,17 @@ namespace HttpRequestor
 
         AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
         const auto httpResponse = httpClient->MakeRequest(httpRequest);
-        const auto roundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
+        m_lastRoundTripTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start);
 
         if (!httpResponse)
         {
-            httpRequestParameters.GetCallback()(AZStd::string(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR, roundTripTime);
+            httpRequestParameters.GetCallback()(AZStd::string(), Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR);
             return;
         }
 
         if (httpResponse->GetResponseCode() != Aws::Http::HttpResponseCode::OK)
         {
-            httpRequestParameters.GetCallback()(AZStd::string(), httpResponse->GetResponseCode(), roundTripTime);
+            httpRequestParameters.GetCallback()(AZStd::string(), httpResponse->GetResponseCode());
             return;
         }
 
@@ -216,6 +221,6 @@ namespace HttpRequestor
         // TODO(aaj): it feels like there should be some limit maybe 1 MB?
         std::istreambuf_iterator<char> eos;
         AZStd::string data(std::istreambuf_iterator<char>(httpResponse->GetResponseBody()), eos);
-        httpRequestParameters.GetCallback()(AZStd::move(data), httpResponse->GetResponseCode(), roundTripTime);
+        httpRequestParameters.GetCallback()(AZStd::move(data), httpResponse->GetResponseCode());
     }
 } // namespace HttpRequestor

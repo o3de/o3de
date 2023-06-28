@@ -165,8 +165,7 @@ namespace AWSClientAuthUnitTest
             jsonValue.WithString("error", "TestError");
             Aws::Utils::Json::JsonView jsonView(jsonValue);
             Aws::Http::HttpResponseCode code = Aws::Http::HttpResponseCode::INTERNAL_SERVER_ERROR;
-            AZStd::chrono::milliseconds roundTripTime(0);
-            callback(jsonView, code, roundTripTime);
+            callback(jsonView, code);
         }
 
         void AddRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::Callback& callback) override
@@ -201,8 +200,7 @@ namespace AWSClientAuthUnitTest
             jsonValue.WithInteger("expires_in", 600);
             Aws::Utils::Json::JsonView jsonView(jsonValue);
             Aws::Http::HttpResponseCode code = Aws::Http::HttpResponseCode::OK;
-            AZStd::chrono::milliseconds roundTripTime(0);
-            callback(jsonView, code, roundTripTime);
+            callback(jsonView, code);
         }
 
         void AddTextRequest(const AZStd::string& URI, Aws::Http::HttpMethod method, const HttpRequestor::TextCallback& callback) override

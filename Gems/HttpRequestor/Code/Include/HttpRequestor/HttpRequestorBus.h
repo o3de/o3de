@@ -74,6 +74,8 @@ namespace HttpRequestor
             const Headers& headers,
             const AZStd::string& body,
             const TextCallback& callback) = 0;
+
+        virtual AZStd::chrono::milliseconds LastRoundTripTime() const = 0;
     };
 
     using HttpRequestorRequestBus = AZ::EBus<HttpRequestorRequests>;
