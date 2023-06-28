@@ -19,7 +19,7 @@
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserTableViewProxyModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
 
 #include <QSharedPointer>
 #include <QTimer>
@@ -35,13 +35,23 @@ namespace AzToolsFramework
     {
         //////////////////////////////////////////////////////////////////////////
         //AssetBrowserFilterModel
-        AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent)
+        AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent, bool isTableView)
             : QSortFilterProxyModel(parent)
+            , m_isTableView(isTableView)
         {
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
             if (ed_useNewAssetBrowserListView)
             {
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
+            }
+            if (isTableView)
+            {
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Type));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DiskSize));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Vertices));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::ApproxSize));
+                // The below isn't used at present but will be needed in future
+                // m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));
             }
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -129,6 +139,10 @@ namespace AzToolsFramework
         {
             //get the source idx, if invalid early out
             QModelIndex idx = sourceModel()->index(source_row, 0, source_parent);
+            if (m_isTableView && qobject_cast<AssetBrowserTreeToTableProxyModel*>(sourceModel()))
+            {
+                idx = static_cast<AssetBrowserTreeToTableProxyModel*>(sourceModel())->mapToSource(idx);
+            }
             if (!idx.isValid())
             {
                 return false;

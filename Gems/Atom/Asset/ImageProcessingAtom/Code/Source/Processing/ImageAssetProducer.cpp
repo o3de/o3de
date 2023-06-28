@@ -219,16 +219,7 @@ namespace ImageProcessingAtom
                 product.m_productSubID = imageAsset.GetId().m_subId;
                 product.m_productFileName = destPath;
 
-                // The StreamingImageAsset is added to end of product list in purpose.
-                // This is in case a new mip chain file is generated, for example when updating the original image's resolution,
-                // the mip chain asset hasn't be registered by the AssetCatalog when processing the asset change notification for
-                // StreamingImageAsset reload and it leads to an unknown asset error.
-                // The Asset system can be modified to solve the problem so the order doesn't matter.
-                // The task is tracked in ATOM-242
-                m_jobProducts.push_back(AZStd::move(product));
-
                 auto& imageDescriptor = imageAsset->GetImageDescriptor();
-
                 AZStd::string folder;
                 AZStd::string jsonName;
                 folder = AZStd::string::format("%s/%s.abdata.json", m_productFolder.c_str(), m_fileName.c_str());
@@ -245,8 +236,16 @@ namespace ImageProcessingAtom
                 });
 
                 AssetBuilderSDK::JobProduct jsonProduct(folder);
-                jsonProduct.m_productSubID = product.m_productSubID + 1;
-                m_jobProducts.push_back(AZStd::move(jsonProduct));
+                jsonProduct.m_productSubID |= product.m_productSubID;
+                m_jobProducts.emplace_back(AZStd::move(jsonProduct));
+
+                // The StreamingImageAsset is added to end of product list on purpose.
+                // This is in case a new mip chain file is generated, for example when updating the original image's resolution,
+                // the mip chain asset hasn't be registered by the AssetCatalog when processing the asset change notification for
+                // StreamingImageAsset reload and it leads to an unknown asset error.
+                // The Asset system can be modified to solve the problem so the order doesn't matter.
+                // The task is tracked in ATOM-242
+                m_jobProducts.emplace_back(AZStd::move(product));
             }
         }
 

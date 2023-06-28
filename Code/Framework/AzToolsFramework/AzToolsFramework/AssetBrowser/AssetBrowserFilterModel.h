@@ -38,7 +38,7 @@ namespace AzToolsFramework
         public:
             
             AZ_CLASS_ALLOCATOR(AssetBrowserFilterModel, AZ::SystemAllocator);
-            explicit AssetBrowserFilterModel(QObject* parent = nullptr);
+            explicit AssetBrowserFilterModel(QObject* parent = nullptr, bool isTableView = false);
             ~AssetBrowserFilterModel() override;
 
             // QSortFilterProxyModel
@@ -88,9 +88,12 @@ namespace AzToolsFramework
             QCollator m_collator;  // cache the collator as its somewhat expensive to constantly create and destroy one.
             AZ_POP_DISABLE_WARNING
             bool m_invalidateFilter = false;
-
+            
+            bool m_isTableView{ false };
             AssetBrowserEntry::AssetEntrySortMode m_sortMode = AssetBrowserEntry::AssetEntrySortMode::Name;
             Qt::SortOrder m_sortOrder = Qt::DescendingOrder;
+            bool m_isTableView{ false };
+ 
             AZStd::string m_searchString = "";
         };
     } // namespace AssetBrowser
