@@ -132,31 +132,33 @@ namespace AZ
                 template<typename> struct int_ { typedef int type; };
 
                 template<typename vkCreateRenderPassType>
-                RenderPassResult Create(VkRenderPassCreateInfoType& createInfo);
-
-                // Specialization for creating a renderpass using the standard function.
-                template<>
-                RenderPassResult Create<VkRenderPassCreateInfo>(VkRenderPassCreateInfoType& createInfo)
+                RenderPassResult Create(VkRenderPassCreateInfoType& createInfo)
                 {
-                    VkRenderPass renderPass = VK_NULL_HANDLE;
-                    VkResult result = m_device.GetContext().CreateRenderPass(
-                        m_device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &renderPass);
-                    return AZStd::make_tuple(result, renderPass);
-                }
-
-                // Specialization for creating a renderpass using the renderpass2 extension.
-                template<>
-                RenderPassResult Create<VkRenderPassCreateInfo2>(VkRenderPassCreateInfoType& createInfo)
-                {
-                    VkRenderPass renderPass = VK_NULL_HANDLE;
-                    VkResult result = m_device.GetContext().CreateRenderPass2KHR(
-                        m_device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &renderPass);
-                    return AZStd::make_tuple(result, renderPass);
+                    if constexpr (AZStd::is_same_v<vkCreateRenderPassType, VkRenderPassCreateInfo>)
+                    {
+                        VkRenderPass renderPass = VK_NULL_HANDLE;
+                        VkResult result = m_device.GetContext().CreateRenderPass(
+                            m_device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &renderPass);
+                        return AZStd::make_tuple(result, renderPass);
+                    }
+                    else if constexpr (AZStd::is_same_v<vkCreateRenderPassType, VkRenderPassCreateInfo2>)
+                    {
+                        VkRenderPass renderPass = VK_NULL_HANDLE;
+                        VkResult result = m_device.GetContext().CreateRenderPass2KHR(
+                            m_device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &renderPass);
+                        return AZStd::make_tuple(result, renderPass);
+                    }
+                    else
+                    {
+                        static_assert(AZStd::is_same_v<vkCreateRenderPassType, VkRenderPassCreateInfo>
+                            || AZStd::is_same_v<vkCreateRenderPassType, VkRenderPassCreateInfo2>);
+                        return {};
+                    }
                 }
 
                 // Builds all attachment descriptions from the descriptor.
                 void BuildAttachmentDescriptions(AZStd::vector<VkAttachmentDescriptionType>& attachmentDescriptions) const
-                {           
+                {
                     for (uint32_t i = 0; i < m_descriptor->m_attachmentCount; ++i)
                     {
                         const RenderPass::AttachmentBinding& binding = m_descriptor->m_attachments[i];
@@ -194,38 +196,40 @@ namespace AZ
                 template<AttachmentType type>
                 void BuildAttachmentReferences(uint32_t subpassIndex, SubpassInfo& subpassInfo) const
                 {
-                    AZStd::span<const RenderPass::SubpassAttachment> subpassAttachmentList = GetSubpassAttachments(subpassIndex, type);
-                    AZStd::vector<VkAttachmentReferenceType>& attachmentReferenceList =
-                        subpassInfo.m_attachmentReferences[static_cast<uint32_t>(type)];
-                    attachmentReferenceList.resize(subpassAttachmentList.size());
-                    for (uint32_t index = 0; index < subpassAttachmentList.size(); ++index)
+                    // A template cannot be specialized inside of another template
+                    // therefore the `if constexpr` statement is used to filter the Preserve AttachmentType functionality
+                    // in this single template member function
+                    if constexpr (type == AttachmentType::Preserve)
                     {
-                        if (subpassAttachmentList[index].IsValid())
-                        {
-                            attachmentReferenceList[index].attachment = subpassAttachmentList[index].m_attachmentIndex;
-                            attachmentReferenceList[index].layout = subpassAttachmentList[index].m_layout;
-                            SetImageAspectFlags(
-                                attachmentReferenceList[index], subpassAttachmentList[index].m_imageAspectFlags, special_());
-                        }
-                        else
-                        {
-                            attachmentReferenceList[index].attachment = VK_ATTACHMENT_UNUSED;
-                        }
-                        SetStructureType(attachmentReferenceList[index], VkAttachmentReferenceTraits::struct_type, special_());
+                        auto& subpassDescriptor = const_cast<RenderPass::SubpassDescriptor&>(m_descriptor->m_subpassDescriptors[subpassIndex]);
+                        AZStd::vector<uint32_t>& attachmentReferenceList = subpassInfo.m_preserveAttachments;
+                        attachmentReferenceList.insert(
+                            attachmentReferenceList.end(),
+                            subpassDescriptor.m_preserveAttachments.begin(),
+                            subpassDescriptor.m_preserveAttachments.begin() + subpassDescriptor.m_preserveAttachmentCount);
                     }
-                }
-
-                // Specialization for "Preserve" attachment references.
-                template<>
-                void BuildAttachmentReferences<AttachmentType::Preserve>(uint32_t subpassIndex, SubpassInfo& subpassInfo) const
-                {
-
-                    auto& subpassDescriptor = const_cast<RenderPass::SubpassDescriptor&>(m_descriptor->m_subpassDescriptors[subpassIndex]);
-                    AZStd::vector<uint32_t>& attachmentReferenceList = subpassInfo.m_preserveAttachments;
-                    attachmentReferenceList.insert(
-                        attachmentReferenceList.end(),
-                        subpassDescriptor.m_preserveAttachments.begin(),
-                        subpassDescriptor.m_preserveAttachments.begin() + subpassDescriptor.m_preserveAttachmentCount);
+                    else
+                    {
+                        AZStd::span<const RenderPass::SubpassAttachment> subpassAttachmentList = GetSubpassAttachments(subpassIndex, type);
+                        AZStd::vector<VkAttachmentReferenceType>& attachmentReferenceList =
+                            subpassInfo.m_attachmentReferences[static_cast<uint32_t>(type)];
+                        attachmentReferenceList.resize(subpassAttachmentList.size());
+                        for (uint32_t index = 0; index < subpassAttachmentList.size(); ++index)
+                        {
+                            if (subpassAttachmentList[index].IsValid())
+                            {
+                                attachmentReferenceList[index].attachment = subpassAttachmentList[index].m_attachmentIndex;
+                                attachmentReferenceList[index].layout = subpassAttachmentList[index].m_layout;
+                                SetImageAspectFlags(
+                                    attachmentReferenceList[index], subpassAttachmentList[index].m_imageAspectFlags, special_());
+                            }
+                            else
+                            {
+                                attachmentReferenceList[index].attachment = VK_ATTACHMENT_UNUSED;
+                            }
+                            SetStructureType(attachmentReferenceList[index], VkAttachmentReferenceTraits::struct_type, special_());
+                        }
+                    }
                 }
 
                 // Return the list of attachment depending on the type.
@@ -298,18 +302,14 @@ namespace AZ
                 void SetFragmentShadingRateAttachmentInfo(
                     [[maybe_unused]] SubpassInfo& subpassInfo, [[maybe_unused]] const VkAttachmentReferenceType* reference) const
                 {
-                    // Do nothing
-                }
-
-                template<>
-                void SetFragmentShadingRateAttachmentInfo<VkAttachmentReference2>(
-                    SubpassInfo& subpassInfo, const VkAttachmentReferenceType* reference) const
-                {
-                    auto& tileSize = m_device.GetLimits().m_shadingRateTileSize;
-                    subpassInfo.m_shadingRateAttachmentExtension.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
-                    subpassInfo.m_shadingRateAttachmentExtension.pFragmentShadingRateAttachment = reference;
-                    subpassInfo.m_shadingRateAttachmentExtension.shadingRateAttachmentTexelSize =
-                        VkExtent2D{ tileSize.m_width, tileSize.m_height };
+                    if constexpr (AZStd::is_same_v<AttachmentType, VkAttachmentReference2>)
+                    {
+                        auto& tileSize = m_device.GetLimits().m_shadingRateTileSize;
+                        subpassInfo.m_shadingRateAttachmentExtension.sType = VK_STRUCTURE_TYPE_FRAGMENT_SHADING_RATE_ATTACHMENT_INFO_KHR;
+                        subpassInfo.m_shadingRateAttachmentExtension.pFragmentShadingRateAttachment = reference;
+                        subpassInfo.m_shadingRateAttachmentExtension.shadingRateAttachmentTexelSize =
+                            VkExtent2D{ tileSize.m_width, tileSize.m_height };
+                    }
                 }
 
                 // Builds the dependencies between the subpasses.
@@ -334,7 +334,7 @@ namespace AZ
                             RHI::FilterBits(subpassDependency.srcAccessMask, GetSupportedAccessFlags(subpassDependency.srcStageMask));
                         dependency.dstAccessMask =
                             RHI::FilterBits(subpassDependency.dstAccessMask, GetSupportedAccessFlags(subpassDependency.dstStageMask));
-                        dependency.dependencyFlags = subpassDependency.dependencyFlags;                            
+                        dependency.dependencyFlags = subpassDependency.dependencyFlags;
                     }
                 }
 
@@ -568,7 +568,7 @@ namespace AZ
             }
 
             return renderPassDesc;
-        }        
+        }
 
         void RenderPass::SetNameInternal(const AZStd::string_view& name)
         {
@@ -587,6 +587,7 @@ namespace AZ
                 m_nativeRenderPass = VK_NULL_HANDLE;
             }
             Base::Shutdown();
-        }       
+        }
     }
 }
+

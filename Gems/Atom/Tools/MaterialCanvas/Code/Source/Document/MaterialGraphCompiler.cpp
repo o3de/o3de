@@ -742,7 +742,7 @@ namespace MaterialCanvas
                 return srgMember;
             }
 
-            if (auto v = AZStd::any_cast<const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(&slotValue))
+            if (AZStd::any_cast<const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>>(&slotValue))
             {
                 return AZStd::string::format("Texture2D SLOTNAME;\n");
             }
