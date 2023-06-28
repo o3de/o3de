@@ -59,12 +59,12 @@ namespace AzToolsFramework
             m_assetFilterModel->sort(0, Qt::DescendingOrder);
 
             m_expandedTableViewProxyModel->setSourceModel(m_assetFilterModel);
-            m_expandedTableViewWidget->setSortingEnabled(false);
-            m_expandedTableViewWidget->header()->setSectionsClickable(true);
-            m_expandedTableViewWidget->header()->setSortIndicatorShown(true);
-            m_expandedTableViewWidget->setModel(m_tableViewProxyModel);
-            m_expandedTableViewWidget->setItemDelegateForColumn(0, m_tableViewDelegate);
-            for (int i = 0; i < m_expandedTableViewWidget->header()->count(); ++i)
+            m_tableViewWidget->setSortingEnabled(false);
+            m_tableViewWidget->header()->setSectionsClickable(true);
+            m_tableViewWidget->header()->setSortIndicatorShown(true);
+            m_tableViewWidget->setModel(m_tableViewProxyModel);
+            m_tableViewWidget->setItemDelegateForColumn(0, m_tableViewDelegate);
+            for (int i = 0; i < m_tableViewWidget->header()->count(); ++i)
 
 
             for (int i = 0; i < m_tableViewWidget->header()->count(); ++i)
@@ -82,7 +82,7 @@ namespace AzToolsFramework
                 });
 
             connect(
-                m_expandedTableViewWidget->header(),
+                m_tableViewWidget->header(),
                 &QHeaderView::sectionClicked,
                 this,
                 [this](const int index)
