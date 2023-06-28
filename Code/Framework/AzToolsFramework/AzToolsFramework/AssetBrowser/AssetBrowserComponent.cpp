@@ -321,7 +321,7 @@ namespace AzToolsFramework
                     const char* sourceFormatExtension = sourceFormats[sourceImageFormatIndex];
                     if (AzFramework::StringFunc::Equal(extension.c_str(), sourceFormatExtension))
                     {
-                        return SourceFileDetails("Icons/AssetBrowser/Image_80.svg");
+                        return SourceFileDetails("Icons/AssetBrowser/PNG_80.svg");
                     }
                 }
             }
