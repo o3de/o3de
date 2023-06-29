@@ -363,7 +363,6 @@ def edit_repo_props(repo_path: pathlib.Path = None,
 
 
 def _edit_repo_props(args: argparse) -> int:
-
     return edit_repo_props(repo_path=args.repo_path,
                               repo_name=args.repo_name,
 
