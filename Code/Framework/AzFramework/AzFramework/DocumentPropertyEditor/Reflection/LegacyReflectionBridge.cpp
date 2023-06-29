@@ -302,7 +302,7 @@ namespace AZ::Reflection
                 nodeData.m_path = AZStd::move(path);
             }
 
-            bool IsInParentGroup(const StackEntry& nodeData, StackEntry& parentData)
+            bool HandleNodeInParentGroup(const StackEntry& nodeData, StackEntry& parentData)
             {
                 if (parentData.m_propertyToGroupMap.contains(nodeData.m_path))
                 {
@@ -354,10 +354,10 @@ namespace AZ::Reflection
                             else
                             {
                                 // If the group name is empty, this is the end of the previous group.
-                                // Create an group for entries that should be displayed after the previous group.
+                                // Create a group for entries that should be displayed after the previous group.
                                 if (!groupName.empty())
                                 {
-                                    groupName = AZStd::string::format("WHATEVER[%d]", ++groupCounter);
+                                    groupName = AZStd::string::format("_GROUP[%d]", ++groupCounter);
                                     nodeData.m_groupEntries.insert(groupName);
                                     nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::nullopt));
                                 }
@@ -602,7 +602,7 @@ namespace AZ::Reflection
 
                 // If this instance is part of a group in its parent, postpone this iteration.
                 // It will be re-executed in the parent's EndNode.
-                if (IsInParentGroup(nodeData, parentData))
+                if (HandleNodeInParentGroup(nodeData, parentData))
                 {
                     m_nodeWasSkipped = true;
                     return true;
