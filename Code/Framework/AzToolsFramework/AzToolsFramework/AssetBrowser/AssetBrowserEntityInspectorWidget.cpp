@@ -622,7 +622,7 @@ namespace AzToolsFramework
         void ResizablePixmapLabel::setPixmap(const QPixmap& pixmap)
         {
             m_pixmap = pixmap;
-            // If the available space is larger than the pixmap, scale the pixmap to fit the space
+            // If the available space is smaller than the pixmap, do not scale the pixmap to fit the space
             if (contentsRect().size().width() < m_pixmap.size().width() || contentsRect().size().height() < m_pixmap.size().height())
             {
                 QLabel::setPixmap(pixmap);
