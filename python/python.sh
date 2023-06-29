@@ -23,9 +23,9 @@ elif [[ "$OSTYPE" == "msys" ]]; then
 else
     LINUX_HOST_ARCHITECTURE=$( uname -m )
     if [[ "$LINUX_HOST_ARCHITECTURE" == "aarch64" ]]; then
-        PYTHON=$DIR/runtime/python-3.10.5-rev3-linux-aarch64/python/bin/python
+        PYTHON=$DIR/runtime/python-3.10.5-rev4-linux-aarch64/python/bin/python
     elif [[ "$LINUX_HOST_ARCHITECTURE" == "x86_64" ]]; then
-        PYTHON=$DIR/runtime/python-3.10.5-rev2-linux/python/bin/python
+        PYTHON=$DIR/runtime/python-3.10.5-rev4-linux/python/bin/python
     else
         echo "Linux host architecture ${LINUX_HOST_ARCHITECTURE} not supported."
         exit 1

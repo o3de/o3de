@@ -797,7 +797,6 @@ set(FILES
     AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h
     AssetBrowser/Favorites/FavoritesEntryDelegate.cpp
     AssetBrowser/Favorites/FavoritesEntryDelegate.h
-    AssetBrowser
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
     Archive/ArchiveAPI.h

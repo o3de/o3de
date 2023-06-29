@@ -102,7 +102,7 @@ namespace AzToolsFramework
                     }
 
                     const EntryAssetBrowserFavoriteItem* entryFavorite = reinterpret_cast<const EntryAssetBrowserFavoriteItem*>(favorite);
-                    paintAssetBrowserEntry(painter, index.column(), entryFavorite->GetEntry(), option, style);
+                    paintAssetBrowserEntry(painter, index.column(), entryFavorite->GetEntry(), option);
                 }
             }
         }

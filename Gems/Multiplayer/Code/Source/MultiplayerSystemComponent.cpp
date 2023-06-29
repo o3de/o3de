@@ -1004,8 +1004,8 @@ namespace Multiplayer
                     "Because this component is missing, the name isn't available, only its hash. "
                     "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%llx }' "
                     "inside the generated multiplayer auto-component build folder.",
-                    theirComponentHash,
-                    theirComponentHash);
+                    static_cast<AZ::u64>(theirComponentHash),
+                    static_cast<AZ::u64>(theirComponentHash));
             }
         }
 

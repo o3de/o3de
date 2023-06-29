@@ -76,11 +76,8 @@ namespace AzToolsFramework
             return widget;
         }
 
-        void EntryDelegate::paintAssetBrowserEntry(QPainter* painter, int column, const AssetBrowserEntry* entry, const QStyleOptionViewItem& option, QStyle* style) const
+        void EntryDelegate::paintAssetBrowserEntry(QPainter* painter, int column, const AssetBrowserEntry* entry, const QStyleOptionViewItem& option) const
         {
-            bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-            bool isSelected = (option.state & QStyle::State_Selected) != 0;
-
             // Draw main entry thumbnail.
             QRect remainingRect(option.rect);
             remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
@@ -90,8 +87,9 @@ namespace AzToolsFramework
             // so it needs to center vertically with padding in that case:
             QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
 
+            QStyleOptionViewItem actualOption = option;
+
             auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-            QPalette actualPalette(option.palette);
             if (column == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
             {
                 int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
@@ -104,8 +102,7 @@ namespace AzToolsFramework
                     // sources with no children should be greyed out.
                     if (sourceEntry->GetChildCount() == 0)
                     {
-                        isEnabled = false; // draw in disabled style.
-                        actualPalette.setCurrentColorGroup(QPalette::Disabled);
+                        actualOption.state &= QStyle::State_Enabled;
                     }
                 }
 
@@ -117,14 +114,12 @@ namespace AzToolsFramework
                 ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
                 : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-            style->drawItemText(
-                painter,
-                remainingRect,
-                option.displayAlignment,
-                actualPalette,
-                isEnabled,
-                displayString,
-                isSelected ? QPalette::HighlightedText : QPalette::Text);
+            if (!m_searchString.empty())
+            {
+                displayString = AzToolsFramework::RichTextHighlighter::HighlightText(displayString, m_searchString.c_str());
+            }
+
+            RichTextHighlighter::PaintHighlightedRichText(displayString, painter, actualOption, remainingRect);
         }
 
         void EntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -147,7 +142,7 @@ namespace AzToolsFramework
                 auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
 
 
-                paintAssetBrowserEntry(painter, index.column(), entry, option, style);
+                paintAssetBrowserEntry(painter, index.column(), entry, option);
             }
         }
 

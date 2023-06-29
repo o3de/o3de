@@ -55,7 +55,8 @@ namespace AZ
 #endif
 
             m_descriptor = descriptor;
-            if (GetValidationMode() != RHI::ValidationMode::Disabled)
+            const RHI::ValidationMode validation = GetValidationMode();
+            if (validation != RHI::ValidationMode::Disabled)
             {
                 char exeDirectory[AZ_MAX_PATH_LEN];
                 AZ::Utils::GetExecutableDirectory(exeDirectory, AZ_ARRAY_SIZE(exeDirectory));
@@ -65,8 +66,8 @@ namespace AZ
 
                 RawStringList validationLayers = Debug::GetValidationLayers();
                 m_descriptor.m_optionalLayers.insert(m_descriptor.m_optionalLayers.end(), validationLayers.begin(), validationLayers.end());
-                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+                RawStringList validationExtension = Debug::GetValidationExtensions();
+                m_descriptor.m_optionalExtensions.insert(m_descriptor.m_optionalExtensions.end(), validationExtension.begin(), validationExtension.end());
             }
 #if defined(AZ_VULKAN_USE_DEBUG_LABELS)
             m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -125,12 +126,34 @@ namespace AZ
             m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
             m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
 
-            //For instance creation/destruction use nullptr for VkAllocationCallbacks* as using VkSystemAllocator::Get() crashes RenderDoc when used with openxr
-            //enabled projects. We think its because RenderDoc maybe injecting something when doing allocations. Using nullptr when USE_RENDERDOC or enableRenderDoc
-            //is enabled is another option but it will not work for Android easily and will require further work, not to mention manually enabling this for Android renderdoc. 
-            if (m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
+            // For instance creation/destruction use nullptr for VkAllocationCallbacks* as using VkSystemAllocator::Get() crashes RenderDoc when used with openxr
+            // enabled projects. We think it's because RenderDoc is maybe injecting something when doing allocations. Using nullptr when USE_RENDERDOC or enableRenderDoc
+            // is enabled is another option but it will not work for Android easily and will require further work, not to mention manually enabling this for Android RenderDoc.
+            VkResult result = m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance);
+
+            if (validation != RHI::ValidationMode::Disabled &&
+                (result == VK_ERROR_LAYER_NOT_PRESENT || result == VK_ERROR_EXTENSION_NOT_PRESENT))
             {
-                AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
+                // Remove all validation layers and extensions and try again to create the Vulkan instance.
+                // Some drivers report the validation layers as available but they fail to load them when creating the instance.
+                AZ_Warning("Vulkan", false, R"(Disabling validation due to Instance creation failure. Error = "%s".)", GetResultString(result));
+                RawStringList validationLayers = Debug::GetValidationLayers();
+                RemoveRawStringList(m_descriptor.m_requiredLayers, validationLayers);
+                RawStringList validationExtension = Debug::GetValidationExtensions();
+                RemoveRawStringList(m_descriptor.m_requiredExtensions, validationExtension);
+
+                m_descriptor.m_validationMode = RHI::ValidationMode::Disabled;
+                m_instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(m_descriptor.m_requiredLayers.size());
+                m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
+                m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
+                m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
+
+                result = m_context.CreateInstance(&m_instanceCreateInfo, nullptr, &m_instance);
+            }
+
+            if (result != VK_SUCCESS)
+            {
+                AZ_Warning("Vulkan", false, R"(Failed to create Vulkan instance. Error = "%s")", GetResultString(result));
                 return false;
             }
 

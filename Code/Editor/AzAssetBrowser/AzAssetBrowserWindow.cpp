@@ -1011,7 +1011,7 @@ void AzAssetBrowserWindow::BreadcrumbsPathChangedSlot(const QString& path) const
 
     if (path != currentFolderPath)
     {
-        m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
+        m_ui->m_assetBrowserTreeViewWidget->SelectFolderFromBreadcrumbsPath(path.toUtf8().constData());
     }
 }
 

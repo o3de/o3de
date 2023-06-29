@@ -312,14 +312,12 @@ namespace AZ
         ResultCode mergePatchResult{ Tasks::Import, Outcomes::Success };
 
         // Check if the target data already contains a field with the same name
-        rapidjson::Value* targetFieldName{};
         rapidjson::Value* targetFieldValue{};
         if (target.IsObject())
         {
             if (auto targetMemberIter = target.FindMember(fieldNameStringRef);
                 targetMemberIter != target.MemberEnd())
             {
-                targetFieldName = &targetMemberIter->name;
                 targetFieldValue = &targetMemberIter->value;
             }
         }

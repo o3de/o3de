@@ -76,6 +76,7 @@ namespace AzToolsFramework
             //! can only work on sources and folders.
             AZStd::vector<const AssetBrowserEntry*> GetSelectedAssets(bool includeProducts = true) const;
 
+            void SelectFolderFromBreadcrumbsPath(AZStd::string_view folderPath);
             void SelectFolder(AZStd::string_view folderPath);
 
             void DeleteEntries();
@@ -155,7 +156,7 @@ namespace AzToolsFramework
 
             AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
             AssetBrowserTableView* m_attachedTableView = nullptr;
-            
+
             QString m_name;
 
             QModelIndex m_indexToSelectAfterUpdate;

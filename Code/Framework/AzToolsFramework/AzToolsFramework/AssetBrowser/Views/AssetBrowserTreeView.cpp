@@ -486,6 +486,20 @@ namespace AzToolsFramework
             return false;
         }
 
+        void AssetBrowserTreeView::SelectFolderFromBreadcrumbsPath(AZStd::string_view folderPath)
+        {
+            if (folderPath.size() == 0)
+            {
+                return;
+            }
+
+            AZStd::vector<AZStd::string> entries;
+            AZ::StringFunc::Tokenize(folderPath, entries, "/");
+
+            SelectEntry(QModelIndex(), entries, entries.size() - 1, 0, true);
+        }
+
+
         void AssetBrowserTreeView::SelectFolder(AZStd::string_view folderPath)
         {
             if (folderPath.size() == 0)
@@ -521,9 +535,6 @@ namespace AzToolsFramework
             AZStd::reverse(entries.begin(), entries.end());
 
             uint32_t lastEntry = entries.size() - 1;
-
-            //AZStd::vector<AZStd::string> entries;
-            //AZ::StringFunc::Tokenize(folderPath, entries, "/");
 
             SelectEntry(QModelIndex(), entries, lastEntry, 0, true);
         }

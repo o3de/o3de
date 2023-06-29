@@ -49,7 +49,7 @@ namespace AzToolsFramework
             explicit EntryDelegate(QWidget* parent = nullptr);
             ~EntryDelegate() override;
 
-            void paintAssetBrowserEntry(QPainter* painter, int column, const AssetBrowserEntry* entry, const QStyleOptionViewItem& option, QStyle* style) const;
+            void paintAssetBrowserEntry(QPainter* painter, int column, const AssetBrowserEntry* entry, const QStyleOptionViewItem& option) const;
 
             QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
             void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
