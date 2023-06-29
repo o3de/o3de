@@ -60,7 +60,7 @@
                     "FilePath": "Shaders/PostProcessing/DepthDownsample.shader"
                 },
                 "Make Fullscreen Pass": true,
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

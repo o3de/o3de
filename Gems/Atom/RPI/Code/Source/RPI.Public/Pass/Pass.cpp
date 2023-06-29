@@ -54,6 +54,7 @@ namespace AZ
             if (m_passData)
             {
                 PassUtils::ExtractPipelineGlobalConnections(m_passData, m_pipelineGlobalConnections);
+                m_viewTag = m_passData->m_pipelineViewTag;
             }
 
             m_flags.m_enabled = true;
@@ -1367,8 +1368,18 @@ namespace AZ
 
         const PipelineViewTag& Pass::GetPipelineViewTag() const
         {
-            static PipelineViewTag viewTag;
-            return viewTag;
+            if (m_viewTag.IsEmpty())
+            {
+                if (m_flags.m_isPipelineRoot && m_pipeline)
+                {
+                    return m_pipeline->GetMainViewTag();
+                }
+                else if (m_parent)
+                {
+                    return m_parent->GetPipelineViewTag();
+                }
+            }
+            return m_viewTag;
         }
 
         void Pass::SetRenderPipeline(RenderPipeline* pipeline)
@@ -1421,7 +1432,7 @@ namespace AZ
             // even when pass is disabled so it can continue work correctly when re-enable it.
 
             // Only get the DrawListTag if this pass has a DrawListTag and it's PipelineViewId matches
-            if (HasPipelineViewTag() && HasDrawListTag() && GetPipelineViewTag() == viewTag)
+            if (BindViewSrg() && HasDrawListTag() && GetPipelineViewTag() == viewTag)
             {
                 RHI::DrawListTag drawListTag = GetDrawListTag();
                 if (drawListTag.IsValid() && outPassesByDrawList.find(drawListTag) == outPassesByDrawList.end())
@@ -1434,7 +1445,7 @@ namespace AZ
 
         void Pass::GetPipelineViewTags(PipelineViewTags& outTags) const
         {
-            if (HasPipelineViewTag())
+            if (BindViewSrg())
             {
                 outTags.insert(GetPipelineViewTag());
             }

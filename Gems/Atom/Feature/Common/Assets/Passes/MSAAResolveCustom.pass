@@ -60,7 +60,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/MSAAResolveCustom.shader"
                 },
-                "PipelineViewTag": "MainCamera",
+                "BindViewSrg": true,
                 "ShaderDataMappings": {
                     "UintMappings": [
                         {
