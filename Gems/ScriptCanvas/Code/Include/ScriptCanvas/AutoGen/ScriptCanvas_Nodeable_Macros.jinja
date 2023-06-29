@@ -140,14 +140,13 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
             static_assert(false, "DataSlot type is undefined for slot: {{ slotName }}");
 {% endif %}
             ScriptCanvas::DataSlotConfiguration dataSlotConfiguration;
-{% if hideName %}
-            dataSlotConfiguration.m_name = " ";
-{% else %}
             dataSlotConfiguration.m_name = "{{ slotName }}";
-{% endif %}
             dataSlotConfiguration.m_toolTip = "{{ slotDescription }}";
 {% if hideInputField %}
             dataSlotConfiguration.m_canHaveInputField = false;
+{% endif %}
+{% if hideName %}
+            dataSlotConfiguration.m_isNameHidden = true;
 {% endif %}
 {% if displayGroup is defined %}
             dataSlotConfiguration.m_displayGroup = "{{ displayGroup }}";
@@ -220,6 +219,9 @@ false
         ScriptCanvas::ExecutionSlotConfiguration slotConfiguration{{executionDirection}}; 
         slotConfiguration{{executionDirection}}.m_name = "{{ slotName }}";
         slotConfiguration{{executionDirection}}.m_toolTip = "{{ slotDescription }}";
+{% if tag.attrib['HideName'] %}
+        slotConfiguration{{executionDirection}}.m_isNameHidden = true;
+{% endif %}
         slotConfiguration{{executionDirection}}.SetConnectionType(ScriptCanvas::ConnectionType::{{ executionDirection }});
 {% if tag.attrib['DisplayGroup'] is defined %}
         slotConfiguration{{executionDirection}}.m_displayGroup = "{{ tag.attrib['DisplayGroup'] }}";
