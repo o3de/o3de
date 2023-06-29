@@ -3347,6 +3347,99 @@ namespace ScriptCanvas
         return AZ::Failure(AZStd::string::format("%s-%s The slot referenced by the slot id in the map was not found. SlotId: %s", GetNodeName().data(), executionOutSlot.GetName().data(), executionOutSlot.GetId().ToString().data()));
     }
 
+    const Slot* Node::GetCorrespondingExecutionSlot(const Slot* slot) const
+    {
+        if (!slot)
+        {
+            return nullptr;
+        }
+
+        if (slot->IsExecution())
+        {
+            return slot;
+        }
+
+        const ScriptCanvas::Slot* executionSlot = nullptr;
+
+        const ScriptCanvas::SlotExecution::Map* map = GetSlotExecutionMap();
+
+        if (map)
+        {
+            if (slot->IsInput())
+            {
+                // Find the corresponding execution input for the source
+                if (const ScriptCanvas::SlotExecution::In* sourceIn = map->FindInFromInputSlot(slot->GetId()))
+                {
+                    const ScriptCanvas::SlotId inSlotId = sourceIn->slotId;
+                    executionSlot = GetSlot(inSlotId);
+                }
+            }
+            else
+            {
+                // Find the corresponding execution output for the source
+                if (const ScriptCanvas::SlotExecution::Out* sourceOut = map->FindOutFromOutputSlot(slot->GetId()))
+                {
+                    const ScriptCanvas::SlotId outSlotId = sourceOut->slotId;
+                    executionSlot = GetSlot(outSlotId);
+                }
+            }
+        }
+        else
+        {
+            // If the node doens't have a slot execution map, we will need to just use whatever execution slot is there
+            AZStd::vector<const ScriptCanvas::Slot*> executionSlots = slot->IsInput()
+                ? GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn())
+                : GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut());
+
+            if (!executionSlots.empty())
+            {
+                executionSlot = executionSlots[0];
+            }
+        }
+
+        return executionSlot;
+    }
+
+    AZStd::vector<const Slot*> Node::GetCorrespondingDataSlots(const Slot* slot) const
+    {
+        AZStd::vector<const Slot*> dataSlots;
+
+        if (!slot)
+        {
+            return dataSlots;
+        }
+
+        const ScriptCanvas::SlotExecution::Map* map = GetSlotExecutionMap();
+
+        if (map)
+        {
+            if (slot->IsExecution())
+            {
+                ConstSlotsOutcome slotOutcome = slot->IsInput()
+                    ? GetSlotsFromMap(*map, *slot, CombinedSlotType::DataIn, nullptr)
+                    : GetSlotsFromMap(*map, *slot, CombinedSlotType::DataOut, nullptr);
+
+                if (slotOutcome.IsSuccess())
+                {
+                    dataSlots = slotOutcome.GetValue();
+                }
+            }
+            else if (slot->IsData())
+            {
+                return GetCorrespondingDataSlots(GetCorrespondingExecutionSlot(slot));
+            }
+        }
+        else
+        {
+            // If the node doens't have a slot execution map, we will need to just get whatever data slots are there
+            dataSlots = slot->IsInput()
+                ? GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataIn())
+                : GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataOut());
+        }
+
+        return dataSlots;
+    }
+
     const Slot* Node::GetIfBranchFalseOutSlot() const
     {
         return GetSlotByName("False");
