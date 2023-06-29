@@ -74,7 +74,7 @@ namespace AzToolsFramework
             buttonLayout->addWidget(m_sceneSettingsButton);
 
             // Create the layout for the asset icon preview
-            m_previewImage = new QLabel(m_populatedLayoutWidget);
+            m_previewImage = new ResizablePixmapLabel(m_populatedLayoutWidget);
             m_previewImage->setStyleSheet("QLabel {background-color: #333333;}");
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
@@ -612,6 +612,52 @@ namespace AzToolsFramework
                 return hasUnsavedChanges;
             }
             return false;
+        }
+
+        ResizablePixmapLabel::ResizablePixmapLabel(QWidget* parent)
+            : QLabel(parent)
+        {
+        }
+
+        void ResizablePixmapLabel::setPixmap(const QPixmap& pixmap)
+        {
+            m_pixmap = pixmap;
+            // If the available space is larger than the pixmap, scale the pixmap to fit the space
+            if (contentsRect().size().width() < m_pixmap.size().width() || contentsRect().size().height() < m_pixmap.size().height())
+            {
+                QLabel::setPixmap(pixmap);
+            }
+            else
+            {
+                updatePixmap();
+            }
+        }
+
+        void ResizablePixmapLabel::setText(const QString& text)
+        {
+            m_pixmap = QPixmap();
+            QLabel::setText(text);
+        }
+
+        void ResizablePixmapLabel::updatePixmap()
+        {
+            if (!m_pixmap.isNull())
+            {
+                updatingPixmap = true;
+                QSize labelSize = contentsRect().size();
+                QPixmap scaledPixmap = m_pixmap.scaled(labelSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                QLabel::setPixmap(scaledPixmap);
+                updatingPixmap = false;
+            }
+        }
+
+        void ResizablePixmapLabel::resizeEvent(QResizeEvent* event)
+        {
+            if (!updatingPixmap)
+            {
+                updatePixmap();
+            }
+            QLabel::resizeEvent(event);
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

@@ -28,7 +28,22 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class PreviewerFrame;
+        class ResizablePixmapLabel : public QLabel
+        {
+        public:
+            explicit ResizablePixmapLabel(QWidget* parent = nullptr);
+            void setPixmap(const QPixmap& pixmap);
+            void setText(const QString& text);
+
+        protected:
+            void resizeEvent(QResizeEvent* event) override;
+
+        private:
+            void updatePixmap();
+
+            QPixmap m_pixmap;
+            bool updatingPixmap = false;
+        };
 
         class AssetBrowserEntityInspectorWidget
             : public QWidget
@@ -75,7 +90,7 @@ namespace AzToolsFramework
 
             QPushButton* m_detailsButton = nullptr;
             QPushButton* m_sceneSettingsButton = nullptr;
-            QLabel* m_previewImage = nullptr;
+            ResizablePixmapLabel* m_previewImage = nullptr;
 
             QStackedWidget* m_settingsSwitcher = nullptr;
             QWidget* m_detailsWidget = nullptr;
@@ -90,7 +105,6 @@ namespace AzToolsFramework
 
             QFont m_headerFont;
         };
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
