@@ -796,7 +796,7 @@ namespace
             incrementNodeData.m_title = "++";
             incrementNodeData.m_toolTip = "Increments the input number by 1";
             incrementNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            incrementNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            incrementNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* incrementPaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();             // This data is in charge of the node palette item
             incrementPaletteData->m_nodeData = incrementNodeData;
@@ -810,7 +810,7 @@ namespace
             decrementNodeData.m_title = "--";
             decrementNodeData.m_toolTip = "Decrements the input number by 1";
             decrementNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            decrementNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            decrementNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* decrementPaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             decrementPaletteData->m_nodeData = decrementNodeData;
@@ -824,7 +824,7 @@ namespace
             doubleNodeData.m_title = "*2";
             doubleNodeData.m_toolTip = "Doubles input number";
             doubleNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            doubleNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            doubleNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* doublePaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             doublePaletteData->m_nodeData = doubleNodeData;
@@ -838,7 +838,7 @@ namespace
             negativeNodeData.m_title = "*-1";
             negativeNodeData.m_toolTip = "Multiplies input number by -1";
             negativeNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            negativeNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            negativeNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* negativePaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             negativePaletteData->m_nodeData = negativeNodeData;
@@ -852,7 +852,7 @@ namespace
             squareNodeData.m_title = "^2";
             squareNodeData.m_toolTip = "Squares input number";
             squareNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            squareNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            squareNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* squarePaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             squarePaletteData->m_nodeData = squareNodeData;
@@ -866,7 +866,7 @@ namespace
             cubeNodeData.m_title = "^3";
             cubeNodeData.m_toolTip = "Cubes input number";
             cubeNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            cubeNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            cubeNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* cubePaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             cubePaletteData->m_nodeData = cubeNodeData;
@@ -880,7 +880,7 @@ namespace
             squareRootNodeData.m_title = "sqrt";
             squareRootNodeData.m_toolTip = "Gets the square root of input number";
             squareRootNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            squareRootNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            squareRootNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* squareRootPaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             squareRootPaletteData->m_nodeData = squareRootNodeData;
@@ -894,7 +894,7 @@ namespace
             cubeRootNodeData.m_title = "cbrt";
             cubeRootNodeData.m_toolTip = "Gets the cube root of input number";
             cubeRootNodeData.m_dataType = ScriptCanvas::Data::Type::Number();
-            cubeRootNodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            cubeRootNodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* cubeRootPaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             cubeRootPaletteData->m_nodeData = cubeRootNodeData;
@@ -908,7 +908,7 @@ namespace
             invertVector2NodeData.m_title = "inv";
             invertVector2NodeData.m_toolTip = "Inverts the input vector 2";
             invertVector2NodeData.m_dataType = ScriptCanvas::Data::Type::Vector2();
-            invertVector2NodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            invertVector2NodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* invertVector2PaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             invertVector2PaletteData->m_nodeData = invertVector2NodeData;
@@ -922,7 +922,7 @@ namespace
             invertVector3NodeData.m_title = "inv";
             invertVector3NodeData.m_toolTip = "Inverts the input vector 3";
             invertVector3NodeData.m_dataType = ScriptCanvas::Data::Type::Vector3();
-            invertVector3NodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            invertVector3NodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* invertVector3PaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             invertVector3PaletteData->m_nodeData = invertVector3NodeData;
@@ -936,7 +936,7 @@ namespace
             invertVector4NodeData.m_title = "inv";
             invertVector4NodeData.m_toolTip = "Inverts the input vector";
             invertVector4NodeData.m_dataType = ScriptCanvas::Data::Type::Vector4();
-            invertVector4NodeData.m_subStyle = GraphCanvas::Styling::Elements::Small;
+            invertVector4NodeData.m_subStyle = GraphCanvas::Styling::Elements::Compact;
             ScriptCanvasEditor::DataDrivenNodeModelInformation* invertVector4PaletteData =
                 aznew ScriptCanvasEditor::DataDrivenNodeModelInformation();
             invertVector4PaletteData->m_nodeData = invertVector4NodeData;
