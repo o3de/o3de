@@ -226,6 +226,11 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(body);
             AZ_UNUSED(callback);
         }
+
+        AZStd::chrono::milliseconds GetLastRoundTripTime() const override
+        {
+            return {};
+        }
     };
 
     class CognitoIdentityProviderClientMock
