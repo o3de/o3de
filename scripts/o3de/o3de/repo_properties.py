@@ -266,20 +266,22 @@ def _edit_objects(object_typename:str,
 
 def _auto_update_json(object_type: str or list,
                       repo_path: pathlib.Path,
-                      repo_json: dict,
-                      ):
+                      repo_json: dict):
     
     repo_directory = os.path.dirname(repo_path)
     expected_files = {"project.json": [],
                       "gem.json": [],
                       "template.json": []}
     for directory, sub_directory, files, in os.walk(repo_directory):
-        current_depth = directory[len(repo_directory):].count(os.sep)
+        found_object_json = False
         for filename in files:
-            if filename in expected_files.keys() and current_depth < 3:
+            if filename in expected_files.keys():
+                found_object_json = True
                 file_path = pathlib.Path(directory)
                 expected_files[filename].append(file_path)
-    
+        if found_object_json:
+            sub_directory.clear()
+
     objects = object_type.split() if isinstance(object_type, str) else object_type
     for object in objects:
         object_name = object.lower()
@@ -340,11 +342,11 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         repo_json['repo_name'] = repo_name
 
     if auto_update is not None and len(auto_update) == 0:
-        logger.error('No object type specified with --auto-update. Please provide one or more object types.')
-        return 1
-    
+        auto_update = ['gem', 'project', 'template']
+
     if auto_update:
         _auto_update_json(auto_update, repo_path, repo_json)
+        logger.warning(f'here is auto update: {auto_update}')
 
     if add_gems or delete_gems or replace_gems:
         _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix)
@@ -362,6 +364,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
 
 
 def _edit_repo_props(args: argparse) -> int:
+
     return edit_repo_props(repo_path=args.repo_path,
                               repo_name=args.repo_name,
 

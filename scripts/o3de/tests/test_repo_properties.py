@@ -444,17 +444,15 @@ class TestEditRepoProperties:
             
         def _auto_update_json(object_type: str or list = None,
                       repo_path: pathlib.Path = None,
-                      repo_json: dict = None,
-                      ):
-            self.repo_json.data = repo_json
+                      repo_json: dict = None):
             objects = object_type.split() if isinstance(object_type, str) else object_type
             for object_type in objects:
                 if object_type == 'gem':
-                    return repo_json.get('gems_data').append(str(JSON_DICT['gem_archive_json_key']))
+                    self.repo_json.data.get('gems_data').append(str(JSON_DICT['gem_archive_json_key']))
                 if object_type == 'project':
-                    return repo_json.get('projects_data').append(str(JSON_DICT['project_json_key']))
+                    self.repo_json.data.get('projects_data').append(str(JSON_DICT['project_json_key']))
                 if object_type == 'template':
-                    return repo_json.get('templates_data').append(str(JSON_DICT['template_json_key']))
+                    self.repo_json.data.get('templates_data').append(str(JSON_DICT['template_json_key']))
             return 0
 
         with patch('o3de.repo_properties.get_repo_props', side_effect=get_repo_props) as get_repo_props_patch, \
