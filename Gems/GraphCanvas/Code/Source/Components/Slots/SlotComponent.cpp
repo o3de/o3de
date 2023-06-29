@@ -398,6 +398,10 @@ namespace GraphCanvas
         return AZ::EntityId();
     }
 
+    bool SlotComponent::IsNameHidden() const
+    {
+        return m_slotConfiguration.m_isNameHidden;
+    }
 
     AZStd::vector<AZ::EntityId> SlotComponent::GetConnections() const
     {

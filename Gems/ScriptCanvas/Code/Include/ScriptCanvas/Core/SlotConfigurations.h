@@ -229,6 +229,7 @@ namespace ScriptCanvas
         bool m_isLatent = false;
         bool m_isUserAdded = false;
         bool m_canHaveInputField = true;
+        bool m_isNameHidden = false;
 
         // Enabling this attribute on an execution slot will cause it to automatically make a "behind the scenes"
         // connection to nodes connected by other slots of the same connection type as this slot
