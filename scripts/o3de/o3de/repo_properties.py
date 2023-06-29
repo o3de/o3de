@@ -346,7 +346,6 @@ def edit_repo_props(repo_path: pathlib.Path = None,
 
     if auto_update:
         _auto_update_json(auto_update, repo_path, repo_json)
-        logger.warning(f'here is auto update: {auto_update}')
 
     if add_gems or delete_gems or replace_gems:
         _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix)
