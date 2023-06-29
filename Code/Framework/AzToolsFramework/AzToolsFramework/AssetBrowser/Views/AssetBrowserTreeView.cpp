@@ -127,6 +127,7 @@ namespace AzToolsFramework
 
         AssetBrowserTreeView::~AssetBrowserTreeView()
         {
+            m_assetBrowserSortFilterProxyModel = nullptr;
             AzToolsFramework::RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
 
             AssetBrowserViewRequestBus::Handler::BusDisconnect();
