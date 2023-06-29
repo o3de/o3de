@@ -81,8 +81,6 @@ namespace AzToolsFramework
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
                 // draw the background
@@ -113,7 +111,6 @@ namespace AzToolsFramework
                         // sources with no children should be greyed out.
                         if (sourceEntry->GetChildCount() == 0)
                         {
-                            isEnabled = false; // draw in disabled style.
                             actualPalette.setCurrentColorGroup(QPalette::Disabled);
                         }
                     }

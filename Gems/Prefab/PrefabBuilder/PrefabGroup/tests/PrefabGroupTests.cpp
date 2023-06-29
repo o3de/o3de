@@ -71,8 +71,9 @@ namespace UnitTest
         SceneData::PrefabGroup instancePrefabGroup;
         EXPECT_EQ(AZ::JsonSerialization::Load(instancePrefabGroup, document).GetOutcome(), JSR::Outcomes::PartialDefaults);
 
-        ASSERT_TRUE(instancePrefabGroup.GetPrefabDomRef().has_value());
-        const AzToolsFramework::Prefab::PrefabDom& dom = instancePrefabGroup.GetPrefabDomRef().value();
+        auto prefabDomRef = instancePrefabGroup.GetPrefabDomRef();
+        ASSERT_TRUE(prefabDomRef.has_value());
+        const auto& dom = prefabDomRef.value().get();
         EXPECT_TRUE(dom.IsObject());
         EXPECT_TRUE(dom.GetObject().HasMember("foo"));
         EXPECT_STREQ(dom.GetObject().FindMember("foo")->value.GetString(), "bar");
@@ -101,7 +102,9 @@ namespace UnitTest
         prefabGroup.SetName("tester");
         prefabGroup.SetPrefabDom(AZStd::move(document));
 
-        const AzToolsFramework::Prefab::PrefabDom& dom = prefabGroup.GetPrefabDomRef().value();
+        auto prefabDomRef = prefabGroup.GetPrefabDomRef();
+        ASSERT_TRUE(prefabDomRef.has_value());
+        const auto& dom = prefabDomRef.value().get();
         EXPECT_TRUE(dom.IsNull());
         EXPECT_STREQ("tester", prefabGroup.GetName().c_str());
     }
