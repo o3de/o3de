@@ -288,7 +288,7 @@ namespace AZ::Reflection
                 }
                 else if (nodeData.m_classElement && nodeData.m_classElement->m_editData)
                 {
-                    AZStd::string_view elementName = nodeData.m_classElement->m_editData->m_name;
+                    AZStd::string_view elementName = nodeData.m_classElement->m_name;
 
                     // Construct the serialized path for only those elements that have valid edit data. Otherwise, you can end up with
                     // serialized paths looking like "token1////token2/token3"
@@ -367,7 +367,7 @@ namespace AZ::Reflection
                         {
                             if (!groupName.empty())
                             {
-                                AZStd::string propertyPath = AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_name);
+                                AZStd::string propertyPath = AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_serializeClassElement->m_name);
                                 nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
                             }
                         }
@@ -703,7 +703,6 @@ namespace AZ::Reflection
                     auto iter = m_nonSerializedElements.begin();
                     while (iter != m_nonSerializedElements.end())
                     {
-                        // TODO - Fix this
                         // If the parent of the element that was just created has the same name as the parent of any non serialized
                         // elements, and the element that was just created is the element immediately before any non serialized element,
                         // create that serialized element
