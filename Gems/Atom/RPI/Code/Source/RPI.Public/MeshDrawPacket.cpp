@@ -10,7 +10,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <Atom/RPI.Public/Scene.h> 
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -18,7 +18,7 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 namespace AZ
-{   
+{
     namespace RPI
     {
         AZ_CVAR(bool,
@@ -55,7 +55,7 @@ namespace AZ
         {
             return m_material;
         }
-        
+
         const ModelLod::Mesh& MeshDrawPacket::GetMesh() const
         {
             AZ_Assert(m_modelLodMeshIndex < m_modelLod->GetMeshes().size(), "m_modelLodMeshIndex %zu is out of range %zu", m_modelLodMeshIndex, m_modelLod->GetMeshes().size());
@@ -127,7 +127,7 @@ namespace AZ
                     return false; // stop checking other shader items.
                 }
             );
-            
+
             m_needUpdate = true;
             return true;
         }
@@ -215,14 +215,15 @@ namespace AZ
 
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
-            const ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
+            const auto meshes = m_modelLod->GetMeshes();
+            const ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
             if (!m_material)
             {
                 AZ_Warning("MeshDrawPacket", false, "No material provided for mesh. Skipping.");
                 return false;
             }
-            
+
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
@@ -430,7 +431,7 @@ namespace AZ
                 }
 
                 drawPacketBuilder.AddDrawItem(drawRequest);
-                
+
                 ShaderData shaderData;
                 shaderData.m_shader = AZStd::move(shader);
                 shaderData.m_materialPipelineName = materialPipelineName;

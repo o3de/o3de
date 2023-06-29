@@ -1671,9 +1671,12 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
     {
-        for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+        if (m_rootNode)
         {
-            m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+            for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+            {
+                m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+            }
         }
     }
 

@@ -50,7 +50,7 @@ namespace AzToolsFramework
 
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
             m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
-            m_fullPath = m_enginePath;
+            SetFullPath(m_enginePath);
             AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry != nullptr)
             {
@@ -315,8 +315,7 @@ namespace AzToolsFramework
             }
             product->m_relativePath = cleanedRelative;
             product->m_visiblePath = cleanedRelative;
-            product->m_fullPath = (AZ::IO::Path("@products@") / cleanedRelative).LexicallyNormal();
-
+            product->SetFullPath((AZ::IO::Path("@products@") / cleanedRelative).LexicallyNormal());
             // compute the display data from the above data.
             // does someone have information about a more friendly name for this type?
             AZStd::string assetTypeName;
@@ -450,12 +449,12 @@ namespace AzToolsFramework
                 // Update the parent to be the project directory if it isn't already
                 if (absolutePathView.IsRelativeTo(m_projectPath) && !parent->m_fullPath.IsRelativeTo(m_projectPath))
                 {
-                    parent->m_fullPath = m_projectPath.ParentPath();
+                    parent->SetFullPath(m_projectPath.ParentPath());
                 }
                 // Update the parent to be the o3de directory if it isn't already
                 else if (absolutePathView.IsRelativeTo(m_enginePath) && !parent->m_fullPath.IsRelativeTo(m_enginePath))
                 {
-                    parent->m_fullPath = m_enginePath.ParentPath();
+                    parent->SetFullPath(m_enginePath.ParentPath());
                 }
             }
 
@@ -481,7 +480,7 @@ namespace AzToolsFramework
             // note that the children of roots have the same fullpath of the child itself
             // they don't inherit a path from the root because the root is an invisible no-path not
             // shown root.
-            child->m_fullPath = m_fullPath / child->m_name;
+            child->SetFullPath(m_fullPath / child->m_name);
             child->m_relativePath = child->m_name;
             child->m_visiblePath = child->m_name;
 

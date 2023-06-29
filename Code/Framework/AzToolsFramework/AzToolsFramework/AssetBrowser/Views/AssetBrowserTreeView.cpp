@@ -745,14 +745,14 @@ namespace AzToolsFramework
             m_indexToSelectAfterUpdate = index;
         }
 
-        void AssetBrowserTreeView::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode mode)
+        void AssetBrowserTreeView::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode mode)
         {
             m_assetBrowserSortFilterProxyModel->SetSortMode(mode);
 
             m_assetBrowserSortFilterProxyModel->sort(0, Qt::DescendingOrder);
         }
 
-        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserTreeView::GetSortMode() const
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserTreeView::GetSortMode() const
         {
             return m_assetBrowserSortFilterProxyModel->GetSortMode();
         }
@@ -770,6 +770,11 @@ namespace AzToolsFramework
         void AssetBrowserTreeView::SetAttachedTableView(AssetBrowserTableView* tableView)
         {
             m_attachedTableView = tableView;
+        }
+
+        AssetBrowserTableView* AssetBrowserTreeView::GetAttachedTableView() const
+        {
+            return m_attachedTableView;
         }
 
         void AssetBrowserTreeView::SetSearchString(const QString& searchString)

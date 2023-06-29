@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
+#include <native/assetprocessor.h>
 #include <native/utilities/PlatformConfiguration.h>
 #include <native/utilities/StatsCapture.h>
 #include <native/AssetManager/FileStateCache.h>

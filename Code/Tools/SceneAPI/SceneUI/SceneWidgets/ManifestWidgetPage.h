@@ -61,9 +61,21 @@ namespace AZ
 
                 void RefreshPage(); // Called when a scene is initially loaded, after all objects are populated.
 
+            signals:
+                void SaveClicked();
+                void ResetSettings();
+                void ClearChanges();
+                void AssignScript();
+                void InspectClicked();
+
+            public slots:
+                void AppendUnsavedChangesToTitle(bool hasUnsavedChanges);
+                void EnableInspector(bool enableInspector);
+
             protected slots:
                 //! Callback that's triggered when the add button only has 1 entry.
                 void OnSingleGroupAdd();
+                void AddEditMenu();
 
             protected:
                 //! Callback that's triggered when the add button has multiple entries.
@@ -102,6 +114,7 @@ namespace AZ
                 SerializeContext* m_context;
                 size_t m_capSize;
                 QString m_helpUrl;
+                QMenu* m_editMenu;
             };
         } // namespace UI
     } // namespace SceneAPI
