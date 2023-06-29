@@ -82,7 +82,7 @@ namespace AZ
             AZ::Data::AssetId shaderAssetId = passData->m_shaderAsset.m_assetId;
             if (!shaderAssetId.IsValid())
             {
-                // This case may happen when the PassData comes from PassRequest defined insize an *.azasset.
+                // This case may happen when PassData comes from a PassRequest defined inside an *.azasset.
                 // Unlike the PassBuilder, the AnyAssetBuilder doesn't record the AssetId, so we have to discover the asset id at runtime.
                 AZStd::string azshaderPath = passData->m_shaderAsset.m_filePath;
                 AZ::StringFunc::Path::ReplaceExtension(azshaderPath, "azshader");
