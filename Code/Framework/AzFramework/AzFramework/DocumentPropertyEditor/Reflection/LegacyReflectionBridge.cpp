@@ -393,6 +393,7 @@ namespace AZ::Reflection
                             AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                             UIElement->m_editData = &*eltIt;
                             UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                            // Use the instance itself to retrieve parameter values that invoke functions on the UI Element.
                             StackEntry entry = {
                                 nodeData.m_instance, nodeData.m_instance, nodeData.m_classData->m_typeId, nodeData.m_classData, UIElement
                             };
