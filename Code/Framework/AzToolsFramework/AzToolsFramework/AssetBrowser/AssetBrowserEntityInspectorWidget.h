@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AzQtComponents/Components/ExtendedLabel.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/SegmentControl.h>
 #include <QFormLayout>
@@ -28,23 +29,6 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class ResizablePixmapLabel : public QLabel
-        {
-        public:
-            explicit ResizablePixmapLabel(QWidget* parent = nullptr);
-            void setPixmap(const QPixmap& pixmap);
-            void setText(const QString& text);
-
-        protected:
-            void resizeEvent(QResizeEvent* event) override;
-
-        private:
-            void updatePixmap();
-
-            QPixmap m_pixmap;
-            bool updatingPixmap = false;
-        };
-
         class AssetBrowserEntityInspectorWidget
             : public QWidget
             , public AssetBrowserPreviewRequestBus::Handler
@@ -90,7 +74,7 @@ namespace AzToolsFramework
 
             QPushButton* m_detailsButton = nullptr;
             QPushButton* m_sceneSettingsButton = nullptr;
-            ResizablePixmapLabel* m_previewImage = nullptr;
+            AzQtComponents::ExtendedLabel* m_previewImage = nullptr;
 
             QStackedWidget* m_settingsSwitcher = nullptr;
             QWidget* m_detailsWidget = nullptr;
