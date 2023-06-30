@@ -21,6 +21,23 @@ from o3de.export_project import process_command
 from o3de import manifest
 from typing import List
 
+# This script is meant to be run via o3de cli export-project command, not from Python directly!
+# In order to use this script, the command should look like the following (on windows use o3de.bat, on linux use o3de.sh):
+
+# cd path\to\o3de\engine
+# .\scripts\o3de.bat  export-project --export-scripts path\to\o3de\ExportScripts\export_standalone_monolithic_engine_centric.py \
+# --project-path path\to\project --log-level INFO --output-path path\to\output --build-non-mono-tools --config release --archive-output zip \
+# --seedlist path\to\seedlist1.seed --seedlist path\to\seedlist2.seed <etc..> 
+
+# The following parameters are optional, but may be helpful:
+#   seedlist: an O3DE seedlist for describing what assets of the project should be bundled
+#   gem-folder-name-to-copy: A Gem Folder from <ProjectRoot>/Gems that should be copied to the output location of the exported project
+#                               Files found in these folders will go into <output-path>/Gems/GemFolderName
+#   project-file-pattern-to-copy: Any regex pattern starting from <ProjectRoot> that indicates what files should be copied to output location.
+#                                   Files found in these patterns will go into <output-path>
+
+# For more information on the available parameters for this script, check the parse_arguments function defined at the bottom of the file
+
 def build_non_monolithic_tools_and_assets(engine_path: pathlib.Path,
                                           project_path: pathlib.Path,
                                           project_name: str,
