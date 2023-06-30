@@ -20,6 +20,7 @@ namespace AzQtComponents
 
     void ExtendedLabel::setPixmap(const QPixmap& p)
     {
+        m_keepAspectRatio = false;
         m_pix = p;
         rescale();
     }
@@ -38,7 +39,6 @@ namespace AzQtComponents
         {
             rescale();
         }
-
     }
 
     void ExtendedLabel::setText(const QString& text)
