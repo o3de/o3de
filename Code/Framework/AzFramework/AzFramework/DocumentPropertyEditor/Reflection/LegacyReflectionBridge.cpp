@@ -367,7 +367,7 @@ namespace AZ::Reflection
                         }
                         else
                         {
-                            if (!groupName.empty())
+                            if (!groupName.empty() && iter->m_serializeClassElement)
                             {
                                 AZStd::string propertyPath =
                                     AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_serializeClassElement->m_name);
