@@ -652,7 +652,7 @@ namespace AZ
                     bindFlags,
                     RHI::BufferBindFlags::InputAssembly | RHI::BufferBindFlags::DynamicInputAssembly |
                         RHI::BufferBindFlags::RayTracingShaderTable | RHI::BufferBindFlags::RayTracingAccelerationStructure |
-                        RHI::BufferBindFlags::RayTracingScratchBuffer))
+                        RHI::BufferBindFlags::RayTracingScratchBuffer | RHI::BufferBindFlags::Indirect))
             {
                 usageFlags |=  VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
             }
