@@ -143,7 +143,9 @@ namespace AZ::Reflection
             struct StackEntry
             {
                 void* m_instance;
-                void* m_parentInstance = nullptr;
+                // Instance that is used to retrieve attribute values that are tied to invokable functions.
+                // Commonly, it is the parent instance for property nodes, and the instance for UI element nodes.
+                void* m_instanceToInvoke = nullptr;
                 AZ::TypeId m_typeId;
                 const SerializeContext::ClassData* m_classData = nullptr;
                 const SerializeContext::ClassElement* m_classElement = nullptr;
@@ -342,8 +344,8 @@ namespace AZ::Reflection
                                 AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                                 UIElement->m_editData = &*iter;
                                 UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                                StackEntry entry = { nodeData.m_parentInstance,
-                                                     nodeData.m_parentInstance,
+                                StackEntry entry = { nodeData.m_instance,
+                                                     nodeData.m_instanceToInvoke,
                                                      nodeData.m_classData->m_typeId,
                                                      nodeData.m_classData,
                                                      UIElement };
@@ -365,9 +367,10 @@ namespace AZ::Reflection
                         }
                         else
                         {
-                            if (!groupName.empty())
+                            if (!groupName.empty() && iter->m_serializeClassElement)
                             {
-                                AZStd::string propertyPath = AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_serializeClassElement->m_name);
+                                AZStd::string propertyPath =
+                                    AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_serializeClassElement->m_name);
                                 nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
                             }
                         }
@@ -375,7 +378,7 @@ namespace AZ::Reflection
                 }
             }
 
-            void HandleNodeUiElementsRetrieval(const StackEntry& parentData, const StackEntry& nodeData)
+            void HandleNodeUiElementsRetrieval(const StackEntry& nodeData)
             {
                 // Search through classData for UIElements and Editor Data.
                 if (nodeData.m_classData->m_editData)
@@ -390,8 +393,9 @@ namespace AZ::Reflection
                             AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                             UIElement->m_editData = &*eltIt;
                             UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                            // Use the instance itself to retrieve parameter values that invoke functions on the UI Element.
                             StackEntry entry = {
-                                nodeData.m_instance, parentData.m_instance, nodeData.m_classData->m_typeId, nodeData.m_classData, UIElement
+                                nodeData.m_instance, nodeData.m_instance, nodeData.m_classData->m_typeId, nodeData.m_classData, UIElement
                             };
                             auto elementPair = AZStd::pair<const char*, StackEntry>(name, entry);
 
@@ -609,7 +613,7 @@ namespace AZ::Reflection
                 }
 
                 HandleNodeGroups(nodeData);
-                HandleNodeUiElementsRetrieval(parentData, nodeData);
+                HandleNodeUiElementsRetrieval(nodeData);
                 HandleNodeUiElementsCreationOnBegin();
 
                 if (auto result = HandleNodeAssociativeInterface(parentData, nodeData); result.has_value())
@@ -1006,7 +1010,7 @@ namespace AZ::Reflection
 
                             for (auto it = elementEditData->m_attributes.begin(); it != elementEditData->m_attributes.end(); ++it)
                             {
-                                checkAttribute(it, nodeData.m_parentInstance, isParentAttribute);
+                                checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
                             }
                         }
 
@@ -1016,7 +1020,7 @@ namespace AZ::Reflection
                             AZ::AttributePair pair;
                             pair.first = it->first;
                             pair.second = it->second.get();
-                            checkAttribute(&pair, nodeData.m_parentInstance, isParentAttribute);
+                            checkAttribute(&pair, nodeData.m_instanceToInvoke, isParentAttribute);
                         }
                     }
 
@@ -1137,10 +1141,10 @@ namespace AZ::Reflection
                 }
 
                 // RpePropertyHandlerWrapper would cache the parent info from which a wrapped handler may retrieve the parent instance.
-                if (nodeData.m_parentInstance)
+                if (nodeData.m_instanceToInvoke)
                 {
                     nodeData.m_cachedAttributes.push_back(
-                        { group, PropertyEditor::ParentValue.GetName(), Dom::Utils::ValueFromType<void*>(nodeData.m_parentInstance) });
+                        { group, PropertyEditor::ParentValue.GetName(), Dom::Utils::ValueFromType<void*>(nodeData.m_instanceToInvoke) });
                 }
 
                 // Calculate our visibility, going through parent nodes in reverse order to see if we should be hidden
