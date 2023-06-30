@@ -120,7 +120,7 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float selectedValue = VectorType::SelectFirst(testVector);
+        const float selectedValue = VectorType::SelectIndex0(testVector);
 
         EXPECT_NEAR(testLoadValues[0], selectedValue, AZ::Constants::Tolerance);
     }
@@ -131,7 +131,7 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float selectedValue = VectorType::SelectSecond(testVector);
+        const float selectedValue = VectorType::SelectIndex1(testVector);
 
         EXPECT_NEAR(testLoadValues[1], selectedValue, AZ::Constants::Tolerance);
     }
@@ -142,7 +142,7 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float selectedValue = VectorType::SelectThird(testVector);
+        const float selectedValue = VectorType::SelectIndex2(testVector);
 
         EXPECT_NEAR(testLoadValues[2], selectedValue, AZ::Constants::Tolerance);
     }
@@ -153,7 +153,7 @@ namespace UnitTest
         float testLoadValues[4] = { 1.0f, 2.0f, 3.0f, 4.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        const float selectedValue = VectorType::SelectFourth(testVector);
+        const float selectedValue = VectorType::SelectIndex3(testVector);
 
         EXPECT_NEAR(testLoadValues[3], selectedValue, AZ::Constants::Tolerance);
     }
@@ -272,7 +272,7 @@ namespace UnitTest
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatFirst(testVector);
+        testVector = VectorType::SplatIndex0(testVector);
         VectorType::StoreUnaligned(testStoreValues, testVector);
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
@@ -288,7 +288,7 @@ namespace UnitTest
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatSecond(testVector);
+        testVector = VectorType::SplatIndex1(testVector);
         VectorType::StoreUnaligned(testStoreValues, testVector);
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
@@ -304,7 +304,7 @@ namespace UnitTest
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatThird(testVector);
+        testVector = VectorType::SplatIndex2(testVector);
         VectorType::StoreUnaligned(testStoreValues, testVector);
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)
@@ -320,7 +320,7 @@ namespace UnitTest
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         typename VectorType::FloatType testVector = VectorType::LoadUnaligned(testLoadValues);
-        testVector = VectorType::SplatFourth(testVector);
+        testVector = VectorType::SplatIndex3(testVector);
         VectorType::StoreUnaligned(testStoreValues, testVector);
 
         for (int32_t i = 0; i < VectorType::ElementCount; ++i)

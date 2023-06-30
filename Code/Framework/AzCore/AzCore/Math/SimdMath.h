@@ -55,68 +55,68 @@ namespace AZ
 {
     AZ_MATH_INLINE float Abs(float value)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Abs(Simd::Vec1::Splat(value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Abs(Simd::Vec1::Splat(value)));
     }
 
     AZ_MATH_INLINE float Mod(float value, float divisor)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Mod(Simd::Vec1::Splat(value), Simd::Vec1::Splat(divisor)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Mod(Simd::Vec1::Splat(value), Simd::Vec1::Splat(divisor)));
     }
 
     AZ_MATH_INLINE float Wrap(float value, float maxValue)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Wrap(Simd::Vec1::Splat(value), Simd::Vec1::ZeroFloat(), Simd::Vec1::Splat(maxValue)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Wrap(Simd::Vec1::Splat(value), Simd::Vec1::ZeroFloat(), Simd::Vec1::Splat(maxValue)));
     }
 
     AZ_MATH_INLINE float Wrap(float value, float minValue, float maxValue)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Wrap(Simd::Vec1::Splat(value), Simd::Vec1::Splat(minValue), Simd::Vec1::Splat(maxValue)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Wrap(Simd::Vec1::Splat(value), Simd::Vec1::Splat(minValue), Simd::Vec1::Splat(maxValue)));
     }
 
     AZ_MATH_INLINE float AngleMod(float value)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::AngleMod(Simd::Vec1::Splat(value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::AngleMod(Simd::Vec1::Splat(value)));
     }
 
     AZ_MATH_INLINE void SinCos(float angle, float& sin, float& cos)
     {
         const Simd::Vec2::FloatType values = Simd::Vec2::SinCos(Simd::Vec1::Splat(angle));
-        sin = Simd::Vec2::SelectFirst(values);
-        cos = Simd::Vec2::SelectSecond(values);
+        sin = Simd::Vec2::SelectIndex0(values);
+        cos = Simd::Vec2::SelectIndex1(values);
     }
 
     AZ_MATH_INLINE float Sin(float angle)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sin(Simd::Vec1::Splat(angle)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sin(Simd::Vec1::Splat(angle)));
     }
 
     AZ_MATH_INLINE float Cos(float angle)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Cos(Simd::Vec1::Splat(angle)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Cos(Simd::Vec1::Splat(angle)));
     }
 
     AZ_MATH_INLINE float Acos(float value)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Acos(Simd::Vec1::Splat(value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Acos(Simd::Vec1::Splat(value)));
     }
 
     AZ_MATH_INLINE float Atan(float value)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Atan(Simd::Vec1::Splat(value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Atan(Simd::Vec1::Splat(value)));
     }
 
     AZ_MATH_INLINE float Atan2(float y, float x)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Atan2(Simd::Vec1::Splat(y), Simd::Vec1::Splat(x)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Atan2(Simd::Vec1::Splat(y), Simd::Vec1::Splat(x)));
     }
 
     AZ_MATH_INLINE float Sqrt(float value)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::Sqrt(Simd::Vec1::Splat(value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::Sqrt(Simd::Vec1::Splat(value)));
     }
 
     AZ_MATH_INLINE float InvSqrt(float value)
     {
-        return Simd::Vec1::SelectFirst(Simd::Vec1::SqrtInv(Simd::Vec1::Splat(value)));
+        return Simd::Vec1::SelectIndex0(Simd::Vec1::SqrtInv(Simd::Vec1::Splat(value)));
     }
 }

@@ -31,7 +31,7 @@ namespace AZ
 
         //! Default constructor, components are uninitialized.
         Vector4() = default;
-        Vector4(const Vector4& v);
+        Vector4(const Vector4& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector4(float x);
@@ -298,9 +298,14 @@ namespace AZ
         //! Returns the reciprocal of each component of the vector, fast but low accuracy, uses raw estimate instructions.
         Vector4 GetReciprocalEstimate() const;
 
+        //! Returns true if the vector contains no nan or inf values, false if at least one element is not finite.
         bool IsFinite() const;
 
+        //! Returns the underlying SIMD vector.
         Simd::Vec4::FloatType GetSimdValue() const;
+
+        //! Directly sets the underlying SIMD vector.
+        void SetSimdValue(Simd::Vec4::FloatArgType value);
 
     protected:
         union
