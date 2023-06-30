@@ -112,6 +112,8 @@ namespace AZ
 
         void PassAttachment::Update(bool updateImportedAttachments)
         {
+            const int maxRecursionTries{ 1000 };
+
             if (m_descriptor.m_type == RHI::AttachmentType::Image && (m_lifetime == RHI::AttachmentLifetimeType::Transient || updateImportedAttachments == true))
             {
                 if (m_getFormatFromPipeline && m_renderPipelineSource)
@@ -120,7 +122,23 @@ namespace AZ
                 }
                 else if (m_formatSource && m_formatSource->GetAttachment())
                 {
-                    m_descriptor.m_image.m_format = m_formatSource->GetAttachment()->m_descriptor.m_image.m_format;
+                    int tries{ 0 };
+                    auto formatSource = m_formatSource;
+                    while (formatSource->GetAttachment() && formatSource->GetAttachment()->m_formatSource &&
+                           formatSource->GetAttachment()->m_formatSource->GetAttachment())
+                    {
+                        formatSource = formatSource->GetAttachment()->m_formatSource;
+                        if (tries > maxRecursionTries) // crude circular dependency detection
+                        {
+                            AZ_Assert(
+                                false,
+                                "Attachment '%s': recursively followed FormatSource over too many connections, aborting.",
+                                m_path.GetCStr());
+                            break;
+                        }
+                        tries++;
+                    }
+                    m_descriptor.m_image.m_format = formatSource->GetAttachment()->m_descriptor.m_image.m_format;
                 }
 
                 if (m_getMultisampleStateFromPipeline && m_renderPipelineSource)
@@ -129,7 +147,23 @@ namespace AZ
                 }
                 else if (m_multisampleSource && m_multisampleSource->GetAttachment())
                 {
-                    m_descriptor.m_image.m_multisampleState = m_multisampleSource->GetAttachment()->m_descriptor.m_image.m_multisampleState;
+                    int tries{ 0 };
+                    auto multisampleSource = m_multisampleSource;
+                    while (multisampleSource->GetAttachment() && multisampleSource->GetAttachment()->m_multisampleSource &&
+                           multisampleSource->GetAttachment()->m_multisampleSource->GetAttachment())
+                    {
+                        multisampleSource = multisampleSource->GetAttachment()->m_multisampleSource;
+                        if (tries > maxRecursionTries) // crude circular dependency detection
+                        {
+                            AZ_Assert(
+                                false,
+                                "Attachment '%s': recursively followed MultiSampleSource over too many connections, aborting.",
+                                m_path.GetCStr());
+                            break;
+                        }
+                        tries++;
+                    }
+                    m_descriptor.m_image.m_multisampleState = multisampleSource->GetAttachment()->m_descriptor.m_image.m_multisampleState;
                 }
 
                 if (m_getSizeFromPipeline && m_renderPipelineSource)
@@ -139,13 +173,49 @@ namespace AZ
                 }
                 else if(m_sizeSource && m_sizeSource->GetAttachment())
                 {
-                    RHI::Size sourceSize = m_sizeSource->GetAttachment()->m_descriptor.m_image.m_size;
-                    m_descriptor.m_image.m_size = m_sizeMultipliers.ApplyModifiers(sourceSize);
+                    int tries{ 0 };
+                    PassAttachmentSizeMultipliers sizeMultiplier{ m_sizeMultipliers };
+                    auto sizeSource = m_sizeSource;
+                    while (sizeSource->GetAttachment() && sizeSource->GetAttachment()->m_sizeSource &&
+                           sizeSource->GetAttachment()->m_sizeSource->GetAttachment())
+                    {
+                        sizeSource = sizeSource->GetAttachment()->m_sizeSource;
+                        sizeMultiplier.m_heightMultiplier *= sizeSource->GetAttachment()->m_sizeMultipliers.m_heightMultiplier;
+                        sizeMultiplier.m_widthMultiplier *= sizeSource->GetAttachment()->m_sizeMultipliers.m_widthMultiplier;
+                        sizeMultiplier.m_depthMultiplier *= sizeSource->GetAttachment()->m_sizeMultipliers.m_depthMultiplier;
+                        if (tries > maxRecursionTries) // crude circular dependency detection
+                        {
+                            AZ_Assert(
+                                false,
+                                "Attachment '%s': recursively followed SizeSource over too many connections, aborting.",
+                                m_path.GetCStr());
+                            break;
+                        }
+                        tries++;
+                    }
+                    RHI::Size sourceSize = sizeSource->GetAttachment()->m_descriptor.m_image.m_size;
+                    m_descriptor.m_image.m_size = sizeMultiplier.ApplyModifiers(sourceSize);
                 }
 
                 if (m_arraySizeSource && m_arraySizeSource->GetAttachment())
                 {
-                    uint16_t arraySize = m_arraySizeSource->GetAttachment()->m_descriptor.m_image.m_arraySize;
+                    auto arraySizeSource = m_arraySizeSource;
+                    while (arraySizeSource->GetAttachment() && arraySizeSource->GetAttachment()->m_arraySizeSource &&
+                           arraySizeSource->GetAttachment()->m_arraySizeSource->GetAttachment())
+                    {
+                        int tries{ 0 };
+                        arraySizeSource = arraySizeSource->GetAttachment()->m_arraySizeSource;
+                        if (tries > maxRecursionTries) // crude circular dependency detection
+                        {
+                            AZ_Assert(
+                                false,
+                                "Attachment '%s': recursively followed ArraySizeSource over too many connections, aborting.",
+                                m_path.GetCStr());
+                            break;
+                        }
+                        tries++;
+                    }
+                    uint16_t arraySize = arraySizeSource->GetAttachment()->m_descriptor.m_image.m_arraySize;
                     m_descriptor.m_image.m_arraySize = arraySize;
                 }
 
