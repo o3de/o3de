@@ -29,6 +29,11 @@ namespace AZ
         Color() = default;
         Color(const Vector4& v)   { m_color = v; }
 
+        Color(AZ::Math::default_initialize_t)
+            : m_color(AZ::Math::default_initialize)
+        {
+        }
+
         explicit Color(const Vector2& source);
 
         explicit Color(const Vector3& source);

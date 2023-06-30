@@ -84,7 +84,11 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor, leaves members uninitialized for speed.
-        Frustum();
+        Frustum() = default;
+
+        Frustum(AZ::Math::default_initialize_t)
+        {
+        }
 
         //! Construct a view frustum from ViewFrustumAttributes.
         //! 

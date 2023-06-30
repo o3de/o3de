@@ -12,6 +12,7 @@
 
 namespace AZ
 {
+
     AZ_MATH_INLINE Vector2::Vector2(float x)
         : m_value(Simd::Vec2::Splat(x))
     {

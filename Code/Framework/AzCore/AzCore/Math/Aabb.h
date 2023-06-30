@@ -51,7 +51,16 @@ namespace AZ
         //! Creates an AABB which contains the specified OBB.
         static Aabb CreateFromObb(const Obb& obb);
 
+        // The default constructor for Vector3 will zero initialize the x, y, z members
         Aabb() = default;
+
+        // Call the Vector3 the default_initialize tag type constructor to default_initialize
+        // The Vector3 members to an indeterminate value
+        Aabb(AZ::Math::default_initialize_t)
+            : m_min(AZ::Math::default_initialize)
+            , m_max(AZ::Math::default_initialize)
+        {
+        }
 
         const Vector3& GetMin() const;
 

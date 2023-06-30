@@ -13,6 +13,7 @@
 
 namespace AZ
 {
+
     AZ_MATH_INLINE Matrix3x3::Matrix3x3(const Matrix3x3& rhs)
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR

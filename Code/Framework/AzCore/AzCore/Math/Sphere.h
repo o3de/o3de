@@ -23,6 +23,12 @@ namespace AZ
         Sphere() = default;
         Sphere(const Vector3& center, float radius);
 
+        Sphere(AZ::Math::default_initialize_t)
+            : m_center(AZ::Math::default_initialize)
+            , m_radius(0)
+        {
+        }
+
         static Sphere CreateUnitSphere();
         static Sphere CreateFromAabb(const Aabb& aabb);
 

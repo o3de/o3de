@@ -31,6 +31,10 @@ namespace AZ
         PolygonPrism() = default;
         virtual ~PolygonPrism() = default;
 
+        PolygonPrism(AZ::Math::default_initialize_t)
+        {
+        }
+
         //! Set the height of the polygon prism.
         void SetHeight(float height);
 
@@ -78,3 +82,5 @@ namespace AZ
     using PolygonPrismPtr = AZStd::shared_ptr<PolygonPrism>;
     using ConstPolygonPrismPtr = AZStd::shared_ptr<const PolygonPrism>;
 }
+
+#include <AzCore/Math/PolygonPrism.inl>

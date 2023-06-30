@@ -14,3 +14,14 @@
 #include <AzCore/Math/Internal/MathTypes_Platform.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/SimdMath.h>
+
+// Tag type used to allow default initialization to be performed for math types
+// https://en.cppreference.com/w/cpp/language/default_initialization
+// Default initialize will initialize objects with automatic storage initialization to indeterminate reviews
+namespace AZ::Math
+{
+    struct default_initialize_t
+    {
+    };
+    inline constexpr default_initialize_t default_initialize{};
+} // namespace AZ::Math

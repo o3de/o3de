@@ -36,7 +36,15 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default constructor does not initialize the matrix.
-        Matrix3x3() = default;
+        AZ_DEPRECATED(Matrix3x3() = default, "The Matrix3x3 Default Constructor has been deprecated. Please use Matrix3x3::CreateUnitialized() instead.");
+
+        //! Returns a 3x3 matrix with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Matrix3x3 CreateUninitialized();
+
+        Matrix3x3(AZ::Math::default_initialize_t)
+        {
+        }
 
         explicit Matrix3x3(const Quaternion& quaternion);
 

@@ -39,7 +39,15 @@ namespace AZ
         using Axis = Constants::Axis;
 
         //! Default constructor, which does not initialize the matrix.
-        Matrix3x4() = default;
+        AZ_DEPRECATED(Matrix3x4() = default, "The Matrix3x4 Default Constructor has been deprecated. Please use Matrix3x4::CreateUnitialized() instead.");
+
+        //! Returns a 3x4 matrix with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Matrix3x4 CreateUninitialized();
+
+        Matrix3x4(AZ::Math::default_initialize_t)
+        {
+        }
 
         Matrix3x4(const Matrix3x4& rhs);
         Matrix3x4(Simd::Vec4::FloatArgType row0, Simd::Vec4::FloatArgType row1, Simd::Vec4::FloatArgType row2);

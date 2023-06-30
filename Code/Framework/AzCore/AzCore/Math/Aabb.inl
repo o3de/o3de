@@ -10,6 +10,7 @@
 
 namespace AZ
 {
+
     AZ_MATH_INLINE Aabb Aabb::CreateNull()
     {
         Aabb result;

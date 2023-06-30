@@ -8,6 +8,7 @@
 
 namespace AZ
 {
+
     AZ_MATH_INLINE Quaternion::Quaternion(const Quaternion& q)
         : m_value(q.m_value)
     {

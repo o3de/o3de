@@ -10,6 +10,7 @@
 
 namespace AZ
 {
+
     AZ_MATH_INLINE Sphere::Sphere(const Vector3& center, float radius)
     {
         m_center = center;

@@ -38,7 +38,16 @@ namespace AZ
         static void Reflect(ReflectContext* context);
 
         //! Default construction, no initialization.
-        Plane() = default;
+        AZ_DEPRECATED(Plane() = default, "The Plane Default Constructor has been deprecated. Please use Plane::CreateUnitialized() instead.");
+
+        //! Returns a plane with uninitialized data members.
+        //! Many of the member functions are not safe to call until the data members have been initialized.
+        static Plane CreateUninitialized();
+
+        Plane(AZ::Math::default_initialize_t)
+            : m_plane(AZ::Math::default_initialize)
+        {
+        }
 
         //! Construct from a simd vector representing a plane.
         explicit Plane(Simd::Vec4::FloatArgType plane);

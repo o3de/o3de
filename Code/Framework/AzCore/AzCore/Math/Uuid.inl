@@ -51,6 +51,7 @@ namespace AZ::UuidInternal
 
 namespace AZ
 {
+
     constexpr Uuid::Uuid(AZStd::string_view uuidString)
     {
         operator=(CreateString(uuidString));
