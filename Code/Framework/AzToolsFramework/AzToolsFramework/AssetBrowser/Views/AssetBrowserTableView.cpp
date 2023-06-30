@@ -90,6 +90,15 @@ namespace AzToolsFramework
 
             connect(
                 m_tableViewWidget,
+                &AzQtComponents::AssetFolderTableView::selectionChangedSignal,
+                this,
+                [this](const QItemSelection& selected, const QItemSelection& deselected)
+                {
+                    Q_EMIT selectionChangedSignal(selected, deselected);
+                });
+
+            connect(
+                m_tableViewWidget,
                 &AzQtComponents::AssetFolderTableView::clicked,
                 this,
                 [this](const QModelIndex& index)
@@ -439,6 +448,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedTableView(this);
 
             m_assetTreeView->SetAttachedTableView(this);
 

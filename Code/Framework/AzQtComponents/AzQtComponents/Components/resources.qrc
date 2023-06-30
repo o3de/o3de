@@ -333,6 +333,9 @@
     <file alias="Audio.svg">img/UI20/Audio.svg</file>
     <file alias="Camera.svg">img/UI20/Camera.svg</file>
     <file alias="Delete.svg">img/UI20/Delete.svg</file>
+    <file alias="Favorites.svg">img/UI20/Favorites.svg</file>
+    <file alias="Favorite_File.svg">img/UI20/Favorite_File.svg</file>
+    <file alias="Favorite_Folder.svg">img/UI20/Favorite_Folder.svg</file>
     <file alias="Folder.svg">img/UI20/Folder.svg</file>
     <file alias="Folder-small.svg">img/UI20/Folder-small.svg</file>
     <file alias="Goto-next-level.svg">img/UI20/Goto-next-level.svg</file>

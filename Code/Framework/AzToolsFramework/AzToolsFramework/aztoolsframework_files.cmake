@@ -783,6 +783,20 @@ set(FILES
     AssetBrowser/Previewer/PreviewerFactory.h
     AssetBrowser/Previewer/PreviewerFrame.cpp
     AssetBrowser/Previewer/PreviewerFrame.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesView.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesView.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesManager.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesManager.h
+    AssetBrowser/Favorites/AssetBrowserFavoritesModel.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoritesModel.h
+    AssetBrowser/Favorites/AssetBrowserFavoriteItem.cpp
+    AssetBrowser/Favorites/AssetBrowserFavoriteItem.h
+    AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.cpp
+    AssetBrowser/Favorites/EntryAssetBrowserFavoriteItem.h
+    AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.cpp
+    AssetBrowser/Favorites/SearchAssetBrowserFavoriteItem.h
+    AssetBrowser/Favorites/FavoritesEntryDelegate.cpp
+    AssetBrowser/Favorites/FavoritesEntryDelegate.h
     Archive/ArchiveComponent.h
     Archive/ArchiveComponent.cpp
     Archive/ArchiveAPI.h
