@@ -514,6 +514,11 @@ namespace AZ
             }
         }
 
+        void DirectionalLightComponentController::BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler)
+        {
+            configurationChangedHandler.Connect(m_configurationChangedEvent);
+        }
+
         const DirectionalLightComponentConfig& DirectionalLightComponentController::GetConfiguration() const
         {
             return m_configuration;
