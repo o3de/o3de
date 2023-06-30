@@ -74,7 +74,7 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE float Vec1::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec1::SelectIndex0(FloatArgType value)
         {
             return value;
         }
