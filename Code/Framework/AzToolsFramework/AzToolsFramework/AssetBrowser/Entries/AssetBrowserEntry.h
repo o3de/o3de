@@ -161,6 +161,10 @@ namespace AzToolsFramework
             void SetThumbnailKey(SharedThumbnailKey thumbnailKey);
             virtual SharedThumbnailKey CreateThumbnailKey() = 0;
 
+            void SetDisplayName(const QString name);
+            void SetIconPath(const AZ::IO::Path path);
+            AZ::IO::Path GetIconPath() const; 
+
             bool lessThan(const AssetBrowserEntry* other, const AssetBrowserEntry::AssetEntrySortMode sortColumn, const QCollator& collator) const;
             void SetFullPath(const AZ::IO::Path& fullPath);
 
@@ -172,7 +176,9 @@ namespace AzToolsFramework
             AZ::IO::Path m_relativePath;
             AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
+            AZ::IO::Path m_iconPath;
             AZ::u64 m_modificationTime;
+
             size_t m_diskSize;
             AZ::Vector3 m_dimension{ NAN, NAN, NAN };
             uint32_t m_vertices{ 0 };

@@ -34,6 +34,8 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
+
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserListView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
@@ -542,7 +544,13 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         calledFromAssetBrowser |= tableView->GetIsAssetBrowserMainView();
     }
 
-    if (!treeView && !listView && !thumbnailView && !tableView)
+    AssetBrowserFavoritesView* favoritesView = qobject_cast<AssetBrowserFavoritesView*>(caller);
+    if (favoritesView)
+    {
+        calledFromAssetBrowser = false;
+    }
+
+    if (!treeView && !tableView && !thumbnailView && !listView && !favoritesView)
     {
         return;
     }
@@ -551,6 +559,42 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     if (!entry)
     {
         return;
+    }
+
+    if (favoritesView)
+    {
+        menu->addAction(
+            QObject::tr("View in Asset Browser"),
+            [favoritesView, entry]()
+            {
+                AssetBrowserFavoriteRequestBus::Broadcast(
+                    &AssetBrowserFavoriteRequestBus::Events::ViewEntryInAssetBrowser, favoritesView, entry);
+            });
+    }
+
+    bool isFavorite = false;
+    AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
+
+    if (isFavorite)
+    {
+        menu->addAction(
+            QObject::tr("Remove from Favorites"),
+            [entry]()
+            {
+                AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
+            });
+    }
+    else
+    {
+        if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
+        {
+            menu->addAction(
+                QObject::tr("Add to Favorites"),
+                [caller]()
+                {
+                    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteEntriesButtonPressed, caller);
+                });
+        }
     }
 
     if (calledFromAssetBrowser)
@@ -648,25 +692,23 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                 QObject::tr("Open in another Asset Browser"),
                 [fullFilePath, thumbnailView, tableView]()
                 {
+                    AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
+                    
+                    if (thumbnailView)
+                    {
+                        newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                    }
+                    else if (tableView)
+                    {
+                        newAssetBrowser->SetCurrentMode(AssetBrowserMode::TableView);
+                    }
+                    else
+                    {
+                        newAssetBrowser->SetCurrentMode(AssetBrowserMode::ListView);
+                    }
 
-                AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
-                
-                if (thumbnailView)
-                {
-                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
-                }
-                else if (tableView)
-                {
-                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::TableView);
-                }
-                else
-                {
-                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::ListView);
-                }
-
-                newAssetBrowser->SelectAsset(fullFilePath.c_str());
-                  
-            });
+                    newAssetBrowser->SelectAsset(fullFilePath.c_str());
+                });
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
             entry->GetChildrenRecursively<ProductAssetBrowserEntry>(products);
@@ -1257,4 +1299,51 @@ bool AzAssetBrowserRequestHandler::OpenWithOS(const AZStd::string& fullEntryPath
     }
 
     return openedSuccessfully;
+}
+
+AzAssetBrowserWindow* AzAssetBrowserRequestHandler::FindAzAssetBrowserWindowThatContainsWidget(QWidget* widget)
+{
+    AzAssetBrowserWindow* targetAssetBrowserWindow = nullptr;
+    QWidget* candidate = widget;
+    while (!targetAssetBrowserWindow)
+    {
+        targetAssetBrowserWindow = qobject_cast<AzAssetBrowserWindow*>(candidate);
+        if (targetAssetBrowserWindow)
+        {
+            return targetAssetBrowserWindow;
+        }
+
+        if (!candidate->parentWidget())
+        {
+            return nullptr;
+        }
+
+        candidate = candidate->parentWidget();
+    }
+
+    return nullptr;
+}
+
+void AzAssetBrowserRequestHandler::SelectAsset(QWidget* caller, const AZStd::string& fullFilePath)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
+
+    if (!assetBrowserWindow)
+    {
+        return;
+    }
+
+    assetBrowserWindow->SelectAsset(fullFilePath.c_str(), false);
+}
+
+void AzAssetBrowserRequestHandler::SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath)
+{
+    AzAssetBrowserWindow* assetBrowserWindow = FindAzAssetBrowserWindowThatContainsWidget(caller);
+
+    if (!assetBrowserWindow)
+    {
+        return;
+    }
+
+    assetBrowserWindow->SelectAsset(fullFolderPath.c_str(), true);
 }

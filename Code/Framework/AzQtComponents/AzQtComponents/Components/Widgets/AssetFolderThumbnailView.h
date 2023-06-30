@@ -115,11 +115,15 @@ namespace AzQtComponents
         void SetShowSearchResultsMode(bool searchMode);
         bool InSearchResultsMode() const;
 
+    protected Q_SLOTS:
+        void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+
     signals:
         void rootIndexChanged(const QModelIndex& idx);
         void contextMenu(const QModelIndex& idx);
         void afterRename(const QString& value) const;
         void deselected();
+        void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
 
     protected:
         friend class Style;
