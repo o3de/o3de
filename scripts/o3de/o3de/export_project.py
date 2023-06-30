@@ -51,16 +51,11 @@ class O3DEScriptExportContext(object):
         return self._args
 
 # Helper API
-def determine_host_asset_platform():
-    system_platform = platform.system().lower()
-    if not system_platform:
-        return ""
-    if system_platform == "windows":
-        return "pc"
-    elif system_platform == "linux":
-        return "linux"
-    elif system_platform == "darwin":
-        return "mac"
+def get_default_asset_platform():
+    host_platform_to_asset_platform_map = { 'windows': 'pc',
+                                            'linux':   'linux',
+                                            'darwin':  'mac' }
+    return host_platform_to_asset_platform_map.get(platform.system().lower(), "")
 
 def process_command(args: list,
                     cwd: pathlib.Path = None,
