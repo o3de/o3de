@@ -67,6 +67,12 @@ namespace AzQtComponents
         }
     }
 
+    void AssetFolderTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    {
+        TableView::selectionChanged(selected, deselected);
+        Q_EMIT selectionChangedSignal(selected, deselected);
+    }
+
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderTableView.cpp"

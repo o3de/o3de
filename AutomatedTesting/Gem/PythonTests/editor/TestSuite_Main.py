@@ -72,7 +72,7 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_AssetBrowser_SearchFiltering(EditorBatchedTest):
         from .EditorScripts import AssetBrowser_SearchFiltering as test_module
 
-    class test_AssetBrowser_TreeNavigation(EditorBatchedTest):
+    class test_AssetBrowser_TreeNavigation(EditorSingleTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
 
     class test_ComponentCRUD_Add_Delete_Components(EditorSingleTest):

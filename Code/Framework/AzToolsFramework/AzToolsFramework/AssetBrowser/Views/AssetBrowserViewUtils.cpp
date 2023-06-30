@@ -548,7 +548,7 @@ namespace AzToolsFramework
 
         }
 
-        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon)
+        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry, bool returnIcon, bool isFavorite)
         {
             // Check if this entry is a folder
             QString iconPathToUse;
@@ -556,10 +556,25 @@ namespace AzToolsFramework
             AZ_Assert(!engineRoot.empty(), "Engine Root not initialized");
             if (auto folderEntry = azrtti_cast<const FolderAssetBrowserEntry*>(entry))
             {
-                if (folderEntry->IsGemFolder())
+                if (!folderEntry->GetIconPath().empty())
+                {
+                    if (folderEntry->GetIconPath().c_str()[0] == ':')
+                    {
+                        iconPathToUse = folderEntry->GetIconPath().c_str();
+                    }
+                    else
+                    {
+                        iconPathToUse = (engineRoot / folderEntry->GetIconPath()).c_str();
+                    }
+                }
+                else if (folderEntry->IsGemFolder())
                 {
                     static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/GemFolder_80.svg";
                     iconPathToUse = (engineRoot / FolderIconPath).c_str();
+                }
+                else if (isFavorite)
+                {
+                    iconPathToUse = ":/Gallery/Favorite_Folder.svg";
                 }
                 else
                 {
