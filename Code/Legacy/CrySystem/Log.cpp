@@ -29,6 +29,17 @@
 #include <time.h>
 #endif
 
+// carbonated begin (akostin/LogWithMS): Log date with milliseconds
+#if defined(CARBONATED)
+#ifdef AZ_COMPILER_MSVC
+#include <sstream>
+#include <ctime>
+#include <iomanip>
+#include <iostream>
+#endif
+#endif
+// carbonated end
+
 #if defined(LINUX) || defined(APPLE)
 #include <syslog.h>
 #endif
@@ -70,16 +81,41 @@ namespace
     auto GetHourMinuteSeconds() -> TimeStringType
     {
         TimeStringType sTime;
+#ifdef AZ_COMPILER_MSVC
+
+// carbonated begin (akostin/LogWithMS): Log date with milliseconds
+#if defined(CARBONATED)
+        const auto now = AZStd::chrono::system_clock::now();
+        const auto milliseconds = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(now.time_since_epoch()) % 1000;
+
+        const auto timeStamp = AZStd::chrono::system_clock::to_time_t(now);
+        std::tm localTime;
+
+        localtime_s(&localTime, &timeStamp);
+
+        std::ostringstream oss;
+
+        oss << std::put_time(&localTime, "%H:%M:%S");
+
+        sprintf_s(sTime.data(), sTime.capacity(), "<%s.%03lld> ", oss.str().c_str(), milliseconds.count());
+
+        // Fix up the internal size member of the fixed string
+        // Using the traits_type::length function to calculate the strlen of the c-string returned by sprintf_s
+        sTime.resize_no_construct(TimeStringType::traits_type::length(sTime.data()));
+#else
         time_t ltime;
         time(&ltime);
-#ifdef AZ_COMPILER_MSVC
         struct tm today;
         localtime_s(&today, &ltime);
         strftime(sTime.data(), sTime.capacity(), "<%H:%M:%S> ", &today);
         // Fix up the internal size member of the fixed string
         // Using the traits_type::length function to calculate the strlen of the c-string returned by strftime
         sTime.resize_no_construct(TimeStringType::traits_type::length(sTime.data()));
+#endif
+// carbonated end
 #else
+        time_t ltime;
+        time(&ltime);
         auto today = localtime(&ltime);
         strftime(sTime.data(), sTime.capacity(), "<%H:%M:%S> ", today);
         sTime.resize_no_construct(TimeStringType::traits_type::length(sTime.data()));
