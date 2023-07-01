@@ -395,7 +395,7 @@ def add_parser_args(parser):
     group.add_argument('--auto-update', '-au', type=str, nargs='*', required=False,
                        help='Checks for any new Gems/Projects/Templates in the associated directories that have not been added'
                        ' to your repo.json fields.'
-                       ' Pass in lower case object type as args that should look like this: gem/ project/ template'
+                       ' Optionally, provide the object types to update as args like this: --auto-update gem project template'
                        ' Note: This does not update the deleted gems/projects/templates, please use'
                         '--delete-gems if you want to delete data from repo.json file')
     
