@@ -69,6 +69,12 @@ class ServiceClientJobConfigTest
         return "";
     }
 
+    bool HasResourceType(const AZStd::string& resourceKeyName) const override
+    {
+        AZ_UNUSED(resourceKeyName);
+        return false;
+    }
+
     AZStd::string GetServiceUrlByServiceName(const AZStd::string& serviceName) const override
     {
         AZ_UNUSED(serviceName);

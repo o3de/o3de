@@ -118,6 +118,11 @@ namespace AWSCore
         }, resourceKeyName);
     }
 
+    bool AWSResourceMappingManager::HasResourceType(const AZStd::string& resourceKeyName) const
+    {
+        return m_resourceMappings.contains(resourceKeyName);
+    }
+
     AZStd::string AWSResourceMappingManager::GetServiceUrlByServiceName(const AZStd::string& serviceName) const
     {
         return GetServiceUrlByRESTApiIdAndStage(

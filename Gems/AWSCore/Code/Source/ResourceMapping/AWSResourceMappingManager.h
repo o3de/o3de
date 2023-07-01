@@ -83,6 +83,7 @@ namespace AWSCore
         AZStd::string GetResourceNameId(const AZStd::string& resourceKeyName) const override;
         AZStd::string GetResourceRegion(const AZStd::string& resourceKeyName) const override;
         AZStd::string GetResourceType(const AZStd::string& resourceKeyName) const override;
+        bool HasResourceType(const AZStd::string& resourceKeyName) const override;
         AZStd::string GetServiceUrlByServiceName(const AZStd::string& serviceName) const override;
         AZStd::string GetServiceUrlByRESTApiIdAndStage(
             const AZStd::string& restApiIdKeyName, const AZStd::string& restApiStageKeyName) const override;

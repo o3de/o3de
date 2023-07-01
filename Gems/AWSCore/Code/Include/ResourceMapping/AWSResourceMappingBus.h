@@ -69,6 +69,13 @@ namespace AWSCore
         //! @return Resource type in string
         virtual AZStd::string GetResourceType(const AZStd::string& resourceKeyName) const = 0;
 
+        //! HasResourceType
+        //! Check if an AWS resource is defined
+        //! @param resourceKeyName Resource mapping key name is used to identify individual
+        //!        resource attributes
+        //! @return True if the resource exists; otherwise false.
+        virtual bool HasResourceType(const AZStd::string& resourceKeyName) const = 0;
+
         //! GetServiceUrl
         //! Returns the base url for a registered APIGateway service endpoint
         //! @param serviceName The name of the Gem or mapping name that provides the services
