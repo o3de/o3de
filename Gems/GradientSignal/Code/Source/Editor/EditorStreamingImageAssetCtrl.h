@@ -60,6 +60,7 @@ namespace GradientSignal
     public:
         AZ_CLASS_ALLOCATOR(StreamingImagePropertyHandler, AZ::SystemAllocator);
 
+        AZ::TypeId GetHandledType() const override;
         AZ::u32 GetHandlerName() const override;
         bool IsDefaultHandler() const override;
         QWidget* GetFirstInTabOrder(StreamingImagePropertyAssetCtrl* widget) override;
@@ -70,6 +71,7 @@ namespace GradientSignal
         void ConsumeAttribute(StreamingImagePropertyAssetCtrl* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, StreamingImagePropertyAssetCtrl* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;
         bool ReadValuesIntoGUI(size_t index, StreamingImagePropertyAssetCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)  override;
+        AZ::Data::Asset<AZ::Data::AssetData>* CastTo(void* instance, const AzToolsFramework::InstanceDataNode* node, const AZ::Uuid& fromId, const AZ::Uuid& toId) const override;
 
         static void Register();
     };
