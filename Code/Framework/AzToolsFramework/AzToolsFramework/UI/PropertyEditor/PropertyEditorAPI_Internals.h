@@ -286,6 +286,38 @@ namespace AzToolsFramework
                         AZStd::string attributeIdString(name.GetStringView());
                         AZ::u32 attributeIdHash = AZStd::stoul(attributeIdString);
                         attributeId = AZ::Crc32(attributeIdHash);
+
+                        // If we failed to marshal the attribute in the above AZ::Reflection::WriteDomValueToGenericAttribute,
+                        // then its either an opaque value or an Attribute object (from being a callback), so we need
+                        // to handle these cases separately to marshal them into an attribute to be passed onto the
+                        // handlers that will actually consume them.
+                        if (!marshalledAttribute)
+                        {
+                            if (attributeIt->second.IsOpaqueValue() && attributeIt->second.GetOpaqueValue().is<AZ::Attribute*>())
+                            {
+                                AZ::Attribute* attribute = AZStd::any_cast<AZ::Attribute*>(attributeIt->second.GetOpaqueValue());
+                                marshalledAttribute = AZStd::shared_ptr<AZ::Attribute>(
+                                    attribute,
+                                    [](AZ::Attribute*)
+                                    {
+                                    });
+                            }
+                            else if (attributeIt->second.IsObject())
+                            {
+                                auto typeField = attributeIt->second.FindMember(AZ::Attribute::GetTypeField());
+                                if (typeField != attributeIt->second.MemberEnd() && typeField->second.IsString() &&
+                                    typeField->second.GetString() == AZ::Attribute::GetTypeName())
+                                {
+                                    AZ::Attribute* attribute =
+                                        AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(attributeIt->second[AZ::Attribute::GetAttributeField()]);
+                                    marshalledAttribute = AZStd::shared_ptr<AZ::Attribute>(
+                                        attribute,
+                                        [](AZ::Attribute*)
+                                        {
+                                        });
+                                }
+                            }
+                        }
                     }
                 }
 

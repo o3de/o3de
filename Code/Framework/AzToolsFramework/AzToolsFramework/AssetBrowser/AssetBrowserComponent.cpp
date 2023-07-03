@@ -21,6 +21,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetPicker/AssetPickerDialog.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/FolderThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
@@ -108,6 +109,7 @@ namespace AzToolsFramework
             AssetSystemBus::Handler::BusDisconnect();
             m_assetBrowserModel.reset();
             EntryCache::DestroyInstance();
+            AssetBrowserFavoritesManager::DestroyInstance();
         }
 
         void AssetBrowserComponent::Reflect(AZ::ReflectContext* context)

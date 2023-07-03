@@ -271,6 +271,8 @@ namespace AZ
                 m_controller.m_configuration.m_intensity = m_controller.m_photometricValue.GetIntensity();
             }
 
+            m_controller.m_configurationChangedEvent.Signal();
+
             BaseClass::OnConfigurationChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;
         }

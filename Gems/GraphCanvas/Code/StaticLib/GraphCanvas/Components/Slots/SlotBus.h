@@ -91,6 +91,8 @@ namespace GraphCanvas
         AZStd::string m_tooltip;
         AZStd::string m_name;
 
+        bool m_isNameHidden = false;
+
         SlotGroup m_slotGroup = SlotGroups::Invalid;
 
         AZStd::string m_textDecoration;

@@ -62,7 +62,7 @@ namespace AZ
             AZStd::vector<float>& blendWeightBufferData)
         {
             EMotionFX::SkinningInfoVertexAttributeLayer* sourceSkinningInfo = static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(mesh->FindSharedVertexAttributeLayer(EMotionFX::SkinningInfoVertexAttributeLayer::TYPE_ID));
-            
+
             // EMotionFX source gives 16 bit indices and 32 bit float weights
             // Atom consumes 32 bit uint indices and 32 bit float weights (range 0-1)
             const uint32_t* sourceOriginalVertex = static_cast<uint32_t*>(mesh->FindOriginalVertexData(EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS));
@@ -112,7 +112,7 @@ namespace AZ
                 }
             }
         }
-        
+
         static void ProcessMorphsForLod(
             uint32_t lodIndex,
             const EMotionFX::Actor* actor,
@@ -148,7 +148,8 @@ namespace AZ
                             float minWeight = morphTarget->GetRangeMin();
                             float maxWeight = morphTarget->GetRangeMax();
 
-                            const auto& modelLodMesh = modelLodAsset->GetMeshes()[metaData.m_meshIndex];
+                            const auto lodMeshes = modelLodAsset->GetMeshes();
+                            const auto& modelLodMesh = lodMeshes[metaData.m_meshIndex];
 
                             const RPI::BufferAssetView* morphBufferAssetView =
                                 modelLodMesh.GetSemanticBufferAssetView(Name{ "MORPHTARGET_VERTEXDELTAS" });
@@ -252,7 +253,7 @@ namespace AZ
                 for (const auto& modelLodMesh : modelLodAsset->GetMeshes())
                 {
                     // TODO: operate on a per-mesh basis
-                    
+
                     // If the joint id/weight buffers haven't been found on a mesh yet, keep looking
                     if (!jointIndicesBufferView)
                     {

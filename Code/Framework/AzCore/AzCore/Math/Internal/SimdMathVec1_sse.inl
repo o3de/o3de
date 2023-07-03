@@ -77,9 +77,9 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE float Vec1::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec1::SelectIndex0(FloatArgType value)
         {
-            return Sse::SelectFirst(value);
+            return Sse::SelectIndex0(value);
         }
 
 
@@ -135,7 +135,7 @@ namespace AZ
         {
             // In Vec1 the last 3 elements can be zero, avoid doing division by zero
             const FloatType ones = Sse::Splat(1.0f);
-            arg2 = Sse::ReplaceFirst(ones, arg2);
+            arg2 = Sse::ReplaceIndex0(ones, arg2);
             return Sse::Div(arg1, arg2);
         }
 
@@ -423,7 +423,7 @@ namespace AZ
             // Using (value.x, 1, 1, 1) to avoid divisions by 0.
             const FloatType ones = Sse::Splat(1.0f);
             return Sse::Reciprocal(
-                Sse::ReplaceFirst(ones, value));
+                Sse::ReplaceIndex0(ones, value));
         }
 
 
@@ -433,7 +433,7 @@ namespace AZ
             // Using (value.x, 1, 1, 1) to avoid divisions by 0.
             const FloatType ones = Sse::Splat(1.0f);
             return Sse::ReciprocalEstimate(
-                Sse::ReplaceFirst(ones, value));
+                Sse::ReplaceIndex0(ones, value));
         }
 
 

@@ -16,6 +16,7 @@ AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
 AZ_POP_DISABLE_WARNING
 
+class QIcon;
 class QMainWindow;
 class QMimeData;
 class QWidget;
@@ -44,6 +45,9 @@ namespace AzToolsFramework
         class AssetSelectionModel;
         class AssetBrowserModel;
         class AssetBrowserEntry;
+        class AssetBrowserFavoriteItem;
+        class AssetBrowserFavoritesView; 
+        class SearchWidget;
 
         //////////////////////////////////////////////////////////////////////////
         // AssetBrowserComponent
@@ -261,6 +265,12 @@ namespace AzToolsFramework
                 return SourceFileDetails();
             }
 
+            //! Selects the asset identified by the path in the AzAssetBrowser identified by caller.
+            virtual void SelectAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFilePath) {};
+
+            //! Selects the folder identified by the path in the AzAssetBrowser identified by caller.
+            virtual void SelectFolderAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFolderPath){};
+
             //! required in order to sort the busses.
             inline bool Compare(const AssetBrowserInteractionNotifications* other) const
             {
@@ -411,6 +421,40 @@ namespace AzToolsFramework
             ~AssetBrowserFileActionNotifications() = default;
         };
         using AssetBrowserFileActionNotificationBus = AZ::EBus<AssetBrowserFileActionNotifications>;
+
+        //! Sends requests to the Asset Browser Favorite system.
+        class AssetBrowserFavoriteRequests
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+            virtual bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) = 0;
+
+            virtual void AddFavoriteAsset(const AssetBrowserEntry* favorite) = 0;
+            virtual void AddFavoriteSearchButtonPressed(SearchWidget* searchWidget) = 0;
+            virtual void AddFavoriteEntriesButtonPressed(QWidget* sourceWindow) = 0;
+
+            virtual void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) = 0;
+            virtual void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) = 0;
+
+            virtual void ViewEntryInAssetBrowser(AssetBrowserFavoritesView* targetWindow, const AssetBrowserEntry* favorite) = 0;
+
+            virtual void SaveFavorites() = 0;
+
+            virtual AZStd::vector<AssetBrowserFavoriteItem*> GetFavorites() = 0;
+        };
+        using AssetBrowserFavoriteRequestBus = AZ::EBus<AssetBrowserFavoriteRequests>;
+
+        //! Used for sending/receiving notifications about changes in the favorites system.
+        class AssetBrowserFavoritesNotifications : public AZ::EBusTraits
+        {
+        public:
+            virtual void FavoritesChanged() {}
+        protected:
+            ~AssetBrowserFavoritesNotifications() = default;
+        };
+        using AssetBrowserFavoritesNotificationBus = AZ::EBus<AssetBrowserFavoritesNotifications>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

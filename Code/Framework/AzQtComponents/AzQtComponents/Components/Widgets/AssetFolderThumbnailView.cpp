@@ -451,6 +451,7 @@ namespace AzQtComponents
     {
         setItemDelegate(m_delegate);
         setSelectionMode(ExtendedSelection);
+
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -1126,6 +1127,12 @@ namespace AzQtComponents
     bool AssetFolderThumbnailView::InSearchResultsMode() const
     {
         return m_showSearchResultsMode;
+    }
+
+    void AssetFolderThumbnailView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    {
+        QAbstractItemView::selectionChanged(selected, deselected);
+        Q_EMIT selectionChangedSignal(selected, deselected);
     }
 } // namespace AzQtComponents
 

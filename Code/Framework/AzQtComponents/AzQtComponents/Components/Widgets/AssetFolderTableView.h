@@ -29,10 +29,14 @@ namespace AzQtComponents
         void SetShowSearchResultsMode(bool searchMode);
         void setRootIndex(const QModelIndex& index) override;
 
+    protected Q_SLOTS:
+        void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
+
     signals:
         void tableRootIndexChanged(const QModelIndex& idx);
         void showInTableFolderTriggered(const QModelIndex& idx);
         void rowDeselected();
+        void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
 
     protected:
         void mousePressEvent(QMouseEvent* event) override;

@@ -136,7 +136,6 @@ def AssetBrowser_SearchFiltering():
         asset_type_filter = verify_files_appeared(asset_browser_tree.model(), ["i_caf", "fbx", "xml", "animgraph", "motionset", "actor", "motion"])
         Report.result(Tests.asset_type_filtered, asset_type_filter)
 
-        print("test2")
         # 6) Add additional filter(FileTag) from the filter menu
         line_edit.setText("FileTag")
         filetag_model_index = await pyside_utils.wait_for_child_by_pattern(tree, "FileTag")
@@ -148,10 +147,10 @@ def AssetBrowser_SearchFiltering():
         )
         Report.result(Tests.asset_type_filtered, more_types_filtered)
 
-        print("test3")
         # 7) Remove one of the filtered asset types from the list of applied filters
-        filter_layout = asset_browser.findChild(QtWidgets.QFrame, "filteredLayout")
-        animation_close_button = filter_layout.children()[1]
+        filter_layout = asset_browser.findChild(QtWidgets.QFrame, "containerLayout")
+        
+        animation_close_button = filter_layout.children()[4]
         first_close_button = animation_close_button.findChild(QtWidgets.QPushButton, "closeTag")
         first_close_button.click()
         general.idle_wait(1.0)
@@ -159,7 +158,6 @@ def AssetBrowser_SearchFiltering():
         remove_filtered = verify_files_appeared(asset_browser_tree.model(), ["filetag"])
         Report.result(Tests.asset_type_filtered, remove_filtered)
 
-        print("test4")
         # 8) Remove all of the filter asset types from the list of filters
         filetag_close_button = filter_layout.children()[1]
         second_close_button = filetag_close_button.findChild(QtWidgets.QPushButton, "closeTag")

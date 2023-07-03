@@ -30,14 +30,14 @@ namespace AZ
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec1(Vec1::FloatArgType value)
         {
             // Coming from a Vec1 the last 3 elements could be garbage.
-            return Sse::SplatFirst(value); // {value.x, value.x, value.x, value.x}
+            return Sse::SplatIndex0(value); // {value.x, value.x, value.x, value.x}
         }
 
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::FromVec2(Vec2::FloatArgType value)
         {
             // Coming from a Vec2 the last 2 elements could be garbage.
-            return Sse::ReplaceThird(value, 0.0f); // {value.x, value.y, 0.0f, unused}
+            return Sse::ReplaceIndex2(value, 0.0f); // {value.x, value.y, 0.0f, unused}
         }
 
 
@@ -101,21 +101,21 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE float Vec3::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec3::SelectIndex0(FloatArgType value)
         {
-            return Sse::SelectFirst(value);
+            return Sse::SelectIndex0(value);
         }
 
 
-        AZ_MATH_INLINE float Vec3::SelectSecond(FloatArgType value)
+        AZ_MATH_INLINE float Vec3::SelectIndex1(FloatArgType value)
         {
-            return Sse::SelectFirst(Sse::SplatSecond(value));
+            return Sse::SelectIndex0(Sse::SplatIndex1(value));
         }
 
 
-        AZ_MATH_INLINE float Vec3::SelectThird(FloatArgType value)
+        AZ_MATH_INLINE float Vec3::SelectIndex2(FloatArgType value)
         {
-            return Sse::SelectFirst(Sse::SplatThird(value));
+            return Sse::SelectIndex0(Sse::SplatIndex2(value));
         }
 
 
@@ -131,57 +131,57 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatFirst(FloatArgType value)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatIndex0(FloatArgType value)
         {
-            return Sse::SplatFirst(value);
+            return Sse::SplatIndex0(value);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatSecond(FloatArgType value)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatIndex1(FloatArgType value)
         {
-            return Sse::SplatSecond(value);
+            return Sse::SplatIndex1(value);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatThird(FloatArgType value)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::SplatIndex2(FloatArgType value)
         {
-            return Sse::SplatThird(value);
+            return Sse::SplatIndex2(value);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceFirst(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex0(FloatArgType a, float b)
         {
-            return Sse::ReplaceFirst(a, b);
+            return Sse::ReplaceIndex0(a, b);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceFirst(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex0(FloatArgType a, FloatArgType b)
         {
-            return Sse::ReplaceFirst(a, b);
+            return Sse::ReplaceIndex0(a, b);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceSecond(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex1(FloatArgType a, float b)
         {
-            return Sse::ReplaceSecond(a, b);
+            return Sse::ReplaceIndex1(a, b);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceSecond(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex1(FloatArgType a, FloatArgType b)
         {
-            return Sse::ReplaceSecond(a, b);
+            return Sse::ReplaceIndex1(a, b);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceThird(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex2(FloatArgType a, float b)
         {
-            return Sse::ReplaceThird(a, b);
+            return Sse::ReplaceIndex2(a, b);
         }
 
 
-        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceThird(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ReplaceIndex2(FloatArgType a, FloatArgType b)
         {
-            return Sse::ReplaceThird(a, b);
+            return Sse::ReplaceIndex2(a, b);
         }
 
 
@@ -224,7 +224,7 @@ namespace AZ
         AZ_MATH_INLINE Vec3::FloatType Vec3::Div(FloatArgType arg1, FloatArgType arg2)
         {
             // In Vec3 the last element can be zero, avoid doing division by zero
-            arg2 = Sse::ReplaceFourth(arg2, 1.0f);
+            arg2 = Sse::ReplaceIndex3(arg2, 1.0f);
             return Sse::Div(arg1, arg2);
         }
 
@@ -511,7 +511,7 @@ namespace AZ
             // In Vec3 the last element (w) can be garbage or 0
             // Using (value.x, value.y, value.z, 1) to avoid divisions by 0.
             return Sse::Reciprocal(
-                Sse::ReplaceFourth(value, 1.0f));
+                Sse::ReplaceIndex3(value, 1.0f));
         }
 
 
@@ -520,7 +520,7 @@ namespace AZ
             // In Vec3 the last element (w) can be garbage or 0
             // Using (value.x, value.y, value.z, 1) to avoid divisions by 0.
             return Sse::ReciprocalEstimate(
-                Sse::ReplaceFourth(value, 1.0f)
+                Sse::ReplaceIndex3(value, 1.0f)
             );
         }
 
@@ -557,7 +557,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::SqrtInv(FloatArgType value)
         {
-            value = Sse::ReplaceFourth(value, 1.0f);
+            value = Sse::ReplaceIndex3(value, 1.0f);
             return Sse::SqrtInv(value);
         }
 
@@ -610,9 +610,9 @@ namespace AZ
             return _mm_dp_ps(arg1, arg2, 0x77);
 #else
             const FloatType x2  = Mul(arg1, arg2);
-            const FloatType xy  = Add(SplatSecond(x2), x2);
-            const FloatType xyz = Add(SplatThird (x2), xy);
-            return SplatFirst(xyz);
+            const FloatType xy  = Add(SplatIndex1(x2), x2);
+            const FloatType xyz = Add(SplatIndex2(x2), xy);
+            return SplatIndex0(xyz);
 #endif
         }
 
