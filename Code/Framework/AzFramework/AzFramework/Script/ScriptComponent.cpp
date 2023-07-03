@@ -902,12 +902,23 @@ namespace AzFramework
                     return true;
                 };
 
+// carbonated begin (akostin/mp226-5): Add NetBindable to ScriptComponent
+#if defined(CARBONATED)
+                serializeContext->Class<ScriptComponent, AZ::Component, NetBindable>()
+                    ->Version(3, converter)
+                    ->Field("ContextID", &ScriptComponent::m_contextId)
+                    ->Field("Properties", &ScriptComponent::m_properties)
+                    ->Field("Script", &ScriptComponent::m_script)
+                    ;
+#else
                 serializeContext->Class<ScriptComponent, AZ::Component>()
                     ->Version(4, converter)
                     ->Field("ContextID", &ScriptComponent::m_contextId)
                     ->Field("Properties", &ScriptComponent::m_properties)
                     ->Field("Script", &ScriptComponent::m_script)
                     ;
+#endif
+// carbonated end
 
                 serializeContext->Class<ScriptPropertyGroup>()
                     ->Field("Name", &ScriptPropertyGroup::m_name)
