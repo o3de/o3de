@@ -699,11 +699,6 @@ namespace AZ::Reflection
                     }
 
                     // Iterate over non serialized elements to see if any of them should be added
-                    const char* elementName = "";
-                    if (parentData.m_classElement && parentData.m_classElement->m_editData && parentData.m_classElement->m_editData->m_name)
-                    {
-                        elementName = parentData.m_classElement->m_editData->m_name;
-                    }
                     auto iter = m_nonSerializedElements.begin();
                     while (iter != m_nonSerializedElements.end())
                     {
