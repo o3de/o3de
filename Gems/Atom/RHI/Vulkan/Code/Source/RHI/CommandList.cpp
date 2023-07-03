@@ -552,15 +552,41 @@ namespace AZ
             hitGroupTable.stride = shaderTableBuffers.m_hitGroupTableStride;
             hitGroupTable.size = shaderTableBuffers.m_hitGroupTableSize;
 
-            context.CmdTraceRaysKHR(
-                m_nativeCommandBuffer,
-                &rayGenerationTable,
-                &missTable,
-                &hitGroupTable,
-                &callableTable,
-                dispatchRaysItem.m_width,
-                dispatchRaysItem.m_height,
-                dispatchRaysItem.m_depth);
+            switch (dispatchRaysItem.m_arguments.m_type)
+            {
+            case RHI::DispatchRaysType::Direct:
+                {
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_direct;
+                    context.CmdTraceRaysKHR(
+                        m_nativeCommandBuffer,
+                        &rayGenerationTable,
+                        &missTable,
+                        &hitGroupTable,
+                        &callableTable,
+                        arguments.m_width,
+                        arguments.m_height,
+                        arguments.m_depth);
+                    break;
+                }
+            case RHI::DispatchRaysType::Indirect:
+                {
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_indirect;
+                    AZ_Assert(arguments.m_countBuffer == nullptr, "Count buffer is not supported for indirect dispatch on this platform.");
+                    const auto* indirectBufferMemoryView =
+                        static_cast<const Buffer*>(arguments.m_indirectBufferView->GetBuffer())->GetBufferMemoryView();
+                    addressInfo.buffer = indirectBufferMemoryView->GetNativeBuffer();
+                    VkDeviceAddress indirectDeviceAddress =
+                        context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo) +
+                        indirectBufferMemoryView->GetOffset() + arguments.m_indirectBufferView->GetByteOffset() +
+                        arguments.m_indirectBufferByteOffset;
+                    context.CmdTraceRaysIndirectKHR(
+                        m_nativeCommandBuffer, &rayGenerationTable, &missTable, &hitGroupTable, &callableTable, indirectDeviceAddress);
+                    break;
+                }
+            default:
+                AZ_Assert(false, "Invalid dispatch type");
+                break;
+            }
         }
 
         void CommandList::BeginPredication(const RHI::Buffer& buffer, uint64_t offset, RHI::PredicationOp operation)
