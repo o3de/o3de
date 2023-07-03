@@ -17,7 +17,7 @@ namespace UnitTest
     // These index paths depend on multiple factors like the data in the component, how its reflected to serialize and edit contexts,
     // how different DPE adapters likes ReflectionAdapter and PrefabAdapter construct the DPE DOM etc. Therefore, these may
     // change in the future if the data stored in the DPE DOM itself changes and need to be modified accordingly to prevent test failures.
-    constexpr AZStd::string_view pathToTranslateRow = "/2/2";
+    constexpr AZStd::string_view pathToTranslateRow = "/1/2";
 
     TEST_F(PrefabInspectorOverrideTest, ValidatePresenceOfOverrideProperty)
     {

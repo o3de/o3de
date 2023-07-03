@@ -188,7 +188,7 @@ namespace AZ::Reflection
                 bool m_iteratingOnGroups = false;
             };
             AZStd::deque<StackEntry> m_stack;
-            AZStd::vector<AZStd::pair<const char*, StackEntry>> m_nonSerializedElements;
+            AZStd::vector<AZStd::pair<AZStd::string, StackEntry>> m_nonSerializedElements;
 
             bool m_nodeWasSkipped = false;
 
@@ -288,7 +288,7 @@ namespace AZ::Reflection
                     path.append("/");
                     path.append(AZStd::string::format("%zu", parentData.m_childElementIndex));
                 }
-                else if (nodeData.m_classElement && nodeData.m_classElement->m_editData)
+                else if (nodeData.m_classElement)
                 {
                     AZStd::string_view elementName = nodeData.m_classElement->m_name;
 
@@ -383,62 +383,105 @@ namespace AZ::Reflection
                 // Search through classData for UIElements and Editor Data.
                 if (nodeData.m_classData->m_editData)
                 {
-                    const char* name = "";
-                    for (auto eltIt = nodeData.m_classData->m_editData->m_elements.begin();
-                         eltIt != nodeData.m_classData->m_editData->m_elements.end();
-                         ++eltIt)
+                    AZStd::vector<AZStd::string> path;
+                    path.push_back(nodeData.m_path.c_str());
+
+                    AZStd::string lastValidElementName = "";
+
+                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin();
+                         iter != nodeData.m_classData->m_editData->m_elements.end();
+                         ++iter)
                     {
-                        if (eltIt->m_elementId == AZ::Edit::ClassElements::UIElement)
+                        if (iter->m_elementId == AZ::Edit::ClassElements::Group)
+                        {
+                            AZStd::string_view itemDescription(iter->m_description);
+
+                            if (!itemDescription.empty())
+                            {
+                                // Add group name to path.
+                                path.push_back(iter->m_description);
+                            }
+                            else
+                            {
+                                // If the group name is empty, this is the end of the previous group.
+                                path.pop_back();
+
+                                // Always reset the lastValidElementName
+                                lastValidElementName = "";
+                            }
+                        }
+                        else if (iter->m_elementId == AZ::Edit::ClassElements::UIElement)
                         {
                             AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                            UIElement->m_editData = &*eltIt;
+                            UIElement->m_editData = &*iter;
                             UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                             // Use the instance itself to retrieve parameter values that invoke functions on the UI Element.
                             StackEntry entry = {
                                 nodeData.m_instance, nodeData.m_instance, nodeData.m_classData->m_typeId, nodeData.m_classData, UIElement
                             };
-                            auto elementPair = AZStd::pair<const char*, StackEntry>(name, entry);
 
-                            m_nonSerializedElements.push_back(elementPair);
-                        }
+                            AZStd::string pathString;
+                            for (const auto& pathElement : path)
+                            {
+                                if (!pathElement.empty())
+                                {
+                                    if (!(pathElement[0] == '/'))
+                                    {
+                                        pathString.append("/");
+                                    }
+                                    pathString.append(pathElement);
+                                }
+                            }
 
-                        // Keep track of the last valid element name
-                        if (eltIt->m_name && strlen(eltIt->m_name) != 0)
-                        {
-                            name = AZStd::string::format("%s/%s", nodeData.m_path.c_str(), eltIt->m_name).c_str();
-                        }
-                    }
-                }
-            }
+                            if (!lastValidElementName.empty())
+                            {
+                                pathString.append("/");
+                                pathString.append(lastValidElementName);
+                            }
 
-            void HandleNodeUiElementsCreationOnBegin()
-            {
-                //! Create UIElements and Editor Data if any one of these is the first element in a class
-                {
-                    auto iter = m_nonSerializedElements.begin();
-                    while (iter != m_nonSerializedElements.end())
-                    {
-                        if (strlen(iter->first) == 0 &&
-                            iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
-                        {
-                            m_stack.push_back(iter->second);
-                            CacheAttributes();
-                            m_visitor->VisitObjectBegin(*this, *this);
-                            m_visitor->VisitObjectEnd(*this, *this);
-                            m_stack.pop_back();
-
-                            iter = m_nonSerializedElements.erase(iter);
+                            m_nonSerializedElements.push_back(AZStd::make_pair(pathString.c_str(), entry));
                         }
                         else
                         {
-                            ++iter;
+                            // Keep track of the last valid element name
+                            if (iter->m_serializeClassElement && strlen(iter->m_serializeClassElement->m_name) > 0)
+                            {
+                                lastValidElementName = iter->m_serializeClassElement->m_name;
+                            }
                         }
                     }
                 }
             }
 
-            void HandleNodeUiElementsCreationOnEnd()
+            void HandleNodeUiElementsCreation(const AZStd::string_view path)
             {
+                // Iterate over non serialized elements to see if any of them should be added
+                auto iter = m_nonSerializedElements.begin();
+                while (iter != m_nonSerializedElements.end())
+                {
+                    // If the parent of the element that was just created has the same name as the parent of any non serialized
+                    // elements, and the element that was just created is the element immediately before any non serialized element,
+                    // create that serialized element
+                    if (path == iter->first && iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
+                    {
+                        m_stack.push_back(iter->second);
+                        CacheAttributes();
+                        m_stack.back().m_entryClosed = true;
+                        m_visitor->VisitObjectBegin(*this, *this);
+                        m_visitor->VisitObjectEnd(*this, *this);
+                        m_stack.pop_back();
+
+                        iter = m_nonSerializedElements.erase(iter);
+                    }
+                    else
+                    {
+                        ++iter;
+                    }
+                }
+                if (!m_stack.empty())
+                {
+                    ++m_stack.back().m_childElementIndex;
+                }
             }
 
             AZStd::optional<bool> HandleNodeAssociativeInterface(StackEntry& parentData, StackEntry& nodeData)
@@ -614,7 +657,7 @@ namespace AZ::Reflection
 
                 HandleNodeGroups(nodeData);
                 HandleNodeUiElementsRetrieval(nodeData);
-                HandleNodeUiElementsCreationOnBegin();
+                HandleNodeUiElementsCreation("");
 
                 if (auto result = HandleNodeAssociativeInterface(parentData, nodeData); result.has_value())
                 {
@@ -664,6 +707,9 @@ namespace AZ::Reflection
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
 
+                            AZStd::string path = AZStd::string::format("%s/%s", nodeData.m_path.c_str(), groupPair.first.c_str());
+                            HandleNodeUiElementsCreation(path);
+
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
                                 m_stack.push_back(groupEntry);
@@ -686,6 +732,11 @@ namespace AZ::Reflection
                         nodeData.m_groups.clear();
                     }
 
+                    if (nodeData.m_classElement && strlen(nodeData.m_classElement->m_name) > 0)
+                    {
+                        HandleNodeUiElementsCreation(nodeData.m_path);
+                    }
+
                     m_stack.pop_back();
                 }
 
@@ -696,40 +747,6 @@ namespace AZ::Reflection
                     if (!parentData.m_group.empty())
                     {
                         EndNode();
-                    }
-
-                    // Iterate over non serialized elements to see if any of them should be added
-                    const char* elementName = "";
-                    if (parentData.m_classElement && parentData.m_classElement->m_editData && parentData.m_classElement->m_editData->m_name)
-                    {
-                        elementName = parentData.m_classElement->m_editData->m_name;
-                    }
-                    auto iter = m_nonSerializedElements.begin();
-                    while (iter != m_nonSerializedElements.end())
-                    {
-                        // If the parent of the element that was just created has the same name as the parent of any non serialized
-                        // elements, and the element that was just created is the element immediately before any non serialized element,
-                        // create that serialized element
-                        if (parentData.m_path == iter->first &&
-                            iter->second.m_classElement->m_editData->m_elementId == AZ::Edit::ClassElements::UIElement)
-                        {
-                            m_stack.push_back(iter->second);
-                            CacheAttributes();
-                            m_stack.back().m_entryClosed = true;
-                            m_visitor->VisitObjectBegin(*this, *this);
-                            m_visitor->VisitObjectEnd(*this, *this);
-                            m_stack.pop_back();
-
-                            iter = m_nonSerializedElements.erase(iter);
-                        }
-                        else
-                        {
-                            ++iter;
-                        }
-                    }
-                    if (!m_stack.empty() && parentData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
-                    {
-                        ++m_stack.back().m_childElementIndex;
                     }
                 }
 
