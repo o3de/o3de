@@ -458,7 +458,9 @@ namespace AzFramework
         , m_script(AZ::Data::AssetLoadBehavior::PreLoad)
         , m_table(LUA_NOREF)
         // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        #if defined(CARBONATED)
         , m_netBindingTable(nullptr)
+        #endif
         // carbonated end
     {
         m_properties.m_name = "Properties";
@@ -473,7 +475,9 @@ namespace AzFramework
         m_properties.Clear();
 
         // carbonated begin (akostin/mp226-2): Add NetBindable to ScriptComponent
+        #if defined(CARBONATED)
         delete m_netBindingTable;
+        #endif
         // carbonated end
     }
 
