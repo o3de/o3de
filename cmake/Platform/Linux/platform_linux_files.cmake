@@ -19,7 +19,6 @@ set(FILES
     libzstd_linux.cmake
     LYTestWrappers_linux.cmake
     LYWrappers_linux.cmake
-    OpenSSL_linux.cmake
     Packaging_linux.cmake
     PackagingCodeSign_linux.cmake
     PackagingPostBuild_linux.cmake

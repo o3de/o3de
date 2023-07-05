@@ -24,6 +24,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesManager.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Editor/AzAssetBrowser/AzAssetBrowserRequestHandler.h>
@@ -375,6 +376,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             m_rootAssetBrowserEntry.reset();
             AzToolsFramework::AssetBrowser::EntryCache::DestroyInstance();
+            AzToolsFramework::AssetBrowser::AssetBrowserFavoritesManager::DestroyInstance();
 
             m_editorComponentDescriptor->ReleaseDescriptor();
 

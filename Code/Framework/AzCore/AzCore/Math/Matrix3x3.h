@@ -37,11 +37,11 @@ namespace AZ
 
         //! Default constructor does not initialize the matrix.
         Matrix3x3() = default;
+        Matrix3x3(const Matrix3x3& rhs) = default;
+
+        Matrix3x3(Simd::Vec3::FloatArgType row0, Simd::Vec3::FloatArgType row1, Simd::Vec3::FloatArgType row2);
 
         explicit Matrix3x3(const Quaternion& quaternion);
-
-        Matrix3x3(const Matrix3x3& rhs);
-        Matrix3x3(Simd::Vec3::FloatArgType row0, Simd::Vec3::FloatArgType row1, Simd::Vec3::FloatArgType row2);
 
         static Matrix3x3 CreateIdentity();
         static Matrix3x3 CreateZero();
@@ -98,9 +98,6 @@ namespace AZ
         float GetElement(int32_t row, int32_t col) const;
         void SetElement(int32_t row, int32_t col, float value);
         //! @}
-
-        //! Assignment operator.
-        Matrix3x3& operator=(const Matrix3x3& rhs);
 
         //! Indexed access using operator().
         float operator()(int32_t row, int32_t col) const;

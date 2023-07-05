@@ -34,7 +34,7 @@ namespace AzToolsFramework
             connect(m_filterModel, &QAbstractItemModel::rowsInserted, this, &AssetBrowserListModel::StartUpdateModelMapTimer);
             connect(m_filterModel, &QAbstractItemModel::rowsRemoved, this, &AssetBrowserListModel::StartUpdateModelMapTimer);
             connect(m_filterModel, &QAbstractItemModel::layoutChanged, this, &AssetBrowserListModel::StartUpdateModelMapTimer);
-            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserListModel::UpdateTableModelMaps);
+            connect(m_filterModel, &AssetBrowserFilterModel::filterChanged, this, &AssetBrowserListModel::UpdateListModelMaps);
             connect(m_filterModel, &QAbstractItemModel::dataChanged, this, &AssetBrowserListModel::SourceDataChanged);
         }
 
@@ -96,7 +96,7 @@ namespace AzToolsFramework
             {
                 if (!m_indexMap.contains(row))
                 {
-                    UpdateTableModelMaps();
+                    UpdateListModelMaps();
                     return;
                 }
             }
@@ -118,7 +118,7 @@ namespace AzToolsFramework
         {
             killTimer(m_updateModelMapTimerId);
             m_updateModelMapTimerId = 0;
-            UpdateTableModelMaps();
+            UpdateListModelMaps();
         }
 
         void AssetBrowserListModel::StartUpdateModelMapTimer()
@@ -131,7 +131,7 @@ namespace AzToolsFramework
             m_updateModelMapTimerId = startTimer(ModelRefreshWaitTimeMS);
         }
 
-        int AssetBrowserListModel::BuildTableModelMap(
+        int AssetBrowserListModel::BuildListModelMap(
             const QAbstractItemModel* model, const QModelIndex& parent /*= QModelIndex()*/, int row /*= 0*/)
         {
             int rows = model ? model->rowCount(parent) : 0;
@@ -165,7 +165,7 @@ namespace AzToolsFramework
 
                     if (model->hasChildren(index))
                     {
-                        row = BuildTableModelMap(model, index, row);
+                        row = BuildListModelMap(model, index, row);
                     }
                 }
                 else
@@ -186,7 +186,7 @@ namespace AzToolsFramework
             return static_cast<AssetBrowserEntry*>(index.internalPointer());
         }
 
-        void AssetBrowserListModel::UpdateTableModelMaps()
+        void AssetBrowserListModel::UpdateListModelMaps()
         {
             beginResetModel();
             emit layoutAboutToBeChanged();
@@ -198,7 +198,7 @@ namespace AzToolsFramework
             }
             AzToolsFramework::EditorSettingsAPIBus::BroadcastResult(
                 m_numberOfItemsDisplayed, &AzToolsFramework::EditorSettingsAPIBus::Handler::GetMaxNumberOfItemsShownInSearchView);
-            BuildTableModelMap(sourceModel());
+            BuildListModelMap(sourceModel());
             emit layoutChanged();
             endResetModel();
         }

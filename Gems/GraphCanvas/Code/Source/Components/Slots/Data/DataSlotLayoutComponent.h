@@ -195,6 +195,8 @@ namespace GraphCanvas
 
         GraphCanvasLabel* m_textDecoration = nullptr;
 
+        bool m_isNameHidden = false;
+
         // track the last seen values of some members to prevent UpdateLayout doing unnecessary work
         struct
         {

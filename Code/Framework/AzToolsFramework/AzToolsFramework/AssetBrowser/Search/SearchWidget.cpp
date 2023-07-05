@@ -142,7 +142,7 @@ namespace AzToolsFramework
             });
         }
 
-        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter)
+        void SearchWidget::Setup(bool stringFilter, bool assetTypeFilter, bool useFavorites)
         {
             ClearTextFilter();
             ClearTypeFilter();
@@ -151,6 +151,7 @@ namespace AzToolsFramework
 
             SetTextFilterVisible(stringFilter);
             SetTypeFilterVisible(assetTypeFilter);
+            SetUseFavorites(useFavorites);
 
             if (stringFilter)
             {
@@ -203,11 +204,17 @@ namespace AzToolsFramework
         {
             if (!checked)
             {
-                m_filter->RemoveFilter(FilterConstType(m_engineFilter));
+                if (GetIsEngineFilterActive())
+                {
+                    m_filter->RemoveFilter(FilterConstType(m_engineFilter));
+                }
             }
             else
             {
-                m_filter->AddFilter(FilterConstType(m_engineFilter));
+                if (!GetIsEngineFilterActive())
+                {
+                    m_filter->AddFilter(FilterConstType(m_engineFilter));
+                }
             }
         }
 
@@ -215,11 +222,17 @@ namespace AzToolsFramework
         {
             if (!checked)
             {
-                m_filter->RemoveFilter(FilterConstType(m_unusableProductsFilter));
+                if (GetIsUnusableProductsFilterActive())
+                {
+                    m_filter->RemoveFilter(FilterConstType(m_unusableProductsFilter));
+                }
             }
             else
             {
-                m_filter->AddFilter(FilterConstType(m_unusableProductsFilter));
+                if (!GetIsUnusableProductsFilterActive())
+                {
+                    m_filter->AddFilter(FilterConstType(m_unusableProductsFilter));
+                }
             }
         }
 
@@ -289,6 +302,26 @@ namespace AzToolsFramework
         QSharedPointer<CompositeFilter> SearchWidget::GetFolderFilter() const
         {
             return m_folderFilter;
+        }
+
+        bool SearchWidget::GetIsEngineFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_engineFilter);
+        }
+
+        bool SearchWidget::GetIsUnusableProductsFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_unusableProductsFilter);
+        }
+
+        bool SearchWidget::GetIsFolderFilterActive()
+        {
+            return m_filter->GetSubFilters().contains(m_folderFilter);
+        }
+
+        void SearchWidget::SetFilterString(const QString& searchTerm)
+        {
+            SetTextFilter(searchTerm);
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

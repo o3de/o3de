@@ -90,6 +90,11 @@ namespace GradientSignal
         }
     }
 
+    AZ::TypeId StreamingImagePropertyHandler::GetHandledType() const
+    {
+        return AZ::GetAssetClassId();
+    }
+
     AZ::u32 StreamingImagePropertyHandler::GetHandlerName() const
     {
         return AZ_CRC_CE("GradientSignalStreamingImageAsset");
@@ -152,6 +157,12 @@ namespace GradientSignal
     {
         // Let the AssetPropertyHandlerDefault handle reading values into the GUI
         return AzToolsFramework::AssetPropertyHandlerDefault::ReadValuesIntoGUIInternal(index, GUI, instance, node);
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* StreamingImagePropertyHandler::CastTo(void* instance, const AzToolsFramework::InstanceDataNode* node, [[maybe_unused]] const AZ::Uuid& fromId, [[maybe_unused]] const AZ::Uuid& toId) const
+    {
+        // Let the AssetPropertyHandlerDefault handle the downcast
+        return AzToolsFramework::AssetPropertyHandlerDefault::CastToInternal(instance, node);
     }
 
     void StreamingImagePropertyHandler::Register()

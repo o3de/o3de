@@ -39,6 +39,8 @@ namespace AzQtComponents
 
     public Q_SLOTS:
         void setPixmap(const QPixmap& p);
+        void setPixmapKeepAspectRatio(const QPixmap& pixmap);
+        void setText(const QString& text);
         void resizeEvent(QResizeEvent* event) override;
 
     Q_SIGNALS:
@@ -50,6 +52,8 @@ namespace AzQtComponents
     private:
         QPixmap m_pix;
         QSize m_pixmapSize;
+
+        bool m_keepAspectRatio = false;
 
         void rescale();
 

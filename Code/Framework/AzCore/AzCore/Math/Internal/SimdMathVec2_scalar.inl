@@ -90,13 +90,13 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE float Vec2::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec2::SelectIndex0(FloatArgType value)
         {
             return value.v[0];
         }
 
 
-        AZ_MATH_INLINE float Vec2::SelectSecond(FloatArgType value)
+        AZ_MATH_INLINE float Vec2::SelectIndex1(FloatArgType value)
         {
             return value.v[1];
         }
@@ -114,37 +114,37 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatFirst(FloatArgType value)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatIndex0(FloatArgType value)
         {
             return Splat(value.v[0]);
         }
 
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatSecond(FloatArgType value)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::SplatIndex1(FloatArgType value)
         {
             return Splat(value.v[1]);
         }
 
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceFirst(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex0(FloatArgType a, float b)
         {
             return {{ b, a.v[1] }};
         }
 
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceFirst(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex0(FloatArgType a, FloatArgType b)
         {
             return {{ b.v[0], a.v[1] }};
         }
 
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceSecond(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex1(FloatArgType a, float b)
         {
             return {{ a.v[0], b }};
         }
 
 
-        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceSecond(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ReplaceIndex1(FloatArgType a, FloatArgType b)
         {
             return {{ a.v[0], b.v[1] }};
         }

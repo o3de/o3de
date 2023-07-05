@@ -19,6 +19,7 @@
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserTreeToTableProxyModel.h>
 
 #include <QSharedPointer>
 #include <QTimer>
@@ -34,13 +35,23 @@ namespace AzToolsFramework
     {
         //////////////////////////////////////////////////////////////////////////
         //AssetBrowserFilterModel
-        AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent)
+        AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent, bool isTableView)
             : QSortFilterProxyModel(parent)
+            , m_isTableView(isTableView)
         {
             m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
             if (ed_useNewAssetBrowserListView)
             {
                 m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
+            }
+            if (isTableView)
+            {
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Type));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DiskSize));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Vertices));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::ApproxSize));
+                // The below isn't used at present but will be needed in future
+                // m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::SourceControlStatus));
             }
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -128,6 +139,10 @@ namespace AzToolsFramework
         {
             //get the source idx, if invalid early out
             QModelIndex idx = sourceModel()->index(source_row, 0, source_parent);
+            if (m_isTableView && qobject_cast<AssetBrowserTreeToTableProxyModel*>(sourceModel()))
+            {
+                idx = static_cast<AssetBrowserTreeToTableProxyModel*>(sourceModel())->mapToSource(idx);
+            }
             if (!idx.isValid())
             {
                 return false;
@@ -161,51 +176,13 @@ namespace AzToolsFramework
             {
                 QVariant leftData = sourceModel()->data(source_left, AssetBrowserModel::Roles::EntryRole);
                 QVariant rightData = sourceModel()->data(source_right, AssetBrowserModel::Roles::EntryRole);
+
                 if (leftData.canConvert<const AssetBrowserEntry*>() && rightData.canConvert<const AssetBrowserEntry*>())
                 {
                     auto leftEntry = qvariant_cast<const AssetBrowserEntry*>(leftData);
                     auto rightEntry = qvariant_cast<const AssetBrowserEntry*>(rightData);
 
-                    const SourceAssetBrowserEntry* leftSource = azrtti_cast<const SourceAssetBrowserEntry*>(leftEntry);
-                    const SourceAssetBrowserEntry* rightSource = azrtti_cast<const SourceAssetBrowserEntry*>(rightEntry);
-
-                    // folders should always come first
-                    if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry) && azrtti_istypeof<const SourceAssetBrowserEntry*>(rightEntry))
-                    {
-                        return false;
-                    }
-                    if (azrtti_istypeof<const SourceAssetBrowserEntry*>(leftEntry) && azrtti_istypeof<const FolderAssetBrowserEntry*>(rightEntry))
-                    {
-                        return true;
-                    }
-
-                    // if both entries are of same type, sort alphabetically
-                    if (azrtti_istypeof<const FolderAssetBrowserEntry*>(leftEntry))
-                    {
-                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                    }
-                    switch (m_sortMode)
-                    {
-                    case AssetBrowserSortMode::FileType:
-                        if (leftSource && rightSource)
-                        {
-                            if (leftSource->GetExtension() != rightSource->GetExtension())
-                            {
-                                return leftSource->GetExtension() > rightSource->GetExtension();
-                            }
-                        }
-                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                    case AssetBrowserSortMode::LastModified:
-                        return leftEntry->GetModificationTime() < rightEntry->GetModificationTime();
-                    case AssetBrowserSortMode::Size:
-                        if (leftEntry->GetDiskSize() == rightEntry->GetDiskSize())
-                        {
-                            return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                        }
-                        return leftEntry->GetDiskSize() < rightEntry->GetDiskSize();
-                    default:
-                        return m_collator.compare(leftEntry->GetDisplayName(), rightEntry->GetDisplayName()) > 0;
-                    }
+                    return leftEntry->lessThan(rightEntry, m_sortMode, m_collator);
                 }
             }
             return QSortFilterProxyModel::lessThan(source_left, source_right);
@@ -289,15 +266,26 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserFilterModel::SetSortMode(const AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
+        void AssetBrowserFilterModel::SetSortMode(const AssetBrowserEntry::AssetEntrySortMode sortMode)
         {
             m_sortMode = sortMode;
         }
 
-        AssetBrowserFilterModel::AssetBrowserSortMode AssetBrowserFilterModel::GetSortMode() const
+        AssetBrowserEntry::AssetEntrySortMode AssetBrowserFilterModel::GetSortMode() const
         {
             return m_sortMode;
         }
+
+        void AssetBrowserFilterModel::SetSortOrder(const Qt::SortOrder sortOrder)
+        {
+            m_sortOrder = sortOrder;
+        }
+
+        Qt::SortOrder AssetBrowserFilterModel::GetSortOrder() const
+        {
+            return m_sortOrder;
+        }
+
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

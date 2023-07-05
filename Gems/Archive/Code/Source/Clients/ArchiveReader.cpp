@@ -441,7 +441,7 @@ namespace Archive
         {
             return AZStd::unexpected(ResultString::format("Compression Algorithm with ID %x is not registered"
                 " with the decompression registrar.",
-                extractFileResult.m_compressionAlgorithm));
+                static_cast<AZ::u32>(extractFileResult.m_compressionAlgorithm)));
         }
 
         // Retrieve a subspan of the block lines for the file being extracted

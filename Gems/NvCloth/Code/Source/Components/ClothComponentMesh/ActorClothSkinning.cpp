@@ -24,7 +24,7 @@ namespace NvCloth
     namespace Internal
     {
         bool ObtainSkinningInfluences(
-            AZ::EntityId entityId, 
+            AZ::EntityId entityId,
             const MeshNodeInfo& meshNodeInfo,
             AZStd::vector<SkinningInfluence>& skinningInfluences,
             AZStd::vector<AZ::u32>& numInfluencesPerSubmesh)
@@ -42,7 +42,8 @@ namespace NvCloth
                 return false;
             }
 
-            const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[meshNodeInfo.m_lodLevel];
+            const auto modelLodAssets = modelAsset->GetLodAssets();
+            const AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset = modelLodAssets[meshNodeInfo.m_lodLevel];
             if (!modelLodAsset.GetId().IsValid())
             {
                 return false;
@@ -79,7 +80,8 @@ namespace NvCloth
                     return false;
                 }
 
-                const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
+                const auto subMeshes = modelLodAsset->GetMeshes();
+                const AZ::RPI::ModelLodAsset::Mesh& subMesh = subMeshes[subMeshInfo.m_primitiveIndex];
 
                 const auto sourcePositions = subMesh.GetSemanticBufferTyped<AZ::PackedVector3f>(AZ::Name("POSITION"));
                 if (sourcePositions.size() != subMeshInfo.m_numVertices)
@@ -119,7 +121,8 @@ namespace NvCloth
             for (size_t meshIndex = 0; meshIndex < meshNodeInfo.m_subMeshes.size(); ++meshIndex)
             {
                 const auto& subMeshInfo = meshNodeInfo.m_subMeshes[meshIndex];
-                const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
+                const auto subMeshes = modelLodAsset->GetMeshes();
+                const AZ::RPI::ModelLodAsset::Mesh& subMesh = subMeshes[subMeshInfo.m_primitiveIndex];
                 const auto sourceSkinJointIndices = subMesh.GetSemanticBufferTyped<uint16_t>(AZ::Name("SKIN_JOINTINDICES"));
                 const auto sourceSkinWeights = subMesh.GetSemanticBufferTyped<float>(AZ::Name("SKIN_WEIGHTS"));
 
@@ -171,7 +174,7 @@ namespace NvCloth
         const AZ::Matrix3x4* ObtainSkinningMatrices(AZ::EntityId entityId)
         {
             EMotionFX::ActorInstance* actorInstance = nullptr;
-            EMotionFX::Integration::ActorComponentRequestBus::EventResult(actorInstance, entityId, 
+            EMotionFX::Integration::ActorComponentRequestBus::EventResult(actorInstance, entityId,
                 &EMotionFX::Integration::ActorComponentRequestBus::Events::GetActorInstance);
             if (!actorInstance)
             {
@@ -434,7 +437,7 @@ namespace NvCloth
     }
 
     AZStd::unique_ptr<ActorClothSkinning> ActorClothSkinning::Create(
-        AZ::EntityId entityId, 
+        AZ::EntityId entityId,
         const MeshNodeInfo& meshNodeInfo,
         const AZStd::vector<SimParticleFormat>& originalMeshParticles,
         const size_t numSimulatedVertices,
@@ -479,7 +482,7 @@ namespace NvCloth
         actorClothSkinning->m_simulatedVertices.resize(numSimulatedVertices);
         actorClothSkinning->m_nonSimulatedVertices.reserve(numVertices);
 
-        
+
         // For each submesh...
         int meshIndexOffset = 0;
         AZ::u32 meshInfluenceOffset = 0;
@@ -491,7 +494,7 @@ namespace NvCloth
             {
                 const AZ::u32 influenceOffset = meshInfluenceOffset + (vertexIndex - meshIndexOffset) * numInfluencesPerSubmesh[subMeshIndex];
 
-                // The cloth cooker has previously simplified the original mesh and re-mapped the vertices 
+                // The cloth cooker has previously simplified the original mesh and re-mapped the vertices
                 const int remappedIndex = meshRemappedVertices[vertexIndex];
 
                 // If the vertex has been remapped, it's part of the simulation

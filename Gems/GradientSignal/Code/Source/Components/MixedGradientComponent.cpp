@@ -69,8 +69,7 @@ namespace GradientSignal
     {
         // This needs to be static since the return value is used by the RPE and needs to exist long enough to set the UI data
         static AZStd::string entityName;
-        
-        entityName = "<empty>";
+        static constexpr auto emptyName = "<empty>";
 
         AZ::EntityId layerEntityId = m_gradientSampler.m_gradientId;
         if (layerEntityId.IsValid())
@@ -78,7 +77,14 @@ namespace GradientSignal
             AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, layerEntityId);
         }
 
-        return entityName.c_str();
+        if (entityName.empty())
+        {
+            return emptyName;
+        }
+        else
+        {
+            return entityName.c_str();
+        }
     }
 
     size_t MixedGradientConfig::GetNumLayers() const
