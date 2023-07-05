@@ -45,53 +45,44 @@ class ServiceClientJobConfigTest
         return "";
     }
 
-    AZStd::string GetResourceAccountId(const AZStd::string& resourceKeyName) const override
+    AZStd::string GetResourceAccountId([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
-        AZ_UNUSED(resourceKeyName);
         return "";
     }
 
-    AZStd::string GetResourceNameId(const AZStd::string& resourceKeyName) const override
+    AZStd::string GetResourceNameId([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
-        AZ_UNUSED(resourceKeyName);
         return "";
     }
 
-    AZStd::string GetResourceRegion(const AZStd::string& resourceKeyName) const override
+    AZStd::string GetResourceRegion([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
-        AZ_UNUSED(resourceKeyName);
         return "";
     }
 
-    AZStd::string GetResourceType(const AZStd::string& resourceKeyName) const override
+    AZStd::string GetResourceType([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
-        AZ_UNUSED(resourceKeyName);
         return "";
     }
 
-    bool HasResourceType(const AZStd::string& resourceKeyName) const override
+    bool HasResourceType([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
-        AZ_UNUSED(resourceKeyName);
         return false;
     }
 
-    AZStd::string GetServiceUrlByServiceName(const AZStd::string& serviceName) const override
+    AZStd::string GetServiceUrlByServiceName([[maybe_unused]] const AZStd::string& serviceName) const override
     {
-        AZ_UNUSED(serviceName);
         return TEST_EXPECTED_FEATURE_SERVICE_URL;
     }
 
     AZStd::string GetServiceUrlByRESTApiIdAndStage(
-        const AZStd::string& restApiIdKeyName, const AZStd::string& restApiStageKeyName) const override
+        [[maybe_unused]] const AZStd::string& restApiIdKeyName, [[maybe_unused]] const AZStd::string& restApiStageKeyName) const override
     {
-        AZ_UNUSED(restApiIdKeyName);
-        AZ_UNUSED(restApiStageKeyName);
         return TEST_EXPECTED_CUSTOM_SERVICE_URL;
     }
 
-    void ReloadConfigFile(bool reloadConfigFileName = false) override
+    void ReloadConfigFile([[maybe_unused]] bool reloadConfigFileName = false) override
     {
-        AZ_UNUSED(reloadConfigFileName);
     }
 };
 
