@@ -175,7 +175,7 @@ namespace UnitTest
         {
             for (AZStd::size_t colIter = 0; colIter < testMatrix.GetColumnCount(); ++colIter)
             {
-                EXPECT_FLOAT_EQ(testMatrix.GetElement(rowIter, colIter), 8.0f);
+                EXPECT_FLOAT_EQ(testMatrix.GetElement(rowIter, colIter), 11.0f);
             }
         }
 
@@ -184,7 +184,7 @@ namespace UnitTest
         {
             for (AZStd::size_t colIter = 0; colIter < testMatrix.GetColumnCount(); ++colIter)
             {
-                EXPECT_FLOAT_EQ(testMatrix.GetElement(rowIter, colIter), -4.0f);
+                EXPECT_FLOAT_EQ(testMatrix.GetElement(rowIter, colIter), -1.0f);
             }
         }
     }
@@ -376,7 +376,6 @@ namespace UnitTest
         }
     }
 
-
     TEST_F(Math_MatrixMxN, TestMatrixMatrixMultiply)
     {
         // 5 x 7
@@ -411,8 +410,8 @@ namespace UnitTest
              84.0f,  88.0f, 112.0f,  86.0f, 110.0f, 104.0f,
         };
 
-        const AZ::MatrixMxN lhs = AZ::MatrixMxN::CreateFromPackedFloats(5, 7, lhsElements);
-        const AZ::MatrixMxN rhs = AZ::MatrixMxN::CreateFromPackedFloats(7, 6, rhsElements);
+        AZ::MatrixMxN lhs = AZ::MatrixMxN::CreateFromPackedFloats(5, 7, lhsElements);
+        AZ::MatrixMxN rhs = AZ::MatrixMxN::CreateFromPackedFloats(7, 6, rhsElements);
 
         AZ::MatrixMxN output = AZ::MatrixMxN::CreateZero(5, 6);
         AZ::MatrixMatrixMultiply(lhs, rhs, output);
@@ -423,6 +422,17 @@ namespace UnitTest
             for (AZStd::size_t colIter = 0; colIter < output.GetColumnCount(); ++colIter)
             {
                 EXPECT_FLOAT_EQ(output.GetElement(rowIter, colIter), *checkResult);
+                ++checkResult;
+            }
+        }
+
+        AZ::MatrixMxN result = lhs * rhs;
+        checkResult = outputElements;
+        for (AZStd::size_t rowIter = 0; rowIter < result.GetRowCount(); ++rowIter)
+        {
+            for (AZStd::size_t colIter = 0; colIter < result.GetColumnCount(); ++colIter)
+            {
+                EXPECT_FLOAT_EQ(result.GetElement(rowIter, colIter), *checkResult);
                 ++checkResult;
             }
         }
