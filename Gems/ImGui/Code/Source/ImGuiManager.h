@@ -108,6 +108,7 @@ namespace ImGui
 
         bool m_hardwardeMouseConnected = false;
         bool m_enableDiscreteInputMode = false;
+        bool m_previousSystemCursorStateInGame = false;
         AzFramework::SystemCursorState m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
         ImGuiControllerModeFlags::FlagType m_controllerModeFlags = 0;
         float m_controllerMouseSensitivity = 4.0f;

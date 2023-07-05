@@ -684,6 +684,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
                 // Disable discrete input in edit mode because the user has to click in the viewport to navigate,
                 // so there's no concern about ImGui mouse movements also navigating the camera.
                 m_enableDiscreteInputMode = false;
+                m_previousSystemCursorStateInGame = false;
             }
             else
             {
@@ -694,6 +695,7 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
                 // During gameplay, the mouse usually affects the camera, so we want the discrete mode to be available by default,
                 // so the user can easily turn off gameplay input while interacting with ImGui.
                 m_enableDiscreteInputMode = true;
+                m_previousSystemCursorStateInGame = true;
             }
 
             // Fetch old cursor state
@@ -713,10 +715,19 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
 
-            // Restore old cursor state
-            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                m_previousSystemCursorState);
+            const bool inGame = !gEnv->IsEditor() || gEnv->IsEditorGameMode(); 
+
+            // Restore old cursor state if the "In Game" state hasn't changed.
+            // This prevents incorrectly hiding the cursor when a user is in
+            // game mode, opens the console, exits game mode, and then hides the
+            // console resulting in the cursor being restored to what it was
+            // in game mode, usually making the cursor hidden in the editor.
+            if (m_previousSystemCursorStateInGame == inGame)
+            {
+                AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    m_previousSystemCursorState);
+            }
             m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
 
             break;
