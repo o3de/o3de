@@ -107,6 +107,7 @@ namespace AWSClientAuthUnitTest
         MOCK_CONST_METHOD1(GetResourceAccountId, AZStd::string(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetResourceNameId, AZStd::string(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetResourceRegion, AZStd::string(const AZStd::string& resourceKeyName));
+        MOCK_CONST_METHOD1(HasResourceType, bool(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetResourceType, AZStd::string(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetServiceUrlByServiceName, AZStd::string(const AZStd::string& serviceName));
         MOCK_CONST_METHOD2(
