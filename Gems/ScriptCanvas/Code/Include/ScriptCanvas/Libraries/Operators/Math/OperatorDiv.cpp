@@ -113,7 +113,7 @@ namespace ScriptCanvas
                 Data::VectorNType operator()(const Data::VectorNType& a, const Datum& b)
                 {
                     const Data::VectorNType* divisor = b.GetAs<Data::VectorNType>();
-                    if (divisor->IsZero())
+                    if (!divisor || divisor->IsZero())
                     {
                         // Divide by zero
                         SCRIPTCANVAS_REPORT_ERROR((*m_node), "Divide by Zero");
