@@ -230,7 +230,7 @@ namespace ScriptCanvas
             static Data::Type GetSCType(const AZ::TypeId & = AZ::TypeId::CreateNull()) { return Data::Type::MatrixMxN(); }
             static AZStd::string GetName(const Data::Type & = {}) { return "MatrixMxN"; }
             static Type GetDefault(const Data::Type & = {}) { return MatrixMxNType::CreateZero(0, 0); }
-            static bool IsDefault(const Type&, const Data::Type& = {}) { false; }
+            static bool IsDefault(const Type&, const Data::Type& = {}) { return false; }
         };
 
         template<>
