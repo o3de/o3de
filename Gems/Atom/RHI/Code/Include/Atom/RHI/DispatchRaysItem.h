@@ -9,12 +9,14 @@
 
 #include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/std/containers/array.h>
+#include <Atom/RHI/IndirectArguments.h>
 #include <Atom/RHI/RayTracingAccelerationStructure.h>
 
 namespace AZ
 {
     namespace RHI
     {
+        class PipelineState;
         class RayTracingPipelineState;
         class RayTracingShaderTable;
         class ShaderResourceGroup;
