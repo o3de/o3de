@@ -79,11 +79,13 @@ namespace Editor
             AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
             if(systemCursorState == AzFramework::SystemCursorState::UnconstrainedAndVisible)
             {
-                // If the system cursor is visible and unconstratined, the user 
-                // can interact with the editor so allow all events
+                // If the system cursor is visible and unconstrained, the user 
+                // can interact with the editor so allow all events.
                 return false;
             }
 #endif
+            // Consume all input so the user cannot use editor menu actions
+            // while in game.
             return true;
         }
         return false;
