@@ -11,6 +11,8 @@
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <AzFramework/XcbEventHandler.h>
 #include <AzFramework/XcbConnectionManager.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <qpa/qplatformnativeinterface.h>
 #include <AzFramework/XcbEventHandler.h>
 #endif
@@ -72,11 +74,13 @@ namespace Editor
                 // responding.
                 return false;
             }
-            else if (responseType == XCB_KEY_PRESS)
+
+            auto systemCursorState = AzFramework::SystemCursorState::Unknown;
+            AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
+            if(systemCursorState == AzFramework::SystemCursorState::UnconstrainedAndVisible)
             {
-                // Do not filter out the keyboard input events which are used 
-                // to trigger QActions that allow the user to leave game mode
-                // and interact with the console window
+                // If the system cursor is visible and unconstratined, the user 
+                // can interact with the editor so allow all events
                 return false;
             }
 #endif

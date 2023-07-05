@@ -25,6 +25,7 @@
 // AzFramework
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Archive/IArchive.h>
 
@@ -793,6 +794,15 @@ void CGameEngine::Update()
         if (CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport())
         {
             pRenderViewport->Update();
+        }
+
+        const AzFramework::InputChannel* inputChannel = nullptr;
+        const AzFramework::InputChannelId channelId(AzFramework::InputDeviceKeyboard::Key::Escape);
+        AzFramework::InputChannelRequestBus::EventResult(inputChannel, channelId, &AzFramework::InputChannelRequests::GetInputChannel);
+        if(inputChannel && inputChannel->GetState() == AzFramework::InputChannel::State::Began)
+        {
+            // leave game mode
+            RequestSetGameMode(false);
         }
     }
     else
