@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_VectorNFunctions_GetMax",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Get Max"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_VectorNFunctions_GetMax",
+                    "details": {
+                        "name": "Get Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3C5A461A-3412-4D97-9CBC-856EE737B6DB}",
+                            "details": {
+                                "name": "VectorN"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

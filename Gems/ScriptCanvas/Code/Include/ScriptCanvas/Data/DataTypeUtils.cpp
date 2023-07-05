@@ -72,6 +72,10 @@ namespace ScriptCanvas
             {
                 return { true, Type::Matrix4x4() };
             }
+            else if (IsMatrixMxN(type))
+            {
+                return { true, Type::MatrixMxN() };
+            }
             else if (IsNumber(type))
             {
                 return { true, Type::Number() };
@@ -107,6 +111,10 @@ namespace ScriptCanvas
             else if (IsVector4(type))
             {
                 return { true, Type::Vector4() };
+            }
+            else if (IsVectorN(type))
+            {
+                return { true, Type::VectorN() };
             }
             else
             {
@@ -148,6 +156,9 @@ namespace ScriptCanvas
             case eType::Matrix4x4:
                 return azrtti_typeid<AZ::Matrix4x4>();
 
+            case eType::MatrixMxN:
+                return azrtti_typeid<AZ::MatrixMxN>();
+
             case eType::Number:
                 return azrtti_typeid<NumberType>();
 
@@ -174,6 +185,9 @@ namespace ScriptCanvas
 
             case eType::Vector4:
                 return azrtti_typeid<AZ::Vector4>();
+
+            case eType::VectorN:
+                return azrtti_typeid<AZ::VectorN>();
 
             default:
                 AZ_Assert(false, "Invalid type!");
@@ -309,6 +323,16 @@ namespace ScriptCanvas
             return type.GetType() == eType::Matrix4x4;
         }
 
+        bool IsMatrixMxN(const AZ::Uuid& type)
+        {
+            return type == azrtti_typeid<AZ::MatrixMxN>();
+        }
+
+        bool IsMatrixMxN(const Type& type)
+        {
+            return type.GetType() == eType::MatrixMxN;
+        }
+
         bool IsNumber(const AZ::Uuid& type)
         {
             return type == azrtti_typeid<AZ::s8>() || type == azrtti_typeid<AZ::s16>() || type == azrtti_typeid<AZ::s32>() ||
@@ -402,9 +426,19 @@ namespace ScriptCanvas
             return type.GetType() == eType::Vector4;
         }
 
+        bool IsVectorN(const AZ::Uuid& type)
+        {
+            return type == azrtti_typeid<AZ::VectorN>();
+        }
+
+        bool IsVectorN(const Type& type)
+        {
+            return type.GetType() == eType::VectorN;
+        }
+
         bool IsVectorType(const AZ::Uuid& type)
         {
-            return type == azrtti_typeid<AZ::Vector3>() || type == azrtti_typeid<AZ::Vector2>() || type == azrtti_typeid<AZ::Vector4>();
+            return type == azrtti_typeid<AZ::Vector3>() || type == azrtti_typeid<AZ::Vector2>() || type == azrtti_typeid<AZ::Vector4>() || type == azrtti_typeid<AZ::VectorN>();
         }
 
         bool IsVectorType(const Type& type)
@@ -412,7 +446,8 @@ namespace ScriptCanvas
             static const AZ::u32 s_vectorTypes = {
                 1 << static_cast<AZ::u32>(eType::Vector3) |
                 1 << static_cast<AZ::u32>(eType::Vector2) |
-                1 << static_cast<AZ::u32>(eType::Vector4)
+                1 << static_cast<AZ::u32>(eType::Vector4) |
+                1 << static_cast<AZ::u32>(eType::VectorN)
             };
 
             return ((1 << static_cast<AZ::u32>(type.GetType())) & s_vectorTypes) != 0;

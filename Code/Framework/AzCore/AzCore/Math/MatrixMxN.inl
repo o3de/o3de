@@ -261,6 +261,63 @@ namespace AZ
         return returnValue;
     }
 
+    AZ_MATH_INLINE MatrixMxN MatrixMxN::operator-() const
+    {
+        MatrixMxN returnValue(m_rowCount, m_colCount);
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            returnValue.m_values[i] = -m_values[i];
+        }
+        return returnValue;
+    }
+
+    AZ_MATH_INLINE MatrixMxN MatrixMxN::operator+(const MatrixMxN& rhs) const
+    {
+        MatrixMxN returnValue(m_rowCount, m_colCount);
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            returnValue.m_values[i] = m_values[i] + rhs.m_values[i];
+        }
+        return returnValue;
+    }
+
+    AZ_MATH_INLINE MatrixMxN MatrixMxN::operator-(const MatrixMxN& rhs) const
+    {
+        MatrixMxN returnValue(m_rowCount, m_colCount);
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            returnValue.m_values[i] = m_values[i] - rhs.m_values[i];
+        }
+        return returnValue;
+    }
+
+    AZ_MATH_INLINE MatrixMxN MatrixMxN::operator*(const MatrixMxN& rhs) const
+    {
+        MatrixMxN result;
+        MatrixMatrixMultiply(*this, rhs, result);
+        return result;
+    }
+
+    AZ_MATH_INLINE MatrixMxN MatrixMxN::operator*(float multiplier) const
+    {
+        MatrixMxN returnValue(m_rowCount, m_colCount);
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            returnValue.m_values[i] = m_values[i] * multiplier;
+        }
+        return returnValue;
+    }
+
+    AZ_MATH_INLINE MatrixMxN MatrixMxN::operator/(float divisor) const
+    {
+        MatrixMxN returnValue(m_rowCount, m_colCount);
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            returnValue.m_values[i] = m_values[i] / divisor;
+        }
+        return returnValue;
+    }
+
     AZ_MATH_INLINE MatrixMxN& MatrixMxN::operator+=(const MatrixMxN& rhs)
     {
         AZ_Assert(m_rowCount == rhs.m_rowCount, "Dimensionality must be equal");
@@ -285,30 +342,9 @@ namespace AZ
 
     AZ_MATH_INLINE MatrixMxN& MatrixMxN::operator*=(const MatrixMxN& rhs)
     {
-        AZ_Assert(m_rowCount == rhs.m_rowCount, "Dimensionality must be equal");
-        AZ_Assert(m_colCount == rhs.m_colCount, "Dimensionality must be equal");
-        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
-        {
-            m_values[i].SetRow(0, m_values[i].GetRow(0) * rhs.m_values[i].GetRow(0));
-            m_values[i].SetRow(1, m_values[i].GetRow(1) * rhs.m_values[i].GetRow(1));
-            m_values[i].SetRow(2, m_values[i].GetRow(2) * rhs.m_values[i].GetRow(2));
-            m_values[i].SetRow(3, m_values[i].GetRow(3) * rhs.m_values[i].GetRow(3));
-        }
-        return *this;
-    }
-
-    AZ_MATH_INLINE MatrixMxN& MatrixMxN::operator/=(const MatrixMxN& rhs)
-    {
-        AZ_Assert(m_rowCount == rhs.m_rowCount, "Dimensionality must be equal");
-        AZ_Assert(m_colCount == rhs.m_colCount, "Dimensionality must be equal");
-        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
-        {
-            m_values[i].SetRow(0, m_values[i].GetRow(0) / rhs.m_values[i].GetRow(0));
-            m_values[i].SetRow(1, m_values[i].GetRow(1) / rhs.m_values[i].GetRow(1));
-            m_values[i].SetRow(2, m_values[i].GetRow(2) / rhs.m_values[i].GetRow(2));
-            m_values[i].SetRow(3, m_values[i].GetRow(3) / rhs.m_values[i].GetRow(3));
-        }
-        FixUnusedElements();
+        // We overwrite elements in the output during multiplication, so unfortunately we require a copy of the lhs to operate on
+        const MatrixMxN lhs = *this;
+        MatrixMatrixMultiply(lhs, rhs, *this);
         return *this;
     }
 
