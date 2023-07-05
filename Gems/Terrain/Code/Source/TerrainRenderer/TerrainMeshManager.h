@@ -84,7 +84,6 @@ namespace Terrain
 
     class TerrainMeshManager
         : private AzFramework::Terrain::TerrainDataNotificationBus::Handler
-        , private AZ::RPI::SceneNotificationBus::Handler
     {
     private:
         
@@ -107,6 +106,8 @@ namespace Terrain
         void Update(const AZ::RPI::ViewPtr mainView, AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>& terrainSrg);
 
         void DrawMeshes(const AZ::RPI::FeatureProcessor::RenderPacket& process, const AZ::RPI::ViewPtr mainView);
+
+        void SetRebuildDrawPackets();
 
     private:
 
@@ -218,6 +219,7 @@ namespace Terrain
             AZ::RHI::DrawListTag m_drawListTag;
             AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout> m_drawSrgLayout;
             AZ::RPI::ShaderVariant m_shaderVariant;
+            AZ::Name m_materialPipelineName;
         };
 
         struct HeightNormalVertex
@@ -244,9 +246,6 @@ namespace Terrain
             uint32_t m_meshGroupIndex;
             uint32_t m_lodLevel;
         };
-
-        // AZ::RPI::SceneNotificationBus overrides...
-        void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         // AzFramework::Terrain::TerrainDataNotificationBus overrides...
         void OnTerrainDataCreateEnd() override;

@@ -70,7 +70,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(Shader);
 
             //! returns the SupervariantIndex that corresponds to the given supervariant name given at instantiation.
-            SupervariantIndex GetSupervariantIndex() { return m_supervariantIndex; }
+            SupervariantIndex GetSupervariantIndex() const { return m_supervariantIndex; }
 
             //! Constructs a shader option group suitable to generate a shader variant key for this shader.
             ShaderOptionGroup CreateShaderOptionGroup() const;
