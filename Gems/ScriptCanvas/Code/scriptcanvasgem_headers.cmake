@@ -201,6 +201,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.h
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/MatrixMxN.h
+    Include/ScriptCanvas/Libraries/Math/MatrixMxN.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/OBB.h
     Include/ScriptCanvas/Libraries/Math/OBB.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Plane.h
@@ -215,6 +217,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector3.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Math/Vector4.h
     Include/ScriptCanvas/Libraries/Math/Vector4.ScriptCanvasFunction.xml
+    Include/ScriptCanvas/Libraries/Math/VectorN.h
+    Include/ScriptCanvas/Libraries/Math/VectorN.ScriptCanvasFunction.xml
     Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.h
     Include/ScriptCanvas/Libraries/Comparison/EqualTo.h
     Include/ScriptCanvas/Libraries/Comparison/NotEqualTo.h
