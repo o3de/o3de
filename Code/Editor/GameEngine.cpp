@@ -796,6 +796,13 @@ void CGameEngine::Update()
             pRenderViewport->Update();
         }
 
+        // Check for the Escape key to exit game mode here rather than in Qt, 
+        // because all Qt events are usually filtered out in game mode in 
+        // QtEditorApplication_<platform>.cpp nativeEventFilter() to prevent 
+        // using Editor menu actions and shortcuts that shouldn't trigger while 
+        // playing the game.
+        // When the user opens the console, Qt events will be allowed 
+        // so the user can interact with limited Editor content like the console.
         const AzFramework::InputChannel* inputChannel = nullptr;
         const AzFramework::InputChannelId channelId(AzFramework::InputDeviceKeyboard::Key::Escape);
         AzFramework::InputChannelRequestBus::EventResult(inputChannel, channelId, &AzFramework::InputChannelRequests::GetInputChannel);
