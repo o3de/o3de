@@ -293,7 +293,7 @@ namespace AZ
 
     AZ_MATH_INLINE MatrixMxN MatrixMxN::operator*(const MatrixMxN& rhs) const
     {
-        MatrixMxN result;
+        MatrixMxN result(GetRowCount(), rhs.GetColumnCount());
         MatrixMatrixMultiply(*this, rhs, result);
         return result;
     }
@@ -337,14 +337,6 @@ namespace AZ
         {
             m_values[i] -= rhs.m_values[i];
         }
-        return *this;
-    }
-
-    AZ_MATH_INLINE MatrixMxN& MatrixMxN::operator*=(const MatrixMxN& rhs)
-    {
-        // We overwrite elements in the output during multiplication, so unfortunately we require a copy of the lhs to operate on
-        const MatrixMxN lhs = *this;
-        MatrixMatrixMultiply(lhs, rhs, *this);
         return *this;
     }
 

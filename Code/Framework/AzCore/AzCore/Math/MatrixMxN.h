@@ -107,7 +107,6 @@ namespace AZ
 
         MatrixMxN& operator+=(const MatrixMxN& rhs);
         MatrixMxN& operator-=(const MatrixMxN& rhs);
-        MatrixMxN& operator*=(const MatrixMxN& rhs);
 
         MatrixMxN& operator+=(float sum);
         MatrixMxN& operator-=(float difference);
