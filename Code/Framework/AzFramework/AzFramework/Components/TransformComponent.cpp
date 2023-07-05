@@ -1472,9 +1472,13 @@ namespace AzFramework
                 ->Event("GetLocalScale", &AZ::TransformBus::Events::GetLocalScale)
                     ->Attribute("Scale", AZ::Edit::Attributes::PropertyScale)
                 ->VirtualProperty("Scale", "GetLocalScale", "SetLocalScale")
+                ->Event("SetLocalUniformScale", &AZ::TransformBus::Events::SetLocalUniformScale)
+                ->Event("GetLocalUniformScale", &AZ::TransformBus::Events::GetLocalUniformScale)
+                ->VirtualProperty("Uniform Scale", "GetLocalUniformScale", "SetLocalUniformScale")
 #if 0
                 ->Event("GetWorldScale", &AZ::TransformBus::Events::GetWorldScale)
 #endif
+                ->Event("GetWorldUniformScale", &AZ::TransformBus::Events::GetWorldUniformScale)
                 ->Event("GetChildren", &AZ::TransformBus::Events::GetChildren)
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)
