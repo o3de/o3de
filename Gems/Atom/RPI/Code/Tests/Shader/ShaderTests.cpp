@@ -566,6 +566,7 @@ namespace UnitTest
 
             const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(descriptorForDraw);
             EXPECT_NE(pipelineState, nullptr);
+            EXPECT_TRUE(pipelineState->IsInitialized());
         }
 
         AZStd::array<AZ::RPI::ShaderOptionDescriptor, 4> m_bindings;

@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Console/Console.h>
 
@@ -243,7 +244,7 @@ namespace AZ::Render
             parentScene.ConfigurePipelineState(m_drawListTag, pipelineStateDescriptor);
 
             const RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-            if (!pipelineState)
+            if (!pipelineState || !pipelineState->IsInitialized())
             {
                 AZ_Error("EditorStateMeshDrawPacket", false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 return false;

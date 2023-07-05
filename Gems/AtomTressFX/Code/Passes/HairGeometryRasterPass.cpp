@@ -153,7 +153,7 @@ namespace AZ
                 pipelineStateDescriptor.m_inputStreamLayout.Finalize();
 
                 m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-                if (!m_pipelineState)
+                if (!m_pipelineState || !m_pipelineState->IsInitialized())
                 {
                     AZ_Error("Hair Gem", false, "Pipeline state could not be acquired");
                     return false;

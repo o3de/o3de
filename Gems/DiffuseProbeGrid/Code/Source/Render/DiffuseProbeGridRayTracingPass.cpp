@@ -81,7 +81,7 @@ namespace AZ
 
             // global pipeline state and Srg
             m_globalPipelineState = m_rayTracingShader->AcquirePipelineState(rayGenerationShaderDescriptor);
-            AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
+            AZ_Assert(m_globalPipelineState && m_globalPipelineState->IsInitialized(), "Failed to acquire ray tracing global pipeline state");
 
             m_globalSrgLayout = m_rayTracingShader->FindShaderResourceGroupLayout(Name{ "RayTracingGlobalSrg" });
             AZ_Error( "DiffuseProbeGridRayTracingPass", m_globalSrgLayout != nullptr, "Failed to find RayTracingGlobalSrg layout for shader [%s]", shaderFilePath.c_str());
