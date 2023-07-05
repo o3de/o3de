@@ -78,6 +78,7 @@ public:
     MOCK_CONST_METHOD1(GetResourceNameId, AZStd::string(const AZStd::string&));
     MOCK_CONST_METHOD1(GetResourceRegion, AZStd::string(const AZStd::string&));
     MOCK_CONST_METHOD1(GetResourceType, AZStd::string(const AZStd::string&));
+    MOCK_CONST_METHOD1(HasResourceType, bool(const AZStd::string&));
     MOCK_CONST_METHOD1(GetServiceUrlByServiceName, AZStd::string(const AZStd::string&));
     MOCK_CONST_METHOD2(GetServiceUrlByRESTApiIdAndStage, AZStd::string(const AZStd::string&, const AZStd::string&));
     MOCK_METHOD1(ReloadConfigFile, void(bool));
