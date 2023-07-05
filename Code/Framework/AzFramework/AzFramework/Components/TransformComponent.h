@@ -88,6 +88,16 @@ namespace AzFramework
         /// a localTM and move the transform relative to the parent.
         void SetParentRelative(AZ::EntityId id) override;
 
+        // Scale modifiers
+        // Get local scale as vector (deprecated)
+        AZ::Vector3 GetLocalScale() override;
+        // Set the uniform scale value in local space.
+        void SetLocalUniformScale([[maybe_unused]] float scale) override;
+        // Get the uniform scale value in local space.
+        float GetLocalUniformScale() override;
+        // Get the uniform scale value in world space.
+        float GetWorldUniformScale() override;
+
 #if defined(CARBONATED)
         //Ignore network updates... currently
         void SetClientSimulated(bool clientSim) override;

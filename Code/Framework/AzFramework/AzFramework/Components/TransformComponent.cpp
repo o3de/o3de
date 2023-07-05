@@ -842,18 +842,36 @@ namespace AzFramework
         SetLocalTM(newLocalTM);
     }
 
-    AZ::Vector3 TransformComponent::GetLocalScale()
-    {
-        AZ::Vector3 scale = m_localTM.RetrieveScaleExact();
-        return scale;
-    }
-
     AZ::Vector3 TransformComponent::GetWorldScale()
     {
         AZ::Vector3 scale = m_worldTM.RetrieveScaleExact();
         return scale;
     }
 #endif
+
+    
+    AZ::Vector3 TransformComponent::GetLocalScale()
+    {
+        AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
+        return AZ::Vector3(m_localTM.GetUniformScale());
+    }
+
+    void TransformComponent::SetLocalUniformScale(float scale)
+    {
+        AZ::Transform newLocalTM = m_localTM;
+        newLocalTM.SetUniformScale(scale);
+        SetLocalTM(newLocalTM);
+    }
+
+    float TransformComponent::GetLocalUniformScale()
+    {
+        return m_localTM.GetUniformScale();
+    }
+
+    float TransformComponent::GetWorldUniformScale()
+    {
+        return m_worldTM.GetUniformScale();
+    }
 
     AZStd::vector<AZ::EntityId> TransformComponent::GetChildren()
     {
