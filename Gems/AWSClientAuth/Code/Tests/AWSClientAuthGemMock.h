@@ -94,6 +94,7 @@ namespace AWSClientAuthUnitTest
             ON_CALL(*this, GetDefaultAccountId).WillByDefault(testing::Return(TEST_ACCOUNT_ID));
             ON_CALL(*this, GetResourceAccountId).WillByDefault(testing::Return(TEST_ACCOUNT_ID));
             ON_CALL(*this, GetResourceNameId).WillByDefault(testing::Return(TEST_RESOURCE_NAME_ID));
+            ON_CALL(*this, HasResourceType).WillByDefault(testing::Return(true));
             ON_CALL(*this, GetDefaultRegion).WillByDefault(testing::Return(TEST_REGION));
         }
 
