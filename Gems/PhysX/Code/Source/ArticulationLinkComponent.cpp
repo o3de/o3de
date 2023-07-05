@@ -99,6 +99,11 @@ namespace PhysX
         return currentEntity;
     }
 
+    AZStd::vector<AzPhysics::SimulatedBodyHandle> ArticulationLinkComponent::GetSimulatedBodyHandles() const
+    {
+        return m_articulationLinks;
+    }
+
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::Activate()
     {
