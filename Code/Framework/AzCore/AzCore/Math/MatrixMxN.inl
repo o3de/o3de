@@ -310,6 +310,7 @@ namespace AZ
 
     AZ_MATH_INLINE MatrixMxN MatrixMxN::operator/(float divisor) const
     {
+        AZ_Assert(fabs(divisor) > Constants::FloatEpsilon, "Potential division by zero");
         MatrixMxN returnValue(m_rowCount, m_colCount);
         for (AZStd::size_t i = 0; i < m_values.size(); ++i)
         {
