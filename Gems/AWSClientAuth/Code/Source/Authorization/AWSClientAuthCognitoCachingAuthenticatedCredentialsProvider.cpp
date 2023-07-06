@@ -42,19 +42,19 @@ namespace AWSClientAuth
 
         if (!identityRepository.HasIdentityId())
         {
-            auto accountId = identityRepository.GetAccountId();
-            const Aws::String identityPoolId = identityRepository.GetIdentityPoolId();
-
             Aws::CognitoIdentity::Model::GetIdRequest getIdRequest;
+
             // Only call SetIdentityPoolId if there's actually a pool id.
             // SetIdentityPoolId will cause AWS to think there's an id even if it's empty.
             // This leads AWS API calls to pass back a warning about an "invalid" pool id,
             //     rather than (properly) passing back an error about not having a pool id.
+            const Aws::String identityPoolId = identityRepository.GetIdentityPoolId();
             if (!identityPoolId.empty())
             {
                 getIdRequest.SetIdentityPoolId(identityPoolId);
             }
 
+            auto accountId = identityRepository.GetAccountId();
             if (!accountId.empty()) // new check
             {
                 getIdRequest.SetAccountId(accountId);
