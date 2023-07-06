@@ -303,15 +303,15 @@ void FlyCameraInputComponent::OnKeyboardEvent(const InputChannel& inputChannel)
         m_movement.x = inputChannel.GetValue();
     }
 
-	if(channelId == InputDeviceKeyboard::Key::AlphanumericE)
-	{
-		m_movement.z = inputChannel.GetValue();
-	}
+    if(channelId == InputDeviceKeyboard::Key::AlphanumericE)
+    {
+        m_movement.z = inputChannel.GetValue();
+    }
 
-	if(channelId == InputDeviceKeyboard::Key::AlphanumericQ)
-	{
-		m_movement.z = -inputChannel.GetValue();
-	}
+    if(channelId == InputDeviceKeyboard::Key::AlphanumericQ)
+    {
+        m_movement.z = -inputChannel.GetValue();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -328,15 +328,15 @@ void FlyCameraInputComponent::OnGamepadEvent(const InputChannel& inputChannel)
         m_movement.y = inputChannel.GetValue();
     }
 
-	if (channelId == InputDeviceGamepad::Trigger::L2)
-	{
-		m_movement.z = inputChannel.GetValue();
-	}
+    if (channelId == InputDeviceGamepad::Trigger::L2)
+    {
+        m_movement.z = -inputChannel.GetValue();
+    }
 
-	if (channelId == InputDeviceGamepad::Trigger::R2)
-	{
-		m_movement.z = -inputChannel.GetValue();
-	}
+    if (channelId == InputDeviceGamepad::Trigger::R2)
+    {
+        m_movement.z = inputChannel.GetValue();
+    }
 
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::RX)
     {
