@@ -55,7 +55,7 @@ namespace AWSClientAuth
             }
 
             auto accountId = identityRepository.GetAccountId();
-            if (!accountId.empty()) // new check
+            if (!accountId.empty())
             {
                 getIdRequest.SetAccountId(accountId);
                 AWS_LOGSTREAM_INFO(logTag, "Identity not found, requesting an id for accountId "
