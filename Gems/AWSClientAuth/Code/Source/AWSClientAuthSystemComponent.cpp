@@ -182,7 +182,7 @@ namespace AWSClientAuth
         // Create a controller for user pools and identity pools.
         bool awsCognitoUserPoolDefined = false;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
-            awsCognitoUserPoolDefined, &AWSCore::AWSResourceMappingRequests::HasResourceType, CognitoUserPoolIdResourceMappingKey);
+            awsCognitoUserPoolDefined, &AWSCore::AWSResourceMappingRequests::HasResource, CognitoUserPoolIdResourceMappingKey);
         if (awsCognitoUserPoolDefined)
         {
             m_awsCognitoUserManagementController = AZStd::make_unique<AWSCognitoUserManagementController>();
@@ -190,7 +190,7 @@ namespace AWSClientAuth
 
         bool awsCognitoIdentityPoolDefined = false;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
-            awsCognitoIdentityPoolDefined, &AWSCore::AWSResourceMappingRequests::HasResourceType, CognitoIdentityPoolIdResourceMappingKey);
+            awsCognitoIdentityPoolDefined, &AWSCore::AWSResourceMappingRequests::HasResource, CognitoIdentityPoolIdResourceMappingKey);
         if (awsCognitoIdentityPoolDefined)
         {
             m_awsCognitoAuthorizationController = AZStd::make_unique<AWSCognitoAuthorizationController>();
