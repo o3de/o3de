@@ -46,8 +46,8 @@ namespace AWSClientAuth
             const Aws::String identityPoolId = identityRepository.GetIdentityPoolId();
 
             Aws::CognitoIdentity::Model::GetIdRequest getIdRequest;
-            // Only SetIdentityPoolId if there's actually a pool id.
-            // SetIdentityPoolId will cause AWS to think there's an id even it's empty.
+            // Only call SetIdentityPoolId if there's actually a pool id.
+            // SetIdentityPoolId will cause AWS to think there's an id even if it's empty.
             // This leads AWS API calls to pass back a warning about an "invalid" pool id,
             //     rather than (properly) passing back an error about not having a pool id.
             if (!identityPoolId.empty())
