@@ -136,6 +136,9 @@ namespace ScriptCanvas
             case eType::Matrix4x4:
                 return eTraits<eType::Matrix4x4>::GetName();
 
+            case eType::MatrixMxN:
+                return eTraits<eType::MatrixMxN>::GetName();
+
             case eType::Number:
                 return eTraits<eType::Number>::GetName();
 
@@ -162,6 +165,9 @@ namespace ScriptCanvas
 
             case eType::Vector4:
                 return eTraits<eType::Vector4>::GetName();
+
+            case eType::VectorN:
+                return eTraits<eType::VectorN>::GetName();
 
             default:
                 AZ_Assert(false, "Invalid type!");
