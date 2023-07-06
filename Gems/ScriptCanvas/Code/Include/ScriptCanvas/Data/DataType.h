@@ -59,7 +59,10 @@ namespace ScriptCanvas
             // List,
             AssetId,
             VectorN,
-            MatrixMxN
+            MatrixMxN,
+            
+            // Add any new types above this. This is used to provide a count of all the types defined.
+            Count
         };
 
         using AABBType = AZ::Aabb;
