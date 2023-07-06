@@ -216,11 +216,11 @@ TEST_F(AWSClientAuthSystemComponentTest, GetCognitoClients_Success)
 
 TEST_F(AWSClientAuthSystemComponentTest, SkipCognitoControllers_Success)
 {
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, HasResourceType(AZStd::string(CognitoUserPoolIdResourceMappingKey)))
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, HasResource(AZStd::string(CognitoUserPoolIdResourceMappingKey)))
         .Times(1)
         .WillOnce(testing::Return(false));
 
-    EXPECT_CALL(m_awsResourceMappingRequestBusMock, HasResourceType(AZStd::string(CognitoIdentityPoolIdResourceMappingKey)))
+    EXPECT_CALL(m_awsResourceMappingRequestBusMock, HasResource(AZStd::string(CognitoIdentityPoolIdResourceMappingKey)))
         .Times(1)
         .WillOnce(testing::Return(false));
 

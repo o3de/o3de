@@ -45,6 +45,11 @@ class ServiceClientJobConfigTest
         return "";
     }
 
+    bool HasResource([[maybe_unused]] const AZStd::string& resourceKeyName) const override
+    {
+        return false;
+    }
+
     AZStd::string GetResourceAccountId([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
         return "";
@@ -63,11 +68,6 @@ class ServiceClientJobConfigTest
     AZStd::string GetResourceType([[maybe_unused]] const AZStd::string& resourceKeyName) const override
     {
         return "";
-    }
-
-    bool HasResourceType([[maybe_unused]] const AZStd::string& resourceKeyName) const override
-    {
-        return false;
     }
 
     AZStd::string GetServiceUrlByServiceName([[maybe_unused]] const AZStd::string& serviceName) const override

@@ -82,6 +82,11 @@ namespace AWSCore
         return m_defaultRegion;
     }
 
+    bool AWSResourceMappingManager::HasResource(const AZStd::string& resourceKeyName) const
+    {
+        return m_resourceMappings.contains(resourceKeyName);
+    }
+
     AZStd::string AWSResourceMappingManager::GetResourceAccountId(const AZStd::string& resourceKeyName) const
     {
         return GetResourceAttribute([this](auto& attributes) {
@@ -116,11 +121,6 @@ namespace AWSCore
         return GetResourceAttribute([](auto& attributes) {
             return attributes.resourceType;
         }, resourceKeyName);
-    }
-
-    bool AWSResourceMappingManager::HasResourceType(const AZStd::string& resourceKeyName) const
-    {
-        return m_resourceMappings.contains(resourceKeyName);
     }
 
     AZStd::string AWSResourceMappingManager::GetServiceUrlByServiceName(const AZStd::string& serviceName) const
