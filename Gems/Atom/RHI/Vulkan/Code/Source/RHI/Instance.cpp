@@ -5,15 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <RHI/Vulkan.h>
 #include <RHI/Device.h>
+#include <RHI/FunctionLoader.h>
 #include <RHI/Instance.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
-#include <Atom/RHI.Loader/FunctionLoader.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Utils/Utils.h>
-#include <Atom/RHI/RHIUtils.h>
-#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -23,6 +24,7 @@ namespace AZ
 
         static EnvironmentVariable<Instance> s_vulkanInstance;
         static constexpr const char* s_vulkanInstanceKey = "VulkanInstance";
+        static const RawStringList s_emptyRawList = {};
 
         Instance& Instance::GetInstance()
         {
@@ -73,9 +75,7 @@ namespace AZ
             m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
             
-            m_functionLoader = FunctionLoader::Create();
-            if (!m_functionLoader->Init() ||
-                !m_functionLoader->LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE))
+            if (!FunctionLoader::LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE))
             {
                 AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                 return false;
@@ -118,6 +118,13 @@ namespace AZ
             m_descriptor.m_requiredLayers.insert(m_descriptor.m_requiredLayers.end(), optionalLayers.begin(), optionalLayers.end());
 
             StringList instanceExtensions = GetInstanceExtensionNames();
+            // Add the extensions provided by layers
+            for (const auto& extension : m_descriptor.m_requiredLayers)
+            {
+                StringList layerExtensions = GetInstanceExtensionNames(extension);
+                instanceExtensions.insert(instanceExtensions.end(), layerExtensions.begin(), layerExtensions.end());
+            }
+
             RawStringList optionalExtensions = FilterList(m_descriptor.m_optionalExtensions, instanceExtensions);
             m_descriptor.m_requiredExtensions.insert(m_descriptor.m_requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
@@ -158,7 +165,7 @@ namespace AZ
             }
 
             // Now that we have created the instance, load the function pointers for it.
-            m_functionLoader->LoadProcAddresses(&m_context, m_instance, VK_NULL_HANDLE, VK_NULL_HANDLE);
+            FunctionLoader::LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE);
 
             CreateDebugMessenger();
 
@@ -176,12 +183,8 @@ namespace AZ
             {
                 ShutdownNativeInstance();
             }
-            
-            if (m_functionLoader)
-            {
-                m_functionLoader->Shutdown();
-            }
-            m_functionLoader = nullptr;
+
+            FunctionLoader::UnloadContext(&m_context);
         }
 
         void Instance::ShutdownNativeInstance()
@@ -384,6 +387,25 @@ namespace AZ
                 }
                 m_isXRInstanceCreated = true;
             }
+        }
+
+        const RawStringList& Instance::GetLoadedLayers() const
+        {
+            if (m_instance == VK_NULL_HANDLE)
+            {
+                return s_emptyRawList;
+            }
+
+            return m_descriptor.m_requiredLayers;
+        }
+        const RawStringList& Instance::GetLoadedExtensions() const
+        {
+            if (m_instance == VK_NULL_HANDLE)
+            {
+                return s_emptyRawList;
+            }
+
+            return m_descriptor.m_requiredExtensions;
         }
     }
 }

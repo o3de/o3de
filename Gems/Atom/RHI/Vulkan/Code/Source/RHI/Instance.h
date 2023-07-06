@@ -7,10 +7,8 @@
  */
 #pragma once
 
-#include <vulkan/vulkan.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI/ValidationLayer.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -23,8 +21,6 @@ namespace AZ
 {
     namespace Vulkan
     {
-        class FunctionLoader;
-
         class Instance final
         {
         public:
@@ -54,10 +50,6 @@ namespace AZ
                 return m_context;
             }
             const Descriptor& GetDescriptor() const;
-            FunctionLoader& GetFunctionLoader()
-            {
-                return *m_functionLoader;
-            }
             StringList GetInstanceLayerNames() const;
             StringList GetInstanceExtensionNames(const char* layerName = nullptr) const;
             RHI::PhysicalDeviceList GetSupportedDevices() const;
@@ -67,6 +59,11 @@ namespace AZ
             //! this method allows us to re-update it if XR support is requested by XR module.
             void UpdateNativeInstance(RHI::XRRenderingInterface* xrSystem);
 
+            //! Returns the list of layers loaded by the Vulkan instance.
+            const RawStringList& GetLoadedLayers() const;
+            //! Retuns the list of instance extensions loaded by the Vulkan instance.
+            const RawStringList& GetLoadedExtensions() const;
+
         private:
             RHI::PhysicalDeviceList EnumerateSupportedDevices() const;
             void ShutdownNativeInstance();
@@ -75,7 +72,6 @@ namespace AZ
             Descriptor m_descriptor;
             VkInstance m_instance = VK_NULL_HANDLE;
             GladVulkanContext m_context = {};
-            AZStd::unique_ptr<FunctionLoader> m_functionLoader;
             RHI::PhysicalDeviceList m_supportedDevices;
             VkInstanceCreateInfo m_instanceCreateInfo = {};
             VkApplicationInfo m_appInfo = {};

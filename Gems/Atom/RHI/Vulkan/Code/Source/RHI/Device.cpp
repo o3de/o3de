@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI.Loader/FunctionLoader.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI/Factory.h>
@@ -23,6 +22,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
+#include <RHI/FunctionLoader.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImagePool.h>
 #include <RHI/Instance.h>
@@ -328,8 +328,7 @@ namespace AZ
                 AssertSuccess(vkResult);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
 
-                if (!instance.GetFunctionLoader().LoadProcAddresses(
-                        &m_context, instance.GetNativeInstance(), physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
+                if (!FunctionLoader::LoadProcAddresses(&m_context, physicalDevice.GetNativePhysicalDevice(), m_nativeDevice))
                 {
                     AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                     return RHI::ResultCode::Fail;
@@ -693,6 +692,8 @@ namespace AZ
                     m_nativeDevice = VK_NULL_HANDLE;
                 }
             }
+
+            FunctionLoader::UnloadContext(&m_context);
         }
 
         RHI::ResultCode Device::BeginFrameInternal() 
@@ -1257,6 +1258,8 @@ namespace AZ
                 m_context.BindBufferMemory2,
                 m_context.BindImageMemory2,
                 m_context.GetPhysicalDeviceMemoryProperties2,
+                m_context.GetDeviceBufferMemoryRequirements,
+                m_context.GetDeviceImageMemoryRequirements
             };
 
             auto& instance = Instance::GetInstance();
@@ -1265,8 +1268,8 @@ namespace AZ
             allocatorInfo.physicalDevice = physicalDevice.GetNativePhysicalDevice();
             allocatorInfo.device = m_nativeDevice;
             allocatorInfo.instance = instance.GetNativeInstance();
-            // 1.2 is our current version for glad function pointers. Update this value when updating GLAD
-            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_2);
+            // Current version for glad function pointers. Update this value when updating GLAD.
+            allocatorInfo.vulkanApiVersion = AZStd::min(physicalProperties.apiVersion, VK_API_VERSION_1_3);
             allocatorInfo.pVulkanFunctions = &vulkanFunctions;
             allocatorInfo.pAllocationCallbacks = VkSystemAllocator::Get();
 

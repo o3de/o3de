@@ -156,6 +156,8 @@ set(FILES
     Source/RHI/RayTracingPipelineState.h
     Source/RHI/RayTracingShaderTable.cpp
     Source/RHI/RayTracingShaderTable.h
-    Source/RHI/Conversion.h
     Source/RHI/Conversion.cpp
+    Source/RHI/Conversion.h
+    Source/RHI/FunctionLoader.cpp
+    Source/RHI/FunctionLoader.h
 )
