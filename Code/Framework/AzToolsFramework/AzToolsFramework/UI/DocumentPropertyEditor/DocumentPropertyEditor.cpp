@@ -1318,6 +1318,7 @@ namespace AzToolsFramework
         {
             // only save our expander state if our expanse/collapse was user-driven
             dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+            dpe->ExpanderChangedByUser();
         }
     }
 
