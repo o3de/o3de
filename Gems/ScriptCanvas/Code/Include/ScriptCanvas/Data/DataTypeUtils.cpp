@@ -456,11 +456,17 @@ namespace ScriptCanvas
         bool IsAutoBoxedType(const Type& type)
         {
             static const AZ::u32 s_autoBoxedTypes = {
-                1 << static_cast<AZ::u32>(eType::AABB) | 1 << static_cast<AZ::u32>(eType::Color) |
-                1 << static_cast<AZ::u32>(eType::CRC) | 1 << static_cast<AZ::u32>(eType::Matrix3x3) |
-                1 << static_cast<AZ::u32>(eType::Matrix4x4) | 1 << static_cast<AZ::u32>(eType::OBB) |
-                1 << static_cast<AZ::u32>(eType::Quaternion) | 1 << static_cast<AZ::u32>(eType::Transform) |
-                1 << static_cast<AZ::u32>(eType::Vector2) | 1 << static_cast<AZ::u32>(eType::Vector3) | 1 << static_cast<AZ::u32>(eType::Vector4)
+                1 << static_cast<AZ::u32>(eType::AABB) |
+                1 << static_cast<AZ::u32>(eType::Color) |
+                1 << static_cast<AZ::u32>(eType::CRC) |
+                1 << static_cast<AZ::u32>(eType::Matrix3x3) |
+                1 << static_cast<AZ::u32>(eType::Matrix4x4) |
+                1 << static_cast<AZ::u32>(eType::OBB) |
+                1 << static_cast<AZ::u32>(eType::Quaternion) |
+                1 << static_cast<AZ::u32>(eType::Transform) |
+                1 << static_cast<AZ::u32>(eType::Vector2) |
+                1 << static_cast<AZ::u32>(eType::Vector3) |
+                1 << static_cast<AZ::u32>(eType::Vector4)
             };
 
             return ((1 << static_cast<AZ::u32>(type.GetType())) & s_autoBoxedTypes) != 0;
