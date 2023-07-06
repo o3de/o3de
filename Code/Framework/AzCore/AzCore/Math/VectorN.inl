@@ -281,6 +281,14 @@ namespace AZ
         return returnValue;
     }
 
+    AZ_MATH_INLINE void VectorN::Absolute()
+    {
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            m_values[i] = m_values[i].GetAbs();
+        }
+    }
+
     AZ_MATH_INLINE VectorN VectorN::GetSquare() const
     {
         VectorN returnValue(m_numElements);
@@ -289,6 +297,14 @@ namespace AZ
             returnValue.m_values[i] = m_values[i] * m_values[i];
         }
         return returnValue;
+    }
+
+    AZ_MATH_INLINE void VectorN::Square()
+    {
+        for (AZStd::size_t i = 0; i < m_values.size(); ++i)
+        {
+            m_values[i] *= m_values[i];
+        }
     }
 
     AZ_MATH_INLINE float VectorN::Dot(const VectorN& rhs) const

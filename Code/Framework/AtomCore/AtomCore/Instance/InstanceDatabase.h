@@ -218,6 +218,11 @@ namespace AZ
              */
             void TEMPOrphan(const InstanceId& id);
 
+            //! A helper function to visit every instance in the database and calls the provided callback method.
+            //! Note: this function can be slow depending on how many instances in the database
+            void ForEach(AZStd::function<void(Type&)> callback);
+            void ForEach(AZStd::function<void(const Type&)> callback) const;
+
         private:
             InstanceDatabase(const AssetType& assetType);
             ~InstanceDatabase();
@@ -225,7 +230,6 @@ namespace AZ
             bool m_checkAssetIds = true;
             //useAssetTypeAsKeyForHandlers;
             static const char* GetEnvironmentName();
-
             
             Data::Asset<Data::AssetData> LoadAsset(const Data::Asset<AssetData>& asset) const;
             Data::Instance<Type> EmplaceInstance(const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param);
@@ -545,6 +549,26 @@ namespace AZ
                 HasInstanceDatabaseName<Type>::value,
                 "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
             return Type::GetDatabaseName();
+        }
+                
+        template <typename Type>
+        void InstanceDatabase<Type>::ForEach(AZStd::function<void(Type&)> callback)
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            for (auto element : m_database)
+            {
+                callback(*element.second);
+            }
+        }
+        
+        template <typename Type>
+        void InstanceDatabase<Type>::ForEach(AZStd::function<void(const Type&)> callback) const
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            for (auto element : m_database)
+            {
+                callback(*element.second);
+            }
         }
     }
 }

@@ -41,6 +41,10 @@ namespace AZ
 
         ~MatrixMxN() = default;
 
+        MatrixMxN& operator=(MatrixMxN&&) = default;
+
+        MatrixMxN& operator=(const MatrixMxN&) = default;
+
         //! Creates an M by N matrix with all elements set to zero.
         static MatrixMxN CreateZero(AZStd::size_t rowCount, AZStd::size_t colCount);
 
@@ -86,18 +90,23 @@ namespace AZ
         MatrixMxN GetClamp(const MatrixMxN& min, const MatrixMxN& max) const;
         //! @}
 
-        //! Returns a new VectorN containing the absolute value of all elements in the source MatrixMxN.
+        //! Returns a new MatrixMxN containing the absolute value of all elements in the source MatrixMxN.
         MatrixMxN GetAbs() const;
 
-        //! Returns a new VectorN containing the square of all elements in the source MatrixMxN.
+        //! Returns a new MatrixMxN containing the square of all elements in the source MatrixMxN.
         MatrixMxN GetSquare() const;
 
-        //! These operators perform basic arithmetic on the individual elements within the respective matrices.
+        //! Aside from multiplication, these operators perform basic arithmetic on the individual elements within the respective matrices.
         //! @{
+        MatrixMxN operator-() const;
+        MatrixMxN operator+(const MatrixMxN& rhs) const;
+        MatrixMxN operator-(const MatrixMxN& rhs) const;
+        MatrixMxN operator*(const MatrixMxN& rhs) const;
+        MatrixMxN operator*(float multiplier) const;
+        MatrixMxN operator/(float divisor) const;
+
         MatrixMxN& operator+=(const MatrixMxN& rhs);
         MatrixMxN& operator-=(const MatrixMxN& rhs);
-        MatrixMxN& operator*=(const MatrixMxN& rhs); //! Hadamard product, not matrix multiplication.
-        MatrixMxN& operator/=(const MatrixMxN& rhs);
 
         MatrixMxN& operator+=(float sum);
         MatrixMxN& operator-=(float difference);

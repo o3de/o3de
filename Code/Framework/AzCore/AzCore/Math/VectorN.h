@@ -39,6 +39,10 @@ namespace AZ
 
         ~VectorN() = default;
 
+        VectorN& operator=(VectorN&&) = default;
+
+        VectorN& operator=(const VectorN&) = default;
+
         //! Creates a vector with all components set to zero, more efficient than calling VectorN(0.0f).
         static VectorN CreateZero(AZStd::size_t numElements);
 
@@ -110,8 +114,14 @@ namespace AZ
         //! Returns a new VectorN containing the absolute value of all elements in the source VectorN.
         VectorN GetAbs() const;
 
+        //! Absolute value in-place.
+        void Absolute();
+
         //! Returns a new VectorN containing the square of all elements in the source VectorN.
         VectorN GetSquare() const;
+
+        //! Square value in-place.
+        void Square();
 
         //! Returns the dot product of two vectors of equal dimension.
         float Dot(const VectorN& rhs) const;
