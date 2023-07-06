@@ -15,7 +15,7 @@
 
 namespace AssetProcessor
 {
-    static constexpr char builderNotFoundWarningMessage[] =
+    [[maybe_unused]] static constexpr char builderNotFoundWarningMessage[] =
         "Found a %s metric entry with builder %s \"%s\", but Asset Processor does not recognize this "
         "builder. Ensure this builder is in the asset folders and its name is shown "
         "in the Builders tab. If this builder was removed intentionally in the past, you can safely ignore this "
