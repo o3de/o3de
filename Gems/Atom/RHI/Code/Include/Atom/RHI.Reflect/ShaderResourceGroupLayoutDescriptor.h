@@ -18,20 +18,17 @@ namespace AZ
 
     namespace RHI
     {
-        /**
-         * A "ShaderInput" describes an input into a ShaderResourceGroup. Shader inputs are comprised of
-         * Buffers, Images, Samplers, and Constants. The former three shader inputs each contain an array
-         * of their respective resources. All of the resources in a shader input are identical with respect
-         * to their usage and type. Each of the {Buffer, Image, Sampler} inputs map directly to a variable
-         * definition in the shader source file.
-         *
-         * Constants are a bit different. Each constant input maps to a named constant variable in the
-         * shader resource group's implicit constant buffer. However, instead of a 'resource group' of
-         * constants, the constants occupy disjoint byte regions in an internal constant buffer.
-         *
-         * Each shader input has an id which is used to reflect the input by name.
-         */
-
+        //! A "ShaderInput" describes an input into a ShaderResourceGroup. Shader inputs are comprised of
+        //! Buffers, Images, Samplers, and Constants. The former three shader inputs each contain an array
+        //! of their respective resources. All of the resources in a shader input are identical with respect
+        //! to their usage and type. Each of the {Buffer, Image, Sampler} inputs map directly to a variable
+        //! definition in the shader source file.
+        //!
+        //! Constants are a bit different. Each constant input maps to a named constant variable in the
+        //! shader resource group's implicit constant buffer. However, instead of a 'resource group' of
+        //! constants, the constants occupy disjoint byte regions in an internal constant buffer.
+        //!
+        //! Each shader input has an id which is used to reflect the input by name.
         enum class ShaderInputType : uint32_t
         {
             Buffer = 0,

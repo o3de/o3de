@@ -104,5 +104,5 @@ namespace AZ
             //Used for better verbosity related to gpu markers
             uint16_t m_numActiveRenderPipelines = 0;
         };
-    } // namespace RPI
+    } // namespace RHI
 } // namespace AZ

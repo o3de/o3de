@@ -19,10 +19,10 @@ namespace AZ
 
     namespace RHI
     {
-        // Defines a custom sample position when doing Multisample rendering.
-        // Sample positions have the origin(0, 0) at the pixel top left.
-        // Each of the X and Y coordinates are unsigned values in the range 0 (top / left) to Limits::Pipeline::MultiSampleCustomLocationGridSize - 1 (bottom / right).
-        // Values outside this range are invalid. Each increment of these integer values represents 1 / Limits::Pipeline::MultiSampleCustomLocationGridSize of a pixel.
+        //! Defines a custom sample position when doing Multisample rendering.
+        //! Sample positions have the origin(0, 0) at the pixel top left.
+        //! Each of the X and Y coordinates are unsigned values in the range 0 (top / left) to Limits::Pipeline::MultiSampleCustomLocationGridSize - 1 (bottom / right).
+        //! Values outside this range are invalid. Each increment of these integer values represents 1 / Limits::Pipeline::MultiSampleCustomLocationGridSize of a pixel.
         struct SamplePosition
         {
             AZ_TYPE_INFO(SamplePosition, "{8CCB872A-2CC3-4898-AB9E-C12517AC1FB8}");

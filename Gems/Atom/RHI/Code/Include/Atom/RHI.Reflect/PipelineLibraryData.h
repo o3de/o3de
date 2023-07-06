@@ -28,24 +28,22 @@ namespace AZ
 
     namespace RHI
     {
-        /**
-         * This class represents a blob of platform-specific PipelineLibrary data that can be serialized
-         * to and from disk, speeding up driver compilation time and memory consumption.
-         *
-         * Pipeline state data is expensive to compile and results in a lot of duplicated memory
-         * when pipeline states have little variance (for example, the same byte code but different
-         * render state). The pipeline library allows the platform to de-duplicate these identical
-         * components. Since this data is platform and driver specific, it gets serialized as an opaque
-         * blob.
-         *
-         * Another restriction enforced by certain platforms is that they won't actually copy the data,
-         * since it can be quite large. For example, if a pipeline library exists per thread, it is
-         * preferred to not copy the data N times.
-         *
-         * Therefore, this class is designed to be immutable after creation and support reference counting.
-         * This allows the platform to safely hold a reference and guarantees that the memory is not mutated
-         * externally.
-         */
+        //! This class represents a blob of platform-specific PipelineLibrary data that can be serialized
+        //! to and from disk, speeding up driver compilation time and memory consumption.
+        //!
+        //! Pipeline state data is expensive to compile and results in a lot of duplicated memory
+        //! when pipeline states have little variance (for example, the same byte code but different
+        //! render state). The pipeline library allows the platform to de-duplicate these identical
+        //! components. Since this data is platform and driver specific, it gets serialized as an opaque
+        //! blob.
+        //!
+        //! Another restriction enforced by certain platforms is that they won't actually copy the data,
+        //! since it can be quite large. For example, if a pipeline library exists per thread, it is
+        //! preferred to not copy the data N times.
+        //!
+        //! Therefore, this class is designed to be immutable after creation and support reference counting.
+        //! This allows the platform to safely hold a reference and guarantees that the memory is not mutated
+        //! externally.
         class PipelineLibraryData final
             : public AZStd::intrusive_base
         {

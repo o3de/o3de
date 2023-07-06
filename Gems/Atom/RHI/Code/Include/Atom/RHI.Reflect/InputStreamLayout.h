@@ -20,9 +20,7 @@ namespace AZ
 
     namespace RHI
     {
-        /**
-         * Describes the primitive topology of an input assembly stream.
-         */
+        //! Describes the primitive topology of an input assembly stream.
         enum class PrimitiveTopology : uint32_t
         {
             Undefined = 0,
@@ -38,12 +36,10 @@ namespace AZ
             PatchList
         };
 
-        /**
-         * Describes the rate at which an input assembly channel increments
-         * to the next element in the buffer stream. If Vertex, the value
-         * is assumed to be a per-vertex component. If Instance, the value
-         * is assumed to be a per-hardware-instance component.
-         */
+        //! Describes the rate at which an input assembly channel increments
+        //! to the next element in the buffer stream. If Vertex, the value
+        //! is assumed to be a per-vertex component. If Instance, the value
+        //! is assumed to be a per-hardware-instance component.
         enum class StreamStepFunction : uint32_t
         {
             Constant = 0,
@@ -53,13 +49,11 @@ namespace AZ
             PerPatchControlPoint
         };
 
-        /**
-         * Describes an instance of a stream channel within a stream layout. A stream channel
-         * corresponds to a single data element on the input vertex, and it has a semantic associated
-         * with it which matches the element within the shader. The data in a stream channel can be
-         * offset from the base of the parent StreamBufferView to interleave multiple channels within 
-         * the same buffer.
-         */
+        //! Describes an instance of a stream channel within a stream layout. A stream channel
+        //! corresponds to a single data element on the input vertex, and it has a semantic associated
+        //! with it which matches the element within the shader. The data in a stream channel can be
+        //! offset from the base of the parent StreamBufferView to interleave multiple channels within 
+        //! the same buffer.
         class StreamChannelDescriptor
         {
         public:
@@ -89,11 +83,9 @@ namespace AZ
             uint32_t m_byteOffset = 0;
         };
 
-        /**
-         * Describes an instance of a StreamBufferView within the stream layout. Each stream
-         * buffer provides new data to the shader at a specified step rate. The byte stride
-         * is the total width of a single element in the buffer stream.
-         */
+        //! Describes an instance of a StreamBufferView within the stream layout. Each stream
+        //! buffer provides new data to the shader at a specified step rate. The byte stride
+        //! is the total width of a single element in the buffer stream.
         class StreamBufferDescriptor
         {
         public:
@@ -114,21 +106,17 @@ namespace AZ
             /// The interval (in per-frequency units) at which the data is pushed to the vertex shader.
             uint32_t m_stepRate = 1;
 
-            /**
-             * The distance in bytes between consecutive vertex entries in the buffer.
-             * This will match the stride value in StreamBufferView. It is provided separately here
-             * because some platforms may require this information at PSO compile time, while the 
-             * StreamBufferView is not available until draw time.
-             */
+            //! The distance in bytes between consecutive vertex entries in the buffer.
+            //! This will match the stride value in StreamBufferView. It is provided separately here
+            //! because some platforms may require this information at PSO compile time, while the 
+            //! StreamBufferView is not available until draw time.
             uint32_t m_byteStride = 0;
         };
 
-        /**
-         * Describes the input assembly stream buffer layout for the pipeline state.
-         * This is provided to the RHI back-end at PSO compile time as part of the PipelineStateDescriptor.
-         *
-         * See InputStreamLayoutBuilder for a convenient way to construct InputStreamLayout objects.
-         */
+        //! Describes the input assembly stream buffer layout for the pipeline state.
+        //! This is provided to the RHI back-end at PSO compile time as part of the PipelineStateDescriptor.
+        //!
+        //! See InputStreamLayoutBuilder for a convenient way to construct InputStreamLayout objects.
         class InputStreamLayout
         {
         public:
@@ -136,34 +124,34 @@ namespace AZ
             static void Reflect(AZ::ReflectContext* context);
             InputStreamLayout() = default;
 
-            /// Clears the descriptor back to an empty state.
+            //! Clears the descriptor back to an empty state.
             void Clear();
 
-            /// Finalizes the descriptor and builds the hash.
+            //! Finalizes the descriptor and builds the hash.
             bool Finalize();
 
-            /// Returns whether Finalize() was called.
+            //! Returns whether Finalize() was called.
             bool IsFinalized() const;
 
-            /// Sets the primitive topology to the descriptor.
+            //! Sets the primitive topology to the descriptor.
             void SetTopology(PrimitiveTopology topology);
 
-            /// Adds a stream channel to the descriptor.
+            //! Adds a stream channel to the descriptor.
             void AddStreamChannel(const StreamChannelDescriptor& descriptor);
 
-            /// Adds a stream buffer to the descriptor.
+            //! Adds a stream buffer to the descriptor.
             void AddStreamBuffer(const StreamBufferDescriptor& descriptor);
 
-            /// Returns the primitive topology.
+            //! Returns the primitive topology.
             const PrimitiveTopology GetTopology() const;
 
-            /// Returns the list of stream channels.
+            //! Returns the list of stream channels.
             AZStd::span<const StreamChannelDescriptor> GetStreamChannels() const;
 
-            /// Returns the list of stream buffers.
+            //! Returns the list of stream buffers.
             AZStd::span<const StreamBufferDescriptor> GetStreamBuffers() const;
 
-            /// Returns the hash computed in Finalize(), which must be called first.
+            //! Returns the hash computed in Finalize(), which must be called first.
             HashValue64 GetHash() const;
 
             bool operator == (const InputStreamLayout& rhs) const;

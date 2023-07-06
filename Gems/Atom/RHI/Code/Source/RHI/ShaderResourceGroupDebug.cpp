@@ -10,50 +10,45 @@
 #include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI/ShaderResourceGroupDebug.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void PrintConstantDataDiff(const ShaderResourceGroup& shaderResourceGroup, ConstantsData& referenceData, bool updateReferenceData)
     {
+        const RHI::ConstantsData& currentData = shaderResourceGroup.GetData().GetConstantsData();
 
-        void PrintConstantDataDiff(const ShaderResourceGroup& shaderResourceGroup, ConstantsData& referenceData, bool updateReferenceData)
+        AZStd::vector<RHI::ShaderInputConstantIndex> differingIndices = currentData.GetIndicesOfDifferingConstants(referenceData);
+
+        if (differingIndices.size() > 0)
         {
-            const RHI::ConstantsData& currentData = shaderResourceGroup.GetData().GetConstantsData();
-
-            AZStd::vector<RHI::ShaderInputConstantIndex> differingIndices = currentData.GetIndicesOfDifferingConstants(referenceData);
-
-            if (differingIndices.size() > 0)
+            AZ_Printf("RHI", "Detected different SRG values for the following fields:\n");
+            if (currentData.GetLayout())
             {
-                AZ_Printf("RHI", "Detected different SRG values for the following fields:\n");
-                if (currentData.GetLayout())
-                {
-                    currentData.GetLayout()->DebugPrintNames(differingIndices);
-                }
-            }
-
-            if (updateReferenceData)
-            {
-                referenceData = currentData;
+                currentData.GetLayout()->DebugPrintNames(differingIndices);
             }
         }
 
-        void PrintConstantDataDiff(const DrawItem& drawItem, ConstantsData& referenceData, uint32_t srgBindingSlot, bool updateReferenceData)
+        if (updateReferenceData)
         {
-            int srgIndex = -1;
-            for (uint32_t i = 0; i < drawItem.m_shaderResourceGroupCount; ++i)
-            {
-                if (drawItem.m_shaderResourceGroups[i]->GetBindingSlot() == srgBindingSlot)
-                {
-                    srgIndex = i;
-                    break;
-                }
-            }
+            referenceData = currentData;
+        }
+    }
 
-            if (srgIndex != -1)
+    void PrintConstantDataDiff(const DrawItem& drawItem, ConstantsData& referenceData, uint32_t srgBindingSlot, bool updateReferenceData)
+    {
+        int srgIndex = -1;
+        for (uint32_t i = 0; i < drawItem.m_shaderResourceGroupCount; ++i)
+        {
+            if (drawItem.m_shaderResourceGroups[i]->GetBindingSlot() == srgBindingSlot)
             {
-                const ShaderResourceGroup& srg = *drawItem.m_shaderResourceGroups[srgIndex];
-                PrintConstantDataDiff(srg, referenceData, updateReferenceData);
+                srgIndex = i;
+                break;
             }
         }
 
+        if (srgIndex != -1)
+        {
+            const ShaderResourceGroup& srg = *drawItem.m_shaderResourceGroups[srgIndex];
+            PrintConstantDataDiff(srg, referenceData, updateReferenceData);
+        }
     }
 }

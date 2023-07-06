@@ -28,12 +28,10 @@ namespace AZ
             ResourcePoolDescriptor() = default;
             virtual ~ResourcePoolDescriptor() = default;
 
-            /**
-             * The budget defines the maximum amount of memory the pool is allowed to consume on its heap level.
-             * If the budget is zero, the budget is not enforced by the RHI and reservations can grow unbounded. However,
-             * the platform itself may still report out of memory errors. Therefore, it is strongly recommended to assign
-             * a budget to Device pools where virtual memory is not present on most platforms.
-             */
+            //! The budget defines the maximum amount of memory the pool is allowed to consume on its heap level.
+            //! If the budget is zero, the budget is not enforced by the RHI and reservations can grow unbounded. However,
+            //! the platform itself may still report out of memory errors. Therefore, it is strongly recommended to assign
+            //! a budget to Device pools where virtual memory is not present on most platforms.
             AZ::u64 m_budgetInBytes = 0;
         };
     }

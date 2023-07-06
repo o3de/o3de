@@ -20,10 +20,8 @@ namespace AZ
 
     namespace RHI
     {
-        /**
-         * A set of combinable flags which inform the system how a buffer is to be
-         * bound to the pipeline at all stages of its lifetime.
-         */
+        //! A set of combinable flags which inform the system how a buffer is to be
+        //! bound to the pipeline at all stages of its lifetime.
         AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(BufferBindFlags, uint32_t,
             (None            , 0),
 
@@ -71,10 +69,8 @@ namespace AZ
 
         BufferBindFlags GetBufferBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
 
-        /**
-         * A buffer corresponds to a region of linear memory and used for rendering operations.
-         * Its lifecycle is managed by buffer pools.
-         */
+        //! A buffer corresponds to a region of linear memory and used for rendering operations.
+        //! Its lifecycle is managed by buffer pools.
         struct BufferDescriptor
         {
             AZ_TYPE_INFO(BufferDescriptor, "{05321516-CDE4-451D-80A2-3D179AB3DB5D}");

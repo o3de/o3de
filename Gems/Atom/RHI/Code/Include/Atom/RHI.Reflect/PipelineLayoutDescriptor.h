@@ -59,10 +59,8 @@ namespace AZ
             uint32_t                m_spaceId = InvalidRegister;
         };
 
-        /**
-         * This class describes binding information about the Shader Resource Group
-         * that is part of a Pipeline. Contains the register number for each SRG resource.
-         */
+        //! This class describes binding information about the Shader Resource Group
+        //! that is part of a Pipeline. Contains the register number for each SRG resource.
         struct ShaderResourceGroupBindingInfo
         {
             AZ_TYPE_INFO(ShaderResourceGroupBindingInfo, "{FE67D6A9-57E7-4075-94F9-3E2F443D1BD3}");
@@ -79,15 +77,13 @@ namespace AZ
             AZStd::unordered_map<Name, ResourceBindingInfo> m_resourcesRegisterMap;
         };
 
-        /**
-         * This class describes shader bindings to the RHI platform backend when creating a PipelineState.
-         * The base class contains a ShaderResourceGroupLayout table ordered by frequency of update. The platform
-         * descriptor implementation augments this table with low-level shader binding information.
-         *
-         * In short, if the shader compiler needs to communicate platform-specific shader binding information
-         * when constructing a pipeline state, this is the place to do it. Platforms are expected to override
-         * this class in their PLATFORM.Reflect library, which is then exposed to the offline shader compiler.
-         */
+        //! This class describes shader bindings to the RHI platform backend when creating a PipelineState.
+        //! The base class contains a ShaderResourceGroupLayout table ordered by frequency of update. The platform
+        //! descriptor implementation augments this table with low-level shader binding information.
+        //!
+        //! In short, if the shader compiler needs to communicate platform-specific shader binding information
+        //! when constructing a pipeline state, this is the place to do it. Platforms are expected to override
+        //! this class in their PLATFORM.Reflect library, which is then exposed to the offline shader compiler.
         class PipelineLayoutDescriptor
             : public AZStd::intrusive_base
         {
@@ -102,35 +98,35 @@ namespace AZ
 
             bool IsFinalized() const;
 
-            /// Resets the descriptor back to an empty state.
+            //! Resets the descriptor back to an empty state.
             void Reset();
 
-            /// Adds the layout info of shader resource group, ordered by frequency of update.
+            //! Adds the layout info of shader resource group, ordered by frequency of update.
             void AddShaderResourceGroupLayoutInfo(const ShaderResourceGroupLayout& layout, const ShaderResourceGroupBindingInfo& shaderResourceGroupInfo);
 
-            /// Sets the layout of inline constants.
+            //! Sets the layout of inline constants.
             void SetRootConstantsLayout(const ConstantsLayout& rootConstantsLayout);
 
-            /// Finalizes the descriptor for use. Must be called prior to serialization. Should not be called
-            /// after serialization.
+            //! Finalizes the descriptor for use. Must be called prior to serialization. Should not be called
+            //! after serialization.
             RHI::ResultCode Finalize();
 
-            /// Returns the number of shader resource group layouts added to this pipeline layout.
+            //! Returns the number of shader resource group layouts added to this pipeline layout.
             size_t GetShaderResourceGroupLayoutCount() const;
 
-            /// Returns the shader resource group layout pointer at the requested index.
+            //! Returns the shader resource group layout pointer at the requested index.
             const ShaderResourceGroupLayout* GetShaderResourceGroupLayout(size_t index) const;
 
-            /// Returns the shader resource group binding info at the requested index.
+            //! Returns the shader resource group binding info at the requested index.
             const ShaderResourceGroupBindingInfo& GetShaderResourceGroupBindingInfo(size_t index) const;
 
-            /// Returns the inline constants layout.
+            //! Returns the inline constants layout.
             const ConstantsLayout* GetRootConstantsLayout() const;
 
-            /// Returns the hash computed for the pipeline layout.
+            //! Returns the hash computed for the pipeline layout.
             HashValue64 GetHash() const;
 
-            /// Converts from an SRG binding slot to a shader resource group index.
+            //! Converts from an SRG binding slot to a shader resource group index.
             uint32_t GetShaderResourceGroupIndexFromBindingSlot(uint32_t bindingSlot) const;
 
         protected:
@@ -140,13 +136,13 @@ namespace AZ
             ///////////////////////////////////////////////////////////////////
             // Platform API
 
-            /// Called when the pipeline layout descriptor is being reset to an empty state.
+            //! Called when the pipeline layout descriptor is being reset to an empty state.
             virtual void ResetInternal();
 
-            /// Called when the pipeline layout descriptor is being finalized.
+            //! Called when the pipeline layout descriptor is being finalized.
             virtual ResultCode FinalizeInternal();
 
-            /// Computes the hash of the platform-dependent descriptor (combined with the provided seed value).
+            //! Computes the hash of the platform-dependent descriptor (combined with the provided seed value).
             virtual HashValue64 GetHashInternal(HashValue64 seed) const;
 
             ///////////////////////////////////////////////////////////////////

@@ -41,9 +41,7 @@ namespace AZ
             uint8_t m_stencil = 0;
         };
 
-        /**
-         * Represents either a depth stencil, a float vector, or a uint vector clear value.
-         */
+        //! Represents either a depth stencil, a float vector, or a uint vector clear value.
         struct ClearValue
         {
             AZ_TYPE_INFO(ClearValue, "{a64f14ac-3012-4fd6-9224-4cd046eff2e2}");

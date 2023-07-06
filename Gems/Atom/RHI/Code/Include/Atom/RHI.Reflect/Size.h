@@ -25,10 +25,8 @@ namespace AZ
             Size() = default;
             Size(uint32_t width, uint32_t height, uint32_t depth);
 
-            /**
-             * Returns the mip level size, assuming this size is mip 0. A value of 1 is
-             * half sized, 2 quarter sized, etc. Clamps at 1.
-             */
+            //! Returns the mip level size, assuming this size is mip 0. A value of 1 is
+            //! half sized, 2 quarter sized, etc. Clamps at 1.
             Size GetReducedMip(uint32_t mipLevel) const;
 
             uint32_t m_width = 1;

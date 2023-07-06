@@ -210,45 +210,32 @@ namespace AZ
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::FormatCapabilities);
 
-        /**
-         * @brief Returns the number of bytes it takes to represent an image element using the provided format.
-         * It returns the number of bytes in a block if the given format is a block compressed format like BC1,
-         * and it do the number of bytes in a pixel otherwise.
-         */
+        //! @brief Returns the number of bytes it takes to represent an image element using the provided format.
+        //! It returns the number of bytes in a block if the given format is a block compressed format like BC1,
+        //! and it do the number of bytes in a pixel otherwise.
         uint32_t GetFormatSize(Format format);
 
-        /**
-         * @brief Returns the number of elements represented by the provided format. For example, R32G32B32_FLOAT returns 3, 
-         *        and R32G32_UINT returns 2. This function is intended primarily for validation of vertex input stream formats.
-         */
+        //! @brief Returns the number of elements represented by the provided format. For example, R32G32B32_FLOAT returns 3, 
+        //!        and R32G32_UINT returns 2. This function is intended primarily for validation of vertex input stream formats.
         uint32_t GetFormatComponentCount(Format format);
 
         const char* ToString(Format format);
 
-        /**
-         * @brief Returns the required alignment for width / height of an image for the given format. Block
-         * compressed formats will return 4. Certain Packed / Planar formats may return 2. This is especially
-         * important for low level of detail mips in the chain, which will reduce down to the alignment instead
-         * of 1x1. The returned value only applies to image width and height. Depth is unaffected.
-         */
+        //! @brief Returns the required alignment for width / height of an image for the given format. Block
+        //! compressed formats will return 4. Certain Packed / Planar formats may return 2. This is especially
+        //! important for low level of detail mips in the chain, which will reduce down to the alignment instead
+        //! of 1x1. The returned value only applies to image width and height. Depth is unaffected.
         uint32_t GetFormatDimensionAlignment(Format format);
 
-        /**
-         * @brief Returns the SRGB equivalent to the provided linear format, if it exists. If not, the provided
-         * format is returned unchanged.
-         */
+        //! @brief Returns the SRGB equivalent to the provided linear format, if it exists. If not, the provided
+        //! format is returned unchanged.
         RHI::Format ConvertLinearToSRGB(Format format);
 
-        /**
-         * @brief Returns the linear equivalent to the provided SRGB format. If no such equivalent exists,
-         * the provided format is returned unchanged.
-         */
+        //! @brief Returns the linear equivalent to the provided SRGB format. If no such equivalent exists,
+        //! the provided format is returned unchanged.
         RHI::Format ConvertSRGBToLinear(Format format);
 
-
-        /**
-         * @brief Returns the image aspect flags supported by the format.
-         */
+        //! @brief Returns the image aspect flags supported by the format.
         ImageAspectFlags GetImageAspectFlags(Format format);
     }
 

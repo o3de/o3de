@@ -20,9 +20,7 @@ namespace AZ
 
     namespace RHI
     {
-        /**
-         * Image views map to a range of mips / array slices in an image.
-         */
+        //! Image views map to a range of mips / array slices in an image.
         struct ImageViewDescriptor
         {
             AZ_TYPE_INFO(ImageViewDescriptor, "{7dc08a6e-5a1d-4730-b1fa-3a6e11bb7178}");
@@ -30,13 +28,13 @@ namespace AZ
 
             static void Reflect(AZ::ReflectContext* context);
 
-            /// Creates a view with a custom format and mip chain range.
+            //! Creates a view with a custom format and mip chain range.
             static ImageViewDescriptor Create(
                 Format overrideFormat,
                 uint16_t mipSliceMin,
                 uint16_t mipSliceMax);
 
-            /// Creates a view with a custom format, mip slice range, and array slice range.
+            //! Creates a view with a custom format, mip slice range, and array slice range.
             static ImageViewDescriptor Create(
                 Format overrideFormat,
                 uint16_t mipSliceMin,
@@ -44,17 +42,17 @@ namespace AZ
                 uint16_t arraySliceMin,
                 uint16_t arraySliceMax);
 
-            /// Creates a default view that maps to the full subresource range, but is
-            /// set to interpret the array slices as cubemap faces.
+            //! Creates a default view that maps to the full subresource range, but is
+            //! set to interpret the array slices as cubemap faces.
             static ImageViewDescriptor CreateCubemap();
 
-            /// Creates a cubemap view with a specific format and mip slice range.
+            //! Creates a cubemap view with a specific format and mip slice range.
             static ImageViewDescriptor CreateCubemap(
                 Format overrideFormat,
                 uint16_t mipSliceMin,
                 uint16_t mipSliceMax);
 
-            /// Creates a cubemap view with a specific format, mip slice range, and array slice range.
+            //! Creates a cubemap view with a specific format, mip slice range, and array slice range.
             static ImageViewDescriptor CreateCubemap(
                 Format overrideFormat,
                 uint16_t mipSliceMin,
@@ -62,14 +60,14 @@ namespace AZ
                 uint16_t cubeSliceMin,
                 uint16_t cubeSliceMax);
 
-            /// Creates a cubemap face view with a specific format and mip slice range.
+            //! Creates a cubemap face view with a specific format and mip slice range.
             static ImageViewDescriptor CreateCubemapFace(
                 Format overrideFormat,
                 uint16_t mipSliceMin,
                 uint16_t mipSliceMax,
                 uint16_t faceSlice);
 
-            /// Create a view for 3d texture
+            //! Create a view for 3d texture
             static ImageViewDescriptor Create3D(
                 Format overrideFormat,
                 uint16_t mipSliceMin,
