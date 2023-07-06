@@ -573,7 +573,7 @@ namespace ScriptCanvasUnitTest
     TEST_F(ScriptCanvasUnitTestDataTypeUtils, ToAZType_GetNullUuid_WhileCheckingInvalidType)
     {
         AZ_TEST_START_TRACE_SUPPRESSION;
-        auto actualResult = ToAZType((eType) 32);
+        auto actualResult = ToAZType(eType::Count);
         AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
         EXPECT_TRUE(actualResult.IsNull());
     }
