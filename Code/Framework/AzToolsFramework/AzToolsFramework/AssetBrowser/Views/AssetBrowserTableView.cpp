@@ -219,6 +219,7 @@ namespace AzToolsFramework
                 &AssetBrowserTableViewProxyModel::SetRootIndex);
 
             auto layout = new QVBoxLayout();
+            layout->setContentsMargins(0, 0, 0, 0);
             layout->addWidget(m_tableViewWidget);
             setLayout(layout);
 
