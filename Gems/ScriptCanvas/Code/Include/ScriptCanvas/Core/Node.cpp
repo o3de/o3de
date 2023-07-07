@@ -3386,7 +3386,7 @@ namespace ScriptCanvas
         }
         else
         {
-            // If the node doens't have a slot execution map, we will need to just use whatever execution slot is there
+            // If the node doesn't have a slot execution map, we will need to just use whatever execution slot is there
             AZStd::vector<const ScriptCanvas::Slot*> executionSlots = slot->IsInput()
                 ? GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn())
                 : GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut());
