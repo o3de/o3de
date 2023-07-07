@@ -1349,7 +1349,7 @@ namespace AzToolsFramework
 
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
