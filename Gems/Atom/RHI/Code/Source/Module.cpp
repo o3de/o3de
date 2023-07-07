@@ -11,40 +11,35 @@
 #include <RHI.Private/FactoryRegistrationFinalizerSystemComponent.h>
 #include <AzCore/Module/Module.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! This module is in charge of loading the RHI reflection descriptor and the
+    //! system components in charge of managing the different factory backends.
+    class PlatformModule
+        : public AZ::Module
     {
-        /**
-        * This module is in charge of loading the RHI reflection descriptor and the
-        * system components in charge of managing the different factory backends.
-        */
-        class PlatformModule
-            : public AZ::Module
+    public:
+        AZ_RTTI(PlatformModule, "{C34AA64E-0983-4D30-A33C-0D7C7676A20E}", Module);
+
+        PlatformModule()
         {
-        public:
-            AZ_RTTI(PlatformModule, "{C34AA64E-0983-4D30-A33C-0D7C7676A20E}", Module);
+            m_descriptors.insert(m_descriptors.end(), {
+                ReflectSystemComponent::CreateDescriptor(),
+                FactoryManagerSystemComponent::CreateDescriptor(),
+                FactoryRegistrationFinalizerSystemComponent::CreateDescriptor()
+            });
+        }
+        ~PlatformModule() override = default;
 
-            PlatformModule()
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override
+        {
+            return AZ::ComponentTypeList
             {
-                m_descriptors.insert(m_descriptors.end(), {
-                    ReflectSystemComponent::CreateDescriptor(),
-                    FactoryManagerSystemComponent::CreateDescriptor(),
-                    FactoryRegistrationFinalizerSystemComponent::CreateDescriptor()
-                });
-            }
-            ~PlatformModule() override = default;
-
-            AZ::ComponentTypeList GetRequiredSystemComponents() const override
-            {
-                return AZ::ComponentTypeList
-                {
-                    azrtti_typeid<FactoryManagerSystemComponent>(),
-                    azrtti_typeid<FactoryRegistrationFinalizerSystemComponent>()
-                };
-            }
-        };
-    }
+                azrtti_typeid<FactoryManagerSystemComponent>(),
+                azrtti_typeid<FactoryRegistrationFinalizerSystemComponent>()
+            };
+        }
+    };
 }
 
 // DO NOT MODIFY THIS LINE UNLESS YOU RENAME THE GEM

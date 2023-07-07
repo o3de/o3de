@@ -12,48 +12,48 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    struct Viewport
     {
-        struct Viewport
-        {
-            AZ_TYPE_INFO(Viewport, "{69160593-B7C3-4E94-A397-CC0A34567698}");
-            static void Reflect(AZ::ReflectContext* context);
+        AZ_TYPE_INFO(Viewport, "{69160593-B7C3-4E94-A397-CC0A34567698}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            Viewport() = default;
-            Viewport(
-                float minX,
-                float maxX,
-                float minY,
-                float maxY,
-                float minZ = 0.0f,
-                float maxZ = 1.0f);
+        Viewport() = default;
+        Viewport(
+            float minX,
+            float maxX,
+            float minY,
+            float maxY,
+            float minZ = 0.0f,
+            float maxZ = 1.0f);
 
-            Viewport GetScaled(
-                float normalizedMinX,
-                float normalizedMaxX,
-                float normalizedMinY,
-                float normalizedMaxY,
-                float normalizedMinZ = 0.0f,
-                float normalizedMaxZ = 1.0f) const;
+        Viewport GetScaled(
+            float normalizedMinX,
+            float normalizedMaxX,
+            float normalizedMinY,
+            float normalizedMaxY,
+            float normalizedMinZ = 0.0f,
+            float normalizedMaxZ = 1.0f) const;
 
-            static Viewport CreateNull();
+        static Viewport CreateNull();
 
-            bool IsNull() const;
+        bool IsNull() const;
 
-            float m_minX = 0.0f;
-            float m_maxX = 0.0f;
-            float m_minY = 0.0f;
-            float m_maxY = 0.0f;
-            float m_minZ = 0.0f;
-            float m_maxZ = 1.0f;
+        float m_minX = 0.0f;
+        float m_maxX = 0.0f;
+        float m_minY = 0.0f;
+        float m_maxY = 0.0f;
+        float m_minZ = 0.0f;
+        float m_maxZ = 1.0f;
 
-            float GetWidth() const;
-            float GetHeight() const;
-            float GetDepth() const;
-        };
-    } // namespace RHI
-} // namespace AZ
+        float GetWidth() const;
+        float GetHeight() const;
+        float GetDepth() const;
+    };
+}
 
 inline float AZ::RHI::Viewport::GetWidth() const
 {
