@@ -102,7 +102,7 @@ public: \
               void ConfigureSlots() override;
 
 {% if Class.attrib['ExtendConfigureSlots'] is defined %}
-              void ExtendConfigureSlots([[maybe_unused]] SlotExecution::Ins& ins, [[maybe_unused]] SlotExecution::Outs& latents);
+              void ExtendConfigureSlots([[maybe_unused]] ScriptCanvas::SlotExecution::Ins& ins, [[maybe_unused]] ScriptCanvas::SlotExecution::Outs& latents);
 
 {% else %}
               /* no slot configuration extension, Use Class attribute 'ExtendConfigureSlots' to extend them */
