@@ -163,6 +163,7 @@ namespace AzToolsFramework
             m_dpe->SetAllowVerticalScroll(false);
             m_filterAdapter->SetSourceAdapter(m_adapter);
             m_dpe->SetAdapter(m_filterAdapter);
+            connect(m_dpe, &DocumentPropertyEditor::ExpanderChangedByUser, this, &ComponentEditor::OnExpansionContractionDone);
             setContentWidget(m_dpe);
         }
         else

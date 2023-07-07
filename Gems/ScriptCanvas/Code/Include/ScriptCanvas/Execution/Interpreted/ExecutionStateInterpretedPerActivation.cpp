@@ -86,28 +86,32 @@ namespace ScriptCanvas
 
     void ExecutionStateInterpretedPerActivation::StopExecution()
     {
-        const auto registryIndex = GetLuaRegistryIndex();
-        SC_RUNTIME_CHECK_RETURN(registryIndex != LUA_NOREF
-            , "ExecutionStateInterpretedPerActivation::StopExecution called but Initialize is was never called");
-        auto& lua = m_luaState;
-        // Lua:
-        lua_rawgeti(lua, LUA_REGISTRYINDEX, registryIndex);
-        // Lua: instance
-        lua_getfield(lua, -1, Grammar::k_DeactivateName);
-        // Lua: instance, instance['Deactivate']
-        lua_pushvalue(lua, -2);
-        // Lua: instance, instance['Deactivate'], instance
-        AZ::Internal::LuaSafeCall(lua, 1, 0);
-        // Lua: instance
-        lua_getfield(lua, -1, "Destruct");
-        // Lua: instance, instance['Destruct']
-        lua_pushvalue(lua, -2);
-        // Lua: instance, instance['Destruct'], instance
-        AZ::Internal::LuaSafeCall(lua, 1, 0);
-        // Lua: instance
-        AZ::Internal::azlua_pop(lua, 1);
-        // Lua:
-        m_deactivationRequired = false;
+        if (m_deactivationRequired)
+        {
+            const auto registryIndex = GetLuaRegistryIndex();
+            SC_RUNTIME_CHECK_RETURN(
+                registryIndex != LUA_NOREF,
+                "ExecutionStateInterpretedPerActivation::StopExecution called but Initialize is was never called");
+            auto& lua = m_luaState;
+            // Lua:
+            lua_rawgeti(lua, LUA_REGISTRYINDEX, registryIndex);
+            // Lua: instance
+            lua_getfield(lua, -1, Grammar::k_DeactivateName);
+            // Lua: instance, instance['Deactivate']
+            lua_pushvalue(lua, -2);
+            // Lua: instance, instance['Deactivate'], instance
+            AZ::Internal::LuaSafeCall(lua, 1, 0);
+            // Lua: instance
+            lua_getfield(lua, -1, "Destruct");
+            // Lua: instance, instance['Destruct']
+            lua_pushvalue(lua, -2);
+            // Lua: instance, instance['Destruct'], instance
+            AZ::Internal::LuaSafeCall(lua, 1, 0);
+            // Lua: instance
+            AZ::Internal::azlua_pop(lua, 1);
+            // Lua:
+            m_deactivationRequired = false;
+        }
     }
 
     void ExecutionStateInterpretedPerActivation::ReleaseInterpretedInstance()

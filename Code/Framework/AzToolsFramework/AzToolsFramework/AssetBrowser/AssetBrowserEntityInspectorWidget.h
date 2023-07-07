@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
+#include <AzQtComponents/Components/ExtendedLabel.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzQtComponents/Components/Widgets/SegmentControl.h>
 #include <QFormLayout>
@@ -28,8 +29,6 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        class PreviewerFrame;
-
         class AssetBrowserEntityInspectorWidget
             : public QWidget
             , public AssetBrowserPreviewRequestBus::Handler
@@ -75,7 +74,7 @@ namespace AzToolsFramework
 
             QPushButton* m_detailsButton = nullptr;
             QPushButton* m_sceneSettingsButton = nullptr;
-            QLabel* m_previewImage = nullptr;
+            AzQtComponents::ExtendedLabel* m_previewImage = nullptr;
 
             QStackedWidget* m_settingsSwitcher = nullptr;
             QWidget* m_detailsWidget = nullptr;
@@ -90,7 +89,6 @@ namespace AzToolsFramework
 
             QFont m_headerFont;
         };
-
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

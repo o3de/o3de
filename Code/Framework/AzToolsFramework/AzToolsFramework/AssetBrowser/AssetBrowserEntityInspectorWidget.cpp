@@ -74,7 +74,7 @@ namespace AzToolsFramework
             buttonLayout->addWidget(m_sceneSettingsButton);
 
             // Create the layout for the asset icon preview
-            m_previewImage = new QLabel(m_populatedLayoutWidget);
+            m_previewImage = new AzQtComponents::ExtendedLabel(m_populatedLayoutWidget);
             m_previewImage->setStyleSheet("QLabel {background-color: #333333;}");
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
@@ -252,7 +252,7 @@ namespace AzToolsFramework
             {
                 if (!pixmap.isNull())
                 {
-                    m_previewImage->setPixmap(pixmap);
+                    m_previewImage->setPixmapKeepAspectRatio(pixmap);
                 }
                 else
                 {

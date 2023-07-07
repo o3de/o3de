@@ -82,7 +82,7 @@ namespace AWSClientAuth
         AZStd::string userPoolId;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
             userPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoUserPoolIdResourceMappingKey);
-        AZ_Warning("AWSCognitoAuthorizationController", !userPoolId.empty(), "Missing Cognito User pool id in resource mappings. Cognito IDP authenticated identities will no work.");
+        AZ_Warning("AWSCognitoAuthorizationController", !userPoolId.empty(), "Missing Cognito User pool id in resource mappings. Cognito IDP authenticated identities will not work.");
 
         AZStd::string defaultRegion;
         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
