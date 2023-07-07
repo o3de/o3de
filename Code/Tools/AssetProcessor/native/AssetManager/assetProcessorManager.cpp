@@ -3528,7 +3528,7 @@ namespace AssetProcessor
         WarmUpFileCache(filePaths);
         AssetProcessor::StatsCapture::EndCaptureStat("WarmingFileCache");
 
-        int processedFileCount = 0;
+        [[maybe_unused]] int processedFileCount = 0;
 
         AssetProcessor::StatsCapture::BeginCaptureStat("InitialFileAssessment");
 

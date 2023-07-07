@@ -386,7 +386,7 @@ namespace AZ::IO
 
         m_arrZips = {};
 
-        uint32_t numFilesForcedToClose = 0;
+        [[maybe_unused]] uint32_t numFilesForcedToClose = 0;
         // scan through all open files and close them
         {
             AZStd::unique_lock lock(m_csOpenFiles);
