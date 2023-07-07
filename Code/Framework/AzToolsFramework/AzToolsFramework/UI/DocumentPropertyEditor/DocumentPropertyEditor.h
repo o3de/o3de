@@ -262,6 +262,9 @@ namespace AzToolsFramework
         };
         static HandlerInfo GetInfoFromWidget(const QWidget* widget);
 
+    signals:
+        void ExpanderChangedByUser();
+
     public slots:
         //! set the DOM adapter for this DPE to inspect
         void SetAdapter(AZ::DocumentPropertyEditor::DocumentAdapterPtr theAdapter);
