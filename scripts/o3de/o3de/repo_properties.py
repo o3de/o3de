@@ -293,7 +293,7 @@ def _auto_update_json(object_type: str or list,
             _edit_objects(object_name, validation.valid_o3de_template_json, repo_json, expected_files.get("template.json"))
     return 0
 
-def _dry_run(repo_json: dict,
+def pretty_print(repo_json: dict,
              repo_json_original: dict):
     
     if repo_json_original == repo_json:
@@ -399,7 +399,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         utils.backup_file(repo_path)
 
     if dry_run:
-        return 0 if _dry_run(repo_json, repo_json_original) else 1
+        return 0 if pretty_print(repo_json, repo_json_original) else 1
 
     else:     
         return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1    
