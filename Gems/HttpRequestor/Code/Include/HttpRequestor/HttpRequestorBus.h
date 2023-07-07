@@ -74,6 +74,11 @@ namespace HttpRequestor
             const Headers& headers,
             const AZStd::string& body,
             const TextCallback& callback) = 0;
+
+        //! Receive the round trip time of the last RESTful call made to a HTTP(s) endpoint.
+        //! Call this method from inside the supplied callback to get the round trip time of the original request.
+        //! @return The round trip time in milliseconds.
+        virtual AZStd::chrono::milliseconds GetLastRoundTripTime() const = 0;
     };
 
     using HttpRequestorRequestBus = AZ::EBus<HttpRequestorRequests>;

@@ -11,7 +11,7 @@
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 
-namespace AzToolsFramework
+namespace AZ::DocumentPropertyEditor
 {
     AZ::Outcome<void, AZStd::string> SettingsRegistrar::SaveSettingsToFile(
         AZ::IO::PathView relativeFilepath,
@@ -97,4 +97,4 @@ namespace AzToolsFramework
         }
         return registry->Remove(registryPath);
     }
-} // namespace AzToolsFramework
+} // namespace AZ::DocumentPropertyEditor

@@ -1837,7 +1837,8 @@ namespace AZ
             
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
+                const auto meshes = modelLod.GetMeshes();
+                const RPI::ModelLod::Mesh& mesh = meshes[meshIndex];
 
                 // Determine if there is a custom material specified for this submission
                 const CustomMaterialId customMaterialId(aznumeric_cast<AZ::u64>(modelLodIndex), mesh.m_materialSlotStableId);
@@ -2096,7 +2097,8 @@ namespace AZ
             RayTracingFeatureProcessor::SubMeshVector subMeshes;
             for (uint32_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
-                const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[meshIndex];
+                const auto meshes = modelLod->GetMeshes();
+                const RPI::ModelLod::Mesh& mesh = meshes[meshIndex];
 
                 // retrieve the material
                 const CustomMaterialId customMaterialId(rayTracingLod, mesh.m_materialSlotStableId);

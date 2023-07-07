@@ -8,13 +8,10 @@
 
 #include <Atom/RHI/PhysicalDevice.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    const PhysicalDeviceDescriptor& PhysicalDevice::GetDescriptor() const
     {
-        const PhysicalDeviceDescriptor& PhysicalDevice::GetDescriptor() const
-        {
-            return m_descriptor;
-        }
+        return m_descriptor;
     }
 }

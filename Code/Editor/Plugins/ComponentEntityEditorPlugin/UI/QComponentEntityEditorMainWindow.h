@@ -70,6 +70,8 @@ public:
         return guid;
     }
 
+    void closeEvent(QCloseEvent* ev) override;
+
     AzToolsFramework::EntityPropertyEditor* GetPropertyEditor() { return m_propertyEditor; }
     AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget* GetAssetBrowserInspector() { return m_assetBrowserInspector; }
 

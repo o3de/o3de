@@ -30,7 +30,7 @@ namespace AZ
                 modelAsset);
         }
 
-        
+
         void Model::TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset)
         {
             for (auto& modelLodAsset : modelAsset->GetLodAssets())
@@ -84,7 +84,8 @@ namespace AZ
 
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
             {
-                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset->GetLodAssets()[lodIndex];
+                const auto lodAssets = modelAsset->GetLodAssets();
+                const Data::Asset<ModelLodAsset> lodAsset = lodAssets[lodIndex];
 
                 if (!lodAsset)
                 {
@@ -151,13 +152,13 @@ namespace AZ
         bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_SCOPE(RPI, "Model: LocalRayIntersection");
-            
+
             if (!GetModelAsset())
             {
                 AZ_Assert(false, "Invalid Model - not created from a ModelAsset?");
                 return false;
             }
-            
+
             float start;
             float end;
             const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), GetModelAsset()->GetAabb(), start, end);

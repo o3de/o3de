@@ -146,6 +146,8 @@ set(FILES
     DocumentPropertyEditor/DocumentAdapter.h
     DocumentPropertyEditor/DocumentSchema.cpp
     DocumentPropertyEditor/DocumentSchema.h
+    DocumentPropertyEditor/ExpanderSettings.cpp
+    DocumentPropertyEditor/ExpanderSettings.h
     DocumentPropertyEditor/FilterAdapter.cpp
     DocumentPropertyEditor/FilterAdapter.h
     DocumentPropertyEditor/PropertyEditorNodes.cpp
@@ -172,6 +174,8 @@ set(FILES
     DocumentPropertyEditor/Reflection/LegacyReflectionBridge.h
     DocumentPropertyEditor/Reflection/Visitor.cpp
     DocumentPropertyEditor/Reflection/Visitor.h
+    DocumentPropertyEditor/SettingsRegistrar.cpp
+    DocumentPropertyEditor/SettingsRegistrar.h
     FileFunc/FileFunc.h
     FileFunc/FileFunc.cpp
     Font/FontInterface.h

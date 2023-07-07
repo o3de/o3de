@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
     //! Be sure to update this if you change this file.
     void Reflect(PropertyEditorSystemInterface* system);
 
-    //! PropertyVisibility: Provided for compatability with the RPE, determines whether an entry
+    //! PropertyVisibility: Provided for compatibility with the RPE, determines whether an entry
     //! and/or its children should be visible.
     enum class PropertyVisibility : AZ::u32
     {
@@ -38,6 +38,8 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto Visibility = AttributeDefinition<PropertyVisibility>("Visibility");
         static constexpr auto ReadOnly = AttributeDefinition<bool>("ReadOnly");
         static constexpr auto NameLabelOverride = AttributeDefinition<AZStd::string_view>("NameLabelOverride");
+        static constexpr auto SetTrueLabel = AttributeDefinition<AZStd::string_view>("SetTrueLabel");
+        static constexpr auto SetFalseLabel = AttributeDefinition<AZStd::string_view>("SetFalseLabel");
 
         static constexpr auto Disabled = AttributeDefinition<bool>("Disabled");
         //! In some cases, a node may need to know that it is descended from a disabled ancestor. For example, disabled

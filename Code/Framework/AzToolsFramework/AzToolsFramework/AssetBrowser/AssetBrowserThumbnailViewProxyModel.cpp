@@ -6,7 +6,6 @@
  *
  */
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
@@ -17,7 +16,7 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
-
+#include <AzToolsFramework/Editor/RichTextHighlighter.h>
 
 
 namespace AzToolsFramework
@@ -42,6 +41,17 @@ namespace AzToolsFramework
 
             switch (role)
             {
+            case Qt::DisplayRole:
+                {
+                    QString name = static_cast<const SourceAssetBrowserEntry*>(assetBrowserEntry)->GetName().c_str();
+
+                    if (!m_searchString.empty())
+                    {
+                        // highlight characters in filter
+                        name = AzToolsFramework::RichTextHighlighter::HighlightText(name, m_searchString.c_str());
+                    }
+                    return name;
+                }
             case Qt::DecorationRole:
                 {
                     return AssetBrowserViewUtils::GetThumbnail(assetBrowserEntry);
@@ -114,6 +124,11 @@ namespace AzToolsFramework
                 beginResetModel();
                 endResetModel();
             }
+        }
+
+        void AssetBrowserThumbnailViewProxyModel::SetSearchString(const QString& searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
         }
 
         Qt::DropActions AssetBrowserThumbnailViewProxyModel::supportedDropActions() const

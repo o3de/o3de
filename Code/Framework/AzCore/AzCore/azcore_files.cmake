@@ -341,6 +341,9 @@ set(FILES
     Math/Matrix4x4.cpp
     Math/Matrix4x4.h
     Math/Matrix4x4.inl
+    Math/MatrixMxN.cpp
+    Math/MatrixMxN.h
+    Math/MatrixMxN.inl
     Math/MatrixUtils.h
     Math/MatrixUtils.cpp
     Math/Obb.cpp
@@ -391,6 +394,9 @@ set(FILES
     Math/Vector4.cpp
     Math/Vector4.h
     Math/Vector4.inl
+    Math/VectorN.cpp
+    Math/VectorN.h
+    Math/VectorN.inl
     Math/VectorConversions.h
     Math/VertexContainer.h
     Math/VertexContainer.cpp

@@ -8,9 +8,16 @@
 
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
+#include <AzQtComponents/Components/Widgets/SegmentBar.h>
+#include <QDesktopServices>
+#include <QDir>
+#include <QPushButton>
+#include <QSplitter>
+#include <QUrl>
 
 static constexpr int MinimumPopulatedWidth = 328;
 
@@ -36,30 +43,56 @@ namespace AzToolsFramework
             // Instantiate the populated previewer
             m_populatedLayoutWidget = new QWidget(this);
             auto populatedLayout = new QVBoxLayout(m_populatedLayoutWidget);
+            populatedLayout->setContentsMargins(0, 0, 0, 0);
+
+            // Create the buttons to switch between asset details and scene settings
+            auto buttonLayout = new QHBoxLayout(m_populatedLayoutWidget);
+            buttonLayout->setSpacing(0);
+            m_detailsButton = new QPushButton(m_populatedLayoutWidget);
+            m_detailsButton->setText(QObject::tr("Details"));
+            m_detailsButton->setCheckable(true);
+            m_detailsButton->setFlat(true);
+            m_detailsButton->setStyleSheet(
+                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
+                "border-top-left-radius: 3px; border-bottom-left-radius: 3px; border-top-right-radius: 0px;"
+                "border-bottom-right-radius: 0px; font-size: 12px; height: 28px;}"
+                "QPushButton:checked {background-color: #1E70EB;}"
+                "QPushButton:hover:!checked {background-color: #444444;}"
+                "QPushButton:pressed:!checked: {background-color: #444444;}");
+            m_sceneSettingsButton = new QPushButton(m_populatedLayoutWidget);
+            m_sceneSettingsButton->setText("Scene Settings");
+            m_sceneSettingsButton->setCheckable(true);
+            m_sceneSettingsButton->setFlat(true);
+            m_sceneSettingsButton->setStyleSheet(
+                "QPushButton {background-color: #333333; border-color #222222; border-style: solid; border-width: 1px;"
+                "border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-top-right-radius: 3px;"
+                "border-bottom-right-radius: 0px; margin-left: -1px; font-size: 12px; height: 28px;}"
+                "QPushButton:checked {background-color: #1E70EB;}"
+                "QPushButton:hover:!checked {background-color: #444444;}"
+                "QPushButton:pressed:!checked: {background-color: #444444;}");
+            buttonLayout->addWidget(m_detailsButton);
+            buttonLayout->addWidget(m_sceneSettingsButton);
 
             // Create the layout for the asset icon preview
-            auto iconLayout = new QVBoxLayout(m_populatedLayoutWidget);
-            iconLayout->setSizeConstraint(QLayout::SetFixedSize);
-            m_previewImage = new QLabel(m_populatedLayoutWidget);
-            m_previewImage->setStyleSheet("QLabel{background-color: #222222; }");
+            m_previewImage = new AzQtComponents::ExtendedLabel(m_populatedLayoutWidget);
+            m_previewImage->setStyleSheet("QLabel {background-color: #333333;}");
             m_previewImage->setAlignment(Qt::AlignCenter);
             m_previewImage->setWordWrap(true);
-            iconLayout->addWidget(m_previewImage, Qt::AlignCenter);
 
             // Create the layout for the asset details card
             auto cardLayout = new QVBoxLayout(m_populatedLayoutWidget);
-            auto assetDetails = new AzQtComponents::Card();
-            assetDetails->setTitle("Asset Details");
-            assetDetails->header()->setHasContextMenu(false);
-            assetDetails->hideFrame();
-            cardLayout->addWidget(assetDetails);
+            m_detailsCard = new AzQtComponents::Card();
+            m_detailsCard->setTitle(QObject::tr("Asset Details"));
+            m_detailsCard->header()->setHasContextMenu(false);
+            m_detailsCard->hideFrame();
+            cardLayout->addWidget(m_detailsCard);
 
             // Create a two column layout for the data inside of the asset details card
-            m_assetDetailWidget = new QWidget(assetDetails);
+            m_assetDetailWidget = new QWidget(m_detailsCard);
             m_assetDetailLayout = new QFormLayout(m_assetDetailWidget);
             m_assetDetailLayout->setLabelAlignment(Qt::AlignRight);
             m_assetDetailWidget->setLayout(m_assetDetailLayout);
-            assetDetails->setContentWidget(m_assetDetailWidget);
+            m_detailsCard->setContentWidget(m_assetDetailWidget);
 
             // Create the layout for the dependent assets card
             m_dependentAssetsCard = new AzQtComponents::Card();
@@ -80,13 +113,53 @@ namespace AzToolsFramework
             m_dependentProducts->setMinimumHeight(0);
             m_dependentAssetsCard->setContentWidget(m_dependentProducts);
 
-            // Add the image preview and the card layouts to a single layout, spacing them appropriately
-            populatedLayout->addLayout(iconLayout, 3);
-            populatedLayout->addLayout(cardLayout, 7);
+            // If opening the Scene Settings is successful, enable switching between the asset details and scene settings
+            m_settingsSwitcher = new QStackedWidget(m_populatedLayoutWidget);
+            m_detailsWidget = new QWidget(m_settingsSwitcher);
+            m_detailsWidget->setLayout(cardLayout);
+            m_settingsSwitcher->addWidget(m_detailsWidget);
+            AssetBrowserPreviewRequestBus::BroadcastResult(m_sceneSettings, &AssetBrowserPreviewRequest::GetSceneSettings);
+            if (m_sceneSettings)
+            {
+                m_settingsSwitcher->addWidget(m_sceneSettings);
+                connect(
+                    m_detailsButton,
+                    &QPushButton::clicked,
+                    this,
+                    [this]
+                    {
+                        m_settingsSwitcher->setCurrentIndex(0);
+                        m_detailsButton->setChecked(true);
+                        m_sceneSettingsButton->setChecked(false);
+                    });
+
+                connect(
+                    m_sceneSettingsButton,
+                    &QPushButton::clicked,
+                    this,
+                    [this]
+                    {
+                        m_settingsSwitcher->setCurrentIndex(1);
+                        m_sceneSettingsButton->setChecked(true);
+                        m_detailsButton->setChecked(false);
+                    });
+            }
+
+            // Create the QSplitter to resize the image preview and the details/settings
+            QSplitter* splitter = new QSplitter(m_populatedLayoutWidget);
+            splitter->setHandleWidth(2);
+            splitter->setOrientation(Qt::Vertical);
+            splitter->addWidget(m_previewImage);
+            splitter->addWidget(m_settingsSwitcher);
+
+            // Add the buttons to switch settings, and the QSplitter to the main layout
+            populatedLayout->addLayout(buttonLayout);
+            populatedLayout->addWidget(splitter);
             m_populatedLayoutWidget->setLayout(populatedLayout);
 
             // Add the widgets containing both empty and populated layouts to a stacked widget
             m_layoutSwitcher = new QStackedLayout(this);
+            m_layoutSwitcher->setContentsMargins(0, 0, 0, 0);
             m_layoutSwitcher->addWidget(m_populatedLayoutWidget);
             m_layoutSwitcher->addWidget(m_emptyLayoutWidget);
             setLayout(m_layoutSwitcher);
@@ -149,6 +222,20 @@ namespace AzToolsFramework
                 setMinimumWidth(MinimumPopulatedWidth);
             }
 
+            if (m_settingsSwitcher->currentWidget() != m_detailsWidget)
+            {
+                m_settingsSwitcher->setCurrentWidget(m_detailsWidget);
+            }
+
+            m_previewImage->show();
+            m_detailsButton->setChecked(true);
+            m_sceneSettingsButton->setChecked(false);
+            if (selectedEntry == m_currentEntry)
+            {
+                return;
+            }
+            m_currentEntry = selectedEntry;
+
             int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
             while (assetDetailIndex >= 0)
             {
@@ -156,13 +243,16 @@ namespace AzToolsFramework
                 assetDetailIndex--;
             }
             m_dependentProducts->clear();
+            m_detailsCard->setExpanded(true);
+            m_detailsButton->hide();
+            m_sceneSettingsButton->hide();
 
             const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(selectedEntry);
             QPixmap pixmap = qVariant.value<QPixmap>();
             {
                 if (!pixmap.isNull())
                 {
-                    m_previewImage->setPixmap(pixmap);
+                    m_previewImage->setPixmapKeepAspectRatio(pixmap);
                 }
                 else
                 {
@@ -170,83 +260,57 @@ namespace AzToolsFramework
                 }
             }
 
-            const QString name = selectedEntry->GetDisplayName();
+            QString name = selectedEntry->GetDisplayName();
             if (!name.isEmpty())
             {
+                const auto extensionIndex = name.lastIndexOf(QLatin1Char{ '.' });
+                if (extensionIndex != -1)
+                {
+                    name = name.left(extensionIndex);
+                }
                 const auto nameLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
                 nameLabel->setText(name);
-                m_assetDetailLayout->addRow(QObject::tr("Name:"), nameLabel);
+                m_assetDetailLayout->addRow(QObject::tr("<b>Name:</b>"), nameLabel);
             }
 
-            const auto fullPath = selectedEntry->GetFullPath();
-            const auto location = QString::fromUtf8(fullPath.c_str(), static_cast<int>(fullPath.size()));
-            if (!location.isEmpty())
+            const AZ::IO::Path fullPath = selectedEntry->GetFullPath();
+            if (!fullPath.empty())
             {
+                const QString location = AZ::IO::Path(fullPath.ParentPath()).c_str();
+                QString nativePath(QString("%1%2").arg(QDir::toNativeSeparators(location)).arg(QDir::separator()));
                 const auto locationLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
-                locationLabel->setText(location);
-                m_assetDetailLayout->addRow(QObject::tr("Location:"), locationLabel);
+                locationLabel->setText(nativePath);
+
+                QIcon explorerIcon;
+                explorerIcon.addFile(":/SceneUI/Manifest/show_in_explorer.svg", QSize(18,18), QIcon::Normal, QIcon::Off);
+                auto openExplorer = new QPushButton(m_assetDetailWidget);
+                openExplorer->setMaximumSize(20, 20);
+                openExplorer->setIcon(explorerIcon);
+                openExplorer->setFlat(true);
+
+                connect(
+                    openExplorer,
+                    &QPushButton::clicked,
+                    this,
+                    [nativePath]()
+                    {
+                        QDesktopServices::openUrl(QUrl::fromLocalFile(nativePath));
+                    });
+
+                auto clickableURL = new QHBoxLayout();
+                clickableURL->addWidget(openExplorer);
+                clickableURL->addWidget(locationLabel);
+
+                m_assetDetailLayout->addRow(QObject::tr("<b>Location:</b>"), clickableURL);
             }
 
-            QString fileType;
-            QString assetEntryType;
             if (const SourceAssetBrowserEntry* sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(selectedEntry))
             {
-                const auto extension = sourceEntry->GetExtension();
-                fileType = QString::fromUtf8(extension.c_str(), static_cast<int>(extension.size()));
-                if (fileType.startsWith(QLatin1Char{ '.' }))
-                {
-                    fileType.remove(0, 1);
-                }
-                assetEntryType = QObject::tr("Source");
-
-                AZStd::vector<const ProductAssetBrowserEntry*> productChildren;
-                sourceEntry->GetChildren(productChildren);
-                if (!productChildren.empty())
-                {
-                    m_dependentAssetsCard->show();
-                    PopulateSourceDependencies(sourceEntry, productChildren);
-                    const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
-                    headerItem->setText(0, QObject::tr("Product Assets"));
-                    headerItem->setFont(0, m_headerFont);
-                    headerItem->setExpanded(true);
-                    for (const auto productChild : productChildren)
-                    {
-                        const auto assetEntry = azrtti_cast<const AssetBrowserEntry*>(productChild);
-                        AddAssetBrowserEntryToTree(assetEntry, headerItem);
-                    }
-                }
-                else
-                {
-                    m_dependentAssetsCard->hide();
-                }
+                HandleSourceAsset(selectedEntry, sourceEntry);
             }
             else if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(selectedEntry))
             {
-                AZ::AssetTypeInfoBus::EventResult(fileType, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
-                assetEntryType = QObject::tr("Product");
-
-                if (PopulateProductDependencies(productEntry))
-                {
-                    m_dependentAssetsCard->show();
-                }
-                else
-                {
-                    m_dependentAssetsCard->hide();
-                }
-            }
-
-            if (!fileType.isEmpty())
-            {
-                const auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
-                fileTypeLabel->setText(fileType);
-                m_assetDetailLayout->addRow(QObject::tr("File Type:"), fileTypeLabel);
-            }
-
-            if (!assetEntryType.isEmpty())
-            {
-                const auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
-                assetTypeLabel->setText(assetEntryType);
-                m_assetDetailLayout->addRow(QObject::tr("Asset Type:"), assetTypeLabel);
+                HandleProductAsset(productEntry);
             }
 
             const float diskSize = static_cast<float>(selectedEntry->GetDiskSize());
@@ -254,7 +318,7 @@ namespace AzToolsFramework
             {
                 const auto diskSizeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
                 diskSizeLabel->setText(QString::number(diskSize / 1000));
-                m_assetDetailLayout->addRow(QObject::tr("Disk Size (KB):"), diskSizeLabel);
+                m_assetDetailLayout->addRow(QObject::tr("<b>Disk Size (KB):</b>"), diskSizeLabel);
             }
 
             const AZ::Vector3 dimension = selectedEntry->GetDimension();
@@ -264,7 +328,7 @@ namespace AzToolsFramework
                     QObject::tr(" x ") + QString::number(dimension.GetZ());
                 const auto dimensionLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
                 dimensionLabel->setText(dimensionString);
-                m_assetDetailLayout->addRow(QObject::tr("Dimensions:"), dimensionLabel);
+                m_assetDetailLayout->addRow(QObject::tr("<b>Dimensions:</b>"), dimensionLabel);
             }
 
             const auto vertices = selectedEntry->GetNumVertices();
@@ -272,7 +336,93 @@ namespace AzToolsFramework
             {
                 const auto verticesLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
                 verticesLabel->setText(QString::number(vertices));
-                m_assetDetailLayout->addRow(QObject::tr("Vertices:"), verticesLabel);
+                m_assetDetailLayout->addRow(QObject::tr("<b>Vertices:</b>"), verticesLabel);
+            }
+        }
+
+        void AssetBrowserEntityInspectorWidget::HandleSourceAsset(const AssetBrowserEntry* selectedEntry, const SourceAssetBrowserEntry* sourceEntry)
+        {
+            const auto extension = sourceEntry->GetExtension();
+            auto fileType = QString::fromUtf8(extension.c_str(), static_cast<int>(extension.size()));
+            if (!fileType.isEmpty())
+            {
+                if (fileType.startsWith(QLatin1Char{ '.' }))
+                {
+                    fileType.remove(0, 1);
+                }
+                const auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                fileTypeLabel->setText(fileType);
+                m_assetDetailLayout->addRow(QObject::tr("<b>File Type:</b>"), fileTypeLabel);
+            }
+
+            const auto assetEntryType = QObject::tr("Source");
+            const auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+            assetTypeLabel->setText(assetEntryType);
+            m_assetDetailLayout->addRow(QObject::tr("<b>Asset Type:</b>"), assetTypeLabel);
+
+            AZStd::vector<const ProductAssetBrowserEntry*> productChildren;
+            sourceEntry->GetChildren(productChildren);
+            if (!productChildren.empty())
+            {
+                m_dependentAssetsCard->show();
+                m_dependentAssetsCard->setExpanded(true);
+                PopulateSourceDependencies(sourceEntry, productChildren);
+                const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
+                headerItem->setText(0, QObject::tr("Product Assets"));
+                headerItem->setFont(0, m_headerFont);
+                headerItem->setExpanded(true);
+                for (const auto productChild : productChildren)
+                {
+                    const auto assetEntry = azrtti_cast<const AssetBrowserEntry*>(productChild);
+                    AddAssetBrowserEntryToTree(assetEntry, headerItem);
+                }
+            }
+            else
+            {
+                m_dependentAssetsCard->hide();
+            }
+
+            if (m_sceneSettings)
+            {
+                bool validSceneSettings = false;
+                AssetBrowserPreviewRequestBus::BroadcastResult(
+                    validSceneSettings, &AssetBrowserPreviewRequest::PreviewSceneSettings, selectedEntry);
+                if (validSceneSettings)
+                {
+                    QString defaultSettings = fileType.isEmpty() ? "Scene" : fileType;
+                    m_sceneSettingsButton->setText(QObject::tr("%1 Settings").arg(fileType.toUpper()));
+                    m_detailsButton->show();
+                    m_detailsButton->setChecked(true);
+                    m_sceneSettingsButton->show();
+                    m_sceneSettingsButton->setChecked(false);
+                }
+            }
+        }
+
+        void AssetBrowserEntityInspectorWidget::HandleProductAsset(const ProductAssetBrowserEntry* productEntry)
+        {
+            QString fileType;
+            AZ::AssetTypeInfoBus::EventResult(fileType, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
+            if (!fileType.isEmpty())
+            {
+                const auto fileTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+                fileTypeLabel->setText(fileType);
+                m_assetDetailLayout->addRow(QObject::tr("<b>File Type:</b>"), fileTypeLabel);
+            }
+
+            const auto assetEntryType = QObject::tr("Product");
+            const auto assetTypeLabel = new AzQtComponents::ElidingLabel(m_assetDetailWidget);
+            assetTypeLabel->setText(assetEntryType);
+            m_assetDetailLayout->addRow(QObject::tr("<b>Asset Type:</b>"), assetTypeLabel);
+
+            if (PopulateProductDependencies(productEntry))
+            {
+                m_dependentAssetsCard->show();
+                m_dependentAssetsCard->setExpanded(true);
+            }
+            else
+            {
+                m_dependentAssetsCard->hide();
             }
         }
 
@@ -281,14 +431,7 @@ namespace AzToolsFramework
             if (m_layoutSwitcher->currentWidget() != m_emptyLayoutWidget)
             {
                 setMinimumWidth(0);
-                m_previewImage->clear();
-                m_dependentProducts->clear();
-                int assetDetailIndex = m_assetDetailLayout->rowCount() - 1;
-                while (assetDetailIndex >= 0)
-                {
-                    m_assetDetailLayout->removeRow(assetDetailIndex);
-                    assetDetailIndex--;
-                }
+                m_previewImage->hide();
                 m_populatedLayoutWidget->setMinimumWidth(m_previewImage->minimumSizeHint().width());
                 m_layoutSwitcher->setCurrentWidget(m_emptyLayoutWidget);
             }
@@ -396,18 +539,16 @@ namespace AzToolsFramework
             {
                 const auto headerItem = new QTreeWidgetItem(m_dependentProducts);
                 headerItem->setFont(0, m_headerFont);
-                headerItem->setExpanded(true);
+                headerItem->setExpanded(false);
                 if (isOutgoing)
                 {
                     headerItem->setText(0, QObject::tr("Outgoing Source Dependencies"));
-                    headerItem->setToolTip(
-                        0, QObject::tr("Lists all source assets that this asset depends on"));
+                    headerItem->setToolTip(0, QObject::tr("Lists all source assets that this asset depends on"));
                 }
                 else
                 {
                     headerItem->setText(0, QObject::tr("Incoming Source Dependencies"));
-                    headerItem->setToolTip(
-                        0, QObject::tr("Lists all source assets that depend on this asset"));
+                    headerItem->setToolTip(0, QObject::tr("Lists all source assets that depend on this asset"));
                 }
                 for (AZ::Uuid sourceUuid : sourceUuids)
                 {
@@ -427,8 +568,7 @@ namespace AzToolsFramework
                 if (isOutgoing)
                 {
                     headerItem->setText(0, QObject::tr("Outgoing Product Dependencies"));
-                    headerItem->setToolTip(
-                        0, QObject::tr("Lists all product assets that this product depends on"));
+                    headerItem->setToolTip(0, QObject::tr("Lists all product assets that this product depends on"));
                 }
                 else
                 {
@@ -461,6 +601,17 @@ namespace AzToolsFramework
                     item->setIcon(0, icon);
                 }
             }
+        }
+
+        bool AssetBrowserEntityInspectorWidget::HasUnsavedChanges()
+        {
+            if (m_sceneSettings)
+            {
+                bool hasUnsavedChanges = false;
+                AssetBrowserPreviewRequestBus::BroadcastResult(hasUnsavedChanges, &AssetBrowserPreviewRequest::SaveBeforeClosing);
+                return hasUnsavedChanges;
+            }
+            return false;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

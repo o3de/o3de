@@ -93,6 +93,7 @@ namespace AZ
             void SetAffectsGI(bool affectsGI) override;
             float GetAffectsGIFactor() const override;
             void SetAffectsGIFactor(float affectsGIFactor) override;
+            void BindConfigurationChangedEventHandler(DirectionalLightConfigurationChangedEvent::Handler& configurationChangedHandler) override;
 
         private:
             friend class EditorDirectionalLightComponent;
@@ -131,6 +132,9 @@ namespace AZ
 
             DirectionalLightFeatureProcessorInterface* m_featureProcessor = nullptr;
             DirectionalLightFeatureProcessorInterface::LightHandle m_lightHandle;
+
+            //! Event used to signal when at least one of the properties changes.
+            DirectionalLightConfigurationChangedEvent m_configurationChangedEvent;
         };
 
     } // namespace Render

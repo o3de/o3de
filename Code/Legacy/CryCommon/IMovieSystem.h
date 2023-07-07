@@ -120,10 +120,10 @@ public:
 
     // Convert to enum. This needs to be explicit,
     // otherwise operator== will be ambiguous
-    AnimParamType GetType() const;
+    constexpr AnimParamType GetType() const { return m_type; }
 
     // Get name
-    const char* GetName() const;
+    const char* GetName() const { return m_name.c_str(); }
 
     bool operator ==(const CAnimParamType& animParamType) const;
 
@@ -131,7 +131,7 @@ public:
 
     bool operator <(const CAnimParamType& animParamType) const;
 
-    constexpr operator size_t() const
+    operator size_t() const
     {
         AZStd::hash<AnimParamType> paramTypeHasher;
         size_t retVal = paramTypeHasher(GetType());
