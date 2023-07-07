@@ -66,6 +66,7 @@
 						<xs:attribute name="Description" type="xs:string" use="required" />
 						<xs:attribute name="Base" type="xs:string" use="optional" />
 						<xs:attribute name="Style" type="xs:string" use="optional" />
+						<xs:attribute name="Preset" type="xs:string" use="optional" />
 					</xs:complexType>
 				</xs:element>
 			</xs:sequence>
