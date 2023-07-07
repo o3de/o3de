@@ -293,6 +293,44 @@ def _auto_update_json(object_type: str or list,
             _edit_objects(object_name, validation.valid_o3de_template_json, repo_json, expected_files.get("template.json"))
     return 0
 
+def _dry_run(repo_json: dict,
+             repo_json_original: dict):
+    
+    if repo_json_original == repo_json:
+            logger.warning('No difference is found between your current repo.json file and your dry run')
+            return 0
+        
+    pretty_print_string = []
+    pretty_print_string.append('Dry Run:')
+    for key in repo_json:
+        # get the field that changed
+        if repo_json_original[key] != repo_json[key]:
+            object_key = key.replace('s_data', '')
+            object_original = {object[f'{object_key}_name'] for object in repo_json_original.get(key, [])}
+            object_dry_run = {object[f'{object_key}_name'] for object in repo_json.get(key, [])}
+            # check for new objects
+            objects_added = object_dry_run - object_original
+            pretty_print_string.append(f"{object_key.capitalize()}s Added: {len(objects_added)}")
+            for i, object_name in enumerate(objects_added, start=1):
+                pretty_print_string.append(f"  {i}. {object_name}")
+
+            # when object name is the same check if there exist a version_data field in the dry-run update
+            modified_objects = [
+                dry_run_repo[f'{object_key}_name']
+                for dry_run_repo in repo_json.get(key, [])
+                for original_repo in repo_json_original.get(key, [])
+                if dry_run_repo[f'{object_key}_name'] == original_repo[f'{object_key}_name']
+                and any(field not in original_repo for field in dry_run_repo)
+            ]    
+            if modified_objects:
+                pretty_print_string.append(f'{object_key.capitalize()}s Modified: {len(modified_objects)}')
+                for i, object_name in enumerate(modified_objects, start=1):
+                    pretty_print_string.append(f"  {i}. {object_name}")
+            else:
+                pretty_print_string.append(f'{object_key.capitalize()}s Modified: {len(modified_objects)}')
+    logger.warning('\n'.join(pretty_print_string))
+    return 1
+
 def edit_repo_props(repo_path: pathlib.Path = None,
                        repo_name: str = None,
                        add_gems: pathlib.Path or list = None,
@@ -305,6 +343,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        delete_templates: str or list = None,
                        replace_templates: pathlib.Path or list = None,
                        auto_update: str or list = None,
+                       dry_run: bool = None,
                        release_archive_path: pathlib.Path = None,
                        force: bool = None,
                        download_prefix: str = None
@@ -356,14 +395,16 @@ def edit_repo_props(repo_path: pathlib.Path = None,
     if add_templates or delete_templates or replace_templates:
         _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix)
 
-    if repo_json_original != repo_json:
+    if repo_json_original != repo_json and not dry_run:
         utils.backup_file(repo_path)
 
-    return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1
+    if dry_run:
+        return 0 if _dry_run(repo_json, repo_json_original) else 1
 
+    else:     
+        return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1    
 
 def _edit_repo_props(args: argparse) -> int:
-
     return edit_repo_props(repo_path=args.repo_path,
                               repo_name=args.repo_name,
 
@@ -380,6 +421,7 @@ def _edit_repo_props(args: argparse) -> int:
                               replace_templates=args.replace_templates,
                               
                               auto_update=args.auto_update,
+                              dry_run=args.dry_run,
                               release_archive_path=args.release_archive_path,
                               force=args.force,
                               download_prefix=args.download_prefix
@@ -398,7 +440,9 @@ def add_parser_args(parser):
                        ' to your repo.json fields.'
                        ' Pass in lower case object type as args that should look like this: gem/ project/ template'
                        ' Note: This does not update the deleted gems/projects/templates, please use'
-                        '--delete-gems if you want to delete data from repo.json file')
+                        '--delete-gems if you want to delete data from repo.json file.')
+    group.add_argument('--dry-run', '-dr', action='store_true', default=False,
+                            help='Prints the anticipated changes to your repo.json file without actually writing to repo.json file.')
     
     group.add_argument('--add-gems', '-ag', type=pathlib.Path, nargs='*', required=False,
                        help="Adds gem(s) to the 'gems_data' property. Space delimited list (ex. -ag c:/gem1 c:/gem2)")
@@ -406,7 +450,7 @@ def add_parser_args(parser):
                        help='Removes gems(s) from the gems_data property by gem name with optional version specifier.'
                        'Space delimited list (ex. -dg gemA==1.0.0 gemB gemC>2.0.0')
     group.add_argument('--replace-gems', '-rg', type=pathlib.Path, nargs='*', required=False,
-                       help='Replace entirety of gems_data property with the provided gems')
+                       help='Replace entirety of gems_data property with the provided gems.')
 
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('--add-templates', '-at', type=pathlib.Path, nargs='*', required=False,
@@ -415,23 +459,23 @@ def add_parser_args(parser):
                        help='Removes templates(s) from the templates_data property by template name with optional version specifier.'
                         ' Space delimited list (ex. -dt templateA templateB==1.0.0 templateC>1.0.0')
     group.add_argument('--replace-templates', '-rt', type=pathlib.Path, nargs='*', required=False,
-                       help='Replace entirety of templates_data property with the provided templates')
+                       help='Replace entirety of templates_data property with the provided templates.')
 
     group = parser.add_mutually_exclusive_group(required=False)
     group.add_argument('--add-projects', '-apr', type=pathlib.Path, nargs='*', required=False,
                        help="Adds projects(s) to the 'projects_data' property. Space delimited list (ex. -at c:/project1 c:/project2)") 
     group.add_argument('--delete-projects', '-dpr', type=str, nargs='*', required=False,
-                       help='Removes projects(s) from the projects_data property by project name with optional version specifier'
+                       help='Removes projects(s) from the projects_data property by project name with optional version specifier.'
                        'Space delimited list (ex. -dpr projectA==1.0.0 projectB projectC>2.0.0')
     group.add_argument('--replace-projects', '-rpr', type=pathlib.Path, nargs='*', required=False,
-                       help='Replace entirety of projects_data property with the provided projects')
+                       help='Replace entirety of projects_data property with the provided projects.')
 
     modify_gems_group = parser.add_argument_group(title='modify gems',
                                                   description='path arguments to use with the --add-gems or --replace-gems option')
     modify_gems_group.add_argument('--release-archive-path','-rap',  type=pathlib.Path, required=False,
                             help='Create a release archive at the specified local path and update the download_source_uri and sha256 fields.')
     modify_gems_group.add_argument('--force', '-f', action='store_true', default=False,
-                            help='Overwrites the release-archive zip file if there is already an existing zip with the same name')
+                            help='Overwrites the release-archive zip file if there is already an existing zip with the same name.')
     modify_gems_group.add_argument('--download-prefix','-dp',  type=str, required=False,
                             help='a URL prefix for a file attached to a GitHub release might look like this:'
                             '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
