@@ -76,61 +76,73 @@ namespace AzToolsFramework
             return widget;
         }
 
+        void EntryDelegate::paintAssetBrowserEntry(QPainter* painter, int column, const AssetBrowserEntry* entry, const QStyleOptionViewItem& option) const
+        {
+            // Draw main entry thumbnail.
+            QRect remainingRect(option.rect);
+            remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
+
+            QSize iconSize(m_iconSize, m_iconSize);
+            // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
+            // so it needs to center vertically with padding in that case:
+            QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
+
+            QStyleOptionViewItem actualOption = option;
+
+            auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
+            if (column == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
+            {
+                int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
+                if (sourceEntry)
+                {
+                    if (m_showSourceControl)
+                    {
+                        DrawThumbnail(painter, iconTopLeft, iconSize, entry);
+                    }
+                    // sources with no children should be greyed out.
+                    if (sourceEntry->GetChildCount() == 0)
+                    {
+                        actualOption.state &= QStyle::State_Enabled;
+                    }
+                }
+
+                remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
+                remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
+            }
+            // for display use the display name when the name column is aksed for, otherwise use the path.
+            QString displayString = column == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
+                : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
+
+            if (!m_searchString.empty())
+            {
+                displayString = AzToolsFramework::RichTextHighlighter::HighlightText(displayString, m_searchString.c_str());
+            }
+
+            RichTextHighlighter::PaintHighlightedRichText(displayString, painter, actualOption, remainingRect);
+        }
+
         void EntryDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
         {
             auto data = index.data(AssetBrowserModel::Roles::EntryRole);
             if (data.canConvert<const AssetBrowserEntry*>())
             {
-                bool isEnabled = (option.state & QStyle::State_Enabled) != 0;
-                bool isSelected = (option.state & QStyle::State_Selected) != 0;
-
                 QStyle* style = option.widget ? option.widget->style() : QApplication::style();
 
                 // draw the background
-                style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+                if (!index.parent().isValid() && !(option.state & QStyle::State_MouseOver) && !(option.state & QStyle::State_Selected))
+                {
+                    painter->fillRect(option.rect, 0x333333);
+                }
+                else
+                {
+                    style->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+                }
 
                 auto entry = qvariant_cast<const AssetBrowserEntry*>(data);
 
-                // Draw main entry thumbnail.
-                QRect remainingRect(option.rect);
-                remainingRect.adjust(EntryIconMarginLeftPixels, 0, 0, 0); // bump it rightwards to give some margin to the icon.
 
-                QSize iconSize(m_iconSize, m_iconSize);
-                // Note that the thumbnail might actually be smaller than the row if theres a lot of padding or font size
-                // so it needs to center vertically with padding in that case:
-                QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
-
-                auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-                QPalette actualPalette(option.palette);
-                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
-                {
-                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
-                    if (sourceEntry)
-                    {
-                        if (m_showSourceControl)
-                        {
-                            DrawThumbnail(painter, iconTopLeft, iconSize, entry);
-                        }
-                        // sources with no children should be greyed out.
-                        if (sourceEntry->GetChildCount() == 0)
-                        {
-                            isEnabled = false; // draw in disabled style.
-                            actualPalette.setCurrentColorGroup(QPalette::Disabled);
-                        }
-                    }
-
-                    remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
-                    remainingRect.adjust(EntrySpacingLeftPixels, 0, 0, 0); // bump it to the right by the spacing.
-                }
-                // for display use the display name when the name column is aksed for, otherwise use the path.
-                QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
-                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)))
-                    : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
-
-                style->drawItemText(
-                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
-                    displayString,
-                    isSelected ? QPalette::HighlightedText : QPalette::Text);
+                paintAssetBrowserEntry(painter, index.column(), entry, option);
             }
         }
 
@@ -139,11 +151,16 @@ namespace AzToolsFramework
             m_showSourceControl = showSourceControl;
         }
 
+        void EntryDelegate::SetShowFavoriteIcons(bool showFavoriteIcons)
+        {
+            m_showFavoriteIcons = showFavoriteIcons;
+        }
+
         int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, const AssetBrowserEntry* entry) const
         {
             if (!m_showSourceControl)
             {
-                const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(entry);
+                const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(entry, false, m_showFavoriteIcons);
                 if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
                 {
                     QIcon icon;
@@ -195,6 +212,11 @@ namespace AzToolsFramework
                 }
             }
             return m_iconSize;
+        }
+
+        void EntryDelegate::SetSearchString(QString searchString)
+        {
+            m_searchString = searchString.toUtf8().data();
         }
 
         SearchEntryDelegate::SearchEntryDelegate(QWidget* parent)

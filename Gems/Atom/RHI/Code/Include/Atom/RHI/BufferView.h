@@ -10,60 +10,57 @@
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI/ResourceView.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class Buffer;
+
+    //! BufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
+    //! It associates 1-to-1 with a BufferViewDescriptor.
+    class BufferView
+        : public ResourceView
     {
-        class Buffer;
+    public:
+        AZ_RTTI(BufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", ResourceView);
+        virtual ~BufferView() = default;
 
-        //! BufferView is contains a platform-specific descriptor mapping to a linear sub-region of a specific buffer resource.
-        //! It associates 1-to-1 with a BufferViewDescriptor.
-        class BufferView
-            : public ResourceView
+        static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+
+        //! Initializes the buffer view with the provided buffer and view descriptor.
+        ResultCode Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor);
+
+        //! Returns the view descriptor used at initialization time.
+        const BufferViewDescriptor& GetDescriptor() const;
+
+        //! Returns the buffer associated with this view.
+        const Buffer& GetBuffer() const;
+
+        //! Returns whether the view maps to the full buffer.
+        bool IsFullView() const override final;
+
+        //! Tells the renderer to ignore any validation related to this buffer's state and scope attachments.
+        //! Assumes that the programmer is manually managing the Read/Write state of the buffer correctly.
+        bool IgnoreFrameAttachmentValidation() const { return m_descriptor.m_ignoreFrameAttachmentValidation; }
+
+        //! Returns the hash of the view.
+        HashValue64 GetHash() const;
+
+        virtual uint32_t GetBindlessReadIndex() const
         {
-        public:
-            AZ_RTTI(BufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", ResourceView);
-            virtual ~BufferView() = default;
+            return InvalidBindlessIndex;
+        }
 
-            static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+        virtual uint32_t GetBindlessReadWriteIndex() const
+        {
+            return InvalidBindlessIndex;
+        }
 
-            //! Initializes the buffer view with the provided buffer and view descriptor.
-            ResultCode Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor);
+    protected:
+        HashValue64 m_hash = HashValue64{ 0 };
 
-            //! Returns the view descriptor used at initialization time.
-            const BufferViewDescriptor& GetDescriptor() const;
+    private:
+        bool ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const;
 
-            //! Returns the buffer associated with this view.
-            const Buffer& GetBuffer() const;
-
-            //! Returns whether the view maps to the full buffer.
-            bool IsFullView() const override final;
-
-            //! Tells the renderer to ignore any validation related to this buffer's state and scope attachments.
-            //! Assumes that the programmer is manually managing the Read/Write state of the buffer correctly.
-            bool IgnoreFrameAttachmentValidation() const { return m_descriptor.m_ignoreFrameAttachmentValidation; }
-
-            //! Returns the hash of the view.
-            HashValue64 GetHash() const;
-
-            virtual uint32_t GetBindlessReadIndex() const
-            {
-                return InvalidBindlessIndex;
-            }
-
-            virtual uint32_t GetBindlessReadWriteIndex() const
-            {
-                return InvalidBindlessIndex;
-            }
-
-        protected:
-            HashValue64 m_hash = HashValue64{ 0 };
-
-        private:
-            bool ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const;
-
-            /// The RHI descriptor for this view.
-            BufferViewDescriptor m_descriptor;
-        };
-    }
+        /// The RHI descriptor for this view.
+        BufferViewDescriptor m_descriptor;
+    };
 }

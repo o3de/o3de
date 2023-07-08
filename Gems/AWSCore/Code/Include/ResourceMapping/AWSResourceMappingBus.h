@@ -37,6 +37,13 @@ namespace AWSCore
         //! @return Default region in string
         virtual AZStd::string GetDefaultRegion() const = 0;
 
+        //! HasResource
+        //! Check if an AWS resource is defined
+        //! @param resourceKeyName Resource mapping key name is used to identify individual
+        //!        resource attributes
+        //! @return True if the resource exists; otherwise false.
+        virtual bool HasResource(const AZStd::string& resourceKeyName) const = 0;
+
         //! GetResourceAccountId
         //! Get individual resource account id by using its mapping key name.
         //! If resource account id is not present in resource attributes, will use

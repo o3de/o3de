@@ -74,7 +74,7 @@ namespace AzToolsFramework
             QScopedPointer<Ui::AssetPickerDialogClass> m_ui;
             AssetBrowserModel* m_assetBrowserModel = nullptr;
             QScopedPointer<AssetBrowserFilterModel> m_filterModel;
-            QScopedPointer<AssetBrowserListModel> m_tableModel;
+            QScopedPointer<AssetBrowserListModel> m_listModel;
             AssetSelectionModel& m_selection;
             bool m_hasFilter;
             AZStd::unique_ptr<TreeViewState> m_filterStateSaver;

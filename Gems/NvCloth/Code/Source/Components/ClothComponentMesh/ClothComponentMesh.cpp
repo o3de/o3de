@@ -503,7 +503,8 @@ namespace NvCloth
             return;
         }
 
-        const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& modelLodAsset = modelAsset->GetLodAssets()[m_meshNodeInfo.m_lodLevel];
+        const auto modelLodAssets = modelAsset->GetLodAssets();
+        const AZ::Data::Asset<AZ::RPI::ModelLodAsset> modelLodAsset = modelLodAssets[m_meshNodeInfo.m_lodLevel];
         if (!modelLodAsset.GetId().IsValid())
         {
             AZ_Error("ClothComponentMesh", false,
@@ -531,7 +532,9 @@ namespace NvCloth
                     modelLodAsset->GetMeshes().size());
                 continue;
             }
-            const AZ::RPI::ModelLodAsset::Mesh& subMesh = modelLodAsset->GetMeshes()[subMeshInfo.m_primitiveIndex];
+            
+            const auto subMeshes = modelLodAsset->GetMeshes();
+            const AZ::RPI::ModelLodAsset::Mesh& subMesh = subMeshes[subMeshInfo.m_primitiveIndex];
 
             const int numVertices = subMeshInfo.m_numVertices;
             const int firstVertex = subMeshInfo.m_verticesFirstIndex;

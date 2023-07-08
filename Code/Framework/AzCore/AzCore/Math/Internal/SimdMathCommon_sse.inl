@@ -122,7 +122,7 @@ namespace AZ
             }
 
 
-            AZ_MATH_INLINE float SelectFirst(__m128 value)
+            AZ_MATH_INLINE float SelectIndex0(__m128 value)
             {
                 return _mm_cvtss_f32(value);
             }
@@ -140,75 +140,75 @@ namespace AZ
             }
 
 
-            AZ_MATH_INLINE __m128 SplatFirst(__m128 value)
+            AZ_MATH_INLINE __m128 SplatIndex0(__m128 value)
             {
                 return _mm_shuffle_ps(value, value, _MM_SHUFFLE(0, 0, 0, 0));
             }
 
 
-            AZ_MATH_INLINE __m128 SplatSecond(__m128 value)
+            AZ_MATH_INLINE __m128 SplatIndex1(__m128 value)
             {
                 return _mm_shuffle_ps(value, value, _MM_SHUFFLE(1, 1, 1, 1));
             }
 
 
-            AZ_MATH_INLINE __m128 SplatThird(__m128 value)
+            AZ_MATH_INLINE __m128 SplatIndex2(__m128 value)
             {
                 return _mm_shuffle_ps(value, value, _MM_SHUFFLE(2, 2, 2, 2));
             }
 
 
-            AZ_MATH_INLINE __m128 SplatFourth(__m128 value)
+            AZ_MATH_INLINE __m128 SplatIndex3(__m128 value)
             {
                 return _mm_shuffle_ps(value, value, _MM_SHUFFLE(3, 3, 3, 3));
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceFirst(__m128 a, __m128 b)
+            AZ_MATH_INLINE __m128 ReplaceIndex0(__m128 a, __m128 b)
             {
                 return _mm_blend_ps(a, b, 0b0001);
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceFirst(__m128 a, float b)
+            AZ_MATH_INLINE __m128 ReplaceIndex0(__m128 a, float b)
             {
-                return ReplaceFirst(a, Splat(b));
+                return ReplaceIndex0(a, Splat(b));
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceSecond(__m128 a, __m128 b)
+            AZ_MATH_INLINE __m128 ReplaceIndex1(__m128 a, __m128 b)
             {
                 return _mm_blend_ps(a, b, 0b0010);
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceSecond(__m128 a, float b)
+            AZ_MATH_INLINE __m128 ReplaceIndex1(__m128 a, float b)
             {
-                return ReplaceSecond(a, Splat(b));
+                return ReplaceIndex1(a, Splat(b));
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceThird(__m128 a, __m128 b)
+            AZ_MATH_INLINE __m128 ReplaceIndex2(__m128 a, __m128 b)
             {
                 return _mm_blend_ps(a, b, 0b0100);
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceThird(__m128 a, float b)
+            AZ_MATH_INLINE __m128 ReplaceIndex2(__m128 a, float b)
             {
-                return ReplaceThird(a, Splat(b));
+                return ReplaceIndex2(a, Splat(b));
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceFourth(__m128 a, __m128 b)
+            AZ_MATH_INLINE __m128 ReplaceIndex3(__m128 a, __m128 b)
             {
                 return _mm_blend_ps(a, b, 0b1000);
             }
 
 
-            AZ_MATH_INLINE __m128 ReplaceFourth(__m128 a, float b)
+            AZ_MATH_INLINE __m128 ReplaceIndex3(__m128 a, float b)
             {
-                return ReplaceFourth(a, Splat(b));
+                return ReplaceIndex3(a, Splat(b));
             }
 
 

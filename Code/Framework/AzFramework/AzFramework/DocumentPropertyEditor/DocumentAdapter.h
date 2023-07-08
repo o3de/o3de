@@ -18,6 +18,7 @@ namespace AZ::DocumentPropertyEditor
     // Forward declarations
     class DocumentAdapter;
     class RoutingAdapter;
+    class ExpanderSettings;
 
     using DocumentAdapterPtr = AZStd::shared_ptr<DocumentAdapter>;
     using ConstDocumentAdapterPtr = AZStd::shared_ptr<const DocumentAdapter>;
@@ -156,6 +157,10 @@ namespace AZ::DocumentPropertyEditor
         static bool IsRow(const Dom::Value& domValue);
 
         bool IsEmpty();
+
+        virtual ExpanderSettings* CreateExpanderSettings(DocumentAdapter* referenceAdapter,
+            const AZStd::string& settingsRegistryKey = AZStd::string(),
+            const AZStd::string& propertyEditorName = AZStd::string());
 
     protected:
         //! Generates the contents of this adapter. This must be an Adapter DOM node.

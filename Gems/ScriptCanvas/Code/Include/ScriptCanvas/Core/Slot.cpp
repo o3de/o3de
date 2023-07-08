@@ -212,6 +212,7 @@ namespace ScriptCanvas
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
                 ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
                 ->Field("CreatesImplicitConnections", &Slot::m_createsImplicitConnections)
+                ->Field("IsNameHidden", &Slot::m_isNameHidden)
                 ;
         }
 
@@ -228,6 +229,7 @@ namespace ScriptCanvas
         , m_isVisible(slotConfiguration.m_isVisible)
         , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
         , m_createsImplicitConnections(slotConfiguration.m_createsImplicitConnections)
+        , m_isNameHidden(slotConfiguration.m_isNameHidden)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -444,6 +446,11 @@ namespace ScriptCanvas
     bool Slot::CreatesImplicitConnections() const
     {
         return m_createsImplicitConnections;
+    }
+
+    bool Slot::IsNameHidden() const
+    {
+        return m_isNameHidden;
     }
 
     bool Slot::CanConvertToValue() const

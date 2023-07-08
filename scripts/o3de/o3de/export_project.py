@@ -5,10 +5,12 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
 import argparse
 import logging
 import os
 import pathlib
+import platform
 import sys
 
 from o3de import manifest, utils
@@ -49,6 +51,12 @@ class O3DEScriptExportContext(object):
         return self._args
 
 # Helper API
+def get_default_asset_platform():
+    host_platform_to_asset_platform_map = { 'windows': 'pc',
+                                            'linux':   'linux',
+                                            'darwin':  'mac' }
+    return host_platform_to_asset_platform_map.get(platform.system().lower(), "")
+
 def process_command(args: list,
                     cwd: pathlib.Path = None,
                     env: os._Environ = None) -> int:

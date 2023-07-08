@@ -355,7 +355,7 @@ namespace AZ
                 return;
             }
 
-            const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();
             if (!globalPipelineLayout)
             {
                 AZ_Assert(false, "Pipeline layout is null.");
@@ -381,7 +381,7 @@ namespace AZ
 
                 for (uint32_t unboundedArrayIndex = 0; unboundedArrayIndex < ShaderResourceGroupCompiledData::MaxUnboundedArrays; ++unboundedArrayIndex)
                 {
-                    if (binding.m_bindlessTable.IsValid() 
+                    if (binding.m_bindlessTable.IsValid()
                         && compiledData.m_gpuUnboundedArraysDescriptorHandles[unboundedArrayIndex].ptr)
                     {
                         GetCommandList()->SetComputeRootDescriptorTable(
@@ -411,31 +411,50 @@ namespace AZ
             // set RayTracing pipeline state
             commandList->SetPipelineState1(rayTracingPipelineState->Get());
 
-            // setup DispatchRays() shader table and ray counts
-            const RayTracingShaderTable* shaderTable = static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
-            const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
+            switch (dispatchRaysItem.m_arguments.m_type)
+            {
+            case RHI::DispatchRaysType::Direct:
+                {
+                    // setup DispatchRays() shader table and ray counts
+                    const RayTracingShaderTable* shaderTable =
+                        static_cast<const RayTracingShaderTable*>(dispatchRaysItem.m_rayTracingShaderTable);
+                    const RayTracingShaderTable::ShaderTableBuffers& shaderTableBuffers = shaderTable->GetBuffers();
 
-            D3D12_DISPATCH_RAYS_DESC desc = {};
-            desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
-            desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
-            
-            desc.MissShaderTable.StartAddress = shaderTableBuffers.m_missTable ? shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress() : 0;
-            desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
-            desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
+                    D3D12_DISPATCH_RAYS_DESC desc = {};
+                    desc.RayGenerationShaderRecord.StartAddress = shaderTableBuffers.m_rayGenerationTable->GetMemoryView().GetGpuAddress();
+                    desc.RayGenerationShaderRecord.SizeInBytes = shaderTableBuffers.m_rayGenerationTableSize;
 
-            desc.CallableShaderTable.StartAddress = shaderTableBuffers.m_callableTable ? shaderTableBuffers.m_callableTable->GetMemoryView().GetGpuAddress() : 0;
-            desc.CallableShaderTable.SizeInBytes = shaderTableBuffers.m_callableTableSize;
-            desc.CallableShaderTable.StrideInBytes = shaderTableBuffers.m_callableTableStride;
-            
-            desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
-            desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
-            desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
+                    desc.MissShaderTable.StartAddress =
+                        shaderTableBuffers.m_missTable ? shaderTableBuffers.m_missTable->GetMemoryView().GetGpuAddress() : 0;
+                    desc.MissShaderTable.SizeInBytes = shaderTableBuffers.m_missTableSize;
+                    desc.MissShaderTable.StrideInBytes = shaderTableBuffers.m_missTableStride;
 
-            desc.Width = dispatchRaysItem.m_width;
-            desc.Height = dispatchRaysItem.m_height;
-            desc.Depth = dispatchRaysItem.m_depth;
-           
-            commandList->DispatchRays(&desc);
+                    desc.CallableShaderTable.StartAddress =
+                        shaderTableBuffers.m_callableTable ? shaderTableBuffers.m_callableTable->GetMemoryView().GetGpuAddress() : 0;
+                    desc.CallableShaderTable.SizeInBytes = shaderTableBuffers.m_callableTableSize;
+                    desc.CallableShaderTable.StrideInBytes = shaderTableBuffers.m_callableTableStride;
+
+                    desc.HitGroupTable.StartAddress = shaderTableBuffers.m_hitGroupTable->GetMemoryView().GetGpuAddress();
+                    desc.HitGroupTable.SizeInBytes = shaderTableBuffers.m_hitGroupTableSize;
+                    desc.HitGroupTable.StrideInBytes = shaderTableBuffers.m_hitGroupTableStride;
+
+                    desc.Width = dispatchRaysItem.m_arguments.m_direct.m_width;
+                    desc.Height = dispatchRaysItem.m_arguments.m_direct.m_height;
+                    desc.Depth = dispatchRaysItem.m_arguments.m_direct.m_depth;
+
+                    commandList->DispatchRays(&desc);
+
+                    break;
+                }
+            case RHI::DispatchRaysType::Indirect:
+                {
+                    ExecuteIndirect(dispatchRaysItem.m_arguments.m_indirect);
+                    break;
+                }
+            default:
+                AZ_Assert(false, "Invalid dispatch type");
+                break;
+            }
 #endif
         }
 
@@ -501,7 +520,14 @@ namespace AZ
 
             case RHI::DrawType::Indirect:
             {
-                ExecuteIndirect(drawItem.m_arguments.m_indirect);
+                const auto& indirect = drawItem.m_arguments.m_indirect;
+                const RHI::IndirectBufferLayout& layout = indirect.m_indirectBufferView->GetSignature()->GetDescriptor().m_layout;
+                if (layout.GetType() == RHI::IndirectBufferLayoutType::IndexedDraw)
+                {
+                    AZ_Assert(drawItem.m_indexBufferView, "Index buffer view is null!");
+                    SetIndexBuffer(*drawItem.m_indexBufferView);
+                }
+                ExecuteIndirect(indirect);
                 break;
             }
             default:

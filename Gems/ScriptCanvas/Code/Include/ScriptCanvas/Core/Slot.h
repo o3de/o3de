@@ -154,6 +154,8 @@ namespace ScriptCanvas
 
         bool CreatesImplicitConnections() const;
 
+        bool IsNameHidden() const;
+
         bool CanConvertTypes() const;
 
         bool CanConvertToValue() const;
@@ -241,6 +243,8 @@ namespace ScriptCanvas
         AZ::Crc32 m_dynamicGroup;
 
         bool m_canHaveInputField = true;
+
+        bool m_isNameHidden = false;
 
         bool               m_isLatentSlot  = false;
         SlotDescriptor     m_descriptor;

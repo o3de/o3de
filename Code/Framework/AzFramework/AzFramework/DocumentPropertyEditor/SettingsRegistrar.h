@@ -12,7 +12,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
-namespace AzToolsFramework
+namespace AZ::DocumentPropertyEditor
 {
     //! Class wrapping file management required to save SettingsRegistry data to file as well as load
     //! json data from file to the SettingsRegistry.
@@ -100,4 +100,4 @@ namespace AzToolsFramework
         //! The file extension expected for SettingsRegistry files.
         static constexpr const char* SettingsRegistryFileExt = AZ::SettingsRegistryInterface::Extension;
     };
-} // namespace AzToolsFramework
+} // namespace AZ::DocumentPropertyEditor

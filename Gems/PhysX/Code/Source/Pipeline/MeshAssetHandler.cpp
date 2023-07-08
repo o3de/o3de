@@ -125,7 +125,7 @@ namespace PhysX
         AZ::Data::AssetHandler::LoadResult MeshAssetHandler::LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-            [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+            const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
             MeshAsset* meshAsset = asset.GetAs<MeshAsset>();
             if (!meshAsset)
@@ -137,7 +137,8 @@ namespace PhysX
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
 
-            if (!AZ::Utils::LoadObjectFromStreamInPlace(*stream, meshAsset->m_assetData, serializeContext))
+            if (!AZ::Utils::LoadObjectFromStreamInPlace(
+                    *stream, meshAsset->m_assetData, serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB)))
             {
                 return AZ::Data::AssetHandler::LoadResult::Error;
             }

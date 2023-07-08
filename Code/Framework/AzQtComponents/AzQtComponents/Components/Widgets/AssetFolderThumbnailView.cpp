@@ -21,6 +21,7 @@ AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'in
 #include <QScrollBar>
 #include <QSettings>
 #include <QStyledItemDelegate>
+#include <QTextDocument>
 AZ_POP_DISABLE_WARNING
 
 namespace
@@ -200,9 +201,46 @@ namespace AzQtComponents
             const auto textRect = QRect{rect.left(), rect.bottom() - textHeight, rect.width(), textHeight * 2};
 
             painter->setPen(option.palette.color(QPalette::Text));
-            QString text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
-            (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
-                                            : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
+
+            QString text = index.data().toString();
+
+            QRegularExpression htmlMarkupRegex("<[^>]*>");
+            if (htmlMarkupRegex.match(text).hasMatch())
+            {
+                // Grab the plain text to measure.
+                QTextDocument textDoc;
+                textDoc.setHtml(text);
+                QString plainText = textDoc.toPlainText();
+                textDoc.clear();
+
+                auto textWidth = option.fontMetrics.horizontalAdvance(plainText);
+
+                QString alignment = textWidth > textRect.width() ? "left" : "center";
+
+                QStyleOptionViewItem optionV4{ option };
+                initStyleOption(&optionV4, index);
+                optionV4.state &= ~(QStyle::State_HasFocus | QStyle::State_Selected);
+
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing);
+
+                textDoc.setDefaultFont(option.font);
+
+                textDoc.setDefaultStyleSheet("body {color: white}");
+
+                textDoc.setHtml("<body align='" + alignment + "'>" + index.data().toString() + "</span> </body>");
+                painter->translate(textRect.topLeft());
+                textDoc.setTextWidth(textRect.width());
+                textDoc.drawContents(painter, QRectF(0, 0, textRect.width(), textRect.height()));
+                painter->restore();
+            }
+            else
+            {
+                text = elidedTextWithExtension(option.fontMetrics, index.data().toString(), textRect.width());
+
+                (text.contains(QChar::LineFeed) ? painter->drawText(textRect, Qt::AlignTop | Qt::AlignLeft, text)
+                                                : painter->drawText(textRect, Qt::AlignTop | Qt::AlignHCenter, text));
+            }
         }
         else
         {
@@ -413,6 +451,7 @@ namespace AzQtComponents
     {
         setItemDelegate(m_delegate);
         setSelectionMode(ExtendedSelection);
+
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -1088,6 +1127,12 @@ namespace AzQtComponents
     bool AssetFolderThumbnailView::InSearchResultsMode() const
     {
         return m_showSearchResultsMode;
+    }
+
+    void AssetFolderThumbnailView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+    {
+        QAbstractItemView::selectionChanged(selected, deselected);
+        Q_EMIT selectionChangedSignal(selected, deselected);
     }
 } // namespace AzQtComponents
 

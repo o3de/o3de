@@ -333,15 +333,15 @@ namespace AZ
 
                 RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-                dispatchRaysItem.m_width = imageSize.m_width;
-                dispatchRaysItem.m_height = imageSize.m_height;
-                dispatchRaysItem.m_depth = imageSize.m_depth;
+                dispatchRaysItem.m_arguments.m_direct.m_width = imageSize.m_width;
+                dispatchRaysItem.m_arguments.m_direct.m_height = imageSize.m_height;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = imageSize.m_depth;
             }
             else
             {
-                dispatchRaysItem.m_width = m_passData->m_threadCountX;
-                dispatchRaysItem.m_height = m_passData->m_threadCountY;
-                dispatchRaysItem.m_depth = m_passData->m_threadCountZ;
+                dispatchRaysItem.m_arguments.m_direct.m_width = m_passData->m_threadCountX;
+                dispatchRaysItem.m_arguments.m_direct.m_height = m_passData->m_threadCountY;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = m_passData->m_threadCountZ;
             }
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs

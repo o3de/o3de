@@ -1245,6 +1245,8 @@ namespace ScriptCanvasEditor::Nodes
             executionConfiguration.m_tooltip = slot.GetToolTip();
             executionConfiguration.m_slotGroup = slotGroup;
 
+            executionConfiguration.m_isNameHidden = slot.IsNameHidden();
+
             if (slot.IsLatent())
             {
                 executionConfiguration.m_textDecoration = u8"\U0001f552";
@@ -1269,6 +1271,8 @@ namespace ScriptCanvasEditor::Nodes
             dataSlotConfiguration.m_name = slot.GetName();
             dataSlotConfiguration.m_tooltip = slot.GetToolTip();
             dataSlotConfiguration.m_slotGroup = slotGroup;
+
+            dataSlotConfiguration.m_isNameHidden = slot.IsNameHidden();
 
             if (slot.IsLatent())
             {
