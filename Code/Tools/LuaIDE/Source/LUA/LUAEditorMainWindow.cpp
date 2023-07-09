@@ -1737,9 +1737,6 @@ namespace LUAEditor
         {
             // the document was probably closed, request it be reopened
             m_dProcessFindListClicked.push_back(result);
-            //EditorFramework::AssetManagementMessages::Bus::Event(LUAEditor::ContextID, &EditorFramework::AssetManagementMessages::Bus::Events::AssetOpenRequested,
-            //    result.m_assetId,
-            //    AZ::ScriptAsset::StaticAssetType());
             AZ_Assert(false, "Fix assets!");
         }
     }
@@ -1811,18 +1808,14 @@ namespace LUAEditor
     {
         m_lastFocusedAssetId = assetId;
 
-        //AZ_TracePrintf(LUAEditorDebugName, AZStd::string::format("OnFocusInEvent, %s\n", assetId.c_str()).c_str());
-
         if (!m_bIgnoreFocusRequests)
         {
             SetGUIToMatch(m_StateTrack);
         }
     }
 
-    void LUAEditorMainWindow::OnFocusOutEvent(const AZStd::string& assetId)
+    void LUAEditorMainWindow::OnFocusOutEvent(const AZStd::string&)
     {
-        (void)assetId;
-        //AZ_Assert(m_dOpenLUAView.find(documentID) != m_dOpenLUAView.end(), "LUAEditorMainWindow::OnFocusInEvent() : DocumentID does not exist");
     }
 
     void LUAEditorMainWindow::OnRequestCheckOut(const AZStd::string& assetId)
@@ -1881,8 +1874,6 @@ namespace LUAEditor
     // externally driven context sensitive widget states
     void LUAEditorMainWindow::SetDebugControlsToInitial()
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "SetDebugControlsToInitial()\n");
-
         m_StateTrack.Init();
         SetGUIToMatch(m_StateTrack);
     }
@@ -1916,15 +1907,11 @@ namespace LUAEditor
     }
     void LUAEditorMainWindow::SetEditContolsToNoFilesOpen()
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "SetDebugControlsToNoFilesOpen()\n");
-
         m_StateTrack.atLeastOneFileOpen = false;
         SetGUIToMatch(m_StateTrack);
     }
     void LUAEditorMainWindow::SetEditContolsToAtLeastOneFileOpen()
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "SetDebugControlsToAtLeastOneFileOpen()\n");
-
         m_StateTrack.atLeastOneFileOpen = true;
         SetGUIToMatch(m_StateTrack);
     }
@@ -2006,9 +1993,6 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::SetGUIToMatch(StateTrack& track)
     {
-        //AZ_TracePrintf(LUAEditorDebugName, "conn(%d) attach(%d) running(%d) atbreak(%d) hasexecuted(%d)  \n",
-        //  track.targetConnected, track.debuggerAttached, track.scriptRunning, track.atBreak, track.hasExecuted);
-
         if (track.atLeastOneFileOpen)
         {
             m_gui->actionSave->setEnabled(true);
