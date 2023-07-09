@@ -49,7 +49,7 @@ namespace ScriptCanvas
             m_target = target;
         }
 
-        AZ::Data::Asset<ExecutionLogAsset> Logger::LoadFromRelativePath(AZStd::string_view path)
+        AZ::Data::Asset<ExecutionLogAsset> Logger::LoadFromRelativePath([[maybe_unused]] AZStd::string_view path)
         {
 #if defined(SC_EXECUTION_TRACE_ENABLED) 
             AZ::SerializeContext* serializeContext = nullptr;
