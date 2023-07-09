@@ -13,34 +13,34 @@
 namespace AZ
 {
     class ReflectContext;
+}
 
-    namespace RHI
+namespace AZ::RHI
+{
+    struct Scissor
     {
-        struct Scissor
-        {
-            AZ_TYPE_INFO(Scissor, "{A0D8D250-59DB-4940-93B4-92C0FA6911CC}");
-            static void Reflect(AZ::ReflectContext* context);
+        AZ_TYPE_INFO(Scissor, "{A0D8D250-59DB-4940-93B4-92C0FA6911CC}");
+        static void Reflect(AZ::ReflectContext* context);
 
-            Scissor() = default;
-            Scissor(int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);
+        Scissor() = default;
+        Scissor(int32_t minX, int32_t minY, int32_t maxX, int32_t maxY);
 
-            Scissor GetScaled(
-                float normalizedMinX,
-                float normalizedMinY,
-                float normalizedMaxY,
-                float normalizedMaxX) const;
+        Scissor GetScaled(
+            float normalizedMinX,
+            float normalizedMinY,
+            float normalizedMaxY,
+            float normalizedMaxX) const;
 
-            static Scissor CreateNull();
+        static Scissor CreateNull();
 
-            bool IsNull() const;
+        bool IsNull() const;
 
-            static const int32_t DefaultScissorMin = 0;
-            static const int32_t DefaultScissorMax = std::numeric_limits<int32_t>::max();
+        static const int32_t DefaultScissorMin = 0;
+        static const int32_t DefaultScissorMax = std::numeric_limits<int32_t>::max();
 
-            int32_t m_minX = DefaultScissorMin;
-            int32_t m_minY = DefaultScissorMin;
-            int32_t m_maxX = DefaultScissorMax;
-            int32_t m_maxY = DefaultScissorMax;
-        };
-    } // namespace RHI
-} // namespace AZ
+        int32_t m_minX = DefaultScissorMin;
+        int32_t m_minY = DefaultScissorMin;
+        int32_t m_maxX = DefaultScissorMax;
+        int32_t m_maxY = DefaultScissorMax;
+    };
+}
