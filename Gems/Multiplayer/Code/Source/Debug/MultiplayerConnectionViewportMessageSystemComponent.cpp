@@ -115,22 +115,10 @@ namespace Multiplayer
         switch (agentType)
         {
         case MultiplayerAgentType::Uninitialized:
-            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
-            {
-                bool isDedicatedServer = false;
-                if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
-                {
-                    AZLOG_WARN("MultiplayerConnectionViewport failed to access cvar  (sv_isDedicated).")
-                    break;
-                }
-
-                if (isDedicatedServer)
-                {
-                    DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
-                    DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
-                }
-            }
-            
+#if AZ_TRAIT_SERVER && !AZ_TRAIT_CLIENT
+            DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
+            DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+#endif
             break;
         case MultiplayerAgentType::Client:
             {
