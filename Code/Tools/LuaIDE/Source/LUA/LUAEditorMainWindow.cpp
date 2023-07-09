@@ -18,6 +18,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Script/ScriptRemoteDebuggingConstants.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -1762,12 +1763,7 @@ namespace LUAEditor
 
     bool LUAEditorMainWindow::OnFileSaveDialog(const AZStd::string& assetName, AZStd::string& newAssetName)
     {
-        const char* rootDirString;
-        AZ::ComponentApplicationBus::BroadcastResult(rootDirString, &AZ::ComponentApplicationBus::Events::GetExecutableFolder);
-
-        QDir rootDir;
-        rootDir.setPath(rootDirString);
-        rootDir.cdUp();
+        const QDir rootDir { AZ::Utils::GetProjectPath().c_str() };
 
         QString name = QFileDialog::getSaveFileName(this, QString(AZStd::string::format("Save File {%s}", assetName.c_str()).c_str()), m_lastOpenFilePath.size() > 0 ? m_lastOpenFilePath.c_str() : rootDir.absolutePath(), QString("*.lua"));
         if (name.isEmpty())
