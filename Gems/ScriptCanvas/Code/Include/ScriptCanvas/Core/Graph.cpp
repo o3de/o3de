@@ -777,6 +777,12 @@ namespace ScriptCanvas
         return false;
     }
 
+    bool Graph::FindConnection(const Endpoint& firstEndpoint, const Endpoint& otherEndpoint) const
+    {
+        AZ::Entity* connectionEntity = nullptr;
+        return FindConnection(connectionEntity, firstEndpoint, otherEndpoint);
+    }
+
 
     bool Graph::Connect(const AZ::EntityId& sourceNodeId, const SlotId& sourceSlotId, const AZ::EntityId& targetNodeId, const SlotId& targetSlotId)
     {
