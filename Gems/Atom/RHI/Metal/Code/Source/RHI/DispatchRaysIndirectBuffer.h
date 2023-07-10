@@ -11,12 +11,12 @@
 
 namespace AZ
 {
-    namespace Vulkan
+    namespace Metal
     {
         class DispatchRaysIndirectBuffer : public RHI::DispatchRaysIndirectBuffer
         {
         public:
-            AZ_RTTI(AZ::Vulkan::DispatchRaysIndirectBuffer, "{D6767937-A314-43A8-82BB-8F8E7D32A937}", RHI::DispatchRaysIndirectBuffer)
+            AZ_RTTI(AZ::Metal::DispatchRaysIndirectBuffer, "{D6767937-A314-43A8-82BB-8F8E7D32A937}", RHI::DispatchRaysIndirectBuffer)
             DispatchRaysIndirectBuffer() = default;
             virtual ~DispatchRaysIndirectBuffer() = default;
             DispatchRaysIndirectBuffer(const DispatchRaysIndirectBuffer&) = delete;
@@ -36,5 +36,5 @@ namespace AZ
             {
             }
         };
-    } // namespace Vulkan
+    } // namespace Metal
 } // namespace AZ
