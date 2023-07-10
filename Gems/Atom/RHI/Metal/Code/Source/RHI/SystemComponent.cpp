@@ -242,5 +242,11 @@ namespace AZ
             AZ_Assert(false, "Not implemented");
             return nullptr;
         }
+
+        RHI::Ptr<RHI::DispatchRaysIndirectBuffer> SystemComponent::CreateDispatchRaysIndirectBuffer()
+        {
+            AZ_Assert(false, "Not implemented");
+            return nullptr;
+        }
     }
 }

@@ -28,6 +28,8 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/IndirectArguments.h>
 
+#include <RHI/DispatchRaysIndirectBuffer.h>
+
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
 #define DX12_COMMANDLIST_TIMER(id) ScopedTimer timer__(m_timerHeap, *this, TimerType::User, id);
@@ -448,7 +450,24 @@ namespace AZ
                 }
             case RHI::DispatchRaysType::Indirect:
                 {
-                    ExecuteIndirect(dispatchRaysItem.m_arguments.m_indirect);
+                    const auto& arguments = dispatchRaysItem.m_arguments.m_indirect;
+                    auto* dispatchIndirectBuffer = static_cast<DispatchRaysIndirectBuffer*>(arguments.m_dispatchRaysIndirectBuffer);
+                    AZ_Assert(
+                        dispatchIndirectBuffer, "CommandList: m_dispatchRaysIndirectBuffer is necessary for indirect raytracing commands");
+                    dispatchIndirectBuffer->CopyData(*arguments.m_indirectBufferView, arguments.m_indirectBufferByteOffset, commandList);
+                    const Buffer* dx12IndirectBuffer = static_cast<const Buffer*>(dispatchIndirectBuffer->GetBuffer());
+
+                    const IndirectBufferSignature* signature =
+                        static_cast<const IndirectBufferSignature*>(arguments.m_indirectBufferView->GetSignature());
+
+                    AZ_Assert(arguments.m_countBuffer == nullptr, "CommandList: Count buffer is not supported for indirect raytracing");
+                    GetCommandList()->ExecuteIndirect(
+                        signature->Get(),
+                        arguments.m_maxSequenceCount,
+                        dx12IndirectBuffer->GetMemoryView().GetMemory(),
+                        dx12IndirectBuffer->GetMemoryView().GetOffset(),
+                        nullptr,
+                        0);
                     break;
                 }
             default:

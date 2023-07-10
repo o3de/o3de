@@ -1,0 +1,47 @@
+#pragma once
+
+#include <Atom/RHI/DispatchRaysIndirectBuffer.h>
+#include <Atom/RHI/IndirectBufferView.h>
+
+struct ID3D12GraphicsCommandList;
+namespace AZ
+{
+    namespace DX12
+    {
+        // This class exists, because the buffer for an indirect raytracing call, in D3D12, has a different layout than e.g. the Vulkan one.
+        // In D3D12, the buffer contains the shader table for the raytracing call.
+        // This means, we can't use the indirect ray dispatch buffer, usually passed using a slot of the pass.
+        // This class is reponsible for copying the shader table, and the actual indirect raytracing arguments to a DX12 specific buffer
+        // The buffer is then used by the commandlist as the argument buffer
+        class DispatchRaysIndirectBuffer : public RHI::DispatchRaysIndirectBuffer
+        {
+        public:
+            AZ_RTTI(AZ::DX12::DispatchRaysIndirectBuffer, "{623567A8-5A73-46FE-BAE6-6B8F59BDEFB3}", RHI::DispatchRaysIndirectBuffer)
+            DispatchRaysIndirectBuffer() = default;
+            virtual ~DispatchRaysIndirectBuffer() = default;
+            DispatchRaysIndirectBuffer(const DispatchRaysIndirectBuffer&) = delete;
+            DispatchRaysIndirectBuffer(DispatchRaysIndirectBuffer&&) = delete;
+            DispatchRaysIndirectBuffer& operator=(const DispatchRaysIndirectBuffer&) = delete;
+            DispatchRaysIndirectBuffer& operator=(const DispatchRaysIndirectBuffer&&) = delete;
+
+            static RHI::Ptr<DispatchRaysIndirectBuffer> Create();
+
+            void Init(RHI::BufferPool* bufferPool, RHI::BufferPool* stagingBufferPool) override;
+            void Build(RHI::RayTracingShaderTable* shaderTable) override;
+            const RHI::Buffer* GetBuffer() const
+            {
+                return m_buffer.get();
+            }
+
+            void CopyData(
+                const RHI::IndirectBufferView& originalIndirectBufferView,
+                uint64_t originalBufferByteOffset,
+                ID3D12GraphicsCommandList* commandList);
+
+        private:
+            RHI::Ptr<RHI::Buffer> m_buffer;
+            RHI::Ptr<RHI::Buffer> m_stagingBuffer;
+            bool m_shaderTableNeedsCopy = true;
+        };
+    } // namespace DX12
+} // namespace AZ
