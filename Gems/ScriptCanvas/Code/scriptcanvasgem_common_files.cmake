@@ -136,6 +136,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/MathNodeUtilities.cpp
     Include/ScriptCanvas/Libraries/Math/Matrix3x3.cpp
     Include/ScriptCanvas/Libraries/Math/Matrix4x4.cpp
+    Include/ScriptCanvas/Libraries/Math/MatrixMxN.cpp
     Include/ScriptCanvas/Libraries/Math/OBB.cpp
     Include/ScriptCanvas/Libraries/Math/Plane.cpp
     Include/ScriptCanvas/Libraries/Math/Quaternion.cpp
@@ -143,6 +144,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Math/Vector2.cpp
     Include/ScriptCanvas/Libraries/Math/Vector3.cpp
     Include/ScriptCanvas/Libraries/Math/Vector4.cpp
+    Include/ScriptCanvas/Libraries/Math/VectorN.cpp
     Include/ScriptCanvas/Libraries/Comparison/ComparisonLibrary.cpp
     Include/ScriptCanvas/Libraries/Time/DelayNodeable.cpp
     Include/ScriptCanvas/Libraries/Time/TimeDelayNodeable.cpp

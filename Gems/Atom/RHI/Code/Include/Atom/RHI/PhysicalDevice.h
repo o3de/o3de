@@ -12,24 +12,21 @@
 #include <Atom/RHI/Object.h>
 #include <AzCore/std/containers/vector.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class PhysicalDevice
+        : public Object
     {
-        class PhysicalDevice
-            : public Object
-        {
-        public:
-            AZ_RTTI(PhysicalDevice, "{B881F2FA-C588-4332-BB4A-D81AC8BF30E9}", Object);
-            virtual ~PhysicalDevice() = default;
+    public:
+        AZ_RTTI(PhysicalDevice, "{B881F2FA-C588-4332-BB4A-D81AC8BF30E9}", Object);
+        virtual ~PhysicalDevice() = default;
 
-            /// Returns the descriptor for the physical device.
-            const PhysicalDeviceDescriptor& GetDescriptor() const;
+        /// Returns the descriptor for the physical device.
+        const PhysicalDeviceDescriptor& GetDescriptor() const;
 
-        protected:
-            PhysicalDeviceDescriptor m_descriptor;
-        };
+    protected:
+        PhysicalDeviceDescriptor m_descriptor;
+    };
 
-        using PhysicalDeviceList = AZStd::vector<Ptr<PhysicalDevice>>;
-    }
+    using PhysicalDeviceList = AZStd::vector<Ptr<PhysicalDevice>>;
 }

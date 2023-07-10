@@ -12,42 +12,37 @@
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Describes what rules to apply when the image or buffer attachment is loaded and stored
+    struct AttachmentLoadStoreAction
     {
-        /**
-         *  Describes what rules to apply when the image or buffer attachment is loaded and stored
-         */
-        struct AttachmentLoadStoreAction
-        {
-            AZ_TYPE_INFO(AttachmentLoadStoreAction, "{B41084F9-ED52-49F1-A2FA-8F648B0EC0D4}");
+        AZ_TYPE_INFO(AttachmentLoadStoreAction, "{B41084F9-ED52-49F1-A2FA-8F648B0EC0D4}");
 
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            explicit AttachmentLoadStoreAction(
-                const ClearValue& clearValue = ClearValue(),
-                AttachmentLoadAction loadAction = AttachmentLoadAction::Load,
-                AttachmentStoreAction storeAction = AttachmentStoreAction::Store,
-                AttachmentLoadAction loadActionStencil = AttachmentLoadAction::Load,
-                AttachmentStoreAction storeActionStencil = AttachmentStoreAction::Store);
+        explicit AttachmentLoadStoreAction(
+            const ClearValue& clearValue = ClearValue(),
+            AttachmentLoadAction loadAction = AttachmentLoadAction::Load,
+            AttachmentStoreAction storeAction = AttachmentStoreAction::Store,
+            AttachmentLoadAction loadActionStencil = AttachmentLoadAction::Load,
+            AttachmentStoreAction storeActionStencil = AttachmentStoreAction::Store);
 
-            bool operator==(const AttachmentLoadStoreAction& other) const;
+        bool operator==(const AttachmentLoadStoreAction& other) const;
             
-            /// The clear value if using a Clear load action. Ignored otherwise.
-            ClearValue m_clearValue;
+        /// The clear value if using a Clear load action. Ignored otherwise.
+        ClearValue m_clearValue;
 
-            /// The load action applied when the attachment is bound.
-            AttachmentLoadAction m_loadAction = AttachmentLoadAction::Load;
+        /// The load action applied when the attachment is bound.
+        AttachmentLoadAction m_loadAction = AttachmentLoadAction::Load;
 
-            /// The store action applied when the attachment is bound.
-            AttachmentStoreAction m_storeAction = AttachmentStoreAction::Store;
+        /// The store action applied when the attachment is bound.
+        AttachmentStoreAction m_storeAction = AttachmentStoreAction::Store;
 
-            /// The stencil load action. Applies only to depth-stencil image attachments.
-            AttachmentLoadAction m_loadActionStencil = AttachmentLoadAction::Load;
+        /// The stencil load action. Applies only to depth-stencil image attachments.
+        AttachmentLoadAction m_loadActionStencil = AttachmentLoadAction::Load;
 
-            /// The stencil store action. Applies only to depth-stencil image attachments.
-            AttachmentStoreAction m_storeActionStencil = AttachmentStoreAction::Store;
-        };
-    }
+        /// The stencil store action. Applies only to depth-stencil image attachments.
+        AttachmentStoreAction m_storeActionStencil = AttachmentStoreAction::Store;
+    };
 }

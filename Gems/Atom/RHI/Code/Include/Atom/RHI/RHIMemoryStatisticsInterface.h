@@ -20,49 +20,45 @@ AZ_DECLARE_BUDGET(RHI);
 
 AZ_CVAR_EXTERNED(bool, r_EnableAutoGpuMemDump); 
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    // Forward declares
+    struct TransientAttachmentStatistics;
+    class RHIMemoryStatisticsInterface
     {
-        // Forward declares
-        struct TransientAttachmentStatistics;
-        class RHIMemoryStatisticsInterface
-        {
-        public:
-            AZ_RTTI(RHIMemoryStatisticsInterface, "{C3789EE2-7922-434D-AC19-8A2D80194C0E}");
+    public:
+        AZ_RTTI(RHIMemoryStatisticsInterface, "{C3789EE2-7922-434D-AC19-8A2D80194C0E}");
 
-            static RHIMemoryStatisticsInterface* Get();
+        static RHIMemoryStatisticsInterface* Get();
 
-            RHIMemoryStatisticsInterface() = default;
-            virtual ~RHIMemoryStatisticsInterface() = default;
+        RHIMemoryStatisticsInterface() = default;
+        virtual ~RHIMemoryStatisticsInterface() = default;
 
-            // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
-            AZ_DISABLE_COPY_MOVE(RHIMemoryStatisticsInterface);
+        // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
+        AZ_DISABLE_COPY_MOVE(RHIMemoryStatisticsInterface);
 
-            virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
+        virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
 
-            virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
+        virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
 
-            //! Utility function to write the state of the provided pool statistics to json.
-            //! The function assumes the pool data will not be modified while it is being converted.
-            virtual void WriteResourcePoolInfoToJson(
-                const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
-                rapidjson::Document& doc) const = 0;
+        //! Utility function to write the state of the provided pool statistics to json.
+        //! The function assumes the pool data will not be modified while it is being converted.
+        virtual void WriteResourcePoolInfoToJson(
+            const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            rapidjson::Document& doc) const = 0;
 
-            //! Utility function to load previously captured pool statistics from json.
-            //! The function clears the passed pools and heaps vectors.
-            virtual AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
-                AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
-                AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
-                rapidjson::Document& doc, 
-                const AZStd::string& fileName) const = 0;
+        //! Utility function to load previously captured pool statistics from json.
+        //! The function clears the passed pools and heaps vectors.
+        virtual AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
+            AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+            AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
+            rapidjson::Document& doc, 
+            const AZStd::string& fileName) const = 0;
 
-            //! Utility function to write the current state of all resource pools to a json file
-            //! Useful for programmatically triggered dumps.
-            virtual void TriggerResourcePoolAllocInfoDump() const = 0;
-        };
-
-    }
+        //! Utility function to write the current state of all resource pools to a json file
+        //! Useful for programmatically triggered dumps.
+        virtual void TriggerResourcePoolAllocInfoDump() const = 0;
+    };
 }
 
 #ifndef AZ_RELEASE_BUILD

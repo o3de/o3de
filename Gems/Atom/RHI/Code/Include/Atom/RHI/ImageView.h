@@ -10,57 +10,54 @@
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI/ResourceView.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class Image;
+
+    //! ImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
+    //! It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
+    //! (mip levels / array slices). They can additionally override the base format of the image
+    class ImageView
+        : public ResourceView
     {
-        class Image;
+    public:
+        AZ_RTTI(ImageView, "{F2BDEE1F-DEFD-4443-9012-A28AED028D7B}", ResourceView);
+        virtual ~ImageView() = default;
 
-        //! ImageView contains a platform-specific descriptor mapping to a sub-region of an image resource.
-        //! It associates 1-to-1 with a ImageViewDescriptor. Image views map to a subset of image sub-resources
-        //! (mip levels / array slices). They can additionally override the base format of the image
-        class ImageView
-            : public ResourceView
+        static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+
+        //! Initializes the image view.
+        ResultCode Init(const Image& image, const ImageViewDescriptor& viewDescriptor);
+
+        //! Returns the view descriptor used at initialization time.
+        const ImageViewDescriptor& GetDescriptor() const;
+
+        //! Returns the image associated with this view.
+        const Image& GetImage() const;
+
+        //! Returns whether the view covers the entire image (i.e. isn't just a subset).
+        bool IsFullView() const override final;
+
+        //! Returns the hash of the view.
+        HashValue64 GetHash() const;
+
+        virtual uint32_t GetBindlessReadIndex() const
         {
-        public:
-            AZ_RTTI(ImageView, "{F2BDEE1F-DEFD-4443-9012-A28AED028D7B}", ResourceView);
-            virtual ~ImageView() = default;
+            return InvalidBindlessIndex;
+        }
 
-            static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+        virtual uint32_t GetBindlessReadWriteIndex() const
+        {
+            return InvalidBindlessIndex;
+        }
 
-            //! Initializes the image view.
-            ResultCode Init(const Image& image, const ImageViewDescriptor& viewDescriptor);
+    protected:
+        HashValue64 m_hash = HashValue64{ 0 };
 
-            //! Returns the view descriptor used at initialization time.
-            const ImageViewDescriptor& GetDescriptor() const;
+    private:
+        bool ValidateForInit(const Image& image, const ImageViewDescriptor& viewDescriptor) const;
 
-            //! Returns the image associated with this view.
-            const Image& GetImage() const;
-
-            //! Returns whether the view covers the entire image (i.e. isn't just a subset).
-            bool IsFullView() const override final;
-
-            //! Returns the hash of the view.
-            HashValue64 GetHash() const;
-
-            virtual uint32_t GetBindlessReadIndex() const
-            {
-                return InvalidBindlessIndex;
-            }
-
-            virtual uint32_t GetBindlessReadWriteIndex() const
-            {
-                return InvalidBindlessIndex;
-            }
-
-        protected:
-            HashValue64 m_hash = HashValue64{ 0 };
-
-        private:
-            bool ValidateForInit(const Image& image, const ImageViewDescriptor& viewDescriptor) const;
-
-            // The RHI descriptor for this view.
-            ImageViewDescriptor m_descriptor;
-        };
-    }
+        // The RHI descriptor for this view.
+        ImageViewDescriptor m_descriptor;
+    };
 }
