@@ -21,7 +21,7 @@ namespace NvCloth
         nullptr,
         AZ::ConsoleFunctorFlags::DontReplicate,
         "Enable NvCloth simulation. It is useful to set this to false on servers for increase performance.\n"
-        "Affects components activated after this cvar is set.");
+        "Only affects components activated after this cvar is set.");
 
     void ClothComponent::Reflect(AZ::ReflectContext* context)
     {
