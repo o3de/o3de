@@ -43,7 +43,6 @@
 #include "GameEngine.h"
 
 #include "CryEdit.h"
-#include "ActionManager.h"
 #include "Include/IObjectManager.h"
 #include "ErrorReportDialog.h"
 #include "Util/AutoLogTime.h"
@@ -118,11 +117,6 @@ CCryEditDoc::CCryEditDoc()
 
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
-
-    if (auto* actionManager = MainWindow::instance()->GetActionManager())
-    {
-        actionManager->RegisterActionHandler(ID_FILE_SAVE_AS, this, &CCryEditDoc::OnFileSaveAs);
-    }
     
     bool isPrefabSystemEnabled = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);

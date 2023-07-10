@@ -28,13 +28,18 @@ namespace AZ
             AzFramework::WindowRequestBus::EventResult(
                 m_viewportSize,
                 nativeWindow,
-                &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+                &AzFramework::WindowRequestBus::Events::GetRenderResolution);
             AzFramework::WindowRequestBus::EventResult(
                 m_viewportDpiScaleFactor,
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
+
+            // Clamp the viewport size to a minimum of (1, 1). Otherwise, it's very easy for consumers of this API to miss
+            // that they need to guard against (0, 0) when the viewport gets hidden.
+            m_viewportSize.m_height = AZStd::max(m_viewportSize.m_height, 1u);
+            m_viewportSize.m_width = AZStd::max(m_viewportSize.m_width, 1u);
 
             m_currentPipelines.resize(MaxViewTypes);
             m_viewChangedEvents.resize(MaxViewTypes);
@@ -399,12 +404,13 @@ namespace AZ
             }
         }
 
-        void ViewportContext::OnWindowResized(uint32_t width, uint32_t height)
+        void ViewportContext::OnResolutionChanged(uint32_t width, uint32_t height)
         {
             if (m_viewportSize.m_width != width || m_viewportSize.m_height != height)
             {
-                m_viewportSize.m_width = width;
-                m_viewportSize.m_height = height;
+                // Clamp the viewport size to a minimum of (1, 1).
+                m_viewportSize.m_height = AZStd::max(height, 1u);
+                m_viewportSize.m_width = AZStd::max(width, 1u);
                 m_sizeChangedEvent.Signal(m_viewportSize);
             }
         }

@@ -97,8 +97,7 @@ namespace AZ
 
             RPI::PassAttachmentBinding& binding = GetOutputBinding(0);
 
-            // [GFX TODO][ATOM-2470] stop caring about attachment
-            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetOwnedAttachment(Name("ShadowmapImage"));
+            RPI::Ptr<RPI::PassAttachment> attachment = parentPass->GetOutputBinding(0).GetAttachment();
             if (!attachment)
             {
                 AZ_Assert(false, "[ShadowmapPass %s] Cannot find shadowmap image attachment.", GetPathName().GetCStr());
@@ -172,13 +171,10 @@ namespace AZ
         {
             Base::SetupFrameGraphDependencies(frameGraph);
 
-            // Override the estimated item count to be what the raster pass would report + 1.
-            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()) + 1);
-        }
-
-        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
-        {
-            if (m_isStatic && !m_forceRenderNextFrame)
+            // Override the estimated item count set by the base class. Draw item count is compared against
+            // the last frame to detect cases where a moving object leaves the shadow frustum. It wouldn't
+            // set m_casterMovedBit since its outside the view, but needs to trigger a re-render anyway.
+            if (m_isStatic && !m_forceRenderNextFrame && m_lastFrameDrawCount == m_drawItemCount)
             {
                 const auto& views = m_pipeline->GetViews(GetPipelineViewTag());
                 if (!views.empty())
@@ -187,12 +183,19 @@ namespace AZ
                     if (view && (view->GetOrFlags() & m_casterMovedBit.GetIndex()) == 0)
                     {
                         // Shadow is static and no casters moved since last frame.
-                        return;
+                        frameGraph.SetEstimatedItemCount(0);
                     }
                 }
             }
-            m_forceRenderNextFrame = false;
+            else
+            {
+                // Report + 1 to make room for the clear draw packet.
+                frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size() + 1));
+            }
+        }
 
+        void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
+        {
             if (m_clearShadowDrawPacket)
             {
                 if (startIndex == 0)
@@ -211,6 +214,19 @@ namespace AZ
                 ++offset;
             }
             Base::SubmitDrawItems(context, startIndex, endIndex, offset);
+        }
+
+        void ShadowmapPass::FrameEndInternal()
+        {
+            if (m_clearShadowDrawPacket)
+            {
+                // If m_clearShadowDrawPacket is valid, then this pass would have rendered this frame if
+                // m_forceRenderNextFrame was set to true, so set it to false now. This can't be done safely
+                // in SubmitDrawItems because it may be called multiple times from different threads.
+                m_forceRenderNextFrame = false;
+            }
+            m_lastFrameDrawCount = m_drawItemCount;
+            Base::FrameEndInternal();
         }
 
     } // namespace Render

@@ -1138,7 +1138,16 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    UpdateErrorButtonWithMessage(AZStd::string::format("Asset is missing.\n\nID: %s\nHint:%s", assetID.ToString<AZStd::string>().c_str(), GetCurrentAssetHint().c_str()));
+                    // The asset might have been created in-memory (for example for the default asset provided
+                    // via DefaultAsset attribute) and therefore it doesn't have a job info.
+                    // Only report the asset missing if it doesn't exist in the asset manager.
+                    if (!AZ::Data::AssetManager::Instance().FindAsset(assetID, AZ::Data::AssetLoadBehavior::Default))
+                    {
+                        UpdateErrorButtonWithMessage(AZStd::string::format(
+                            "Asset is missing.\n\nID: %s\nHint:%s",
+                            assetID.ToString<AZStd::string>().c_str(),
+                            GetCurrentAssetHint().c_str()));
+                    }
                 }
             }
         }
@@ -1156,6 +1165,10 @@ namespace AzToolsFramework
         if (m_selectedAssetID.IsValid())
         {
             m_browseEdit->setText(assetName.c_str());
+        }
+        else
+        {
+            m_browseEdit->setText("");
         }
     }
 
@@ -1289,7 +1302,7 @@ namespace AzToolsFramework
         // if Edit button is in use (shown), enable/disable it depending on the current asset id.
         if (m_showEditButton && m_disableEditButtonWhenNoAssetSelected)
         {
-            m_editButton->setEnabled(GetCurrentAssetID().IsValid());
+            m_editButton->setEnabled(GetSelectedAssetID().IsValid());
         }
     }
 
@@ -1677,6 +1690,21 @@ namespace AzToolsFramework
     bool AssetPropertyHandlerDefault::ReadValuesIntoGUI(size_t index, PropertyAssetCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
         return ReadValuesIntoGUIInternal(index, GUI, instance, node);
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastToInternal(void* instance, const InstanceDataNode* node)
+    {
+        if (node->GetElementMetadata()->m_genericClassInfo && node->GetElementMetadata()->m_genericClassInfo->GetGenericTypeId() == AZ::GetAssetClassId())
+        {
+            return static_cast<AZ::Data::Asset<AZ::Data::AssetData>*>(instance);
+        }
+
+        return nullptr;
+    }
+
+    AZ::Data::Asset<AZ::Data::AssetData>* AssetPropertyHandlerDefault::CastTo(void* instance, const InstanceDataNode* node, [[maybe_unused]] const AZ::Uuid& fromId, [[maybe_unused]] const AZ::Uuid& toId) const
+    {
+        return CastToInternal(instance, node);
     }
 
     QWidget* AssetIdPropertyHandlerDefault::CreateGUI(QWidget* pParent)

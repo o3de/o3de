@@ -121,15 +121,33 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // RegExpFilter
+        // CustomFilter
         //////////////////////////////////////////////////////////////////////////
-        //! RegExpFilter filters assets based on a regular expression pattern
-        class RegExpFilter
-            : public AssetBrowserEntryFilter
+        //! CustomFilter filters assets based on a custom filter function 
+        class CustomFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
-            RegExpFilter();
+            CustomFilter(const AZStd::function<bool(const AssetBrowserEntry*)>& filterFn);
+            ~CustomFilter() override = default;
+
+        protected:
+            QString GetNameInternal() const override;
+            bool MatchInternal(const AssetBrowserEntry* entry) const override;
+
+        private:
+            AZStd::function<bool(const AssetBrowserEntry*)> m_filterFn;
+        };
+
+        //////////////////////////////////////////////////////////////////////////
+        // CustomFilter
+        //////////////////////////////////////////////////////////////////////////
+        //! RegExpFilter filters assets based on a regular expression pattern
+        class RegExpFilter : public AssetBrowserEntryFilter
+        {
+            Q_OBJECT
+        public:
+            RegExpFilter() = default;
             ~RegExpFilter() override = default;
 
             void SetFilterPattern(const QRegExp& filterPattern);
@@ -212,23 +230,25 @@ namespace AzToolsFramework
         };
 
         //////////////////////////////////////////////////////////////////////////
-        // AssetPathFilter
+        // EngineFilter
         //////////////////////////////////////////////////////////////////////////
-        class AssetPathFilter : public AssetBrowserEntryFilter
+        //! EngineFilter filters assets in the engine directory, excluding project directory
+        class EngineFilter : public AssetBrowserEntryFilter
         {
             Q_OBJECT
         public:
-            AssetPathFilter();
-            ~AssetPathFilter() override = default;
+            EngineFilter();
+            ~EngineFilter() override = default;
 
-            void SetAssetPath(AZ::IO::Path path);
+            void SetEngineAndProject(AZ::IO::Path enginePath, AZ::IO::Path projectPath);
 
         protected:
             QString GetNameInternal() const override;
             bool MatchInternal(const AssetBrowserEntry* entry) const override;
 
         private:
-            AZ::IO::Path m_assetPath;
+            AZ::IO::Path m_enginePath;
+            AZ::IO::Path m_projectPath;
         };
 
         //////////////////////////////////////////////////////////////////////////

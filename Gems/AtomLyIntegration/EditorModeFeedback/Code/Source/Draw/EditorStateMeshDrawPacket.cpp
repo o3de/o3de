@@ -11,7 +11,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <Atom/RPI.Public/Scene.h> 
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -35,7 +35,8 @@ namespace AZ::Render
     {
         if (!m_material)
         {
-            const RPI::ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
+            const auto meshes = m_modelLod->GetMeshes();
+            const RPI::ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
             m_material = mesh.m_material;
         }
 
@@ -114,7 +115,8 @@ namespace AZ::Render
 
     bool EditorStateMeshDrawPacket::DoUpdate(const RPI::Scene& parentScene)
     {
-        const RPI::ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
+        const auto meshes = m_modelLod->GetMeshes();
+        const RPI::ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
         if (!m_material)
         {

@@ -6,6 +6,8 @@
  *
  */
 
+#include <Atom/Features/SrgSemantics.azsli>
+
 // Gaussian Kernel Radius 9, Sigma 1.8
 static const uint GaussianKernelSize = 19;
 static const int2  TexelOffsetsV[GaussianKernelSize] = {{0, -9}, {0, -8}, {0, -7}, {0, -6}, {0, -5}, {0, -4}, {0, -3}, {0, -2}, {0, -1}, {0, 0}, {0, 1}, {0, 2}, {0, 3}, {0, 4}, {0, 5}, {0, 6}, {0, 7}, {0, 8}, {0, 9}};
@@ -32,14 +34,42 @@ static const float TexelWeights[GaussianKernelSize] = {
     0.0000011022801820635918f
 };
 
-float3 GaussianFilter(uint2 screenCoords, int2 texelOffsets[GaussianKernelSize], RWTexture2D<float4> inputImage)
+ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    float3 result = float3(0.0f, 0.0f, 0.0f);
+    Texture2D<float4> m_input;
+    Texture2D<float2> m_downsampledDepthLinear;
+    float m_invOutputScale;
+    uint m_mipLevel;
+};
+
+float4 GaussianFilter(uint2 inputCoords, uint2 outputCoords, int2 texelOffsets[GaussianKernelSize])
+{
+    const float DepthThreshold = 0.5f;
+    const float SigmaThreshold = 0.25f;
+
+    float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float2 depthSample = PassSrg::m_downsampledDepthLinear.Load(uint3(outputCoords, PassSrg::m_mipLevel)).rg;
+    float depth = depthSample.r;
+    float sigma = depthSample.g;
+
+    if (sigma > SigmaThreshold)
+    {
+        // skip high variance texels (complex edges) to reduce artifacts
+        return result;
+    }
 
     [unroll]
     for (uint i = 0; i < GaussianKernelSize; ++i)
     {
-        result += inputImage[screenCoords + texelOffsets[i]].rgb * TexelWeights[i];
+        float2 offsetDepthSample = PassSrg::m_downsampledDepthLinear.Load(uint3(outputCoords + texelOffsets[i], PassSrg::m_mipLevel)).rg;
+        float offsetDepth = offsetDepthSample.r;
+        float offsetSigma = offsetDepthSample.g;
+
+        // only consider samples that are within the depth and sigma thresholds
+        if (abs(offsetDepth - depth) < DepthThreshold && offsetSigma < SigmaThreshold)
+        {
+            result += max(0.0f, PassSrg::m_input[inputCoords + texelOffsets[i]] * TexelWeights[i]);
+        }
     }
 
     return result;

@@ -17,6 +17,7 @@
 #include <Render/DiffuseProbeGridFeatureProcessor.h>
 #include <DiffuseProbeGrid_Traits_Platform.h>
 #include <Atom/Feature/TransformService/TransformServiceFeatureProcessor.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/PipelineState.h>
@@ -122,21 +123,44 @@ namespace AZ
                 m_visualizationBufferPools->Init(device);
 
                 // load probe visualization model, the BLAS will be created in OnAssetReady()
-                m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                    "Models/DiffuseProbeSphere.azmodel",
-                    AZ::RPI::AssetUtils::TraceLevel::Assert);
 
-                if (!m_visualizationModelAsset.IsReady())
+                // The asset ID for our visualization model has the ID from the lowercased relative path of the source asset
+                // and a sub ID that's generated based on the asset name.
+                // The asset sub id is hardcoded here because the sub id is generated based on the asset name
+                // and the generation method for models currently only exists in ModelAssetBuilderComponent::CreateAssetId().
+                // It isn't exposed to the engine.
+                // Note that there's technically a bug where if the DiffuseProbeSphere asset hasn't been processed by the Asset
+                // Processor by the time this loads, it will load the default missing asset (a cube) instead of the sphere asset
+                // until the next run of the Editor. This could be fixed by using the MeshFeatureProcessor to load the asset and
+                // using ConnectModelChangeEventHandler() to listen for model changes to refresh the visualization.
+                // However, since that will just cause the visualization to change from a cube to a sphere on the first run of the
+                // Editor, handling the edge case might be overkill.
+                Data::AssetId modelAssetId = Data::AssetId(AZ::Uuid::CreateName("models/diffuseprobesphere.fbx"), 268692035);
+                m_visualizationModelAsset =
+                    Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(modelAssetId, Data::AssetLoadBehavior::PreLoad);
+
+                if (m_visualizationModelAsset.GetId().IsValid())
                 {
-                    m_visualizationModelAsset.QueueLoad();
-                }
+                    if (!m_visualizationModelAsset.IsReady())
+                    {
+                        m_visualizationModelAsset.QueueLoad();
+                    }
 
-                Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                    Data::AssetBus::MultiHandler::BusConnect(m_visualizationModelAsset.GetId());
+                }
             }
 
             // query buffer attachmentId
             AZStd::string uuidString = AZ::Uuid::CreateRandom().ToString<AZStd::string>();
             m_queryBufferAttachmentId = AZStd::string::format("DiffuseProbeGridQueryBuffer_%s", uuidString.c_str());
+
+            // cache the SpecularReflectionsFeatureProcessor and SSR RayTracing state
+            m_specularReflectionsFeatureProcessor = GetParentScene()->GetFeatureProcessor<SpecularReflectionsFeatureProcessorInterface>();
+            if (m_specularReflectionsFeatureProcessor)
+            {
+                const SSROptions& ssrOptions = m_specularReflectionsFeatureProcessor->GetSSROptions();
+                m_ssrRayTracingEnabled = ssrOptions.m_rayTracing;
+            }
 
             EnableSceneNotification();
         }
@@ -149,7 +173,7 @@ namespace AZ
                 return;
             }
 
-            AZ_Warning("DiffuseProbeGridFeatureProcessor", m_diffuseProbeGrids.size() == 0, 
+            AZ_Warning("DiffuseProbeGridFeatureProcessor", m_diffuseProbeGrids.size() == 0,
                 "Deactivating the DiffuseProbeGridFeatureProcessor, but there are still outstanding probe grids probes. Components\n"
                 "using DiffuseProbeGridHandles should free them before the DiffuseProbeGridFeatureProcessor is deactivated.\n"
             );
@@ -229,6 +253,23 @@ namespace AZ
                 AZ_Assert(diffuseProbeGrid.use_count() > 1, "DiffuseProbeGrid found with no corresponding owner, ensure that RemoveProbe() is called before releasing probe handles");
 
                 diffuseProbeGrid->Simulate(probeGridIndex);
+            }
+
+            if (m_specularReflectionsFeatureProcessor)
+            {
+                const SSROptions& ssrOptions = m_specularReflectionsFeatureProcessor->GetSSROptions();
+                if (m_ssrRayTracingEnabled != ssrOptions.m_rayTracing)
+                {
+                    m_ssrRayTracingEnabled = ssrOptions.m_rayTracing;
+
+                    AZStd::vector<Name> passHierarchy = { Name("ReflectionScreenSpacePass"), Name("DiffuseProbeGridQueryFullscreenWithAlbedoPass") };
+                    RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchy);
+                    RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                        {
+                            pass->SetEnabled(m_ssrRayTracingEnabled);
+                            return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                        });
+                }
             }
         }
 
@@ -728,7 +769,7 @@ namespace AZ
 
             AZ::RHI::ValidateStreamBufferViews(m_boxStreamLayout, m_probeGridRenderData.m_boxPositionBufferView);
         }
-        
+
         void DiffuseProbeGridFeatureProcessor::OnRenderPipelineChanged(RPI::RenderPipeline* renderPipeline,
                 RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
@@ -754,7 +795,7 @@ namespace AZ
             }
             m_needUpdatePipelineStates = true;
         }
-                
+
         void DiffuseProbeGridFeatureProcessor::AddRenderPasses(AZ::RPI::RenderPipeline* renderPipeline)
         {
             // only add to this pipeline if it contains the DiffuseGlobalFullscreen pass
@@ -771,8 +812,12 @@ namespace AZ
 
             if (!diffuseProbeGridUpdatePass)
             {
-                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridPreparePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DiffuseProbeGridPreparePass");
                 AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridRenderPassRequest.azasset", "ForwardSubsurface");
+
+                // add the fullscreen query pass for SSR raytracing fallback color
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridScreenSpaceReflectionsQueryPassRequest.azasset", "ReflectionScreenSpaceRayTracingPass");
 
                 // only add the visualization pass if there's an AuxGeom pass in the pipeline
                 RPI::PassFilter auxGeomPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("AuxGeomPass"), renderPipeline);
@@ -789,7 +834,7 @@ namespace AZ
             UpdatePasses();
             m_needUpdatePipelineStates = true;
         }
-        
+
         void DiffuseProbeGridFeatureProcessor::AddPassRequest(RPI::RenderPipeline* renderPipeline, const char* passRequestAssetFilePath, const char* insertionPointPassName)
         {
             auto passRequestAsset = RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(passRequestAssetFilePath, RPI::AssetUtils::TraceLevel::Warning);
@@ -861,6 +906,10 @@ namespace AZ
 
             m_visualizationModel = RPI::Model::FindOrCreate(modelAsset);
             AZ_Assert(m_visualizationModel.get(), "Failed to load DiffuseProbeGrid visualization model");
+            if (!m_visualizationModel)
+            {
+                return;
+            }
 
             const AZStd::span<const Data::Instance<RPI::ModelLod>>& modelLods = m_visualizationModel->GetLods();
             AZ_Assert(!modelLods.empty(), "Invalid DiffuseProbeGrid visualization model");
@@ -876,7 +925,8 @@ namespace AZ
                 return;
             }
 
-            const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[0];
+            const auto meshes = modelLod->GetMeshes();
+            const RPI::ModelLod::Mesh& mesh = meshes[0];
 
             // setup a stream layout and shader input contract for the position vertex stream
             static const char* PositionSemantic = "POSITION";

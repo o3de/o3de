@@ -19,6 +19,7 @@
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/DisplayContextRequestBus.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
@@ -103,6 +104,7 @@ class SandboxIntegrationManager
     , private AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
     , private IUndoManagerListener
     , private AzToolsFramework::Layers::EditorLayerComponentNotificationBus::Handler
+    , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
 {
 public:
 
@@ -165,7 +167,6 @@ private:
     AZ::Vector3 GetWorldPositionAtViewportCenter() override;
     void InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId) override;
     void ClearRedoStack() override;
-    int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -181,7 +182,7 @@ private:
 
     //////////////////////////////////////////////////////////////////////////
     // AzToolsFramework::EditorEntityContextNotificationBus::Handler
-    void OnContextReset() override;
+    void OnPrepareForContextReset() override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////
@@ -196,6 +197,10 @@ private:
     // AzFramework::DisplayContextRequestBus
     void SetDC(DisplayContext* dc) override;
     DisplayContext* GetDC() override;
+
+    // ActionManagerRegistrationNotificationBus overrides ...
+    void OnActionRegistrationHook() override;
+    void OnMenuBindingHook() override;
 
     // Context menu handlers.
     void ContextMenu_NewEntity();
@@ -274,7 +279,7 @@ private:
     };
 
 private:
-    ContextMenuBottomHandler m_contextMenuBottomHandler;
+    EditorContextMenuHandler m_contextMenuBottomHandler;
 
     //! Position of the cursor when the context menu is opened inside the 3d viewport.
     //! note: The optional will be empty if the context menu was opened outside the 3d viewport.

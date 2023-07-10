@@ -45,8 +45,6 @@ ly_add_target(
 ly_create_alias(NAME PrefabBuilder.Tools NAMESPACE Gem TARGETS Gem::PrefabBuilder.Builders)
 
 # we automatically add this gem, if it is present, to all our known set of builder applications:
-ly_enable_gems(GEMS PrefabBuilder)
-
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME PrefabBuilder.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
@@ -64,5 +62,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::PrefabBuilder.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

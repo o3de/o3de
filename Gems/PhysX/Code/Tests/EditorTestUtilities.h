@@ -146,7 +146,6 @@ namespace PhysXEditorTests
     class PhysXEditorFixture
         : public testing::Test
         , public Physics::DefaultWorldBus::Handler
-        , public UnitTest::RegistryTestHelper
     {
     public:
         void SetUp() override;

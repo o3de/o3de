@@ -461,7 +461,7 @@ namespace AtomToolsFramework
                     {
                         layoutSettingsMenu->addAction(
                             layoutName.c_str(),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -483,7 +483,7 @@ namespace AtomToolsFramework
                         // Since these layouts were created and saved by the user, give them the option to restore and delete them.
                         layoutMenu->addAction(
                             tr("Load"),
-                            [this, layoutName, windowState]()
+                            [this, windowState]()
                             {
                                 m_advancedDockManager->restoreState(
                                     QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
@@ -556,7 +556,7 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::RestoreSavedLayout()
     {
-        // Attempt to restore the layout that was saved the last time the application was closed. 
+        // Attempt to restore the layout that was saved the last time the application was closed.
         const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
         if (!windowState.empty())
         {
@@ -601,16 +601,14 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::UpdateWindowTitle()
     {
-        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
-        if (!apiName.IsEmpty())
+        if (AZ::RHI::Factory::IsReady())
         {
-            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
-            setWindowTitle(title);
+            const AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            setWindowTitle(tr("%1 (%2)").arg(QApplication::applicationName()).arg(apiName.GetCStr()));
+            AZ_Error("AtomToolsMainWindow", !apiName.IsEmpty(), "Render API name not found");
+            return;
         }
-        else
-        {
-            AZ_Assert(false, "Render API name not found");
-            setWindowTitle(QApplication::applicationName());
-        }
+
+        setWindowTitle(QApplication::applicationName());
     }
 } // namespace AtomToolsFramework

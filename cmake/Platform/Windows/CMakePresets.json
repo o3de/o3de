@@ -111,6 +111,19 @@
             ]
         },
         {
+            "name": "windows-ninja-clang-cl",
+            "displayName": "Windows Visual Studio 2022 + ClangCl",
+            "description": "Configure Windows to use the VS2022 generator and the clang-cl compiler",
+            "binaryDir": "${sourceDir}/build/windows_clangcl",
+            "inherits": [
+                "windows-vs2022",
+                "unity"
+            ],
+            "toolset": {
+                "value": "ClangCl"
+            }
+        },
+        {
             "name": "windows-ninja",
             "displayName": "Windows Ninja",
             "description": "Configure Windows using the Ninja Multi-Config generator",

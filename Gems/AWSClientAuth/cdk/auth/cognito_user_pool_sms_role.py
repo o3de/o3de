@@ -6,9 +6,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Environment,
     aws_iam as iam
 )
+from constructs import Construct
 from utils import name_utils
 
 
@@ -17,7 +19,7 @@ class CognitoUserPoolSMSRole:
     Class to create IAM Role to allow Cognito user pool to send sms for SignUp and MFA
     """
 
-    def __init__(self, scope: core.Construct, feature_name: str, project_name: str, env: core.Environment) -> None:
+    def __init__(self, scope: Construct, feature_name: str, project_name: str, env: Environment) -> None:
         """
         :param feature_name: Name of the feature for resource.
         :param project_name: Name of the project for resource.
@@ -49,7 +51,7 @@ class CognitoUserPoolSMSRole:
         # Below does not work as add_to_policy creates a parallel CF construct.
         # self._sms_role.add_to_policy(policy_statement)
 
-        output = core.CfnOutput(
+        CfnOutput(
             scope,
             'CognitoUserPoolSMSRoleArn',
             description="Cognito User pool SMS role Arn",

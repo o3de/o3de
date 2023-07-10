@@ -28,6 +28,9 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     TextureCube m_reflectionProbeCubeMap;
 }
 
+// The shader variant system needs a fallback if you have non-static options.
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
+
 option bool o_useClipmap = false;
 option bool o_useTerrainClod = true;
 

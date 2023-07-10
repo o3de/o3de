@@ -150,7 +150,13 @@ namespace AzToolsFramework
                     }
                 }
 
-                AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+                AZ::EntityId parentId; // start with an invalid id, in case the parent is invalid.
+                AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+                if (entityId == parentId)
+                {
+                    break; // avoid situation where a GetParentId returns the same id leading to an infinite loop
+                }
+                entityId = parentId;
             }
 
             return highestUnselectedAncestorContainer;
@@ -172,7 +178,13 @@ namespace AzToolsFramework
                 highestSelectableEntityId = entityId;
             }
 
-            AZ::TransformBus::EventResult(entityId, entityId, &AZ::TransformBus::Events::GetParentId);
+            AZ::EntityId parentId; // start with an invalid id, in case the parent is invalid.
+            AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
+            if (entityId == parentId)
+            {
+                break; // avoid an infinite loop in the case where the same entity is returned.
+            }
+            entityId = parentId;
         }
 
         return highestSelectableEntityId;

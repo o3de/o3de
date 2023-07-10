@@ -145,18 +145,20 @@ namespace AtomToolsFramework
     {
         using namespace AzToolsFramework::AssetBrowser;
 
-        QSharedPointer<EntryTypeFilter> sourceFilter(new EntryTypeFilter);
-        sourceFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Source);
+        auto filterFn = [&](const AssetBrowserEntry* entry)
+        {
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source &&
+                entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+            {
+                return false;
+            }
 
-        QSharedPointer<EntryTypeFilter> folderFilter(new EntryTypeFilter);
-        folderFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
-
-        QSharedPointer<CompositeFilter> sourceOrFolderFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::OR));
-        sourceOrFolderFilter->AddFilter(sourceFilter);
-        sourceOrFolderFilter->AddFilter(folderFilter);
+            const auto& path = entry->GetFullPath();
+            return !AZ::StringFunc::Contains(path, "cache");
+        };
 
         QSharedPointer<CompositeFilter> finalFilter(new CompositeFilter(CompositeFilter::LogicOperatorType::AND));
-        finalFilter->AddFilter(sourceOrFolderFilter);
+        finalFilter->AddFilter(FilterConstType(new CustomFilter(filterFn)));
         finalFilter->AddFilter(m_ui->m_searchWidget->GetFilter());
 
         return finalFilter;

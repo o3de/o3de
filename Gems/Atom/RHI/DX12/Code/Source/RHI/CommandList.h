@@ -27,6 +27,7 @@
 #define DX12_GPU_PROFILE_MODE_BASIC     1       // Profiles command list lifetime
 #define DX12_GPU_PROFILE_MODE_DETAIL    2       // Profiles draw call state changes
 #define DX12_GPU_PROFILE_MODE DX12_GPU_PROFILE_MODE_BASIC
+#define PIX_MARKER_CMDLIST_COL 0xFF00FF00
 
 namespace AZ
 {
@@ -283,7 +284,7 @@ namespace AZ
                 return false;
             }
             
-            const PipelineLayout* pipelineLayout = &pipelineState->GetPipelineLayout();
+            const PipelineLayout* pipelineLayout = pipelineState->GetPipelineLayout();
             if (!pipelineLayout)
             {
                 AZ_Assert(false, "Pipeline layout is null.");
@@ -382,7 +383,8 @@ namespace AZ
                 RootParameterBinding binding = pipelineLayout->GetRootParameterBindingByIndex(srgIndex);
 
                 //Check if we are iterating over the bindless srg slot
-                if (srgSlot == RHI::ShaderResourceGroupData::BindlessSRGFrequencyId && shaderResourceGroup == nullptr)
+                const auto& device = static_cast<Device&>(GetDevice());
+                if (srgSlot == device.GetBindlessSrgSlot() && shaderResourceGroup == nullptr)
                 {
                     // Skip in case the global static heap is already bound
                     if (m_state.m_bindBindlessHeap)

@@ -278,7 +278,7 @@ namespace AZ
             struct DrawItemInfo
             {
                 RHI::DrawItem m_drawItem;
-                RHI::DrawItemSortKey m_sortKey;
+                RHI::DrawItemSortKey m_sortKey = 0;
                 BufferViewIndexType m_vertexBufferViewIndex = InvalidIndex;
                 BufferViewIndexType m_indexBufferViewIndex = InvalidIndex;
             };

@@ -564,6 +564,33 @@ namespace AzToolsFramework
         return AZ::Success(sortKey.value());
     }
 
+    MenuManagerOperationResult MenuManager::DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) const
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not display menu \"%s\" - menu has not been registered.",
+                menuIdentifier.c_str()));
+        }
+
+        menuIterator->second.DisplayAtPosition(screenPosition);
+        return AZ::Success();
+    }
+
+    MenuManagerOperationResult MenuManager::DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) const
+    {
+        auto menuIterator = m_menus.find(menuIdentifier);
+        if (menuIterator == m_menus.end())
+        {
+            return AZ::Failure(AZStd::string::format(
+                "Menu Manager - Could not display menu \"%s\" - menu has not been registered.", menuIdentifier.c_str()));
+        }
+
+        menuIterator->second.DisplayUnderCursor();
+        return AZ::Success();
+    }
+
     MenuManagerOperationResult MenuManager::QueueRefreshForMenu(const AZStd::string& menuIdentifier)
     {
         if (!m_menus.contains(menuIdentifier))

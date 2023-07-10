@@ -39,6 +39,11 @@ AZ_CVAR(
     AZ::ConsoleFunctorFlags::DontReplicate | AZ::ConsoleFunctorFlags::DontDuplicate,
     "If set, enables experimental DPE-based CVar Editor");
 
+static constexpr const char* GetHandlerPropertyName()
+{
+    return "handlerId";
+}
+
 template<class T>
 void DetachAndHide(T* widget)
 {
@@ -236,124 +241,133 @@ namespace AzToolsFramework
             itemGeometry.setLeft(itemGeometry.left() + expanderSpace);
 
             // used to iterate through the vector containing a shared column's first widget and size
+            auto* myRow = GetRow();
             int sharedVectorIndex = 0;
             // iterate over each item, laying them left to right
             int layoutIndex = 0;
             while (layoutIndex < itemCount)
             {
-                size_t currentWidget = static_cast<size_t>(layoutIndex);
-                auto* myRow = GetRow();
-                AzToolsFramework::DPERowWidget::AttributeInfo* attributes = myRow->GetAttributes(currentWidget);
-
-                //! If the current widget is the first widget of a shared column, create the shared column layout and add widgets to it
-                if (sharedVectorIndex < m_sharePriorColumn.size() &&
-                    layoutIndex == static_cast<int>(m_sharePriorColumn[sharedVectorIndex][0]))
+                auto* currentItem = itemAt(layoutIndex);
+                auto* currentWidget = currentItem->widget();
+                if (currentWidget)
                 {
-                    QHBoxLayout* sharedColumnLayout = new QHBoxLayout;
-                    const int numItems = static_cast<int>(m_sharePriorColumn[sharedVectorIndex].size());
-                    int sharedWidgetIndex = 0;
-                    // values used to remember the alignment of each widget
-                    bool startSpacer = false, endSpacer = false;
-                    // number of widgets that should be set to their minimum size
-                    int minWidthCount = 0;
+                    auto domIndex = myRow->GetDomIndexOfChild(currentWidget);
+                    AZ_Assert(domIndex != -1, "widget in layout was not found in row's dom list!");
 
-                    // Iterate over each item in the current shared column, adding them to a single layout
-                    while (sharedWidgetIndex < numItems)
+                    AzToolsFramework::DPERowWidget::AttributeInfo* attributes = myRow->GetCachedAttributes(domIndex);
+
+                    //! If the current widget is the first widget of a shared column, create the shared column layout and add widgets to it
+                    if (sharedVectorIndex < m_sharePriorColumn.size() &&
+                        domIndex == static_cast<int>(m_sharePriorColumn[sharedVectorIndex][0]))
                     {
-                        currentWidget = m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex];
-                        attributes = myRow->GetAttributes(currentWidget);
-                        // Save the alignment of the last widget in the shared column with an alignment attribute
-                        if (attributes)
+                        QHBoxLayout* sharedColumnLayout = new QHBoxLayout;
+                        const int numItems = static_cast<int>(m_sharePriorColumn[sharedVectorIndex].size());
+                        int sharedWidgetIndex = 0;
+                        // values used to remember the alignment of each widget
+                        bool startSpacer = false, endSpacer = false;
+                        // number of widgets that should be set to their minimum size
+                        int minWidthCount = 0;
+
+                        // Iterate over each item in the current shared column, adding them to a single layout
+                        while (sharedWidgetIndex < numItems)
                         {
-                            switch (attributes->m_alignment)
+                            domIndex = aznumeric_cast<int>(m_sharePriorColumn[sharedVectorIndex][sharedWidgetIndex]);
+                            attributes = myRow->GetCachedAttributes(domIndex);
+                            // Save the alignment of the last widget in the shared column with an alignment attribute
+                            if (attributes)
                             {
-                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
-                                startSpacer = false;
-                                endSpacer = true;
-                                break;
-                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
-                                startSpacer = true;
-                                endSpacer = true;
-                                break;
-                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
-                                startSpacer = true;
-                                endSpacer = false;
-                                break;
+                                switch (attributes->m_alignment)
+                                {
+                                case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                                    startSpacer = false;
+                                    endSpacer = true;
+                                    break;
+                                case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
+                                    startSpacer = true;
+                                    endSpacer = true;
+                                    break;
+                                case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                                    startSpacer = true;
+                                    endSpacer = false;
+                                    break;
+                                }
+                            }
+                            auto* itemToAdd = itemAt(layoutIndex + sharedWidgetIndex);
+                            AZ_Assert(itemToAdd, "layout item not found!");
+                            sharedColumnLayout->addItem(itemToAdd);
+
+                            // If a widget should only take up its minimum width, do not stretch it
+                            if (attributes && attributes->m_minimumWidth)
+                            {
+                                minWidthCount++;
+                            }
+                            else
+                            {
+                                sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
+                            }
+                            sharedWidgetIndex++;
+                        }
+
+                        // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
+                        if (minWidthCount == numItems)
+                        {
+                            QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
+                            if (startSpacer)
+                            {
+                                sharedColumnLayout->insertSpacerItem(0, spacer);
+                            }
+                            if (endSpacer)
+                            {
+                                sharedColumnLayout->addSpacerItem(spacer);
                             }
                         }
-                        sharedColumnLayout->addItem(itemAt(layoutIndex + sharedWidgetIndex));
 
-                        // If a widget should only take up its minimum width, do not stretch it
-                        if (attributes && attributes->m_minimumWidth)
+                        // Special case if this is the first column in a row
+                        if (layoutIndex == 0)
                         {
-                            minWidthCount++;
+                            sharedColumnLayout->setGeometry(itemGeometry);
                         }
                         else
                         {
-                            sharedColumnLayout->setStretch(sharedColumnLayout->count() - 1, 1);
+                            itemGeometry.setLeft(itemGeometry.right() + 1);
+                            itemGeometry.setRight(itemGeometry.left() + perItemWidth);
+                            sharedColumnLayout->setGeometry(itemGeometry);
                         }
-                        sharedWidgetIndex++;
+                        ++sharedVectorIndex;
+                        // Increase the layout index by the amount of widgets in the shared column we have iterated over
+                        layoutIndex += sharedWidgetIndex;
                     }
-
-                    // if all widgets in this shared column take up only their minimum width, set the appropriate alignment with spacers
-                    if (minWidthCount == numItems)
-                    {
-                        QSpacerItem* spacer = new QSpacerItem(perItemWidth, 1, QSizePolicy::Expanding, QSizePolicy::Fixed);
-                        if (startSpacer)
-                        {
-                            sharedColumnLayout->insertSpacerItem(0, spacer);
-                        }
-                        if (endSpacer)
-                        {
-                            sharedColumnLayout->addSpacerItem(spacer);
-                        }
-                    }
-
-                    // Special case if this is the first column in a row
-                    if (layoutIndex == 0)
-                    {
-                        sharedColumnLayout->setGeometry(itemGeometry);
-                    }
+                    // Widget is not in a shared column, lay it individually with its appropriate alignment
                     else
                     {
-                        itemGeometry.setLeft(itemGeometry.right() + 1);
-                        itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-                        sharedColumnLayout->setGeometry(itemGeometry);
-                    }
-                    ++sharedVectorIndex;
-                    // Increase the layout index by the amount of widgets in the shared column we have iterated over
-                    layoutIndex += sharedWidgetIndex;
-                }
-                // Widget is not in a shared column, lay it individually with its appropriate alignment
-                else
-                {
-                    if (layoutIndex == 0)
-                    {
-                        itemAt(layoutIndex)->setGeometry(itemGeometry);
-                    }
-                    else
-                    {
-                        auto* currItem = itemAt(layoutIndex);
-                        itemGeometry.setLeft(itemGeometry.right() + 1);
-                        itemGeometry.setRight(itemGeometry.left() + perItemWidth);
-                        if (attributes)
+                        if (layoutIndex == 0)
                         {
-                            switch (attributes->m_alignment)
+                            itemAt(layoutIndex)->setGeometry(itemGeometry);
+                        }
+                        else
+                        {
+                            auto* currItem = itemAt(layoutIndex);
+                            itemGeometry.setLeft(itemGeometry.right() + 1);
+                            itemGeometry.setRight(itemGeometry.left() + perItemWidth);
+                            if (attributes)
                             {
-                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
-                                currItem->setAlignment(Qt::AlignLeft);
-                                break;
-                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
-                                currItem->setAlignment(Qt::AlignCenter);
-                                break;
-                            case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
-                                currItem->setAlignment(Qt::AlignRight);
-                                break;
+                                switch (attributes->m_alignment)
+                                {
+                                case AZ::Dpe::Nodes::PropertyEditor::Align::AlignLeft:
+                                    currItem->setAlignment(Qt::AlignLeft);
+                                    break;
+                                case AZ::Dpe::Nodes::PropertyEditor::Align::AlignCenter:
+                                    currItem->setAlignment(Qt::AlignCenter);
+                                    break;
+                                case AZ::Dpe::Nodes::PropertyEditor::Align::AlignRight:
+                                    currItem->setAlignment(Qt::AlignRight);
+                                    break;
+                                }
                             }
+                            currItem->setGeometry(itemGeometry);
                         }
-                        currItem->setGeometry(itemGeometry);
+                        layoutIndex++;
                     }
-                    layoutIndex++;
                 }
             }
         }
@@ -500,12 +514,10 @@ namespace AzToolsFramework
         {
             if (childWidget)
             {
-                if (auto foundPropertIter = m_widgetToPropertyHandlerInfo.find(childWidget);
-                    foundPropertIter != m_widgetToPropertyHandlerInfo.end())
+                auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
+                if (!handlerInfo.IsNull())
                 {
-                    // propertyHandlers own their widgets, so don't destroy them here. Set them free!
-                    DetachAndHide(childWidget);
-                    ReleaseHandler(foundPropertIter->second);
+                    DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
                 else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
                 {
@@ -522,9 +534,7 @@ namespace AzToolsFramework
                 }
             }
         }
-
-        m_widgetToPropertyHandlerInfo.clear();
-        ClearAttributes();
+        ClearCachedAttributes();
         m_domOrderedChildren.clear();
         m_columnLayout->Clear();
     }
@@ -534,6 +544,48 @@ namespace AzToolsFramework
         Clear();
     }
 
+    DPERowWidget* DPERowWidget::GetPriorRowInLayout(size_t domIndex)
+    {
+        DPERowWidget* priorRowInLayout = nullptr;
+
+        // search for an existing row sibling with a lower dom index
+        for (int priorWidgetIndex = static_cast<int>(domIndex) - 1; priorRowInLayout == nullptr && priorWidgetIndex >= 0;
+             --priorWidgetIndex)
+        {
+            priorRowInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
+        }
+
+        // if we found a prior DPERowWidget, put this one after the last of its children,
+        // if not, put this new row immediately after its parent -- this
+        if (priorRowInLayout)
+        {
+            priorRowInLayout = priorRowInLayout->GetLastDescendantInLayout();
+        }
+        else
+        {
+            priorRowInLayout = this;
+        }
+        return priorRowInLayout;
+    }
+
+    int DPERowWidget::GetDomIndexOfChild(const QWidget* childWidget) const
+    {
+        for (int searchIndex = 0, numEntries = aznumeric_cast<int>(m_domOrderedChildren.size()); searchIndex < numEntries; ++searchIndex)
+        {
+            if (m_domOrderedChildren[searchIndex] == childWidget)
+            {
+                return searchIndex;
+            }
+        }
+        return -1;
+    }
+
+    QWidget* DPERowWidget::GetChild(size_t domIndex)
+    {
+        AZ_Assert(domIndex < m_domOrderedChildren.size(), "DOM index out of bounds!");
+        return m_domOrderedChildren[domIndex];
+    }
+
     void DPERowWidget::AddChildFromDomValue(const AZ::Dom::Value& childValue, size_t domIndex)
     {
         // create a child widget from the given DOM value and add it to the correct layout
@@ -541,36 +593,12 @@ namespace AzToolsFramework
 
         if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
         {
-            m_columnLayout->SetExpanderShown(true);
-
             if (IsExpanded())
             {
-                auto dpe = GetDPE();
-                // determine where to put this new row in the main DPE layout
+                // create and add the row child to m_domOrderedChildren
                 auto newRow = DocumentPropertyEditor::GetRowPool()->GetInstance();
                 newRow->Init(m_depth + 1, this);
-                newRow->setParent(dpe);
-                DPERowWidget* priorWidgetInLayout = nullptr;
-
-                // search for an existing row sibling with a lower dom index
-                for (int priorWidgetIndex = static_cast<int>(domIndex) - 1; priorWidgetInLayout == nullptr && priorWidgetIndex >= 0;
-                     --priorWidgetIndex)
-                {
-                    priorWidgetInLayout = qobject_cast<DPERowWidget*>(m_domOrderedChildren[priorWidgetIndex]);
-                }
-
-                // if we found a prior DPERowWidget, put this one after the last of its children,
-                // if not, put this new row immediately after its parent -- this
-                if (priorWidgetInLayout)
-                {
-                    priorWidgetInLayout = priorWidgetInLayout->GetLastDescendantInLayout();
-                }
-                else
-                {
-                    priorWidgetInLayout = this;
-                }
-                AddDomChildWidget(domIndex, newRow);
-                dpe->AddAfterWidget(priorWidgetInLayout, newRow);
+                AddRowChild(newRow, domIndex);
 
                 // if it's a row, recursively populate the children from the DOM array in the passed value
                 newRow->SetValueFromDom(childValue);
@@ -579,7 +607,7 @@ namespace AzToolsFramework
             {
                 // this row isn't expanded, don't create any row children, just log that there's a null widget at
                 // the given DOM index
-                AddDomChildWidget(domIndex, nullptr);
+                AddRowChild(nullptr, domIndex);
             }
         }
         else // not a row, so it's a column widget
@@ -596,7 +624,8 @@ namespace AzToolsFramework
             else if (childType == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
             {
                 auto handlerId = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(childValue);
-                addedWidget = CreateWidgetForHandler(handlerId, childValue);
+
+                addedWidget = GetDPE()->CreateWidgetForHandler(handlerId, childValue);
             }
             else
             {
@@ -604,8 +633,68 @@ namespace AzToolsFramework
                 return;
             }
 
-            AddColumnWidget(addedWidget, domIndex, childValue);
             AddDomChildWidget(domIndex, addedWidget);
+            AddColumnWidget(addedWidget, domIndex, childValue);
+        }
+    }
+
+    void DPERowWidget::RemoveChildAt(size_t childIndex, QWidget** newOwner)
+    {
+        const auto childIterator = m_domOrderedChildren.begin() + childIndex;
+        auto childWidget = *childIterator;
+        if (childWidget)
+        {
+            if (newOwner)
+            {
+                // transfer ownership
+                *newOwner = childWidget;
+            }
+
+            // remove the existing child from this row and do any necessary book-keeping
+            DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
+            if (rowToRemove)
+            {
+                // we're removing a row, remove any associated saved expander state
+                auto dpe = GetDPE();
+                if (dpe->ShouldEraseExpanderStateWhenRowRemoved())
+                {
+                    dpe->RemoveExpanderStateForRow(rowToRemove->BuildDomPath());
+                }
+                if (!newOwner)
+                {
+                    DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
+                }
+            }
+            else if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
+            {
+                RemoveCachedAttributes(childIndex);
+                if (!newOwner)
+                {
+                    DocumentPropertyEditor::ReleaseHandler(handlerInfo);
+                }
+            }
+            else // not a row, not a PropertyHandler, must be a label
+            {
+                auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                AZ_Assert(label, "not a label, unknown widget discovered!");
+                if (label && !newOwner)
+                {
+                    DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
+                }
+            }
+        }
+        m_domOrderedChildren.erase(childIterator);
+
+        // check if the last row widget child was removed, and hide the expander if necessary
+        const bool expanded = IsExpanded();
+        auto isDPERow = [expanded](auto* widget)
+        {
+            // when not expanded, null children are just unseen child rows
+            return ((!widget && !expanded) || qobject_cast<DPERowWidget*>(widget) != nullptr);
+        };
+        if (AZStd::find_if(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), isDPERow) == m_domOrderedChildren.end())
+        {
+            m_columnLayout->SetExpanderShown(false);
         }
     }
 
@@ -613,39 +702,42 @@ namespace AzToolsFramework
     {
         Clear();
 
-        m_domPath = BuildDomPath();
+        auto domPath = BuildDomPath();
         SetAttributesFromDom(domArray);
 
-        // determine whether this node should be expanded
-        if (m_forceAutoExpand.has_value())
+        if (ValueHasChildRows(domArray))
         {
-            // forced attribute always wins, set the expansion state
-            SetExpanded(m_forceAutoExpand.value());
-        }
-        else
-        {
-            // nothing forced, so the user's saved expansion state, if it exists, should be used
-            DocumentPropertyEditor* dpe = GetDPE();
-            if (dpe->IsRecursiveExpansionOngoing())
+            // determine whether this node should be expanded, so we know whether to populate row children
+            if (m_forceAutoExpand.has_value())
             {
-                SetExpanded(true);
-                dpe->SetSavedExpanderStateForRow(m_domPath, true);
-            }
-            else if (dpe->HasSavedExpanderStateForRow(m_domPath))
-            {
-                SetExpanded(dpe->GetSavedExpanderStateForRow(m_domPath));
+                // forced attribute always wins, set the expansion state
+                SetExpanded(m_forceAutoExpand.value());
             }
             else
             {
-                // no prior expansion state set, use the AutoExpand attribute, if it's set
-                if (m_expandByDefault.has_value())
+                // nothing forced, so the user's saved expansion state, if it exists, should be used
+                DocumentPropertyEditor* dpe = GetDPE();
+                if (dpe->IsRecursiveExpansionOngoing())
                 {
-                    SetExpanded(m_expandByDefault.value());
+                    SetExpanded(true);
+                    dpe->SetSavedExpanderStateForRow(domPath, true);
+                }
+                else if (dpe->HasSavedExpanderStateForRow(domPath))
+                {
+                    SetExpanded(dpe->GetSavedExpanderStateForRow(domPath));
                 }
                 else
                 {
-                    // expander state is not explicitly set or saved anywhere, default to expanded
-                    SetExpanded(true);
+                    // no prior expansion state set, use the AutoExpand attribute, if it's set
+                    if (m_expandByDefault.has_value())
+                    {
+                        SetExpanded(m_expandByDefault.value());
+                    }
+                    else
+                    {
+                        // expander state is not explicitly set or saved anywhere, default to expanded
+                        SetExpanded(true);
+                    }
                 }
             }
         }
@@ -666,74 +758,65 @@ namespace AzToolsFramework
 
     void DPERowWidget::SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget)
     {
-        AttributeInfo updatedInfo;
-
-        // Extract all attributes from dom value
-        updatedInfo.m_alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(
+        AttributeInfo updatedLayoutAttributes;
+        updatedLayoutAttributes.m_alignment = AZ::Dpe::Nodes::PropertyEditor::Alignment.ExtractFromDomNode(domArray).value_or(
             AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment);
-        updatedInfo.m_sharePriorColumn = AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domArray).value_or(false);
-        updatedInfo.m_minimumWidth = AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domArray).value_or(false);
-        updatedInfo.m_descriptionString = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
-        updatedInfo.m_isDisabled = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domArray).value_or(false) ||
-            AZ::Dpe::Nodes::PropertyEditor::AncestorDisabled.ExtractFromDomNode(domArray).value_or(false);
+        updatedLayoutAttributes.m_sharePriorColumn =
+            AZ::Dpe::Nodes::PropertyEditor::SharePriorColumn.ExtractFromDomNode(domArray).value_or(false);
+        updatedLayoutAttributes.m_minimumWidth =
+            AZ::Dpe::Nodes::PropertyEditor::UseMinimumWidth.ExtractFromDomNode(domArray).value_or(false);
 
-        AttributeInfo currentInfo;
-        auto attributeIter = m_childIndexToAttributeInfo.find(domIndex);
-        if (attributeIter != m_childIndexToAttributeInfo.end())
+        if (updatedLayoutAttributes.m_sharePriorColumn)
         {
-            currentInfo = m_childIndexToAttributeInfo[domIndex];
-        }
-
-        if (updatedInfo.m_sharePriorColumn != currentInfo.m_sharePriorColumn)
-        {
-            if (updatedInfo.m_sharePriorColumn)
+            // Check for a widget in the previous column
+            int priorColumnDomIndex = -1;
+            for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnDomIndex == -1 && searchIndex >= 0); --searchIndex)
             {
-                // Check for a widget in the previous column
-                int priorColumnIndex = -1;
-                for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
+                if (m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]) != -1)
                 {
-                    priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
-                }
-
-                AZ_Assert(priorColumnIndex != -1, "Tried to share column with an out of bounds index!");
-                if (priorColumnIndex != -1)
-                {
-                    m_columnLayout->AddSharePriorColumn(priorColumnIndex, domIndex);
+                    priorColumnDomIndex = searchIndex;
                 }
             }
-            else
+            AZ_Assert(priorColumnDomIndex != -1, "Tried to share column with an out of bounds index!");
+            if (priorColumnDomIndex != -1)
             {
-                m_columnLayout->RemoveSharePriorColumn(domIndex);
+                m_columnLayout->AddSharePriorColumn(priorColumnDomIndex, domIndex);
             }
-        }
-
-        if (updatedInfo.m_descriptionString != currentInfo.m_descriptionString)
-        {
-            setToolTip(
-                QString::fromUtf8(updatedInfo.m_descriptionString.data(), aznumeric_cast<int>(updatedInfo.m_descriptionString.size())));
-            childWidget->setToolTip(
-                QString::fromUtf8(updatedInfo.m_descriptionString.data(), aznumeric_cast<int>(updatedInfo.m_descriptionString.size())));
-        }
-
-        if (updatedInfo.m_isDisabled != currentInfo.m_isDisabled)
-        {
-            childWidget->setEnabled(!updatedInfo.m_isDisabled);
-        }
-
-        if (attributeIter != m_childIndexToAttributeInfo.end() && updatedInfo.IsDefault())
-        {
-            m_childIndexToAttributeInfo.erase(attributeIter);
         }
         else
         {
-            m_childIndexToAttributeInfo[domIndex] = updatedInfo;
+            m_columnLayout->RemoveSharePriorColumn(domIndex);
         }
+
+        // Remove any cached attribute info that is default, else cache it for the layout to use.
+        // This way we only cache what is needed.
+        auto layoutAttributeInfoIter = m_childIndexToCachedAttributeInfo.find(domIndex);
+        if (layoutAttributeInfoIter != m_childIndexToCachedAttributeInfo.end() && updatedLayoutAttributes.IsDefault())
+        {
+            m_childIndexToCachedAttributeInfo.erase(layoutAttributeInfoIter);
+        }
+        else
+        {
+            m_childIndexToCachedAttributeInfo[domIndex] = updatedLayoutAttributes;
+        }
+
+        AZStd::string_view descriptionView = AZ::Dpe::Nodes::PropertyEditor::Description.ExtractFromDomNode(domArray).value_or("");
+        QString descriptionString = QString::fromUtf8(descriptionView.data(), aznumeric_cast<int>(descriptionView.size()));
+        if (descriptionString != childWidget->toolTip())
+        {
+            setToolTip(descriptionString);
+            childWidget->setToolTip(descriptionString);
+        }
+
+        bool isDisabled = AZ::Dpe::Nodes::PropertyEditor::Disabled.ExtractFromDomNode(domArray).value_or(false) ||
+            AZ::Dpe::Nodes::PropertyEditor::AncestorDisabled.ExtractFromDomNode(domArray).value_or(false);
+        childWidget->setEnabled(!isDisabled);
     }
 
-    DPERowWidget::AttributeInfo* DPERowWidget::GetAttributes(size_t domIndex)
+    DPERowWidget::AttributeInfo* DPERowWidget::GetCachedAttributes(size_t domIndex)
     {
-        auto foundEntry = m_childIndexToAttributeInfo.find(domIndex);
-        if (foundEntry != m_childIndexToAttributeInfo.end())
+        auto foundEntry = m_childIndexToCachedAttributeInfo.find(domIndex);
+        if (foundEntry != m_childIndexToCachedAttributeInfo.end())
         {
             return &foundEntry->second;
         }
@@ -743,19 +826,19 @@ namespace AzToolsFramework
         }
     }
 
-    void DPERowWidget::RemoveAttributes(size_t domIndex)
+    void DPERowWidget::RemoveCachedAttributes(size_t domIndex)
     {
-        auto foundEntry = m_childIndexToAttributeInfo.find(domIndex);
-        if (foundEntry != m_childIndexToAttributeInfo.end())
+        auto foundEntry = m_childIndexToCachedAttributeInfo.find(domIndex);
+        if (foundEntry != m_childIndexToCachedAttributeInfo.end())
         {
-            m_childIndexToAttributeInfo.erase(foundEntry);
+            m_childIndexToCachedAttributeInfo.erase(foundEntry);
             m_columnLayout->RemoveSharePriorColumn(domIndex);
         }
     }
 
-    void DPERowWidget::ClearAttributes()
+    void DPERowWidget::ClearCachedAttributes()
     {
-        m_childIndexToAttributeInfo.clear();
+        m_childIndexToCachedAttributeInfo.clear();
         for (AZStd::vector<size_t> sharedGroup : m_columnLayout->m_sharePriorColumn)
         {
             sharedGroup.clear();
@@ -765,189 +848,227 @@ namespace AzToolsFramework
 
     void DPERowWidget::HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex)
     {
-        const auto& fullPath = domOperation.GetDestinationPath();
-        auto pathEntry = fullPath[pathIndex];
-
-        const bool entryIsIndex = pathEntry.IsIndex();
-        const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
-
-        if (!entryIsIndex && entryAtEnd)
+        if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Move)
         {
-            // patch isn't addressing a child index like a child row or widget, it's an attribute,
-            // refresh this row from its corresponding DOM node
-            auto subPath = fullPath;
-            subPath.Pop();
-            const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
-            SetAttributesFromDom(valueAtSubPath);
-        }
-        else if (entryAtEnd)
-        {
-            // if we're on the last entry in the path, this row widget is the direct owner
-            const auto childCount = m_domOrderedChildren.size();
-            size_t childIndex = 0;
-            if (pathEntry.IsIndex())
-            {
-                // remove and replace operations must match an existing index. Add operations can be one past the current end.
-                childIndex = pathEntry.GetIndex();
-                const bool indexValid =
-                    (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount);
-                AZ_Assert(indexValid, "patch index is beyond the array bounds!");
-                if (!indexValid)
-                {
-                    return;
-                }
-            }
+            /* For a move operation, note that source and/or destination widgets might not exist due to collapsed nodes.
+             * if both source and destination location exist, move the existing widget
+             * if source exists but not destination, it's a remove
+             * if destination exists but not source, we need to look up the value and instantiate it. */
+            auto* theDPE = GetDPE();
+            auto sourceParentPath = domOperation.GetSourcePath();
+            auto sourceIndex = sourceParentPath.Back().GetIndex();
+            sourceParentPath.Pop();
+            auto* sourceParentRow = qobject_cast<DPERowWidget*>(theDPE->GetWidgetAtPath(sourceParentPath));
+            auto* sourceWidget =
+                (sourceParentRow && sourceParentRow->m_domOrderedChildren.size() > sourceIndex
+                     ? sourceParentRow->m_domOrderedChildren[sourceIndex]
+                     : nullptr);
 
-            // if this is a remove or replace, remove the existing entry first,
-            // then, if this is a replace or add, add the new entry
-            if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
-                domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
+            auto destinationParentPath = domOperation.GetDestinationPath();
+            auto destinationIndex = destinationParentPath.Back().GetIndex();
+            destinationParentPath.Pop();
+            auto* destinationParentRow = qobject_cast<DPERowWidget*>(theDPE->GetWidgetAtPath(destinationParentPath));
+
+            if (sourceWidget)
             {
-                auto dpe = GetDPE();
-                const auto childIterator = m_domOrderedChildren.begin() + childIndex;
-                auto childWidget = *childIterator;
-                if (childWidget)
+                if (destinationParentRow)
                 {
-                    DPERowWidget* rowToRemove = qobject_cast<DPERowWidget*>(childWidget);
-                    if (rowToRemove)
+                    auto widgetAsRow = qobject_cast<DPERowWidget*>(sourceWidget);
+                    if (destinationParentRow->IsExpanded() || !widgetAsRow)
                     {
-                        // we're removing a row, remove any associated saved expander state
-                        dpe->RemoveExpanderStateForRow(rowToRemove->GetPath());
-                        DocumentPropertyEditor::GetRowPool()->RecycleInstance(rowToRemove);
-                    }
-                    else if (auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
-                             foundEntry != m_widgetToPropertyHandlerInfo.end())
-                    {
-                        ReleaseHandler(foundEntry->second);
-                        m_widgetToPropertyHandlerInfo.erase(foundEntry);
-                        RemoveAttributes(childIndex);
-                        DetachAndHide(childWidget);
-                    }
-                    else // not a row, not a PropertyHandler, must be a label
-                    {
-                        auto label = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                        AZ_Assert(label, "not a label, unknown widget discovered!");
-                        if (label)
+                        // both endpoints already exist, this is a real widget relocation
+                        QWidget* newOwner = nullptr;
+                        sourceParentRow->RemoveChildAt(sourceIndex, &newOwner);
+                        AZ_Assert(newOwner == sourceWidget, "source widget could not be taken!");
+                        if (widgetAsRow)
                         {
-                            DocumentPropertyEditor::GetLabelPool()->RecycleInstance(label);
-                        }
-                    }
-                }
-                m_domOrderedChildren.erase(childIterator);
-
-                // check if the last row widget child was removed, and hide the expander if necessary
-                const bool expanded = IsExpanded();
-                auto isDPERow = [expanded](auto* widget)
-                {
-                    // when not expanded, null children are just unseen child rows
-                    return ((!widget && !expanded) || qobject_cast<DPERowWidget*>(widget) != nullptr);
-                };
-                if (AZStd::find_if(m_domOrderedChildren.begin(), m_domOrderedChildren.end(), isDPERow) == m_domOrderedChildren.end())
-                {
-                    m_columnLayout->SetExpanderShown(false);
-                }
-            }
-
-            if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
-                domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
-            {
-                AddChildFromDomValue(domOperation.GetValue(), childIndex);
-            }
-        }
-        else // not the direct owner of the entry to patch
-        {
-            const auto childCount = m_domOrderedChildren.size();
-            // find the next widget in the path and delegate the operation to them
-            auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
-            AZ_Assert(childIndex < childCount, "DPE: Patch failed to apply, invalid child index specified");
-            if (childIndex >= childCount)
-            {
-                return;
-            }
-
-            QWidget* childWidget = m_domOrderedChildren[childIndex];
-            DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
-            if (widgetAsDpeRow)
-            {
-                // child is a DPERowWidget, pass patch processing to it
-                widgetAsDpeRow->HandleOperationAtPath(domOperation, pathIndex + 1);
-            }
-            else // child must be a label or a PropertyEditor
-            {
-                // pare down the path to this node, then look up and set the value from the DOM
-                auto subPath = fullPath;
-                for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
-                {
-                    subPath.Pop();
-                }
-                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
-
-                if (!childWidget)
-                {
-                    // if there's a null entry in the current place for m_domOrderedChildren,
-                    // that's ok if this entry isn't expanded to that depth and need not follow the change any further
-                    // if we are expanded, then this patch references an unsupported handler, which might a problem
-                    if (IsExpanded())
-                    {
-                        // widget doesn't exist, but maybe we can make one now with the known contents
-                        auto handlerId =
-                            AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
-
-                        if (handlerId)
-                        {
-                            // have a proper handlerID now, see if we can make a widget from this value now
-                            auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
-                            if (replacementWidget)
-                            {
-                                AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                                m_domOrderedChildren[childIndex] = replacementWidget;
-                            }
+                            // this is a row move, change its position in the main DPE layout
+                            destinationParentRow->AddRowChild(widgetAsRow, destinationIndex);
                         }
                         else
                         {
-                            AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                            // this is a column widget move, consume its layout attributes and add
+                            // it to the correct place in the (possibly) new layout
+                            const auto valueForAttributes = theDPE->GetAdapter()->GetContents()[domOperation.GetDestinationPath()];
+                            destinationParentRow->AddColumnWidget(newOwner, destinationIndex, valueForAttributes);
                         }
                     }
-                    // new handler was created with the current value from the DOM, or not. Either way, we're done
-                    return;
-                }
-
-                // check if it's a PropertyHandler; if it is, just set it from the DOM directly
-                auto foundEntry = m_widgetToPropertyHandlerInfo.find(childWidget);
-                if (foundEntry != m_widgetToPropertyHandlerInfo.end())
-                {
-                    auto handlerId = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
-
-                    // check if this patch has morphed the PropertyHandler into a different type
-                    if (handlerId != foundEntry->second.handlerId)
+                    else if (destinationParentRow)
                     {
-                        // CreateWidgetForHandler will add a new entry to m_widgetToPropertyHandlerInfo, kill the old entry
-                        ReleaseHandler(foundEntry->second);
-                        m_widgetToPropertyHandlerInfo.erase(foundEntry);
-                        m_columnLayout->RemoveSharePriorColumn(childIndex);
-                        childWidget->hide();
-                        m_columnLayout->removeWidget(childWidget);
+                        // new child is a row, but the destination parent isn't expanded. Just create a null placeholder
+                        destinationParentRow->AddRowChild(nullptr, destinationIndex);
 
-                        // Replace the existing handler widget with one appropriate for the new type
-                        auto replacementWidget = CreateWidgetForHandler(handlerId, valueAtSubPath);
-                        AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
-                        m_domOrderedChildren[childIndex] = replacementWidget;
-                    }
-                    else
-                    {
-                        // handler is the same, set the existing handler with the new value
-                        SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
-                        foundEntry->second.hanlderInterface->SetValueFromDom(valueAtSubPath);
+                        // remove old widget
+                        sourceParentRow->RemoveChildAt(sourceIndex);
                     }
                 }
                 else
                 {
-                    auto changedLabel = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
-                    AZ_Assert(changedLabel, "not a label, unknown widget discovered!");
-                    if (changedLabel)
+                    // destination doesn't exist because it has a collapsed ancestor
+                    // just remove the source widget - the destination will be instantiated if/when it is expanded
+                    sourceParentRow->RemoveChildAt(sourceIndex);
+                }
+            }
+            else
+            {
+                if (destinationParentRow)
+                {
+                    // check if the parent row exists but isn't expanded
+                    if (sourceParentRow)
                     {
-                        auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
-                        changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                        AZ_Assert(!sourceParentRow->IsExpanded(), "row should only have null children if it's not expanded!");
+                        sourceParentRow->RemoveChildAt(sourceIndex);
+                    }
+                    // source is missing, but destination exists. Look up the value and treat it as an add at that location
+                    auto parentValue = theDPE->GetDomValueForRow(destinationParentRow);
+                    destinationParentRow->AddChildFromDomValue(parentValue[destinationIndex], destinationIndex);
+                }
+                // NB: no else case here. If neither source nor destination exist, the widgets aren't instantiated and nothing is moved
+            }
+        }
+        else
+        {
+            const auto& fullPath = domOperation.GetDestinationPath();
+            auto pathEntry = fullPath[pathIndex];
+
+            const bool entryIsIndex = pathEntry.IsIndex();
+            const bool entryAtEnd = (pathIndex == fullPath.Size() - 1); // this is the last entry in the path
+
+            if (!entryIsIndex && entryAtEnd)
+            {
+                // patch isn't addressing a child index like a child row or widget, it's an attribute,
+                // refresh this row from its corresponding DOM node
+                auto subPath = fullPath;
+                subPath.Pop();
+                const auto valueAtSubPath = GetDPE()->GetAdapter()->GetContents()[subPath];
+                SetAttributesFromDom(valueAtSubPath);
+            }
+            else if (entryAtEnd)
+            {
+                // if we're on the last entry in the path, this row widget is the direct owner
+                const auto childCount = m_domOrderedChildren.size();
+                size_t childIndex = 0;
+                if (pathEntry.IsIndex())
+                {
+                    // remove and replace operations must match an existing index. Add operations can be one past the current end.
+                    childIndex = pathEntry.GetIndex();
+                    const bool indexValid =
+                        (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add ? childIndex <= childCount : childIndex < childCount);
+                    AZ_Assert(indexValid, "patch index is beyond the array bounds!");
+                    if (!indexValid)
+                    {
+                        return;
+                    }
+                }
+
+                // if this is a remove or replace, remove the existing entry first,
+                // then, if this is a replace or add, add the new entry
+                if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Remove ||
+                    domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace)
+                {
+                    RemoveChildAt(childIndex);
+                }
+
+                if (domOperation.GetType() == AZ::Dom::PatchOperation::Type::Replace ||
+                    domOperation.GetType() == AZ::Dom::PatchOperation::Type::Add)
+                {
+                    AddChildFromDomValue(domOperation.GetValue(), childIndex);
+                }
+            }
+            else // not the direct owner of the entry to patch
+            {
+                auto theDPE = GetDPE();
+                const auto childCount = m_domOrderedChildren.size();
+                // find the next widget in the path and delegate the operation to them
+                auto childIndex = (pathEntry.IsIndex() ? pathEntry.GetIndex() : childCount - 1);
+                AZ_Assert(childIndex < childCount, "DPE: Patch failed to apply, invalid child index specified");
+                if (childIndex >= childCount)
+                {
+                    return;
+                }
+
+                QWidget* childWidget = m_domOrderedChildren[childIndex];
+                DPERowWidget* widgetAsDpeRow = qobject_cast<DPERowWidget*>(childWidget);
+                if (widgetAsDpeRow)
+                {
+                    // child is a DPERowWidget, pass patch processing to it
+                    widgetAsDpeRow->HandleOperationAtPath(domOperation, pathIndex + 1);
+                }
+                else // child must be a label or a PropertyEditor
+                {
+                    // pare down the path to this node, then look up and set the value from the DOM
+                    auto subPath = fullPath;
+                    for (size_t pathEntryIndex = fullPath.size() - 1; pathEntryIndex > pathIndex; --pathEntryIndex)
+                    {
+                        subPath.Pop();
+                    }
+                    const auto valueAtSubPath = theDPE->GetAdapter()->GetContents()[subPath];
+
+                    if (!childWidget)
+                    {
+                        // if there's a null entry in the current place for m_domOrderedChildren,
+                        // that's ok if this entry isn't expanded to that depth and need not follow the change any further
+                        // if we are expanded, then this patch references an unsupported handler, which might a problem
+                        if (IsExpanded())
+                        {
+                            // widget doesn't exist, but maybe we can make one now with the known contents
+                            auto handlerId =
+                                AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
+
+                            if (handlerId)
+                            {
+                                // have a proper handlerID now, see if we can make a widget from this value now
+                                auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
+                                if (replacementWidget)
+                                {
+                                    m_domOrderedChildren[childIndex] = replacementWidget;
+                                    AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                                }
+                            }
+                            else if (AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled())
+                            {
+                                /* there are many unimplemented PropertyHandlers, so receiving an update for one is fine.
+                                 * However, a warning here is useful when debugging a missing widget that is expected to appear */
+                                AZ_Warning("Document Property Editor", false, "got patch for unimplemented PropertyHandler");
+                            }
+                        }
+                        // new handler was created with the current value from the DOM, or not. Either way, we're done
+                        return;
+                    }
+
+                    // check if it's a PropertyHandler; if it is, just set it from the DOM directly
+                    if (auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget); !handlerInfo.IsNull())
+                    {
+                        auto handlerId =
+                            AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->GetPropertyHandlerForNode(valueAtSubPath);
+
+                        // check if this patch has morphed the PropertyHandler into a different type
+                        if (handlerId != handlerInfo.handlerId)
+                        {
+                            DocumentPropertyEditor::ReleaseHandler(handlerInfo);
+                            m_columnLayout->RemoveSharePriorColumn(childIndex);
+
+                            // Replace the existing handler widget with one appropriate for the new type
+                            auto replacementWidget = theDPE->CreateWidgetForHandler(handlerId, valueAtSubPath);
+                            m_domOrderedChildren[childIndex] = replacementWidget;
+                            AddColumnWidget(replacementWidget, childIndex, valueAtSubPath);
+                        }
+                        else
+                        {
+                            // handler is the same, set the existing handler with the new value
+                            SetPropertyEditorAttributes(childIndex, valueAtSubPath, childWidget);
+                            handlerInfo.handlerInterface->SetValueFromDom(valueAtSubPath);
+                        }
+                    }
+                    else
+                    {
+                        auto changedLabel = qobject_cast<AzQtComponents::ElidingLabel*>(childWidget);
+                        AZ_Assert(changedLabel, "not a label, unknown widget discovered!");
+                        if (changedLabel)
+                        {
+                            auto labelString = AZ::Dpe::Nodes::Label::Value.ExtractFromDomNode(valueAtSubPath).value_or("");
+                            changedLabel->setText(QString::fromUtf8(labelString.data(), aznumeric_cast<int>(labelString.size())));
+                        }
                     }
                 }
             }
@@ -989,7 +1110,7 @@ namespace AzToolsFramework
         int priorColumnIndex = -1;
         for (int searchIndex = static_cast<int>(domIndex) - 1; (priorColumnIndex == -1 && searchIndex >= 0); --searchIndex)
         {
-            priorColumnIndex = m_columnLayout->indexOf(m_domOrderedChildren[searchIndex]);
+            priorColumnIndex = m_columnLayout->indexOf(GetChild(searchIndex));
         }
 
         SetPropertyEditorAttributes(domIndex, domValue, columnWidget);
@@ -1000,76 +1121,38 @@ namespace AzToolsFramework
         columnWidget->show();
     }
 
-    AZ::Name DPERowWidget::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
+    void DPERowWidget::AddRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
-        return AZ::Name(AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId)));
+        m_columnLayout->SetExpanderShown(true);
+        AddDomChildWidget(domIndex, rowWidget);
+
+        if (rowWidget)
+        {
+            PlaceRowChild(rowWidget, domIndex);
+        }
     }
 
-    QWidget* DPERowWidget::CreateWidgetForHandler(
-        PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue)
+    void DPERowWidget::PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
-        QWidget* createdWidget = nullptr;
-        // if we found a valid handler, grab its widget to add to the column layout
-        if (handlerId)
+        rowWidget->setParent(this);
+        auto dpe = GetDPE();
+
+        // determine where to put this new row in the main DPE layout
+        DPERowWidget* priorRowInLayout = GetPriorRowInLayout(domIndex);
+        dpe->AddAfterWidget(priorRowInLayout, rowWidget);
+
+        if (rowWidget->IsExpanded())
         {
-            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-            auto handlerName = GetNameForHandlerId(handlerId);
-            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-            if (!handlerPool)
+            for (int childIndex = 0, numChildren = static_cast<int>(rowWidget->m_domOrderedChildren.size()); childIndex < numChildren;
+                 ++childIndex)
             {
-                auto* theDPE = GetDPE();
-                AZ_Assert(theDPE, "DPERowWidget should always be able to retrieve its DPE during widget creation!");
-                if (!theDPE)
+                DPERowWidget* childRow = qobject_cast<DPERowWidget*>(rowWidget->m_domOrderedChildren[childIndex]);
+                if (childRow)
                 {
-                    return nullptr;
+                    rowWidget->PlaceRowChild(childRow, childIndex);
                 }
-                AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
-                {
-                    DetachAndHide(handler.GetWidget());
-                };
-
-                AZStd::function<PropertyHandlerWidgetInterface*()> createHandler = [handlerId]()
-                {
-                    auto createdHandler = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->CreateHandlerInstance(handlerId);
-                    auto bareHandler = createdHandler.get();
-                    createdHandler.release();
-                    return bareHandler;
-                };
-
-                handlerPool = poolManager->CreatePool<PropertyHandlerWidgetInterface>(handlerName, resetHandler, createHandler)
-                                 .GetValue();
-                theDPE->RegisterHandlerPool(handlerPool);
             }
-
-            // store, then reference the unique_ptr that will manage the handler's lifetime
-            auto handler = handlerPool->GetInstance();
-            handler->SetValueFromDom(domValue);
-            createdWidget = handler->GetWidget();
-            createdWidget->setEnabled(true);
-            m_widgetToPropertyHandlerInfo[createdWidget] = { handlerId, AZStd::unique_ptr<PropertyHandlerWidgetInterface>(handler) };
         }
-        return createdWidget;
-    }
-
-    void DPERowWidget::ReleaseHandler(HandlerInfo& handler)
-    {
-        auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
-        auto handlerName = GetNameForHandlerId(handler.handlerId);
-        auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
-        if (handlerPool)
-        {
-            handlerPool->RecycleInstance(handler.hanlderInterface.get());
-        }
-        else
-        {
-            QTimer::singleShot(
-                0,
-                [interfacePointer = handler.hanlderInterface.get()]()
-                {
-                    delete interfacePointer;
-                });
-        }
-        handler.hanlderInterface.release();
     }
 
     DPERowWidget* DPERowWidget::GetLastDescendantInLayout()
@@ -1096,12 +1179,12 @@ namespace AzToolsFramework
         return lastDescendant;
     }
 
-    AZ::Dom::Path DPERowWidget::BuildDomPath()
+    AZ::Dom::Path DPERowWidget::BuildDomPath() const
     {
         auto pathToRoot = GetDPE()->GetPathToRoot(this);
         AZ::Dom::Path rowPath = AZ::Dom::Path();
 
-        for (auto pathIter =  pathToRoot.rbegin(); pathIter != pathToRoot.rend(); ++pathIter)
+        for (auto pathIter = pathToRoot.rbegin(); pathIter != pathToRoot.rend(); ++pathIter)
         {
             auto&& reversePathEntry = *pathIter;
             rowPath.Push(reversePathEntry);
@@ -1135,12 +1218,28 @@ namespace AzToolsFramework
 
             pushAllChildRowsToStack(row->m_domOrderedChildren);
 
-            GetDPE()->SetSavedExpanderStateForRow(row->GetPath(), isExpanded);
+            GetDPE()->SetSavedExpanderStateForRow(row->BuildDomPath(), isExpanded);
         }
+    }
+
+    bool DPERowWidget::ValueHasChildRows(const AZ::Dom::Value& rowValue)
+    {
+        bool childRowFound = false;
+
+        for (size_t arrayIndex = 0, numIndices = rowValue.ArraySize(); arrayIndex < numIndices && !childRowFound; ++arrayIndex)
+        {
+            auto& childValue = rowValue[arrayIndex];
+            if (childValue.GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::Row>())
+            {
+                childRowFound = true;
+            }
+        }
+        return childRowFound;
     }
 
     void DPERowWidget::SetExpanded(bool expanded, bool recurseToChildRows)
     {
+        m_expandingProgrammatically = true;
         m_columnLayout->SetExpanded(expanded);
 
         if (recurseToChildRows)
@@ -1154,6 +1253,7 @@ namespace AzToolsFramework
                 }
             }
         }
+        m_expandingProgrammatically = false;
     }
 
     bool DPERowWidget::IsExpanded() const
@@ -1166,11 +1266,12 @@ namespace AzToolsFramework
         DocumentPropertyEditor* dpe = GetDPE();
         bool isExpanded = expanderState != Qt::Unchecked;
 
+        const bool expandRecursively = (!m_expandingProgrammatically && QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier));
         if (!isExpanded)
         {
-            if (QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+            if (expandRecursively)
             {
-                // Store collapsed state for all children before deletion if shift was pressed
+                // Store collapsed state for all children before deletion if expanding recursively
                 SaveExpanderStatesForChildRows(false);
             }
 
@@ -1188,10 +1289,12 @@ namespace AzToolsFramework
         }
         else
         {
-            if (QGuiApplication::keyboardModifiers().testFlag(Qt::ShiftModifier))
+            bool initialRecursiveExpander = false;
+            if (expandRecursively)
             {
-                // Flag DPE as in the middle of a recursive expand operation if shift was pressed
+                // Flag DPE as in the middle of a recursive expand operation if expanding recursively
                 dpe->SetRecursiveExpansionOngoing(true);
+                initialRecursiveExpander = true;
             }
 
             auto myValue = dpe->GetDomValueForRow(this);
@@ -1204,21 +1307,31 @@ namespace AzToolsFramework
                     AddChildFromDomValue(myValue[valueIndex], valueIndex);
                 }
             }
-
-            dpe->SetRecursiveExpansionOngoing(false);
+            if (initialRecursiveExpander)
+            {
+                dpe->SetRecursiveExpansionOngoing(false);
+                SaveExpanderStatesForChildRows(true);
+            }
         }
 
-        dpe->SetSavedExpanderStateForRow(m_domPath, isExpanded);
-    }
-
-    const AZ::Dom::Path DPERowWidget::GetPath() const
-    {
-        return m_domPath;
+        if (!m_expandingProgrammatically)
+        {
+            // only save our expander state if our expanse/collapse was user-driven
+            dpe->SetSavedExpanderStateForRow(BuildDomPath(), isExpanded);
+            dpe->ExpanderChangedByUser();
+        }
     }
 
     bool DPERowWidget::HasChildRows() const
     {
-        return !m_domOrderedChildren.empty();
+        for (auto currChild : m_domOrderedChildren)
+        {
+            if (qobject_cast<DPERowWidget*>(currChild))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     int DPERowWidget::GetLevel() const
@@ -1236,7 +1349,7 @@ namespace AzToolsFramework
 
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
-        setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
@@ -1298,7 +1411,8 @@ namespace AzToolsFramework
         // Free the settings ptr which saves any in-memory settings to disk and replace it
         // with a default in-memory only settings object until a saved state key is specified
         m_dpeSettings.reset();
-        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>();
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
+            m_adapter->CreateExpanderSettings(m_adapter.get()));
 
         // populate the view from the full adapter contents, just like a reset
         HandleReset();
@@ -1308,6 +1422,24 @@ namespace AzToolsFramework
     {
         m_rowPool->RecycleInstance(m_rootNode);
         m_rootNode = nullptr;
+    }
+
+    void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
+    {
+        m_allowVerticalScroll = allowVerticalScroll;
+        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+        auto existingPolicy = sizePolicy();
+        setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
+    }
+
+    QSize DocumentPropertyEditor::sizeHint() const
+    {
+        auto hint = QScrollArea::sizeHint();
+        if (!m_allowVerticalScroll)
+        {
+            hint.setHeight(m_layout->sizeHint().height());
+        }
+        return hint;
     }
 
     void DocumentPropertyEditor::AddAfterWidget(QWidget* precursor, QWidget* widgetToAdd)
@@ -1335,26 +1467,24 @@ namespace AzToolsFramework
     {
         // We need to append some alphabetical characters to the key or it will be treated as a very large json array index
         AZStd::string_view keyStr = AZStd::string::format("uuid%s", AZStd::to_string(key).c_str());
-        m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>(keyStr, propertyEditorName);
+        // Free the settings ptr before creating a new one. If the registry key is the same, we want
+        // the in-memory settings to be saved to disk (in settings destructor) before they're loaded
+        // from disk (in settings constructor)
+        m_dpeSettings.reset();
+        m_dpeSettings = AZStd::unique_ptr<AZ::DocumentPropertyEditor::ExpanderSettings>(
+            m_adapter->CreateExpanderSettings(m_adapter.get(), keyStr, propertyEditorName));
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {
-            m_dpeSettings->SetCleanExpanderStateCallback(
-                [this](DocumentPropertyEditorSettings::ExpanderStateMap& storedStates)
-                {
-                    const auto& rootValue = m_adapter->GetContents();
-                    auto numErased = AZStd::erase_if(
-                        storedStates,
-                        [&rootValue](const AZStd::pair<AZStd::string, bool>& statePair)
-                        {
-                            return !rootValue.FindChild(AZ::Dom::Path(statePair.first)) ? true : false;
-                        });
-                    return numErased > 0;
-                });
-
             // We need to rebuild the view using the stored expander states
             HandleReset();
         }
+    }
+
+    void DocumentPropertyEditor::ClearInstances()
+    {
+        m_dpeSettings.reset();
+        Clear();
     }
 
     void DocumentPropertyEditor::SetSavedExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
@@ -1383,11 +1513,16 @@ namespace AzToolsFramework
         return false;
     }
 
+    bool DocumentPropertyEditor::ShouldEraseExpanderStateWhenRowRemoved() const
+    {
+        return (m_dpeSettings && m_dpeSettings->ShouldEraseStateWhenRowRemoved());
+    }
+
     void DocumentPropertyEditor::RemoveExpanderStateForRow(const AZ::Dom::Path& rowPath)
     {
         if (m_dpeSettings)
         {
-            return m_dpeSettings->RemoveExpanderStateForRow(rowPath);
+            m_dpeSettings->RemoveExpanderStateForRow(rowPath);
         }
     }
 
@@ -1456,7 +1591,24 @@ namespace AzToolsFramework
         return m_layout;
     }
 
-    AZStd::vector<size_t> DocumentPropertyEditor::GetPathToRoot(DPERowWidget* row) const
+    QWidget* DocumentPropertyEditor::GetWidgetAtPath(const AZ::Dom::Path& path)
+    {
+        DPERowWidget* currParent = m_rootNode;
+        QWidget* currWidget = currParent;
+        for (auto entry : path)
+        {
+            const auto entryIndex = entry.GetIndex();
+            if (!currParent || currParent->m_domOrderedChildren.size() <= entryIndex)
+            {
+                return nullptr;
+            }
+            currWidget = currParent->m_domOrderedChildren[entryIndex];
+            currParent = qobject_cast<DPERowWidget*>(currWidget);
+        }
+        return currWidget;
+    }
+
+    AZStd::vector<size_t> DocumentPropertyEditor::GetPathToRoot(const DPERowWidget* row) const
     {
         AZStd::vector<size_t> pathToRoot;
         const DPERowWidget* thisRow = row;
@@ -1520,9 +1672,12 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
     {
-        for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+        if (m_rootNode)
         {
-            m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+            for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+            {
+                m_rootNode->HandleOperationAtPath(*operationIterator, 0);
+            }
         }
     }
 
@@ -1540,16 +1695,97 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
-                    m_adapter->GetContents(), adapter, containerPath);
+                AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(m_adapter->GetContents(), containerPath);
             }
         };
 
         message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
     }
 
-    void DocumentPropertyEditor::RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
+    void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
     {
-        m_handlerPools.push_back(handlerPool);
+        AZ_Assert(
+            m_handlerPools.find(handlerName) == m_handlerPools.end() || m_handlerPools[handlerName] == handlerPool,
+            "Attempted to register a new handler pool to a handler name that is already in use.");
+
+        // insertion to the handler pool hash map only succeeds if the handler name is a new key
+        // so it won't overwrite any existing registered handler pool for that handler name
+        m_handlerPools.insert({ handlerName, handlerPool });
+    }
+
+    DocumentPropertyEditor::HandlerInfo DocumentPropertyEditor::GetInfoFromWidget(const QWidget* widget)
+    {
+        auto infoVariant = widget->property(GetHandlerPropertyName());
+        if (!infoVariant.isNull())
+        {
+            return infoVariant.value<HandlerInfo>();
+        }
+        return HandlerInfo{};
+    }
+
+    AZ::Name DocumentPropertyEditor::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
+    {
+        auto name = AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId));
+        auto moduleId = AZ::Environment::GetModuleId();
+
+        auto nameWithModuleId = AZStd::fixed_string<256>::format("%s%p", name.c_str(), moduleId);
+        return AZ::Name(nameWithModuleId);
+    }
+
+    QWidget* DocumentPropertyEditor::CreateWidgetForHandler(
+        PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId, const AZ::Dom::Value& domValue)
+    {
+        QWidget* createdWidget = nullptr;
+        // if we found a valid handler, grab its widget to add to the column layout
+        if (handlerId)
+        {
+            // first try to get the instance pool from pool manager
+            auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
+            auto handlerName = GetNameForHandlerId(handlerId);
+            auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+
+            // create the pool if it does not exist
+            if (!handlerPool)
+            {
+                AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
+                {
+                    DetachAndHide(handler.GetWidget());
+                    handler.PrepareWidgetForReuse();
+                };
+
+                AZStd::function<PropertyHandlerWidgetInterface*()> createHandler = [handlerId]()
+                {
+                    auto createdHandler = AZ::Interface<PropertyEditorToolsSystemInterface>::Get()->CreateHandlerInstance(handlerId);
+                    auto bareHandler = createdHandler.get();
+                    createdHandler.release();
+                    HandlerInfo handlerInfo = { handlerId, bareHandler };
+                    bareHandler->GetWidget()->setProperty(GetHandlerPropertyName(), QVariant::fromValue(handlerInfo));
+                    return bareHandler;
+                };
+
+                handlerPool = poolManager->CreatePool<PropertyHandlerWidgetInterface>(handlerName, resetHandler, createHandler).GetValue();
+            }
+
+            // register the handler pool in DPE view to co-own the handler pool
+            // the registration is needed in case the handler pool is released by other DPE views
+            RegisterHandlerPool(handlerName, handlerPool);
+
+            auto handler = handlerPool->GetInstance();
+            handler->SetValueFromDom(domValue);
+            createdWidget = handler->GetWidget();
+            createdWidget->setEnabled(true);
+        }
+        return createdWidget;
+    }
+
+    void DocumentPropertyEditor::ReleaseHandler(HandlerInfo& handler)
+    {
+        // GHI-16135: Revisit recycling handler instances once we have a mechanism to reset the handlers/widgets for re-use
+        // and have implemented
+        {
+            // if there is no handler pool, then delete the handler immediately; parent widgets won't delete it twice
+            delete handler.handlerInterface;
+            handler.handlerInterface = nullptr;
+        }
     }
 } // namespace AzToolsFramework

@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 {# ------- #}
 
-{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName) %}
+{% macro AddDataSlot(isInput, executionName, displayGroup, slotName, slotDescription, slotDefaultValue, valueType, parentName, hideInputField, hideName) %}
 
         // Data Slot: {{slotName}} ({% if isInput == "true" %}Input{% else %}Output{% endif %})
         {
@@ -142,6 +142,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
             ScriptCanvas::DataSlotConfiguration dataSlotConfiguration;
             dataSlotConfiguration.m_name = "{{ slotName }}";
             dataSlotConfiguration.m_toolTip = "{{ slotDescription }}";
+{% if hideInputField %}
+            dataSlotConfiguration.m_canHaveInputField = false;
+{% endif %}
+{% if hideName %}
+            dataSlotConfiguration.m_isNameHidden = true;
+{% endif %}
 {% if displayGroup is defined %}
             dataSlotConfiguration.m_displayGroup = "{{ displayGroup }}";
 {% elif parentName is defined%}
@@ -213,11 +219,20 @@ false
         ScriptCanvas::ExecutionSlotConfiguration slotConfiguration{{executionDirection}}; 
         slotConfiguration{{executionDirection}}.m_name = "{{ slotName }}";
         slotConfiguration{{executionDirection}}.m_toolTip = "{{ slotDescription }}";
+{% if tag.attrib['HideName'] %}
+        slotConfiguration{{executionDirection}}.m_isNameHidden = true;
+{% endif %}
         slotConfiguration{{executionDirection}}.SetConnectionType(ScriptCanvas::ConnectionType::{{ executionDirection }});
 {% if tag.attrib['DisplayGroup'] is defined %}
         slotConfiguration{{executionDirection}}.m_displayGroup = "{{ tag.attrib['DisplayGroup'] }}";
 {% else %}
         slotConfiguration{{executionDirection}}.m_displayGroup = "{{ slotName }}";
+{% endif %}
+{% if tag.attrib['Implicit'] %}
+        slotConfiguration{{executionDirection}}.m_createsImplicitConnections = true;
+{% endif %}
+{% if tag.attrib['Hidden'] %}
+        slotConfiguration{{executionDirection}}.m_isVisible = false;
 {% endif %}
 {% if isLatent is defined or executionDirection == "Output" %}
         slotConfiguration{{executionDirection}}.m_isLatent = true;

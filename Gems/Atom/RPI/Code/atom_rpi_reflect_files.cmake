@@ -19,6 +19,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Buffer/BufferAssetCreator.h
     Include/Atom/RPI.Reflect/Buffer/BufferAssetView.h
     Include/Atom/RPI.Reflect/Model/ModelAsset.h
+    Include/Atom/RPI.Reflect/Model/ModelAssetHelpers.h
     Include/Atom/RPI.Reflect/Model/ModelKdTree.h
     Include/Atom/RPI.Reflect/Model/ModelLodAsset.h
     Include/Atom/RPI.Reflect/Model/ModelLodIndex.h
@@ -108,6 +109,7 @@ set(FILES
     Source/RPI.Reflect/Buffer/BufferAssetCreator.cpp
     Source/RPI.Reflect/Buffer/BufferAssetView.cpp
     Source/RPI.Reflect/Model/ModelAsset.cpp
+    Source/RPI.Reflect/Model/ModelAssetHelpers.cpp
     Source/RPI.Reflect/Model/ModelKdTree.cpp
     Source/RPI.Reflect/Model/ModelLodAsset.cpp
     Source/RPI.Reflect/Model/ModelAssetCreator.cpp

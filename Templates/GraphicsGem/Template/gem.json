@@ -1,0 +1,32 @@
+{
+    "gem_name": "${Name}",
+    "version": "${Version}",
+    "display_name": "${DisplayName}",
+    "license": "${License}",
+    "license_url": "${LicenseURL}",
+    "origin": "${Origin}",
+    "origin_url": "${OriginURL}",
+    "type": "Code",
+    "summary": "${Summary}",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "${UserTags}"
+    ],
+    "platforms": [
+        "${Platforms}"
+    ],
+    "icon_path": "${IconPath}",
+    "requirements": "${Requirements}",
+    "documentation_url": "${DocumentationURL}",
+    "dependencies": [
+        "Atom_RPI",
+        "Atom"
+    ],
+    "repo_uri": "${RepoURI}",
+    "compatible_engines": [
+    ],
+    "engine_api_dependencies":[
+    ]
+}

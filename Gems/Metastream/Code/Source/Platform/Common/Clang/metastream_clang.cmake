@@ -7,4 +7,11 @@
 #
 
 # CivetHttpServer.cpp uses a try catch block
-set(LY_COMPILE_OPTIONS PRIVATE -fexceptions)
+if(MSVC)
+    set(LY_COMPILE_OPTIONS PRIVATE /EHsc)
+else()
+    set(LY_COMPILE_OPTIONS
+    PRIVATE
+        -fexceptions
+    )
+endif()

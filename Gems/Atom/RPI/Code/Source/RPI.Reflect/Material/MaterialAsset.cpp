@@ -50,6 +50,20 @@ namespace AZ
             AssetInitBus::Handler::BusDisconnect();
         }
 
+        bool MaterialAsset::InitializeNonSerializedData()
+        {
+            if (m_isNonSerializedDataInitialized)
+            {
+                return true;
+            }
+            if (!m_materialTypeAsset.IsReady())
+            {
+                return false;
+            }
+            m_isNonSerializedDataInitialized = m_materialTypeAsset->InitializeNonSerializedData();
+            return m_isNonSerializedDataInitialized;
+        }
+
         const Data::Asset<MaterialTypeAsset>& MaterialAsset::GetMaterialTypeAsset() const
         {
             return m_materialTypeAsset;

@@ -127,5 +127,20 @@ namespace AZ
         {
             return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
         }
+
+        AZ::Crc32 DirectionalLightComponentConfig::UpdateCascadeFarDepths()
+        {
+            if (IsSplitAutomatic())
+            {
+                for (uint32_t i = 0; i < Shadow::MaxNumberOfCascades; ++i)
+                {
+                    m_cascadeFarDepths.SetElement(
+                        i, i < m_cascadeCount ? m_shadowFarClipDistance * (i + 1) / m_cascadeCount : m_shadowFarClipDistance);
+                }
+            }
+            m_cascadeFarDepths =
+                m_cascadeFarDepths.GetClamp(Vector4(DirectionalLightConstants::MIN_CASCADE_FAR_DEPTH), Vector4(m_shadowFarClipDistance));
+            return Edit::PropertyRefreshLevels::AttributesAndValues;
+        }
     } // namespace Render
 } // namespace AZ

@@ -9,22 +9,19 @@
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void BufferPoolDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void BufferPoolDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<BufferPoolDescriptor, ResourcePoolDescriptor>()
-                    ->Version(2)
-                    ->Field("m_heapMemoryLevel", &BufferPoolDescriptor::m_heapMemoryLevel)
-                    ->Field("m_hostMemoryAccess", &BufferPoolDescriptor::m_hostMemoryAccess)
-                    ->Field("m_bindFlags", &BufferPoolDescriptor::m_bindFlags)
-                    ->Field("m_largestPooledAllocationSizeInBytes", &BufferPoolDescriptor::m_largestPooledAllocationSizeInBytes)
-                    ;
-            }
+            serializeContext->Class<BufferPoolDescriptor, ResourcePoolDescriptor>()
+                ->Version(2)
+                ->Field("m_heapMemoryLevel", &BufferPoolDescriptor::m_heapMemoryLevel)
+                ->Field("m_hostMemoryAccess", &BufferPoolDescriptor::m_hostMemoryAccess)
+                ->Field("m_bindFlags", &BufferPoolDescriptor::m_bindFlags)
+                ->Field("m_largestPooledAllocationSizeInBytes", &BufferPoolDescriptor::m_largestPooledAllocationSizeInBytes)
+                ;
         }
     }
 }

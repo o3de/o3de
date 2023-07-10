@@ -9,95 +9,92 @@
 #include <Atom/RHI/FrameAttachment.h>
 #include <Atom/RHI/Resource.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    FrameAttachment::FrameAttachment(
+        const AttachmentId& attachmentId,
+        HardwareQueueClassMask supportedQueueMask,
+        AttachmentLifetimeType lifetimeType)
+        : m_attachmentId{attachmentId}
+        , m_supportedQueueMask{supportedQueueMask}
+        , m_lifetimeType{lifetimeType}
     {
-        FrameAttachment::FrameAttachment(
-            const AttachmentId& attachmentId,
-            HardwareQueueClassMask supportedQueueMask,
-            AttachmentLifetimeType lifetimeType)
-            : m_attachmentId{attachmentId}
-            , m_supportedQueueMask{supportedQueueMask}
-            , m_lifetimeType{lifetimeType}
-        {
-            AZ_Assert(!attachmentId.IsEmpty(), "Frame Attachment was created with an empty attachment id!");
-        }
+        AZ_Assert(!attachmentId.IsEmpty(), "Frame Attachment was created with an empty attachment id!");
+    }
 
-        FrameAttachment::~FrameAttachment()
+    FrameAttachment::~FrameAttachment()
+    {
+        if (m_resource)
         {
-            if (m_resource)
-            {
-                m_resource->SetFrameAttachment(nullptr);
-            }
+            m_resource->SetFrameAttachment(nullptr);
         }
+    }
 
-        const AttachmentId& FrameAttachment::GetId() const
-        {
-            return m_attachmentId;
-        }
+    const AttachmentId& FrameAttachment::GetId() const
+    {
+        return m_attachmentId;
+    }
 
-        AttachmentLifetimeType FrameAttachment::GetLifetimeType() const
-        {
-            return m_lifetimeType;
-        }
+    AttachmentLifetimeType FrameAttachment::GetLifetimeType() const
+    {
+        return m_lifetimeType;
+    }
 
-        Resource* FrameAttachment::GetResource()
-        {
-            return m_resource.get();
-        }
+    Resource* FrameAttachment::GetResource()
+    {
+        return m_resource.get();
+    }
 
-        const Resource* FrameAttachment::GetResource() const
-        {
-            return m_resource.get();
-        }
+    const Resource* FrameAttachment::GetResource() const
+    {
+        return m_resource.get();
+    }
 
-        void FrameAttachment::SetResource(Ptr<Resource> resource)
-        {
-            AZ_Assert(!m_resource, "A resource has already been assigned to this frame attachment.");
-            AZ_Assert(resource, "Assigning a null resource to attachment %s.", m_attachmentId.GetCStr());
-            m_resource = AZStd::move(resource);
-            m_resource->SetFrameAttachment(this);
-        }
+    void FrameAttachment::SetResource(Ptr<Resource> resource)
+    {
+        AZ_Assert(!m_resource, "A resource has already been assigned to this frame attachment.");
+        AZ_Assert(resource, "Assigning a null resource to attachment %s.", m_attachmentId.GetCStr());
+        m_resource = AZStd::move(resource);
+        m_resource->SetFrameAttachment(this);
+    }
 
-        const ScopeAttachment* FrameAttachment::GetFirstScopeAttachment() const
-        {
-            return m_firstScopeAttachment;
-        }
+    const ScopeAttachment* FrameAttachment::GetFirstScopeAttachment() const
+    {
+        return m_firstScopeAttachment;
+    }
 
-        ScopeAttachment* FrameAttachment::GetFirstScopeAttachment()
-        {
-            return m_firstScopeAttachment;
-        }
+    ScopeAttachment* FrameAttachment::GetFirstScopeAttachment()
+    {
+        return m_firstScopeAttachment;
+    }
 
-        const ScopeAttachment* FrameAttachment::GetLastScopeAttachment() const
-        {
-            return m_lastScopeAttachment;
-        }
+    const ScopeAttachment* FrameAttachment::GetLastScopeAttachment() const
+    {
+        return m_lastScopeAttachment;
+    }
 
-        ScopeAttachment* FrameAttachment::GetLastScopeAttachment()
-        {
-            return m_lastScopeAttachment;
-        }
+    ScopeAttachment* FrameAttachment::GetLastScopeAttachment()
+    {
+        return m_lastScopeAttachment;
+    }
 
-        Scope* FrameAttachment::GetLastScope() const
-        {
-            return m_lastScope;
-        }
+    Scope* FrameAttachment::GetLastScope() const
+    {
+        return m_lastScope;
+    }
 
-        Scope* FrameAttachment::GetFirstScope() const
-        {
-            return m_firstScope;
-        }
+    Scope* FrameAttachment::GetFirstScope() const
+    {
+        return m_firstScope;
+    }
 
-        HardwareQueueClassMask FrameAttachment::GetSupportedQueueMask() const
-        {
-            return m_supportedQueueMask;
-        }
+    HardwareQueueClassMask FrameAttachment::GetSupportedQueueMask() const
+    {
+        return m_supportedQueueMask;
+    }
 
-        HardwareQueueClassMask FrameAttachment::GetUsedQueueMask() const
-        {
-            return m_usedQueueMask;
-        }
+    HardwareQueueClassMask FrameAttachment::GetUsedQueueMask() const
+    {
+        return m_usedQueueMask;
     }
 }

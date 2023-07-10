@@ -5,12 +5,16 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import (core,
-                     aws_cognito as cognito,
-                     aws_iam as iam)
-from utils import name_utils
-from cognito.cognito_user_pool import CognitoUserPool
+from aws_cdk import (
+    CfnOutput,
+    Environment,
+    aws_cognito as cognito,
+    aws_iam as iam)
+from constructs import Construct
+
 from auth.cognito_identity_pool_role import CognitoIdentityPoolRole
+from cognito.cognito_user_pool import CognitoUserPool
+from utils import name_utils
 from utils.constants import *
 
 
@@ -20,14 +24,14 @@ class CognitoIdentityPool:
     Cognito user pool, login with Amazon and Google 3rd party provider support.
     """
 
-    def __init__(self, scope: core.Construct, feature_name: str, project_name: str, env: core.Environment,
+    def __init__(self, scope: Construct, feature_name: str, project_name: str, env: Environment,
                  cognito_user_pool: CognitoUserPool) -> None:
         """
-        :param scope: Construct role scope will be attached to.
-        :param feature_name: Name of the feature for resource.
-        :param project_name: Name of the project for resource.
-        :param env: Environment set up by App.
-        :param cognito_user_pool: User pool to allow authenticated users from.
+        :param scope: Construct role scope will be attached to
+        :param feature_name: Name of the feature for resource
+        :param project_name: Name of the project for resource
+        :param env: Environment set up by App
+        :param cognito_user_pool: User pool to allow authenticated users from
         """
 
         supported_login_providers = {} if LOGIN_WITH_AMAZON_APP_CLIENT_ID or GOOGLE_APP_CLIENT_ID else None
@@ -36,20 +40,20 @@ class CognitoIdentityPool:
         if GOOGLE_APP_CLIENT_ID:
             supported_login_providers['accounts.google.com'] = GOOGLE_APP_CLIENT_ID
 
-        self._identity_pool = cognito.CfnIdentityPool(scope, id=name_utils.format_aws_resource_id(feature_name,
-                                                                                                  project_name, env,
-                                                                                                  cognito.CfnIdentityPool.__name__),
-                                                      identity_pool_name=name_utils.format_aws_resource_name(
-                                                          feature_name, project_name, env,
-                                                          cognito.CfnIdentityPool.__name__),
-                                                      allow_unauthenticated_identities=True,
-                                                      allow_classic_flow=True,
-                                                      cognito_identity_providers=[
-                                                          cognito.CfnIdentityPool.CognitoIdentityProviderProperty(
-                                                              client_id=cognito_user_pool.get_user_pool_client().ref,
-                                                              provider_name=cognito_user_pool.get_user_pool().attr_provider_name)
-                                                      ],
-                                                      supported_login_providers=supported_login_providers)
+        self._identity_pool = \
+            cognito.CfnIdentityPool(scope, id=name_utils.format_aws_resource_id(feature_name, project_name, env,
+                                                                                cognito.CfnIdentityPool.__name__),
+                                    identity_pool_name=name_utils.format_aws_resource_name(
+                                        feature_name, project_name, env,
+                                        cognito.CfnIdentityPool.__name__),
+                                    allow_unauthenticated_identities=True,
+                                    allow_classic_flow=True,
+                                    cognito_identity_providers=[
+                                        cognito.CfnIdentityPool.CognitoIdentityProviderProperty(
+                                            client_id=cognito_user_pool.get_user_pool_client().ref,
+                                            provider_name=cognito_user_pool.get_user_pool().attr_provider_name)
+                                    ],
+                                    supported_login_providers=supported_login_providers)
 
         self._identity_pool.add_depends_on(cognito_user_pool.get_user_pool())
         self._identity_pool.add_depends_on(cognito_user_pool.get_user_pool_client())
@@ -74,7 +78,7 @@ class CognitoIdentityPool:
                                                   'unauthenticated': self._unauth_role.get_role().role_arn
                                               })
 
-        core.CfnOutput(
+        CfnOutput(
             scope,
             'CognitoIdentityPoolId',
             description="Cognito Identity pool id",
@@ -84,13 +88,13 @@ class CognitoIdentityPool:
         """
         :return: Created Authenticated IAM role
         """
-        return self._auth_role
+        return self._auth_role.get_role()
 
     def get_unauthenticated_role(self) -> iam.Role:
         """
         :return: Created Unauthenticated IAM role
         """
-        return self._unauth_role
+        return self._unauth_role.get_role()
 
     def get_identity_pool(self) -> cognito.CfnIdentityPool:
         """

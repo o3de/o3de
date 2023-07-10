@@ -31,7 +31,35 @@ namespace AzToolsFramework::Prefab
 
         AZ::Dom::Value HandleMessage(const AZ::DocumentPropertyEditor::AdapterMessage& message) override;
 
+        //! Updates the DPE DOM using the property change information provided. If the property is owned by the focused prefab,
+        //! the change is applied as direct template edit. If the property is owned by descendant of the focused prefab, it is
+        //! applied as an override from the focused prefab.
+        //! @param propertyChangeInfo The object containing information about the property change.
+        void UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo) override;
+
     private:
+
+        //! Creates and applies a component edit prefab patch using the property change information provided.
+        //! @param relativePathFromOwningPrefab The path to the property in the prefab from the owning prefab.
+        //! @param propertyChangeInfo The object containing information about the property change.
+        bool CreateAndApplyComponentEditPatch(
+            AZStd::string_view relativePathFromOwningPrefab,
+            const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo);
+
+        //! Creates and applies a component override prefab patch using the property change information provided. 
+        //! @param relativePathFromOwningPrefab The path to the property in the prefab from the owning prefab.
+        //! @param propertyChangeInfo The object containing information about the property change.
+        bool CreateAndApplyComponentOverridePatch(
+            AZ::Dom::Path relativePathFromOwningPrefab,
+            const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& propertyChangeInfo);
+
+        //! Checks if the component is disabled.
+        static bool IsComponentDisabled(const AZ::Component* component);
+
+        //! Checks if the component is pending.
+        static bool IsComponentPending(const AZ::Component* component);
+
+        AZStd::string m_entityAlias;
         AZStd::string m_componentAlias;
 
         PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;

@@ -98,11 +98,21 @@ namespace AZ
                                                                    const ViewType viewType = ViewType::Default);
             static RenderPipelinePtr CreateRenderPipelineForWindow(Data::Asset<AnyAsset> pipelineAsset, const WindowContext& windowContext);
 
+            //! Create a render pipeline which renders to the specified attachment image
+            //! The render pipeline's root pass is created from the pass template specified from RenderPipelineDescriptor::m_rootPassTemplate
+            //! The input AttachmentImageAsset is used to connect to first output attachment of the root pass template
+            //! Note: the AttachmentImageAsset doesn't need to be loaded
+            static RenderPipelinePtr CreateRenderPipelineForImage(const RenderPipelineDescriptor& desc, Data::Asset<AttachmentImageAsset> imageAsset);
+
             // Data type for render pipeline's views' information
             using PipelineViewMap = AZStd::unordered_map<PipelineViewTag, PipelineViews>;
             using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
-            //! Assign a view for a PipelineViewTag used in this pipeline. 
+            // Removes a registered view from the pipeline, either transient or persistent
+            // This is only needed if you want to re-register a view with another viewtag
+            void UnregisterView(ViewPtr view);
+
+            //! Assign a view for a PipelineViewTag used in this pipeline.
             //! This reference of this view will be saved until it's replaced in another SetPersistentView call.
             void SetPersistentView(const PipelineViewTag& viewId, ViewPtr view);
 
@@ -227,6 +237,9 @@ namespace AZ
             //! Return the view type associated with this pipeline.
             ViewType GetViewType() const;
 
+            //! Update viewport and scissor based on pass tree's output
+            void UpdateViewportScissor();
+
         private:
             RenderPipeline() = default;
 
@@ -242,6 +255,10 @@ namespace AZ
 
             // Checks if the view is already registered with a different viewTag
             bool CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const;
+
+            // Removes a registered view from the pipeline
+            void RemoveTransientView(const PipelineViewTag viewId, ViewPtr view);
+            void ResetPersistentView(const PipelineViewTag viewId, ViewPtr view);
 
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             // This is called from the pipeline root pass during the pass reset phase
@@ -282,6 +299,7 @@ namespace AZ
 
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
+
 
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 
@@ -335,6 +353,10 @@ namespace AZ
 
             // View type associated with the Render Pipeline.
             ViewType m_viewType = ViewType::Default;
+
+            // viewport and scissor for frame update
+            RHI::Viewport m_viewport;
+            RHI::Scissor m_scissor;
         };
 
     } // namespace RPI

@@ -21,7 +21,15 @@ if [[ "$OSTYPE" == *"darwin"* ]]; then
 elif [[ "$OSTYPE" == "msys" ]]; then
     PYTHON=$DIR/runtime/python-3.10.5-rev1-windows/python/python.exe
 else
-    PYTHON=$DIR/runtime/python-3.10.5-rev2-linux/python/bin/python
+    LINUX_HOST_ARCHITECTURE=$( uname -m )
+    if [[ "$LINUX_HOST_ARCHITECTURE" == "aarch64" ]]; then
+        PYTHON=$DIR/runtime/python-3.10.5-rev4-linux-aarch64/python/bin/python
+    elif [[ "$LINUX_HOST_ARCHITECTURE" == "x86_64" ]]; then
+        PYTHON=$DIR/runtime/python-3.10.5-rev4-linux/python/bin/python
+    else
+        echo "Linux host architecture ${LINUX_HOST_ARCHITECTURE} not supported."
+        exit 1
+    fi
 fi
 
 if [[ -e "$PYTHON" ]];

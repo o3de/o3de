@@ -151,6 +151,9 @@ namespace AZ
             // make sure the shader table rebuilds if we're hotreloading
             m_rayTracingRevision = 0;
 
+            // store the max ray length
+            m_maxRayLength = m_passData->m_maxRayLength;
+
             RPI::ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_rayGenerationShaderAssetReference.m_assetId);
             RPI::ShaderReloadNotificationBus::MultiHandler::BusConnect(m_passData->m_closestHitShaderAssetReference.m_assetId);
@@ -172,6 +175,28 @@ namespace AZ
             }
 
             return RPI::Shader::FindOrCreate(shaderAsset);
+        }
+
+        bool RayTracingPass::IsEnabled() const
+        {
+            if (!RenderPass::IsEnabled())
+            {
+                return false;
+            }
+
+            RPI::Scene* scene = m_pipeline->GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+
+            RayTracingFeatureProcessor* rayTracingFeatureProcessor = scene->GetFeatureProcessor<RayTracingFeatureProcessor>();
+            if (!rayTracingFeatureProcessor)
+            {
+                return false;
+            }
+
+            return true;
         }
 
         void RayTracingPass::FrameBeginInternal(FramePrepareParams params)
@@ -237,6 +262,12 @@ namespace AZ
 
             if (m_shaderResourceGroup != nullptr)
             {
+                auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxRayLength"));
+                if (constantIndex.IsValid())
+                {
+                    m_shaderResourceGroup->SetConstant(constantIndex, m_maxRayLength);
+                }
+
                 BindPassSrg(context, m_shaderResourceGroup);
                 m_shaderResourceGroup->Compile();
             }
@@ -302,15 +333,15 @@ namespace AZ
 
                 RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-                dispatchRaysItem.m_width = imageSize.m_width;
-                dispatchRaysItem.m_height = imageSize.m_height;
-                dispatchRaysItem.m_depth = imageSize.m_depth;
+                dispatchRaysItem.m_arguments.m_direct.m_width = imageSize.m_width;
+                dispatchRaysItem.m_arguments.m_direct.m_height = imageSize.m_height;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = imageSize.m_depth;
             }
             else
             {
-                dispatchRaysItem.m_width = m_passData->m_threadCountX;
-                dispatchRaysItem.m_height = m_passData->m_threadCountY;
-                dispatchRaysItem.m_depth = m_passData->m_threadCountZ;
+                dispatchRaysItem.m_arguments.m_direct.m_width = m_passData->m_threadCountX;
+                dispatchRaysItem.m_arguments.m_direct.m_height = m_passData->m_threadCountY;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = m_passData->m_threadCountZ;
             }
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs

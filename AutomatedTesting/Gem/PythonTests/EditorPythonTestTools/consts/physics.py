@@ -13,7 +13,7 @@ PhysX Components
 PHYSX_PRIMITIVE_COLLIDER = "PhysX Primitive Collider"
 PHYSX_MESH_COLLIDER = "PhysX Mesh Collider"
 PHYSX_SHAPE_COLLIDER = "PhysX Shape Collider"
-
+PHYSX_DYNAMIC_RIGID_BODY = "Physx Dynamic Rigid Body"
 """
 Shape Components
 

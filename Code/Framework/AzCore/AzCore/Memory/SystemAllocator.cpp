@@ -130,7 +130,7 @@ namespace AZ
         pointer newAddress = m_subAllocator->reallocate(ptr, newSize, newAlignment);
 
 #if defined(AZ_ENABLE_TRACING)
-        const size_type allocatedSize = get_allocated_size(newAddress, 1);
+        [[maybe_unused]] const size_type allocatedSize = get_allocated_size(newAddress, 1);
         AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
         AZ_MEMORY_PROFILE(ProfileReallocation(ptr, newAddress, allocatedSize, newAlignment));
 #endif

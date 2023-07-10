@@ -124,7 +124,7 @@ namespace EMotionFX
             QList<QPushButton*> dialogButtons = inputDialog->findChildren<QPushButton*>();
             for (QPushButton* dialogButton : dialogButtons)
             {
-                if (dialogButton->text() == "OK")
+                if (dialogButton->text().endsWith("OK"))
                 {
                     QTest::mouseClick(dialogButton, Qt::LeftButton);
                     break;

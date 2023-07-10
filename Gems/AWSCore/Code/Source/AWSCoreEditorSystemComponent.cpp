@@ -20,6 +20,7 @@
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 
 #include <Editor/Constants/AWSCoreEditorMenuNames.h>
 #include <Editor/UI/AWSCoreEditorMenu.h>
@@ -91,6 +92,8 @@ namespace AWSCore
         AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
 
         AWSCoreEditorRequestBus::Handler::BusDisconnect();
+
+        m_awsCoreEditorMenu.reset();
     }
 
     void AWSCoreEditorSystemComponent::OnMenuBarRegistrationHook()

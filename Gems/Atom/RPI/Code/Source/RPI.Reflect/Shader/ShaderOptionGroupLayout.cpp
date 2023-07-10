@@ -109,8 +109,13 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
                     ->Method("GetName", &ShaderOptionDescriptor::GetName)
                     ->Method("GetDefaultValue", &ShaderOptionDescriptor::GetDefaultValue)
-                    ->Method("GetValueName", &ShaderOptionDescriptor::GetValueName)
+                    ->Method("GetValueName", static_cast<Name (ShaderOptionDescriptor::*)(ShaderOptionValue) const>(&ShaderOptionDescriptor::GetValueName))
                     ->Method("FindValue", &ShaderOptionDescriptor::FindValue)
+                    ->Method("GetMinValue", &ShaderOptionDescriptor::GetMinValue)
+                    ->Method("GetMaxValue", &ShaderOptionDescriptor::GetMaxValue)
+                    ->Method("GetValuesCount", &ShaderOptionDescriptor::GetValuesCount)
+                    ->Method("GetType", &ShaderOptionDescriptor::GetType)
+                    ->Method("GetValueNameByIndex", static_cast<Name (ShaderOptionDescriptor::*)(uint32_t) const>(&ShaderOptionDescriptor::GetValueName))
                     ;
             }   
         }
@@ -379,6 +384,11 @@ namespace AZ
             }
             auto name = m_nameReflectionForValues.Find(value);
             return name;
+        }
+
+        Name ShaderOptionDescriptor::GetValueName(uint32_t valueIndex) const
+        {
+            return GetValueName(ShaderOptionValue{ valueIndex });
         }
 
         void ShaderOptionDescriptor::EncodeBits(ShaderVariantKey& shaderVariantKey, uint32_t value) const

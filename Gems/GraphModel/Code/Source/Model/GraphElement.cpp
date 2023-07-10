@@ -24,6 +24,8 @@ namespace GraphModel
             serializeContext->Class<GraphElement>()
                 ->Version(0)
                 ;
+
+            serializeContext->RegisterGenericType<GraphElementPtr>();
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

@@ -6,4 +6,5 @@
 
 set(FILES
     Tests/Tools/CompressionEditorTest.cpp
+    Tests/Tools/CompressionLZ4EditorTest.cpp
 )

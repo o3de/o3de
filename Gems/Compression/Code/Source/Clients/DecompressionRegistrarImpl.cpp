@@ -11,8 +11,15 @@
 #include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/ranges/ranges_algorithm.h>
 
+#include <Compression/CompressionTypeIds.h>
+
 namespace Compression
 {
+    AZ_TYPE_INFO_WITH_NAME_IMPL(DecompressionRegistrarImpl, "DecompressionRegistrarImpl",
+        DecompressionRegistrarImplTypeId);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(DecompressionRegistrarImpl, DecompressionRegistrarInterface);
+    AZ_CLASS_ALLOCATOR_IMPL(DecompressionRegistrarImpl, AZ::SystemAllocator);
+
     DecompressionRegistrarImpl::DecompressionInterfaceDeleter::DecompressionInterfaceDeleter() = default;
     DecompressionRegistrarImpl::DecompressionInterfaceDeleter::DecompressionInterfaceDeleter(bool shouldDelete)
         : m_delete(shouldDelete)
@@ -114,6 +121,29 @@ namespace Compression
         AZStd::scoped_lock lock(m_decompressionInterfaceMutex);
         auto decompressionIter = FindDecompressionInterfaceImpl(compressionAlgorithmId);
         return decompressionIter != m_decompressionInterfaces.end() ? decompressionIter->m_decompressionInterface.get() : nullptr;
+    }
+
+    IDecompressionInterface* DecompressionRegistrarImpl::FindDecompressionInterface(AZStd::string_view algorithmName) const
+    {
+        // Potentially the entire vector is iterated over
+        IDecompressionInterface* resultInterface{};
+        auto FindCompressionInterfaceByName = [algorithmName, &resultInterface](const IDecompressionInterface& decompressionInterface)
+        {
+            if (decompressionInterface.GetCompressionAlgorithmName() == algorithmName)
+            {
+                // const_cast is being used here to avoid making a second visitor overload
+                // NOTE: this is function is internal to the implementation of the Decompression Registrar
+                resultInterface = const_cast<IDecompressionInterface*>(&decompressionInterface);
+                // The matching interface has been found, halt visitation.
+                return false;
+            }
+
+            return true;
+        };
+        AZStd::scoped_lock lock(m_decompressionInterfaceMutex);
+
+        VisitDecompressionInterfaces(FindCompressionInterfaceByName);
+        return resultInterface;
     }
 
     bool DecompressionRegistrarImpl::IsRegistered(CompressionAlgorithmId compressionAlgorithmId) const

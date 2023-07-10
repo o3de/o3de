@@ -9,22 +9,19 @@
 #pragma once
 
 //! Reflection Probe (smallest probe volume that overlaps the object position)
-class ReflectionProbeData
+struct ReflectionProbeData
 {
     row_major float3x4 m_modelToWorld;
     row_major float3x4 m_modelToWorldInverse; // does not include extents
     float3 m_outerObbHalfLengths;
-    float3 m_innerObbHalfLengths;
     float m_padding;
+    float3 m_innerObbHalfLengths;
     bool m_useReflectionProbe;
     bool m_useParallaxCorrection;
     float m_exposure;
-    
-    float4x4 GetReflectionProbeWorldMatrix();
-    float4x4 GetReflectionProbeWorldMatrixInverse();
 };
 
-float4x4 ReflectionProbeData::GetReflectionProbeWorldMatrix()
+float4x4 GetReflectionProbeWorldMatrix(in ReflectionProbeData reflectionProbeData)
 {
     float4x4 modelToWorld = float4x4(
         float4(1, 0, 0, 0),
@@ -32,13 +29,13 @@ float4x4 ReflectionProbeData::GetReflectionProbeWorldMatrix()
         float4(0, 0, 1, 0),
         float4(0, 0, 0, 1));
 
-    modelToWorld[0] = m_modelToWorld[0];
-    modelToWorld[1] = m_modelToWorld[1];
-    modelToWorld[2] = m_modelToWorld[2];
+    modelToWorld[0] = reflectionProbeData.m_modelToWorld[0];
+    modelToWorld[1] = reflectionProbeData.m_modelToWorld[1];
+    modelToWorld[2] = reflectionProbeData.m_modelToWorld[2];
     return modelToWorld;
 }
 
-float4x4 ReflectionProbeData::GetReflectionProbeWorldMatrixInverse()
+float4x4 GetReflectionProbeWorldMatrixInverse(in ReflectionProbeData reflectionProbeData)
 {
     float4x4 modelToWorldInverse = float4x4(
         float4(1, 0, 0, 0),
@@ -46,9 +43,9 @@ float4x4 ReflectionProbeData::GetReflectionProbeWorldMatrixInverse()
         float4(0, 0, 1, 0),
         float4(0, 0, 0, 1));
 
-    modelToWorldInverse[0] = m_modelToWorldInverse[0];
-    modelToWorldInverse[1] = m_modelToWorldInverse[1];
-    modelToWorldInverse[2] = m_modelToWorldInverse[2];
+    modelToWorldInverse[0] = reflectionProbeData.m_modelToWorldInverse[0];
+    modelToWorldInverse[1] = reflectionProbeData.m_modelToWorldInverse[1];
+    modelToWorldInverse[2] = reflectionProbeData.m_modelToWorldInverse[2];
     return modelToWorldInverse;
 }
 

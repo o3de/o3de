@@ -62,8 +62,10 @@ const QString& VectorElement::label() const
 
 void VectorElement::setValue(double newValue)
 {
-    // Nothing to do if the value is not actually changed
-    if (AZ::IsCloseMag(m_value, newValue, AZStd::numeric_limits<double>::epsilon()))
+    // Nothing to do if the value is not actually changed.
+    // Cast to float for comparison because our vector data is stored in floats.
+    // Otherwise, small changes may be detected when comparing values
+    if (AZ::IsCloseMag(static_cast<float>(m_value), static_cast<float>(newValue), AZStd::numeric_limits<float>::epsilon()))
     {
         return;
     }

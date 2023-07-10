@@ -10,26 +10,23 @@
 
 #include <Atom/RHI.Reflect/UnifiedAttachmentDescriptor.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor()
+    { }
+
+    UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const BufferDescriptor& bufferDescriptor)
+        : m_buffer(bufferDescriptor)
+        , m_type(AttachmentType::Buffer)
+    { }
+
+    UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const ImageDescriptor& imageDescriptor)
+        : m_image(imageDescriptor)
+        , m_type(AttachmentType::Image)
+    { }
+
+    HashValue64 UnifiedAttachmentDescriptor::GetHash(HashValue64 seed /* = 0 */) const
     {
-        UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor()
-        { }
-
-        UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const BufferDescriptor& bufferDescriptor)
-            : m_buffer(bufferDescriptor)
-            , m_type(AttachmentType::Buffer)
-        { }
-
-        UnifiedAttachmentDescriptor::UnifiedAttachmentDescriptor(const ImageDescriptor& imageDescriptor)
-            : m_image(imageDescriptor)
-            , m_type(AttachmentType::Image)
-        { }
-
-        HashValue64 UnifiedAttachmentDescriptor::GetHash(HashValue64 seed /* = 0 */) const
-        {
-            return TypeHash64(*this, seed);
-        }
+        return TypeHash64(*this, seed);
     }
 }

@@ -31,7 +31,7 @@ namespace AssetProcessor
         void ResetModel() override;
 
         void AddOrUpdateEntry(
-            const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product,
+            const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& product,
             bool modelIsResetting);
 
         void RemoveAsset(AZ::s64 productId);

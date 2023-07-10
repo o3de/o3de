@@ -61,7 +61,6 @@ namespace LmbrCentral
 
     class EditorSphereShapeComponentFixture
         : public UnitTest::ToolsApplicationFixture<>
-        , public UnitTest::RegistryTestHelper
     {
     public:
         void SetUpEditorFixtureImpl() override;
@@ -77,8 +76,6 @@ namespace LmbrCentral
 
     void EditorSphereShapeComponentFixture::SetUpEditorFixtureImpl()
     {
-        RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
-
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
 
@@ -104,8 +101,6 @@ namespace LmbrCentral
         m_entityId.SetInvalid();
 
         m_editorSphereShapeComponentDescriptor.reset();
-
-        RegistryTestHelper::TearDown();
     }
 
     using EditorSphereShapeComponentManipulatorFixture =

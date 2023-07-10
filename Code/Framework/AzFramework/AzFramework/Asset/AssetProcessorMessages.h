@@ -1291,12 +1291,13 @@ namespace AzFramework
 
             // The default constructor is only required for the SerializeContext.
             AssetChangeReportRequest() = default;
-            AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move);
+            AssetChangeReportRequest(const AZ::OSString& fromPath, const AZ::OSString& toPath, ChangeType changeType = ChangeType::Move, bool isFolder = false);
             unsigned int GetMessageType() const override;
 
             AZ::OSString m_fromPath;
             AZ::OSString m_toPath;
             ChangeType m_type;
+            bool m_isFolder;
         };
 
         class AssetChangeReportResponse

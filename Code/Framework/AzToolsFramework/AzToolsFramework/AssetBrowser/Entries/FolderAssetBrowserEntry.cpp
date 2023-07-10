@@ -40,6 +40,11 @@ namespace AzToolsFramework
             return m_isScanFolder;
         }
 
+        bool FolderAssetBrowserEntry::IsGemFolder() const
+        {
+            return m_isGemFolder;
+        }
+
         const AZ::Uuid& FolderAssetBrowserEntry::GetFolderUuid() const
         {
             return m_folderUuid;
@@ -65,7 +70,7 @@ namespace AzToolsFramework
             // display path is just the relative path without the name:
             AZ::IO::Path parentPath = child->m_relativePath.ParentPath();
             child->m_displayPath = QString::fromUtf8(parentPath.c_str());
-            child->m_fullPath = (m_fullPath / child->m_name).LexicallyNormal();
+            child->SetFullPath((m_fullPath / child->m_name).LexicallyNormal());
             AssetBrowserEntry::UpdateChildPaths(child);
         }
 

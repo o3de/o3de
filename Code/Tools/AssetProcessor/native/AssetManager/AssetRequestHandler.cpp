@@ -104,29 +104,51 @@ namespace
             {
                 case AssetChangeReportRequest::ChangeType::CheckMove:
                 {
-                    auto resultCheck = relocationInterface->Move(messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
+                        auto resultCheck = relocationInterface->Move(
+                            messageData.m_message->m_fromPath,
+                            messageData.m_message->m_toPath,
+                            RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag |
+                                RelocationParameters_UpdateReferencesFlag | RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Move:
                 {
+                    auto* metadataUpdates = AZ::Interface<AssetProcessor::IMetadataUpdates>::Get();
+                    AZ_Assert(metadataUpdates, "Programmer Error - IMetadataUpdates interface is not available.");
+
+                    metadataUpdates->PrepareForFileMove(messageData.m_message->m_fromPath.c_str(), messageData.m_message->m_toPath.c_str());
+
                     auto resultMove = relocationInterface->Move(
-                        messageData.m_message->m_fromPath, messageData.m_message->m_toPath, RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag);
+                        messageData.m_message->m_fromPath,
+                        messageData.m_message->m_toPath,
+                        RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_UpdateReferencesFlag |
+                            RelocationParameters_AllowNonDatabaseFilesFlag);
 
                     BuildReport(relocationInterface, resultMove, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag);
+                    auto flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_AllowDependencyBreakingFlag);
+                    int flags = RelocationParameters_AllowDependencyBreakingFlag | RelocationParameters_AllowNonDatabaseFilesFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;
@@ -385,15 +407,15 @@ bool AssetRequestHandler::InvokeHandler(MessageData<AzFramework::AssetSystem::Ba
 }
 
 void AssetRequestHandler::ProcessAssetRequest(MessageData<RequestAssetStatus> messageData)
-{    
+{
     if ((messageData.m_message->m_searchTerm.empty())&&(!messageData.m_message->m_assetId.IsValid()))
     {
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "Failed to decode incoming RequestAssetStatus - both path and uuid is empty\n");
+        AZ_Info(AssetProcessor::DebugChannel, "Failed to decode incoming RequestAssetStatus - both path and uuid is empty\n");
         SendAssetStatus(messageData.m_key, RequestAssetStatus::MessageType, AssetStatus_Unknown);
         return;
     }
     AssetRequestLine newLine(messageData.m_platform, QString::fromUtf8(messageData.m_message->m_searchTerm.c_str()), messageData.m_message->m_assetId, messageData.m_message->m_isStatusRequest, messageData.m_message->m_searchType);
-    AZ_TracePrintf(AssetProcessor::DebugChannel, "GetAssetStatus/CompileAssetSync: %s.\n", newLine.GetDisplayString().toUtf8().constData());
+    AZ_Info(AssetProcessor::DebugChannel, "GetAssetStatus/CompileAssetSync: %s.\n", newLine.GetDisplayString().toUtf8().constData());
 
     QString assetPath = QString::fromUtf8(messageData.m_message->m_searchTerm.c_str());  // utf8-decode just once here, reuse below
     m_pendingAssetRequests.insert(messageData.m_key, newLine);
@@ -463,12 +485,12 @@ void AssetRequestHandler::OnRequestAssetExistsResponse(NetworkRequestID groupID,
 
     if (located == m_pendingAssetRequests.end())
     {
-        AZ_TracePrintf(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
+        AZ_Info(AssetProcessor::DebugChannel, "OnRequestAssetExistsResponse: No such compile group found, ignoring.\n");
         return;
     }
-    
-    AZ_TracePrintf(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n", 
-        located.value().GetDisplayString().toUtf8().constData(), 
+
+    AZ_Info(AssetProcessor::DebugChannel, "GetAssetStatus / CompileAssetSync: Asset %s is %s.\n",
+        located.value().GetDisplayString().toUtf8().constData(),
         exists ? "compiled already" : "missing" );
 
     SendAssetStatus(groupID, RequestAssetStatus::MessageType, exists ? AssetStatus_Compiled : AssetStatus_Missing);

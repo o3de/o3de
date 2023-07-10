@@ -30,6 +30,16 @@
 
 namespace PhysXEditorTests
 {
+    // This function reactivates the entity to cause the simulated body to be recreated.
+    // This is necessary when modifying properties that affect a dynamic rigid body,
+    // because it will delay applying the changes until the next simulation tick,
+    // which happens automatically in the editor but not in test environment.
+    static void ForceSimulatedBodyRecreation(AZ::Entity& entity)
+    {
+        entity.Deactivate();
+        entity.Activate();
+    }
+
     EntityPtr CreateInactiveEditorEntity(const char* entityName)
     {
         AZ::Entity* entity = nullptr;
@@ -85,6 +95,11 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
+        }
+
         return editorEntity;
     }
 
@@ -127,6 +142,11 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
+        }
+
         return editorEntity;
     }
 
@@ -163,6 +183,11 @@ namespace PhysXEditorTests
         if (nonUniformScale.has_value())
         {
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
+        }
+
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -208,6 +233,11 @@ namespace PhysXEditorTests
         if (nonUniformScale.has_value())
         {
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
+        }
+
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -256,6 +286,11 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
+        }
+
         return editorEntity;
     }
 
@@ -298,6 +333,11 @@ namespace PhysXEditorTests
         if (nonUniformScale.has_value())
         {
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
+        }
+
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
         }
 
         return editorEntity;
@@ -345,9 +385,10 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
-        // reactivate the entity to recreate the editor world body, which happens automatically in the editor but not in test environment
-        editorEntity->Deactivate();
-        editorEntity->Activate();
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
+        }
 
         return editorEntity;
     }
@@ -395,6 +436,11 @@ namespace PhysXEditorTests
             AZ::NonUniformScaleRequestBus::Event(editorEntity->GetId(), &AZ::NonUniformScaleRequests::SetScale, *nonUniformScale);
         }
 
+        if (rigidBodyType == RigidBodyType::Dynamic)
+        {
+            ForceSimulatedBodyRecreation(*editorEntity);
+        }
+
         return editorEntity;
     }
 
@@ -405,9 +451,7 @@ namespace PhysXEditorTests
             simulatedBody, entityId, &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
         if (simulatedBody)
         {
-            const auto* pxActor = static_cast<const physx::PxActor*>(simulatedBody->GetNativePointer());
-            PHYSX_SCENE_READ_LOCK(pxActor->getScene());
-            return PxMathConvert(pxActor->getWorldBounds(1.0f));
+            return simulatedBody->GetAabb();
         }
         return AZ::Aabb::CreateNull();
     }
@@ -425,8 +469,6 @@ namespace PhysXEditorTests
 
     void PhysXEditorFixture::SetUp()
     {
-        UnitTest::RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
-
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             //in case a test modifies the default world config setup a config without getting the default(eg. SetWorldConfiguration_ForwardsConfigChangesToWorldRequestBus)
@@ -452,8 +494,6 @@ namespace PhysXEditorTests
         {
             physicsSystem->RemoveScene(m_defaultSceneHandle);
         }
-
-        UnitTest::RegistryTestHelper::TearDown();
     }
 
     void PhysXEditorFixture::ConnectToPVD()

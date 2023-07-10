@@ -18,6 +18,8 @@ namespace AZ
 {
     namespace Render
     {
+        class SpecularReflectionsFeatureProcessorInterface;
+
         //! This class manages DiffuseProbeGrids which generate diffuse global illumination
         class DiffuseProbeGridFeatureProcessor final
             : public DiffuseProbeGridFeatureProcessorInterface
@@ -222,6 +224,10 @@ namespace AZ
             static const uint32_t BufferFrameCount = 3;
             Data::Instance<RPI::Buffer> m_queryBuffer[BufferFrameCount];
             uint32_t m_currentBufferIndex = 0;
+
+            // SSR state, for controlling the DiffuseProbeGridQueryPass in the SSR pipeline
+            SpecularReflectionsFeatureProcessorInterface* m_specularReflectionsFeatureProcessor = nullptr;
+            bool m_ssrRayTracingEnabled = false;
         };
     } // namespace Render
 } // namespace AZ

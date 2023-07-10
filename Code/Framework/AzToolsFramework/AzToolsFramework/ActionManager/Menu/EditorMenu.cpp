@@ -14,6 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <QCursor>
 #include <QMenu>
 
 namespace AzToolsFramework
@@ -173,6 +174,16 @@ namespace AzToolsFramework
     const QMenu* EditorMenu::GetMenu() const
     {
         return m_menu;
+    }
+
+    void EditorMenu::DisplayAtPosition(QPoint screenPosition) const
+    {
+        m_menu->popup(screenPosition);
+    }
+
+    void EditorMenu::DisplayUnderCursor() const
+    {
+        DisplayAtPosition(QCursor::pos());
     }
 
     void EditorMenu::RefreshMenu()

@@ -24,6 +24,11 @@ namespace AZ::DocumentPropertyEditor
         UpdateMatchDescendants(m_root);
     }
 
+    bool RowFilterAdapter::FilterIsActive() const
+    {
+        return m_filterActive;
+    }
+
     Dom::Path RowFilterAdapter::MapFromSourcePath(const Dom::Path& sourcePath) const
     {
         if (!m_filterActive)

@@ -106,12 +106,19 @@ namespace AZ
             : public ComponentBus
         {
         public:
+            // Notifications can be triggered from job threads, so this uses a mutex to guard against
+            // listeners joining or leaving the ebus on other threads mid-notification.
+            using MutexType = AZStd::recursive_mutex;
+
             //! Notifies listeners when a model has been loaded.
             //! If the model is already loaded when first connecting to the MeshComponentNotificationBus,
             //! the OnModelReady event will occur when connecting.
             virtual void OnModelReady(const Data::Asset<RPI::ModelAsset>& modelAsset, const Data::Instance<RPI::Model>& model) = 0;
             //! Notifies listeners when the instance of the model for this component is about to be released.
             virtual void OnModelPreDestroy() {}
+
+            //! Notifies listeners when a new ObjectSrg was created (this is where you'd like to update your custom ObjectSrg)
+            virtual void OnObjectSrgCreated(const Data::Instance<RPI::ShaderResourceGroup>& /*objectSrg*/) {}
 
             /**
              * When connecting to this bus if the asset is ready you will immediately get an OnModelReady event

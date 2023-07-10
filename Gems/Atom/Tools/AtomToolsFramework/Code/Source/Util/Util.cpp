@@ -350,23 +350,30 @@ namespace AtomToolsFramework
             path = GetPathWithoutAlias(path);
         }
 
-        // Build a string list from the supported extensions container that will be used in a regular expression wild card for the asset
-        // selection model.
-        QStringList extensionList;
-        for (const auto& extensionPair : supportedExtensions)
+        // Create a custom filter function to plug into the asset selection model. The filter function will only display source assets
+        // matching one of the supported extensions. It will also ignore files in the cache folder, usually intermediate assets. This is
+        // much faster than the previous iteration using regular expressions.
+        auto filterFn = [&](const AssetBrowserEntry* entry)
         {
-            if (!extensionPair.second.empty())
+            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Source)
             {
-                extensionList.append(extensionPair.second.c_str());
+                return false;
             }
-        }
 
-        // Build an expression that tells the selection model to only show files with matching extensions.
-        const QString expression = QString("[\\w\\-.]+\\.(%1)").arg(extensionList.join("|"));
-        const QRegExp filter(expression, Qt::CaseInsensitive);
+            const auto& path = entry->GetFullPath();
+            return !AZ::StringFunc::Contains(path, "cache") &&
+                AZStd::any_of(
+                    supportedExtensions.begin(),
+                    supportedExtensions.end(),
+                    [&](const auto& extensionPair)
+                    {
+                        return path.ends_with(AZStd::fixed_string<32>::format(".%s", extensionPair.second.c_str()));
+                    });
+        };
 
-        // Create the selection models of the asset picture only displays files matching the filter.
-        auto selection = AzToolsFramework::AssetBrowser::AssetSelectionModel::SourceAssetTypeSelection(filter);
+        AssetSelectionModel selection;
+        selection.SetDisplayFilter(FilterConstType(new CustomFilter(filterFn)));
+        selection.SetSelectionFilter(FilterConstType(new CustomFilter(filterFn)));
         selection.SetTitle(title.c_str());
         selection.SetMultiselect(multiSelect);
         selection.SetSelectedFilePaths(selectedFilePathsWithoutAliases);
@@ -436,13 +443,9 @@ namespace AtomToolsFramework
 
     bool IsDocumentPathInSupportedFolder(const AZStd::string& path)
     {
-        bool assetFoldersRetrieved = false;
-        AZStd::vector<AZStd::string> assetFolders;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            assetFoldersRetrieved, &AzToolsFramework::AssetSystemRequestBus::Events::GetAssetSafeFolders, assetFolders);
-
-        AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(GetPathWithoutAlias(path)).LexicallyNormal();
-        for (const auto& assetFolder : assetFolders)
+        const auto& fullPath = GetPathWithoutAlias(path);
+        const AZ::IO::FixedMaxPath assetPath = AZ::IO::PathView(fullPath).LexicallyNormal();
+        for (const auto& assetFolder : GetNonCacheSourceFolders())
         {
             // Check if the path is relative to the asset folder
             if (assetPath.IsRelativeTo(AZ::IO::PathView(assetFolder)))
@@ -661,7 +664,7 @@ namespace AtomToolsFramework
     void VisitFilesInFolder(
         const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse)
     {
-        if (!visitorFn)
+        if (!visitorFn || AZ::StringFunc::Contains(folder, "cache"))
         {
             return;
         }
@@ -693,10 +696,7 @@ namespace AtomToolsFramework
                     return visitorFn(fullPath);
                 }
 
-                if (recurse && !AZ::StringFunc::Contains(fullPath, "cache"))
-                {
-                    VisitFilesInFolder(fullPath, visitorFn, recurse);
-                }
+                VisitFilesInFolder(fullPath, visitorFn, recurse);
                 return true;
             });
     }
@@ -708,12 +708,7 @@ namespace AtomToolsFramework
             return;
         }
 
-        AZStd::vector<AZStd::string> scanFolders;
-        scanFolders.reserve(100);
-        AzToolsFramework::AssetSystemRequestBus::Broadcast(
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
-
-        for (const AZStd::string& scanFolder : scanFolders)
+        for (const AZStd::string& scanFolder : GetNonCacheSourceFolders())
         {
             VisitFilesInFolder(scanFolder, visitorFn, true);
         }
@@ -721,16 +716,12 @@ namespace AtomToolsFramework
 
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn)
     {
-        AZStd::vector<AZStd::string> scanFolders;
-        scanFolders.reserve(100);
-        AzToolsFramework::AssetSystemRequestBus::Broadcast(
-            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+        const auto& scanFolders = GetNonCacheSourceFolders();
 
-        AZStd::mutex resultsMutex;
         AZStd::vector<AZStd::string> results;
         results.reserve(scanFolders.size());
 
-        AZ::parallel_for_each(
+        AZStd::for_each(
             scanFolders.begin(),
             scanFolders.end(),
             [&](const AZStd::string& scanFolder)
@@ -741,7 +732,6 @@ namespace AtomToolsFramework
                     {
                         if (!filterFn || filterFn(path))
                         {
-                            AZStd::scoped_lock lock(resultsMutex);
                             results.emplace_back(path);
                         }
                         return true;
@@ -756,13 +746,31 @@ namespace AtomToolsFramework
         return results;
     }
 
-    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard)
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingExtension(const AZStd::string& extension)
     {
+        if (extension.empty())
+        {
+            return {};
+        }
+
+        const AZStd::string& extensionWithDot = (extension[0] == '.') ? extension : AZStd::string::format(".%s", extension.c_str());
         return GetPathsInSourceFoldersMatchingFilter(
             [&](const AZStd::string& path)
             {
-                return AZ::IO::NameMatchesFilter(path, wildcard) && IsDocumentPathEditable(path);
+                return path.ends_with(extensionWithDot) && IsDocumentPathEditable(path);
             });
+    }
+
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders()
+    {
+        AZStd::vector<AZStd::string> scanFolders;
+        scanFolders.reserve(100);
+
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(
+            &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
+
+        AZStd::erase_if(scanFolders, [](const AZStd::string& path){ return AZ::StringFunc::Contains(path, "cache"); });
+        return scanFolders;
     }
 
     void AddRegisteredScriptToMenu(QMenu* menu, const AZStd::string& registryKey, const AZStd::vector<AZStd::string>& arguments)
@@ -855,7 +863,8 @@ namespace AtomToolsFramework
             addUtilFunc(behaviorContext->Method("GetPathToExteralReference", GetPathToExteralReference, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithoutAlias", GetPathWithoutAlias, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetPathWithAlias", GetPathWithAlias, nullptr, ""));
-            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingWildcard", GetPathsInSourceFoldersMatchingWildcard, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetPathsInSourceFoldersMatchingExtension", GetPathsInSourceFoldersMatchingExtension, nullptr, ""));
+            addUtilFunc(behaviorContext->Method("GetNonCacheSourceFolders", GetNonCacheSourceFolders, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSettingsValue_bool", GetSettingsValue<bool>, nullptr, ""));
             addUtilFunc(behaviorContext->Method("SetSettingsValue_bool", SetSettingsValue<bool>, nullptr, ""));
             addUtilFunc(behaviorContext->Method("GetSettingsValue_s64", GetSettingsValue<AZ::s64>, nullptr, ""));

@@ -80,7 +80,7 @@ namespace AZ
                         ->DataElement(Edit::UIHandlers::EntityId, &DirectionalLightComponentConfig::m_cameraEntityId, "Camera", "Entity of the camera for cascaded shadowmap view frustum.")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                         ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_shadowFarClipDistance, "Shadow far clip", "Shadow specific far clip distance.")
-                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                         ->DataElement(Edit::UIHandlers::ComboBox, &DirectionalLightComponentConfig::m_shadowmapSize, "Shadowmap size", "Width/Height of shadowmap")
                             ->EnumAttribute(ShadowmapSize::Size256, " 256")
                             ->EnumAttribute(ShadowmapSize::Size512, " 512")
@@ -91,8 +91,10 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, 1)
                             ->Attribute(Edit::Attributes::Max, Shadow::MaxNumberOfCascades)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                         ->DataElement(Edit::UIHandlers::Default, &DirectionalLightComponentConfig::m_isShadowmapFrustumSplitAutomatic, "Automatic splitting",
                             "Switch splitting of shadowmap frustum to cascades automatically or not.")
+                            ->Attribute(Edit::Attributes::ChangeNotify, &DirectionalLightComponentConfig::UpdateCascadeFarDepths)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_shadowmapFrustumSplitSchemeRatio, "Split ratio",
                             "Ratio to lerp between the two types of frustum splitting scheme.\n"
                             "0 = Uniform scheme which will split the frustum evenly across all cascades.\n"
@@ -104,7 +106,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitManual)
                         ->DataElement(Edit::UIHandlers::Vector4, &DirectionalLightComponentConfig::m_cascadeFarDepths, "Far depth cascade",
                             "Far depth of each cascade.  The value of the index greater than or equal to cascade count is ignored.")
-                            ->Attribute(Edit::Attributes::Min, 0.01f)
+                            ->Attribute(Edit::Attributes::Min, DirectionalLightConstants::MIN_CASCADE_FAR_DEPTH)
                             ->Attribute(Edit::Attributes::Max, &DirectionalLightComponentConfig::m_shadowFarClipDistance)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSplitAutomatic)
@@ -268,6 +270,8 @@ namespace AZ
                 m_controller.m_photometricValue.ConvertToPhotometricUnit(m_controller.m_configuration.m_intensityMode);
                 m_controller.m_configuration.m_intensity = m_controller.m_photometricValue.GetIntensity();
             }
+
+            m_controller.m_configurationChangedEvent.Signal();
 
             BaseClass::OnConfigurationChanged();
             return Edit::PropertyRefreshLevels::AttributesAndValues;

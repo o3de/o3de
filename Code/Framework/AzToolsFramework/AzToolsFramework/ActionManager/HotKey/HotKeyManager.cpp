@@ -46,6 +46,9 @@ namespace AzToolsFramework
                 contextIdentifier.c_str()));
         }
 
+        // Set the context identifier as a property on the widget so that the watcher can be queried easily later
+        widget->setProperty(ActionManager::ActionContextWidgetIdentifier.data(), contextIdentifier.c_str());
+
         widget->installEventFilter(widgetWatcher);
         return AZ::Success();
     }
@@ -61,6 +64,7 @@ namespace AzToolsFramework
                 contextIdentifier.c_str()));
         }
 
+        widget->setProperty(ActionManager::ActionContextWidgetIdentifier.data(), QVariant());
         widget->removeEventFilter(widgetWatcher);
         return AZ::Success();
     }

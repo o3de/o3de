@@ -38,8 +38,15 @@ _MODULENAME = f'{_PACKAGENAME}.config'
 _LOGGER = _logging.getLogger(_MODULENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
+
+# dynaconf boilerplate
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+
+settings.setenv() # ensure default file based settings are in the env
 
 from DccScriptingInterface import add_site_dir
 add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
@@ -48,7 +55,7 @@ add_site_dir(PATH_O3DE_TECHART_GEMS) # cleaner add
 # in a future iteration it is suggested that the core config
 # be rewritten from ConfigClass, then BlenderConfig inherits core
 import DccScriptingInterface.config as dccsi_core_config
-
+# logic based dccsi config management
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)

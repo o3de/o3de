@@ -163,6 +163,10 @@ namespace AZ
         }
     }
 
+    void Component::OnAfterEntitySet()
+    {
+    }
+
     AZStd::string Component::GetSerializedIdentifier() const
     {
         return AZStd::string();

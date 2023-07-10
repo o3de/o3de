@@ -67,6 +67,19 @@ namespace AZ
             m_materialPipelineData = {};
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
+            if (!m_materialAsset.IsReady())
+            {
+                // We will call this function again later when the asset is ready.
+                Data::AssetBus::Handler::BusConnect(m_materialAsset.GetId());
+                return RHI::ResultCode::Success;
+            }
+
+            if (!m_materialAsset->InitializeNonSerializedData())
+            {
+                AZ_Error(s_debugTraceName, false, "Material::InitializeNonSerializedData is not supposed to fail. materialAsset uuid=%s",
+                    materialAsset.GetId().ToFixedString().c_str());
+                return RHI::ResultCode::Fail;
+            }
 
             // Cache off pointers to some key data structures from the material type...
             auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
@@ -130,6 +143,7 @@ namespace AZ
 
         Material::~Material()
         {
+            Data::AssetBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
 
@@ -282,7 +296,7 @@ namespace AZ
 
         bool Material::CanCompile() const
         {
-            return !m_shaderResourceGroup || !m_shaderResourceGroup->IsQueuedForCompile();
+            return m_materialAsset.IsReady() && (!m_shaderResourceGroup || !m_shaderResourceGroup->IsQueuedForCompile());
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -819,6 +833,14 @@ namespace AZ
         {
             return m_materialProperties.GetMaterialPropertiesLayout();
         }
+
+        // AssetBus overrides...
+        void Material::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            Data::AssetBus::Handler::BusDisconnect();
+            Init(*static_cast<MaterialAsset*>(asset.Get()));
+        }
+        // AssetBus overrides end
 
     } // namespace RPI
 } // namespace AZ

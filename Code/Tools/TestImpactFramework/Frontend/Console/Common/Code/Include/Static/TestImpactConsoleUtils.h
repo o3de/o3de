@@ -11,14 +11,13 @@
 #include <TestImpactFramework/TestImpactChangeList.h>
 #include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
 #include <TestImpactFramework/TestImpactConsoleMain.h>
-#include <TestImpactFramework/TestImpactRuntime.h>
 #include <TestImpactFramework/TestImpactSequenceReportException.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <TestImpactCommandLineOptions.h>
 #include <TestImpactCommandLineOptionsException.h>
-#include <TestImpactConsoleTestSequenceEventHandler.h>
+#include <TestImpactTestSequenceNotificationHandler.h>
 
 #include <AzCore/std/string/string.h>
 
@@ -81,7 +80,10 @@ namespace TestImpact::Console
     //! Wrapper around impact analysis sequences to handle the case where the safe mode option is active.
     template<typename CommandLineOptions, typename Runtime> 
     ReturnCode WrappedImpactAnalysisTestSequence(
-        const CommandLineOptions& options, Runtime& runtime, const AZStd::optional<ChangeList>& changeList)
+        const CommandLineOptions& options,
+        Runtime& runtime,
+        const AZStd::optional<ChangeList>& changeList,
+        ConsoleOutputMode consoleOutputMode)
     {
         // Even though it is possible for a regular run to be selected (see below) which does not actually require a change list,
         // consider any impact analysis sequence type without a change list to be an error
@@ -92,15 +94,13 @@ namespace TestImpact::Console
         {
             if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysis)
             {
+                SafeImpactAnalysisTestSequenceNotificationHandler handler(consoleOutputMode);
                 return ConsumeSequenceReportAndGetReturnCode(
                     runtime.SafeImpactAnalysisTestSequence(
                         changeList.value(),
                         options.GetTestPrioritizationPolicy(),
                         options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        SafeImpactAnalysisTestSequenceStartCallback,
-                        SafeImpactAnalysisTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
+                        options.GetGlobalTimeout()),
                     options);
             }
             else if (options.GetTestSequenceType() == TestSequenceType::ImpactAnalysisNoWrite)
@@ -108,13 +108,11 @@ namespace TestImpact::Console
                 // A no-write impact analysis sequence with safe mode enabled is functionally identical to a regular sequence type
                 // due to a) the selected tests being run without instrumentation and b) the discarded tests also being run without
                 // instrumentation
+                RegularTestSequenceNotificationHandler handler(consoleOutputMode);
                 return ConsumeSequenceReportAndGetReturnCode(
                     runtime.RegularTestSequence(
                         options.GetTestTargetTimeout(),
-                        options.GetGlobalTimeout(),
-                        TestSequenceStartCallback,
-                        RegularTestSequenceCompleteCallback,
-                        TestRunCompleteCallback),
+                        options.GetGlobalTimeout()),
                     options);
             }
             else
@@ -138,16 +136,14 @@ namespace TestImpact::Console
                 throw(Exception("Unexpected sequence type"));
             }
 
+            ImpactAnalysisTestSequenceNotificationHandler handler(consoleOutputMode);
             return ConsumeSequenceReportAndGetReturnCode(
                 runtime.ImpactAnalysisTestSequence(
                     changeList.value(),
                     options.GetTestPrioritizationPolicy(),
                     dynamicDependencyMapPolicy,
                     options.GetTestTargetTimeout(),
-                    options.GetGlobalTimeout(),
-                    ImpactAnalysisTestSequenceStartCallback,
-                    ImpactAnalysisTestSequenceCompleteCallback,
-                    TestRunCompleteCallback),
+                    options.GetGlobalTimeout()),
                 options);
         }
     };

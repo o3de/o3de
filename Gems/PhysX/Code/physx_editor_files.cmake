@@ -12,6 +12,8 @@ set(FILES
     Include/PhysX/EditorJointBus.h
     Source/ComponentDescriptors.cpp
     Source/ComponentDescriptors.h
+    Source/EditorArticulationLinkComponent.cpp
+    Source/EditorArticulationLinkComponent.h
     Source/EditorComponentDescriptors.cpp
     Source/EditorComponentDescriptors.h
     Source/EditorRigidBodyComponent.cpp
@@ -48,6 +50,8 @@ set(FILES
     Source/Pipeline/MeshGroup.h
     Source/Pipeline/MeshBehavior.cpp
     Source/Pipeline/MeshBehavior.h
+    Source/Pipeline/PhysicsPrefabProcessor.cpp
+    Source/Pipeline/PhysicsPrefabProcessor.h
     Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.cpp
     Source/Pipeline/PrimitiveShapeFitter/PrimitiveShapeFitter.h
     Source/Pipeline/PrimitiveShapeFitter/AbstractShapeParameterization.cpp

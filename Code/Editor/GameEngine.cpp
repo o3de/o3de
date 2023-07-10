@@ -25,6 +25,7 @@
 // AzFramework
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Archive/IArchive.h>
 
@@ -43,7 +44,6 @@
 #include "AnimationContext.h"
 #include "MainWindow.h"
 #include "Include/IObjectManager.h"
-#include "ActionManager.h"
 
 // Implementation of System Callback structure.
 struct SSystemUserCallback
@@ -532,8 +532,6 @@ void CGameEngine::SwitchToInGame()
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);
     m_bInGameMode = true;
 
-    // Disable accelerators.
-    GetIEditor()->EnableAcceleratos(false);
     //! Send event to switch into game.
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_INGAME);
 
@@ -569,9 +567,6 @@ void CGameEngine::SwitchToInEditor()
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(m_bSimulationMode);
 
-    // Enable accelerators.
-    GetIEditor()->EnableAcceleratos(true);
-
     // [Anton] - order changed, see comments for CGameEngine::SetSimulationMode
     //! Send event to switch out of game.
     GetIEditor()->GetObjectManager()->SendEvent(EVENT_OUTOFGAME);
@@ -604,7 +599,7 @@ void CGameEngine::HandleQuitRequest(IConsoleCmdArgs* /*args*/)
     }
     else
     {
-        MainWindow::instance()->GetActionManager()->GetAction(ID_APP_EXIT)->trigger();
+        MainWindow::instance()->window()->close();
     }
 }
 
@@ -799,6 +794,22 @@ void CGameEngine::Update()
         if (CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport())
         {
             pRenderViewport->Update();
+        }
+
+        // Check for the Escape key to exit game mode here rather than in Qt, 
+        // because all Qt events are usually filtered out in game mode in 
+        // QtEditorApplication_<platform>.cpp nativeEventFilter() to prevent 
+        // using Editor menu actions and shortcuts that shouldn't trigger while 
+        // playing the game.
+        // When the user opens the console, Qt events will be allowed 
+        // so the user can interact with limited Editor content like the console.
+        const AzFramework::InputChannel* inputChannel = nullptr;
+        const AzFramework::InputChannelId channelId(AzFramework::InputDeviceKeyboard::Key::Escape);
+        AzFramework::InputChannelRequestBus::EventResult(inputChannel, channelId, &AzFramework::InputChannelRequests::GetInputChannel);
+        if(inputChannel && inputChannel->GetState() == AzFramework::InputChannel::State::Began)
+        {
+            // leave game mode
+            RequestSetGameMode(false);
         }
     }
     else

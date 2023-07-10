@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -30,6 +31,7 @@ namespace AZ
             : public AZ::Data::AssetData
         {
             friend class ModelAssetCreator;
+            friend class ModelAssetHelpers;
 
         public:
             static const char* DisplayName;
@@ -76,10 +78,32 @@ namespace AZ
                 const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
+            //! Returns the model tags
+            const AZStd::vector<AZ::Name>& GetTags() const;
+
         private:
+            //! Initialize the ModelAsset with the given set of data.
+            //! This is used by ModelAssetHelpers to overwrite an already-created ModelAsset.
+            //! @param name The name to associate with the model
+            //! @param lodAssets The list of LodAssets to use with the model
+            //! @param materialSlots The map of slots to materials for the model
+            //! @param fallbackSlot The slot to use as a fallback material
+            //! @param tags The set of tags to associate with the model.
+            void InitData(
+                AZ::Name name,
+                AZStd::span<Data::Asset<ModelLodAsset>> lodAssets,
+                const ModelMaterialSlotMap& materialSlots,
+                const ModelMaterialSlot& fallbackSlot,
+                AZStd::span<AZ::Name> tags);
+
             // AssetData overrides...
             bool HandleAutoReload() override
             {
+                // Automatic asset reloads via the AssetManager are disabled for Atom models and their dependent assets because reloads
+                // need to happen in a specific order to refresh correctly. They require more complex code than what the default
+                // AssetManager reloading provides. See ModelReloader() for the actual handling of asset reloads.
+                // Models need to be loaded via the MeshFeatureProcessor to reload correctly, and reloads can be listened
+                // to by using MeshFeatureProcessor::ConnectModelChangeEventHandler().
                 return false;
             }
 
@@ -118,6 +142,8 @@ namespace AZ
             ModelMaterialSlot m_fallbackSlot;
 
             AZStd::size_t CalculateTriangleCount() const;
+
+            AZStd::vector<AZ::Name> m_tags;
         };
 
         class ModelAssetHandler
@@ -126,6 +152,23 @@ namespace AZ
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 
+            //! Called when an asset requested to load is actually missing from the catalog when we are trying to resolve it
+            //! from an ID to a file name and other streaming info.
+            //! The AssetId that this returns should reference asset data to use as a fallback asset until the correct asset
+            //! is compiled by the Asset Processor and loaded (or not, if it's a missing or failed asset).
+            //! Missing assets don't support asset dependencies because they're substituted in at the asset stream load level,
+            //! so the substitute asset must be standalone. All processed ModelAsset models have dependencies on LODs, buffers, and
+            //! materials, so they can't be used as substitutes. Instead, this generates an in-memory unit cube model with no materials
+            //! as a no-dependency asset that can be used until the real one appears.
+            Data::AssetId AssetMissingInCatalog(const Data::Asset<Data::AssetData>& asset) override;
+
+            Data::AssetHandler::LoadResult LoadAssetData(
+                const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+                AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
+                const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
+
+        private:
+            static const Data::AssetId s_defaultModelAssetId;
         };
     } //namespace RPI
 } // namespace AZ

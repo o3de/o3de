@@ -34,6 +34,7 @@ set(FILES
     ../Common/Default/AzCore/IO/Streamer/StreamerConfiguration_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.cpp
     ../Common/Default/AzCore/IO/Streamer/StreamerContext_Default.h
+    ../Common/UnixLike/AzCore/IO/AnsiTerminalUtils_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/SystemFile_UnixLike.cpp
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h
     ../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.cpp
@@ -59,7 +60,6 @@ set(FILES
     AzCore/Socket/AzSocket_Platform.h
     ../Common/UnixLike/AzCore/std/time_UnixLike.cpp
     AzCore/Utils/Utils_Android.cpp
-    ../Common/Unimplemented/AzCore/Utils/Utils_Unimplemented.cpp
     AzCore/Android/AndroidEnv.cpp
     AzCore/Android/AndroidEnv.h
     AzCore/Android/APKFileHandler.cpp
@@ -95,6 +95,6 @@ endif()
 # algorithm, which gets broken by the fast-math optimizations.
 ly_add_source_properties(
     SOURCES ${CMAKE_CURRENT_LIST_DIR}/../../AzCore/Math/IntersectSegment.cpp
-    PROPERTY COMPILE_FLAGS
-    VALUES -fno-fast-math
+    PROPERTY COMPILE_OPTIONS
+    VALUES -fno-fast-math -Wno-overriding-t-option
 )

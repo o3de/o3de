@@ -42,6 +42,8 @@ namespace AZ::Reflection
         //! The container instance pointer for a container element row.
         //! Type: void*
         extern const Name ParentContainerInstance;
+        //! Boolean flag indicating whether the owning container of an element can be modified
+        extern const Name ParentContainerCanBeModified;
         //! If specified, an override for the instance of the element referenced in a container operation.
         //! Type: void*
         extern const Name ContainerElementOverride;

@@ -7,6 +7,7 @@
  */
 #include "native/utilities/PlatformConfiguration.h"
 #include "native/AssetManager/FileStateCache.h"
+#include "native/assetprocessor.h"
 
 #include <QDirIterator>
 
@@ -705,7 +706,7 @@ namespace AssetProcessor
     #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         if (commandLine)
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, true);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, {});
         }
     #endif
 
@@ -980,7 +981,7 @@ namespace AssetProcessor
     {
         for (const auto& scanfolder : m_scanFolders)
         {
-            if (scanfolder.GetPortableKey() == IntermediateAssetsFolderName)
+            if (scanfolder.GetPortableKey() == AssetProcessor::IntermediateAssetsFolderName)
             {
                 m_intermediateAssetScanFolderId = scanfolder.ScanFolderID();
                 return;
@@ -1347,7 +1348,7 @@ namespace AssetProcessor
         // file to the settings registry
         if (configFile.Extension() == ".setreg")
         {
-            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch).IsSuccess();
+            return static_cast<bool>(settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch));
         }
 
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
@@ -1473,6 +1474,11 @@ namespace AssetProcessor
             {
                 return scanFolder.ScanFolderID() == id;
             });
+    }
+
+    const AZ::s64 PlatformConfiguration::GetIntermediateAssetScanFolderId() const
+    {
+        return m_intermediateAssetScanFolderId;
     }
 
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)
@@ -1601,7 +1607,7 @@ namespace AssetProcessor
     // This function is one of the most frequently called ones in the entire application
     // and is invoked several times per file.  It can frequently become a bottleneck, so
     // avoid doing expensive operations here, especially memory or IO operations.
-    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
+    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder, const ScanFolderInfo** outScanFolderInfo) const
     {
         if (relativeName.isEmpty())
         {
@@ -1666,6 +1672,11 @@ namespace AssetProcessor
             {
                 if (fileStateInterface->GetFileInfo(absolutePath, &fileStateInfo))
                 {
+                    if (outScanFolderInfo)
+                    {
+                        *outScanFolderInfo = &scanFolderInfo;
+                    }
+
                     return AssetUtilities::NormalizeFilePath(fileStateInfo.m_absolutePath);
                 }
             }
@@ -1851,7 +1862,7 @@ namespace AssetProcessor
         settingsRegistry->Get(cacheRootFolder, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder);
 
         AZ::IO::Path scanfolderPath = cacheRootFolder.c_str();
-        scanfolderPath /= IntermediateAssetsFolderName;
+        scanfolderPath /= AssetProcessor::IntermediateAssetsFolderName;
 
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         PopulatePlatformsForScanFolder(platforms);
@@ -1864,8 +1875,8 @@ namespace AssetProcessor
 
         AddScanFolder(ScanFolderInfo{
             scanfolderPath.c_str(),
-            IntermediateAssetsFolderName,
-            IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
+            AssetProcessor::IntermediateAssetsFolderName,
             false,
             true,
             platforms,

@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -53,6 +54,11 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
+        RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
+        {
+            return m_bindlessArgumentBuffer.Init(this, bindlessSrgDesc);
+        }
+    
         RHI::ResultCode Device::InitializeLimits()
         {
             {
@@ -89,7 +95,6 @@ namespace AZ
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
-            m_bindlessArgumentBuffer.Init(this);
             return RHI::ResultCode::Success;
         }
     
@@ -169,6 +174,7 @@ namespace AZ
         MemoryView Device::CreateInternalImageCommitted(MTLTextureDescriptor* mtlTextureDesc)
         {
             id<MTLTexture> mtlTexture = [m_metalDevice newTextureWithDescriptor : mtlTextureDesc];
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(mtlTexture != nil);
             AZ_Assert(mtlTexture, "Failed to create texture");
             
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlTexture, ResourceType::MtlTextureType});
@@ -241,6 +247,7 @@ namespace AZ
             ResourceDescriptor resourceDesc = ConvertBufferDescriptor(bufferDescriptor, heapMemoryLevel);
             MTLResourceOptions resOptions = CovertToResourceOptions(resourceDesc.m_mtlStorageMode, resourceDesc.m_mtlCPUCacheMode, resourceDesc.m_mtlHazardTrackingMode);
             mtlBuffer = [m_metalDevice newBufferWithLength:resourceDesc.m_width options:resOptions];
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(mtlBuffer != nil);
             AZ_Assert(mtlBuffer, "Failed to create the buffer");
             
             RHI::Ptr<MetalResource> resc = MetalResource::Create(MetalResourceDescriptor{mtlBuffer, ResourceType::MtlBufferType});
@@ -376,7 +383,9 @@ namespace AZ
             m_features.m_occlusionQueryPrecise = true;
             
             m_features.m_unboundedArrays = m_metalDevice.argumentBuffersSupport == MTLArgumentBuffersTier2;
-            
+            m_features.m_unboundedArrays = false; //Remove this when unbounded array support is added to spirv-cross
+            m_features.m_simulateBindlessUA = true; // Simulate unbounded arrays for Bindless srg
+
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
             m_limits.m_maxImageDimension1D = 8192;
             m_limits.m_maxImageDimension2D = 8192;

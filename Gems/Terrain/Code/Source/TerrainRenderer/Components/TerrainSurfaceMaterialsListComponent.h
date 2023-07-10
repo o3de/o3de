@@ -13,7 +13,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Serialization/EditContext.h>
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>

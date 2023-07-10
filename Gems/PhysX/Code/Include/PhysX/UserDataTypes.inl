@@ -109,6 +109,16 @@ namespace PhysX
         m_payload.m_ragdollNode = ragdollNode;
     }
 
+    inline AzPhysics::SimulatedBody* ActorData::GetArticulationLink()
+    {
+        return m_payload.m_articulationLink;
+    }
+
+    inline void ActorData::SetArticulationLink(AzPhysics::SimulatedBody* articulationLink)
+    {
+        m_payload.m_articulationLink = articulationLink;
+    }
+
     inline AzPhysics::SimulatedBody* ActorData::GetSimulatedBody() const
     {
         if (m_payload.m_rigidBody)
@@ -129,6 +139,11 @@ namespace PhysX
         else if (m_payload.m_ragdollNode)
         {
             return m_payload.m_ragdollNode;
+        }
+
+        else if (m_payload.m_articulationLink)
+        {
+            return m_payload.m_articulationLink;
         }
 
         else

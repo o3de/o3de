@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 
@@ -93,88 +94,104 @@ namespace PhysX
     EditorProxyAssetShapeConfig::EditorProxyAssetShapeConfig(
         const Physics::PhysicsAssetShapeConfiguration& assetShapeConfiguration)
     {
+        m_physicsAsset.m_pxAsset = assetShapeConfiguration.m_asset;
         m_physicsAsset.m_configuration = assetShapeConfiguration;
+    }
+
+    AZStd::vector<EditorProxyAssetShapeConfig::ShapeType> EditorProxyAssetShapeConfig::GetShapeTypesInsideAsset() const
+    {
+        if (!m_physicsAsset.m_pxAsset.IsReady())
+        {
+            return {};
+        }
+
+        Physics::ColliderConfiguration defaultColliderConfiguration;
+        Physics::PhysicsAssetShapeConfiguration physicsAssetConfiguration = m_physicsAsset.m_configuration;
+        physicsAssetConfiguration.m_asset = m_physicsAsset.m_pxAsset;
+        physicsAssetConfiguration.m_assetScale = AZ::Vector3::CreateOne(); // Remove the scale so it doesn't affect the query for the asset mesh type
+        const bool hasNonUniformScale = false;
+
+        AzPhysics::ShapeColliderPairList shapeConfigList;
+        Utils::GetColliderShapeConfigsFromAsset(
+            physicsAssetConfiguration, defaultColliderConfiguration, hasNonUniformScale, m_subdivisionLevel, shapeConfigList);
+
+        AZStd::vector<ShapeType> shapeTypes;
+        shapeTypes.reserve(shapeConfigList.size());
+        for (const auto& shapeConfig : shapeConfigList)
+        {
+            const Physics::ShapeConfiguration* shapeConfiguration = shapeConfig.second.get();
+            AZ_Assert(shapeConfiguration, "GetShapeTypesInsideAsset: Invalid shape-collider configuration pair");
+
+            switch (shapeConfiguration->GetShapeType())
+            {
+            case Physics::ShapeType::CookedMesh:
+                {
+                    const Physics::CookedMeshShapeConfiguration* cookedMeshShapeConfiguration =
+                        static_cast<const Physics::CookedMeshShapeConfiguration*>(shapeConfiguration);
+                    switch (cookedMeshShapeConfiguration->GetMeshType())
+                    {
+                    case Physics::CookedMeshShapeConfiguration::MeshType::Convex:
+                        shapeTypes.push_back(ShapeType::Convex);
+                        break;
+                    case Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh:
+                        shapeTypes.push_back(ShapeType::TriangleMesh);
+                        break;
+                    default:
+                        shapeTypes.push_back(ShapeType::Invalid);
+                        break;
+                    }
+                }
+                break;
+            case Physics::ShapeType::Sphere:
+            case Physics::ShapeType::Box:
+            case Physics::ShapeType::Capsule:
+                shapeTypes.push_back(ShapeType::Primitive);
+                break;
+            default:
+                shapeTypes.push_back(ShapeType::Invalid);
+                break;
+            }
+        }
+
+        return shapeTypes;
     }
 
     AZStd::string EditorProxyAssetShapeConfig::PhysXMeshAssetShapeTypeName() const
     {
         const AZStd::string assetName = "Asset";
 
-        if (!m_physicsAsset.m_pxAsset.IsReady())
+        const AZStd::vector<ShapeType> shapeTypes = GetShapeTypesInsideAsset();
+        if (shapeTypes.empty())
         {
             return assetName;
         }
 
-        Physics::ColliderConfiguration defaultColliderConfiguration;
-        Physics::PhysicsAssetShapeConfiguration physicsAssetConfiguration = m_physicsAsset.m_configuration;
-        physicsAssetConfiguration.m_asset = m_physicsAsset.m_pxAsset;
-
-        AzPhysics::ShapeColliderPairList shapeConfigList;
-        Utils::GetColliderShapeConfigsFromAsset(
-            physicsAssetConfiguration,
-            defaultColliderConfiguration,
-            m_hasNonUniformScale,
-            m_subdivisionLevel,
-            shapeConfigList);
-
-        if (shapeConfigList.empty())
+        // Using the first shape type as representative for shapes inside the asset.
+        switch (shapeTypes[0])
         {
-            return assetName;
-        }
-
-        // It's enough looking at the first shape as the rest would be the same type.
-        const Physics::ShapeConfiguration* shapeConfiguration = shapeConfigList[0].second.get();
-        AZ_Assert(shapeConfiguration, "PhysXMeshAssetShapeTypeName: Invalid shape-collider configuration pair");
-
-        switch (shapeConfiguration->GetShapeType())
-        {
-        case Physics::ShapeType::CookedMesh:
-            {
-                const Physics::CookedMeshShapeConfiguration* cookedMeshShapeConfiguration =
-                    static_cast<const Physics::CookedMeshShapeConfiguration*>(shapeConfiguration);
-                switch (cookedMeshShapeConfiguration->GetMeshType())
-                {
-                case Physics::CookedMeshShapeConfiguration::MeshType::Convex:
-                    {
-                        return assetName + " (Convex)";
-                    }
-                case Physics::CookedMeshShapeConfiguration::MeshType::TriangleMesh:
-                    {
-                        return assetName + " (Triangle Mesh)";
-                    }
-                default:
-                    {
-                        AZ_Error(
-                            "EditorProxyAssetShapeConfig",
-                            false,
-                            "PhysXMeshAssetShapeTypeName: Unexpected MeshType %d",
-                            static_cast<AZ::u32>(cookedMeshShapeConfiguration->GetMeshType()));
-                        return assetName;
-                    }
-                }
-                break;
-            }
-        case Physics::ShapeType::Sphere:
-        case Physics::ShapeType::Box:
-        case Physics::ShapeType::Capsule:
-            {
-                return assetName + " (Primitive)";
-            }
+        case ShapeType::Primitive:
+            return assetName + " (Primitive)";
+        case ShapeType::Convex:
+            return assetName + " (Convex)";
+        case ShapeType::TriangleMesh:
+            return assetName + " (Triangle Mesh)";
         default:
-            {
-                AZ_Error(
-                    "EditorProxyAssetShapeConfig",
-                    false,
-                    "PhysXMeshAssetShapeTypeName: Unexpected ShapeType %d.",
-                    static_cast<AZ::u32>(shapeConfiguration->GetShapeType()));
-                return assetName;
-            }
+            return assetName;
         }
     }
 
     bool EditorProxyAssetShapeConfig::ShowingSubdivisionLevel() const
     {
-        return m_hasNonUniformScale;
+        const AZStd::vector<ShapeType> shapeTypes = GetShapeTypesInsideAsset();
+
+        return m_hasNonUniformScale &&
+            AZStd::any_of(
+                   shapeTypes.begin(),
+                   shapeTypes.end(),
+                   [](const ShapeType& shapeType)
+                   {
+                       return shapeType == ShapeType::Primitive;
+                   });
     }
 
     AZ::u32 EditorProxyAssetShapeConfig::OnConfigurationChanged()
@@ -342,15 +359,10 @@ namespace PhysX
         AZ::NonUniformScaleRequestBus::Event(
             entityId, &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent,
             m_nonUniformScaleChangedHandler);
-        m_hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(entityId) != nullptr);
-        m_proxyShapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
 
         AZ::TransformBus::EventResult(m_cachedWorldTransform, entityId, &AZ::TransformInterface::GetWorldTM);
         m_cachedNonUniformScale = AZ::Vector3::CreateOne();
-        if (m_hasNonUniformScale)
-        {
-            AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
-        }
+        AZ::NonUniformScaleRequestBus::EventResult(m_cachedNonUniformScale, entityId, &AZ::NonUniformScaleRequests::GetScale);
 
         // Debug drawing
         m_colliderDebugDraw.Connect(entityId);
@@ -845,6 +857,10 @@ namespace PhysX
 
     void EditorMeshColliderComponent::UpdateShapeConfigurationScale()
     {
+        const AZ::Vector3& assetScale = m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_assetScale;
+        m_hasNonUniformScale =
+            !Physics::Utils::HasUniformScale(assetScale) || (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        m_proxyShapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
         m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
     }
 

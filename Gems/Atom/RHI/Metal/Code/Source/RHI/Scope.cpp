@@ -25,7 +25,12 @@ namespace AZ
         {
             return aznew Scope();
         }
-
+    
+        void Scope::InitInternal()
+        {
+            m_markerName = Name(GetMarkerLabel());
+        }
+    
         void Scope::DeactivateInternal()
         {
             for (RHI::ResourcePoolResolver* resolvePolicyBase : GetResourcePoolResolves())
@@ -290,7 +295,7 @@ namespace AZ
             }
             
             const bool isPrologue = commandListIndex == 0;
-            commandList.SetName(GetId());
+            commandList.SetName(m_markerName);
             commandList.SetRenderPassInfo(m_renderPassDescriptor, m_scopeMultisampleState, m_residentHeaps);
             
             if (isPrologue)

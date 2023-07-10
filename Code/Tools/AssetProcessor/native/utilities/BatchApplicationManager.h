@@ -40,6 +40,7 @@ private:
     const char* GetLogBaseName() override;
     RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) override;
     void InitSourceControl() override;
+    void InitUuidManager() override;
 
     void MakeActivationConnections() override;
 

@@ -63,6 +63,14 @@ namespace PhysX
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
 
     private:
+        enum class ShapeType
+        {
+            Invalid,
+            Primitive,
+            Convex,
+            TriangleMesh
+        };
+        AZStd::vector<ShapeType> GetShapeTypesInsideAsset() const;
         AZStd::string PhysXMeshAssetShapeTypeName() const;
         bool ShowingSubdivisionLevel() const;
         AZ::u32 OnConfigurationChanged();

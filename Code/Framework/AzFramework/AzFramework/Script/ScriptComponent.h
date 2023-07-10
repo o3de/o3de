@@ -78,6 +78,7 @@ namespace AzFramework
 
     class ScriptComponent
         : public AZ::Component
+        , private AZ::Data::AssetBus::Handler
     {
         friend class AzToolsFramework::Components::ScriptEditorComponent;        
 
@@ -110,11 +111,17 @@ namespace AzFramework
         void Deactivate() override;
         //////////////////////////////////////////////////////////////////////////
 
+        //////////////////////////////////////////////////////////////////////////
+        // AssetBus
+        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
+        //////////////////////////////////////////////////////////////////////////
+
+
         /// Loads the script into the context/VM, \returns true if the script is loaded
         bool LoadInContext();
 
-        // Create script instance table.
         void CreateEntityTable();
+        void DestroyEntityTable();
         
         void CreatePropertyGroup(const ScriptPropertyGroup& group, int propertyGroupTableIndex, int parentIndex, int metatableIndex, bool isRoot);
 

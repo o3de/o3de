@@ -28,7 +28,7 @@ ly_associate_package(PACKAGE_NAME png-1.6.37-rev2-android            TARGETS PNG
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1o-rev2-android        TARGETS OpenSSL         PACKAGE_HASH 28fa781be8fa233e3074b08e5d6d5064d1a5a5cffc80b04e1bb8d407aca459a0)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-android           TARGETS ZLIB            PACKAGE_HASH 73c9e88892c237a3fc6eafc04268ccd9d479e6d55f9df2ed58b236c8f9cf2cae)
-ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-android       TARGETS lz4             PACKAGE_HASH f5b22642d218dbbb442cae61e469e5b241c4740acd258c3e8678e60dec61ea93)
+ly_associate_package(PACKAGE_NAME lz4-1.9.4-rev1-android             TARGETS lz4             PACKAGE_HASH 97a4758f07bea6792dc68d7e9b84952800628bc482b33d9a93e2c52f9e758662)
 
 set(AZ_USE_PHYSX5 OFF CACHE BOOL "When ON PhysX Gem will use PhysX 5 SDK")
 if(AZ_USE_PHYSX5)

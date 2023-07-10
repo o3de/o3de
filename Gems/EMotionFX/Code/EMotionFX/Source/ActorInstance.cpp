@@ -140,6 +140,13 @@ namespace EMotionFX
         {
             UpdateMeshDeformers(0.0f, true); // TODO: not really thread safe because of shared meshes, although it probably will output correctly
             UpdateStaticBasedAabbDimensions();
+
+            // If the aabb is still not valid, this can happen for example when the actor has no nodes,
+            // generate a valid aabb at the global location.
+            if (!m_staticAabb.IsValid())
+            {
+                m_staticAabb.AddPoint(m_worldTransform.m_position);
+            }
         }
 
         // update the bounds
@@ -1425,7 +1432,11 @@ namespace EMotionFX
             return;
         }
 
-        *outResult = m_actor->GetStaticAabb().GetTransformedAabb(m_worldTransform.ToAZTransform());
+        if (const AZ::Aabb& staticAabb = m_actor->GetStaticAabb();
+            staticAabb.IsValid())
+        {
+            *outResult = staticAabb.GetTransformedAabb(m_worldTransform.ToAZTransform());
+        }
     }
 
     // adjust the anim graph instance

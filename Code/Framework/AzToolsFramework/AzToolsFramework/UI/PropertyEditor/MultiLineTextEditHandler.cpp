@@ -41,7 +41,7 @@ namespace AzToolsFramework
     {
         AZ_TraceContext("Attribute name", debugName);
 
-        if (attrib == AZ_CRC("PlaceholderText", 0xa23ec278))
+        if (attrib == AZ::Edit::Attributes::PlaceholderText)
         {
             AZStd::string placeholderText;
             if (attrValue->Read<AZStd::string>(placeholderText))

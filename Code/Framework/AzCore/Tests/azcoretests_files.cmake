@@ -133,6 +133,7 @@ set(FILES
     Math/Matrix3x4Tests.cpp
     Math/Matrix4x4PerformanceTests.cpp
     Math/Matrix4x4Tests.cpp
+    Math/MatrixMxNTests.cpp
     Math/MatrixUtilsTests.cpp
     Math/MathTest.h
     Math/MathTestData.h
@@ -159,6 +160,7 @@ set(FILES
     Math/Vector3Tests.cpp
     Math/Vector4PerformanceTests.cpp
     Math/Vector4Tests.cpp
+    Math/VectorNTests.cpp
     Memory/AllocatorBenchmarks.cpp
     Memory/HphaAllocator.cpp
     Memory/HphaAllocatorErrorDetection.cpp
@@ -235,6 +237,7 @@ set(FILES
     Settings/SettingsRegistryOriginTrackerTests.cpp
     Settings/SettingsRegistryScriptUtilsTests.cpp
     Settings/SettingsRegistryVisitorUtilsTests.cpp
+    Settings/TextParserTests.cpp
     Slice.cpp
     State.cpp
     Statistics.cpp

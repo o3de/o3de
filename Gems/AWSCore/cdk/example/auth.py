@@ -5,8 +5,11 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
+
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Stack,
     aws_iam as iam
 )
 
@@ -15,15 +18,15 @@ class AuthPolicy:
     """
     Creator of auth policies related for the example stack
     """
-    def __init__(self, context: core.Construct):
+    def __init__(self, context: Construct):
         self._context = context
         self._policy_output = None
 
-    def generate_user_policy(self, stack: core.Stack) -> None:
+    def generate_user_policy(self, stack: Stack) -> None:
         """
         Generate require role policy for calling resources created in the stack.
 
-        Currently all resources use grant_access to groups so no direct policy
+        Currently, all resources use grant_access to groups so no direct policy
         is generated.
 
         :param stack: The stack to use to generate the policy for
@@ -31,7 +34,7 @@ class AuthPolicy:
         """
         return None
 
-    def generate_admin_policy(self, stack: core.Stack) -> iam.ManagedPolicy:
+    def generate_admin_policy(self, stack: Stack) -> iam.ManagedPolicy:
         """
         Generate required role policy for calling service / using resources.
 
@@ -63,7 +66,7 @@ class AuthPolicy:
             managed_policy_name=f'{stack.stack_name}-AdminPolicy',
             statements=policy_statements)
 
-        self._policy_output = core.CfnOutput(
+        self._policy_output = CfnOutput(
             self._context,
             id=f'{policy_id}AdminOutput',
             description='Admin user policy arn to work with resources',

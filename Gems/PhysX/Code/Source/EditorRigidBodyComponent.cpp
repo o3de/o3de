@@ -8,6 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/NameConstants.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/EditorRigidBodyComponent.h>
@@ -78,11 +79,16 @@ namespace PhysX
                     continue;
                 }
 
+                const AZ::Vector3& assetScale = shapeConfigurationProxy.m_physicsAsset.m_configuration.m_assetScale;
+
                 const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
                 Utils::CreateShapesFromAsset(
                     shapeConfigurationProxy.m_physicsAsset.m_configuration,
-                    colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
+                    colliderConfigurationUnscaled,
+                    hasNonUniformScaleComponent || !Physics::Utils::HasUniformScale(assetScale),
+                    shapeConfigurationProxy.m_subdivisionLevel,
+                    shapes);
 
                 for (const auto& shape : shapes)
                 {
@@ -201,7 +207,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
                         ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
                         ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
-                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Dynamic")
+                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
                     ->Attribute(
                         AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
                         ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
@@ -442,7 +448,11 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
-                    ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorRigidBodyComponent::m_config,
+                        "Configuration",
+                        "Configuration for rigid body physics.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
                     ->DataElement(

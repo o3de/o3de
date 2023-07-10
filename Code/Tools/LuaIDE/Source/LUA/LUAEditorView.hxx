@@ -178,9 +178,6 @@ namespace LUAEditor
         AzToolsFramework::ProgressShield *m_pSavingProgressShield;
         AzToolsFramework::ProgressShield *m_pRequestingEditProgressShield;
 
-        int m_breakpointMarker_Waiting;
-        bool m_bHasInitialUpdate;
-
         struct BreakpointData
         {
             AZ::Uuid m_editorId; // globally unique

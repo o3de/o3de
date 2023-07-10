@@ -29,17 +29,17 @@ namespace PhysX
 {
     // ShapeInfoCache
     AZ::Aabb BaseColliderComponent::ShapeInfoCache::GetAabb(const AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& shapes)
-    { 
+    {
         if (m_cacheOutdated)
         {
             UpdateCache(shapes);
         }
-        return m_aabb; 
+        return m_aabb;
     }
 
     void BaseColliderComponent::ShapeInfoCache::InvalidateCache()
-    { 
-        m_cacheOutdated = true; 
+    {
+        m_cacheOutdated = true;
     }
 
     const AZ::Transform& BaseColliderComponent::ShapeInfoCache::GetWorldTransform()
@@ -59,6 +59,11 @@ namespace PhysX
         if (numShapes > 0)
         {
             auto* scene = Utils::GetDefaultScene();
+            if (scene == nullptr)
+            {
+                return;
+            }
+
             auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
             PHYSX_SCENE_READ_LOCK(pxScene);
 
@@ -68,7 +73,8 @@ namespace PhysX
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
             const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry();
 #else
-            const physx::PxGeometry& pxShapeGeom = pxShape->getGeometry().any();
+            const auto pxGeometryHolder = pxShape->getGeometry();
+            const physx::PxGeometry& pxShapeGeom = pxGeometryHolder.any();
 #endif
 
             physx::PxBounds3 bounds = physx::PxGeometryQuery::getWorldBounds(pxShapeGeom,
@@ -161,7 +167,7 @@ namespace PhysX
 
     void BaseColliderComponent::SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 colliderTag)
     {
-        for(auto& shape : m_shapes) 
+        for(auto& shape : m_shapes)
         {
             if (Physics::Utils::FilterTag(shape->GetTag(), colliderTag))
             {
@@ -268,7 +274,7 @@ namespace PhysX
     bool BaseColliderComponent::InitShapes()
     {
         UpdateScaleForShapeConfigs();
-        
+
         if (IsMeshCollider())
         {
             return InitMeshCollider();
@@ -294,7 +300,7 @@ namespace PhysX
 
                 AZStd::shared_ptr<Physics::Shape> shape;
                 Physics::SystemRequestBus::BroadcastResult(shape, &Physics::SystemRequests::CreateShape, colliderConfiguration, *shapeConfiguration);
-                
+
                 if (!shape)
                 {
                     AZ_Error("PhysX", false, "Failed to create a PhysX shape. Entity: %s", GetEntity()->GetName().c_str());
@@ -307,7 +313,7 @@ namespace PhysX
             return true;
         }
     }
-    
+
     bool BaseColliderComponent::IsMeshCollider() const
     {
         return m_shapeConfigList.size() == 1 && m_shapeConfigList.begin()->second &&
@@ -320,7 +326,7 @@ namespace PhysX
 
         const AzPhysics::ShapeColliderPair& shapeConfigurationPair = *(m_shapeConfigList.begin());
         const Physics::ColliderConfiguration& componentColliderConfiguration = *(shapeConfigurationPair.first.get());
-        const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration = 
+        const Physics::PhysicsAssetShapeConfiguration& physicsAssetConfiguration =
             *(static_cast<const Physics::PhysicsAssetShapeConfiguration*>(shapeConfigurationPair.second.get()));
 
         if (!physicsAssetConfiguration.m_asset.IsReady())
@@ -328,7 +334,8 @@ namespace PhysX
             return false;
         }
 
-        const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        const bool hasNonUniformScale = !Physics::Utils::HasUniformScale(physicsAssetConfiguration.m_assetScale) ||
+            (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
         Utils::CreateShapesFromAsset(physicsAssetConfiguration, componentColliderConfiguration, hasNonUniformScale,
             physicsAssetConfiguration.m_subdivisionLevel, m_shapes);
 

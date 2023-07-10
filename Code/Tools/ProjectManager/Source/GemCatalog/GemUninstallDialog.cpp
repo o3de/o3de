@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         layout->addSpacing(10);
 
         QLabel* bodyLabel = new QLabel(tr("The Gem and its related files will be uninstalled. This does not affect the Gem's repository. "
-                                          "You can reinstall this Gem from the Catalog, but its contents may be subject to change."));
+                                          "You can re-install this Gem from the Catalog, but its contents may be subject to change."));
         bodyLabel->setWordWrap(true);
         bodyLabel->setFixedSize(QSize(440, 80));
         layout->addWidget(bodyLabel);
@@ -52,7 +52,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* uninstallButton = dialogButtons->addButton(tr("Uninstall Gem"), QDialogButtonBox::ApplyRole);
-        uninstallButton->setObjectName("gemCatalogUninstallGemButton");
+        uninstallButton->setProperty("danger", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(uninstallButton, &QPushButton::clicked, this, &QDialog::accept);

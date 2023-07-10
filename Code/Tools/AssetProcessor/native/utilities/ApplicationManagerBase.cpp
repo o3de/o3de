@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 
+#include <native/assetprocessor.h>
 #include <native/utilities/BuilderConfigurationManager.h>
 #include <native/resourcecompiler/rccontroller.h>
 #include <native/AssetManager/assetScanner.h>
@@ -867,7 +868,8 @@ void ApplicationManagerBase::InitUuidManager()
     {
         if (settingsRegistry->GetObject(uuidSettings, "/O3DE/AssetProcessor/Settings/Metadata"))
         {
-            AZ::Interface<AssetProcessor::IUuidRequests>::Get()->EnableGenerationForTypes(uuidSettings.m_enabledTypes);
+            m_uuidManager->EnableGenerationForTypes(uuidSettings.m_enabledTypes);
+            m_assetProcessorManager->SetMetaCreationDelay(uuidSettings.m_metaCreationDelayMs);
         }
     }
 }
@@ -1310,6 +1312,11 @@ void ApplicationManagerBase::CheckForIdle()
     }
 }
 
+WId ApplicationManagerBase::GetWindowId() const
+{
+    return {};
+}
+
 void ApplicationManagerBase::InitBuilderManager()
 {
     AZ_Assert(m_connectionManager != nullptr, "ConnectionManager must be started before the builder manager");
@@ -1521,7 +1528,7 @@ bool ApplicationManagerBase::Activate()
         m_uuidManager->FileChanged(changedFile.toUtf8().constData());
         m_fileProcessor->AssessAddedFile(changedFile);
     };
-         
+
     QObject::connect(
         m_assetProcessorManager,
         &AssetProcessor::AssetProcessorManager::IntermediateAssetCreated,

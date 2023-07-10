@@ -353,13 +353,13 @@ AZ::RPI::ShaderVariantId UiRenderer::GetCurrentShaderVariant()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32 UiRenderer::GetStencilRef()
+uint32_t UiRenderer::GetStencilRef()
 {
     return m_stencilRef;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiRenderer::SetStencilRef(uint32 stencilRef)
+void UiRenderer::SetStencilRef(uint32_t stencilRef)
 {
     m_stencilRef = stencilRef;
 }

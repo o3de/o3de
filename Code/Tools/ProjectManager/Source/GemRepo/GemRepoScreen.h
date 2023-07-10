@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QLabel)
@@ -18,12 +19,15 @@ QT_FORWARD_DECLARE_CLASS(QHeaderView)
 QT_FORWARD_DECLARE_CLASS(QTableWidget)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
+QT_FORWARD_DECLARE_CLASS(QSortFilterProxyModel)
+QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
 
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(GemRepoInspector)
     QT_FORWARD_DECLARE_CLASS(GemRepoListView)
     QT_FORWARD_DECLARE_CLASS(GemRepoModel)
+    QT_FORWARD_DECLARE_CLASS(GemRepoProxyModel)
     QT_FORWARD_DECLARE_CLASS(AdjustableHeaderWidget)
 
     class GemRepoScreen
@@ -41,18 +45,19 @@ namespace O3DE::ProjectManager
 
         void NotifyCurrentScreen() override;
 
-    signals:
-        void OnRefresh();
-
     public slots:
+        void ShowStandardToastNotification(const QString& notification);
         void HandleAddRepoButton();
         void HandleRemoveRepoButton(const QModelIndex& modelIndex);
         void HandleRefreshAllButton();
         void HandleRefreshRepoButton(const QModelIndex& modelIndex);
-
+        void OnModelDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles);
 
     private:
         void FillModel();
+
+        AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
+
         QFrame* CreateNoReposContent();
         QFrame* CreateReposContent();
 
@@ -65,8 +70,9 @@ namespace O3DE::ProjectManager
         GemRepoListView* m_gemRepoListView = nullptr;
         GemRepoInspector* m_gemRepoInspector = nullptr;
         GemRepoModel* m_gemRepoModel = nullptr;
+        GemRepoProxyModel* m_sortProxyModel = nullptr;
+        QItemSelectionModel* m_selectionModel = nullptr;
 
         QLabel* m_lastAllUpdateLabel;
-        QPushButton* m_AllUpdateButton;
     };
 } // namespace O3DE::ProjectManager

@@ -18,11 +18,13 @@
 
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/ActionManager/ToolBar/ToolBarManagerInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorToolBarIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -39,6 +41,7 @@
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzToolsFramework/ToolsComponents/EditorLayerComponentBus.h>
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiInterface.h>
+#include <AzToolsFramework/UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -49,8 +52,6 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QTimer>
-
-static constexpr AZStd::string_view PrefabFocusChangedUpdaterIdentifier = "o3de.updater.onPrefabFocusChanged";
 
 namespace AzToolsFramework
 {
@@ -120,47 +121,37 @@ namespace AzToolsFramework
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             prefabFocusInterface->InitializeEditorInterfaces();
 
-            if (IsNewActionManagerEnabled())
+            m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
+            AZ_Assert(
+                m_actionManagerInterface, "Prefab - could not get ActionManagerInterface on PrefabIntegrationManager construction.");
+
+            m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
+            AZ_Assert(
+                m_hotKeyManagerInterface, "Prefab - could not get HotKeyManagerInterface on PrefabIntegrationManager construction.");
+
+            m_menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get();
+            AZ_Assert(
+                m_menuManagerInterface, "Prefab - could not get MenuManagerInterface on PrefabIntegrationManager construction.");
+
+            m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
+            AZ_Assert(
+                m_toolBarManagerInterface, "Prefab - could not get ToolBarManagerInterface on PrefabIntegrationManager construction.");
+
+            // Register an updater that will refresh actions when a level is loaded.
+            if (m_actionManagerInterface)
             {
-                m_actionManagerInterface = AZ::Interface<ActionManagerInterface>::Get();
-                AZ_Assert(
-                    m_actionManagerInterface, "Prefab - could not get ActionManagerInterface on PrefabIntegrationManager construction.");
-
-                m_hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get();
-                AZ_Assert(
-                    m_hotKeyManagerInterface, "Prefab - could not get HotKeyManagerInterface on PrefabIntegrationManager construction.");
-
-                m_toolBarManagerInterface = AZ::Interface<ToolBarManagerInterface>::Get();
-                AZ_Assert(
-                    m_toolBarManagerInterface, "Prefab - could not get ToolBarManagerInterface on PrefabIntegrationManager construction.");
-
-                // Register an updater that will refresh actions when a level is loaded.
-                if (m_actionManagerInterface)
-                {
-                    ActionManagerRegistrationNotificationBus::Handler::BusConnect();
-                }
-            }
-
-            // New Action Manager handler Escape by registering an action.
-            if (!IsNewActionManagerEnabled())
-            {
-                EditorEventsBus::Handler::BusConnect();
+                ActionManagerRegistrationNotificationBus::Handler::BusConnect();
             }
             
-            EditorContextMenuBus::Handler::BusConnect();
             PrefabFocusNotificationBus::Handler::BusConnect(s_editorEntityContextId);
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             EditorEntityContextNotificationBus::Handler::BusConnect();
             PrefabPublicNotificationBus::Handler::BusConnect();
-
-            InitializeShortcuts();
         }
 
         PrefabIntegrationManager::~PrefabIntegrationManager()
         {
-            UninitializeShortcuts();
-
             if (m_actionManagerInterface)
             {
                 ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
@@ -171,85 +162,11 @@ namespace AzToolsFramework
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
             PrefabFocusNotificationBus::Handler::BusDisconnect();
-            EditorContextMenuBus::Handler::BusDisconnect();
-
-            if (!IsNewActionManagerEnabled())
-            {
-                EditorEventsBus::Handler::BusDisconnect();
-            }
         }
 
         void PrefabIntegrationManager::Reflect(AZ::ReflectContext* context)
         {
             PrefabUserSettings::Reflect(context);
-        }
-
-        void PrefabIntegrationManager::InitializeShortcuts()
-        {
-            // Open/Edit Prefab (+)
-            // We also support = to enable easier editing on compact US keyboards.
-            {
-                m_actions.emplace_back(AZStd::make_unique<QAction>(nullptr));
-
-                m_actions.back()->setShortcuts({ QKeySequence(Qt::Key_Plus), QKeySequence(Qt::Key_Equal) });
-                m_actions.back()->setText("Open/Edit Prefab");
-                m_actions.back()->setStatusTip("Edit the prefab in focus mode.");
-
-                QObject::connect(
-                    m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
-                    [this]
-                    {
-                        AzToolsFramework::EntityIdList selectedEntities;
-                        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-                        if (selectedEntities.size() != 1)
-                        {
-                            return;
-                        }
-
-                        AZ::EntityId selectedEntity = selectedEntities[0];
-
-                        if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
-                        {
-                            return;
-                        }
-
-                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
-                        {
-                            ContextMenu_EditPrefab(selectedEntity);
-                        }
-                    });
-
-                EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabopen"),
-                    m_actions.back().get());
-            }
-
-            // Close Prefab (-)
-            {
-                m_actions.emplace_back(AZStd::make_unique<QAction>(nullptr));
-
-                m_actions.back()->setShortcuts({ QKeySequence(Qt::Key_Minus) });
-                m_actions.back()->setText("Close Prefab");
-                m_actions.back()->setStatusTip("Close focus mode for this prefab and move one level up.");
-
-                QObject::connect(
-                    m_actions.back().get(), &QAction::triggered, m_actions.back().get(),
-                    [this]
-                    {
-                        ContextMenu_ClosePrefab();
-                    });
-
-                EditorActionRequestBus::Broadcast(
-                    &EditorActionRequests::AddActionViaBusCrc, AZ_CRC_CE("org.o3de.action.editortransform.prefabclose"),
-                    m_actions.back().get());
-            }
-        }
-
-        void PrefabIntegrationManager::UninitializeShortcuts()
-        {
-            m_actions.clear();
         }
 
         void PrefabIntegrationManager::OnActionUpdaterRegistrationHook()
@@ -258,11 +175,507 @@ namespace AzToolsFramework
             m_actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::LevelLoadedUpdaterIdentifier);
 
             // Update actions whenever Prefab Focus changes (or is refreshed).
-            m_actionManagerInterface->RegisterActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+            m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
+
+            // Update actions whenever the prefab instance propagation process ends.
+            m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier);
+
+            // Update actions whenever a Prefab's unsaved state changes.
+            m_actionManagerInterface->RegisterActionUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier);
         }
 
         void PrefabIntegrationManager::OnActionRegistrationHook()
         {
+            // Open/Edit Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.edit";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Open/Edit Prefab";
+                actionProperties.m_description = "Edit the prefab in focus mode.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (selectedEntities.size() == 1 &&
+                            s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                            !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                            !s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntities.front()))
+                        {
+                            ContextMenu_EditPrefab(selectedEntities.front());
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, prefabPublicInterface = s_prefabPublicInterface]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return  selectedEntities.size() == 1 &&
+                            prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                            !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                            !prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntities.front());
+                    }
+                );
+
+                // Trigger update whenever entity selection changes.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+                m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "+");
+            }
+
+            // Inspect Procedural Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.inspect";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Inspect Procedural Prefab";
+                actionProperties.m_description = "See the procedural prefab contents in focus mode.";
+                actionProperties.m_category = "Procedural Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (selectedEntities.size() == 1 &&
+                            s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                            !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                            s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntities.front()))
+                        {
+                            ContextMenu_EditPrefab(selectedEntities.front());
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [prefabFocusPublicInterface = s_prefabFocusPublicInterface, prefabPublicInterface = s_prefabPublicInterface]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return  selectedEntities.size() == 1 &&
+                                prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                                !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                                prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntities.front());
+                    }
+                );
+
+                // Trigger update whenever entity selection changes.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+                m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "+");
+            }
+
+            // Close Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.close";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Close Prefab";
+                actionProperties.m_description = "Close focus mode for this prefab and move one level up.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (selectedEntities.size() == 1 && s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                            s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                            selectedEntities.front() != s_prefabPublicInterface->GetLevelInstanceContainerEntityId())
+                        {
+                            ContextMenu_ClosePrefab();
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    []() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return selectedEntities.size() == 1 &&
+                            s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                            s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                            selectedEntities.front() != s_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+                    }
+                );
+
+                // Trigger update whenever entity selection changes.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+
+                m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "-");
+            }
+
+            if (IsOutlinerOverrideManagementEnabled())
+            {
+                // Open Prefab Instance
+                {
+                    AZStd::string actionIdentifier = "o3de.action.prefabs.openInstance";
+                    AzToolsFramework::ActionProperties actionProperties;
+                    actionProperties.m_name = "Open Prefab Instance";
+                    actionProperties.m_description = "Open the prefab instance to apply overrides.";
+                    actionProperties.m_category = "Prefabs";
+
+                    m_actionManagerInterface->RegisterAction(
+                        EditorIdentifiers::MainWindowActionContextIdentifier,
+                        actionIdentifier,
+                        actionProperties,
+                        [this]()
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            if (selectedEntities.size() == 1 &&
+                                s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                                !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                                !s_containerEntityInterface->IsContainerOpen(selectedEntities.front()))
+                            {
+                                ContextMenu_OpenPrefabInstance(selectedEntities.front());
+                            }
+                        }
+                    );
+
+                    m_actionManagerInterface->InstallEnabledStateCallback(
+                        actionIdentifier,
+                        [prefabFocusPublicInterface = s_prefabFocusPublicInterface,
+                         prefabPublicInterface = s_prefabPublicInterface]() -> bool
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            return selectedEntities.size() == 1 &&
+                                prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                                !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                                !s_containerEntityInterface->IsContainerOpen(selectedEntities.front());
+                        }
+                    );
+                    
+                    // Trigger update whenever entity selection or container entity states change.
+                    m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                    m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ContainerEntityStatesChangedUpdaterIdentifier, actionIdentifier);
+
+                    // This action is only accessible outside of Component Modes
+                    m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+                }
+
+                // Close Prefab Instance
+                {
+                    AZStd::string actionIdentifier = "o3de.action.prefabs.closeInstance";
+                    AzToolsFramework::ActionProperties actionProperties;
+                    actionProperties.m_name = "Close Prefab Instance";
+                    actionProperties.m_description = "Close this prefab instance.";
+                    actionProperties.m_category = "Prefabs";
+
+                    m_actionManagerInterface->RegisterAction(
+                        EditorIdentifiers::MainWindowActionContextIdentifier,
+                        actionIdentifier,
+                        actionProperties,
+                        [this]()
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            if (selectedEntities.size() == 1 &&
+                                s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                                !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                                s_containerEntityInterface->IsContainerOpen(selectedEntities.front()))
+                            {
+                                ContextMenu_ClosePrefabInstance(selectedEntities.front());
+                            }
+                        }
+                    );
+
+                    m_actionManagerInterface->InstallEnabledStateCallback(
+                        actionIdentifier,
+                        [prefabFocusPublicInterface = s_prefabFocusPublicInterface,
+                         prefabPublicInterface = s_prefabPublicInterface]() -> bool
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            return selectedEntities.size() == 1 &&
+                                prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                                !prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()) &&
+                                s_containerEntityInterface->IsContainerOpen(selectedEntities.front());
+                        }
+                    );
+
+                    // Trigger update whenever entity selection or container entity states change.
+                    m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                    m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ContainerEntityStatesChangedUpdaterIdentifier, actionIdentifier);
+
+                    // This action is only accessible outside of Component Modes
+                    m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+                }
+
+
+            }
+
+            // Create Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.create";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Create Prefab...";
+                actionProperties.m_description = "Creates a prefab out of the currently selected entities.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanCreatePrefabWithCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_CreatePrefab(selectedEntities);
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanCreatePrefabWithCurrentSelection(selectedEntities);
+                    }
+                );
+
+                // Trigger update whenever entity selection changes, and after prefab instance propagation.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
+            // Detach Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.detach";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Detach Prefab";
+                actionProperties.m_description = "Creates a prefab out of the currently selected entities.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanDetachPrefabWithCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_DetachPrefab(selectedEntities.front());
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanDetachPrefabWithCurrentSelection(selectedEntities);
+                    }
+                );
+
+                // Trigger update whenever entity selection changes.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
+            // Instantiate Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.instantiate";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Instantiate Prefab...";
+                actionProperties.m_description = "Instantiates a prefab file in the scene.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanInstantiatePrefabWithCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_InstantiatePrefab();
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanInstantiatePrefabWithCurrentSelection(selectedEntities);
+                    }
+                );
+
+                // Trigger update whenever entity selection changes, and after prefab instance propagation.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
+            // Instantiate Procedural Prefab
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.procedural.instantiate";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Instantiate Procedural Prefab...";
+                actionProperties.m_description = "Instantiates a procedural prefab file in a prefab.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanInstantiatePrefabWithCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_InstantiateProceduralPrefab();
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanInstantiatePrefabWithCurrentSelection(selectedEntities);
+                    }
+                );
+
+                // Trigger update whenever entity selection changes, and after prefab instance propagation.
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
+            // Save Prefab to file
+            {
+                AZStd::string actionIdentifier = "o3de.action.prefabs.save";
+                AzToolsFramework::ActionProperties actionProperties;
+                actionProperties.m_name = "Save Prefab to file";
+                actionProperties.m_description = "Save the changes to the prefab to disk.";
+                actionProperties.m_category = "Prefabs";
+
+                m_actionManagerInterface->RegisterAction(
+                    EditorIdentifiers::MainWindowActionContextIdentifier,
+                    actionIdentifier,
+                    actionProperties,
+                    [this]()
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        if (CanSaveUnsavedPrefabChangedInCurrentSelection(selectedEntities))
+                        {
+                            ContextMenu_SavePrefab(selectedEntities.front());
+                        }
+                    }
+                );
+
+                m_actionManagerInterface->InstallEnabledStateCallback(
+                    actionIdentifier,
+                    [this]() -> bool
+                    {
+                        AzToolsFramework::EntityIdList selectedEntities;
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                        return CanSaveUnsavedPrefabChangedInCurrentSelection(selectedEntities);
+                    }
+                );
+
+                m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier, actionIdentifier);
+
+                // This action is only accessible outside of Component Modes
+                m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
+            }
+
+            // Focus on Level Prefab
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.focusOnLevel";
                 AzToolsFramework::ActionProperties actionProperties;
@@ -288,7 +701,7 @@ namespace AzToolsFramework
                     }
                 );
 
-                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
 
                 // This action is only accessible outside of Component Modes
                 m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -296,6 +709,7 @@ namespace AzToolsFramework
                 m_hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
             }
 
+            // Focus one level up
             {
                 AZStd::string actionIdentifier = "o3de.action.prefabs.focusUpOneLevel";
                 AzToolsFramework::ActionProperties actionProperties;
@@ -324,7 +738,85 @@ namespace AzToolsFramework
                 );
 
                 m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::ComponentModeChangedUpdaterIdentifier, actionIdentifier);
-                m_actionManagerInterface->AddActionToUpdater(PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier, actionIdentifier);
+            }
+
+            if (IsOutlinerOverrideManagementEnabled())
+            {
+                // Revert overrides
+                {
+                    AZStd::string actionIdentifier = "o3de.action.prefabs.revertInstanceOverrides";
+                    AzToolsFramework::ActionProperties actionProperties;
+                    actionProperties.m_name = "Revert overrides";
+                    actionProperties.m_description = "Revert all overrides on this entity.";
+                    actionProperties.m_category = "Prefabs";
+
+                    m_actionManagerInterface->RegisterAction(
+                        EditorIdentifiers::MainWindowActionContextIdentifier,
+                        actionIdentifier,
+                        actionProperties,
+                        [this]()
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            if (selectedEntities.size() != 1)
+                            {
+                                return;
+                            }
+
+                            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                            if (!s_prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntityId))
+                            {
+                                return;
+                            }
+
+                            if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+                                m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
+                                m_prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity)
+                            {
+                                ContextMenu_RevertOverrides(selectedEntityId);
+                            }
+                        }
+                    );
+
+                    m_actionManagerInterface->InstallEnabledStateCallback(
+                        actionIdentifier,
+                        [prefabPublicInterface = s_prefabPublicInterface,
+                         prefabOverridePublicInterface = m_prefabOverridePublicInterface]() -> bool
+                        {
+                            AzToolsFramework::EntityIdList selectedEntities;
+                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                            if (selectedEntities.size() != 1)
+                            {
+                                return false;
+                            }
+
+                            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                            // Returns false if the selected entity is not owned by a prefab instance. This could happen when the callback is
+                            // triggered after entity selection changes, but prefab propagation does not finish yet to create/reload the entity.
+                            if (!prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntityId))
+                            {
+                                return false;
+                            }
+
+                            return !prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+                                prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
+                                prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity;
+                        }
+                    );
+
+                    // Refresh this action whenever instance propagation ends, as that could have changed overrideson the current selection.
+                    m_actionManagerInterface->AddActionToUpdater(
+                        EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                    m_actionManagerInterface->AddActionToUpdater(
+                        PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
+                }
             }
         }
 
@@ -347,328 +839,78 @@ namespace AzToolsFramework
             }
         }
 
+        void PrefabIntegrationManager::OnMenuBindingHook()
+        {
+            // Entity Outliner Context Menu
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.inspect", 10600);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.close", 10700);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.openInstance", 10800);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.closeInstance", 10900);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
+
+            // Viewport Context Menu
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.inspect", 10600);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.close", 10700);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.openInstance", 10800);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.closeInstance", 10900);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.create", 20100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.detach", 20200);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.instantiate", 20300);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
+            m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
+        }
+
         void PrefabIntegrationManager::OnToolBarBindingHook()
         {
-            // Populate Viewport top menu with Prefab actions and widgets
+            // Populate Viewport top toolbar with Prefab actions and widgets
             m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.prefabs.focusUpOneLevel", 100);
             m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
         }
 
-        int PrefabIntegrationManager::GetMenuPosition() const
+        void PrefabIntegrationManager::OnPostActionManagerRegistrationHook()
         {
-            return aznumeric_cast<int>(EditorContextMenuOrdering::MIDDLE);
-        }
-
-        AZStd::string PrefabIntegrationManager::GetMenuIdentifier() const
-        {
-            return "Prefabs";
-        }
-
-        void PrefabIntegrationManager::PopulateEditorGlobalContextMenu(
-            QMenu* menu, [[maybe_unused]] const AZStd::optional<AzFramework::ScreenPoint>& point, [[maybe_unused]] int flags)
-        {
-            AzToolsFramework::EntityIdList selectedEntities;
-            AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-                selectedEntities, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-            bool readOnlyEntityInSelection = false;
-            for (const auto& entityId : selectedEntities)
-            {
-                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+            // It should not be possible to Delete the container entity of the focused instance.
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                "o3de.action.edit.delete",
+                []()
                 {
-                    readOnlyEntityInSelection = true;
-                    break;
-                }
-            }
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-            bool onlySelectedEntityIsFocusedPrefabContainer = false;
-            bool onlySelectedEntityIsClosedPrefabContainer = false;
-
-            if (selectedEntities.size() == 1)
-            {
-                AZ::EntityId selectedEntity = selectedEntities.front();
-
-                if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
-                {
-                    if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                    // If only one entity is selected, don't show the option if it's the container entity of the focused instance.
+                    if (selectedEntities.size() == 1 &&
+                        s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId) == selectedEntities.front())
                     {
-                        onlySelectedEntityIsFocusedPrefabContainer = true;
+                        return false;
                     }
-                    else
+
+                    // If multiple entities are selected, they should all be owned by the same instance.
+                    if (!s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
                     {
-                        onlySelectedEntityIsClosedPrefabContainer = true;
+                        return false;
                     }
+                    
+                    return true;
                 }
-            }
+            );
 
-            // Edit/Inspect/Close Prefab
-            {
-                if (selectedEntities.size() == 1)
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                "o3de.action.edit.duplicate",
+                []()
                 {
-                    AZ::EntityId selectedEntity = selectedEntities[0];
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
-                    if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
-                    {
-                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
-                        {
-                            if (s_prefabPublicInterface->IsOwnedByProceduralPrefabInstance(selectedEntity))
-                            {
-                                // Inspect Prefab
-                                QAction* editAction = menu->addAction(QObject::tr("Inspect Procedural Prefab"));
-                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
-                                editAction->setToolTip(QObject::tr("See the procedural prefab contents in focus mode."));
-
-                                QObject::connect(
-                                    editAction, &QAction::triggered, editAction,
-                                    [this, selectedEntity]
-                                    {
-                                        ContextMenu_EditPrefab(selectedEntity);
-                                    }
-                                );
-                            }
-                            else
-                            {
-                                // Edit Prefab
-                                QAction* editAction = menu->addAction(QObject::tr("Open/Edit Prefab"));
-                                editAction->setShortcut(QKeySequence(Qt::Key_Plus));
-                                editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
-
-                                QObject::connect(
-                                    editAction, &QAction::triggered, editAction,
-                                    [this, selectedEntity]
-                                    {
-                                        ContextMenu_EditPrefab(selectedEntity);
-                                    }
-                                );
-                            }
-
-                            if (IsOutlinerOverrideManagementEnabled())
-                            {
-                                if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
-                                {
-                                    // Open Prefab Instance
-                                    QAction* overrideAction = menu->addAction(QObject::tr("Override Prefab Instance"));
-                                    overrideAction->setToolTip(QObject::tr("Open the prefab instance to apply overrides."));
-
-                                    QObject::connect(
-                                        overrideAction, &QAction::triggered, overrideAction,
-                                        [this, selectedEntity]
-                                    {
-                                        ContextMenu_OpenPrefabInstance(selectedEntity);
-                                    }
-                                    );
-                                }
-                                else
-                                {
-                                    // Close Prefab
-                                    QAction* closeAction = menu->addAction(QObject::tr("Close Prefab Instance"));
-                                    closeAction->setToolTip(QObject::tr("Close this prefab instance."));
-
-                                    QObject::connect(
-                                        closeAction, &QAction::triggered, closeAction,
-                                        [this, selectedEntity]
-                                    {
-                                        ContextMenu_ClosePrefabInstance(selectedEntity);
-                                    }
-                                    );
-                                }
-                            }                           
-                        }
-                        else if (selectedEntity != s_prefabPublicInterface->GetLevelInstanceContainerEntityId())
-                        {
-                            // Close Prefab
-                            QAction* closeAction = menu->addAction(QObject::tr("Close Prefab"));
-                            closeAction->setShortcut(QKeySequence(Qt::Key_Minus));
-                            closeAction->setToolTip(QObject::tr("Close focus mode for this prefab and move one level up."));
-
-                            QObject::connect(
-                                closeAction, &QAction::triggered, closeAction,
-                                [this]
-                                {
-                                    ContextMenu_ClosePrefab();
-                                }
-                            );
-                        }
-
-                        menu->addSeparator();
-                    }
-                }
-            }
-
-            bool itemWasShown = false;
-
-            // Create Prefab
-            {
-                if (!selectedEntities.empty())
-                {
-                    // Hide if the only selected entity is the Focused Instance Container
-                    if (!onlySelectedEntityIsFocusedPrefabContainer)
-                    {
-                        bool layerInSelection = false;
-
-                        for (AZ::EntityId entityId : selectedEntities)
-                        {
-                            if (!layerInSelection)
-                            {
-                                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
-                                    layerInSelection, entityId,
-                                    &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
-
-                                if (layerInSelection)
-                                {
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Layers can't be in prefabs.
-                        // Also don't allow to create a prefab if any of the selected entities are read-only
-                        if (!layerInSelection && !readOnlyEntityInSelection)
-                        {
-                            if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
-                            {
-                                AZ::EntityId entityToCheck = selectedEntities[0];
-
-                                // If it is a container entity, then check its parent entity's owning instance instead.
-                                if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
-                                {
-                                    AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
-                                }
-
-                                // Do not show the option when it is not a prefab edit.
-                                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
-                                {
-                                    QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
-                                    createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
-
-                                    QObject::connect(
-                                        createAction, &QAction::triggered, createAction,
-                                        [this, selectedEntities]
-                                        {
-                                            ContextMenu_CreatePrefab(selectedEntities);
-                                        });
-
-                                    itemWasShown = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Detach Prefab
-            if (onlySelectedEntityIsClosedPrefabContainer)
-            {
-                AZ::EntityId selectedEntityId = selectedEntities.front();
-                AZ::EntityId parentEntityId;
-                AZ::TransformBus::EventResult(parentEntityId, selectedEntityId, &AZ::TransformBus::Events::GetParentId);
-
-                // Do not show the option when it is not a prefab edit.
-                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentEntityId))
-                {
-                    QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab"));
-                    QObject::connect(
-                        detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                        [this, selectedEntityId]
-                        {
-                            ContextMenu_DetachPrefab(selectedEntityId);
-                        });
-                }
-            }
-
-            // Instantiate Prefab
-            // Do not show the option when it is not a prefab edit.
-            if (selectedEntities.size() == 0 || selectedEntities.size() == 1 &&
-                !readOnlyEntityInSelection && !onlySelectedEntityIsClosedPrefabContainer &&
-                s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities[0]))
-            {
-                QAction* instantiateAction = menu->addAction(QObject::tr("Instantiate Prefab..."));
-                instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
-
-                QObject::connect(
-                    instantiateAction, &QAction::triggered, instantiateAction,
-                    [this]
-                    {
-                        ContextMenu_InstantiatePrefab();
-                    }
-                );
-
-                // Instantiate Procedural Prefab
-                if (AZ::Prefab::ProceduralPrefabAsset::UseProceduralPrefabs())
-                {
-                    QAction* action = menu->addAction(QObject::tr("Instantiate Procedural Prefab..."));
-                    action->setToolTip(QObject::tr("Instantiates a procedural prefab file in a prefab."));
-
-                    QObject::connect(
-                        action, &QAction::triggered, action,
-                        [this]
-                        {
-                            ContextMenu_InstantiateProceduralPrefab();
-                        }
-                    );
-                }
-
-                itemWasShown = true;
-            }
-
-            if (itemWasShown)
-            {
-                menu->addSeparator();
-            }
-
-            // Save Prefab
-            {
-                if (selectedEntities.size() == 1)
-                {
-                    AZ::EntityId selectedEntity = selectedEntities[0];
-
-                    if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
-                    {
-                        // Save Prefab
-                        AZ::IO::Path prefabFilePath = s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntity);
-                        auto dirtyOutcome = s_prefabPublicInterface->HasUnsavedChanges(prefabFilePath);
-
-                        if (dirtyOutcome.IsSuccess() && dirtyOutcome.GetValue() == true)
-                        {
-                            QAction* saveAction = menu->addAction(QObject::tr("Save Prefab to file"));
-                            saveAction->setToolTip(QObject::tr("Save the changes to the prefab to disk."));
-
-                            QObject::connect(
-                                saveAction, &QAction::triggered, saveAction,
-                                [this, selectedEntity]
-                                {
-                                    ContextMenu_SavePrefab(selectedEntity);
-                                }
-                            );
-
-                            menu->addSeparator();
-                        }
-                    }
-                }
-            }
-
-            if (!selectedEntities.empty())
-            {
-                // Don't allow duplication if any of the selected entities are direct descendants of a read-only entity
-                bool selectionContainsDescendantOfReadOnlyEntity = false;
-                for (const auto& entityId : selectedEntities)
-                {
-                    AZ::EntityId parentEntityId;
-                    AZ::TransformBus::EventResult(parentEntityId, entityId, &AZ::TransformBus::Events::GetParentId);
-
-                    if (parentEntityId.IsValid() && m_readOnlyEntityPublicInterface->IsReadOnly(parentEntityId))
-                    {
-                        selectionContainsDescendantOfReadOnlyEntity = true;
-                        break;
-                    }
-                }
-
-                if (!selectionContainsDescendantOfReadOnlyEntity)
-                {
                     if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
                     {
                         AZ::EntityId entityToCheck = selectedEntities[0];
@@ -680,72 +922,22 @@ namespace AzToolsFramework
                         }
 
                         // Do not show the option when it is not a prefab edit.
-                        if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
-                        {
-                            QAction* duplicateAction = menu->addAction(QObject::tr("Duplicate"));
-                            duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
-                            QObject::connect(
-                                duplicateAction, &QAction::triggered, duplicateAction,
-                                [this]
-                                {
-                                    ContextMenu_Duplicate();
-                                });
-                        }
+                        return s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck);
                     }
+
+                    return false;
                 }
-            }
+            );
 
-            if (!selectedEntities.empty() &&
-                (selectedEntities.size() != 1 ||
-                 selectedEntities[0] != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId)) &&
-                !readOnlyEntityInSelection)
-            {
-                QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
-                deleteAction->setShortcut(QKeySequence(Qt::Key_Delete));
-                QObject::connect(
-                    deleteAction, &QAction::triggered, deleteAction,
-                    [this]
-                    {
-                        ContextMenu_DeleteSelected();
-                    }
-                );
-            }
+            // Update the duplicate action after Prefab instance propagation.
+            m_actionManagerInterface->AddActionToUpdater(
+                PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.edit.duplicate");
 
-            // Revert Overrides
-            {
-                if (IsOutlinerOverrideManagementEnabled() && selectedEntities.size() == 1)
-                {
-                    AZ::EntityId selectedEntity = selectedEntities[0];
-                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
-                        m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
-                    {
-                        QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));
-                        revertAction->setToolTip(QObject::tr("Revert all overrides on this entity."));
-                        if (m_prefabOverridePublicInterface->GetEntityOverrideType(selectedEntity) == OverrideType::AddEntity)
-                        {
-                            revertAction->setToolTip(QObject::tr("Cannot revert overrides on entities that are added as overrides. Use Delete instead."));
-                            revertAction->setEnabled(false);
-                        }
-                        QObject::connect(
-                            revertAction,
-                            &QAction::triggered,
-                            revertAction,
-                            [this, selectedEntity]
-                            {
-                                ContextMenu_RevertOverrides(selectedEntity);
-                            });
-
-                        menu->addSeparator();
-                    }
-                }
-            }
-
-            menu->addSeparator();
-        }
-
-        void PrefabIntegrationManager::OnEscape()
-        {
-            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
+            // Update the move up/move down actions after Prefab instance propagation.
+            m_actionManagerInterface->AddActionToUpdater(
+                PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.entitySorting.moveUp");
+            m_actionManagerInterface->AddActionToUpdater(
+                PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.entitySorting.moveDown");
         }
 
         void PrefabIntegrationManager::OnStartPlayInEditorBegin()
@@ -764,6 +956,143 @@ namespace AzToolsFramework
                     s_containerEntityInterface->RefreshAllContainerEntities(s_editorEntityContextId);
                 }
             );
+        }
+
+        bool PrefabIntegrationManager::CanCreatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)
+        {
+            if (selectedEntities.empty())
+            {
+                // Can't create an empty prefab.
+                return false;
+            }
+
+            if (selectedEntities.size() == 1 && s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()))
+            {
+                // Can't create if the only selected entity is the Focused Instance Container.
+                return false;
+            }
+
+            // Check all entities
+            bool containsLayers = false;
+            for (const auto& entityId : selectedEntities)
+            {
+                if (m_readOnlyEntityPublicInterface->IsReadOnly(entityId))
+                {
+                    // Can't create a prefab with read-only entities in it.
+                    return false;
+                }
+
+                AzToolsFramework::Layers::EditorLayerComponentRequestBus::EventResult(
+                    containsLayers, entityId, &AzToolsFramework::Layers::EditorLayerComponentRequestBus::Events::HasLayer);
+                if (containsLayers)
+                {
+                    // Can't create a prefab with layers in it.
+                    return false;
+                }
+            }
+
+            if (!s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
+            {
+                // All selected entities must belong to the same instance to create a prefab.
+                return false;
+            }
+
+            AZ::EntityId entityToCheck = selectedEntities[0];
+
+            // If it is a container entity, then check its parent entity's owning instance instead.
+            if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
+            {
+                AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
+            }
+
+            // Do not show the option when it is not a prefab edit.
+            if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck))
+            {
+                return false;
+            }
+
+            return true;
+        };
+
+        bool PrefabIntegrationManager::CanDetachPrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)
+        {
+            if (selectedEntities.size() == 1 &&
+                s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntities.front()) &&
+                !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntities.front()))
+            {
+                AZ::EntityId parentEntityId;
+                AZ::TransformBus::EventResult(parentEntityId, selectedEntities.front(), &AZ::TransformBus::Events::GetParentId);
+
+                // Do not show the option when it is not a prefab edit.
+                if (s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(parentEntityId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        bool PrefabIntegrationManager::CanInstantiatePrefabWithCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)
+        {
+            if (selectedEntities.empty())
+            {
+                // Can always instantiate with no selection.
+                // New instance will be parented to the container entity of the currently focused prefab.
+                return true;
+            }
+
+            if (selectedEntities.size() > 1)
+            {
+                // Can't instantiate a prefab instance with multiple parents.
+                return false;
+            }
+
+            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+            if (m_readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId))
+            {
+                // Can't instantiate as a child of a read-only entity.
+                return false;
+            }
+
+            if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) ||
+                !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntityId))
+            {
+                // Can't instantiate under prefab that is not in focus.
+                return false;
+            }
+
+            return true;
+        }
+
+        bool PrefabIntegrationManager::CanSaveUnsavedPrefabChangedInCurrentSelection(const AzToolsFramework::EntityIdList& selectedEntities)
+        {
+            if (selectedEntities.size() != 1)
+            {
+                // This operation only supports one selection at a time.
+                return false;
+            }
+
+            AZ::EntityId selectedEntityId = selectedEntities.front();
+
+            if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId))
+            {
+                // Entity needs to be a prefab instance container.
+                return false;
+            }
+
+            AZ::IO::Path prefabFilePath = s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntityId);
+            auto dirtyOutcome = s_prefabPublicInterface->HasUnsavedChanges(prefabFilePath);
+
+            if (!dirtyOutcome.IsSuccess() || dirtyOutcome.GetValue() == false)
+            {
+                // No change to save.
+                return false;
+            }
+
+            return true;
         }
 
         void PrefabIntegrationManager::ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities)
@@ -1284,12 +1613,29 @@ namespace AzToolsFramework
             m_prefabSaveHandler.InitializePrefabToastNotificationsView();
         }
 
+        void PrefabIntegrationManager::OnPrefabTemplateDirtyFlagUpdated(
+            [[maybe_unused]] TemplateId templateId, [[maybe_unused]] bool status)
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabUnsavedStateChangedUpdaterIdentifier);
+            }
+        }
+
+        void PrefabIntegrationManager::OnPrefabInstancePropagationEnd()
+        {
+            if (m_actionManagerInterface)
+            {
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier);
+            }
+        }
+
         void PrefabIntegrationManager::OnPrefabFocusChanged(
             [[maybe_unused]] AZ::EntityId previousContainerEntityId, [[maybe_unused]] AZ::EntityId newContainerEntityId)
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
             }
         }
 
@@ -1297,7 +1643,7 @@ namespace AzToolsFramework
         {
             if (m_actionManagerInterface)
             {
-                m_actionManagerInterface->TriggerActionUpdater(PrefabFocusChangedUpdaterIdentifier);
+                m_actionManagerInterface->TriggerActionUpdater(PrefabIdentifiers::PrefabFocusChangedUpdaterIdentifier);
             }
         }
 

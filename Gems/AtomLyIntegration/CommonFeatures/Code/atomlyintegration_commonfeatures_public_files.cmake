@@ -23,6 +23,8 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ImageBasedLights/ImageBasedLightComponentConstants.h
+    Include/AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h
+    Include/AtomLyIntegration/CommonFeatures/Material/MaterialAssignmentId.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h
@@ -63,6 +65,7 @@ set(FILES
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/ScreenSpace/DeferredFogBus.h
     Include/AtomLyIntegration/CommonFeatures/SkinnedMesh/SkinnedMeshOverrideBus.h
+    Include/AtomLyIntegration/CommonFeatures/SkyAtmosphere/SkyAtmosphereBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyAtmosphere/SkyAtmosphereComponentConfig.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxBus.h
     Include/AtomLyIntegration/CommonFeatures/SkyBox/HDRiSkyboxComponentConfig.h

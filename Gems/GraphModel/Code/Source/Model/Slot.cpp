@@ -261,6 +261,9 @@ namespace GraphModel
                 ->Field("m_value", &Slot::m_value)
                 ->Field("m_subId", &Slot::m_subId)
                 ;
+
+            serializeContext->RegisterGenericType<SlotPtr>();
+            serializeContext->RegisterGenericType<SlotPtrList>();
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

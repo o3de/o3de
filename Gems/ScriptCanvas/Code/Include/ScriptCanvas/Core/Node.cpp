@@ -45,6 +45,12 @@ namespace NodeCpp
         MergeFromBackend2dotZero = 12,
         AddDisabledFlag = 13,
         AddName = 1,
+        // AddName was changed to a lower value than the previous version instead of a higher value,
+        // causing errors when processing assets generated with versions between 2 and 14.
+        // This both causes the serialization system to emit an error message, because this is usually not intentional
+        // and a symptom of other problems, and it causes the version converter used by this class to not work as expected.
+        // This change resolves this error by setting the version higher than any previous version.
+        FixedVersioningIssue = 14,
 
         // add your named version above
         Current,
@@ -78,6 +84,21 @@ namespace ScriptCanvas
 
     bool NodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& nodeElementNode)
     {
+        // AddName was mistakenly set to version 1 instead of a higher version than the previous version.
+        // This caused issues with version conversion and nodes, and caused asset processing errors.
+        // This early out check skips conversion that may have previously failed because the version number was mistakenly
+        // set backward and was previously triggering incorrect conversion logic.
+        // This is +1 because the current value is always the latest +1, and when AddName was the most recent, the saved node versions were AddName+1 and not AddName.
+        // The version enum wasn't created until version MergeFromBackend2dotZero, so there are many additional version checks below here that could get triggered
+        // and cause the version converter to think it failed.
+        if (nodeElementNode.GetVersion() == NodeCpp::Version::AddName + 1)
+        {
+            // To avoid triggering those other version conversion checks, skip them by returning early.
+            // Return true so the system knows this was handled.
+            // This does mean that if someone tried to convert data from the old version 2 instead of the new version 2, it will fail.
+            // That's a narrow edge case and would require data that is many years old, from before O3DE.
+            return true;
+        }
         if (nodeElementNode.GetVersion() <= 5)
         {
             auto slotVectorElementNodes = AZ::Utils::FindDescendantElements(context, nodeElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC("Slots", 0xc87435d0), AZ_CRC("m_slots", 0x84838ab4)});
@@ -441,6 +462,11 @@ namespace ScriptCanvas
                     ;
             }
         }
+    }
+
+    int Node::GetNodeVersion()
+    {
+        return NodeCpp::Version::Current;
     }
 
     // Class Definition
@@ -1591,8 +1617,25 @@ namespace ScriptCanvas
         return AZ::Failure(AZStd::string("SlotID not found in Node"));
     }
 
+    Data::Type Node::GetUnderlyingSlotDataType(const SlotId& slotId) const
+    {
+        // Return the slot's base data type, which is used to determine which types of variables or connectors can be hooked to the slot.
+
+        auto slotIter = m_slotIdIteratorCache.find(slotId);
+        if (slotIter != m_slotIdIteratorCache.end() && slotIter->second.HasDatum())
+        {
+            return slotIter->second.GetDatum()->GetType();
+        }
+
+        return Data::Type::Invalid();
+    }
+
+
     Data::Type Node::GetSlotDataType(const SlotId& slotId) const
     {
+        // Return the slot's current data type, which could be a subtype of the slot's defined data type, based on
+        // whatever variable is currently hooked into the slot.
+
         AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotDataType");
 
         const auto* slot = GetSlot(slotId);
@@ -3302,6 +3345,99 @@ namespace ScriptCanvas
         }
 
         return AZ::Failure(AZStd::string::format("%s-%s The slot referenced by the slot id in the map was not found. SlotId: %s", GetNodeName().data(), executionOutSlot.GetName().data(), executionOutSlot.GetId().ToString().data()));
+    }
+
+    const Slot* Node::GetCorrespondingExecutionSlot(const Slot* slot) const
+    {
+        if (!slot)
+        {
+            return nullptr;
+        }
+
+        if (slot->IsExecution())
+        {
+            return slot;
+        }
+
+        const ScriptCanvas::Slot* executionSlot = nullptr;
+
+        const ScriptCanvas::SlotExecution::Map* map = GetSlotExecutionMap();
+
+        if (map)
+        {
+            if (slot->IsInput())
+            {
+                // Find the corresponding execution input for the source
+                if (const ScriptCanvas::SlotExecution::In* sourceIn = map->FindInFromInputSlot(slot->GetId()))
+                {
+                    const ScriptCanvas::SlotId inSlotId = sourceIn->slotId;
+                    executionSlot = GetSlot(inSlotId);
+                }
+            }
+            else
+            {
+                // Find the corresponding execution output for the source
+                if (const ScriptCanvas::SlotExecution::Out* sourceOut = map->FindOutFromOutputSlot(slot->GetId()))
+                {
+                    const ScriptCanvas::SlotId outSlotId = sourceOut->slotId;
+                    executionSlot = GetSlot(outSlotId);
+                }
+            }
+        }
+        else
+        {
+            // If the node doesn't have a slot execution map, we will need to just use whatever execution slot is there
+            AZStd::vector<const ScriptCanvas::Slot*> executionSlots = slot->IsInput()
+                ? GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionIn())
+                : GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::ExecutionOut());
+
+            if (!executionSlots.empty())
+            {
+                executionSlot = executionSlots[0];
+            }
+        }
+
+        return executionSlot;
+    }
+
+    AZStd::vector<const Slot*> Node::GetCorrespondingDataSlots(const Slot* slot) const
+    {
+        AZStd::vector<const Slot*> dataSlots;
+
+        if (!slot)
+        {
+            return dataSlots;
+        }
+
+        const ScriptCanvas::SlotExecution::Map* map = GetSlotExecutionMap();
+
+        if (map)
+        {
+            if (slot->IsExecution())
+            {
+                ConstSlotsOutcome slotOutcome = slot->IsInput()
+                    ? GetSlotsFromMap(*map, *slot, CombinedSlotType::DataIn, nullptr)
+                    : GetSlotsFromMap(*map, *slot, CombinedSlotType::DataOut, nullptr);
+
+                if (slotOutcome.IsSuccess())
+                {
+                    dataSlots = slotOutcome.GetValue();
+                }
+            }
+            else if (slot->IsData())
+            {
+                return GetCorrespondingDataSlots(GetCorrespondingExecutionSlot(slot));
+            }
+        }
+        else
+        {
+            // If the node doens't have a slot execution map, we will need to just get whatever data slots are there
+            dataSlots = slot->IsInput()
+                ? GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataIn())
+                : GetAllSlotsByDescriptor(ScriptCanvas::SlotDescriptors::DataOut());
+        }
+
+        return dataSlots;
     }
 
     const Slot* Node::GetIfBranchFalseOutSlot() const

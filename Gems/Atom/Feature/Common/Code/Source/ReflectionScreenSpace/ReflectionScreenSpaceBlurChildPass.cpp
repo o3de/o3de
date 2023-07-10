@@ -7,10 +7,6 @@
  */
 
 #include "ReflectionScreenSpaceBlurChildPass.h"
-#include <Atom/RHI/FrameGraphBuilder.h>
-#include <Atom/RHI/FrameGraphAttachmentInterface.h>
-#include <Atom/RPI.Reflect/Pass/FullscreenTrianglePassData.h>
-#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
 {
@@ -30,7 +26,7 @@ namespace AZ
         void ReflectionScreenSpaceBlurChildPass::FrameBeginInternal(FramePrepareParams params)
         {
             // get attachment size
-            RPI::PassAttachment* inputAttachment = GetInputOutputBinding(0).GetAttachment().get();
+            RPI::PassAttachment* inputAttachment = GetInputBinding(0).GetAttachment().get();
             AZ_Assert(inputAttachment, "ReflectionScreenSpaceBlurChildPass: Input binding has no attachment!");
 
             RHI::Size size = inputAttachment->m_descriptor.m_image.m_size;
@@ -38,14 +34,13 @@ namespace AZ
             if (m_imageSize != size)
             {
                 m_imageSize = size;
-                m_outputScale = (m_passType == PassType::Vertical) ? static_cast<float>(pow(2.0f, m_mipLevel)) : 1.0f;
-
+                m_invOutputScale = (m_passType == PassType::Vertical) ? static_cast<float>(pow(2.0f, m_mipLevel)) : 1.0f;
                 m_updateSrg = true;
             }
 
-            float inverseScale = 1.0f / m_outputScale;
-            uint32_t outputWidth = static_cast<uint32_t>(m_imageSize.m_width * inverseScale);
-            uint32_t outputHeight = static_cast<uint32_t>(m_imageSize.m_height * inverseScale);
+            float outputScale = 1.0f / m_invOutputScale;
+            uint32_t outputWidth = static_cast<uint32_t>(m_imageSize.m_width * outputScale);
+            uint32_t outputHeight = static_cast<uint32_t>(m_imageSize.m_height * outputScale);
 
             params.m_viewportState = RHI::Viewport(0, static_cast<float>(outputWidth), 0, static_cast<float>(outputHeight));
             params.m_scissorState = RHI::Scissor(0, 0, outputWidth, outputHeight);
@@ -57,9 +52,8 @@ namespace AZ
         {
             if (m_updateSrg)
             {
-                m_shaderResourceGroup->SetConstant(m_imageWidthIndex, m_imageSize.m_width);
-                m_shaderResourceGroup->SetConstant(m_imageHeightIndex, m_imageSize.m_height);
-                m_shaderResourceGroup->SetConstant(m_outputScaleIndex, m_outputScale);
+                m_shaderResourceGroup->SetConstant(m_invOutputScaleNameIndex, m_invOutputScale);
+                m_shaderResourceGroup->SetConstant(m_mipLevelNameIndex, m_mipLevel);
 
                 m_updateSrg = false;
             }

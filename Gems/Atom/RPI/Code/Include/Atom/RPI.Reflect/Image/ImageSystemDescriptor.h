@@ -24,6 +24,9 @@ namespace AZ
             //! The maximum size of the image pool used for streaming images.
             //! Check ImageSystemInterface::GetSystemStreamingPool() for detail of this image pool
             uint64_t m_systemStreamingImagePoolSize = 0;
+            
+            //! The mipmap bias applied to streamable images created from the system streaming image pool
+            int16_t m_systemStreamingImagePoolMipBias = 0;
 
             //! The maximum size of the image pool used for system attachments images.
             //! Check ImageSystemInterface::GetSystemAttachmentPool() for detail of this image pool

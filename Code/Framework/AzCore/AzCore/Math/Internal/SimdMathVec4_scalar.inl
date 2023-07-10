@@ -122,25 +122,25 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE float Vec4::SelectFirst(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex0(FloatArgType value)
         {
             return value.v[0];
         }
 
 
-        AZ_MATH_INLINE float Vec4::SelectSecond(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex1(FloatArgType value)
         {
             return value.v[1];
         }
 
 
-        AZ_MATH_INLINE float Vec4::SelectThird(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex2(FloatArgType value)
         {
             return value.v[2];
         }
 
 
-        AZ_MATH_INLINE float Vec4::SelectFourth(FloatArgType value)
+        AZ_MATH_INLINE float Vec4::SelectIndex3(FloatArgType value)
         {
             return value.v[3];
         }
@@ -158,73 +158,73 @@ namespace AZ
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatFirst(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex0(FloatArgType value)
         {
             return Splat(value.v[0]);
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatSecond(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex1(FloatArgType value)
         {
             return Splat(value.v[1]);
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatThird(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex2(FloatArgType value)
         {
             return Splat(value.v[2]);
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatFourth(FloatArgType value)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::SplatIndex3(FloatArgType value)
         {
             return Splat(value.v[3]);
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFirst(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex0(FloatArgType a, float b)
         {
             return {{ b, a.v[1], a.v[2], a.v[3] }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFirst(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex0(FloatArgType a, FloatArgType b)
         {
             return {{ b.v[0], a.v[1], a.v[2], a.v[3] }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceSecond(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex1(FloatArgType a, float b)
         {
             return {{ a.v[0], b, a.v[2], a.v[3] }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceSecond(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex1(FloatArgType a, FloatArgType b)
         {
             return {{ a.v[0], b.v[1], a.v[2], a.v[3] }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceThird(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex2(FloatArgType a, float b)
         {
             return {{ a.v[0], a.v[1], b, a.v[3] }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceThird(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex2(FloatArgType a, FloatArgType b)
         {
             return {{ a.v[0], a.v[1], b.v[2], a.v[3] }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFourth(FloatArgType a, float b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex3(FloatArgType a, float b)
         {
             return {{ a.v[0], a.v[1], a.v[2], b }};
         }
 
 
-        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceFourth(FloatArgType a, FloatArgType b)
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ReplaceIndex3(FloatArgType a, FloatArgType b)
         {
             return {{ a.v[0], a.v[1], a.v[2], b.v[3] }};
         }
@@ -936,6 +936,22 @@ namespace AZ
                 for (int32_t col = 0; col < 4; col++)
                 {
                     out[row].v[col] = 0.0f;
+                    for (int32_t k = 0; k < 4; ++k)
+                    {
+                        out[row].v[col] += rowsA[row].v[k] * rowsB[k].v[col];
+                    }
+                }
+            }
+        }
+
+
+        AZ_MATH_INLINE void Vec4::Mat4x4MultiplyAdd(const FloatType* rowsA, const FloatType* rowsB, const FloatType* add, FloatType* out)
+        {
+            for (int32_t row = 0; row < 4; ++row)
+            {
+                for (int32_t col = 0; col < 4; col++)
+                {
+                    out[row].v[col] = add[row].v[col];
                     for (int32_t k = 0; k < 4; ++k)
                     {
                         out[row].v[col] += rowsA[row].v[k] * rowsB[k].v[col];

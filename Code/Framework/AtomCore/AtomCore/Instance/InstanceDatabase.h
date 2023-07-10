@@ -218,6 +218,11 @@ namespace AZ
              */
             void TEMPOrphan(const InstanceId& id);
 
+            //! A helper function to visit every instance in the database and calls the provided callback method.
+            //! Note: this function can be slow depending on how many instances in the database
+            void ForEach(AZStd::function<void(Type&)> callback);
+            void ForEach(AZStd::function<void(const Type&)> callback) const;
+
         private:
             InstanceDatabase(const AssetType& assetType);
             ~InstanceDatabase();
@@ -225,7 +230,6 @@ namespace AZ
             bool m_checkAssetIds = true;
             //useAssetTypeAsKeyForHandlers;
             static const char* GetEnvironmentName();
-
             
             Data::Asset<Data::AssetData> LoadAsset(const Data::Asset<AssetData>& asset) const;
             Data::Instance<Type> EmplaceInstance(const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param);
@@ -387,6 +391,14 @@ namespace AZ
         Data::Instance<Type> InstanceDatabase<Type>::EmplaceInstance(
             const InstanceId& id, const Data::Asset<AssetData>& asset, const AZStd::any* param)
         {
+            // This assert is here to catch any potential non-randomness in our id generation. If it triggers,
+            // there might be a bug / race condition in the id generator. The same assert also occurs *after*
+            // instance creation to help differentiate between a non-random id vs recursive creation of the same id.
+            AZ_Assert(
+                !m_database.contains(id),
+                "Database already contains an instance for this id (%s), possibly a random id generation collision?",
+                id.ToString<AZStd::fixed_string<64>>().c_str());
+
             // Emplace a new instance and return it.
             // It's possible for the m_createFunction call to recursively trigger another FindOrCreate call, so be aware that
             // the contents of m_database may change within this call.
@@ -403,10 +415,10 @@ namespace AZ
             if (instance)
             {
                 AZ_Assert(
-                    m_database.find(id) == m_database.end(),
+                    !m_database.contains(id),
                     "Instance creation for asset id %s resulted in a recursive creation of that asset, which was unexpected. "
                     "This asset might be erroneously referencing itself as a dependent asset.",
-                    id.ToString<AZStd::string>().c_str());
+                    asset.GetHint().c_str());
 
                 instance->m_id = id;
                 instance->m_parentDatabase = this;
@@ -537,6 +549,26 @@ namespace AZ
                 HasInstanceDatabaseName<Type>::value,
                 "All classes used as instances in an InstanceDatabase need to define AZ_INSTANCE_DATA in the class.");
             return Type::GetDatabaseName();
+        }
+                
+        template <typename Type>
+        void InstanceDatabase<Type>::ForEach(AZStd::function<void(Type&)> callback)
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            for (auto element : m_database)
+            {
+                callback(*element.second);
+            }
+        }
+        
+        template <typename Type>
+        void InstanceDatabase<Type>::ForEach(AZStd::function<void(const Type&)> callback) const
+        {
+            AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_databaseMutex);
+            for (auto element : m_database)
+            {
+                callback(*element.second);
+            }
         }
     }
 }

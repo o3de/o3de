@@ -9,10 +9,12 @@
 #include "CameraComponentController.h"
 #include "CameraViewRegistrationBus.h"
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Vector2.h>
@@ -26,7 +28,7 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(4)
+                ->Version(6)
                 ->Field("Orthographic", &CameraComponentConfig::m_orthographic)
                 ->Field("Orthographic Half Width", &CameraComponentConfig::m_orthographicHalfWidth)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
@@ -35,8 +37,9 @@ namespace Camera
                 ->Field("SpecifyDimensions", &CameraComponentConfig::m_specifyFrustumDimensions)
                 ->Field("FrustumWidth", &CameraComponentConfig::m_frustumWidth)
                 ->Field("FrustumHeight", &CameraComponentConfig::m_frustumHeight)
-                ->Field("EditorEntityId", &CameraComponentConfig::m_editorEntityId)
                 ->Field("MakeActiveViewOnActivation", &CameraComponentConfig::m_makeActiveViewOnActivation)
+                ->Field("RenderToTexture", &CameraComponentConfig::m_renderTextureAsset)
+                ->Field("PipelineTemplate", &CameraComponentConfig::m_pipelineTemplate)
             ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -74,6 +77,9 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ->Attribute(AZ::Edit::Attributes::Step, 10.f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Render To Texture")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_renderTextureAsset, "Target texture", "The render target texture which the camera renders to.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_pipelineTemplate, "Pipeline template", "The root pass template for the camera's render pipeline")
                 ;
             }
         }
@@ -261,6 +267,11 @@ namespace Camera
         CameraBus::Handler::BusConnect();
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnCameraAdded, m_entityId);
 
+        if (m_config.m_renderTextureAsset.GetId().IsValid())
+        {
+            CreateRenderPipelineForTexture();
+        }
+
         // Only activate if we're configured to do so, and our activation call back indicates that we should
         if (m_config.m_makeActiveViewOnActivation && (!m_shouldActivateFn || m_shouldActivateFn()))
         {
@@ -270,6 +281,13 @@ namespace Camera
 
     void CameraComponentController::Deactivate()
     {
+        if (m_renderToTexturePipeline)
+        {
+            auto scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+            scene->RemoveRenderPipeline(m_renderToTexturePipeline->GetId());
+            m_renderToTexturePipeline = nullptr;
+        }
+
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnCameraRemoved, m_entityId);
         CameraBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect(m_entityId);
@@ -278,6 +296,31 @@ namespace Camera
         m_atomCameraViewGroup->Deactivate();
        
         DeactivateAtomView();
+    }
+
+    void CameraComponentController::CreateRenderPipelineForTexture()
+    {
+        auto scene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+
+        const AZStd::string pipelineName = "Camera_" + m_entityId.ToString() + "_Pipeline";
+
+        AZ::RPI::RenderPipelineDescriptor pipelineDesc;
+        pipelineDesc.m_mainViewTagName = "MainCamera";
+        pipelineDesc.m_name = pipelineName;
+        pipelineDesc.m_rootPassTemplate = m_config.m_pipelineTemplate;
+        pipelineDesc.m_renderSettings.m_multisampleState = AZ::RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+        pipelineDesc.m_allowModification = false;
+        m_renderToTexturePipeline = AZ::RPI::RenderPipeline::CreateRenderPipelineForImage(pipelineDesc, m_config.m_renderTextureAsset);
+
+        if (!m_renderToTexturePipeline)
+        {
+            AZStd::string entityName;
+            AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, m_entityId);
+            AZ_Error("Camera", false, "Failed to create render to texture pipeline for camera component in entity %s", entityName.c_str());
+            return;
+        }
+        scene->AddRenderPipeline(m_renderToTexturePipeline);
+        m_renderToTexturePipeline->SetDefaultView(GetView());
     }
 
     void CameraComponentController::SetConfiguration(const CameraComponentConfig& config)

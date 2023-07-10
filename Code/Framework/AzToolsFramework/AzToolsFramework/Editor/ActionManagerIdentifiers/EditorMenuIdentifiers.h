@@ -40,6 +40,7 @@ namespace EditorIdentifiers
     inline constexpr AZStd::string_view HelpGameDevResourcesMenuIdentifier = "o3de.menu.editor.help.gamedevresources";
 
     // Viewport menus and sub-menus
+    inline constexpr AZStd::string_view ViewportContextMenuIdentifier = "o3de.menu.editor.viewport.context";
     inline constexpr AZStd::string_view ViewportCameraMenuIdentifier = "o3de.menu.editor.viewport.camera";
     inline constexpr AZStd::string_view ViewportHelpersMenuIdentifier = "o3de.menu.editor.viewport.helpers";
     inline constexpr AZStd::string_view ViewportDebugInfoMenuIdentifier = "o3de.menu.editor.viewport.debugInfo";
@@ -47,4 +48,10 @@ namespace EditorIdentifiers
     inline constexpr AZStd::string_view ViewportSizeRatioMenuIdentifier = "o3de.menu.editor.viewport.size.ratio";
     inline constexpr AZStd::string_view ViewportSizeResolutionMenuIdentifier = "o3de.menu.editor.viewport.size.resolution";
     inline constexpr AZStd::string_view ViewportOptionsMenuIdentifier = "o3de.menu.editor.viewport.options";
+
+    // Editor Widget Menus
+    inline constexpr AZStd::string_view EntityOutlinerContextMenuIdentifier = "o3de.menu.editor.entityOutliner.context";
+
+    // Entity creation menu
+    inline constexpr AZStd::string_view EntityCreationMenuIdentifier = "o3de.menu.entity.create";
 }

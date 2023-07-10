@@ -9,20 +9,17 @@
 
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    class FrameGraph;
+
+    class FrameGraphLogger
     {
-        class FrameGraph;
-
-        class FrameGraphLogger
-        {
-        public:
-            /// Logs the graph to the output console, with the specified verbosity.
-            static void Log(const FrameGraph& frameGraph, FrameSchedulerLogVerbosity logVerbosity);
-
-            /// Dumps a graph-vis file of the current frame graph to the logs folder.
-            static void DumpGraphVis(const FrameGraph& frameGraph);
-        };
-    }
+    public:
+        //! Logs the graph to the output console, with the specified verbosity.
+        static void Log(const FrameGraph& frameGraph, FrameSchedulerLogVerbosity logVerbosity);
+        
+        //! Dumps a graph-vis file of the current frame graph to the logs folder.
+        static void DumpGraphVis(const FrameGraph& frameGraph);
+    };
 }

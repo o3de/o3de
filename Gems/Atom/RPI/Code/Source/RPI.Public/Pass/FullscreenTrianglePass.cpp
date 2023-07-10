@@ -53,12 +53,17 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
-            UpdateSrgs();
+            LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
-            UpdateSrgs();
+            LoadShader();
+        }
+
+        void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
+        {
+            LoadShader();
         }
 
         void FullscreenTrianglePass::LoadShader()
@@ -74,11 +79,23 @@ namespace AZ
                 return;
             }
 
+            AZ::Data::AssetId shaderAssetId = passData->m_shaderAsset.m_assetId;
+            if (!shaderAssetId.IsValid())
+            {
+                // This case may happen when PassData comes from a PassRequest defined inside an *.azasset.
+                // Unlike the PassBuilder, the AnyAssetBuilder doesn't record the AssetId, so we have to discover the asset id at runtime.
+                AZStd::string azshaderPath = passData->m_shaderAsset.m_filePath;
+                AZ::StringFunc::Path::ReplaceExtension(azshaderPath, "azshader");
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    shaderAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, azshaderPath.c_str(),
+                    azrtti_typeid<ShaderAsset>(), false /*autoRegisterIfNotFound*/);
+            }
+
             // Load Shader
             Data::Asset<ShaderAsset> shaderAsset;
-            if (passData->m_shaderAsset.m_assetId.IsValid())
+            if (shaderAssetId.IsValid())
             {
-                shaderAsset = RPI::FindShaderAsset(passData->m_shaderAsset.m_assetId, passData->m_shaderAsset.m_filePath);
+                shaderAsset = RPI::FindShaderAsset(shaderAssetId, passData->m_shaderAsset.m_filePath);
             }
 
             if (!shaderAsset.GetId().IsValid())
@@ -138,7 +155,11 @@ namespace AZ
             const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
             m_drawShaderResourceGroup = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
 
-            m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+            // It is valid for there to be no draw srg if there are no shader options, so check to see if it is null.
+            if (m_drawShaderResourceGroup)
+            {
+                m_pipelineStateForDraw.UpdateSrgVariantFallback(m_shaderResourceGroup);
+            }
         }
 
         void FullscreenTrianglePass::BuildDrawItem()
@@ -208,16 +229,11 @@ namespace AZ
 
             RHI::Size targetImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-            
-            m_viewportState.m_maxX = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxX), targetImageSize.m_width));
-            m_viewportState.m_maxY = static_cast<float>(AZStd::min(static_cast<uint32_t>(params.m_viewportState.m_maxY), targetImageSize.m_height));
-            m_viewportState.m_minX = static_cast<float>(AZStd::min(params.m_viewportState.m_minX, m_viewportState.m_maxX));
-            m_viewportState.m_minY = static_cast<float>(AZStd::min(params.m_viewportState.m_minY, m_viewportState.m_maxY));
+            m_viewportState.m_maxX = static_cast<float>(targetImageSize.m_width);
+            m_viewportState.m_maxY = static_cast<float>(targetImageSize.m_height);
 
-            m_scissorState.m_maxX = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxX), targetImageSize.m_width);
-            m_scissorState.m_maxY = AZStd::min(static_cast<uint32_t>(params.m_scissorState.m_maxY), targetImageSize.m_height);
-            m_scissorState.m_minX = AZStd::min(params.m_scissorState.m_minX, m_scissorState.m_maxX);
-            m_scissorState.m_minY = AZStd::min(params.m_scissorState.m_minY, m_scissorState.m_maxY);
+            m_scissorState.m_maxX = static_cast<int32_t>(targetImageSize.m_width);
+            m_scissorState.m_maxY = static_cast<int32_t>(targetImageSize.m_height);
 
             RenderPass::FrameBeginInternal(params);
         }

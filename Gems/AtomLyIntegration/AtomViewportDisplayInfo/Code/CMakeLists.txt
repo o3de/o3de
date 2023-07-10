@@ -25,6 +25,11 @@ ly_add_target(
             Gem::Atom_RPI.Public
 )
 
+ly_create_alias(NAME AtomViewportDisplayInfo.Clients NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+ly_create_alias(NAME AtomViewportDisplayInfo.Tools NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+ly_create_alias(NAME AtomViewportDisplayInfo.Servers NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+ly_create_alias(NAME AtomViewportDisplayInfo.Unified NAMESPACE Gem TARGETS Gem::AtomViewportDisplayInfo)
+
 ################################################################################
 # Tests
 ################################################################################
@@ -44,6 +49,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::AtomViewportDisplayInfo.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()
 

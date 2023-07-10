@@ -15,9 +15,10 @@
 #include <QPixmap>
 
 // Graph Canvas
-#include <GraphCanvas/Editor/GraphModelBus.h>
-#include <GraphCanvas/Components/Slots/SlotBus.h>
+#include <GraphCanvas/Components/EntitySaveDataBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
+#include <GraphCanvas/Components/Slots/SlotBus.h>
+#include <GraphCanvas/Editor/GraphModelBus.h>
 
 // Graph Model
 #include <GraphModel/GraphModelBus.h>
@@ -35,6 +36,7 @@ namespace GraphModelIntegration
     class GraphController
         : private GraphCanvas::GraphModelRequestBus::Handler
         , private GraphCanvas::SceneNotificationBus::Handler
+        , public GraphCanvas::EntitySaveDataRequestBus::Router
         , public GraphControllerRequestBus::Handler
     {
     public:
@@ -126,11 +128,8 @@ namespace GraphModelIntegration
         AZ::Entity* CreateSlotUi(GraphModel::SlotPtr slot, AZ::EntityId nodeUiId);
 
         //! Creates the GraphCanvas node UI represeting a given Node
-        //! \param scenePosition  Pass in a lambda function that provides the node's position given it's GraphCanvas node EntityId.
-        AZ::EntityId CreateNodeUi(GraphModel::NodeId nodeId, GraphModel::NodePtr node, AZStd::function<AZ::Vector2(AZ::EntityId/*nodeUiId*/)> getScenePosition);
-
-        //! Utility function for adding a Graph Canvas node to a Graph Canvas scene
-        void AddNodeUiToScene(AZ::EntityId graphCanvasNodeId, const AZ::Vector2& scenePosition);
+        //! \param scenePosition The node's position
+        AZ::EntityId CreateNodeUi(GraphModel::NodeId nodeId, GraphModel::NodePtr node, const AZ::Vector2& scenePosition);
 
         //! Creates the GraphCanvas UI represeting a given Connection
         void CreateConnectionUi(GraphModel::ConnectionPtr connection);
@@ -149,23 +148,27 @@ namespace GraphModelIntegration
         // GraphCanvas::SceneNotificationBus, connections
         void OnNodeAdded(const AZ::EntityId& nodeUiId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeUiId) override;
+        void OnConnectionAdded(const AZ::EntityId& connectionUiId) override;
         void OnConnectionRemoved(const AZ::EntityId& connectionUiId) override;
         void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
         void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource) override;
         void OnEntitiesDeserializationComplete(const GraphCanvas::GraphSerialization& serializationSource) override;
         void OnNodeIsBeingEdited(bool isBeingEditeed) override;
+        void OnSelectionChanged() override;
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        // GraphCanvas::EntitySaveDataRequestBus::Router
+        void WriteSaveData(GraphCanvas::EntitySaveDataContainer& saveDataContainer) const override;
+        void ReadSaveData(const GraphCanvas::EntitySaveDataContainer& saveDataContainer) override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, connections
-
         void DisconnectConnection([[maybe_unused]] const AZ::EntityId& connectionUiId) override {}
         bool CreateConnection(const AZ::EntityId& connectionUiId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
-
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, undo
-
         void RequestUndoPoint() override;
         void RequestPushPreventUndoStateUpdate() override;
         void RequestPopPreventUndoStateUpdate() override;
@@ -174,7 +177,6 @@ namespace GraphModelIntegration
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphCanvas::GraphModelRequestBus, other
-
         void EnableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
         void DisableNodes(const AZStd::unordered_set<GraphCanvas::NodeId>& nodeIds) override;
 

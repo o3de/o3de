@@ -23,6 +23,7 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ISkinWeightData.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkinRule.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
+#include <SceneAPI/SceneCore/SceneBuilderDependencyBus.h>
 
 #include <Model/ModelExporterContexts.h>
 
@@ -132,6 +133,7 @@ namespace AZ
             using ProductMeshContentList = AZStd::vector<ProductMeshContent>;
 
             static constexpr inline const char* s_builderName = "Atom Model Builder";
+            static constexpr inline const char* s_defaultVertexBufferPoolSourcePath = "ResourcePools/DefaultVertexBufferPool.resourcepool";
 
         private:
 
@@ -399,5 +401,31 @@ namespace AZ
                 AZStd::unordered_map<AZStd::string, uint16_t>& jointNameToIndexMap,
                 size_t vertexIndex) const;
         };
+
+        //! Report dependencies for the ModelAssetBuilderComponent.
+        //! Specifically, this reports the dependency on DefaultVertexBufferPool.resourcepool.
+        class ModelAssetDependenciesComponent
+            : public Component
+            , public SceneAPI::SceneBuilderDependencyBus::Handler
+        {
+        public:
+            AZ_COMPONENT(ModelAssetDependenciesComponent, "{CE1E8C2B-A05F-4AED-8771-88E58377A82B}");
+
+            static void Reflect(ReflectContext* context);
+
+            ModelAssetDependenciesComponent() = default;
+            ~ModelAssetDependenciesComponent() override = default;
+
+            static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
+            static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible);
+
+            // AZ::Component overrides...
+            void Activate() override;
+            void Deactivate() override;
+
+            // SceneAPI::SceneBuilderDependencyBus::Handler overrides...
+            void ReportJobDependencies(SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier) override;
+        };
+
     } // namespace RPI
 } // namespace AZ

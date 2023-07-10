@@ -27,3 +27,4 @@ ros-humble-tf2-ros                      # ROS2 development tools
 ros-humble-urdfdom                      # ROS2 development tools
 ros-humble-vision-msgs                  # ROS2 development tools
 libunwind-dev
+libzstd-dev
