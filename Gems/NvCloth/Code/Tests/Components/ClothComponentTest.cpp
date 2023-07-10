@@ -61,21 +61,9 @@ namespace UnitTest
         EXPECT_TRUE(sortOutcome.IsSuccess());
     }
 
-    TEST_F(NvClothComponent, ClothComponent_WithoutMultiplayerGem_ConnectsToMeshComponentNotificationBusOnActivation)
+    TEST_F(NvClothComponent, ClothComponent_SimulationCvarEnabled_ConnectsToMeshComponentNotificationBusOnActivation)
     {
-        AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
-        entity->Activate();
-
-        auto* clothComponent = entity->FindComponent<NvCloth::ClothComponent>();
-
-        EXPECT_TRUE(IsConnectedToMeshComponentNotificationBus(clothComponent));
-    }
-
-    TEST_F(NvClothComponent, ClothComponent_WithMultiplayerGem_Game_ConnectsToMeshComponentNotificationBusOnActivation)
-    {
-        // Fake that multiplayer gem is enabled by creating a local sv_isDedicated AZ_CVAR
-        AZ::ConsoleDataWrapper<bool, ConsoleThreadSafety<bool>> sv_isDedicated(false,
-            nullptr, "sv_isDedicated", "", AZ::ConsoleFunctorFlags::DontReplicate);
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("bg_enableNvClothSimulation true");
 
         AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
         entity->Activate();
@@ -85,12 +73,9 @@ namespace UnitTest
         EXPECT_TRUE(IsConnectedToMeshComponentNotificationBus(clothComponent));
     }
 
-    TEST_F(NvClothComponent, ClothComponent_WithMultiplayerGem_Server_DoesNotConnectToMeshComponentNotificationBusOnActivation)
+    TEST_F(NvClothComponent, ClothComponent_SimulationCvarDisabled_Server_DoesNotConnectToMeshComponentNotificationBusOnActivation)
     {
-        // Fake that multiplayer gem is enabled by creating a local sv_isDedicated AZ_CVAR
-        AZ::ConsoleDataWrapper<bool, ConsoleThreadSafety<bool>> sv_isDedicated(true,
-            nullptr, "sv_isDedicated", "", AZ::ConsoleFunctorFlags::DontReplicate);
-
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("bg_enableNvClothSimulation false");
         AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
         entity->Activate();
 
@@ -101,6 +86,7 @@ namespace UnitTest
 
     TEST_F(NvClothComponent, ClothComponent_OneEntityWithTwoClothComponents_BothConnectToMeshComponentNotificationBusOnActivation)
     {
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("bg_enableNvClothSimulation true");
         AZStd::unique_ptr<AZ::Entity> entity = AZStd::make_unique<AZ::Entity>();
         entity->CreateComponent<AzFramework::TransformComponent>();
         entity->CreateComponent<EMotionFX::Integration::ActorComponent>();
@@ -115,6 +101,7 @@ namespace UnitTest
 
     TEST_F(NvClothComponent, ClothComponent_AfterDeactivation_IsNotConnectedToMeshComponentNotificationBus)
     {
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("bg_enableNvClothSimulation true");
         AZStd::unique_ptr<AZ::Entity> entity = CreateClothActorEntity({});
         entity->Activate();
 

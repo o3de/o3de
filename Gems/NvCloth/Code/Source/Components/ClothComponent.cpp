@@ -14,6 +14,15 @@
 
 namespace NvCloth
 {
+    AZ_CVAR(
+        bool,
+        bg_enableNvClothSimulation,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate,
+        "Enable NvCloth simulation. It is useful to set this to false on servers for increase performance.\n"
+        "Affects components activated after this cvar is set.");
+
     void ClothComponent::Reflect(AZ::ReflectContext* context)
     {
         ClothConfiguration::Reflect(context);
@@ -50,15 +59,9 @@ namespace NvCloth
 
     void ClothComponent::Activate()
     {
-        // Cloth components do not run on dedicated servers.
-        if (auto* console = AZ::Interface<AZ::IConsole>::Get())
+        if (!bg_enableNvClothSimulation)
         {
-            bool isDedicated = false;
-            if (const auto result = console->GetCvarValue("sv_isDedicated", isDedicated);
-                result == AZ::GetValueResult::Success && isDedicated)
-            {
-                return;
-            }
+            return;
         }
 
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
