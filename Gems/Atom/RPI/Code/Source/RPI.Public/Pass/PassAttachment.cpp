@@ -199,11 +199,11 @@ namespace AZ
 
                 if (m_arraySizeSource && m_arraySizeSource->GetAttachment())
                 {
+                    int tries{ 0 };
                     auto arraySizeSource = m_arraySizeSource;
                     while (arraySizeSource->GetAttachment() && arraySizeSource->GetAttachment()->m_arraySizeSource &&
                            arraySizeSource->GetAttachment()->m_arraySizeSource->GetAttachment())
                     {
-                        int tries{ 0 };
                         arraySizeSource = arraySizeSource->GetAttachment()->m_arraySizeSource;
                         if (tries > maxRecursionTries) // crude circular dependency detection
                         {
