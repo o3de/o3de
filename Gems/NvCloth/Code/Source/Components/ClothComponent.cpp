@@ -16,7 +16,7 @@ namespace NvCloth
 {
     AZ_CVAR(
         bool,
-        bg_enableNvClothSimulation,
+        cl_enableNvClothSimulation,
         true,
         nullptr,
         AZ::ConsoleFunctorFlags::DontReplicate,
@@ -59,7 +59,7 @@ namespace NvCloth
 
     void ClothComponent::Activate()
     {
-        if (!bg_enableNvClothSimulation)
+        if (!cl_enableNvClothSimulation)
         {
             return;
         }
