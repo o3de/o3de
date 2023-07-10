@@ -27,7 +27,6 @@ namespace Multiplayer
 {
     using namespace AzNetworking;
 
-    AZ_CVAR(bool, editorsv_isDedicated, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to init as a server expecting data from an Editor. Do not modify unless you're sure of what you're doing.");
     AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic.");
 
     MultiplayerEditorConnection::MultiplayerEditorConnection()
@@ -42,28 +41,29 @@ namespace Multiplayer
         // - LegacySystemInterfaceCreated is signaled, so that the logging system is ready. Automated testing listens for these logs.
         // - LegacyCommandLineProcessed is signaled, so that everything has initialized and finished their blocking loads, so that it
         // should be relatively safe to start receiving packets without as much fear of too much time passing between system ticks.
-        if (editorsv_isDedicated)
-        {
-            // Server logs will be piped to the editor so turn off buffering,
-            // otherwise it'll take a lot of logs to fill up the buffer before stdout is finally flushed.
-            // This isn't optimal, but will only affect editor-servers (used when testing multiplayer levels in Editor gameplay mode) and not production servers.
-            // Note: _IOLBF (flush on newlines) won't work for Automated Testing which uses a headless server app and will fall back to _IOFBF (full buffering)
-            setvbuf(stdout, NULL, _IONBF, 0);
+#if AZ_TRAIT_SERVER && !AZ_TRAIT_CLIENT
+        // Server logs will be piped to the editor so turn off buffering,
+        // otherwise it'll take a lot of logs to fill up the buffer before stdout is finally flushed.
+        // This isn't optimal, but will only affect editor-servers (used when testing multiplayer levels in Editor gameplay mode) and not
+        // production servers. Note: _IOLBF (flush on newlines) won't work for Automated Testing which uses a headless server app and will
+        // fall back to _IOFBF (full buffering)
+        setvbuf(stdout, nullptr, _IONBF, 0);
 
-            // If the settings registry is not available at this point,
-            // then something catastrophic has happened in the application startup.
-            // That should have been caught and messaged out earlier in startup.
-            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-            {
-                AZ::ComponentApplicationLifecycle::RegisterHandler(
-                    *settingsRegistry, m_componentApplicationLifecycleHandler,
-                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
-                    {
-                        ActivateDedicatedEditorServer();
-                    },
-                    "LegacyCommandLineProcessed");
-            }
+        // If the settings registry is not available at this point,
+        // then something catastrophic has happened in the application startup.
+        // That should have been caught and messaged out earlier in startup.
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::RegisterHandler(
+                *settingsRegistry,
+                m_componentApplicationLifecycleHandler,
+                [this](const AZ::SettingsRegistryInterface::NotifyEventArgs&)
+                {
+                    ActivateDedicatedEditorServer();
+                },
+                "LegacyCommandLineProcessed");
         }
+#endif
     }
 
     MultiplayerEditorConnection::~MultiplayerEditorConnection()
@@ -79,15 +79,18 @@ namespace Multiplayer
 
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
-        if (m_isActivated || !editorsv_isDedicated)
+#if AZ_TRAIT_SERVER && !AZ_TRAIT_CLIENT
+        if (m_isActivated)
         {
             return;
         }
+
         m_isActivated = true;
-        
+
         AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
 
-        m_networkEditorInterface->Listen(editorsv_port);
+            m_networkEditorInterface->Listen(editorsv_port);
+#endif
     }
 
     bool MultiplayerEditorConnection::HandleRequest

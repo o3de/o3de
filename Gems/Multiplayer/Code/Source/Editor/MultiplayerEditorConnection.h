@@ -27,7 +27,7 @@ namespace Multiplayer
     {
     public:
         MultiplayerEditorConnection();
-        ~MultiplayerEditorConnection();
+        ~MultiplayerEditorConnection() override;
 
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReadyForLevelData& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerLevelData& packet);
@@ -48,7 +48,7 @@ namespace Multiplayer
         AzNetworking::INetworkInterface* m_networkEditorInterface = nullptr;
         AZStd::vector<uint8_t> m_buffer;
         AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> m_byteStream;
-        mutable bool m_isActivated = false;
+        [[maybe_unused]] mutable bool m_isActivated = false;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
         AZStd::unique_ptr<AzFramework::InMemorySpawnableAssetContainer> m_inMemorySpawnableAssetContainer = nullptr;
     };
