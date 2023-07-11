@@ -591,7 +591,7 @@ namespace LegacyLevelSystem
         AzFramework::RootSpawnableInterface::Get()->ReleaseRootSpawnable();
         
         // Process the queued deactivate calls for the unloaded entities
-        AzFramework::RootSpawnableInterface::Get()->ProcessSpawnableQueue();
+        AzFramework::RootSpawnableInterface::Get()->ProcessSpawnableQueueUntilEmpty();
 
         m_lastLevelName.clear();
 
