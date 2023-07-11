@@ -70,7 +70,7 @@ namespace AZStd
         // QOS_CLASS_BACKGROUN         |           0          |           4          |  Will be prevented from using whole core.
         uint8_t GetDefaultThreadPriority()
         {
-            return 10;
+            return 25;
         }
     }
 }

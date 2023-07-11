@@ -243,6 +243,30 @@ namespace AZ
         void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
+            
+            uint16_t viewMinMip = RHI::ImageSubresourceRange::HighestSliceIndex;
+            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
+            {
+                if (attachmentBinding.GetAttachment() != nullptr &&
+                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()) &&
+                    attachmentBinding.m_unifiedScopeDesc.GetType() ==RHI::AttachmentType::Image &&
+                    RHI::CheckBitsAny(attachmentBinding.GetAttachmentAccess(), RHI::ScopeAttachmentAccess::Write) &&
+                    attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
+                {
+                    RHI::ImageViewDescriptor viewDesc = attachmentBinding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor;
+                    viewMinMip = AZStd::min(viewMinMip, viewDesc.m_mipSliceMin);
+                }
+            }
+            
+            if(viewMinMip < RHI::ImageSubresourceRange::HighestSliceIndex)
+            {
+                m_viewportState.m_maxX = static_cast<uint32_t>(m_viewportState.m_maxX) >> viewMinMip;
+                m_viewportState.m_maxY = static_cast<uint32_t>(m_viewportState.m_maxY) >> viewMinMip;
+                
+                m_scissorState.m_maxX = static_cast<uint32_t>(m_scissorState.m_maxX) >> viewMinMip;
+                m_scissorState.m_maxY = static_cast<uint32_t>(m_scissorState.m_maxY) >> viewMinMip;
+            }
+            
             frameGraph.SetEstimatedItemCount(1);
         }
 

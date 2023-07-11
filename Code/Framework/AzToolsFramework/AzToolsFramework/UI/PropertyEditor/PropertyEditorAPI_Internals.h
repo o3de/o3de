@@ -284,7 +284,7 @@ namespace AzToolsFramework
                     if (AZ::StringFunc::LooksLikeInt(name.GetCStr()))
                     {
                         AZStd::string attributeIdString(name.GetStringView());
-                        AZ::u32 attributeIdHash = AZStd::stoul(attributeIdString);
+                        AZ::u32 attributeIdHash = static_cast<AZ::u32>(AZStd::stoul(attributeIdString));
                         attributeId = AZ::Crc32(attributeIdHash);
 
                         // If we failed to marshal the attribute in the above AZ::Reflection::WriteDomValueToGenericAttribute,
