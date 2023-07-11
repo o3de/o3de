@@ -71,7 +71,7 @@ namespace AZ
             request.m_buffer = m_stagingBuffer.get();
             request.m_byteCount = sizeof(D3D12_DISPATCH_RAYS_DESC);
             request.m_byteOffset = 0;
-            RHI::ResultCode result = pool->MapBuffer(request, response);
+            [[maybe_unused]] RHI::ResultCode result = pool->MapBuffer(request, response);
             AZ_Assert(result == RHI::ResultCode::Success, "Failed to map buffer for IndirectBufferWriter");
             memcpy(response.m_data, &desc, sizeof(D3D12_DISPATCH_RAYS_DESC));
             pool->UnmapBuffer(*m_stagingBuffer);
