@@ -56,6 +56,7 @@ namespace AZ
                 // See ShaderVariantStableId.
                 AZ::u32 m_stableId = 0;
 
+                //! Map of option-names to value-names (string formatted values)
                 ShaderOptionValuesSourceData m_options;
 
                 
