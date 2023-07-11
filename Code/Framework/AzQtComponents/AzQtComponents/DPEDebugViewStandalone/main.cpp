@@ -112,7 +112,7 @@ namespace DPEDebugView
             {
                 if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
                 {
-                    serializeContext->Class<GenericValueTestType>()->Version(2)
+                    serializeContext->Class<GenericValueTestType>()->Version(1)
                         ->Field("m_id", &GenericValueTestType::m_id);
                 }
             }
@@ -207,7 +207,6 @@ namespace DPEDebugView
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<TestContainer>()
-                    ->Version(2)
                     ->Field("toggle", &TestContainer::m_toggle)
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)

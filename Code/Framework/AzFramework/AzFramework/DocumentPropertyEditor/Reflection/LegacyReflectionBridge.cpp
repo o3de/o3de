@@ -701,8 +701,25 @@ namespace AZ::Reflection
                         {
                             if (groupPair.second.has_value())
                             {
-                                groupPair.second.value().m_group = groupPair.first;
-                                m_stack.push_back(groupPair.second.value());
+                                auto& groupStackEntry = groupPair.second.value();
+                                groupStackEntry.m_group = groupPair.first;
+
+                                StackEntry* proxyEntry = nullptr;
+                                if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
+                                {
+                                    auto& groupEntry = nodeData.m_groupEntries[groupPair.first];
+                                    for (auto entryIter = groupEntry.begin(), endIter = groupEntry.end(); !proxyEntry && entryIter != endIter; ++entryIter)
+                                    {
+                                        auto& currEntry = *entryIter;
+                                        if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement == currEntry.m_classElement)
+                                        {
+                                            currEntry.m_classElement->m_editData->m_elementId = 0; // makes bool work
+                                            //currEntry.m_skipHandler = true;
+                                            //proxyEntry = &currEntry;
+                                        }
+                                    }
+                                }
+                                m_stack.push_back(proxyEntry != nullptr ? *proxyEntry : groupStackEntry);
                                 CacheAttributes();
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
