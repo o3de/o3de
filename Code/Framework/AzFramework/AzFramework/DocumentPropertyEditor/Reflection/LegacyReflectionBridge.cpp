@@ -128,6 +128,7 @@ namespace AZ::Reflection
         {
             IReadWrite* m_visitor;
             SerializeContext* m_serializeContext;
+            SerializeContext::EnumerateInstanceCallContext* m_enumerateContext;
 
             struct AttributeData
             {
@@ -200,7 +201,6 @@ namespace AZ::Reflection
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
 
-            virtual ~InstanceVisitor() = default;
 
             InstanceVisitor(
                 IReadWrite* visitor,
@@ -229,6 +229,27 @@ namespace AZ::Reflection
                     AZ::s64,
                     float,
                     double>();
+
+                m_enumerateContext = new SerializeContext::EnumerateInstanceCallContext(
+                    [this](
+                        void* instance,
+                        const AZ::SerializeContext::ClassData* classData,
+                        const AZ::SerializeContext::ClassElement* classElement)
+                    {
+                        return BeginNode(instance, classData, classElement);
+                    },
+                    [this]()
+                    {
+                        return EndNode();
+                    },
+                    m_serializeContext,
+                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_READ,
+                    nullptr);
+            }
+
+            virtual ~InstanceVisitor()
+            {
+                delete m_enumerateContext;
             }
 
             template<typename T>
@@ -259,25 +280,10 @@ namespace AZ::Reflection
                 {
                     return;
                 }
-                SerializeContext::EnumerateInstanceCallContext context(
-                    [this](
-                        void* instance,
-                        const AZ::SerializeContext::ClassData* classData,
-                        const AZ::SerializeContext::ClassElement* classElement)
-                    {
-                        return BeginNode(instance, classData, classElement);
-                    },
-                    [this]()
-                    {
-                        return EndNode();
-                    },
-                    m_serializeContext,
-                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_READ,
-                    nullptr);
 
                 // Note that this is the dummy parent node for the root node. It contains null classData and classElement.
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->EnumerateInstance(m_enumerateContext, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
 
             void GenerateNodePath(const StackEntry& parentData, StackEntry& nodeData)
@@ -648,7 +654,7 @@ namespace AZ::Reflection
                 if (HandleNodeInParentGroup(nodeData, parentData))
                 {
                     m_nodeWasSkipped = true;
-                    return true;
+                    return false;
                 }
 
                 HandleNodeGroups(nodeData);
@@ -691,7 +697,7 @@ namespace AZ::Reflection
                     // Handle groups
                     if (!nodeData.m_iteratingOnGroups && nodeData.m_groups.size() > 0)
                     {
-                        nodeData.m_iteratingOnGroups = true;
+                        //nodeData.m_iteratingOnGroups = true;
 
                         for (auto& groupPair : nodeData.m_groups)
                         {
@@ -708,10 +714,9 @@ namespace AZ::Reflection
 
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
-                                m_stack.push_back(groupEntry);
-                                CacheAttributes();
-                                m_visitor->VisitObjectBegin(*this, *this);
-                                m_visitor->VisitObjectEnd(*this, *this);
+                                m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
+                                m_serializeContext->EnumerateInstance(
+                                    m_enumerateContext, groupEntry.m_instance, groupEntry.m_typeId, groupEntry.m_classData, groupEntry.m_classElement);
                                 m_stack.pop_back();
                             }
 
