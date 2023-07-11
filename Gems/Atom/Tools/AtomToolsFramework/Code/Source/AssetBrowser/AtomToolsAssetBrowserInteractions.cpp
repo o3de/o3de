@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <AtomToolsFramework/AssetBrowser/AtomToolsAssetBrowserInteractions.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/string/wildcard.h>
@@ -83,6 +84,18 @@ namespace AtomToolsFramework
     void AtomToolsAssetBrowserInteractions::AddContextMenuActionsForSourceEntries(
         [[maybe_unused]] QWidget* caller, QMenu* menu, const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry)
     {
+        QFileInfo fileInfo(entry->GetFullPath().c_str());
+        QString extension = fileInfo.completeSuffix();
+        if (extension == "shader")
+        {
+            menu->addAction("Create new variantlist", [entry]()
+                {
+                    AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::CreateNewVariantListRequested,
+                        entry->GetFullPath().c_str());
+                });
+        }
+
         menu->addAction("Duplicate", [entry]()
             {
                 const auto& duplicateFilePath = GetUniqueFilePath(entry->GetFullPath());

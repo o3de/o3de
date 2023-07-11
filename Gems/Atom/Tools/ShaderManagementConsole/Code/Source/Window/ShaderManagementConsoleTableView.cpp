@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
@@ -13,9 +13,35 @@
 
 #include <QComboBox>
 #include <QHeaderView>
+#include <QMenu>
+#include <QKeyEvent>
+#include <QPushButton>
+
+#include <functional>
 
 namespace ShaderManagementConsole
 {
+
+    template< typename BaseWidget >
+    struct FocusOutConfigurable : public BaseWidget
+    {
+        template< typename... Objects >
+        FocusOutConfigurable(Objects&&... args)
+            : BaseWidget(std::forward<Objects>(args)...)
+        {}
+
+        void hidePopup() override
+        {
+            BaseWidget::hidePopup();
+            if (m_onExit)
+            {
+                m_onExit();
+            }
+        }
+
+        std::function<void()> m_onExit;
+    };
+
     ShaderManagementConsoleTableView::ShaderManagementConsoleTableView(
         const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent)
         : QTableWidget(parent)
@@ -25,10 +51,42 @@ namespace ShaderManagementConsole
         setEditTriggers(QAbstractItemView::NoEditTriggers);
         setSelectionBehavior(QAbstractItemView::SelectItems);
         setSelectionMode(QAbstractItemView::SingleSelection);
-        horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
+        setAlternatingRowColors(true);
 
         RebuildTable();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+        this->setContextMenuPolicy(Qt::CustomContextMenu);
+        this->connect(this, &QTableWidget::customContextMenuRequested, this, &ShaderManagementConsoleTableView::ShowContextMenu);
+    }
+
+    void ShaderManagementConsoleTableView::mousePressEvent(QMouseEvent* e)
+    {
+        QTableWidget::mousePressEvent(e);
+        if (e->button() == Qt::RightButton)
+        {
+            ShowContextMenu(e->pos());
+        }
+    }
+
+    void ShaderManagementConsoleTableView::ShowContextMenu(const QPoint& pos)
+    {
+        QMenu contextMenu(tr("Context menu"), this);
+        QAction* action = new QAction(QString(tr("Add variant")), this);
+        connect(
+            action,
+            &QAction::triggered,
+            this,
+            [this]()
+            {
+                ShaderManagementConsoleDocumentRequestBus::Event(
+                    m_documentId,
+                    &ShaderManagementConsoleDocumentRequestBus::Events::AddOneVariantRow);
+            });
+        contextMenu.addAction(action);
+
+        contextMenu.exec(mapToGlobal(pos));
     }
 
     ShaderManagementConsoleTableView::~ShaderManagementConsoleTableView()
@@ -57,7 +115,10 @@ namespace ShaderManagementConsole
         QSignalBlocker blocker(this);
 
         // Delete any active edit widget from the current selection
-        setCellWidget(currentRow(), currentColumn(), nullptr);
+        if (currentColumn() != 0)
+        {
+            removeCellWidget(currentRow(), currentColumn());
+        }
 
         // Disconnect data change signal while populating the table
         disconnect();
@@ -78,17 +139,17 @@ namespace ShaderManagementConsole
             m_shaderOptionCount, m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderOptionDescriptorCount);
 
         // Only clear the table if the number of columns or rows have changed
-        if (rowCount() != m_shaderVariantCount || columnCount() != m_shaderOptionCount)
+        if (rowCount() != m_shaderVariantCount || (columnCount() + 1) != m_shaderOptionCount)
         {
             clear();
             setRowCount(static_cast<int>(m_shaderVariantCount));
-            setColumnCount(static_cast<int>(m_shaderOptionCount));
+            setColumnCount(static_cast<int>(m_shaderOptionCount) + 1);  // 1 for "delete row" widgets
         }
 
         // Get a list of all of the shader option descriptors from the shader asset that will be used for the columns in the table
         m_shaderOptionDescriptors = {};
-        m_shaderOptionDescriptors.reserve(columnCount());
-        for (int column = 0; column < columnCount(); ++column)
+        m_shaderOptionDescriptors.reserve(columnCount() - 1);
+        for (int column = 0; column < columnCount() - 1; ++column)
         {
             AZ::RPI::ShaderOptionDescriptor shaderOptionDescriptor;
             ShaderManagementConsoleDocumentRequestBus::EventResult(
@@ -99,36 +160,89 @@ namespace ShaderManagementConsole
             m_shaderOptionDescriptors.push_back(shaderOptionDescriptor);
         }
 
-        // Sort all of the descriptors by name so that the columns are arranged in alphabetical order
-        AZStd::sort(
-            m_shaderOptionDescriptors.begin(),
-            m_shaderOptionDescriptors.end(),
-            [](const auto& a, const auto& b)
+        switch (m_columnSortMode)
+        {
+        case Alpha:
             {
-                return a.GetName().GetStringView() < b.GetName().GetStringView();
-            });
+                // Sort descriptors by name
+                AZStd::sort(
+                    m_shaderOptionDescriptors.begin(),
+                    m_shaderOptionDescriptors.end(),
+                    [](const auto& a, const auto& b)
+                    {   //                      small first ('a' first)
+                        return a.GetName().GetStringView() < b.GetName().GetStringView();
+                    });
+            }
+            break;
+        case Rank:
+            {
+                // Sort by shader declaration order
+                AZStd::sort(
+                    m_shaderOptionDescriptors.begin(),
+                    m_shaderOptionDescriptors.end(),
+                    [](const auto& a, const auto& b)
+                    {   //  small first (order 0 is highest)
+                        return a.GetOrder() < b.GetOrder();
+                    });
+            }
+            break;
+        case Cost:
+            {
+                // Sort by cost (high score first)
+                AZStd::sort(
+                    m_shaderOptionDescriptors.begin(),
+                    m_shaderOptionDescriptors.end(),
+                    [](const auto& a, const auto& b)
+                    {   //      big first (high score is more important)
+                        return a.GetCostEstimate() > b.GetCostEstimate();
+                    });
+            }
+            break;
+        }
 
         // Fill in the header of each column with the descriptor name
-        for (int column = 0; column < columnCount(); ++column)
+        for (int column = 1; column < columnCount(); ++column)
         {
-            const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
-            setHorizontalHeaderItem(column, new QTableWidgetItem(shaderOptionDescriptor.GetName().GetCStr()));
+            const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
+            auto* tableItem = new QTableWidgetItem(shaderOptionDescriptor.GetName().GetCStr());
+            tableItem->setToolTip(tr("cost %1").arg(shaderOptionDescriptor.GetCostEstimate()));
+            setHorizontalHeaderItem(column, tableItem);
         }
+        setHorizontalHeaderItem(0, new QTableWidgetItem(""));
+
+        QIcon emptyOptionIcon("D:/emptyoption.png");
 
         // Fill all the rows with values from each variant
         for (int row = 0; row < rowCount(); ++row)
         {
             const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
-            setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(row)));
+            setVerticalHeaderItem(row, new QTableWidgetItem(QString::number(shaderVariant.m_stableId)));
 
-            for (int column = 0; column < columnCount(); ++column)
+            for (int column = 1; column < columnCount(); ++column)
             {
-                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
+                const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
                 const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName());
                 const AZ::Name valueName = optionIt != shaderVariant.m_options.end() ? AZ::Name(optionIt->second) : AZ::Name();
-                setItem(row, column, new QTableWidgetItem(valueName.GetCStr()));
+                auto* newItem = new QTableWidgetItem(valueName.GetCStr());
+                if (valueName.IsEmpty())
+                {
+                    newItem->setIcon(emptyOptionIcon);
+                    newItem->setToolTip(tr("runtime variable"));
+                }
+                setItem(row, column, newItem);
             }
+            auto* deleterButton = new QPushButton;
+            deleterButton->setText(u8"❌");
+            deleterButton->setToolTip(tr("delete row"));
+            connect(deleterButton, &QPushButton::clicked, this, [this, row](){
+                auto& vec = m_shaderVariantListSourceData.m_shaderVariants;
+                vec.erase(vec.begin() + row);
+                TransferViewModelToModel(CallOnModified);
+            });
+            setCellWidget(row, 0, deleterButton);
+
         }
+        horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
 
         // Connect to the data changed signal to listen for and apply table edits back to the document
         connect(this, &QTableWidget::currentCellChanged, this, &ShaderManagementConsoleTableView::OnCellSelected);
@@ -137,8 +251,13 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleTableView::OnCellSelected(int row, int column, int previousRow, int previousColumn)
     {
-        setCellWidget(row, column, nullptr);
-        setCellWidget(previousRow, previousColumn, nullptr);
+        if (column == 0)
+        {
+            return;
+        }
+
+        removeCellWidget(row, column);
+        removeCellWidget(previousRow, previousColumn);
 
         if (row < 0 || row >= m_shaderVariantListSourceData.m_shaderVariants.size())
         {
@@ -150,7 +269,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column];
+        const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
         const auto& shaderVariant = m_shaderVariantListSourceData.m_shaderVariants[row];
         const auto optionIt = shaderVariant.m_options.find(shaderOptionDescriptor.GetName());
 
@@ -164,7 +283,7 @@ namespace ShaderManagementConsole
         case AZ::RPI::ShaderOptionType::Boolean:
         case AZ::RPI::ShaderOptionType::Enumeration:
             {
-                QComboBox* comboBox = new QComboBox(this);
+                auto* comboBox = new FocusOutConfigurable<QComboBox>(this);
                 comboBox->addItem("");
                 for (uint32_t valueIndex = valueMin.GetIndex(); valueIndex <= valueMax.GetIndex(); ++valueIndex)
                 {
@@ -175,11 +294,12 @@ namespace ShaderManagementConsole
                 connect(comboBox, &QComboBox::currentTextChanged, this, [this, row, column](const QString& text) {
                     item(row, column)->setText(text);
                 });
+                comboBox->m_onExit = [this, row, column]() { removeCellWidget(row, column); };
                 break;
             }
         case AZ::RPI::ShaderOptionType::IntegerRange:
             {
-                AzQtComponents::StyledSpinBox* spinBox = new AzQtComponents::StyledSpinBox(this);
+                auto* spinBox = new AzQtComponents::StyledSpinBox(this);
                 spinBox->setRange(valueMin.GetIndex(), valueMax.GetIndex());
                 spinBox->setValue(value.GetIndex());
                 setCellWidget(row, column, spinBox);
@@ -188,6 +308,19 @@ namespace ShaderManagementConsole
                 });
                 break;
             }
+        }
+    }
+
+    void ShaderManagementConsoleTableView::keyPressEvent(QKeyEvent* e)
+    {
+        if (e->key() == Qt::Key_Escape)
+        {
+            setCurrentCell(-1, -1);
+            clearFocus();
+        }
+        else if (e->key() == Qt::Key_Menu)
+        {
+            ShowContextMenu(mapFromGlobal(QCursor::pos()));
         }
     }
 
@@ -209,20 +342,30 @@ namespace ShaderManagementConsole
         const auto optionItem = horizontalHeaderItem(column);
         if (optionItem && !optionItem->text().isEmpty())
         {
-            if (const auto variantItem = item(row, column))
+            if (auto variantItem = item(row, column))
             {
+                QSignalBlocker blocker(this);
                 // Set or clear the option based on the item text
                 if (variantItem->text().isEmpty())
                 {
                     shaderVariant.m_options.erase(AZ::Name{optionItem->text().toUtf8().constData()});
+                    variantItem->setIcon(QIcon("D:/emptyoption.png"));
+                    variantItem->setToolTip(tr("runtime variable"));
                 }
                 else
                 {
                     shaderVariant.m_options[AZ::Name{optionItem->text().toUtf8().constData()}] = variantItem->text().toUtf8().constData();
+                    variantItem->setIcon({});
+                    variantItem->setToolTip("");
                 }
             }
         }
 
+        TransferViewModelToModel(KeepAsIs/*because we know the change is already reflected*/);
+    }
+
+    void ShaderManagementConsoleTableView::TransferViewModelToModel(RebuildMode mode)
+    {
         // Temporarily disconnect the document notification bus to prevent recursive notification handling as changes are applied
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
 
@@ -232,7 +375,9 @@ namespace ShaderManagementConsole
 
         // Set the shader variant list source data built from the table onto the document
         ShaderManagementConsoleDocumentRequestBus::Event(
-            m_documentId, &ShaderManagementConsoleDocumentRequestBus::Events::SetShaderVariantListSourceData, m_shaderVariantListSourceData);
+            m_documentId,
+            &ShaderManagementConsoleDocumentRequestBus::Events::SetShaderVariantListSourceData,
+            m_shaderVariantListSourceData);
 
         // Signify the end of the undoable change
         AtomToolsFramework::AtomToolsDocumentRequestBus::Event(
@@ -240,7 +385,41 @@ namespace ShaderManagementConsole
 
         // Reconnect to the notification bus now that all changes have been applied
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect(m_toolId);
+
+        if (mode == CallOnModified)
+        {
+            // manual call to the modified handler because when the bus is disconnected, events to this goes to naught.
+            OnDocumentModified(m_documentId);
+        }
     }
+
+    void ShaderManagementConsoleTableView::SetColumnSortMode(ColumnSortMode m)
+    {
+        m_columnSortMode = m;
+        RebuildTable();
+    }
+
+    ShaderManagementConsoleContainer::ShaderManagementConsoleContainer(QWidget* container, const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent)
+        :
+        QVBoxLayout(container)
+        , m_tableView(toolId, documentId, parent)
+    {
+        m_sortLabel.setText(tr("Option sort mode:"));
+        m_sortComboBox.addItem(tr("Alphabetical"));
+        m_sortComboBox.addItem(tr("Rank (shader declaration order)"));
+        m_sortComboBox.addItem(tr("Cost impact (likely-performance weight, by static-analysis)"));
+        m_sortComboBox.setCurrentIndex(2);
+        m_subLayout.addWidget(&m_sortLabel);
+        m_subLayout.addWidget(&m_sortComboBox);
+        m_subLayout.addStretch();
+        this->addLayout(&m_subLayout);
+        this->addWidget(&m_tableView);
+        connect(&m_sortComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [this](int index) {
+            m_tableView.SetColumnSortMode(ColumnSortMode(index));
+        });
+
+    }
+
 } // namespace ShaderManagementConsole
 
 #include <Window/moc_ShaderManagementConsoleTableView.cpp>

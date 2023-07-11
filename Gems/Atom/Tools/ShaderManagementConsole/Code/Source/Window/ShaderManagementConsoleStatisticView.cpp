@@ -107,7 +107,7 @@ namespace ShaderManagementConsole
         contextMenu.exec(mapToGlobal(pos));
     }
 
-     void ShaderManagementConsoleStatisticView::ShowMaterialList(AZ::Name optionName)
+    void ShaderManagementConsoleStatisticView::ShowMaterialList(AZ::Name optionName)
     {
         AZStd::vector<AZ::Data::AssetId> materialAssetIdList;
         ShaderManagementConsoleRequestBus::BroadcastResult(

@@ -265,6 +265,8 @@ namespace AzToolsFramework
                 return SourceFileDetails();
             }
 
+            virtual void CreateNewVariantListRequested(const char* /*fromShaderSourcePath*/) {}
+
             //! Selects the asset identified by the path in the AzAssetBrowser identified by caller.
             virtual void SelectAsset([[maybe_unused]] QWidget* caller, [[maybe_unused]] const AZStd::string& fullFilePath) {};
 
