@@ -47,12 +47,14 @@ namespace ShaderManagementConsole
 
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
         ShaderManagementConsoleRequestBus::Handler::BusConnect();
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
     }
 
     ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
         ShaderManagementConsoleRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         m_window.reset();
     }
 
@@ -93,8 +95,11 @@ namespace ShaderManagementConsole
 
         // Overriding default document type info to provide a custom view
         auto documentTypeInfo = ShaderManagementConsoleDocument::BuildDocumentTypeInfo();
-        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId) {
-            return m_window->AddDocumentTab(documentId, new ShaderManagementConsoleTableView(toolId, documentId, m_window.get()));
+        documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
+        {
+            auto* container = new QWidget;
+            new ShaderManagementConsoleContainer(container, toolId, documentId, m_window.get());
+            return m_window->AddDocumentTab(documentId, container);
         };
         AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
             m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::RegisterDocumentType, documentTypeInfo);
@@ -319,5 +324,11 @@ namespace ShaderManagementConsole
             AZ_Error("GenerateRelativeSourcePath", false, "Can not find a relative path from the shader: '%s'.", fullShaderPath.c_str());
             return "";
         }
+    }
+
+    void ShaderManagementConsoleApplication::CreateNewVariantListRequested(const char* fromShaderSourcePath)
+    {
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Event(
+            m_toolId, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Handler::CreateDocumentFromFilePath, fromShaderSourcePath, "");
     }
 } // namespace ShaderManagementConsole

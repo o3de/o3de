@@ -31,7 +31,7 @@
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(const AZ::Crc32& toolId, QWidget* parent)
-        : Base(toolId, "ShaderManagementConsoleWindow",  parent)
+        : Base(toolId, "ShaderManagementConsoleWindow", parent)
     {
         m_assetBrowser->SetFilterState("", AZ::RPI::ShaderAsset::Group, true);
 
@@ -41,6 +41,25 @@ namespace ShaderManagementConsole
         SetDockWidgetVisible("Inspector", false);
 
         OnDocumentOpened(AZ::Uuid::CreateNull());
+        this->setContextMenuPolicy(Qt::CustomContextMenu);
+        this->connect(this, &QTableWidget::customContextMenuRequested, this, &ShaderManagementConsoleWindow::ShowContextMenu);
+    }
+
+    void ShaderManagementConsoleWindow::ShowContextMenu(const QPoint& pos)
+    {
+        QMenu contextMenu(tr("Context menu"), this);
+        QAction* action = new QAction(QString(tr("Open recent...")), this); // for example.
+        connect(
+            action,
+            &QAction::triggered,
+            this,
+            []()
+            {
+                
+            });
+        contextMenu.addAction(action);
+
+        contextMenu.exec(mapToGlobal(pos));
     }
 
     void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -104,8 +123,8 @@ namespace ShaderManagementConsole
     {
         Base::CreateMenus(menuBar);
 
-        // Add statistic button
-        QAction* action = new QAction(tr("Generate Shader Variant Statistic..."), m_menuFile);
+        // Add statistics button
+        QAction* action = new QAction(tr("Generate shader variant statistics..."), m_menuFile);
         QObject::connect(action, &QAction::triggered, this, &ShaderManagementConsoleWindow::GenerateStatisticView);
         m_menuFile->insertAction(m_menuFile->actions().back(), action);
     }

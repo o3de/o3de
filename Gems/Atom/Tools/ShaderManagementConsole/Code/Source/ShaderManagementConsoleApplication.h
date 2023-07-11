@@ -13,6 +13,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <ShaderManagementConsoleRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 namespace ShaderManagementConsole
 {
@@ -20,6 +21,7 @@ namespace ShaderManagementConsole
         : public AtomToolsFramework::AtomToolsDocumentApplication
         , private ShaderManagementConsoleRequestBus::Handler
         , private AzToolsFramework::EditorWindowRequestBus::Handler
+        , public AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(ShaderManagementConsoleApplication, AZ::SystemAllocator)
@@ -49,6 +51,9 @@ namespace ShaderManagementConsole
         AZStd::vector<AZ::Data::AssetId> GetAllMaterialAssetIds() override;
         AZStd::string GetFullSourcePathFromRelativeProductPath(const AZStd::string& relativeProductPath) override;
         AZStd::string GenerateRelativeSourcePath(const AZStd::string& fullShaderPath) override;
+
+        // AssetBrowserInteractionNotificationBus overrides...
+        void CreateNewVariantListRequested(const char* /*fromShaderSourcePath*/) override;
 
     private:
         AZStd::unique_ptr<ShaderManagementConsoleWindow> m_window;

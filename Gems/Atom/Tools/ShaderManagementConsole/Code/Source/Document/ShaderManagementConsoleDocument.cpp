@@ -60,6 +60,33 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
     }
 
+    AZ::u32 ShaderManagementConsoleDocument::AddOneVariantRow()
+    {
+        auto shaderAssetResult =
+            AZ::RPI::AssetUtils::LoadAsset<AZ::RPI::ShaderAsset>(m_absolutePath,
+                                                                 m_shaderVariantListSourceData.m_shaderFilePath);
+        if (shaderAssetResult)
+        {
+            BeginEdit();
+            AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderAssetResult.GetValue();
+            AZStd::vector<AZ::RPI::ShaderOptionDescriptor> options = shaderAsset->GetShaderOptionGroupLayout()->GetShaderOptions();
+            AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
+            for (auto& optionDescriptor : options)
+            {
+                variantInfo.m_options[optionDescriptor.GetName()] = ""; // all unset
+            }
+            variantInfo.m_stableId = m_shaderVariantListSourceData.m_shaderVariants.empty()
+                ? 0
+                : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
+            m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
+            EndEdit();
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
+            return variantInfo.m_stableId;
+        }
+        return {};
+    }
+
     void ShaderManagementConsoleDocument::SetShaderVariantListSourceData(
         const AZ::RPI::ShaderVariantListSourceData& shaderVariantListSourceData)
     {
@@ -71,6 +98,7 @@ namespace ShaderManagementConsole
         {
             m_shaderAsset = shaderAssetResult.GetValue();
 
+            // TODO: check this comment. "material"?
             // No material is using this shader, check for system option settings
             if (m_shaderVariantListSourceData.m_shaderVariants.empty())
             {
@@ -101,7 +129,7 @@ namespace ShaderManagementConsole
                             AZ::Name valueName = AZ::Name(optionIt->second);
                             if (strcmp(valueName.GetCStr(), "") == 0)
                             {
-                                // Option with unset value, expend later
+                                // Option with unset value, expand later
                                 unsetOption.push_back(shaderOptionDescriptor);
                                 systemOptionSetting[optionName] = shaderOptionDescriptor.GetDefaultValue();
                             }
@@ -207,6 +235,7 @@ namespace ShaderManagementConsole
         documentType.m_documentFactoryCallback = [](const AZ::Crc32& toolId, const AtomToolsFramework::DocumentTypeInfo& documentTypeInfo) {
             return aznew ShaderManagementConsoleDocument(toolId, documentTypeInfo); };
         documentType.m_supportedExtensionsToOpen.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
+        documentType.m_supportedExtensionsToOpen.push_back({ "Shader Asset", AZ::RPI::ShaderSourceData::Extension });
         documentType.m_supportedExtensionsToSave.push_back({ "Shader Variant List", AZ::RPI::ShaderVariantListSourceData::Extension });
         return documentType;
     }
@@ -360,7 +389,13 @@ namespace ShaderManagementConsole
 
     bool ShaderManagementConsoleDocument::LoadShaderSourceData()
     {
-        return OpenFailed();
+        // return OpenFailed();  // TODO: it should be that. what we need is something like "PopulateNewVariantListFromShaderAsset"
+
+        AZ::RPI::ShaderVariantListSourceData shaderVariantListSourceData;
+        shaderVariantListSourceData.m_shaderFilePath = m_absolutePath;
+        SetShaderVariantListSourceData(shaderVariantListSourceData);
+        m_modified = {};
+        return OpenSucceeded();
     }
 
     bool ShaderManagementConsoleDocument::LoadShaderVariantListSourceData()

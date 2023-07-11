@@ -22,6 +22,9 @@ namespace ShaderManagementConsole
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
 
+        //! Returns the stable id
+        virtual AZ::u32 AddOneVariantRow() = 0;
+
         //! Set the shader variant list source data on the document.
         //! This function can be used to edit and update the data contained within the document.
         //! Functions can be added to this bus for more fine grained editing of shader variant list data.
