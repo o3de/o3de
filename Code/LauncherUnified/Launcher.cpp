@@ -456,9 +456,6 @@ namespace O3DELauncher
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
 
-            const char* isDedicatedServerCommand = IsDedicatedServer() ? "sv_isDedicated true" : "sv_isDedicated false";
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(isDedicatedServerCommand);
-
             gameApplication.Start({}, gameApplicationStartupParams);
 
 
