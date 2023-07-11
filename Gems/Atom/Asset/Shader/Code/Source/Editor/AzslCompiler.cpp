@@ -1027,12 +1027,19 @@ namespace AZ
                         implicitlyOrdered++;
                     }
 
+                    uint32_t cost = 0;
+                    if (optionEntry.HasMember("costImpact"))
+                    {
+                        cost = optionEntry["costImpact"].GetUint();
+                    }
+
                     RPI::ShaderOptionDescriptor shaderOption(Name(optionName), 
                                                              optionType,
                                                              keyOffset,
                                                              order,
                                                              idIndexList,
-                                                             defaultValueId);
+                                                             defaultValueId,
+                                                             cost);
 
                     if (!shaderOptionGroupLayout->AddShaderOption(shaderOption))
                     {
