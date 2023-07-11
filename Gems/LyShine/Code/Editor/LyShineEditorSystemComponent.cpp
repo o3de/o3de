@@ -8,6 +8,7 @@
 
 #include "LyShineEditorSystemComponent.h"
 #include "EditorWindow.h"
+#include "PropertyHandlerCanvasAsset.h"
 
 // UI_ANIMATION_REVISIT, added includes so that we can register the UI Animation system on startup
 #include "Animation/UiAnimViewSequenceManager.h"
@@ -89,6 +90,7 @@ namespace LyShineEditor
         AzToolsFramework::EditorEventsBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         LyShine::LyShineRequestBus::Handler::BusConnect();
+        CanvasAssetPropertyHandler::Register();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
