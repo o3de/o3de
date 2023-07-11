@@ -41,7 +41,7 @@ namespace Multiplayer
         // - LegacySystemInterfaceCreated is signaled, so that the logging system is ready. Automated testing listens for these logs.
         // - LegacyCommandLineProcessed is signaled, so that everything has initialized and finished their blocking loads, so that it
         // should be relatively safe to start receiving packets without as much fear of too much time passing between system ticks.
-#if AZ_TRAIT_SERVER && !AZ_TRAIT_CLIENT
+#if AZ_DEDICATED_SERVER 
         // Server logs will be piped to the editor so turn off buffering,
         // otherwise it'll take a lot of logs to fill up the buffer before stdout is finally flushed.
         // This isn't optimal, but will only affect editor-servers (used when testing multiplayer levels in Editor gameplay mode) and not
