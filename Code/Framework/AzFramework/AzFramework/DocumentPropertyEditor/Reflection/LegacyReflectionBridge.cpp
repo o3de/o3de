@@ -713,7 +713,7 @@ namespace AZ::Reflection
                                         auto& currEntry = *entryIter;
                                         if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement == currEntry.m_classElement)
                                         {
-                                            currEntry.m_classElement->m_editData->m_elementId = 0; // makes bool work
+                                            //currEntry.m_classElement->m_editData->m_elementId = 0; // makes bool work
                                             //currEntry.m_skipHandler = true;
                                             //proxyEntry = &currEntry;
                                         }
