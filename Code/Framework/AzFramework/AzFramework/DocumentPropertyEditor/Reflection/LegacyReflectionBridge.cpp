@@ -478,10 +478,6 @@ namespace AZ::Reflection
                         ++iter;
                     }
                 }
-                if (!m_stack.empty())
-                {
-                    ++m_stack.back().m_childElementIndex;
-                }
             }
 
             AZStd::optional<bool> HandleNodeAssociativeInterface(StackEntry& parentData, StackEntry& nodeData)
@@ -747,6 +743,11 @@ namespace AZ::Reflection
                     if (!parentData.m_group.empty())
                     {
                         EndNode();
+                    }
+
+                    if (!m_stack.empty() && parentData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
+                    {
+                        ++m_stack.back().m_childElementIndex;
                     }
                 }
 
