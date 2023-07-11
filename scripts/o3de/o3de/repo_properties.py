@@ -297,8 +297,7 @@ def print_repo_diff(repo_json: dict,
              repo_json_original: dict):
     
     if repo_json_original == repo_json:
-            logger.warning('No difference is found between your current repo.json file and your dry run')
-            return 0
+        return 0
         
     pretty_print_string = []
     pretty_print_string.append('Dry Run:')
@@ -328,9 +327,8 @@ def print_repo_diff(repo_json: dict,
                     pretty_print_string.append(f"  {i}. {object_name}")
             else:
                 pretty_print_string.append(f'{object_key.capitalize()}s Modified: {len(modified_objects)}')
-    logger.warning('\n'.join(pretty_print_string))
-    return 1
-
+    print('\n'.join(pretty_print_string))
+    
 def edit_repo_props(repo_path: pathlib.Path = None,
                        repo_name: str = None,
                        add_gems: pathlib.Path or list = None,
@@ -399,8 +397,8 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         utils.backup_file(repo_path)
 
     if dry_run:
-        return 0 if print_repo_diff(repo_json, repo_json_original) else 1
-
+        print_repo_diff(repo_json, repo_json_original)
+        return 0
     else:     
         return 0 if manifest.save_o3de_manifest(repo_json, repo_path) else 1    
 
