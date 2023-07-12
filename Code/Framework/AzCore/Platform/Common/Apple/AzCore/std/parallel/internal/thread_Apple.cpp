@@ -70,6 +70,9 @@ namespace AZStd
         // QOS_CLASS_BACKGROUN         |           0          |           4          |  Will be prevented from using whole core.
         uint8_t GetDefaultThreadPriority()
         {
+            // We currently set the thread priority somewhere in the middle of QOS_CLASS_DEFAULT by default, since our threads generally
+            // don't need to finish in a single frame. Set this value higher if the default thread priorities are causing the threads to
+            // get starved too often.
             return 25;
         }
     }

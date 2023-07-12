@@ -243,13 +243,14 @@ namespace AZ
         void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            
+
+            // Update scissor/viewport regions based on the mip level of the render target that is being written into
             uint16_t viewMinMip = RHI::ImageSubresourceRange::HighestSliceIndex;
             for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
             {
                 if (attachmentBinding.GetAttachment() != nullptr &&
                     frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()) &&
-                    attachmentBinding.m_unifiedScopeDesc.GetType() ==RHI::AttachmentType::Image &&
+                    attachmentBinding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image &&
                     RHI::CheckBitsAny(attachmentBinding.GetAttachmentAccess(), RHI::ScopeAttachmentAccess::Write) &&
                     attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
                 {

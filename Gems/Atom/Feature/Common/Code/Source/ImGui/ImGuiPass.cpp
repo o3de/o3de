@@ -535,7 +535,11 @@ namespace AZ
             desc.m_byteCount = 64;
             desc.m_bufferData = instanceData;
             m_instanceBuffer = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-            m_instanceBufferView = RHI::StreamBufferView(*m_instanceBuffer->GetRHIBuffer(), 0, 64, 4);
+            m_instanceBufferView = RHI::StreamBufferView(
+                *m_instanceBuffer->GetRHIBuffer(),
+                0,
+                aznumeric_cast<uint32_t>(desc.m_byteCount),
+                aznumeric_cast<uint32_t>(desc.m_elementSize));
 
             ImGui::NewFrame();
             AzFramework::InputChannelEventListener::Connect();
