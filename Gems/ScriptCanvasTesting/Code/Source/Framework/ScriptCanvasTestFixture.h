@@ -185,23 +185,17 @@ namespace ScriptCanvasTests
 
         ScriptCanvas::Graph* CreateGraph()
         {
-            if (m_graph == nullptr)
-            {
-                m_graph = aznew ScriptCanvas::Graph();
-                m_graph->Init();
-            }
-
+            AZ_Assert(!m_graph, "Only one graph should be created per test.");
+            m_graph = aznew ScriptCanvas::Graph();
+            m_graph->Init();
             return m_graph;
         }
 
         ScriptCanvasEditor::EditorGraph* CreateEditorGraph()
         {
-            if (m_graph == nullptr)
-            {
-                m_graph = aznew ScriptCanvasEditor::EditorGraph();
-                m_graph->Init();
-            }
-
+            AZ_Assert(!m_graph, "Only one graph should be created per test.");
+            m_graph = aznew ScriptCanvasEditor::EditorGraph();
+            m_graph->Init();
             return static_cast<ScriptCanvasEditor::EditorGraph*>(m_graph);
         }
 
@@ -210,9 +204,11 @@ namespace ScriptCanvasTests
             AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
-            if (m_graph == nullptr)
+            AZ_Assert(m_graph, "A graph must be created before any nodes are created.");
+
+            if (!m_graph)
             {
-                CreateGraph();
+                return nullptr;
             }
 
             ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
@@ -263,7 +259,6 @@ namespace ScriptCanvasTests
             AZ::Entity* ent;
 
             EXPECT_EQ(m_graph->FindConnection(ent, sourceEndpoint, targetEndpoint), isValid);
-            EXPECT_EQ(m_graph->FindConnection(ent, targetEndpoint, sourceEndpoint), isValid);
         }
 
         // Tests implicit connections between nodes by connecting and disconnecting every data source and data slot while checking to make

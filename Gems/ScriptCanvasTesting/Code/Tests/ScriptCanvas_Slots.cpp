@@ -105,6 +105,8 @@ TEST_F(ScriptCanvasTestFixture, SlotCreation_GeneralCreation)
 {
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     {
@@ -202,6 +204,8 @@ TEST_F(ScriptCanvasTestFixture, SlotCreation_GeneralCreation)
 TEST_F(ScriptCanvasTestFixture, SlotCreation_DataSlotCreation)
 {
     using namespace ScriptCanvas;
+
+    CreateGraph();
 
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
@@ -648,6 +652,8 @@ TEST_F(ScriptCanvasTestFixture, TypeMatching_SubClassShouldMatchBaseClassSlot)
 
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
@@ -675,6 +681,8 @@ TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassShouldNotMatchSubClassSlot
 
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
@@ -700,6 +708,8 @@ TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_SubClassShouldMatchBaseClass
     // When a dynamic slot is created with a base class type, it should match both base classes and subclasses.
 
     using namespace ScriptCanvas;
+
+    CreateGraph();
 
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
@@ -731,6 +741,8 @@ TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_BaseClassShouldNotMatchSubCl
 
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
@@ -761,6 +773,8 @@ TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassSlotWithSubClassVariableSh
     // the slot should still match base classes. This is important for being able to change what is hooked to the slot.
 
     using namespace ScriptCanvas;
+
+    CreateGraph();
 
     // Create a slot of type TestBaseClass
 

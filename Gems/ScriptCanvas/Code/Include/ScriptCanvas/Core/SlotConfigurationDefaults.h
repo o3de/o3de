@@ -39,11 +39,8 @@ namespace ScriptCanvas
         struct FloatData : public DataSlotConfiguration
         {
             FloatData(AZStd::string_view name, ConnectionType connectionType, bool isLatent = false)
-                : DataSlotConfiguration()
+                : DataSlotConfiguration(Data::Type::Number(), name, connectionType)
             {
-                m_name = name;
-                SetConnectionType(connectionType);
-                SetAZType<float>();
                 m_isLatent = isLatent;
             }
         };
