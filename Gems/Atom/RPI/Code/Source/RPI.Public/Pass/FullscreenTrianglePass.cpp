@@ -260,9 +260,11 @@ namespace AZ
             
             if(viewMinMip < RHI::ImageSubresourceRange::HighestSliceIndex)
             {
-                m_viewportState.m_maxX = static_cast<uint32_t>(m_viewportState.m_maxX) >> viewMinMip;
-                m_viewportState.m_maxY = static_cast<uint32_t>(m_viewportState.m_maxY) >> viewMinMip;
-                
+                uint32_t viewportStateMaxX = static_cast<uint32_t>(m_viewportState.m_maxX);
+                uint32_t viewportStateMaxY = static_cast<uint32_t>(m_viewportState.m_maxY);
+                m_viewportState.m_maxX = static_cast<float>(viewportStateMaxX >> viewMinMip);
+                m_viewportState.m_maxY = static_cast<float>(viewportStateMaxY >> viewMinMip);
+
                 m_scissorState.m_maxX = static_cast<uint32_t>(m_scissorState.m_maxX) >> viewMinMip;
                 m_scissorState.m_maxY = static_cast<uint32_t>(m_scissorState.m_maxY) >> viewMinMip;
             }
