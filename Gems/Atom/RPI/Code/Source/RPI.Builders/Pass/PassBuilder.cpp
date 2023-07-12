@@ -347,6 +347,7 @@ namespace AZ
                             "Asset %s: '\"PipelineViewTag\": \"MainCamera\"' is deprecated, use '\"BindViewSrg\": true' instead",
                             request.m_fullPath.c_str());
                         passData->m_pipelineViewTag = AZ::Name();
+                        passData->m_bindViewSrg = true;
                     }
                     else if (!passData->m_bindViewSrg)
                     {
