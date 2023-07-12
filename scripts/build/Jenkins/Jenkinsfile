@@ -1192,7 +1192,7 @@ try {
                     timestamps {
                         repositoryUrl = scm.getUserRemoteConfigs()[0].getUrl()
                         // repositoryName is the full repository name
-                        repositoryName = (repositoryUrl =~ /https:\/\/(.*)\/(.*)\.git/)[0][1]
+                        repositoryName = (repositoryUrl =~ /https:\/\/(.+)\/(.+)\.git/)[0][1]
                         env.REPOSITORY_NAME = repositoryName
                         (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
 
