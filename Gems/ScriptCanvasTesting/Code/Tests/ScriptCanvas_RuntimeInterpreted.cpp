@@ -971,3 +971,8 @@ TEST_F(ScriptCanvasTestFixture, AutoGenFunctions)
 {
     RunUnitTestGraph("LY_SC_UnitTest_AutoGenFunctions", ExecutionMode::Interpreted);
 }
+
+TEST_F(ScriptCanvasTestFixture, CompactNodeBasicOperators)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_CompactNodeBasicOperators", ExecutionMode::Interpreted);
+}

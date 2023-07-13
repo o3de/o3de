@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {# ----------------------------------------------------------------------------------------- #}
 {%- set attribute_Name = macros.CleanName(Class.attrib['Name']) %}
 {%- set attribute_QualifiedName = macros.CleanName(Class.attrib['QualifiedName']) %}
-{%- set attribute_PreferredClassName = macros.CleanName(Class.attrib['PreferredClassName']) %}
+{%- set attribute_PreferredClassName = nodemacro.CleanName(Class.attrib['PreferredClassName']) %}
 {%- set attribute_Description = Class.attrib['Description']  %}
 {%- set attribute_Category = Class.attrib['Category']  %}
 {%- set attribute_HideProperty = Class.attrib['HideProperty']%}
