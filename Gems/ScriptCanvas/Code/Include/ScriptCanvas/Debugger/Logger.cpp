@@ -80,7 +80,7 @@ namespace ScriptCanvas
             return {};
         }
 
-        void Logger::SaveToRelativePath(AZStd::string_view path)
+        void Logger::SaveToRelativePath([[maybe_unused]] AZStd::string_view path)
         {
             AZ::SerializeContext* serializeContext = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
