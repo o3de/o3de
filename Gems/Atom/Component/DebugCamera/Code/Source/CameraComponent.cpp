@@ -324,6 +324,14 @@ namespace AZ
             return false;
         }
 
+        // carbonated begin: Add Screen space to world space transformation
+        AZ::Vector3 CameraComponent::ScreenSpaceToWorldSpace([[maybe_unused]] float screenX, [[maybe_unused]] float screenY, [[maybe_unused]] float depth)
+        {
+            // not implemented
+            return AZ::Vector3::CreateZero();
+        }
+        // carbonated end
+
         AZ::Vector3 CameraComponent::ScreenToWorld([[maybe_unused]] const AZ::Vector2& screenPosition, [[maybe_unused]] float depth)
         {
             // not implemented

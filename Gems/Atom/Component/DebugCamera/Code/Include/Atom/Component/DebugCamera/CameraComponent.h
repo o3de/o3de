@@ -109,6 +109,7 @@ namespace AZ
 
             void MakeActiveView() override;
             bool IsActiveView() override;
+            AZ::Vector3 ScreenSpaceToWorldSpace(float screenX, float screenY, float depth) override; // carbonated: Add Screen space to world space transformation
             AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) override;
             AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenPosition, float depth) override;
             AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) override;
