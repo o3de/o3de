@@ -553,7 +553,7 @@ def create_template(source_path: pathlib.Path,
         template_path = default_templates_folder / source_name
         logger.info(f'Template path empty. Using default templates folder {template_path}')
     if not force and template_path.is_dir() and len(list(template_path.iterdir())):
-        logger.error(f'Template path {template_path} already exists.')
+        logger.error(f'Template path {template_path} already exists; use --force to overwrite existing contents.')
         return 1
 
     # Make sure the output directory for the template is outside the source path directory
@@ -1388,7 +1388,7 @@ def create_from_template(destination_path: pathlib.Path,
         logger.error('Destination path cannot be empty.')
         return 1
     if not force and os.path.isdir(destination_path):
-        logger.error(f'Destination path {destination_path} already exists.')
+        logger.error(f'Destination path {destination_path} already exists; use --force to overwrite existing contents.')
         return 1
     else:
         os.makedirs(destination_path, exist_ok=force)
