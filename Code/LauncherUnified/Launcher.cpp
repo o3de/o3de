@@ -551,6 +551,10 @@ namespace O3DELauncher
 
         ReturnCode status = ReturnCode::Success;
 
+        // carbonated begin (akostin/mp305-1): Broadcast OnCryGameInitialize
+        CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryGameInitialize);
+        // carbonated begin
+
         if (systemInitParams.pSystem)
         {
             // Process queued events before main loop.

@@ -443,6 +443,12 @@ namespace AzFramework
     void Application::CreateReflectionManager()
     {
         ComponentApplication::CreateReflectionManager();
+        // carbonated begin (akostin/mp305-1): Add NetworkContext to ReflectionManager instance
+#if defined(CARBONATED)
+        // Setup NetworkContext
+        AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<AzFramework::NetworkContext>();
+#endif
+        // carbonated end
     }
 
     ////////////////////////////////////////////////////////////////////////////
