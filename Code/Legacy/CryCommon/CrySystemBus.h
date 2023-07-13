@@ -36,6 +36,8 @@ public:
 #if defined(CARBONATED)
     //! In-Editor systems initialize game.
     virtual void OnCryEditorGameInitialize() {}
+    //! Standalone systems initialize game.
+    virtual void OnCryGameInitialize() {}
 #endif
     // carbonated end
 
