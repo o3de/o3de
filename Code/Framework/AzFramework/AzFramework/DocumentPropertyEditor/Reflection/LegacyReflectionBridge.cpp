@@ -165,6 +165,8 @@ namespace AZ::Reflection
                 bool m_disableEditor = false;
                 bool m_isAncestorDisabled = false;
 
+                bool m_skipHandler = false;
+
                 // extra data necessary to support Containers composed of pair<> children (like maps!)
                 bool m_extractKeyedPair = false;
                 AZ::SerializeContext::IDataContainer* m_parentContainerInfo = nullptr;
@@ -327,22 +329,25 @@ namespace AZ::Reflection
                     AZStd::string groupName = "";
                     int groupCounter = 0;
 
-                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin();
-                         iter != nodeData.m_classData->m_editData->m_elements.end();
+                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin(),
+                              endIter = nodeData.m_classData->m_editData->m_elements.end();
+                         iter != endIter;
                          ++iter)
                     {
+                        auto& currElement = *iter;
+
                         //! If this node has group definitions in its element, create the vectors.
-                        if (iter->m_elementId == AZ::Edit::ClassElements::Group)
+                        if (currElement.m_elementId == AZ::Edit::ClassElements::Group)
                         {
-                            AZStd::string_view itemDescription(iter->m_description);
+                            AZStd::string_view itemDescription(currElement.m_description);
 
                             if (!itemDescription.empty())
                             {
                                 // Update groupName to new group's name
-                                groupName = iter->m_description;
+                                groupName = currElement.m_description;
 
                                 AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                                UIElement->m_editData = &*iter;
+                                UIElement->m_editData = &currElement;
                                 UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                                 StackEntry entry = { nodeData.m_instance,
                                                      nodeData.m_instanceToInvoke,
@@ -352,6 +357,13 @@ namespace AZ::Reflection
 
                                 nodeData.m_groupEntries.insert(groupName);
                                 nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+
+                                if (currElement.m_serializeClassElement)
+                                {
+                                    AZStd::string propertyPath = AZStd::string::format(
+                                        "%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
+                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
+                                }
                             }
                             else
                             {
@@ -367,10 +379,10 @@ namespace AZ::Reflection
                         }
                         else
                         {
-                            if (!groupName.empty() && iter->m_serializeClassElement)
+                            if (!groupName.empty() && currElement.m_serializeClassElement)
                             {
                                 AZStd::string propertyPath =
-                                    AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_serializeClassElement->m_name);
+                                    AZStd::string::format("%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
                                 nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
                             }
                         }
@@ -708,14 +720,17 @@ namespace AZ::Reflection
                                 if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
                                 {
                                     auto& groupEntry = nodeData.m_groupEntries[groupPair.first];
-                                    for (auto entryIter = groupEntry.begin(), endIter = groupEntry.end(); !proxyEntry && entryIter != endIter; ++entryIter)
+                                    for (auto entryIter = groupEntry.begin(), endIter = groupEntry.end();
+                                         !proxyEntry && entryIter != endIter;
+                                         ++entryIter)
                                     {
                                         auto& currEntry = *entryIter;
                                         if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement == currEntry.m_classElement)
                                         {
-                                            //currEntry.m_classElement->m_editData->m_elementId = 0; // makes bool work
-                                            //currEntry.m_skipHandler = true;
-                                            //proxyEntry = &currEntry;
+                                            // currEntry.m_classElement->m_editData->m_elementId = 0; // makes bool work
+                                            currEntry.m_typeId == AzTypeInfo<bool*>::Uuid();
+                                            currEntry.m_skipHandler = true;
+                                            proxyEntry = &currEntry;
                                         }
                                     }
                                 }
@@ -1031,7 +1046,7 @@ namespace AZ::Reflection
                         {
                             if (!isParentAttribute)
                             {
-                                if (elementEditData->m_elementId)
+                                if (!nodeData.m_skipHandler && elementEditData->m_elementId)
                                 {
                                     handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                                 }
