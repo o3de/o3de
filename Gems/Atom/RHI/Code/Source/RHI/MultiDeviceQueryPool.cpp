@@ -206,7 +206,9 @@ namespace AZ::RHI
             resultCode = deviceQueryPool->GetResults(deviceQueries.data(), queryCount, deviceResults, resultsCount, flags);
 
             if (resultCode != ResultCode::Success)
+            {
                 break;
+            }
         }
 
         return resultCode;
