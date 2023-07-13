@@ -483,24 +483,6 @@ namespace Camera
         }
     }
 
-    // carbonated begin: Add Screen space to world space transformation
-    AZ::Vector3 CameraComponentController::ScreenSpaceToWorldSpace(float screenX, float screenY, float depth)
-    {
-        const AzFramework::CameraState& cameraState = GetCameraState();
-
-        const auto inverseCameraView = AzFramework::InverseCameraView(cameraState);
-        const auto inverseCameraProjection = AzFramework::InverseCameraProjection(cameraState);
-
-        const float x = 2.0f * screenX / cameraState.m_viewportSize.Widthf() - 1.0f;
-        const float y = 2.0f * screenY / cameraState.m_viewportSize.Heightf() - 1.0f;
-
-        AZ::Vector4 vec{ x, y, 1.0f, 0.0f };
-        vec = inverseCameraProjection * vec;
-
-        return inverseCameraView * (AZ::Vector3(vec.GetX(), vec.GetY(), vec.GetZ()).GetNormalized() * depth);
-    }
-    // carbonated end
-
     AZ::Vector3 CameraComponentController::ScreenToWorld(const AZ::Vector2& screenPosition, float depth)
     {
         const AzFramework::ScreenPoint point{ static_cast<int>(screenPosition.GetX()), static_cast<int>(screenPosition.GetY()) };

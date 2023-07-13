@@ -135,8 +135,6 @@ namespace Camera
             };
         }
 
-        virtual AZ::Vector3 ScreenSpaceToWorldSpace(float screenX, float screenY, float depth) = 0; // carbonated: Add Screen space to world space transformation
-
         //! Unprojects a position in screen space pixel coordinates to world space.
         //! With a depth of zero, the position returned will be on the near clip plane of the camera
         //! in world space.
