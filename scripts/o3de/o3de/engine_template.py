@@ -1243,10 +1243,18 @@ def create_from_template(destination_path: pathlib.Path,
     # if replacements are provided we need an even number of
     # replace arguments because they are A->B pairs
     if replace and len(replace) % 2 == 1:
+        replacement_pairs = []
+        for replace_index in range(0, len(replace), 2):
+            if replace_index + 1 < len(replace):
+                replacement_pairs.append(f' {replace[replace_index]} -> {replace[replace_index + 1]}')
+            else:
+                replacement_pairs.append(f' {replace[replace_index]} is missing replacement')
         logger.error("Invalid replacement argument pairs.  "
                      "Verify you have provided replacement match and value pairs "
                      "and your replacement arguments are in single quotes "
-                     "e.g. -r '${GemName}' 'NameValue'")
+                     "e.g. -r '${GemName}' 'NameValue'\n\n"
+                     "The current set of replacement pairs are:\n" + 
+                     ("\n".join(replacement_pairs)))
         return 1
 
     if template_name:
