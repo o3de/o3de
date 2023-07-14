@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_MatrixMxNFunctions_MultiplyByMatrix",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Multiply By Matrix"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_MatrixMxNFunctions_MultiplyByMatrix",
+                    "details": {
+                        "name": "Multiply By Matrix"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        },
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Vector"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B751D885-87D0-40BF-A6B3-48EFF0147AFA}",
+                            "details": {
+                                "name": "Matrix MxN"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

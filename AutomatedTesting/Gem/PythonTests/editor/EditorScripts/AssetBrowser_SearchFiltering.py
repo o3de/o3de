@@ -159,7 +159,7 @@ def AssetBrowser_SearchFiltering():
         Report.result(Tests.asset_type_filtered, remove_filtered)
 
         # 8) Remove all of the filter asset types from the list of filters
-        filetag_close_button = filter_layout.children()[1]
+        filetag_close_button = filter_layout.children()[3]
         second_close_button = filetag_close_button.findChild(QtWidgets.QPushButton, "closeTag")
         second_close_button.click()
 

@@ -9,31 +9,28 @@
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <AzCore/Utils/TypeHash.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        TransientImageDescriptor::TransientImageDescriptor(
-            const AttachmentId& attachmentId,
-            const ImageDescriptor& imageDescriptor,
-            HardwareQueueClassMask supportedQueueMask,
-            const ClearValue* optimizedClearValue)
-            : m_attachmentId{attachmentId}
-            , m_imageDescriptor{imageDescriptor}
-            , m_supportedQueueMask{supportedQueueMask}
-            , m_optimizedClearValue{optimizedClearValue}
-        {}
+    TransientImageDescriptor::TransientImageDescriptor(
+        const AttachmentId& attachmentId,
+        const ImageDescriptor& imageDescriptor,
+        HardwareQueueClassMask supportedQueueMask,
+        const ClearValue* optimizedClearValue)
+        : m_attachmentId{attachmentId}
+        , m_imageDescriptor{imageDescriptor}
+        , m_supportedQueueMask{supportedQueueMask}
+        , m_optimizedClearValue{optimizedClearValue}
+    {}
 
-        HashValue64 TransientImageDescriptor::GetHash(HashValue64 seed) const
+    HashValue64 TransientImageDescriptor::GetHash(HashValue64 seed) const
+    {
+        seed = TypeHash64(m_attachmentId.GetHash(), seed);
+        seed = m_imageDescriptor.GetHash(seed);
+        seed = TypeHash64(m_supportedQueueMask, seed);
+        if (m_optimizedClearValue)
         {
-            seed = TypeHash64(m_attachmentId.GetHash(), seed);
-            seed = m_imageDescriptor.GetHash(seed);
-            seed = TypeHash64(m_supportedQueueMask, seed);
-            if (m_optimizedClearValue)
-            {
-                seed = TypeHash64(m_optimizedClearValue->GetHash(seed), seed);
-            }
-            return seed;
+            seed = TypeHash64(m_optimizedClearValue->GetHash(seed), seed);
         }
+        return seed;
     }
 }

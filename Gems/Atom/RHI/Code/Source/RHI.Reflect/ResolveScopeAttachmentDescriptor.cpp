@@ -9,28 +9,25 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ResolveScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void ResolveScopeAttachmentDescriptor::Reflect(AZ::ReflectContext* context)
+        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ResolveScopeAttachmentDescriptor, ImageScopeAttachmentDescriptor>()
-                    ->Version(2)
-                    ->Field("ResolveAttachmentId", &ResolveScopeAttachmentDescriptor::m_resolveAttachmentId)
-                    ;
-            }
+            serializeContext->Class<ResolveScopeAttachmentDescriptor, ImageScopeAttachmentDescriptor>()
+                ->Version(2)
+                ->Field("ResolveAttachmentId", &ResolveScopeAttachmentDescriptor::m_resolveAttachmentId)
+                ;
         }
-
-        ResolveScopeAttachmentDescriptor::ResolveScopeAttachmentDescriptor(
-            const AttachmentId& attachmentId,
-            const AttachmentId& resolveAttachmentId,
-            const ImageViewDescriptor& imageViewDescriptor,
-            const AttachmentLoadStoreAction& loadStoreAction)
-            : ImageScopeAttachmentDescriptor(attachmentId, imageViewDescriptor, loadStoreAction)
-            , m_resolveAttachmentId{ resolveAttachmentId }
-        {}
     }
+
+    ResolveScopeAttachmentDescriptor::ResolveScopeAttachmentDescriptor(
+        const AttachmentId& attachmentId,
+        const AttachmentId& resolveAttachmentId,
+        const ImageViewDescriptor& imageViewDescriptor,
+        const AttachmentLoadStoreAction& loadStoreAction)
+        : ImageScopeAttachmentDescriptor(attachmentId, imageViewDescriptor, loadStoreAction)
+        , m_resolveAttachmentId{ resolveAttachmentId }
+    {}
 }
