@@ -1,4 +1,5 @@
 .idea/
+.venv/
 .vs/
 .vscode/
 __pycache__
@@ -20,4 +21,3 @@ server*.cfg
 _savebackup/
 *.swatches
 /imgui.ini
-

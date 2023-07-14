@@ -977,13 +977,18 @@ namespace AZ::Reflection
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 return;
                             }
-                            // Collect EnumValueKey attributes unless this node has an EnumValues or GenericValueList
-                            // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
+                            // Collect EnumValueKey attributes unless this node has an EnumValues, GenericValue or GenericValueList
+                            // attribute. If an EnumValues, GenericValue or GenericValueList attribute is present we do not cache
                             // because such nodes also have internal EnumValueKey attributes that we won't use.
                             // The cached values will be stored as a GenericValueList attribute.
-                            if (name == enumValueKeyName && !visitedAttributes.contains(enumValuesCrcName) &&
-                                !visitedAttributes.contains(genericValueListName))
+                            if (name == enumValueKeyName)
                             {
+                                if (visitedAttributes.contains(enumValuesCrcName) || visitedAttributes.contains(genericValueListName) ||
+                                    visitedAttributes.contains(genericValueName))
+                                {
+                                    return;
+                                }
+
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
                                 // in the PropertyEditorSystem.

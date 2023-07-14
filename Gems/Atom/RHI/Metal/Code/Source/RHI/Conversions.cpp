@@ -215,7 +215,7 @@ namespace AZ
             {
                 usageFlags |= MTLTextureUsageRenderTarget;
             }
-            if (RHI::CheckBitsAll(imageFlags, RHI::ImageBindFlags::DepthStencil))
+            if (RHI::CheckBitsAny(imageFlags, RHI::ImageBindFlags::DepthStencil))
             {
                 usageFlags |= MTLTextureUsageRenderTarget;
             }
