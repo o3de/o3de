@@ -256,7 +256,7 @@ namespace AzToolsFramework
                     }
                     continue;
                 }
-                // Use the SerializedPath as the prxy class element name, which prior to this is always an empty string
+                // Use the SerializedPath as the proxy class element name, which prior to this was always an empty string
                 // since it isn't used by the property handler. This helps when debugging the ConsumeAttribute method
                 // in the property handlers because the class element name gets passed as the debugName, so its easier
                 // to tell which property is currently processing the attributes.
