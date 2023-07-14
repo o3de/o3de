@@ -1662,7 +1662,7 @@ class AndroidSDKResolver(object):
             package_map[item_components[0]] = AndroidSDKResolver.AvailableUpdate(item_components)
 
         # Use the SDK manager to collect the available and installed packages
-        result_stdout = self.call_sdk_manager(['--list'], "retreiving package list")
+        result_stdout = self.call_sdk_manager(['--list'], "retrieving package list")
 
         current_append_map = None
         current_item_factory = None
