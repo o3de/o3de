@@ -176,10 +176,8 @@ namespace AzToolsFramework
             }
 
             const AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
-            AZ::IO::Path engineAssets = enginePath;
-            engineAssets = engineAssets.Append("Assets/Engine").LexicallyNormal();
-            AZ::IO::Path setregAssets = enginePath;
-            setregAssets = setregAssets.Append("Registry").LexicallyNormal();
+            AZ::IO::Path engineAssets =  (enginePath / "Assets" / "Engine").LexicallyNormal();
+            AZ::IO::Path setregAssets = (enginePath / "Registry").LexicallyNormal();
 
             auto filterFn = [engineAssets, setregAssets](const AssetBrowserEntry* entry)
             {
