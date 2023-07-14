@@ -1650,7 +1650,16 @@ class AndroidSDKResolver(object):
             package_map[item_components[0]] = AndroidSDKResolver.AvailableUpdate(item_components)
 
         # Use the SDK manager to collect the available and installed packages
-        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--list'], capture_stdout=True, suppress_stderr=True)
+        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--list'], capture_stdout=True, suppress_stderr=False)
+        if result_code != 0:
+            # Provide a more concise error if a known execption is thrown indicating the wrong version of JAVA is set in the
+            # environment
+            if "java.lang.UnsupportedClassVersionError" in result_stderr:
+                err_msg = "The current installed java runtime is not compatible with the sdkmanager. Make sure that " \
+                          "java runtime version 11 is installed and JAVA_HOME is set to that path."
+            else:
+                err_msg = result_stderr
+            raise common.LmbrCmdError(f"An error occurred attempting to retrieve package list: \n{err_msg}")
 
         current_append_map = None
         current_item_factory = None
@@ -1737,9 +1746,17 @@ class AndroidSDKResolver(object):
 
         # Perform the package installation
         logging.info(f"Installing {available_package_to_install.description} ...")
-        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--install', available_package_to_install.path], capture_stdout=True, suppress_stderr=True)
+        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--install', available_package_to_install.path], capture_stdout=True, suppress_stderr=False)
         if result_code != 0:
-            raise common.LmbrCmdError(f"Error installing package {available_package_to_install.path}: \n{result_stderr}")
+            if result_code != 0:
+                # Provide a more concise error if a known execption is thrown indicating the wrong version of JAVA is set in the
+                # environment
+                if "java.lang.UnsupportedClassVersionError" in result_stderr:
+                    err_msg = "The current installed java runtime is not compatible with the sdkmanager. Make sure that " \
+                              "java runtime version 11 is installed and JAVA_HOME is set to that path."
+                else:
+                    err_msg = result_stderr
+                raise common.LmbrCmdError(f"Error installing package {available_package_to_install.path}: \n{err_msg}")
 
         # Refresh the tracked SDK Contents
         self.refresh_sdk_installation()
