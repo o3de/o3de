@@ -102,6 +102,7 @@ TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
             "SDK"
         ],
         "dependencies": [],
+        "download_source_uri": "https://downloads.testgem3.com/o3de-repo/testgem3-2.15/O3DE_testgem3Gem_v2.0.0_Win64_Linux64_Mac64.zip",
         "versions_data": [
             {
                 "display_name": "testgem3 2.0.0",
@@ -183,9 +184,8 @@ TEST_O3DE_REPO_GEM3_JSON_VERSION_1_PAYLOAD = '''
         "SDK"
     ],
     "dependencies": [],
-    "origin_uri": "https://downloads.testgem3.com/o3de-repo/testgem3-2.15/O3DE_testgem3Gem_v2.0.0_Win64_Linux64_Mac64.zip",
-    "version": "1.0.0",
-    "last_updated": "2021-03-09"
+    "download_source_uri": "https://downloads.testgem3.com/o3de-repo/testgem3-2.15/O3DE_testgem3Gem_v2.0.0_Win64_Linux64_Mac64.zip",
+    "version": "1.0.0"
 }
 '''
 
@@ -587,7 +587,7 @@ class TestRepos:
             # Gems
             gems_json_data = repo.get_gem_json_data_from_all_cached_repos()
             expected_gems_json_list = [json.loads(data) for data in expected_gems_json_data]
-            # assert all(json_data in expected_gems_json_list for json_data in gems_json_data) 
+            assert all(json_data in expected_gems_json_list for json_data in gems_json_data) 
             # Projects
             projects_json_data = repo.get_project_json_data_from_all_cached_repos()
             expected_projects_json_list = [json.loads(data) for data in expected_projects_json_data]
