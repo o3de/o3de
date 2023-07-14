@@ -24,4 +24,10 @@ namespace AzFramework
         return nullptr;
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
     }
+
+    Application::ImplementationFactory* NativeUISystemComponent::CreateApplicationImplementationFactory() const
+    {
+        return aznew Application::ImplementationFactory(CreateLinuxApplication);
+    }
+
 } // namespace AzFramework

@@ -201,6 +201,14 @@ namespace AzFramework
             bool m_enableCustomizedResolution = false;
         };
 
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! The factory class to create a custom implementation for this native window
+        struct ImplementationFactory
+        {
+            AZ_TYPE_INFO(ImplementationFactory, "{6C2B94E1-388E-4E17-A125-94E5BAE9655C}");
+            virtual Implementation* Create() = 0;
+        };
+
     private:
         AZStd::unique_ptr<Implementation> m_pimpl;
     };

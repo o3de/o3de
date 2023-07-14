@@ -5,3 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+set(FILES
+    AzFrameworkNativeUIModule.h
+    AzFrameworkNativeUIModule.cpp
+    Components/NativeUISystemComponent.h
+    Components/NativeUISystemComponent.cpp
+)

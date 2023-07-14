@@ -106,6 +106,8 @@ ly_add_target(
             Legacy::CryCommon
             Legacy::EditorCommon
             AZ::AzCore
+            AZ::AzFramework
+            AZ::AzFramework.NativeUI
             AZ::AzToolsFramework
             Gem::LmbrCentral.Static
             AZ::AtomCore

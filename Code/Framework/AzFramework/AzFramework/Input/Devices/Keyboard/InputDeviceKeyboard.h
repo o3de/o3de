@@ -375,15 +375,20 @@ namespace AzFramework
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceKeyboard&);
+        //! The factory class to create a custom implementation for this input device
+        struct ImplementationFactory
+        {
+            AZ_TYPE_INFO(ImplementationFactory, "{D840FD45-97BC-40D6-A92B-C83B607EA9D5}");
+            virtual ~ImplementationFactory() = default;
+            virtual Implementation* Create(InputDeviceKeyboard& inputDevice) = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDeviceId Optional override of the default input device id
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceKeyboard(const InputDeviceId& inputDeviceId = Id,
-                                     ImplementationFactory implementationFactory = &Implementation::Create);
+                                     ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

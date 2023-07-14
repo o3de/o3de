@@ -274,7 +274,8 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputSystemComponent::CreateEnabledInputDevices()
     {
-        const AZ::u32 maxSupportedGamepads = InputDeviceGamepad::GetMaxSupportedGamepads();
+        auto deviceGamepadImplFactory = AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Get();
+        const AZ::u32 maxSupportedGamepads = (deviceGamepadImplFactory != nullptr) ? deviceGamepadImplFactory->GetMaxSupportedGamepads() : 0;
         m_gamepadsEnabled = AZStd::clamp<AZ::u32>(m_gamepadsEnabled, 0, maxSupportedGamepads);
 
         DestroyEnabledInputDevices();
