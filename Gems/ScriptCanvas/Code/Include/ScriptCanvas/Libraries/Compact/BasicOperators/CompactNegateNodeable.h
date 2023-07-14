@@ -12,15 +12,15 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
-#include <Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegativeNodeable.generated.h>
+#include <Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables
 {
-    class CompactNegativeNodeable : public Nodeable
+    class CompactNegateNodeable : public Nodeable
     {
-        SCRIPTCANVAS_NODE(CompactNegativeNodeable);
+        SCRIPTCANVAS_NODE(CompactNegateNodeable);
 
     public:
-        AZ_CLASS_ALLOCATOR(CompactNegativeNodeable, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR(CompactNegateNodeable, AZ::SystemAllocator)
     };
 }

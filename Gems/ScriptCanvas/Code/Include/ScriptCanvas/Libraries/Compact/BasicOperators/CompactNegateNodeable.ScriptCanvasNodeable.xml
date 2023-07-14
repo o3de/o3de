@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegativeNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			  xsi:noNamespaceSchemaLocation="../../../AutoGen/ScriptCanvasNodeable.xsd">
-    <Class Name="CompactNegativeNodeable"
-        QualifiedName="Nodeables::CompactNegativeNodeable"
+    <Class Name="CompactNegateNodeable"
+        QualifiedName="Nodeables::CompactNegateNodeable"
         PreferredClassName="*-1"
         Category="Compact/Basic Operators"
         Namespace="ScriptCanvas"
-        Description="Gets the negative of the input number"
-		Preset="compact">
+        Description="Multiplies the input number by -1"
+        Preset="compact">
 
         <Input Name="In" OutputName="Out">
             <Parameter Name="a" Type="float"/>

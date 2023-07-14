@@ -136,8 +136,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.h
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.ScriptCanvasNodeable.xml
-    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegativeNodeable.h
-    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegativeNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.h
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h

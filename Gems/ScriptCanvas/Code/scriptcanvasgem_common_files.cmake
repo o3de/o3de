@@ -101,7 +101,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDivideNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegativeNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp

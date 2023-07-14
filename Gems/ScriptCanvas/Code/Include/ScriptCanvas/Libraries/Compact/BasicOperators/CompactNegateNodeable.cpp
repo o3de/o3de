@@ -6,12 +6,12 @@
  *
  */
 
-#include "CompactNegativeNodeable.h"
+#include "CompactNegateNodeable.h"
 
 namespace ScriptCanvas::Nodeables
 {
-    float CompactNegativeNodeable::In(float a)
+    float CompactNegateNodeable::In(float a)
     {
-        return a * -1;
+        return -a;
     }
 }

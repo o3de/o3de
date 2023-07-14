@@ -8,7 +8,7 @@
         Category="Compact/Basic Operators"
         Namespace="ScriptCanvas"
         Description="Multiplies the first input number by the second input number"
-		Preset="compact">
+        Preset="compact">
 
         <Input Name="In" OutputName="Out">
             <Parameter Name="a" Type="float"/>

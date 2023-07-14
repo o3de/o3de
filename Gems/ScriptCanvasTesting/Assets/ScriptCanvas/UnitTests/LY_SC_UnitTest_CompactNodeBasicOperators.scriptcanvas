@@ -2212,10 +2212,10 @@
                                 "Id": {
                                     "id": 792352248110
                                 },
-                                "Name": "SC-Node(CompactNegativeNodeableNode)",
+                                "Name": "SC-Node(CompactNegateNodeableNode)",
                                 "Components": {
                                     "Component_[7612818545677164298]": {
-                                        "$type": "CompactNegativeNodeableNode",
+                                        "$type": "CompactNegateNodeableNode",
                                         "Id": 7612818545677164298,
                                         "Slots": [
                                             {
