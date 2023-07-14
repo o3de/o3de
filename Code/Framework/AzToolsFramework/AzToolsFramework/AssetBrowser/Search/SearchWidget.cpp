@@ -175,10 +175,21 @@ namespace AzToolsFramework
                 SetTypeFilters(buildTypesFilterList());
             }
 
-            AZ::IO::Path projectPath{ AZ::Utils::GetProjectPath() };
-            AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
-            auto engineFilter = new EngineFilter();
-            engineFilter->SetEngineAndProject(enginePath, projectPath);
+            const AZ::IO::Path enginePath{ AZ::Utils::GetEnginePath() };
+            AZ::IO::Path engineAssets = enginePath;
+            engineAssets = engineAssets.Append("Assets/Engine").LexicallyNormal();
+            AZ::IO::Path setregAssets = enginePath;
+            setregAssets = setregAssets.Append("Registry").LexicallyNormal();
+
+            auto filterFn = [engineAssets, setregAssets](const AssetBrowserEntry* entry)
+            {
+                AZ::IO::Path absolutePath = entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product
+                    ? entry->GetParent()->GetFullPath()
+                    : entry->GetFullPath();
+
+                return !(absolutePath.IsRelativeTo(engineAssets) || absolutePath.IsRelativeTo(setregAssets));
+            };
+            auto engineFilter = new CustomFilter(filterFn);
             m_engineFilter->AddFilter(FilterConstType(engineFilter));
 
             AZStd::vector<AZ::Data::AssetType> types = BuildAssetTypeList();
