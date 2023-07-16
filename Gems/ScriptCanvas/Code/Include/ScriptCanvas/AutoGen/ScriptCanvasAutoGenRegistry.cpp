@@ -30,17 +30,6 @@ ScriptCanvasModel& ScriptCanvasModel::Instance()
     return s_scriptModel.Get();
 }
 
-void ScriptCanvasModel::Release()
-{
-    //for (auto& entry : s_scriptModel->GetEntries())
-    //{
-    //    if (entry.second.m_descriptor)
-    //    {
-    //        entry.second.m_descriptor->ReleaseDescriptor();
-    //    }
-    //}
-}
-
 void ScriptCanvasModel::Init()
 {
     if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())

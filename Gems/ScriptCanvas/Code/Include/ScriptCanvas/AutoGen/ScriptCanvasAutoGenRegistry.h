@@ -61,7 +61,6 @@ class ScriptCanvasModel
 public:
 
     static ScriptCanvasModel& Instance();
-    static void Release();
 
     ScriptCanvasModel() = default;
     virtual ~ScriptCanvasModel()
