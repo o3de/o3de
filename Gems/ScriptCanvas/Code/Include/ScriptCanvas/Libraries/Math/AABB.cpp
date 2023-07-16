@@ -8,6 +8,8 @@
 
 #include "AABB.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/AABB.generated.h>
+
 namespace ScriptCanvas
 {
     namespace AABBFunctions

@@ -6,208 +6,118 @@
  *
  */
 
+#include "ScriptCanvasAutoGenRegistry.h"
+
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/string/fixed_string.h>
+
 #include <ScriptCanvas/Libraries/ScriptCanvasNodeRegistry.h>
 
-#include "ScriptCanvasAutoGenRegistry.h"
+static constexpr const char* s_scriptCanvasModelName = "ScriptCanvasModel";
+static AZ::EnvironmentVariable<ScriptCanvasModel> s_scriptModel;
 
-namespace ScriptCanvas
+ScriptCanvasModel& ScriptCanvasModel::Instance()
 {
-    static constexpr const char ScriptCanvasAutoGenDataRegistrySuffix[] = "DataRegistry";
-    static constexpr const char ScriptCanvasAutoGenFunctionRegistrySuffix[] = "FunctionRegistry";
-    static constexpr const char ScriptCanvasAutoGenNodeableRegistrySuffix[] = "NodeableRegistry";
-    static constexpr const char ScriptCanvasAutoGenGrammarRegistrySuffix[] = "GrammarRegistry";
-    static constexpr const char ScriptCanvasAutoGenRegistryName[] = "AutoGenRegistryManager";
-    static constexpr int MaxMessageLength = 4096;
-    static constexpr const char ScriptCanvasAutoGenRegistrationWarningMessage[] = "[Warning] Registry name %s is occupied already, ignore AutoGen registry registration.\n";
-
-    void ScriptCanvasRegistry::ReleaseDescriptors()
+    static bool _initialized = false;
+    if (!s_scriptModel)
     {
-        for (AZ::ComponentDescriptor* descriptor : m_cachedDescriptors)
-        {
-            descriptor->ReleaseDescriptor();
-        }
-        m_cachedDescriptors = {};
+        s_scriptModel = AZ::Environment::CreateVariable<ScriptCanvasModel>(s_scriptCanvasModelName);
+        _initialized = true;
     }
 
-    AutoGenRegistryManager::~AutoGenRegistryManager()
+    return s_scriptModel.Get();
+}
+
+void ScriptCanvasModel::Release()
+{
+    //for (auto& entry : s_scriptModel->GetEntries())
+    //{
+    //    if (entry.second.m_descriptor)
+    //    {
+    //        entry.second.m_descriptor->ReleaseDescriptor();
+    //    }
+    //}
+}
+
+void ScriptCanvasModel::Init()
+{
+    if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
     {
-        // If any registries still exist at this point, make sure they get released. Otherwise, they can cause a crash on shutdown.
-
-        AZ_Error("AutoGen", m_registries.empty(),
-            "Auto-registered registries still exist on shutdown. This isn't harmful, but there is a programming or linking error causing "
-            "destruction of the registries to happen in the wrong order relative to the AutoGenRegistryManager.");
-
-        for (auto& registry : m_registries)
+        for (auto& it : m_registry)
         {
-            registry.second->ReleaseDescriptors();
-        }
-        
-        m_registries.clear();
-    }
-
-    AutoGenRegistryManager* AutoGenRegistryManager::GetInstance()
-    {
-        // This needs to be declared inside of GetInstance() to ensure proper construction / destruction order relative to any
-        // static registries. What happens is that inside the constructor of the first static registry loaded and processed, it
-        // will call GetInstance(), which will construct this static variable. Since this variable finishes constructing before
-        // the first static registry finishes, it won't be destroyed until *after* that registry is destroyed on shutdown.
-        // If this were declared outside of the GetInstance() call, its construction order would be non-deterministic relative
-        // to the static registries in this DLL and so it could potentially get destroyed too soon.
-        static AZ::EnvironmentVariable<AutoGenRegistryManager> g_autogenRegistry;
-
-        // Look up variable in AZ::Environment first
-        // This is need if the Environment variable was already created
-        if (!g_autogenRegistry)
-        {
-            g_autogenRegistry = AZ::Environment::FindVariable<AutoGenRegistryManager>(ScriptCanvasAutoGenRegistryName);
-        }
-
-        // Create the environment variable in O3DEKernel memory space if it has not been found
-        if (!g_autogenRegistry)
-        {
-            g_autogenRegistry = AZ::Environment::CreateVariable<AutoGenRegistryManager>(ScriptCanvasAutoGenRegistryName);
-        }
-
-        return &(g_autogenRegistry.Get());
-    }
-
-    AZStd::vector<AZStd::string> AutoGenRegistryManager::GetRegistryNames(const char* registryName)
-    {
-        AZStd::vector<AZStd::string> result;
-        result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenDataRegistrySuffix).c_str());
-        result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenFunctionRegistrySuffix).c_str());
-        result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenNodeableRegistrySuffix).c_str());
-        result.push_back(AZStd::string::format("%s%s", registryName, ScriptCanvasAutoGenGrammarRegistrySuffix).c_str());
-        return result;
-    }
-
-    void AutoGenRegistryManager::Init()
-    {
-        auto registry = GetInstance();
-        auto nodeRegistry = NodeRegistry::GetInstance();
-        if (registry && nodeRegistry)
-        {
-            for (auto& iter : registry->m_registries)
+            if (m_verbose)
             {
-                if (iter.second)
-                {
-                    iter.second->Init(nodeRegistry);
-                }
+                AZ_TracePrintf("ScriptCanvas", "Registering BaseClass Descriptor for: %s\n", it.second.m_factory->GetName().c_str());
             }
+
+            it.second.m_descriptor = it.second.m_factory->GetDescriptor();
+            componentApplication->RegisterComponentDescriptor(it.second.m_descriptor);
         }
     }
+}
 
-    void AutoGenRegistryManager::Init(const char* registryName)
+void ScriptCanvasModel::Register(const char* gemOrModuleName, const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory)
+{
+    AZStd::string gemOrModule = gemOrModuleName;
+    if (m_registry.find(typeHash) != m_registry.end())
     {
-        auto registry = GetInstance();
-        auto nodeRegistry = NodeRegistry::GetInstance();
-        if (registry && nodeRegistry)
-        {
-            auto registryNames = registry->GetRegistryNames(registryName);
-            for (auto name : registryNames)
-            {
-                auto registryIter = registry->m_registries.find(name.c_str());
-                if (registryIter != registry->m_registries.end())
-                {
-                    registryIter->second->Init(nodeRegistry);
-                }
-            }
-        }
+        static int duplicateCounter = 1;
+
+        AZStd::string newName = AZStd::string::format("%s_%d", gemOrModuleName, duplicateCounter++);
+
+        // Duplicate hash, emit warning and change the module name to avoid the problem
+        AZ_Warning("Duplicate ScriptCanvas registration, consider making the node name unique: %s::%s, %s - to retain functionality, it will be found with a new module name of: %s\n", gemOrModuleName, typeName, typeHash, newName.c_str());
+        gemOrModule.append(newName.c_str());
     }
 
-    AZStd::vector<AZ::ComponentDescriptor*> AutoGenRegistryManager::GetComponentDescriptors()
+    Entry entry;
+    entry.m_gemOrModuleName = gemOrModule;
+    entry.m_factory = factory;
+    // Do not assign m_descriptor, this is happening at static initialization time, the types do not yet exist, see ScriptCanvasModel::Init
+    m_registry[typeHash] = entry;
+
+    if (m_verbose)
     {
-        AZStd::vector<AZ::ComponentDescriptor*> descriptors;
-        if (auto registry = GetInstance())
-        {
-            for (auto& iter : registry->m_registries)
-            {
-                if (iter.second)
-                {
-                    auto nodeableDescriptors = iter.second->GetComponentDescriptors();
-                    descriptors.insert(descriptors.end(), nodeableDescriptors.begin(), nodeableDescriptors.end());
-                }
-            }
-        }
-        return descriptors;
+        AZ_TracePrintf("ScriptCanvas", "ScriptCanvas: >> REGISTERED: %s::%s, %s\n", gemOrModuleName, typeName, typeHash);
     }
+}
 
-    AZStd::vector<AZ::ComponentDescriptor*> AutoGenRegistryManager::GetComponentDescriptors(const char* registryName)
+void ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFunction reflect)
+{
+    if (!m_registeredReflections.contains(name))
     {
-        AZStd::vector<AZ::ComponentDescriptor*> descriptors;
-        if (auto registry = GetInstance())
+        if (m_verbose)
         {
-            auto registryNames = registry->GetRegistryNames(registryName);
-            for (auto name : registryNames)
-            {
-                auto registryIter = registry->m_registries.find(name.c_str());
-                if (registryIter != registry->m_registries.end())
-                {
-                    auto registryDescriptors = registryIter->second->GetComponentDescriptors();
-                    descriptors.insert(descriptors.end(), registryDescriptors.begin(), registryDescriptors.end());
-                }
-            }
+            AZ_TracePrintf("ScriptCanvas", "RegisterReflection: %s\n", name.c_str());
         }
-        return descriptors;
+
+        m_registeredReflections[name] = reflect;
     }
 
-    void AutoGenRegistryManager::Reflect(AZ::ReflectContext* context)
+}
+
+void ScriptCanvasModel::Reflect(AZ::ReflectContext* context)
+{
+    for (auto& reflection : m_registeredReflections)
     {
-        if (auto registry = GetInstance())
+        if (m_verbose)
         {
-            for (auto& iter : registry->m_registries)
-            {
-                if (iter.second)
-                {
-                    iter.second->Reflect(context);
-                }
-            }
+            AZ_TracePrintf("ScriptCanvas", "Reflecting: %s\n", reflection.first.c_str());
         }
-    }
 
-    void AutoGenRegistryManager::Reflect(AZ::ReflectContext* context, const char* registryName)
+        reflection.second(context);
+    }
+}
+
+const AZ::ComponentDescriptor* ScriptCanvasModel::GetDescriptor(const char* typehash) const
+{
+    auto it = m_registry.find(AZStd::string(typehash));
+    if (it != m_registry.end())
     {
-        if (auto registry = GetInstance())
-        {
-            auto registryNames = registry->GetRegistryNames(registryName);
-            for (auto name : registryNames)
-            {
-                auto registryIter = registry->m_registries.find(name.c_str());
-                if (registryIter != registry->m_registries.end())
-                {
-                    registryIter->second->Reflect(context);
-                }
-            }
-        }
+        return it->second.m_factory->GetDescriptor();
     }
 
-    void AutoGenRegistryManager::RegisterRegistry(const char* registryName, ScriptCanvasRegistry* registry)
-    {
-        if (m_registries.find(registryName) != m_registries.end())
-        {
-            // This can happen if multiple Gems link to ScriptCanvas, since the ScriptCanvas registries will try to
-            // register themselves with each Gem that loads, causing redundant registration requests.
-            AZ::Debug::Platform::OutputToDebugger(
-                ScriptCanvasAutoGenRegistryName,
-                AZStd::fixed_string<MaxMessageLength>::format(ScriptCanvasAutoGenRegistrationWarningMessage, registryName).c_str());
-        }
-        else if (registry != nullptr)
-        {
-            m_registries.emplace(registryName, registry);
-        }
-    }
-
-    void AutoGenRegistryManager::UnregisterRegistry(const char* registryName)
-    {
-        if (auto it = m_registries.find(registryName);
-            it != m_registries.end())
-        {
-            it->second->ReleaseDescriptors();
-            m_registries.erase(it);
-        }
-    }
-
-} // namespace ScriptCanvas
+    return nullptr;
+}

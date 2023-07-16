@@ -17,8 +17,6 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
-#include <TestAutoGenFunctionRegistry.generated.h>
-#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
 #include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
@@ -36,9 +34,6 @@
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
-
-REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
 
 namespace ScriptCanvasTests
 {
@@ -120,9 +115,6 @@ namespace ScriptCanvasTests
 
         static void TearDownTestCase()
         {
-            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
-            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
-
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 

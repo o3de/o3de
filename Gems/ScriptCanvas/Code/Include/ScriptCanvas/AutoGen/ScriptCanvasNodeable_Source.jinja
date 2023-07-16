@@ -128,8 +128,8 @@ namespace {{attribute_Namespace}}
 {% set branches = [] %}
 {% for method in Class.findall('Input') %}
 {%      for branch in method.findall('Branch') %}
-{%			if branches.append(branch) %}{% endif %}
-{%		endfor %}
+{%            if branches.append(branch) %}{% endif %}
+{%        endfor %}
 {% endfor %}
 {# ExecutionOuts #}
 // ExecutionOuts begin
@@ -258,6 +258,11 @@ ScriptCanvas::NodePropertyInterface* {{ attribute_QualifiedName }}::GetPropertyI
 
 {# ----------------------------------------------------------------------- #}
 ////////////////////////////////////////////////////////////////////////////
+
+namespace Nodes
+{
+    SCRIPTCANVAS_NODE_FACTORY_IMPL(Nodes, {{nodeableNodeName}});
+}
 
 {# Constructor #}
 Nodes::{{ nodeableNodeName }}::{{ nodeableNodeName }}() 
