@@ -11,7 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <ScriptCanvasTestingSystemComponent.h>
 #include <Editor/Framework/ScriptCanvasTraceUtilities.h>
-#include <TestAutoGenNodeableRegistry.generated.h>
+//#include <TestAutoGenNodeableRegistry.generated.h>
 
 namespace ScriptCanvasTesting
 {

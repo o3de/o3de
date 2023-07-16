@@ -1,0 +1,67 @@
+{#
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
+#}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// This code was produced with AzAutoGen, any modifications made will not be preserved.
+// If you need to modify this code see:
+//
+// Gems\ScriptCanvas\Code\Include\ScriptCanvas\AutoGen\ScriptCanvasFunction_Header.jinja
+//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
+{% for ScriptCanvas in dataFiles %}
+{%  for Library in ScriptCanvas %}
+
+#include <{{ Library.attrib['Include'] }}>
+
+{% set qualifiedNamespace = Library.attrib['Namespace'] %}
+{% set parts = qualifiedNamespace.split("::") %}
+{% set className = parts[-1] %}
+
+{% if Library.attrib['Name'] is defined %}
+{% set className = Library.attrib['Name'] %}
+{% endif %}
+
+namespace {{ qualifiedNamespace }}
+{
+
+class {{className}}_Reflection
+{
+public:
+    AZ_TYPE_INFO({{ className }}_Reflection, "{{ className|createHashGuid }}");
+
+    static void Reflect(AZ::ReflectContext* context);
+};
+
+class AutoReflection_{{className}}
+{
+public:
+
+    AutoReflection_{{className}}()
+    {
+        ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{className}}_Reflection::Reflect(context); });
+    }
+
+    static AutoReflection_{{className}}* Get() { static AutoReflection_{{className}} s_instance; return &s_instance; }
+};
+static AutoReflection_{{className}} s_autoReflection_{{className}} = *AutoReflection_{{className}}::Get();
+
+
+}
+
+{%   endfor %}
+{% endfor %}

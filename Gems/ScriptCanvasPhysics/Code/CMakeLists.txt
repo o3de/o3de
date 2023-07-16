@@ -19,9 +19,9 @@ ly_add_target(
             Legacy::CryCommon
         PUBLIC
             Gem::ScriptCanvas.Extensions
-    AUTOGEN_RULES
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,AutoGenFunctionRegistry.generated.h
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,AutoGenFunctionRegistry.generated.cpp
+     AUTOGEN_RULES
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,$path/$fileprefix.generated.cpp
 )
 
 ly_add_target(

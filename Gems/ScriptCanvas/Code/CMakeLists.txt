@@ -99,18 +99,13 @@ ly_add_target(
             AZ::AzFramework
             Gem::ScriptCanvasDebugger
     AUTOGEN_RULES
-        *.ScriptCanvasData.xml,ScriptCanvasDataRegistry_Header.jinja,AutoGenDataRegistry.generated.h
-        *.ScriptCanvasData.xml,ScriptCanvasDataRegistry_Source.jinja,AutoGenDataRegistry.generated.cpp
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,AutoGenFunctionRegistry.generated.h
-        *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,AutoGenFunctionRegistry.generated.cpp
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Source.jinja,$path/$fileprefix.generated.cpp
-        *.ScriptCanvasGrammar.xml,ScriptCanvasGrammarRegistry_Header.jinja,AutoGenGrammarRegistry.generated.h
-        *.ScriptCanvasGrammar.xml,ScriptCanvasGrammarRegistry_Source.jinja,AutoGenGrammarRegistry.generated.cpp
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Header.jinja,$path/$fileprefix.generated.h
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeable_Source.jinja,$path/$fileprefix.generated.cpp
-        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Header.jinja,AutoGenNodeableRegistry.generated.h
-        *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,AutoGenNodeableRegistry.generated.cpp
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Header.jinja,$path/$fileprefix.generated.h
+        *.ScriptCanvasFunction.xml,ScriptCanvasFunction_Source.jinja,$path/$fileprefix.generated.cpp
+
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvasDebugger
 )

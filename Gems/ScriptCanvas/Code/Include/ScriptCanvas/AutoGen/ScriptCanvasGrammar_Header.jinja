@@ -21,6 +21,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Node.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
 {% for xml in dataFiles %}
 {%     for Class in xml.iter('Class') %}
 
@@ -47,9 +49,11 @@ namespace {{attribute_Namespace}}
 {%- set className = Class.attrib['Name'] %}
 
 {%- set baseClass = "ScriptCanvas::Node" %}
-{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
-{%    set baseClass = Class.attrib['Base'] %}
+
+{% if Class.attrib['Base'] is defined %}
+{% set baseClass = Class.attrib['Base'] %}
 {% endif %}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -68,6 +72,7 @@ namespace {{attribute_Namespace}}
 #define SCRIPTCANVAS_NODE_{{ className }} \
 public: \
     AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClass }} ); \
+    SCRIPTCANVAS_NODE_FACTORY_DECL("{{ autogenTargetName }}", {{ className }}); \
     static void Reflect(AZ::ReflectContext* reflection); \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \

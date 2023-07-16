@@ -256,6 +256,31 @@ namespace
 
         nodePaletteModel.RegisterDefaultCateogryInformation();
 
+        for (auto& nodes : ScriptCanvasModel::Instance().GetEntries())
+        {
+            const auto& classId = nodes.second.m_descriptor->GetUuid();
+            if (const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(classId))
+            {
+                if (HasExcludeFromNodeListAttribute(&serializeContext, classId))
+                {
+                    continue;
+                }
+                // Skip over some of our more dynamic nodes that we want to populate using different means
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::GetVariableNode>())
+                {
+                    continue;
+                }
+                else if (nodeClassData->m_azRtti && nodeClassData->m_azRtti->IsTypeOf<ScriptCanvas::Nodes::Core::SetVariableNode>())
+                {
+                    continue;
+                }
+                else
+                {
+                    nodePaletteModel.RegisterCustomNode(nodeClassData);
+                }
+            }
+        }
+
         ScriptCanvas::NodeRegistry* registry = ScriptCanvas::NodeRegistry::GetInstance();
         for (auto nodeId : registry->m_nodes)
         {

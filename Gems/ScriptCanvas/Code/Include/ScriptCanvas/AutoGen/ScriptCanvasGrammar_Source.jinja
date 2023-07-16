@@ -47,6 +47,11 @@ namespace {{attribute_Namespace}}
 {
 {% endif %}
 
+{# Use the fully qualified name, but strip out the class name #}
+{% set parts = Class.attrib['QualifiedName'].split("::") %}
+{% set result = parts[:-1] | join("::") %}
+
+SCRIPTCANVAS_NODE_FACTORY_IMPL({{result}}, {{ Class.attrib['Name'] }});
 
 void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
 {

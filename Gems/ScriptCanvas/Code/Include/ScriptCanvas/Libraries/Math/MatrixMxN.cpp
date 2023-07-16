@@ -8,6 +8,8 @@
 
 #include "MatrixMxN.h"
 
+#include <Include/ScriptCanvas/Libraries/Math/MatrixMxN.generated.h>
+
 namespace ScriptCanvas
 {
     namespace MatrixMxNFunctions

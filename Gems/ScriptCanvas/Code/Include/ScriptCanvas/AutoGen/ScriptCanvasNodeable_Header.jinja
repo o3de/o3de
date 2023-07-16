@@ -26,6 +26,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
 {% for xml in dataFiles %}
 {%   for Class in xml.findall('Class') %}
 
@@ -45,9 +47,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {% endif %}
 
 {% set attribute_Base = "ScriptCanvas::Nodeable" %}
-{% if Class.attrib['Base'] is defined and Class.attrib['Base'] %}
-{%    set attribute_Base = Class.attrib['Base'] %}
+
+{% if Class.attrib['Base'] is defined %}
+{% set attribute_Base = Class.attrib['Base'] %}
 {% endif %}
+
 
 {% if attribute_Namespace is defined %}
 namespace {{attribute_Namespace}}
@@ -90,6 +94,7 @@ public: \
           public:
 
               AZ_COMPONENT({{nodeableNodeName}}, {% if Class.attrib['NodeableUuid'] is defined %}"{{Class.attrib['NodeableUuid']}}"{% else %}"{{nodeableNodeName|createHashGuid}}"{% endif %}, ScriptCanvas::Nodes::NodeableNode);
+              SCRIPTCANVAS_NODE_FACTORY_DECL("{{ autogenTargetName }}_Nodeable", {{ nodeableNodeName }});
 
               static void Reflect(AZ::ReflectContext* context);
 
