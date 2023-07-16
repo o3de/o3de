@@ -47,7 +47,7 @@ void ScriptCanvasModel::Init()
     }
 }
 
-void ScriptCanvasModel::Register(const char* gemOrModuleName, const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory)
+void ScriptCanvasModel::Register(const char* gemOrModuleName, [[maybe_unused]] const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory)
 {
     AZStd::string gemOrModule = gemOrModuleName;
     if (m_registry.find(typeHash) != m_registry.end())
