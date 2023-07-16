@@ -477,7 +477,7 @@ def add_parser_args(parser):
     template_group.add_argument('--replace-templates', '-rt', type=pathlib.Path, nargs='*', required=False,
                                 help='Replace the entirety of templates_data property with the provided templates.')
 
-    modify_object_group = parser.add_argument_group('Modify Objects Args',
+    modify_object_group = parser.add_argument_group('Create Release',
                                                   'Path arguments to use with the --add-objects or --replace-objects option')
     modify_object_group.add_argument('--release-archive-path', '-rap', type=pathlib.Path, required=False,
                                    help='Create a release archive at the specified local path and update the download_source_uri and sha256 fields.')
