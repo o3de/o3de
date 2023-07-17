@@ -351,7 +351,7 @@ namespace AZ::Reflection
                                 UIElement->m_editData = &*iter;
                                 UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                                 StackEntry entry = { nodeData.m_instance,
-                                                     nodeData.m_instanceToInvoke,
+                                                     nodeData.m_instance,
                                                      nodeData.m_classData->m_typeId,
                                                      nodeData.m_classData,
                                                      UIElement };
