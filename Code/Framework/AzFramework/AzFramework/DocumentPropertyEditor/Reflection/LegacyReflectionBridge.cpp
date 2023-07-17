@@ -185,8 +185,6 @@ namespace AZ::Reflection
                 AZStd::vector<AZStd::pair<AZStd::string, AZStd::optional<StackEntry>>> m_groups;
                 AZStd::map<AZStd::string, AZStd::vector<StackEntry>> m_groupEntries;
                 AZStd::map<AZStd::string, AZStd::string> m_propertyToGroupMap;
-
-                bool m_iteratingOnGroups = false;
             };
             AZStd::deque<StackEntry> m_stack;
             AZStd::vector<AZStd::pair<AZStd::string, StackEntry>> m_nonSerializedElements;
@@ -687,10 +685,8 @@ namespace AZ::Reflection
                     }
 
                     // Handle groups
-                    if (!nodeData.m_iteratingOnGroups && nodeData.m_groups.size() > 0)
+                    if (nodeData.m_groups.size() > 0)
                     {
-                        //nodeData.m_iteratingOnGroups = true;
-
                         for (auto& groupPair : nodeData.m_groups)
                         {
                             if (groupPair.second.has_value())
@@ -719,7 +715,6 @@ namespace AZ::Reflection
                             }
                         }
 
-                        nodeData.m_iteratingOnGroups = false;
                         nodeData.m_propertyToGroupMap.clear();
                         nodeData.m_groupEntries.clear();
                         nodeData.m_groups.clear();
