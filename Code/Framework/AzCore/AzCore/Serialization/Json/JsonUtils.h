@@ -88,7 +88,7 @@ namespace AZ
 
         template <typename ObjectType>
         AZ::Outcome<void, AZStd::string> LoadObjectFromStream(ObjectType& objectToLoad, IO::GenericStream& stream
-            , AZStd::string& errorsOut, const JsonDeserializerSettings* settings = nullptr)
+            , AZStd::string& /*errorsOut*/, const JsonDeserializerSettings* settings = nullptr)
         {
             return LoadObjectFromStreamByType(&objectToLoad, AzTypeInfo<ObjectType>::Uuid(), stream, settings);
         }

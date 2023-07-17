@@ -57,7 +57,7 @@ namespace ScriptCanvas::Developer
     // TypeCharAction
     ///////////////////
 
-    TypeCharAction::TypeCharAction(QChar testCharacter)
+    TypeCharAction::TypeCharAction([[maybe_unused]] QChar testCharacter)
     {
 #if defined(AZ_COMPILER_MSVC)
         // This is a. Going to use this to manage most of my elements

@@ -31,7 +31,7 @@ namespace AzToolsFramework
             }
 
             template<typename T, typename AZStd::enable_if_t<!AZStd::is_enum<T>::value>* = nullptr>
-            T GetColumnEnum(SQLite::Statement* statement, int index)
+            T GetColumnEnum(SQLite::Statement* /*statement*/, int /*index*/)
             {
                 // Non-enum type with no implementation
                 static_assert(!AZStd::is_same<T, T>::value, "Type not implemented");

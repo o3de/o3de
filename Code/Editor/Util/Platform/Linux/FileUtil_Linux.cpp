@@ -21,7 +21,7 @@ namespace Platform
         return QProcess::startDetached(command, argsList);
     }
 
-    bool RunEditorWithArg(const QString& editor, const QString& arg)
+    bool RunEditorWithArg(const QString& editor, const QString& /*arg*/)
     {
         return RunCommandWithArguments(gSettings.textureEditor, { editor });
     }
@@ -49,7 +49,7 @@ namespace Platform
         }
     }
 
-    QString MakePlatformFileEditString(QString pathToEdit, int lineToEdit)
+    QString MakePlatformFileEditString(QString pathToEdit, int /*lineToEdit*/)
     {
         return pathToEdit;
     }

@@ -1253,7 +1253,7 @@ void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
+void CSystem::RegisterWindowMessageHandler([[maybe_unused]] IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
     assert(pHandler && !stl::find(m_windowMessageHandlers, pHandler) && "This IWindowMessageHandler is already registered");
@@ -1264,7 +1264,7 @@ void CSystem::RegisterWindowMessageHandler(IWindowMessageHandler* pHandler)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CSystem::UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler)
+void CSystem::UnregisterWindowMessageHandler([[maybe_unused]] IWindowMessageHandler* pHandler)
 {
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER
     [[maybe_unused]] bool bRemoved = stl::find_and_erase(m_windowMessageHandlers, pHandler);

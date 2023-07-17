@@ -14,11 +14,11 @@
 
 #include "Util/Mailer.h"
 
-bool CMailer::SendMail(const char* subject,
-    const char* messageBody,
-    const std::vector<const char*>& _recipients,
-    const std::vector<const char*>& _attachments,
-    bool bShowDialog)
+bool CMailer::SendMail(const char* /*subject*/,
+    const char* /*messageBody*/,
+    const std::vector<const char*>& /*_recipients*/,
+    const std::vector<const char*>& /*_attachments*/,
+    bool /*bShowDialog*/)
 {
     return true;
 }

@@ -129,7 +129,7 @@ namespace AZ::Internal
     {}
 
     template<class EBus, class R, class C, class... Args>
-    BehaviorEBusEvent::BehaviorEBusEvent(R(C::* functionPointer)(Args...) const noexcept, BehaviorContext* context,
+    BehaviorEBusEvent::BehaviorEBusEvent(R(C::* functionPointer)(Args...) const noexcept, BehaviorContext* /*context*/,
         BehaviorEventType eventType, AZStd::type_identity<EBus>)
         : BehaviorEBusEvent(reinterpret_cast<R(C::*)(Args...) const>(functionPointer),
             eventType, AZStd::type_identity<EBus>{})

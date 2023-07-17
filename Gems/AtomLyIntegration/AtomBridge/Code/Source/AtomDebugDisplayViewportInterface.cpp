@@ -303,7 +303,7 @@ namespace AZ::AtomBridge
     }
 
 
-    void AtomDebugDisplayViewportInterface::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
+    void AtomDebugDisplayViewportInterface::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr /*view*/)
     {
         ResetRenderState();
         if (!m_defaultInstance)

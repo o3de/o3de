@@ -1604,9 +1604,8 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         template <class EBus, class TargetEBus, class BusIdType>
         template <class Event, class... Args>
-        void EBusRouterQueueEventForwarder<EBus, TargetEBus, BusIdType>::ForwardEventResult(Event event, Args&&... args)
+        void EBusRouterQueueEventForwarder<EBus, TargetEBus, BusIdType>::ForwardEventResult(Event /*event*/, Args&&... /*args*/)
         {
-
         }
 
         template <class EBus, class TargetEBus>
@@ -1661,7 +1660,7 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         template <class EBus, class TargetEBus>
         template <class Event, class... Args>
-        void EBusRouterQueueEventForwarder<EBus, TargetEBus, NullBusId>::ForwardEventResult(Event event, Args&&... args)
+        void EBusRouterQueueEventForwarder<EBus, TargetEBus, NullBusId>::ForwardEventResult(Event /*event*/, Args&&... /*args*/)
         {
         }
 

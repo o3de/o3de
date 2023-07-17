@@ -385,7 +385,7 @@ std::pair<typename VectorMap<K, V, T, A>::iterator, bool> VectorMap<K, V, T, A>:
 }
 
 template <typename K, typename V, typename T, typename A>
-typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::insert(iterator where, const value_type& val)
+typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::insert(iterator /*where*/, const value_type& val)
 {
     return insert(val);
 }

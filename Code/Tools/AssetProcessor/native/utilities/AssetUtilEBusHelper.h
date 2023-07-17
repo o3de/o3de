@@ -37,11 +37,11 @@ public:
     static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // multi listener
     static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
 
-    virtual ~AssetProcessorPlaformBusTraits() {}
+    virtual ~AssetProcessorPlaformBusTraits() = default;
     //Informs that the AP got a connection for this platform.
-    virtual void AssetProcessorPlatformConnected(const AZStd::string platform) {}
+    virtual void AssetProcessorPlatformConnected(const AZStd::string /*platform*/) {}
     //Informs that a connection got disconnected for this platform.
-    virtual void AssetProcessorPlatformDisconnected(const AZStd::string platform) {}
+    virtual void AssetProcessorPlatformDisconnected(const AZStd::string /*platform*/) {}
 };
 
 using AssetProcessorPlatformBus = AZ::EBus<AssetProcessorPlaformBusTraits>;
@@ -54,7 +54,7 @@ public:
     static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
     typedef AZStd::recursive_mutex MutexType;
 
-    virtual ~ApplicationServerBusTraits() {};
+    virtual ~ApplicationServerBusTraits() = default;
 
     //! Returns the port the server is set to listen on
     virtual int GetServerListeningPort() const = 0;

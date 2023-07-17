@@ -115,7 +115,7 @@ namespace AZStd
         }
 
 
-        fixed_unordered_set(const initializer_list<value_type>& list, size_type numBuckets = {},
+        fixed_unordered_set(const initializer_list<value_type>& list, size_type /*numBuckets*/ = {},
             const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
             : base_type(hash, keyEqual)
         {
@@ -237,7 +237,7 @@ namespace AZStd
         {
         }
 
-        fixed_unordered_multiset(const initializer_list<value_type>& list, size_type numBuckets = {},
+        fixed_unordered_multiset(const initializer_list<value_type>& list, size_type /*numBuckets*/ = {},
             const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
             : base_type(hash, keyEqual)
         {

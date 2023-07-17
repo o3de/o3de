@@ -71,7 +71,7 @@ namespace AZ::IO
         return systemFile;
     }
 
-    bool SystemFile::PlatformOpen(int mode, int platformFlags)
+    bool SystemFile::PlatformOpen(int mode, int /*platformFlags*/)
     {
         int desiredAccess = 0;
         int permissions = S_IRWXU | S_IRGRP | S_IROTH;
@@ -144,7 +144,7 @@ namespace AZ::IO::Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
-    void Seek(FileHandleType handle, const SystemFile* systemFile, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
+    void Seek(FileHandleType handle, const SystemFile* /*systemFile*/, SystemFile::SeekSizeType offset, SystemFile::SeekMode mode)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -152,7 +152,7 @@ namespace AZ::IO::Platform
         }
     }
 
-    SystemFile::SizeType Tell(FileHandleType handle, const SystemFile* systemFile)
+    SystemFile::SizeType Tell(FileHandleType handle, const SystemFile* /*systemFile*/)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -163,7 +163,7 @@ namespace AZ::IO::Platform
         return 0;
     }
 
-    bool Eof(FileHandleType handle, const SystemFile* systemFile)
+    bool Eof(FileHandleType handle, const SystemFile* /*systemFile*/)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -188,11 +188,11 @@ namespace AZ::IO::Platform
         return false;
     }
 
-    AZ::u64 ModificationTime(FileHandleType handle, const SystemFile* systemFile)
+    AZ::u64 ModificationTime(FileHandleType handle, const SystemFile* /*systemFile*/)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            struct stat statResult;
+            struct stat statResult{};
             if (fstat(handle, &statResult) != 0)
             {
                 return 0;
@@ -203,7 +203,7 @@ namespace AZ::IO::Platform
         return 0;
     }
 
-    SystemFile::SizeType Read(FileHandleType handle, const SystemFile* systemFile, SizeType byteSize, void* buffer)
+    SystemFile::SizeType Read(FileHandleType handle, const SystemFile* /*systemFile*/, SizeType byteSize, void* buffer)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -218,7 +218,7 @@ namespace AZ::IO::Platform
         return 0;
     }
 
-    SystemFile::SizeType Write(FileHandleType handle, const SystemFile* systemFile, const void* buffer, SizeType byteSize)
+    SystemFile::SizeType Write(FileHandleType handle, const SystemFile* /*systemFile*/, const void* buffer, SizeType byteSize)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -233,7 +233,7 @@ namespace AZ::IO::Platform
         return 0;
     }
 
-    void Flush(FileHandleType handle, const SystemFile* systemFile)
+    void Flush(FileHandleType handle, const SystemFile* /*systemFile*/)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
@@ -243,11 +243,11 @@ namespace AZ::IO::Platform
         }
     }
 
-    SystemFile::SizeType Length(FileHandleType handle, const SystemFile* systemFile)
+    SystemFile::SizeType Length(FileHandleType handle, const SystemFile* /*systemFile*/)
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            struct stat stat;
+            struct stat stat{};
             if (fstat(handle, &stat) < 0)
             {
                 return 0;
@@ -265,7 +265,7 @@ namespace AZ::IO::Platform
 
     bool IsDirectory(const char* filePath)
     {
-        struct stat result;
+        struct stat result{};
         if (stat(filePath, &result) == 0)
         {
             return S_ISDIR(result.st_mode);

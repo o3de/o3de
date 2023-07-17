@@ -141,7 +141,7 @@ namespace AZ
             return path.substr(start, end);
         }
 
-        void Platform::Printf(const char* format, ...)
+        void Platform::Printf(const char* /*format*/, ...)
         {
             // Not currently supported
         }

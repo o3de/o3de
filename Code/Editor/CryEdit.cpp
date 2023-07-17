@@ -1782,7 +1782,7 @@ bool CCryEditApp::InitInstance()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CCryEditApp::LoadFile(QString fileName)
+void CCryEditApp::LoadFile(QString /*fileName*/)
 {
     if (GetIEditor()->GetViewManager()->GetViewCount() == 0)
     {

@@ -55,7 +55,7 @@ namespace AZ::Utils
         return {};
     }
 
-    bool ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength)
+    bool ConvertToAbsolutePath(const char* path, char* absolutePath, [[maybe_unused]] AZ::u64 maxLength)
     {
 #ifdef PATH_MAX
         static constexpr size_t UnixMaxPathLength = PATH_MAX;

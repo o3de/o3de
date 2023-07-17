@@ -44,7 +44,7 @@ void SymbolStorage::UnregisterModuleListeners()
 // [7/29/2009]
 //=========================================================================
 unsigned int
-StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount /* = 0 */, void* nativeThread /*= NULL*/)
+StackRecorder::Record(StackFrame* frames, unsigned int maxNumOfFrames, unsigned int suppressCount /* = 0 */, void* /*nativeThread = NULL*/)
 {
     int count = 0;
     unw_cursor_t cursor;

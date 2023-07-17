@@ -30,7 +30,7 @@ namespace ScriptCanvasEditor
 
     void ScriptEventSenderNodeDescriptorComponent::Reflect(AZ::ReflectContext* reflectContext)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+        auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
 
         if (serializeContext)
         {
@@ -74,7 +74,7 @@ namespace ScriptCanvasEditor
         SignalNeedsVersionConversion();
     }
 
-    void ScriptEventSenderNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
+    void ScriptEventSenderNodeDescriptorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> /*asset*/)
     {
         SignalNeedsVersionConversion();
     }

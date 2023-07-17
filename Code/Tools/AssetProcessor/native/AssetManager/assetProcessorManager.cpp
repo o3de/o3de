@@ -119,7 +119,7 @@ namespace AssetProcessor
     }
 
     template <class R>
-    inline bool AssetProcessorManager::Recv(unsigned int connId, QByteArray payload, R& request)
+    inline bool AssetProcessorManager::Recv(unsigned int /*connId*/, QByteArray payload, R& request)
     {
         bool readFromStream = AZ::Utils::LoadObjectFromBufferInPlace(payload.data(), payload.size(), request);
         AZ_Assert(readFromStream, "AssetProcessorManager::Recv: Could not deserialize from stream (type=%u)", request.GetMessageType());
@@ -348,7 +348,7 @@ namespace AssetProcessor
     }
 
     //! A network request came in, Given a Job Run Key (from the above Job Request), asking for the actual log for that job.
-    GetAbsoluteAssetDatabaseLocationResponse AssetProcessorManager::ProcessGetAbsoluteAssetDatabaseLocationRequest(MessageData<GetAbsoluteAssetDatabaseLocationRequest> messageData)
+    GetAbsoluteAssetDatabaseLocationResponse AssetProcessorManager::ProcessGetAbsoluteAssetDatabaseLocationRequest(MessageData<GetAbsoluteAssetDatabaseLocationRequest> /*messageData*/)
     {
         GetAbsoluteAssetDatabaseLocationResponse response;
 

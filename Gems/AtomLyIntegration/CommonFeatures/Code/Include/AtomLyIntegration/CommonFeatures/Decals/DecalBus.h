@@ -56,7 +56,7 @@ namespace AZ
         };
 
         /// The EBus for requests to for setting and getting decal component properties.
-        typedef AZ::EBus<DecalRequests> DecalRequestBus;
+        using DecalRequestBus = AZ::EBus<DecalRequests>;
 
         class DecalNotifications
             : public ComponentBus
@@ -64,7 +64,7 @@ namespace AZ
         public:
             AZ_RTTI(DecalNotifications, "{BA81FBF5-FF66-4868-AD85-6B7954941B6B}");
 
-            virtual ~DecalNotifications() {}
+             ~DecalNotifications() override = default;
 
             //! Signals that the attenuation angle has changed.
             //! @param attenuationAngle This controls how much the angle between geometry and the decal affects decal opacity.
@@ -84,10 +84,10 @@ namespace AZ
 
             //! Signals that the material has changed
             //! @param materialAsset The material asset of the decal
-            virtual void OnMaterialChanged(Data::Asset<RPI::MaterialAsset> materialAsset){ }
+            virtual void OnMaterialChanged(Data::Asset<RPI::MaterialAsset> /*materialAsset*/){ }
         };
 
         /// The EBus for decal notification events.
-        typedef AZ::EBus<DecalNotifications> DecalNotificationBus;
+        using DecalNotificationBus = AZ::EBus<DecalNotifications>;
     } // namespace Render
 } // namespace AZ

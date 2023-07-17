@@ -23,7 +23,7 @@ public:
     {
         return READING;
     }
-    ILINE void BeginGroup(const char* szName)
+    ILINE void BeginGroup(const char* /*szName*/)
     {
     }
     ILINE void EndGroup()

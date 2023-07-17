@@ -370,7 +370,7 @@ CCommand0wRet<RT>::CCommand0wRet(const AZStd::string& module, const AZStd::strin
 }
 
 template <typename RT>
-QString CCommand0wRet<RT>::Execute(const CCommand::CArgs& args)
+QString CCommand0wRet<RT>::Execute([[maybe_unused]] const CCommand::CArgs& args)
 {
     assert(args.GetArgCount() == 0);
 

@@ -223,7 +223,7 @@ namespace AZStd
 
         // assignment with type conversion
         template <typename T2>
-        constexpr array<T, 0>& operator = (const array<T2, 0>& rhs) { return *this; }
+        constexpr array<T, 0>& operator = (const array<T2, 0>& /*rhs*/) { return *this; }
 
         constexpr void fill(const T&) {}
 

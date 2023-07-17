@@ -197,7 +197,7 @@ public:
     void GetKeyValueRange(float& fMin, float& fMax) const override { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
     void SetKeyValueRange(float fMin, float fMax) override{ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };
 
-    static void Reflect(AZ::SerializeContext* serializeContext) {}
+    static void Reflect(AZ::SerializeContext* /*serializeContext*/) {}
 
 protected:
     void CheckValid()

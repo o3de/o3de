@@ -643,8 +643,7 @@ namespace Multiplayer
         return ticket;
     }
 
-    void NetworkEntityManager::OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable,
-        [[maybe_unused]] uint32_t generation)
+    void NetworkEntityManager::OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> /*rootSpawnable*/, uint32_t /*generation*/)
     {
         auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();

@@ -95,7 +95,7 @@ public: // static member data
     static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 };
 
-typedef AZ::EBus<UiAnimationInterface> UiAnimationBus;
+using UiAnimationBus = AZ::EBus<UiAnimationInterface>;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiAnimationNotifications
@@ -109,14 +109,13 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
 public: // member functions
-
-    virtual ~UiAnimationNotifications(){}
+    ~UiAnimationNotifications() override = default;
 
     //! Called on an animation event
     virtual void OnUiAnimationEvent(IUiAnimationListener::EUiAnimationEvent uiAnimationEvent, AZStd::string animSequenceName) = 0;
 
     //! Called on animation track event triggered
-    virtual void OnUiTrackEvent(AZStd::string eventName, AZStd::string valueName, AZStd::string animSequenceName) {}
+    virtual void OnUiTrackEvent(AZStd::string /*eventName*/, AZStd::string /*valueName*/, AZStd::string /*animSequenceName*/) {}
 };
 
-typedef AZ::EBus<UiAnimationNotifications> UiAnimationNotificationBus;
+using UiAnimationNotificationBus = AZ::EBus<UiAnimationNotifications>;

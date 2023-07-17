@@ -72,7 +72,7 @@ namespace ScriptCanvas
         }
 
         template<typename T>
-        static bool GetElementData(AZ::SerializeContext& serializeContext, AZ::SerializeContext::DataElementNode& classElement, T& outData, uint32_t crc)
+        static bool GetElementData(AZ::SerializeContext& /*serializeContext*/, AZ::SerializeContext::DataElementNode& classElement, T& outData, uint32_t crc)
         {
             AZ::SerializeContext::DataElementNode* dataElement = classElement.FindSubElement(crc);
             if (!dataElement)
