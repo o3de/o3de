@@ -630,22 +630,11 @@ namespace AZ::Reflection
 
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
-                if (m_stack.size() > 1)
-                {
-                    m_stack.push_back({ instance,
-                                        m_stack.at(1).m_instance,
-                                        classData ? classData->m_typeId : Uuid::CreateNull(),
-                                        classData,
-                                        classElement });
-                }
-                else
-                {
-                    m_stack.push_back({ instance,
-                                        parentData.m_instance,
-                                        classData ? classData->m_typeId : Uuid::CreateNull(),
-                                        classData,
-                                        classElement });
-                }
+                m_stack.push_back({ instance,
+                                    parentData.m_instance,
+                                    classData ? classData->m_typeId : Uuid::CreateNull(),
+                                    classData,
+                                    classElement });
                 
                 StackEntry& nodeData = m_stack.back();
 
