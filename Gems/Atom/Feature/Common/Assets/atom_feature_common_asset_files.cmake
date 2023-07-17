@@ -120,8 +120,6 @@ set(FILES
     Passes/MultiViewSkyBox.pass
     Passes/MultiViewTransparent.pass
     Passes/MultiViewTransparentParent.pass
-    Passes/MultiViewXRLeftPipeline.pass
-    Passes/MultiViewXRRightPipeline.pass
     Passes/NewDepthOfField.pass
     Passes/NewDepthOfFieldComposite.pass
     Passes/NewDepthOfFieldDownsample.pass
