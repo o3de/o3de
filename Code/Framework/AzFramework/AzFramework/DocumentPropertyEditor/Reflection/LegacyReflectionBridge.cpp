@@ -389,9 +389,8 @@ namespace AZ::Reflection
                 // Search through classData for UIElements and Editor Data.
                 if (nodeData.m_classData->m_editData)
                 {
-                    AZStd::vector<AZStd::string> path;
-                    path.push_back(nodeData.m_path.c_str());
-
+                    // Store current group.
+                    AZStd::string groupName = "";
                     AZStd::string lastValidElementName = "";
 
                     for (auto iter = nodeData.m_classData->m_editData->m_elements.begin();
@@ -400,19 +399,13 @@ namespace AZ::Reflection
                     {
                         if (iter->m_elementId == AZ::Edit::ClassElements::Group)
                         {
-                            AZStd::string_view itemDescription(iter->m_description);
+                            // The group name is stored in the description.
+                            groupName = iter->m_description;
 
-                            if (!itemDescription.empty())
-                            {
-                                // Add group name to path.
-                                path.push_back(iter->m_description);
-                            }
-                            else
+                            if (groupName.empty())
                             {
                                 // If the group name is empty, this is the end of the previous group.
-                                path.pop_back();
-
-                                // Always reset the lastValidElementName
+                                // As such, we reset the lastValidElementName.
                                 lastValidElementName = "";
                             }
                         }
@@ -426,17 +419,12 @@ namespace AZ::Reflection
                                 nodeData.m_instance, nodeData.m_instance, nodeData.m_classData->m_typeId, nodeData.m_classData, UIElement
                             };
 
-                            AZStd::string pathString;
-                            for (const auto& pathElement : path)
+                            AZStd::string pathString = nodeData.m_path;
+
+                            if (!groupName.empty())
                             {
-                                if (!pathElement.empty())
-                                {
-                                    if (!(pathElement[0] == '/'))
-                                    {
-                                        pathString.append("/");
-                                    }
-                                    pathString.append(pathElement);
-                                }
+                                pathString.append("/");
+                                pathString.append(groupName);
                             }
 
                             if (!lastValidElementName.empty())
