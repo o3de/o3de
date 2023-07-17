@@ -435,7 +435,7 @@ def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_ov
         parsed_uri_path = urllib.parse.unquote(parsed_uri.path)
         if isinstance(download_path, pathlib.PureWindowsPath):
             # On Windows we want to remove the initial slash in front of the drive letter
-            if parsed_uri_path[0] == '/':
+            if parsed_uri_path.startswith('/'):
                 parsed_uri_path = parsed_uri_path[1:]
             else:
                 logger.warning(f"The provided path URI '{parsed_uri_path}' may be missing a '/', "
