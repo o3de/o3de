@@ -105,6 +105,8 @@ TEST_F(ScriptCanvasTestFixture, SlotCreation_GeneralCreation)
 {
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     {
@@ -203,6 +205,8 @@ TEST_F(ScriptCanvasTestFixture, SlotCreation_DataSlotCreation)
 {
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (auto dataType : GetTypes())
@@ -284,6 +288,194 @@ TEST_F(ScriptCanvasTestFixture, SlotConnecting_ExecutionBasic)
     Endpoint inputEndpoint = Endpoint(inputNode->GetEntityId(), inputSlot->GetId());
 
     TestConnectionBetween(outputEndpoint, inputEndpoint, true);
+}
+
+// Test implicit connections against a simple node that has no slot execution map
+TEST_F(ScriptCanvasTestFixture, SlotConnecting_ImplicitConnections)
+{
+    using namespace ScriptCanvas;
+
+    auto editorGraph = CreateEditorGraph();
+
+    // Node before node that creates implicit connections
+    ConfigurableUnitTestNode* sourceNode = CreateConfigurableNode();
+    Endpoint execOutSlot = sourceNode->AddTestingSlot(CommonSlots::Execution("Out", ConnectionType::Output))->GetEndpoint();
+    Endpoint dataOutSlot1 = sourceNode->AddTestingSlot(CommonSlots::FloatData("out1", ConnectionType::Output))->GetEndpoint();
+    Endpoint dataOutSlot2 = sourceNode->AddTestingSlot(CommonSlots::FloatData("out2", ConnectionType::Output))->GetEndpoint();
+
+    // Node that creates implicit connections
+    ConfigurableUnitTestNode* targetNode = CreateConfigurableNode();
+    Endpoint implicitSlot = targetNode->AddTestingSlot(CommonSlots::Execution("In", ConnectionType::Input, false, true))->GetEndpoint();
+    Endpoint dataInSlot1 = targetNode->AddTestingSlot(CommonSlots::FloatData("in1", ConnectionType::Input))->GetEndpoint();
+    Endpoint dataInSlot2 = targetNode->AddTestingSlot(CommonSlots::FloatData("in2", ConnectionType::Input))->GetEndpoint();
+
+    // Test the implicit connections between the two nodes
+    TestAllImplicitConnections(editorGraph, { dataOutSlot1, dataOutSlot2 }, { dataInSlot1, dataInSlot2 }, execOutSlot, implicitSlot, { execOutSlot });
+}
+
+// Test implicit connections against a complex node that has a slot execution map
+TEST_F(ScriptCanvasTestFixture, SlotConnecting_ImplicitConnectionsSlotExecutionMap)
+{
+    using namespace ScriptCanvas;
+
+    auto editorGraph = CreateEditorGraph();
+
+    // These vectors store each "set" of data output endpoints that correspond with one execution out
+    AZStd::vector<Endpoint> dataOutEndpointSet1;
+    AZStd::vector<Endpoint> dataOutEndpointSet2;
+    AZStd::vector<Endpoint> dataOutEndpointSet3;
+    AZStd::vector<Endpoint> dataOutEndpointSet4;
+    AZStd::vector<Endpoint> dataOutEndpointSet5;
+
+    // The data in slots for the compact node
+    AZStd::vector<Endpoint> dataInEndpointSet;
+
+    // Vector of every execution output pin. Used to make sure implicit connections are only being made when they need to
+    AZStd::vector<Endpoint> executions;
+
+    // Execution ins and outs for slot execution map
+    SlotExecution::Ins ins;
+    SlotExecution::Outs outs;
+
+
+    // Node before the node that creates implicit connections
+    ConfigurableUnitTestNode* sourceNode = CreateConfigurableNode();
+
+    // Simple execution in mapped to one execution out with two corresponding data out slots
+    SlotExecution::In in1;
+
+    Endpoint execIn1 = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("In1", ConnectionType::Input))->GetEndpoint();
+    in1.slotId = execIn1.GetSlotId();
+
+    SlotExecution::Out out1;
+
+    Endpoint execOut1 = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("Out1", ConnectionType::Output))->GetEndpoint();
+    out1.slotId = execOut1.GetSlotId();
+    executions.push_back(execOut1);
+
+    Endpoint dataOut1a = sourceNode->AddTestingSlot(CommonSlots::FloatData("out1a", ConnectionType::Output))->GetEndpoint();
+    out1.outputs.emplace_back(dataOut1a.GetSlotId());
+    dataOutEndpointSet1.push_back(dataOut1a);
+
+    Endpoint dataOut1b = sourceNode->AddTestingSlot(CommonSlots::FloatData("out1b", ConnectionType::Output))->GetEndpoint();
+    out1.outputs.emplace_back(dataOut1b.GetSlotId());
+    dataOutEndpointSet1.push_back(dataOut1b);
+
+    in1.outs.emplace_back(out1);
+
+    ins.push_back(in1);
+
+    // Execution in mapped to two execution out slots. Each execution out slot has two corresponding data out slots
+    SlotExecution::In in2;
+
+    Endpoint execIn2 = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("In2", ConnectionType::Input))->GetEndpoint();
+    in2.slotId = execIn2.GetSlotId();
+
+    SlotExecution::Out out2a;
+
+    Endpoint execOut2a = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("Out2a", ConnectionType::Output))->GetEndpoint();
+    out2a.slotId = execOut2a.GetSlotId();
+    executions.push_back(execOut2a);
+
+    Endpoint dataOut2aa = sourceNode->AddTestingSlot(CommonSlots::FloatData("out2aa", ConnectionType::Output))->GetEndpoint();
+    out2a.outputs.emplace_back(dataOut2aa.GetSlotId());
+    dataOutEndpointSet2.push_back(dataOut2aa);
+
+    Endpoint dataOut2ab = sourceNode->AddTestingSlot(CommonSlots::FloatData("out2ab", ConnectionType::Output))->GetEndpoint();
+    out2a.outputs.emplace_back(dataOut2ab.GetSlotId());
+    dataOutEndpointSet2.push_back(dataOut2ab);
+
+    in2.outs.emplace_back(out2a);
+
+    SlotExecution::Out out2b;
+
+    Endpoint execOut2b = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("Out2b", ConnectionType::Output))->GetEndpoint();
+    out2b.slotId = execOut2b.GetSlotId();
+    executions.push_back(execOut2b);
+
+    Endpoint dataOut2ba = sourceNode->AddTestingSlot(CommonSlots::FloatData("out2ba", ConnectionType::Output))->GetEndpoint();
+    out2b.outputs.emplace_back(dataOut2ba.GetSlotId());
+    dataOutEndpointSet3.push_back(dataOut2ba);
+
+    Endpoint dataOut2bb = sourceNode->AddTestingSlot(CommonSlots::FloatData("out2bb", ConnectionType::Output))->GetEndpoint();
+    out2b.outputs.emplace_back(dataOut2bb.GetSlotId());
+    dataOutEndpointSet3.push_back(dataOut2bb);
+
+    in2.outs.emplace_back(out2b);
+
+    ins.push_back(in2);
+
+    // Simple execution in mapped to one execution out with one corresponding data out slot
+    SlotExecution::In in3;
+
+    Endpoint execIn3 = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("In3", ConnectionType::Input))->GetEndpoint();
+    in3.slotId = execIn3.GetSlotId();
+
+    SlotExecution::Out out3;
+
+    Endpoint execOut3 = sourceNode->AddTestingSlot(ExecutionSlotConfiguration("Out3", ConnectionType::Output))->GetEndpoint();
+    out3.slotId = execOut3.GetSlotId();
+    executions.push_back(execOut3);
+
+    Endpoint dataOut3 = sourceNode->AddTestingSlot(CommonSlots::FloatData("out3", ConnectionType::Output))->GetEndpoint();
+    out3.outputs.emplace_back(dataOut3.GetSlotId());
+    dataOutEndpointSet4.push_back(dataOut3);
+
+    in3.outs.emplace_back(out3);
+
+    ins.push_back(in3);
+
+    // Latent execution out slot with two corresponding data out slots
+    SlotExecution::Out latOut1;
+
+    Endpoint latExecOut1 =
+        sourceNode->AddTestingSlot(CommonSlots::Execution("LatOut1", ConnectionType::Output, true))->GetEndpoint();
+    latOut1.slotId = latExecOut1.GetSlotId();
+    executions.push_back(latExecOut1);
+
+    Endpoint latDataOut1a =
+        sourceNode->AddTestingSlot(CommonSlots::FloatData("latOut1a", ConnectionType::Output, true))->GetEndpoint();
+    latOut1.outputs.emplace_back(latDataOut1a.GetSlotId());
+    dataOutEndpointSet5.push_back(latDataOut1a);
+
+    Endpoint latDataOut1b =
+        sourceNode->AddTestingSlot(CommonSlots::FloatData("latOut1b", ConnectionType::Output, true))->GetEndpoint();
+    latOut1.outputs.emplace_back(latDataOut1b.GetSlotId());
+    dataOutEndpointSet5.push_back(latDataOut1b);
+
+    outs.push_back(latOut1);
+
+    // Configure the slot execution map on the source node
+    auto map = aznew SlotExecution::Map(AZStd::move(ins), AZStd::move(outs));
+
+    sourceNode->SetSlotExecutionMap(map);
+
+
+    // Node that creates implicit connections
+    ConfigurableUnitTestNode* targetNode = CreateConfigurableNode();
+
+    // Implicit Execution input with two data inputs
+    Endpoint compImpExecIn = targetNode->AddTestingSlot(CommonSlots::Execution("impExec", ConnectionType::Input, false, true))->GetEndpoint();
+
+    Endpoint compDataIn1 = targetNode->AddTestingSlot(CommonSlots::FloatData("compDataIn1", ConnectionType::Input))->GetEndpoint();
+    dataInEndpointSet.push_back(compDataIn1);
+
+    Endpoint compDataIn2 = targetNode->AddTestingSlot(CommonSlots::FloatData("compDataIn2", ConnectionType::Input))->GetEndpoint();
+    dataInEndpointSet.push_back(compDataIn2);
+
+
+    // Test to make sure implicit connections are being made correctly in each set of data slots
+    TestAllImplicitConnections(editorGraph, dataOutEndpointSet1, dataInEndpointSet, execOut1, compImpExecIn, executions);
+
+    TestAllImplicitConnections(editorGraph, dataOutEndpointSet2, dataInEndpointSet, execOut2a, compImpExecIn, executions);
+
+    TestAllImplicitConnections(editorGraph, dataOutEndpointSet3, dataInEndpointSet, execOut2b, compImpExecIn, executions);
+
+    TestAllImplicitConnections(editorGraph, dataOutEndpointSet4, dataInEndpointSet, execOut3, compImpExecIn, executions);
+
+    TestAllImplicitConnections(editorGraph, dataOutEndpointSet5, dataInEndpointSet, latExecOut1, compImpExecIn, executions);
+
+    delete map;
 }
 
 // Exhaustive test of connecting Execution to a variety of invalid targets.
@@ -460,6 +652,8 @@ TEST_F(ScriptCanvasTestFixture, TypeMatching_SubClassShouldMatchBaseClassSlot)
 
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
@@ -487,6 +681,8 @@ TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassShouldNotMatchSubClassSlot
 
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
@@ -512,6 +708,8 @@ TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_SubClassShouldMatchBaseClass
     // When a dynamic slot is created with a base class type, it should match both base classes and subclasses.
 
     using namespace ScriptCanvas;
+
+    CreateGraph();
 
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
@@ -543,6 +741,8 @@ TEST_F(ScriptCanvasTestFixture, DynamicSlotCreation_BaseClassShouldNotMatchSubCl
 
     using namespace ScriptCanvas;
 
+    CreateGraph();
+
     ConfigurableUnitTestNode* emptyNode = CreateConfigurableNode();
 
     for (const ConnectionType& connectionType : { ConnectionType::Input, ConnectionType::Output })
@@ -573,6 +773,8 @@ TEST_F(ScriptCanvasTestFixture, TypeMatching_BaseClassSlotWithSubClassVariableSh
     // the slot should still match base classes. This is important for being able to change what is hooked to the slot.
 
     using namespace ScriptCanvas;
+
+    CreateGraph();
 
     // Create a slot of type TestBaseClass
 

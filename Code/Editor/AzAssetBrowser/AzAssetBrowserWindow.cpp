@@ -749,13 +749,13 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_tableView->SetTableViewActive(false);
-        m_ui->m_searchWidget->SetSelectionCount(m_ui->m_thumbnailView->GetSelectedAssets().size());
+        m_ui->m_searchWidget->SetSelectionCount(aznumeric_cast<uint32_t>(m_ui->m_thumbnailView->GetSelectedAssets().size()));
     }
     else if (tableView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(true);
-        m_ui->m_searchWidget->SetSelectionCount(m_ui->m_tableView->GetSelectedAssets().size());
+        m_ui->m_searchWidget->SetSelectionCount(aznumeric_cast<uint32_t>(m_ui->m_tableView->GetSelectedAssets().size()));
     }
 }
 
@@ -772,7 +772,7 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         }
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_tableView->SetTableViewActive(false);
-        m_ui->m_searchWidget->SetSelectionCount(m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size());
+        m_ui->m_searchWidget->SetSelectionCount(aznumeric_cast<uint32_t>(m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size()));
     }
 }
 
@@ -1019,15 +1019,15 @@ int AzAssetBrowserWindow::GetSelectionCount()
 {
     if (m_ui->m_thumbnailView->GetThumbnailActiveView())
     {
-        return m_ui->m_thumbnailView->GetSelectedAssets().size();
+        return aznumeric_cast<uint32_t>(m_ui->m_thumbnailView->GetSelectedAssets().size());
     }
 
     if (m_ui->m_tableView->GetTableViewActive())
     {
-        return m_ui->m_tableView->GetSelectedAssets().size();
+        return aznumeric_cast<uint32_t>(m_ui->m_tableView->GetSelectedAssets().size());
     }
 
-    return m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size();
+    return aznumeric_cast<uint32_t>(m_ui->m_assetBrowserTreeViewWidget->GetSelectedAssets().size());
 }
 
 void AzAssetBrowserWindow::OnFilterCriteriaChanged()
