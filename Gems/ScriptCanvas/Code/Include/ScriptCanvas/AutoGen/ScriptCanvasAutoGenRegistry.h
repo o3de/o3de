@@ -70,6 +70,8 @@ public:
     }
 
     void Init();
+    void Release();
+
     void Register(const char* gemOrModuleName, const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory);
 
     using ReflectFunction = AZStd::function<void(AZ::ReflectContext*)>;

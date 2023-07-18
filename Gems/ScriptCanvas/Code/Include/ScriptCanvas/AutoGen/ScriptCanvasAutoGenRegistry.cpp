@@ -47,6 +47,14 @@ void ScriptCanvasModel::Init()
     }
 }
 
+void ScriptCanvasModel::Release()
+{
+    for (auto& entry : m_registry)
+    {
+        entry.second.m_descriptor->ReleaseDescriptor();
+    }
+}
+
 void ScriptCanvasModel::Register(const char* gemOrModuleName, [[maybe_unused]] const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory)
 {
     AZStd::string gemOrModule = gemOrModuleName;
