@@ -140,6 +140,18 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.h
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArccosineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArccosineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArcsineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArcsineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArctangentNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArctangentNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactCosineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactCosineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactSineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactSineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactTangentNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactTangentNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
