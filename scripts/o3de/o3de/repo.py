@@ -24,6 +24,11 @@ REPO_IMPLICIT_SCHEMA_VERSION = "0.0.0"
 REPO_SCHEMA_VERSION_1_0_0 = "1.0.0"
 
 def get_cache_file_uri(uri: str):
+    # check if the passed in uri is a path or uri
+    uri_path = pathlib.Path(uri)
+    if uri_path.exists():
+        uri = uri_path.as_uri()
+
     parsed_uri = urllib.parse.urlparse(uri)
     uri_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
     cache_file = manifest.get_o3de_cache_folder() / str(uri_sha256.hexdigest() + '.json')
