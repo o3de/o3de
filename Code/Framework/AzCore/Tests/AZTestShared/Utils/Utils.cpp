@@ -22,7 +22,7 @@ namespace UnitTest
         return s_tempDirectory.GetDirectoryAsPath();
     }
 
-    void MakePathFromTestFolder(char* buffer, int bufferLen, const char* fileName)
+    void MakePathFromTestFolder(char* buffer, [[maybe_unused]] int bufferLen, const char* fileName)
     {
         azstrcpy(buffer, bufferLen, (GetTestFolderPath() / fileName).LexicallyNormal().c_str());
     }

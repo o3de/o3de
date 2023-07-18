@@ -326,10 +326,10 @@ namespace UnitTest
 
         virtual void OnEventConst() const {};
 
-        virtual BehaviorTestClass OnEventResultWithBehaviorClassParameter(BehaviorTestClass data) { return BehaviorTestClass(); };
+        virtual BehaviorTestClass OnEventResultWithBehaviorClassParameter(BehaviorTestClass /*data*/) { return {}; };
     };
 
-    typedef AZ::EBus<BehaviorTestBusEvents> BehaviorTestBus;
+    using BehaviorTestBus = AZ::EBus<BehaviorTestBusEvents>;
 
 
     class BehaviorTestBusHandler : public BehaviorTestBus::Handler, public AZ::BehaviorEBusHandler

@@ -96,11 +96,11 @@ namespace AzFramework
         xkb_state_component UpdateStateMask(
             xkb_state* state,
             xkb_mod_mask_t depressed_mods,
-            xkb_mod_mask_t latched_mods,
+            xkb_mod_mask_t /*latched_mods*/,
             xkb_mod_mask_t locked_mods,
-            xkb_layout_index_t depressed_layout,
-            xkb_layout_index_t latched_layout,
-            xkb_layout_index_t locked_layout)
+            xkb_layout_index_t /*depressed_layout*/,
+            xkb_layout_index_t /*latched_layout*/,
+            xkb_layout_index_t /*locked_layout*/)
         {
             state->m_modifiers = depressed_mods | locked_mods;
             return {};

@@ -3371,7 +3371,7 @@ namespace UnitTest
                 BusDisconnect();
             }
 
-            void OnAssetReady(Asset<AssetData> asset) override
+            void OnAssetReady(Asset<AssetData> /*asset*/) override
             {
                 m_loadSignal->release();
             }
@@ -3563,7 +3563,7 @@ namespace UnitTest
                 BusDisconnect();
             }
 
-            void OnAssetReady(Asset<AssetData> asset) override
+            void OnAssetReady(Asset<AssetData> /*asset*/) override
             {
                 ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady called \n");
                 m_onAssetReadySignal.release();
