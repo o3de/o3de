@@ -1061,6 +1061,27 @@ namespace AZ::Reflection
                             pair.second = it->second.get();
                             checkAttribute(&pair, nodeData.m_instance, isParentAttribute);
                         }
+
+                        // Lastly, check the AZ::SerializeContext::ClassData -> AZ::Edit::ClassData -> EditorData for attributes
+                        if (const auto* editClassData = nodeData.m_classData->m_editData; editClassData && !isParentAttribute)
+                        {
+                            if (const auto* classEditorData = editClassData->FindElementData(AZ::Edit::ClassElements::EditorData))
+                            {
+                                // Ignore EditorData attributes for UIElements (e.g. groups)
+                                bool ignore = false;
+                                if (nodeData.m_classElement)
+                                {
+                                    ignore = (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_UI_ELEMENT) != 0;
+                                }
+                                if (!ignore)
+                                {
+                                    for (auto it = classEditorData->m_attributes.begin(); it != classEditorData->m_attributes.end(); ++it)
+                                    {
+                                        checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
+                                    }
+                                }
+                            }
+                        }
                     }
                 };
 
