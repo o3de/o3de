@@ -31,6 +31,7 @@
 #include "ScriptCanvasTestBus.h"
 #include "ScriptCanvasTestNodes.h"
 #include "ScriptCanvasTestUtilities.h"
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
@@ -118,9 +119,10 @@ namespace ScriptCanvasTests
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
+            ScriptCanvasModel::Instance().Release();
+
             if (s_application)
             {
-                s_application->Stop();
                 delete s_application;
                 s_application = nullptr;
             }
@@ -143,6 +145,8 @@ namespace ScriptCanvasTests
 
         void SetUp() override
         {
+            ScriptCanvasModel::Instance().Init();
+
             ASSERT_TRUE(s_setupSucceeded) << "ScriptCanvasTestFixture set up failed, unit tests can't work properly";
             m_serializeContext = s_application->GetSerializeContext();
             m_behaviorContext = s_application->GetBehaviorContext();
@@ -472,8 +476,6 @@ namespace ScriptCanvasTests
         ScriptCanvas::Graph* m_graph = nullptr;
 
         int m_slotCounter = 0;
-
-        AZStd::unordered_map< AZ::EntityId, AZ::Entity* > m_entityMap;
 
     protected:
         static ScriptCanvasTests::Application* GetApplication() { return s_application; }
