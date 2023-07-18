@@ -644,6 +644,7 @@ namespace AZ::Reflection
                 if (HandleNodeInParentGroup(nodeData, parentData))
                 {
                     m_nodeWasSkipped = true;
+                    // Return false to prevent descendants from being enumerated.
                     return false;
                 }
 
