@@ -835,10 +835,16 @@ namespace ScriptCanvas
 
         AZ::Outcome<AZStd::string> GetLatentOutKey(const SlotExecution::Map& map, const Slot& slot) const;
 
-        // Returns the provided slot's corresponding execution slot
+        // Returns a list of slots that are opposite of the provided slots and of the same type. For example, if you pass in a data in slot,
+        // it will return all of the data out slots associated with it
+        AZStd::vector<const Slot*> GetOppositeSlots(const Slot* slot) const;
+
+        // Returns the provided slot's corresponding execution slot. For example, if you pass in an data in slot, it will return the
+        // execution in slot that maps to it (whether this node has a map or not)
         const Slot* GetCorrespondingExecutionSlot(const Slot* slot) const;
 
-        // Returns the provided slot's corresponding data slots
+        // Returns the provided slot's corresponding data slots. For example, if you pass in an execution in slot, it will return a list of
+        // the data in slots that map to it (whether this node has a map or not)
         AZStd::vector<const Slot*> GetCorrespondingDataSlots(const Slot* slot) const;
 
         void ClearDisplayType(const SlotId& slotId);
