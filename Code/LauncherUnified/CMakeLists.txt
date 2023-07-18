@@ -45,6 +45,25 @@ ly_add_target(
             Legacy::CryCommon
 )
 
+ly_add_target(
+    NAME Launcher.Game.Headless.Static STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        launcher_game_files.cmake
+        ${pal_dir}/launcher_game_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+    COMPILE_DEFINITIONS
+        PRIVATE
+            LY_HEADLESS_LAUNCHER=1
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzGameFramework
+            Legacy::CryCommon
+)
+
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
 
     ly_add_target(
@@ -71,8 +90,8 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
             PRIVATE
                 .
         COMPILE_DEFINITIONS
-            PUBLIC
-                LY_HEADLESS_SERVER=1
+            PRIVATE
+                LY_HEADLESS_LAUNCHER=1
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore

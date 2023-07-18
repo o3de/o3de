@@ -32,7 +32,11 @@ namespace O3DELauncher
 
     bool IsHeadless()
     {
+        #if LY_HEADLESS_LAUNCHER
+        return true;
+        #else
         return false;
+        #endif
     }
 
     AZStd::string_view GetBuildTargetName()
