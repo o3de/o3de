@@ -41,6 +41,8 @@ namespace ${SanitizedCppName}
         // Put your public methods here
     };
 
+    // ${SomeVar}
+
     class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
@@ -402,21 +404,33 @@ class TestCreateTemplate:
     @pytest.mark.parametrize(
         "concrete_contents, templated_contents,"
         " keep_license_text, force, expect_failure,"
-        " template_json_contents", [
+        " template_json_contents, replace_contents", [
             pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITH_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          True, True, False,
-                         TEST_TEMPLATE_JSON_CONTENTS),
+                         TEST_TEMPLATE_JSON_CONTENTS, None),
             pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
                          False, True, False,
-                         TEST_TEMPLATE_JSON_CONTENTS)
+                         TEST_TEMPLATE_JSON_CONTENTS, None),
+            # Expect success when replacing a var with a value
+            pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
+                         False, True, False,
+                         TEST_TEMPLATE_JSON_CONTENTS, ['${SomeVar}','ReplacedVar']),
+            # Expect failure when trying to replace a var with no value
+            pytest.param(TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE, TEST_TEMPLATED_CONTENT_WITH_LICENSE,
+                         False, True, True,
+                         TEST_TEMPLATE_JSON_CONTENTS, ['${SomeVar}'])
         ]
     )
     def test_create_from_template(self, tmpdir, concrete_contents, templated_contents, keep_license_text, force,
-                                  expect_failure, template_json_contents):
-
+                                  expect_failure, template_json_contents, replace_contents):
+        if replace_contents and len(replace_contents) % 2 == 0:
+            # update concrete_contents with replaced pairs
+            it = iter(replace_contents)
+            for data in it:
+                concrete_contents = concrete_contents.replace(data, next(it), 1)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_from_template, 'TestTemplate', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, destination_name='TestTemplate')
+                                          template_json_contents, destination_name='TestTemplate', replace=replace_contents)
 
 
     @pytest.mark.parametrize(
