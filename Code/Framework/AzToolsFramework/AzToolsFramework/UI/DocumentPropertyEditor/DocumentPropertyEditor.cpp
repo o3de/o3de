@@ -1668,6 +1668,7 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        emit RequestSizeUpdate();
     }
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
@@ -1678,6 +1679,7 @@ namespace AzToolsFramework
             {
                 m_rootNode->HandleOperationAtPath(*operationIterator, 0);
             }
+            emit RequestSizeUpdate();
         }
     }
 

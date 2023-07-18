@@ -264,6 +264,7 @@ namespace AzToolsFramework
 
     signals:
         void ExpanderChangedByUser();
+        void RequestSizeUpdate(); //!< needed to inform the ComponentEditor Card that the DPE's sizehint needs to be re-evaluated
 
     public slots:
         //! set the DOM adapter for this DPE to inspect
