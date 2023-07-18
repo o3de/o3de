@@ -28,4 +28,14 @@ namespace O3DELauncher
     {
         return "server";
     }
+
+    bool IsHeadless()
+    {
+        #if LY_HEADLESS_SERVER
+        return true;
+        #else
+        return false;
+        #endif
+    }
+
 }

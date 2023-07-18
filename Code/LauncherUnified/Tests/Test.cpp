@@ -30,6 +30,11 @@ namespace O3DELauncher
         return "client";
     }
 
+    bool IsHeadless()
+    {
+        return false;
+    }
+
     AZStd::string_view GetBuildTargetName()
     {
 #if !defined (LY_CMAKE_TARGET)

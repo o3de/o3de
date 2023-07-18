@@ -76,9 +76,12 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 ${server_gem_dependencies}
                 Legacy::CrySystem
             )
-
+            
             if(NOT O3DE_HEADLESS_SERVER_LAUNCHER)
                 list(APPEND server_build_dependencies AzFramework.NativeUI)
+                list(APPEND server_build_dependencies AZ::Launcher.Server.Static)
+            else()
+                list(APPEND server_build_dependencies AZ::Launcher.Server.Headless.Static)
             endif()
 
         endif()
@@ -188,7 +191,6 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                     # This is needed so that only gems for the project server launcher are loaded
                     LY_CMAKE_TARGET="${project_name}_ServerLauncher"
 
-                    ${headless_server_defines}
             INCLUDE_DIRECTORIES
                 PRIVATE
                     .

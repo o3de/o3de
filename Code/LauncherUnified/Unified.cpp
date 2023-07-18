@@ -27,4 +27,10 @@ namespace O3DELauncher
     {
         return "unified";
     }
+
+    bool IsHeadless()
+    {
+        return false;
+    }
+
 }

@@ -27,4 +27,9 @@ namespace O3DELauncher
     {
         return "client";
     }
+
+    bool IsHeadless()
+    {
+        return false;
+    }
 }

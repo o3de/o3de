@@ -411,10 +411,12 @@ namespace O3DELauncher
             return ReturnCode::ErrValidation;
         }
 
-        #if LY_HEADLESS_LAUNCHER
-        gameApplication.SetHeadless(true);
-        #endif // LY_HEADLESS_LAUNCHER
-
+        bool isHeadless = IsHeadless();
+        if (isHeadless)
+        {
+            AZ_Trace("Launcher", "Running headless\n");
+            gameApplication.SetHeadless(true);    
+        }
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
