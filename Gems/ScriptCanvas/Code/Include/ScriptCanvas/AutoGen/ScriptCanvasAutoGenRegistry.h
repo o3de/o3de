@@ -114,7 +114,7 @@ public:
     {
         AZStd::hash<AZStd::string> hash_string;
         auto h = hash_string(input);
-        return AZStd::string::format("%lX", h);
+        return AZStd::string::format("%zX", h);
     }
 };
 
