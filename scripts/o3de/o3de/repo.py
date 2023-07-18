@@ -254,8 +254,13 @@ def get_object_versions_json_data(remote_object_list:list, required_json_key:str
 
         versions_data = remote_object_json_data.pop('versions_data', None)
         if versions_data:
+            version_found = False
             for version_json_data in versions_data:
+                if remote_object_json_data.get('version') == version_json_data.get('version'):
+                    version_found = True
                 object_json_data_list.append(remote_object_json_data | version_json_data)
+            if not version_found:
+                object_json_data_list.append(remote_object_json_data)
         else:
             object_json_data_list.append(remote_object_json_data)
 

@@ -126,6 +126,20 @@ set(FILES
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.h
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Libraries.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactAddNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactAddNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDecrementNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDecrementNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDivideNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactDivideNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactIncrementNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
