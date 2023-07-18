@@ -8,6 +8,8 @@
 
 #include "TestAutoGenFunctions.h"
 
+#include "Source/Nodes/TestAutoGenFunctions.generated.h"
+
 namespace ScriptCanvasTesting
 {
     namespace TestAutoGenFunctions
