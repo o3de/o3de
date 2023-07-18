@@ -724,6 +724,7 @@ namespace AzQtComponents
         : QFrame(parent)
         , m_ui(new Ui::FilteredSearchWidget)
         , m_flowLayout(new FlowLayout())
+        , m_favoritesLayout(new QHBoxLayout())
         , m_selector(nullptr)
         , m_textFilterFillsWidth(true)
         , m_displayEnabledFilters(true)
@@ -790,23 +791,45 @@ namespace AzQtComponents
 
         if (m_filterTextButton)
         {
-            m_flowLayout->addWidget(m_filterTextButton);
+            m_filterTextButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+            m_favoritesLayout->addWidget(m_filterTextButton);
         }
 
         if (m_selectionCountButton)
         {
-            m_flowLayout->addWidget(m_selectionCountButton);
+            m_favoritesLayout->addWidget(m_selectionCountButton);
         }
 
         if (m_addFavoritesButton)
         {
-            m_flowLayout->addWidget(m_addFavoritesButton);
+            m_favoritesLayout->addWidget(m_addFavoritesButton);
+        }
+
+        if (m_endSpacer)
+        {
+            m_favoritesLayout->addSpacerItem(m_endSpacer);
         }
     }
 
     void FilteredSearchWidget::SetupContainerLayout()
     {
-        m_containerLayout->setLayout(m_flowLayout);
+        if (m_usingFavoritesSystem)
+        {
+            for (int widgetCount = m_flowLayout->count() - 1; widgetCount > -1; widgetCount--)
+            {
+                QLayoutItem* item = m_flowLayout->takeAt(widgetCount);
+                if (auto widget = item->widget())
+                {
+                    widget->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+                    m_favoritesLayout->addItem(item);
+                }
+            }
+            m_containerLayout->setLayout(m_favoritesLayout);
+        }
+        else
+        {
+            m_containerLayout->setLayout(m_flowLayout);
+        }
         m_buttonContainer->hide();
         m_containerLayout->setContextMenuPolicy(Qt::CustomContextMenu);
         connect(m_ui->filteredLayout, &QWidget::customContextMenuRequested, this, &FilteredSearchWidget::OnClearFilterContextMenu);
@@ -841,7 +864,8 @@ namespace AzQtComponents
         {
             createAddFavoriteSearchButton();
             m_selectionCountButton = new SelectionCountButton(parentWidget());
-            m_flowLayout->addWidget(m_selectionCountButton);
+            m_selectionCountButton->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+            m_favoritesLayout->addWidget(m_selectionCountButton);
             m_selectionCountButton->setVisible(true);
         }
     }
@@ -1043,7 +1067,7 @@ namespace AzQtComponents
         m_addFavoritesButton->setIcon(QIcon(":/Gallery/Favorites.svg"));
         m_addFavoritesButton->setToolTip(tr("Add to Favorites"));
         m_addFavoritesButton->setAutoRaise(true);
-        m_flowLayout->addWidget(m_addFavoritesButton);
+        m_favoritesLayout->addWidget(m_addFavoritesButton);
         connect(
             m_addFavoritesButton,
             &QAbstractButton::clicked,
@@ -1052,6 +1076,8 @@ namespace AzQtComponents
             {
                 AddFavoritesButtonPressed();
             });
+        m_endSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Fixed);
+        m_favoritesLayout->addSpacerItem(m_endSpacer);
     }
 
     void FilteredSearchWidget::AddFavoritesButtonPressed()
@@ -1073,20 +1099,34 @@ namespace AzQtComponents
         // Ensure the text search and favorite buttons are always at the end.
         if (m_filterTextButton)
         {
-            m_flowLayout->removeWidget(m_filterTextButton);
-            m_flowLayout->addWidget(m_filterTextButton);
+            if (m_usingFavoritesSystem)
+            {
+                m_favoritesLayout->removeWidget(m_filterTextButton);
+                m_favoritesLayout->addWidget(m_filterTextButton);
+            }
+            else
+            {
+                m_flowLayout->removeWidget(m_filterTextButton);
+                m_flowLayout->addWidget(m_filterTextButton);
+            }
         }
 
         if (m_selectionCountButton)
         {
-            m_flowLayout->removeWidget(m_selectionCountButton);
-            m_flowLayout->addWidget(m_selectionCountButton);
+            m_favoritesLayout->removeWidget(m_selectionCountButton);
+            m_favoritesLayout->addWidget(m_selectionCountButton);
         }
 
         if (m_addFavoritesButton)
         {
-            m_flowLayout->removeWidget(m_addFavoritesButton);
-            m_flowLayout->addWidget(m_addFavoritesButton);
+            m_favoritesLayout->removeWidget(m_addFavoritesButton);
+            m_favoritesLayout->addWidget(m_addFavoritesButton);
+        }
+
+        if (m_endSpacer)
+        {
+            m_favoritesLayout->removeItem(m_endSpacer);
+            m_favoritesLayout->addItem(m_endSpacer);
         }
     }
 
@@ -1150,7 +1190,15 @@ namespace AzQtComponents
                     break;
                 }
             });
-            m_flowLayout->addWidget(button);
+            if (m_usingFavoritesSystem)
+            {
+                button->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Fixed);
+                m_favoritesLayout->addWidget(button);
+            }
+            else
+            {
+                m_flowLayout->addWidget(button);
+            }
             RepositionFixedButtons();
             m_typeButtons[index] = button;
         }
