@@ -977,13 +977,18 @@ namespace AZ::Reflection
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 return;
                             }
-                            // Collect EnumValueKey attributes unless this node has an EnumValues or GenericValueList
-                            // attribute. If an EnumValues or GenericValueList attribute is present we do not cache
+                            // Collect EnumValueKey attributes unless this node has an EnumValues, GenericValue or GenericValueList
+                            // attribute. If an EnumValues, GenericValue or GenericValueList attribute is present we do not cache
                             // because such nodes also have internal EnumValueKey attributes that we won't use.
                             // The cached values will be stored as a GenericValueList attribute.
-                            if (name == enumValueKeyName && !visitedAttributes.contains(enumValuesCrcName) &&
-                                !visitedAttributes.contains(genericValueListName))
+                            if (name == enumValueKeyName)
                             {
+                                if (visitedAttributes.contains(enumValuesCrcName) || visitedAttributes.contains(genericValueListName) ||
+                                    visitedAttributes.contains(genericValueName))
+                                {
+                                    return;
+                                }
+
                                 genericValueCache.ArrayPushBack(attributeValue);
                                 // Forcing the node's typeId to AZ::u64 so the correct property handler will be chosen
                                 // in the PropertyEditorSystem.
@@ -1055,6 +1060,27 @@ namespace AZ::Reflection
                             pair.first = it->first;
                             pair.second = it->second.get();
                             checkAttribute(&pair, nodeData.m_instance, isParentAttribute);
+                        }
+
+                        // Lastly, check the AZ::SerializeContext::ClassData -> AZ::Edit::ClassData -> EditorData for attributes
+                        if (const auto* editClassData = nodeData.m_classData->m_editData; editClassData && !isParentAttribute)
+                        {
+                            if (const auto* classEditorData = editClassData->FindElementData(AZ::Edit::ClassElements::EditorData))
+                            {
+                                // Ignore EditorData attributes for UIElements (e.g. groups)
+                                bool ignore = false;
+                                if (nodeData.m_classElement)
+                                {
+                                    ignore = (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_UI_ELEMENT) != 0;
+                                }
+                                if (!ignore)
+                                {
+                                    for (auto it = classEditorData->m_attributes.begin(); it != classEditorData->m_attributes.end(); ++it)
+                                    {
+                                        checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
+                                    }
+                                }
+                            }
                         }
                     }
                 };
