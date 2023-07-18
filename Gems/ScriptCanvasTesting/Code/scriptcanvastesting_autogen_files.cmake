@@ -13,4 +13,6 @@ set(FILES
     ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasNodeable_Source.jinja
     ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvas_Macros.jinja
     ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvas_Nodeable_Macros.jinja
+    ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasFunction_Header.jinja
+    ${scriptcanvas_gem_root}/Code/Include/ScriptCanvas/AutoGen/ScriptCanvasFunction_Source.jinja
 )
