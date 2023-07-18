@@ -243,6 +243,33 @@ namespace AZ
         void FullscreenTrianglePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
+
+            // Update scissor/viewport regions based on the mip level of the render target that is being written into
+            uint16_t viewMinMip = RHI::ImageSubresourceRange::HighestSliceIndex;
+            for (const PassAttachmentBinding& attachmentBinding : m_attachmentBindings)
+            {
+                if (attachmentBinding.GetAttachment() != nullptr &&
+                    frameGraph.GetAttachmentDatabase().IsAttachmentValid(attachmentBinding.GetAttachment()->GetAttachmentId()) &&
+                    attachmentBinding.m_unifiedScopeDesc.GetType() == RHI::AttachmentType::Image &&
+                    RHI::CheckBitsAny(attachmentBinding.GetAttachmentAccess(), RHI::ScopeAttachmentAccess::Write) &&
+                    attachmentBinding.m_scopeAttachmentUsage == RHI::ScopeAttachmentUsage::RenderTarget)
+                {
+                    RHI::ImageViewDescriptor viewDesc = attachmentBinding.m_unifiedScopeDesc.GetAsImage().m_imageViewDescriptor;
+                    viewMinMip = AZStd::min(viewMinMip, viewDesc.m_mipSliceMin);
+                }
+            }
+            
+            if(viewMinMip < RHI::ImageSubresourceRange::HighestSliceIndex)
+            {
+                uint32_t viewportStateMaxX = static_cast<uint32_t>(m_viewportState.m_maxX);
+                uint32_t viewportStateMaxY = static_cast<uint32_t>(m_viewportState.m_maxY);
+                m_viewportState.m_maxX = static_cast<float>(viewportStateMaxX >> viewMinMip);
+                m_viewportState.m_maxY = static_cast<float>(viewportStateMaxY >> viewMinMip);
+
+                m_scissorState.m_maxX = static_cast<uint32_t>(m_scissorState.m_maxX) >> viewMinMip;
+                m_scissorState.m_maxY = static_cast<uint32_t>(m_scissorState.m_maxY) >> viewMinMip;
+            }
+            
             frameGraph.SetEstimatedItemCount(1);
         }
 

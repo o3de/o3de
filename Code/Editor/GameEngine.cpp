@@ -25,6 +25,7 @@
 // AzFramework
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Archive/IArchive.h>
 
@@ -793,6 +794,22 @@ void CGameEngine::Update()
         if (CViewport* pRenderViewport = GetIEditor()->GetViewManager()->GetGameViewport())
         {
             pRenderViewport->Update();
+        }
+
+        // Check for the Escape key to exit game mode here rather than in Qt, 
+        // because all Qt events are usually filtered out in game mode in 
+        // QtEditorApplication_<platform>.cpp nativeEventFilter() to prevent 
+        // using Editor menu actions and shortcuts that shouldn't trigger while 
+        // playing the game.
+        // When the user opens the console, Qt events will be allowed 
+        // so the user can interact with limited Editor content like the console.
+        const AzFramework::InputChannel* inputChannel = nullptr;
+        const AzFramework::InputChannelId channelId(AzFramework::InputDeviceKeyboard::Key::Escape);
+        AzFramework::InputChannelRequestBus::EventResult(inputChannel, channelId, &AzFramework::InputChannelRequests::GetInputChannel);
+        if(inputChannel && inputChannel->GetState() == AzFramework::InputChannel::State::Began)
+        {
+            // leave game mode
+            RequestSetGameMode(false);
         }
     }
     else

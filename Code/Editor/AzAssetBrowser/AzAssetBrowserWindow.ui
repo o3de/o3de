@@ -562,7 +562,11 @@
             <height>0</height>
            </size>
           </property>
-          <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView"/>
+             <widget class="AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView" name="m_thumbnailView">
+                 <property name="styleSheet">
+                     <string notr="true">background-color: #333333</string>
+                 </property>
+             </widget>
           <widget class="AzToolsFramework::AssetBrowser::AssetBrowserTableView" name="m_tableView">
            <layout class="QVBoxLayout" name="m_tableViewLayout">
             <property name="spacing">

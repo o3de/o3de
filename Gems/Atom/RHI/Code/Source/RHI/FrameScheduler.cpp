@@ -184,6 +184,7 @@ namespace AZ::RHI
     {
         AZ_PROFILE_SCOPE(RHI, "FrameScheduler: Compile");
 
+        //Go through each scope and call their SetupFrameGraphDependencies to build the framegraph
         PrepareProducers();
 
         m_compileRequest = compileRequest;

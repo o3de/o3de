@@ -25,6 +25,11 @@ namespace LmbrCentral
                 ->Field("Load Type", &EditorAudioPreloadComponent::m_loadType)
                 ;
 
+            serializeContext->Enum<AudioPreloadComponent::LoadType>()
+                ->Value("Auto", AudioPreloadComponent::LoadType::Auto)
+                ->Value("Manual", AudioPreloadComponent::LoadType::Manual)
+                ;
+
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<AudioPreloadComponent::LoadType>("Load Type", "Automatic or Manual loading and unloading")
