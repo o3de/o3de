@@ -57,6 +57,11 @@ namespace AzGameFramework
     {
     }
 
+    void GameApplication::SetHeadless(bool headless)
+    {
+        m_headless = headless;
+    }
+
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
     {
         AzFramework::Application::StartCommon(systemEntity);
@@ -106,6 +111,10 @@ namespace AzGameFramework
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
     {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
+        if (m_headless)
+        {
+            appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::Headless;
+        }
     };
 
 } // namespace AzGameFramework

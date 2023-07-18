@@ -9,7 +9,18 @@
 # This will be used to turn on "PerMonitor" DPI scaling support. (Currently there is no way in CMake to specify "PerMonitorV2")
 set(O3DE_DPI_AWARENESS "PerMonitor")
 
+set(O3DE_HEADLESS_SERVER_LAUNCHER TRUE CACHE BOOL "Flag to indicating building the game server launcher as a headless console application")
+
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
+
+if(O3DE_HEADLESS_SERVER_LAUNCHER)
+    set(SERVER_LAUNCHERTYPE EXECUTABLE)
+    set(headless_server_defines
+        LY_HEADLESS_LAUNCHER=1)
+else()
+    set(SERVER_LAUNCHERTYPE APPLICATION)
+endif()
 
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
@@ -65,6 +76,11 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                 ${server_gem_dependencies}
                 Legacy::CrySystem
             )
+
+            if(NOT O3DE_HEADLESS_SERVER_LAUNCHER)
+                list(APPEND server_build_dependencies AzFramework.NativeUI)
+            endif()
+
         endif()
 
         if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
@@ -157,7 +173,7 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
     ################################################################################
     if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
         ly_add_target(
-            NAME ${project_name}.ServerLauncher APPLICATION
+            NAME ${project_name}.ServerLauncher ${SERVER_LAUNCHERTYPE}
             NAMESPACE AZ
             FILES_CMAKE
                 ${CMAKE_CURRENT_LIST_DIR}/launcher_project_files.cmake
@@ -171,6 +187,8 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                     # when loading .setreg file specializations
                     # This is needed so that only gems for the project server launcher are loaded
                     LY_CMAKE_TARGET="${project_name}_ServerLauncher"
+
+                    ${headless_server_defines}
             INCLUDE_DIRECTORIES
                 PRIVATE
                     .

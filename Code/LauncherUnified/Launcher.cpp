@@ -411,6 +411,10 @@ namespace O3DELauncher
             return ReturnCode::ErrValidation;
         }
 
+        #if LY_HEADLESS_LAUNCHER
+        gameApplication.SetHeadless(true);
+        #endif // LY_HEADLESS_LAUNCHER
+
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 

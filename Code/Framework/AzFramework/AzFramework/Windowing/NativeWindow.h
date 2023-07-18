@@ -120,7 +120,7 @@ namespace AzFramework
         bool IsActive() const;
 
         //! Get the native window handle. This is used as the bus id for the WindowRequestBus and WindowNotificationBus
-        NativeWindowHandle GetWindowHandle() const { return m_pimpl->GetWindowHandle(); }
+        NativeWindowHandle GetWindowHandle() const { return (m_pimpl != nullptr) ? m_pimpl->GetWindowHandle() : nullptr; }
 
         // WindowRequestBus::Handler overrides ...
         void SetWindowTitle(const AZStd::string& title) override;
