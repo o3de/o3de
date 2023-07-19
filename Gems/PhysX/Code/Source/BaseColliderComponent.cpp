@@ -106,7 +106,72 @@ namespace PhysX
                 ->Field("ShapeConfigList", &BaseColliderComponent::m_shapeConfigList)
                 ;
         }
+
+#if defined(CARBONATED)
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<ColliderComponentRequestBus>("ColliderComponentRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                ->Event("GetBoxDimensions", &ColliderComponentRequests::GetBoxDimensions)
+                ->Event("SetBoxDimensions", &ColliderComponentRequests::SetBoxDimensions);
+        }
+#endif
     }
+
+#if defined(CARBONATED)
+    AZ::Vector3 BaseColliderComponent::GetBoxDimensions()
+    {
+        auto* scene = Utils::GetDefaultScene();
+        if (scene == nullptr)
+        {
+            return AZ::Vector3::CreateZero();
+        }
+
+        auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+        PHYSX_SCENE_READ_LOCK(pxScene);
+
+        for (auto& shape : m_shapes)
+        {
+            auto pxShape = static_cast<physx::PxShape*>(shape->GetNativePointer());
+
+            if (pxShape->getGeometryType() == physx::PxGeometryType::eBOX)
+            {
+                physx::PxGeometryHolder holder = pxShape->getGeometry();
+                physx::PxVec3 halfExt = holder.box().halfExtents;
+
+                return AZ::Vector3(halfExt.x * 2.0f, halfExt.y * 2.0f, halfExt.z * 2.0f);
+            }
+        }
+
+        return AZ::Vector3::CreateZero();
+    }
+
+    void BaseColliderComponent::SetBoxDimensions(const AZ::Vector3& dimensions)
+    {
+        auto* scene = Utils::GetDefaultScene();
+        if (scene == nullptr)
+        {
+            return;
+        }
+
+        auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+        PHYSX_SCENE_WRITE_LOCK(pxScene);
+
+        for (auto& shape : m_shapes)
+        {
+            auto pxShape = static_cast<physx::PxShape*>(shape->GetNativePointer());
+
+            if (pxShape->getGeometryType() == physx::PxGeometryType::eBOX)
+            {
+                const physx::PxBoxGeometry boxGeom(dimensions.GetX() / 2.0f, dimensions.GetY() / 2.0f, dimensions.GetZ() / 2.0f);
+
+                pxShape->setGeometry(boxGeom);
+            }
+        }
+    }
+#endif
 
     void BaseColliderComponent::SetShapeConfigurationList(const AzPhysics::ShapeColliderPairList& shapeConfigList)
     {

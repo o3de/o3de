@@ -189,6 +189,18 @@ namespace PhysX
         return { GetHeightfieldShape() };
     }
 
+#if defined(CARBONATED)
+    AZ::Vector3 HeightfieldColliderComponent::GetBoxDimensions()
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    void HeightfieldColliderComponent::SetBoxDimensions([[maybe_unused]]const AZ::Vector3& dimensions)
+    {
+    }
+#endif
+
+
     // CollisionFilteringRequestBus
     void HeightfieldColliderComponent::SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 colliderTag)
     {

@@ -71,6 +71,11 @@ namespace PhysX
         AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 
+#if defined(CARBONATED)
+        AZ::Vector3 GetBoxDimensions() override;
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+#endif
+
         // CollisionFilteringRequestBus
         void SetCollisionLayer(const AZStd::string& layerName, AZ::Crc32 filterTag) override;
         AZStd::string GetCollisionLayerName() override;

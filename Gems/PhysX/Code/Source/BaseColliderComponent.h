@@ -42,6 +42,11 @@ namespace PhysX
         AzPhysics::ShapeColliderPairList GetShapeConfigurations() override;
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> GetShapes() override;
 
+#if defined(CARBONATED)
+        AZ::Vector3 GetBoxDimensions() override;
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+#endif
+
         // TransformNotificationsBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
