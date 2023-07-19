@@ -12,7 +12,6 @@
 #include <Atom/RPI.Public/GpuQuery/GpuQuerySystemInterface.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
-#include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/Pass/PassAttachment.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -257,6 +256,17 @@ namespace AZ
             //!               It's ignored if the attachment isn't an InputOutput attachment.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
             bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+
+            //! Same as above, but reads back several attachments at once.
+            //! This is mostly useful to read several Mips for the same Image, where each Mip is an attachment.
+            //! CAVEAT 1: This function will only succeed if @readback is a subclass of AttachmentReadback that
+            //!           implements reading back from multiple attachments.
+            //! CAVEAT 2: Because several attachments are captured at once, the @option argument will apply equally to all attachments.
+            //!           This means that if @option == PassAttachmentReadbackOption::Input, then we'll read all attachments
+            //!           BEFORE the Pass runs its main shader.
+            //!           if @option ==  PassAttachmentReadbackOption::Output, then we'll read all attachments
+            //!           AFTER the Pass runs its main shader.
+            bool ReadbackAttachments(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const AZStd::vector<Name>& slotNames, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }

@@ -25,7 +25,7 @@ namespace AZ
 
     namespace RPI
     {
-        //! A scope producer which reads back buffer or image attachments 
+        //! A scope producer which reads back a single buffer or image attachment 
         class AttachmentReadback
         {
         public:
@@ -43,7 +43,6 @@ namespace AZ
             };
 
             AttachmentReadback(const RHI::ScopeId& scopeId);
-
             virtual ~AttachmentReadback();
 
             //! Readback a pass attachment.
@@ -51,6 +50,24 @@ namespace AZ
             //! Return true if the pass attachment readback request was submitted.  
             //! The callback function set by SetCallback(CallbackFunction callback) will be called once the readback is finished
             bool ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName);
+
+
+            struct ReadbackRequestInfo
+            {
+                // Same semantic as ReadPassAttachment Arg 0.
+                const PassAttachment* m_attachment = nullptr;
+                // Same semantic as ReadPassAttachment Arg 1.
+                Name m_readbackName;
+                // With a properly set imageViewDescription we can readback
+                // a particular mip level.
+                RHI::ImageViewDescriptor m_imageViewDescriptor;
+            };
+            //! Readback multiple pass attachments.
+            virtual bool ReadPassAttachments(const AZStd::vector<ReadbackRequestInfo>& /*readbackAttachmentRequests*/)
+            {
+                AZ_Assert(false, "AttachmentReadback base class doesn't support reading back from multiple attachments!");
+                return false;
+            }
 
             struct ReadbackResult
             {
@@ -64,7 +81,7 @@ namespace AZ
                 RHI::ImageDescriptor m_imageDescriptor;
             };
 
-            void Reset();
+            virtual void Reset();
 
             ReadbackState GetReadbackState();
 
@@ -86,12 +103,24 @@ namespace AZ
             //! Prepare this scope producer for the frame.
             void FrameBegin(Pass::FramePrepareParams params);
 
-        private:
+        protected:
+            // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
+            static RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect);
 
             // Scope producer functions for copy
-            void CopyPrepare(RHI::FrameGraphInterface frameGraph);
-            void CopyCompile(const RHI::FrameGraphCompileContext& context);
-            void CopyExecute(const RHI::FrameGraphExecuteContext& context);
+            virtual void CopyPrepare(RHI::FrameGraphInterface frameGraph);
+            virtual void CopyCompile(const RHI::FrameGraphCompileContext& context);
+            virtual void CopyExecute(const RHI::FrameGraphExecuteContext& context);
+
+            AZStd::fixed_vector<bool, RHI::Limits::Device::FrameCountMax> m_isReadbackComplete;
+            uint32_t m_readbackBufferCurrentIndex = 0u;
+            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
+            ReadbackState m_state = ReadbackState::Uninitialized;
+            Ptr<RHI::Fence> m_fence;
+            // Callback function when read back finished
+            CallbackFunction m_callback = nullptr;
+
+        private:
 
             // Scope producer functions for decomposing multi-sample image
             void DecomposePrepare(RHI::FrameGraphInterface frameGraph);
@@ -120,10 +149,7 @@ namespace AZ
             // It helps with an issue where during the buffer cleanup there was a chance to hit the assert
             // related to disconnecting a bus during a dispatch on a lockless Bus.
             AZStd::fixed_vector<Data::Instance<Buffer>, RHI::Limits::Device::FrameCountMax> m_readbackBufferArray;
-            AZStd::fixed_vector<bool, RHI::Limits::Device::FrameCountMax> m_isReadbackComplete;
-            uint32_t m_readbackBufferCurrentIndex = 0u;
             AZ::Name m_readbackName;
-            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
 
             RHI::AttachmentId m_copyAttachmentId;
 
@@ -132,13 +158,6 @@ namespace AZ
 
             // The input image attachment's descriptor
             RHI::ImageDescriptor m_imageDescriptor;
-            
-            ReadbackState m_state = ReadbackState::Uninitialized;
-
-            Ptr<RHI::Fence> m_fence;
-
-            // Callback function when read back finished
-            CallbackFunction m_callback = nullptr;
 
             // For decompose multisample image to an non-multisample image
             Data::Instance<Shader> m_decomposeShader;

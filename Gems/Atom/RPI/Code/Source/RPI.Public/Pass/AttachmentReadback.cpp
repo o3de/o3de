@@ -80,7 +80,7 @@ namespace AZ
 
 
         // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
-        RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
+        RHI::Format AttachmentReadback::FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect)
         {
             RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(format);
 
@@ -381,6 +381,8 @@ namespace AZ
 
                 // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the mipmaps, array and planars
                 // only copy mip level 0, array 0, and one aspect (planar) at this moment
+                // REMARK: The new AttachmentsReadbackGroup is capable of reading a particular mip level,
+                // including for volumetric textures.
                 RHI::ImageSubresourceRange range(0, 0, 0, 0);
                 range.m_aspectFlags = RHI::ImageAspectFlags::Color;
 
@@ -396,10 +398,16 @@ namespace AZ
                 RHI::ImageSubresourceLayout imageSubresourceLayout;
                 image->GetSubresourceLayouts(range, &imageSubresourceLayout, nullptr);
 
+                AZ::u64 byteCount = imageSubresourceLayout.m_bytesPerImage;
+                if (m_imageDescriptor.m_dimension == RHI::ImageDimension::Image3D)
+                {
+                    byteCount *= imageSubresourceLayout.m_size.m_depth;
+                }
+
                 RPI::CommonBufferDescriptor desc;
                 desc.m_poolType = RPI::CommonBufferPoolType::ReadBack;
                 desc.m_bufferName = m_readbackName.GetStringView();
-                desc.m_byteCount = imageSubresourceLayout.m_bytesPerImage;
+                desc.m_byteCount = byteCount;
 
                 m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
@@ -551,12 +559,24 @@ namespace AZ
                     RHI::ImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(m_imageDescriptor.m_size,
                         m_imageDescriptor.m_format);
 
-                    m_dataBuffer->resize_no_construct(imageLayout.m_bytesPerImage);
-
-                    for (uint32_t row = 0; row < imageLayout.m_rowCount; ++row)
+                    auto rowCount = imageLayout.m_rowCount;
+                    auto imageByteCount = imageLayout.m_bytesPerImage;
+                    if (m_imageDescriptor.m_dimension == AZ::RHI::ImageDimension::Image3D)
                     {
-                        void* dest = m_dataBuffer->data() + row * imageLayout.m_bytesPerRow;
-                        void* source = static_cast<uint8_t*>(buf) + row * m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
+                        imageByteCount *= m_imageDescriptor.m_size.m_depth;
+                        rowCount *= m_imageDescriptor.m_size.m_depth;
+                    }
+
+                    m_dataBuffer->resize_no_construct(imageByteCount);
+                    const uint8_t* const sourceBegin = static_cast<uint8_t*>(buf);
+                    uint8_t* const destBegin = m_dataBuffer->data();
+                    // The source image WAS the destination when the copy item transferred data from GPU to CPU
+                    // this explains why the name srcBytesPerRow for these memcpy operations.
+                    const auto srcBytesPerRow = m_copyItem.m_imageToBuffer.m_destinationBytesPerRow;
+                    for (uint32_t row = 0; row < rowCount; ++row)
+                    {
+                        void* dest = destBegin + row * imageLayout.m_bytesPerRow;
+                        const void* source = sourceBegin + row * srcBytesPerRow;
                         memcpy(dest, source, imageLayout.m_bytesPerRow);
                     }
                 }
