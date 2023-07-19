@@ -144,6 +144,8 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.h
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.h
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.h

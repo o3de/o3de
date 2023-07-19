@@ -105,6 +105,7 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.cpp
