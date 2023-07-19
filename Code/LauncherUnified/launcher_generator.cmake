@@ -16,8 +16,6 @@ set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_
 
 if(O3DE_HEADLESS_SERVER_LAUNCHER)
     set(SERVER_LAUNCHERTYPE EXECUTABLE)
-    set(headless_server_defines
-        LY_HEADLESS_LAUNCHER=1)
 else()
     set(SERVER_LAUNCHERTYPE APPLICATION)
 endif()
@@ -80,12 +78,10 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
             if(NOT O3DE_HEADLESS_SERVER_LAUNCHER)
                 list(APPEND server_build_dependencies 
                             AzFramework.NativeUI
-                            AZ::Launcher.Game.Static
-                            AZ::Launcher.Server.Static)
+                            AZ::Launcher.Static)
             else()
                 list(APPEND server_build_dependencies 
-                            AZ::Launcher.Game.Headless.Static
-                            AZ::Launcher.Server.Headless.Static)
+                            AZ::Launcher.Headless.Static)
             endif()
 
         endif()
@@ -201,6 +197,8 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                     ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes # required for StaticModules.inl
             BUILD_DEPENDENCIES
                 PRIVATE
+                    AZ::Launcher.Static
+                    AZ::Launcher.Server.Static
                     ${server_build_dependencies}
             RUNTIME_DEPENDENCIES
                 ${server_runtime_dependencies}

@@ -30,6 +30,29 @@ ly_add_target(
 )
 
 ly_add_target(
+    NAME Launcher.Headless.Static STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        launcher_files.cmake
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
+            ${pal_dir}
+    COMPILE_DEFINITIONS
+        PRIVATE
+            LY_HEADLESS_LAUNCHER=1
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore
+            AZ::AzGameFramework
+            Legacy::CryCommon
+)
+
+
+ly_add_target(
     NAME Launcher.Game.Static STATIC
     NAMESPACE AZ
     FILES_CMAKE
@@ -38,25 +61,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             .
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::AzGameFramework
-            Legacy::CryCommon
-)
-
-ly_add_target(
-    NAME Launcher.Game.Headless.Static STATIC
-    NAMESPACE AZ
-    FILES_CMAKE
-        launcher_game_files.cmake
-        ${pal_dir}/launcher_game_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-    COMPILE_DEFINITIONS
-        PRIVATE
-            LY_HEADLESS_LAUNCHER=1
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -74,24 +78,6 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 .
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-                AZ::AzGameFramework
-                Legacy::CryCommon
-    )
-
-    ly_add_target(
-        NAME Launcher.Server.Headless.Static STATIC
-        NAMESPACE AZ
-        FILES_CMAKE
-            launcher_server_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                .
-        COMPILE_DEFINITIONS
-            PRIVATE
-                LY_HEADLESS_LAUNCHER=1
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore

@@ -410,13 +410,14 @@ namespace O3DELauncher
             // Settings registry must be available at this point in order to continue
             return ReturnCode::ErrValidation;
         }
+#if LY_HEADLESS_LAUNCHER
+        AZ_Trace("Launcher", "Running headless\n");
+        constexpr const bool isHeadless = true;
+#else
+        constexpr const bool isHeadless = false;
+#endif // LY_HEADLESS_LAUNCHER
+        gameApplication.SetHeadless(isHeadless);    
 
-        bool isHeadless = IsHeadless();
-        if (isHeadless)
-        {
-            AZ_Trace("Launcher", "Running headless\n");
-            gameApplication.SetHeadless(true);    
-        }
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
