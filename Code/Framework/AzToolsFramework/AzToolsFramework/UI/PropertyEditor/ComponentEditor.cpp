@@ -164,6 +164,7 @@ namespace AzToolsFramework
             m_filterAdapter->SetSourceAdapter(m_adapter);
             m_dpe->SetAdapter(m_filterAdapter);
             connect(m_dpe, &DocumentPropertyEditor::ExpanderChangedByUser, this, &ComponentEditor::OnExpansionContractionDone);
+            connect(m_dpe, &DocumentPropertyEditor::RequestSizeUpdate, this, &ComponentEditor::OnSizeUpdateRequested);
             setContentWidget(m_dpe);
         }
         else

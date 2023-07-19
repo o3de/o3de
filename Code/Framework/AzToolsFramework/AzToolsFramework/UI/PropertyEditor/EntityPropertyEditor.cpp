@@ -31,6 +31,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleHelpers.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
@@ -1924,6 +1925,11 @@ namespace AzToolsFramework
                     layout()->activate();
                     setUpdatesEnabled(true);
                 });
+
+            // force Card resize when expansion state changes or when explicitly requested by OnSizeUpdateRequested
+            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnExpansionContractionDone);
+            AzQtComponents::StyleHelpers::repolishWhenPropertyChanges(componentEditor, &ComponentEditor::OnSizeUpdateRequested);
+
             connect(componentEditor, &ComponentEditor::OnDisplayComponentEditorMenu, this, &EntityPropertyEditor::OnDisplayComponentEditorMenu);
             connect(componentEditor, &ComponentEditor::OnRequestRequiredComponents, this, &EntityPropertyEditor::OnRequestRequiredComponents);
             connect(componentEditor, &ComponentEditor::OnRequestRemoveComponents, this, [this](const AZ::Entity::ComponentArrayType& components) {DeleteComponents(components); });

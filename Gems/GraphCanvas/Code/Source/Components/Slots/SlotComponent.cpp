@@ -43,6 +43,7 @@ namespace GraphCanvas
             ->Field("Name", &SlotConfiguration::m_name)
             ->Field("SlotGroup", &SlotConfiguration::m_slotGroup)
             ->Field("ToolTip", &SlotConfiguration::m_tooltip)
+            ->Field("IsNameHidden", &SlotConfiguration::m_isNameHidden)
         ;
 
         serializeContext->Class<SlotComponent, AZ::Component>()

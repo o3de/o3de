@@ -521,7 +521,7 @@ class TestEditRepoProperties:
                     # assert true here because actual assert will be inside mock_dryrun_print
                     assert True
                 else:
-                    assert self.backup_file_name == repo_path
+                    assert self.backup_file_name == repo_path / 'repo.json'
                     for gem in self.repo_json.data.get('gems_data', []):
                         if release_archive_path:
                             zip_path = release_archive_path / pathlib.Path(gem['download_source_uri']).name
