@@ -12,7 +12,7 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
-#include <Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactTangentNodeable.generated.h>
+#include <Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables
 {

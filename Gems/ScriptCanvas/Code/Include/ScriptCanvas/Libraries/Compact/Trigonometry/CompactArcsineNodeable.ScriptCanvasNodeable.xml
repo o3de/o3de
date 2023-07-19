@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArcsineNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 			  xsi:noNamespaceSchemaLocation="../../../AutoGen/ScriptCanvasNodeable.xsd">
     <Class Name="CompactArcsineNodeable"
         QualifiedName="Nodeables::CompactArcsineNodeable"
         PreferredClassName="asin"
-        Category="Compact/Triginometry"
+        Category="Compact/Trigonometry"
         Namespace="ScriptCanvas"
         Description="Gets the arcsine of the input number (expects radians)"
         Preset="compact">

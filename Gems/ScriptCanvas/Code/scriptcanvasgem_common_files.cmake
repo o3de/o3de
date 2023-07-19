@@ -103,12 +103,12 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactMultiplyNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArccosineNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArcsineNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArctangentNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactCosineNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactSineNodeable.cpp
-    Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactTangentNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.cpp
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.cpp
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.cpp
     Include/ScriptCanvas/Libraries/Core/CoreLibrary.cpp

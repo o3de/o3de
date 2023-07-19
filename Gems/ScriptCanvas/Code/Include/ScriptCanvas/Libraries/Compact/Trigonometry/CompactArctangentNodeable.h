@@ -12,15 +12,15 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
 
-#include <Include/ScriptCanvas/Libraries/Compact/Triginometry/CompactArcsineNodeable.generated.h>
+#include <Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.generated.h>
 
 namespace ScriptCanvas::Nodeables
 {
-    class CompactArcsineNodeable : public Nodeable
+    class CompactArctangentNodeable : public Nodeable
     {
-        SCRIPTCANVAS_NODE(CompactArcsineNodeable);
+        SCRIPTCANVAS_NODE(CompactArctangentNodeable);
 
     public:
-        AZ_CLASS_ALLOCATOR(CompactArcsineNodeable, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR(CompactArctangentNodeable, AZ::SystemAllocator)
     };
 }
