@@ -10,6 +10,25 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+#if LY_HEADLESS_LAUNCHER
+int main(int argc, char* argv[])
+{
+    const AZ::Debug::Trace tracer;
+    InitRootDir();
+
+    using namespace O3DELauncher;
+
+    PlatformMainInfo mainInfo;
+
+    mainInfo.m_instance = GetModuleHandle(0);
+
+    mainInfo.CopyCommandLine(argc, argv);
+
+    ReturnCode status = Run(mainInfo);
+
+    return static_cast<int>(status);
+}
+#else
 int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow)
 {
     const AZ::Debug::Trace tracer;
@@ -38,6 +57,7 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     return static_cast<int>(status);
 }
+#endif // LY_HEADLESS_LAUNCHER
 
 void CVar_OnViewportPosition(const AZ::Vector2& value)
 {

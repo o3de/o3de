@@ -14,6 +14,10 @@
 #include <AzFramework/Archive/Archive.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
+#if !LY_HEADLESS_LAUNCHER
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#endif
+
 namespace AzGameFramework
 {
     GameApplication::GameApplication()
@@ -106,6 +110,9 @@ namespace AzGameFramework
         AzFramework::Application::CreateStaticModules(outModules);
 
         outModules.emplace_back(aznew AzGameFrameworkModule());
+#if !LY_HEADLESS_LAUNCHER
+        outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
+#endif
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const

@@ -41,6 +41,7 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             AZ::AzFramework
+            AZ::AzFramework.NativeUI
             AZ::AzQtComponents
 )
 

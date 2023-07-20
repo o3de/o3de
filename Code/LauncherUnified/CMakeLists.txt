@@ -47,7 +47,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
-            AZ::AzGameFramework
+            AZ::AzGameFramework.Headless
             Legacy::CryCommon
 )
 

@@ -15,6 +15,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzFramework/AzFrameworkNativeUIModule.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -158,6 +159,8 @@ namespace AtomToolsFramework
     {
         Base::CreateStaticModules(outModules);
         outModules.push_back(aznew AzToolsFramework::AzToolsFrameworkModule);
+        outModules.push_back(aznew AzFramework::AzFrameworkNativeUIModule());
+
     }
 
     void AtomToolsApplication::StartCommon(AZ::Entity* systemEntity)

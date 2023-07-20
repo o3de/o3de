@@ -15,6 +15,7 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
+#include <AzFramework/AzFrameworkNativeUIModule.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
@@ -269,7 +270,7 @@ namespace AzToolsFramework
     void ToolsApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         AzFramework::Application::CreateStaticModules(outModules);
-
+        outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
         outModules.emplace_back(aznew AzToolsFrameworkModule);
     }
 

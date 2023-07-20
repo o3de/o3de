@@ -410,14 +410,6 @@ namespace O3DELauncher
             // Settings registry must be available at this point in order to continue
             return ReturnCode::ErrValidation;
         }
-#if LY_HEADLESS_LAUNCHER
-        AZ_Trace("Launcher", "Running headless\n");
-        constexpr const bool isHeadless = true;
-#else
-        constexpr const bool isHeadless = false;
-#endif // LY_HEADLESS_LAUNCHER
-        gameApplication.SetHeadless(isHeadless);    
-
         const AZStd::string_view buildTargetName = GetBuildTargetName();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(*settingsRegistry, buildTargetName);
 
@@ -426,6 +418,13 @@ namespace O3DELauncher
         settingsRegistry->Set(LauncherTypeTag, launcherType);
         // Also add the launcher type as a specialization as well
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, launcherType);
+#if LY_HEADLESS_LAUNCHER
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, "headless");
+        gameApplication.SetHeadless(true);
+#else
+        gameApplication.SetHeadless(false);
+#endif // LY_HEADLESS_LAUNCHER
+
         // Finally add the "launcher" specialization tag into the Settings Registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddSpecialization(*settingsRegistry, LauncherFilenameTag);
 

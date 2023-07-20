@@ -13,11 +13,14 @@ set(O3DE_HEADLESS_SERVER_LAUNCHER TRUE CACHE BOOL "Flag to indicating building t
 
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
-
 if(O3DE_HEADLESS_SERVER_LAUNCHER)
     set(SERVER_LAUNCHERTYPE EXECUTABLE)
+    set(server_build_dependencies 
+                AZ::Launcher.Headless.Static)
 else()
     set(SERVER_LAUNCHERTYPE APPLICATION)
+    set(server_build_dependencies 
+                AZ::Launcher.Static)
 endif()
 
 # Launcher targets for a project need to be generated when configuring a project.
@@ -70,20 +73,11 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
         if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
             get_property(server_gem_dependencies GLOBAL PROPERTY LY_DELAYED_DEPENDENCIES_${project_name}.ServerLauncher)
 
-            set(server_build_dependencies
+            list(APPEND server_build_dependencies
                 ${server_gem_dependencies}
                 Legacy::CrySystem
             )
             
-            if(NOT O3DE_HEADLESS_SERVER_LAUNCHER)
-                list(APPEND server_build_dependencies 
-                            AzFramework.NativeUI
-                            AZ::Launcher.Static)
-            else()
-                list(APPEND server_build_dependencies 
-                            AZ::Launcher.Headless.Static)
-            endif()
-
         endif()
 
         if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
@@ -197,9 +191,8 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
                     ${CMAKE_CURRENT_BINARY_DIR}/${project_name}.ServerLauncher/Includes # required for StaticModules.inl
             BUILD_DEPENDENCIES
                 PRIVATE
-                    AZ::Launcher.Static
-                    AZ::Launcher.Server.Static
                     ${server_build_dependencies}
+                    AZ::Launcher.Server.Static
             RUNTIME_DEPENDENCIES
                 ${server_runtime_dependencies}
         )

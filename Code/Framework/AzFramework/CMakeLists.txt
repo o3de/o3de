@@ -51,12 +51,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-        PUBLIC
-            AZ::AzNetworking
-            3rdParty::zstd
-            3rdParty::lz4
 )
-
 
 set(LY_SEARCH_MODE_DEFINE $<$<BOOL:"${LY_ARCHIVE_FILE_SEARCH_MODE}">:LY_ARCHIVE_FILE_SEARCH_MODE=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
 
