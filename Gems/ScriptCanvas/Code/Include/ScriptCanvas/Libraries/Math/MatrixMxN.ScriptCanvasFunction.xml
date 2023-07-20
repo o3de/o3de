@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/MatrixMxN.h"
+        Namespace="ScriptCanvas::MatrixMxNFunctions"
+        Category="Math/MatrixMxN">
+
+        <Function Name="Zero">
+            <Parameter Name="Rows"/>
+            <Parameter Name="Columns"/>
+        </Function>
+
+        <Function Name="Random">
+            <Parameter Name="Rows"/>
+            <Parameter Name="Columns"/>
+        </Function>
+
+        <Function Name="GetRowCount">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="GetColumnCount">
+            <Parameter Name="Column"/>
+        </Function>
+        
+        <Function Name="GetElement">
+            <Parameter Name="Source"/>
+            <Parameter Name="Row"/>
+            <Parameter Name="Column"/>
+        </Function>
+
+        <Function Name="Transpose">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="MultiplyByVector">
+            <Parameter Name="Source"/>
+            <Parameter Name="Vector"/>
+        </Function>
+
+        <Function Name="MultiplyByMatrix">
+            <Parameter Name="Source"/>
+            <Parameter Name="Vector"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

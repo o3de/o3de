@@ -54,11 +54,13 @@ namespace ScriptCanvas
                         Data::Type::Vector2(),
                         Data::Type::Vector3(),
                         Data::Type::Vector4(),
+                        Data::Type::VectorN(),
                         Data::Type::Color(),
                         Data::Type::Quaternion(),
                         Data::Type::Transform(),
                         Data::Type::Matrix3x3(),
-                        Data::Type::Matrix4x4()
+                        Data::Type::Matrix4x4(),
+                        Data::Type::MatrixMxN()
                     };
                 }
 

@@ -74,6 +74,7 @@ public:
 
     MOCK_CONST_METHOD0(GetDefaultRegion, AZStd::string());
     MOCK_CONST_METHOD0(GetDefaultAccountId, AZStd::string());
+    MOCK_CONST_METHOD1(HasResource, bool(const AZStd::string&));
     MOCK_CONST_METHOD1(GetResourceAccountId, AZStd::string(const AZStd::string&));
     MOCK_CONST_METHOD1(GetResourceNameId, AZStd::string(const AZStd::string&));
     MOCK_CONST_METHOD1(GetResourceRegion, AZStd::string(const AZStd::string&));

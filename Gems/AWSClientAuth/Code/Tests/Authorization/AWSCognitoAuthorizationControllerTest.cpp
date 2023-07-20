@@ -325,6 +325,8 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_ForPersiste
 
 TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_ResultIsAnonymousCredentials)
 {
+    m_mockController->Initialize();
+
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetId(testing::_)).Times(1);
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(1);
 
@@ -333,20 +335,14 @@ TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersisted
     EXPECT_TRUE(actualCredentialsProvider == m_mockController->m_cognitoCachingAnonymousCredentialsProvider);
 }
 
-TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_NoAnonymousCredentials_ResultNullPtr) // fails
+TEST_F(AWSCognitoAuthorizationControllerTest, GetCredentialsProvider_NoPersistedLogins_NoAnonymousCredentials_ResultNullPtr)
 {
-    Aws::Client::AWSError<Aws::CognitoIdentity::CognitoIdentityErrors> error;
-    error.SetExceptionName(AWSClientAuthUnitTest::TEST_EXCEPTION);
-    Aws::CognitoIdentity::Model::GetIdOutcome outcome(error);
-
-    EXPECT_CALL(*m_cognitoIdentityClientMock, GetId(testing::_)).Times(1).WillOnce(testing::Return(outcome));
+    EXPECT_CALL(*m_cognitoIdentityClientMock, GetId(testing::_)).Times(0);
     EXPECT_CALL(*m_cognitoIdentityClientMock, GetCredentialsForIdentity(testing::_)).Times(0);
 
     std::shared_ptr<Aws::Auth::AWSCredentialsProvider> actualCredentialsProvider;
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCore::AWSCredentialRequestBus::BroadcastResult(
         actualCredentialsProvider, &AWSCore::AWSCredentialRequests::GetCredentialsProvider);
-    AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
     EXPECT_TRUE(actualCredentialsProvider == nullptr);
 }
 
@@ -354,6 +350,8 @@ TEST_F(
     AWSCognitoAuthorizationControllerTest,
     GetCredentialsProvider_OneThreadPersistLogins_SecondThreadGetCredentialsProvider_GetCredentialsSuccess)
 {
+    m_mockController->Initialize();
+
     AZStd::vector<AZStd::thread> testThreads;
     AZStd::atomic_bool loginsAdded = false;
     AZStd::atomic_int anonymousLogin = 0;

@@ -169,9 +169,9 @@ pyyaml==5.4 \
     --hash=sha256:8bf38641b4713d77da19e91f8b5296b832e4db87338d6aeffe422d42f1ca896d \
     --hash=sha256:3c49e39ac034fd64fd576d63bb4db53cda89b362768a67f07749d55f128ac18a \
     # via -r requirements.txt
-requests==2.25.0 \
-    --hash=sha256:7f1a0b932f4a60a1a65caa4263921bb7d9ee911957e0ae4a23a6dd08185ad5f8 \
-    --hash=sha256:e786fa28d8c9154e6a4de5d46a1d921b8749f8b74e28bde23768e5e16eece998 \
+requests==2.31.0 \
+    --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f \
+    --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1 \
     # via -r requirements.txt
 rsa==4.7 \
     --hash=sha256:a8774e55b59fd9fc893b0d05e9bfc6f47081f46ff5b46f39ccf24631b7be356b \

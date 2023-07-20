@@ -178,7 +178,9 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     const float moveSpeed = m_moveSpeed * deltaTime;
     const AZ::Vector3 right = worldTransform.GetBasisX();
     const AZ::Vector3 forward = worldTransform.GetBasisY();
-    const AZ::Vector3 movement = (forward * m_movement.y) + (right * m_movement.x);
+    const AZ::Vector3 up = worldTransform.GetBasisZ();
+
+    const AZ::Vector3 movement = (forward * m_movement.y) + (right * m_movement.x) + (up * m_movement.z);
     const AZ::Vector3 newPosition = worldTransform.GetTranslation() + (movement * moveSpeed);
     worldTransform.SetTranslation(newPosition);
 
@@ -300,6 +302,16 @@ void FlyCameraInputComponent::OnKeyboardEvent(const InputChannel& inputChannel)
     {
         m_movement.x = inputChannel.GetValue();
     }
+
+    if(channelId == InputDeviceKeyboard::Key::AlphanumericE)
+    {
+        m_movement.z = inputChannel.GetValue();
+    }
+
+    if(channelId == InputDeviceKeyboard::Key::AlphanumericQ)
+    {
+        m_movement.z = -inputChannel.GetValue();
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -315,7 +327,17 @@ void FlyCameraInputComponent::OnGamepadEvent(const InputChannel& inputChannel)
     {
         m_movement.y = inputChannel.GetValue();
     }
-    
+
+    if (channelId == InputDeviceGamepad::Trigger::L2)
+    {
+        m_movement.z = -inputChannel.GetValue();
+    }
+
+    if (channelId == InputDeviceGamepad::Trigger::R2)
+    {
+        m_movement.z = inputChannel.GetValue();
+    }
+
     if (channelId == InputDeviceGamepad::ThumbStickAxis1D::RX)
     {
         m_rotation.x = inputChannel.GetValue();

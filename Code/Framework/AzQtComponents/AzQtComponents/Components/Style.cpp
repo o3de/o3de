@@ -1314,13 +1314,10 @@ namespace AzQtComponents
 
     int Style::styleHint(QStyle::StyleHint hint, const QStyleOption* option, const QWidget* widget, QStyleHintReturn* returnData) const
     {
-#if QT_VERSION >= QT_VERSION_CHECK(5,11,1)
         if (hint == QStyle::SH_SpinBox_StepModifier)
         {
-            // This was introduced in 5.12 but we backported it to 5.11
             return Qt::ShiftModifier;
         }
-#endif
 
         if (!hasStyle(widget))
         {

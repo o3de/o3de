@@ -8,17 +8,14 @@
 #include <Atom/RHI.Reflect/StreamingImagePoolDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void StreamingImagePoolDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void StreamingImagePoolDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<StreamingImagePoolDescriptor, ResourcePoolDescriptor>()
-                    ->Version(1);
-            }
+            serializeContext->Class<StreamingImagePoolDescriptor, ResourcePoolDescriptor>()
+                ->Version(1);
         }
     }
 }

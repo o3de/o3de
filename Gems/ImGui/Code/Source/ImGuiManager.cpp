@@ -27,7 +27,6 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <AzFramework/Viewport/ViewportBus.h>
-#include <CrySystem/System.h>
 #include <IConsole.h>
 #include <imgui/imgui_internal.h>
 #include <ISystem.h>
@@ -454,21 +453,6 @@ bool ImGuiManager::OnInputChannelEventFiltered(const InputChannel& inputChannel)
             {
                 ToggleThroughImGuiVisibleState();
             }
-
-            if (inputChannel.GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::Escape)
-            {
-                CSystem* cSys = static_cast<CSystem*>(GetISystem());
-                if (cSys)
-                {
-                    ISystemUserCallback* pCallback = cSys->GetUserCallback();
-                    {
-                        if (pCallback)
-                        {
-                            pCallback->OnProcessSwitch();
-                        }
-                    }
-                }
-            }
         }
 
         // Handle Keyboard Modifier Keys
@@ -729,10 +713,16 @@ void ImGuiManager::ToggleThroughImGuiVisibleState()
         case DisplayState::Visible:
             m_clientMenuBarState = DisplayState::Hidden;
 
-            // Restore old cursor state
-            AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                m_previousSystemCursorState);
+            // Avoid hiding the cursor when in the Editor and not in game mode
+            const bool inGame = !gEnv->IsEditor() || gEnv->IsEditorGameMode(); 
+            const bool cursorWasVisible = m_previousSystemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible ||
+                                          m_previousSystemCursorState == AzFramework::SystemCursorState::UnconstrainedAndVisible;
+            if (inGame || cursorWasVisible)
+            {
+                AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
+                    &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+                    m_previousSystemCursorState);
+            }
             m_previousSystemCursorState = AzFramework::SystemCursorState::Unknown;
 
             break;
