@@ -12,6 +12,7 @@
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI/ValidationLayer.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Loader/LoaderContext.h>
 
 #if defined(USE_NSIGHT_AFTERMATH)
 #include <RHI/NsightAftermathGpuCrashTracker_Windows.h>
@@ -47,7 +48,7 @@ namespace AZ
             }
             GladVulkanContext& GetContext()
             {
-                return m_context;
+                return m_loaderContext.GetContext();
             }
             const Descriptor& GetDescriptor() const;
             StringList GetInstanceLayerNames() const;
@@ -55,27 +56,22 @@ namespace AZ
             RHI::PhysicalDeviceList GetSupportedDevices() const;
             AZ::RHI::ValidationMode GetValidationMode() const;
 
-            //! Since the native instance is created when the RHI::Vulkan module was initialized
-            //! this method allows us to re-update it if XR support is requested by XR module.
-            void UpdateNativeInstance(RHI::XRRenderingInterface* xrSystem);
-
             //! Returns the list of layers loaded by the Vulkan instance.
             const RawStringList& GetLoadedLayers() const;
             //! Retuns the list of instance extensions loaded by the Vulkan instance.
             const RawStringList& GetLoadedExtensions() const;
 
         private:
-            RHI::PhysicalDeviceList EnumerateSupportedDevices() const;
+            RHI::PhysicalDeviceList EnumerateSupportedDevices(uint32_t minVersion) const;
             void ShutdownNativeInstance();
             void CreateDebugMessenger();
 
             Descriptor m_descriptor;
             VkInstance m_instance = VK_NULL_HANDLE;
-            GladVulkanContext m_context = {};
+            LoaderContext m_loaderContext;
             RHI::PhysicalDeviceList m_supportedDevices;
             VkInstanceCreateInfo m_instanceCreateInfo = {};
             VkApplicationInfo m_appInfo = {};
-            bool m_isXRInstanceCreated = false;
 
 #if defined(USE_NSIGHT_AFTERMATH)
             GpuCrashTracker m_gpuCrashHandler;

@@ -11,6 +11,7 @@
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/ObjectCache.h>
 #include <Atom/RHI/ThreadLocalContext.h>
+#include <Atom/RHI.Loader/LoaderContext.h>
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/TypeInfo.h>
@@ -75,8 +76,8 @@ namespace AZ
             static RHI::Ptr<Device> Create();
             ~Device() = default;
 
-            static RawStringList GetRequiredLayers();
-            static RawStringList GetRequiredExtensions();
+            static StringList GetRequiredLayers();
+            static StringList GetRequiredExtensions();
 
             VkDevice GetNativeDevice() const;
 
@@ -199,7 +200,7 @@ namespace AZ
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
-            GladVulkanContext m_context = {};
+            LoaderContext m_loaderContext;
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
@@ -235,7 +236,6 @@ namespace AZ
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
-            bool m_isXrNativeDevice = false;
 
             BindlessDescriptorPool m_bindlessDescriptorPool;
             ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
