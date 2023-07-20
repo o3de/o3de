@@ -105,8 +105,7 @@ def upload_release_to_github(repo_uri:str,
     else:
         logger.error(f'Failed to retrieve github user name. Status code: {response.status_code}')
 
-    # Get repo (required)
-    # repo_uri: https://github.com/<owner>/<repo>.git
+    # Get repo (required) repo_uri: https://github.com/<owner>/<repo>.git
     repo_uri = repo_uri.split("/")
     repo = repo_uri[-1].split(".git")[0]
     
@@ -116,7 +115,7 @@ def upload_release_to_github(repo_uri:str,
     release_payload = {
         'tag_name': tag_name
     }
-    # Status code 200: valid release
+    # Valid release
     if response.status_code == 200:
         # Get the release end point to retrive release id
         get_release_by_tag = f"https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag_name}"
@@ -151,7 +150,7 @@ def upload_release_to_github(repo_uri:str,
     else:
         logger.error(f'Error checking tag existence. Status code: {response.status_code}')
   
-def is_github_link(url):
+def _is_github_link(url):
     github_url_pattern = r'^https?://github\.com/[a-zA-Z0-9\-_]+/[a-zA-Z0-9\-_]+(\.git)?$'
     return bool(re.match(github_url_pattern, url))
 
@@ -229,10 +228,15 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         logger.error(f'{zip_path} already exists.  Use --force command to overwrite the existing zip or '
                      'provide a new location to save your archive.')
         return {}
-    
+    if upload_github_release_tag is None and download_prefix is None:
+        logger.error('You need to provide a --upload-github-release-tag if you want to upload to github.\n'
+                     'If you want to use other version control systems you must provide --download-prefix argument\n'
+                     'A url prefix for a file attached to a Github release might look like this:'
+                     '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
+        return {}
     if upload_github_release_tag and download_prefix is None:
         
-        if is_github_link(repo_uri):
+        if _is_github_link(repo_uri):
         # Parse the URL to extract owner and repository name
             owner_repo = repo_uri.split("github.com/")[1].rstrip('.git').split('/')
             owner = owner_repo[0]
@@ -644,7 +648,8 @@ def add_parser_args(parser):
                                    help='A URL prefix for a file attached to a GitHub release might look like this:'
                                         '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
     modify_object_group.add_argument('--upload-github-release-tag', '-ugrt', type=str, default=False,
-                                   help='Please provide a tag_name for the release. Automatically uploads your object-release-archive.zip file to specified github release.')
+                                   help='Automatically uploads your object-release-archive.zip file to specified github release.\n'
+                                        'Please provide a tag_name for the release. ')
     parser.set_defaults(func=_edit_repo_props)
 
 
