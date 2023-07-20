@@ -104,6 +104,13 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactCeilingNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactFloorNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactPowerNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactRoundNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareNodeable.cpp
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareRootNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.cpp
     Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.cpp
