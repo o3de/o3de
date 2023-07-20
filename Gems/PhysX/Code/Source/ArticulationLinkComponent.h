@@ -87,6 +87,7 @@ namespace PhysX
         const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
         physx::PxArticulationJointReducedCoordinate* GetDriveJoint();
+        AZStd::vector<AzPhysics::SimulatedBodyHandle> GetSimulatedBodyHandles() const;
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
         ArticulationLinkConfiguration m_config;
 

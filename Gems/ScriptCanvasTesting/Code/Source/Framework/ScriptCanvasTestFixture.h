@@ -21,6 +21,7 @@
 #include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
 #include <Nodes/TestAutoGenFunctions.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
@@ -184,13 +185,18 @@ namespace ScriptCanvasTests
 
         ScriptCanvas::Graph* CreateGraph()
         {
-            if (m_graph == nullptr)
-            {
-                m_graph = aznew ScriptCanvas::Graph();
-                m_graph->Init();
-            }
-
+            AZ_Assert(!m_graph, "Only one graph should be created per test.");
+            m_graph = aznew ScriptCanvas::Graph();
+            m_graph->Init();
             return m_graph;
+        }
+
+        ScriptCanvasEditor::EditorGraph* CreateEditorGraph()
+        {
+            AZ_Assert(!m_graph, "Only one graph should be created per test.");
+            m_graph = aznew ScriptCanvasEditor::EditorGraph();
+            m_graph->Init();
+            return static_cast<ScriptCanvasEditor::EditorGraph*>(m_graph);
         }
 
         TestNodes::ConfigurableUnitTestNode* CreateConfigurableNode(AZStd::string entityName = "ConfigurableNodeEntity")
@@ -198,9 +204,11 @@ namespace ScriptCanvasTests
             AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
-            if (m_graph == nullptr)
+            AZ_Assert(m_graph, "A graph must be created before any nodes are created.");
+
+            if (!m_graph)
             {
-                CreateGraph();
+                return nullptr;
             }
 
             ScriptCanvas::ScriptCanvasId scriptCanvasId = m_graph->GetScriptCanvasId();
@@ -243,6 +251,70 @@ namespace ScriptCanvasTests
 
             EXPECT_EQ(m_graph->CanCreateConnectionBetween(sourceEndpoint, targetEndpoint).IsSuccess(), isValid);
             EXPECT_EQ(m_graph->CanCreateConnectionBetween(targetEndpoint, sourceEndpoint).IsSuccess(), isValid);
+        }
+
+        // Test if there is an existing connection between the provided endpoints
+        void TestIsConnectionBetween(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint, bool isValid = true)
+        {
+            AZ::Entity* ent;
+
+            EXPECT_EQ(m_graph->FindConnection(ent, sourceEndpoint, targetEndpoint), isValid);
+        }
+
+        // Tests implicit connections between nodes by connecting and disconnecting every data source and data slot while checking to make
+        // sure that a connection is maintained between the source and target execution slots as long as at least one set of source and target
+        // data slots are connected, and that no other execution out slots are connected to the target execution slot
+        void TestAllImplicitConnections(
+            ScriptCanvasEditor::EditorGraph* editorGraph,
+            AZStd::vector<ScriptCanvas::Endpoint> sourceDataSlots,
+            AZStd::vector<ScriptCanvas::Endpoint> targetDataSlots,
+            ScriptCanvas::Endpoint sourceExecSlot,
+            ScriptCanvas::Endpoint targetExecSlot,
+            AZStd::vector<ScriptCanvas::Endpoint> allExecutionOutSlots)
+        {
+            // Connect all of the data slots
+            for (auto sourceDataSlot : sourceDataSlots)
+            {
+                for (auto targetDataSlot : targetDataSlots)
+                {
+                    TestConnectionBetween(sourceDataSlot, targetDataSlot, true);
+                    editorGraph->UpdateCorrespondingImplicitConnection(sourceDataSlot, targetDataSlot);
+
+                    // Ensure the implicit connection exists
+                    TestIsConnectionBetween(sourceExecSlot, targetExecSlot, true);
+                    for (auto otherExecSlot : allExecutionOutSlots)
+                    {
+                        if (otherExecSlot.GetSlotId() != sourceExecSlot.GetSlotId())
+                        {
+                            // Ensure that no implicit connections exist between any of the other execution out slots and the target
+                            // execution slot
+                            TestIsConnectionBetween(otherExecSlot, targetExecSlot, false);
+                        }
+                    }
+                }
+            }
+            // Disconnect all of the data slots
+            for (int i = 0; i < sourceDataSlots.size(); i++)
+            {
+                for (int j = 0; j < targetDataSlots.size(); j++)
+                {
+                    editorGraph->DisconnectByEndpoint(sourceDataSlots[i], targetDataSlots[j]);
+                    editorGraph->UpdateCorrespondingImplicitConnection(sourceDataSlots[i], targetDataSlots[j]);
+
+                    // Ensure the implicit connection exists only if this is not the last data connection. If it is, then ensure that
+                    // no implicit connection exists
+                    TestIsConnectionBetween(sourceExecSlot, targetExecSlot, (i < sourceDataSlots.size() - 1 || j < targetDataSlots.size() - 1));
+                    for (auto otherExecSlot : allExecutionOutSlots)
+                    {
+                        if (otherExecSlot.GetSlotId() != sourceExecSlot.GetSlotId())
+                        {
+                            // Ensure that no implicit connections exist between any of the other execution out slots and the target
+                            // execution slot
+                            TestIsConnectionBetween(otherExecSlot, targetExecSlot, false);
+                        }
+                    }
+                }
+            }
         }
 
         void CreateExecutionFlowBetween(AZStd::vector<TestNodes::ConfigurableUnitTestNode*> unitTestNodes)

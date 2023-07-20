@@ -52,9 +52,10 @@ namespace AZ
                 m_receiverShadowPlaneBiasEnable = enable;
             }
 
-            void SetLightIndex(int lightIndex)
+            // Set directional light's raw index which is used for accessing the directional light in the shader
+            void SetLightRawIndex(int lightRawIndex)
             {
-                m_lightIndex = lightIndex;
+                m_lightIndex = lightRawIndex;
             }
 
         private:

@@ -19,7 +19,7 @@ AzAssetBrowserWindow #previewWidgetWrapper
 
 AzAssetBrowserWindow #searchButtonContainer
 {
-    background-color: #222222;
+    background-color: #141414;
     border: 0 none;
 }
 

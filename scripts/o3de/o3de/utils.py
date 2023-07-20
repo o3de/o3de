@@ -432,8 +432,17 @@ def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_ov
             logger.error(f'URL Error {e.reason} opening {parsed_uri.geturl()}')
             return 1
     else:
-        origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
+        parsed_uri_path = urllib.parse.unquote(parsed_uri.path)
+        if isinstance(download_path, pathlib.PureWindowsPath):
+            # On Windows we want to remove the initial slash in front of the drive letter
+            if parsed_uri_path.startswith('/'):
+                parsed_uri_path = parsed_uri_path[1:]
+            else:
+                logger.warning(f"The provided path URI '{parsed_uri_path}' may be missing a '/', "
+                               "file URIs typically have 3 slashes when they have an empty authority (RFC 8089) e.g. file:///")
+        origin_file = pathlib.Path(parsed_uri_path).resolve()
         if not origin_file.is_file():
+            logger.error(f"Failed to find local file '{origin_file}' based on URI '{parsed_uri}'")
             return 1
         shutil.copy(origin_file, download_path)
 
