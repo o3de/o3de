@@ -240,7 +240,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         else:
             logger.error(f'{repo_uri} is not a valid Github repository link, please update your repo_uri in your repo.json file.')
             return 1
-        download_prefix = f'https:\\github.com\{owner}\{repo}\releases\download\{upload_github_release_tag}\{archive_filename}'
+        download_prefix = f'https://github.com/{owner}/{repo}/releases/download/{upload_github_release_tag}/{archive_filename}'
      
         json_data = merge_json_data(json_data_path, {
             'repo_uri': repo_uri,
