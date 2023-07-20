@@ -12,6 +12,7 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Archive/Archive.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
 #if !LY_HEADLESS_LAUNCHER
@@ -123,5 +124,21 @@ namespace AzGameFramework
             appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::Headless;
         }
     };
+
+    AZ::ComponentTypeList GameApplication::GetRequiredSystemComponents() const
+    {
+        AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
+
+        #if !LY_HEADLESS_LAUNCHER
+        components.insert(
+            components.end(),
+            {
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
+            });
+        #endif
+
+        return components;
+    }
+
 
 } // namespace AzGameFramework
