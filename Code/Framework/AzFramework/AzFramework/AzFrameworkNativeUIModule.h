@@ -20,7 +20,5 @@ namespace AzFramework
 
         AzFrameworkNativeUIModule();
         ~AzFrameworkNativeUIModule() override = default;
-
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
 }

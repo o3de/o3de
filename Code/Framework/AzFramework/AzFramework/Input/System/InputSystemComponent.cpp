@@ -163,6 +163,18 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    {
+        dependent.push_back(AZ_CRC("NativeUIInputSystemService", 0x67675d29));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void InputSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     InputSystemComponent::InputSystemComponent()
         : m_gamepads()
         , m_keyboard()

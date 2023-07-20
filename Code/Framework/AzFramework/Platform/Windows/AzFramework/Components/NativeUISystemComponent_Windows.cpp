@@ -28,7 +28,7 @@ namespace AzFramework
         }
     };
 
-    struct LinuxDeviceKeyboardImplFactory
+    struct WindowsDeviceKeyboardImplFactory
         : public InputDeviceKeyboard::ImplementationFactory
     {
         InputDeviceKeyboard::Implementation* Create(InputDeviceKeyboard& inputDevice) override
@@ -91,7 +91,7 @@ namespace AzFramework
 
     InputDeviceKeyboard::ImplementationFactory* NativeUISystemComponent::GetDeviceKeyboardImplementationFactory() const
     {
-        return aznew LinuxDeviceKeyboardImplFactory();
+        return aznew WindowsDeviceKeyboardImplFactory();
     }
 
     InputDeviceMouse::ImplementationFactory* NativeUISystemComponent::GetDeviceMouseImplentationFactory() const

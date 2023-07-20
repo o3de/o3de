@@ -123,6 +123,7 @@ namespace AzFramework
 
     void NativeUISystemComponent::GetIncompatibleServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
+        incompatible.push_back(AZ_CRC("NativeUIInputSystemService", 0x67675d29));
     }
 
     void NativeUISystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -131,6 +132,7 @@ namespace AzFramework
 
     void NativeUISystemComponent::GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
+        provided.push_back(AZ_CRC("NativeUIInputSystemService", 0x67675d29));
     }
 
     void NativeUISystemComponent::Activate()

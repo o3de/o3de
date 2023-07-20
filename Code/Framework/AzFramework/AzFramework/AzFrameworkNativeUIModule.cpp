@@ -22,12 +22,4 @@ namespace AzFramework
             AzFramework::NativeUISystemComponent::CreateDescriptor(),
         });
     }
-
-    AZ::ComponentTypeList AzFrameworkNativeUIModule::GetRequiredSystemComponents() const
-    {
-        return AZ::ComponentTypeList
-        {
-            azrtti_typeid<AzFramework::NativeUISystemComponent>()
-        };
-    }
 }
