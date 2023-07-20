@@ -977,6 +977,11 @@ TEST_F(ScriptCanvasTestFixture, CompactNodeBasicOperators)
     RunUnitTestGraph("LY_SC_UnitTest_CompactNodeBasicOperators", ExecutionMode::Interpreted);
 }
 
+TEST_F(ScriptCanvasTestFixture, CompactNodeMathematicalFunctions)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_CompactNodeMathematicalFunctions", ExecutionMode::Interpreted);
+}
+
 TEST_F(ScriptCanvasTestFixture, CompactNodeTrigonometry)
 {
     RunUnitTestGraph("LY_SC_UnitTest_CompactNodeTrigonometry", ExecutionMode::Interpreted);
