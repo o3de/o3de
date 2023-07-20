@@ -704,6 +704,9 @@ namespace AZ
             {
                 m_windowHandle = nullptr;
                 m_viewportContext.reset();
+                // On some platforms (e.g. Android) the main window is destroyed when the app is suspended
+                // but this doesn't mean that we need to exit the app. The window will be recreated when the app
+                // is resumed.
 #if AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_EXIT_ON_WINDOW_CLOSE
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
 #endif
