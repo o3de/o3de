@@ -640,8 +640,22 @@ namespace AZ::Reflection
 
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
+
+                // search up the stack for the "true parent",
+                // the first entry with a different instance pointer
+                void* instanceToInvoke = instance;
+                for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
+                {
+                    auto* currInstance = rIter->m_instance;
+                    if (currInstance != instance)
+                    {
+                        instanceToInvoke = currInstance;
+                        break;
+                    }
+                }
+
                 m_stack.push_back({ instance,
-                                    parentData.m_instance,
+                                    instanceToInvoke,
                                     classData ? classData->m_typeId : Uuid::CreateNull(),
                                     classData,
                                     classElement });
