@@ -487,17 +487,9 @@ namespace AZ
                                                     AZStd::string_view pipelineName, AZ::RPI::ViewType viewType, AZ::RHI::MultisampleState& multisampleState)
             {
                 // Create a render pipeline from the specified asset for the window context and add the pipeline to the scene.
-                // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
-                AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-                AzFramework::AssetSystemRequestBus::BroadcastResult(
-                    status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, pipelineName.data());
-                AZ_Assert(
-                    status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown,
-                    "Could not compile the default render pipeline at '%s'",
-                    pipelineName.data());
-
+                // When running with an Asset Processor, this will attempt to compile the asset before loading it.
                 Data::Asset<RPI::AnyAsset> pipelineAsset =
-                    RPI::AssetUtils::LoadAssetByProductPath<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
+                    RPI::AssetUtils::LoadCriticalAsset<RPI::AnyAsset>(pipelineName.data(), RPI::AssetUtils::TraceLevel::Error);
                 if (pipelineAsset)
                 {
                     RPI::RenderPipelineDescriptor renderPipelineDescriptor =

@@ -20,6 +20,9 @@ namespace AZ
 {
     namespace Render
     {
+        constexpr AZStd::string_view DiffuseProbeGridPrepareShaderProductAssetPath =
+            "shaders/diffuseglobalillumination/diffuseprobegridprepare.azshader";
+
         RPI::Ptr<DiffuseProbeGridPreparePass> DiffuseProbeGridPreparePass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<DiffuseProbeGridPreparePass> pass = aznew DiffuseProbeGridPreparePass(descriptor);
@@ -44,8 +47,7 @@ namespace AZ
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridPrepare.azshader";
-            m_shader = RPI::LoadCriticalShader(shaderFilePath);
+            m_shader = RPI::LoadCriticalShader(DiffuseProbeGridPrepareShaderProductAssetPath);
             if (m_shader == nullptr)
             {
                 return;
@@ -64,7 +66,11 @@ namespace AZ
             const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchArgs);
             if (!outcome.IsSuccess())
             {
-                AZ_Error("PassSystem", false, "[DiffuseProbeGridPreparePass '%s']: Shader '%s' contains invalid numthreads arguments:\n%s", GetPathName().GetCStr(), shaderFilePath.c_str(), outcome.GetError().c_str());
+                AZ_Error("PassSystem", false,
+                    "[DiffuseProbeGridPreparePass '%s']: Shader '" AZ_STRING_FORMAT "' contains invalid numthreads arguments:\n%s",
+                    GetPathName().GetCStr(),
+                    AZ_STRING_ARG(DiffuseProbeGridPrepareShaderProductAssetPath),
+                    outcome.GetError().c_str());
             }
         }
 

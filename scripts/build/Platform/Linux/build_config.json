@@ -354,7 +354,7 @@
   "installer": {
     "TAGS": [],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"linux-707531fc7-packaging"
+      "NODE_LABEL":"ubuntu-20-packaging"
     },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {
@@ -373,7 +373,7 @@
       "nightly-installer"
     ],
     "PIPELINE_ENV":{
-      "NODE_LABEL":"ubuntu-22-packaging"
+      "NODE_LABEL":"ubuntu-20-packaging"
     },
     "COMMAND": "build_installer_linux.sh",
     "PARAMETERS": {

@@ -1312,7 +1312,6 @@ void CCryEditApp::CompileCriticalAssets() const
     // Also reload the "assetcatalog.xml" if it exists
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
     {
-        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
         // Reload the assetcatalog.xml at this point again
         // Start Monitoring Asset changes over the network and load the AssetCatalog
         auto LoadCatalog = [settingsRegistry](AZ::Data::AssetCatalogRequests* assetCatalogRequests)
@@ -1325,6 +1324,9 @@ void CCryEditApp::CompileCriticalAssets() const
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(AZStd::move(LoadCatalog));
+
+        // Only signal the event *after* the asset catalog has been loaded.
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "CriticalAssetsCompiled", R"({})");
     }
 
     CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
