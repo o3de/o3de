@@ -1539,7 +1539,7 @@ namespace AZ
             AZStd::vector<AttachmentReadback::ReadbackRequestInfo> readbackRequests;
             for (auto& binding : m_attachmentBindings)
             {
-                for (const auto slotName : slotNames)
+                for (const auto &slotName : slotNames)
                 {
                     if (slotName == binding.m_name)
                     {
