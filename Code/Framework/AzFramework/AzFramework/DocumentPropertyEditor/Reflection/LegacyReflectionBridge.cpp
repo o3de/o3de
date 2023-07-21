@@ -167,6 +167,7 @@ namespace AZ::Reflection
                 bool m_isAncestorDisabled = false;
 
                 bool m_skipHandler = false;
+                bool m_createdByEnumerate = false;
 
                 // extra data necessary to support Containers composed of pair<> children (like maps!)
                 bool m_extractKeyedPair = false;
@@ -328,7 +329,7 @@ namespace AZ::Reflection
             void HandleNodeGroups(StackEntry& nodeData)
             {
                 // Search through classData for Groups.
-                if (nodeData.m_classData->m_editData)
+                if (nodeData.m_classData && nodeData.m_classData->m_editData)
                 {
                     AZStd::string groupName = "";
                     int groupCounter = 0;
@@ -349,24 +350,36 @@ namespace AZ::Reflection
                             {
                                 // Update groupName to new group's name
                                 groupName = currElement.m_description;
-
-                                AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                                UIElement->m_editData = &currElement;
-                                UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                                StackEntry entry = { nodeData.m_instance,
-                                                     nodeData.m_instance,
-                                                     nodeData.m_classData->m_typeId,
-                                                     nodeData.m_classData,
-                                                     UIElement };
-
                                 nodeData.m_groupEntries.insert(groupName);
-                                nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
 
                                 if (currElement.m_serializeClassElement)
                                 {
-                                    AZStd::string propertyPath = AZStd::string::format(
+                                    void* boolAddress = reinterpret_cast<void*>(reinterpret_cast<size_t>(nodeData.m_instance) +
+                                        currElement.m_serializeClassElement->m_offset);
+                                    
+                                    StackEntry entry = { boolAddress,
+                                                         nodeData.m_instance,
+                                                         currElement.m_serializeClassElement->m_typeId,
+                                                         nullptr,
+                                                         currElement.m_serializeClassElement };
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+
+                                    /*AZStd::string propertyPath = AZStd::string::format(
                                         "%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
-                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
+                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });*/
+                                }
+                                else
+                                {
+                                    AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                                    UIElement->m_editData = &currElement;
+                                    UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                                    StackEntry entry = { nodeData.m_instance,
+                                                         nodeData.m_instance,
+                                                         nodeData.m_classData->m_typeId,
+                                                         nodeData.m_classData,
+                                                         UIElement };
+
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
                                 }
                             }
                             else
@@ -397,7 +410,7 @@ namespace AZ::Reflection
             void HandleNodeUiElementsRetrieval(const StackEntry& nodeData)
             {
                 // Search through classData for UIElements and Editor Data.
-                if (nodeData.m_classData->m_editData)
+                if (nodeData.m_classData && nodeData.m_classData->m_editData)
                 {
                     // Store current group.
                     AZStd::string groupName = "";
@@ -642,23 +655,23 @@ namespace AZ::Reflection
                 StackEntry& parentData = m_stack.back();
 
                 // search up the stack for the "true parent",
-                // the first entry with a different instance pointer
-                void* instanceToInvoke = instance;
+                void* instanceToInvoke = nullptr;
                 for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
                 {
                     auto* currInstance = rIter->m_instance;
-                    if (currInstance != instance)
+                    if (rIter->m_createdByEnumerate && currInstance)
                     {
                         instanceToInvoke = currInstance;
                         break;
                     }
                 }
 
-                m_stack.push_back({ instance,
-                                    instanceToInvoke,
-                                    classData ? classData->m_typeId : Uuid::CreateNull(),
-                                    classData,
-                                    classElement });
+                StackEntry newEntry = {
+                    instance, instanceToInvoke, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement
+                };
+                newEntry.m_createdByEnumerate = true;
+
+                m_stack.push_back(newEntry);
                 
                 StackEntry& nodeData = m_stack.back();
 
@@ -719,27 +732,12 @@ namespace AZ::Reflection
                             if (groupPair.second.has_value())
                             {
                                 auto& groupStackEntry = groupPair.second.value();
-                                groupStackEntry.m_group = groupPair.first;
-
-                                StackEntry* proxyEntry = nullptr;
+                                
                                 if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
                                 {
-                                    auto& groupEntry = nodeData.m_groupEntries[groupPair.first];
-                                    for (auto entryIter = groupEntry.begin(), endIter = groupEntry.end();
-                                         !proxyEntry && entryIter != endIter;
-                                         ++entryIter)
-                                    {
-                                        auto& currEntry = *entryIter;
-                                        if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement == currEntry.m_classElement)
-                                        {
-                                            // currEntry.m_classElement->m_editData->m_elementId = 0; // makes bool work
-                                            currEntry.m_typeId == AzTypeInfo<bool*>::Uuid();
-                                            currEntry.m_skipHandler = true;
-                                            proxyEntry = &currEntry;
-                                        }
-                                    }
+                                    groupStackEntry.m_skipHandler = true;
                                 }
-                                m_stack.push_back(proxyEntry != nullptr ? *proxyEntry : groupStackEntry);
+                                m_stack.push_back(groupStackEntry);
                                 CacheAttributes();
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
@@ -1217,7 +1215,7 @@ namespace AZ::Reflection
                           Dom::Value(true) });
                 }
 
-                if (nodeData.m_classData->m_container)
+                if (nodeData.m_classData && nodeData.m_classData->m_container)
                 {
                     nodeData.m_cachedAttributes.push_back(
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
@@ -1244,7 +1242,8 @@ namespace AZ::Reflection
 
                 // If this node has no edit data and is not the child of a container, only show its children
                 auto parentData = m_stack.end() - 2;
-                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData && !parentData->m_classData->m_container)
+                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData &&
+                    (parentData->m_classData && !parentData->m_classData->m_container))
                 {
                     visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
                 }
