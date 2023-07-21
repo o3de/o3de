@@ -135,11 +135,6 @@ namespace ScriptCanvasEditor
                         createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::EBusSendEventPaletteTreeItem>(ebusSenderNodeModelInformation->m_busName, ebusSenderNodeModelInformation->m_eventName, ebusSenderNodeModelInformation->m_busId, ebusSenderNodeModelInformation->m_eventId, ebusSenderNodeModelInformation->m_isOverload, ebusSenderNodeModelInformation->m_propertyStatus);
                     }
                 }
-                else if (auto dataDrivenModelInformation = azrtti_cast<const DataDrivenNodeModelInformation*>(modelInformation))
-                {
-                    createdItem = parentItem->CreateChildNode<DataDrivenNodePaletteTreeItem>(*dataDrivenModelInformation);
-                    createdItem->SetToolTip(QString(dataDrivenModelInformation->m_toolTip.c_str()));
-                }
 
                 if (createdItem)
                 {

@@ -128,6 +128,7 @@ namespace AZ::Reflection
         {
             IReadWrite* m_visitor;
             SerializeContext* m_serializeContext;
+            SerializeContext::EnumerateInstanceCallContext* m_enumerateContext;
 
             struct AttributeData
             {
@@ -184,8 +185,6 @@ namespace AZ::Reflection
                 AZStd::vector<AZStd::pair<AZStd::string, AZStd::optional<StackEntry>>> m_groups;
                 AZStd::map<AZStd::string, AZStd::vector<StackEntry>> m_groupEntries;
                 AZStd::map<AZStd::string, AZStd::string> m_propertyToGroupMap;
-
-                bool m_iteratingOnGroups = false;
             };
             AZStd::deque<StackEntry> m_stack;
             AZStd::vector<AZStd::pair<AZStd::string, StackEntry>> m_nonSerializedElements;
@@ -200,7 +199,6 @@ namespace AZ::Reflection
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
 
-            virtual ~InstanceVisitor() = default;
 
             InstanceVisitor(
                 IReadWrite* visitor,
@@ -229,6 +227,27 @@ namespace AZ::Reflection
                     AZ::s64,
                     float,
                     double>();
+
+                m_enumerateContext = new SerializeContext::EnumerateInstanceCallContext(
+                    [this](
+                        void* instance,
+                        const AZ::SerializeContext::ClassData* classData,
+                        const AZ::SerializeContext::ClassElement* classElement)
+                    {
+                        return BeginNode(instance, classData, classElement);
+                    },
+                    [this]()
+                    {
+                        return EndNode();
+                    },
+                    m_serializeContext,
+                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_READ,
+                    nullptr);
+            }
+
+            virtual ~InstanceVisitor()
+            {
+                delete m_enumerateContext;
             }
 
             template<typename T>
@@ -259,25 +278,10 @@ namespace AZ::Reflection
                 {
                     return;
                 }
-                SerializeContext::EnumerateInstanceCallContext context(
-                    [this](
-                        void* instance,
-                        const AZ::SerializeContext::ClassData* classData,
-                        const AZ::SerializeContext::ClassElement* classElement)
-                    {
-                        return BeginNode(instance, classData, classElement);
-                    },
-                    [this]()
-                    {
-                        return EndNode();
-                    },
-                    m_serializeContext,
-                    SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_READ,
-                    nullptr);
 
                 // Note that this is the dummy parent node for the root node. It contains null classData and classElement.
                 const StackEntry& nodeData = m_stack.back();
-                m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
+                m_serializeContext->EnumerateInstance(m_enumerateContext, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
 
             void GenerateNodePath(const StackEntry& parentData, StackEntry& nodeData)
@@ -345,7 +349,7 @@ namespace AZ::Reflection
                                 UIElement->m_editData = &*iter;
                                 UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
                                 StackEntry entry = { nodeData.m_instance,
-                                                     nodeData.m_instanceToInvoke,
+                                                     nodeData.m_instance,
                                                      nodeData.m_classData->m_typeId,
                                                      nodeData.m_classData,
                                                      UIElement };
@@ -383,9 +387,8 @@ namespace AZ::Reflection
                 // Search through classData for UIElements and Editor Data.
                 if (nodeData.m_classData->m_editData)
                 {
-                    AZStd::vector<AZStd::string> path;
-                    path.push_back(nodeData.m_path.c_str());
-
+                    // Store current group.
+                    AZStd::string groupName = "";
                     AZStd::string lastValidElementName = "";
 
                     for (auto iter = nodeData.m_classData->m_editData->m_elements.begin();
@@ -394,19 +397,13 @@ namespace AZ::Reflection
                     {
                         if (iter->m_elementId == AZ::Edit::ClassElements::Group)
                         {
-                            AZStd::string_view itemDescription(iter->m_description);
+                            // The group name is stored in the description.
+                            groupName = iter->m_description;
 
-                            if (!itemDescription.empty())
-                            {
-                                // Add group name to path.
-                                path.push_back(iter->m_description);
-                            }
-                            else
+                            if (groupName.empty())
                             {
                                 // If the group name is empty, this is the end of the previous group.
-                                path.pop_back();
-
-                                // Always reset the lastValidElementName
+                                // As such, we reset the lastValidElementName.
                                 lastValidElementName = "";
                             }
                         }
@@ -420,17 +417,12 @@ namespace AZ::Reflection
                                 nodeData.m_instance, nodeData.m_instance, nodeData.m_classData->m_typeId, nodeData.m_classData, UIElement
                             };
 
-                            AZStd::string pathString;
-                            for (const auto& pathElement : path)
+                            AZStd::string pathString = nodeData.m_path;
+
+                            if (!groupName.empty())
                             {
-                                if (!pathElement.empty())
-                                {
-                                    if (!(pathElement[0] == '/'))
-                                    {
-                                        pathString.append("/");
-                                    }
-                                    pathString.append(pathElement);
-                                }
+                                pathString.append("/");
+                                pathString.append(groupName);
                             }
 
                             if (!lastValidElementName.empty())
@@ -477,10 +469,6 @@ namespace AZ::Reflection
                     {
                         ++iter;
                     }
-                }
-                if (!m_stack.empty())
-                {
-                    ++m_stack.back().m_childElementIndex;
                 }
             }
 
@@ -640,8 +628,26 @@ namespace AZ::Reflection
 
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
-                m_stack.push_back(
-                    { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
+
+                // search up the stack for the "true parent",
+                // the first entry with a different instance pointer
+                void* instanceToInvoke = instance;
+                for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
+                {
+                    auto* currInstance = rIter->m_instance;
+                    if (currInstance != instance)
+                    {
+                        instanceToInvoke = currInstance;
+                        break;
+                    }
+                }
+
+                m_stack.push_back({ instance,
+                                    instanceToInvoke,
+                                    classData ? classData->m_typeId : Uuid::CreateNull(),
+                                    classData,
+                                    classElement });
+                
                 StackEntry& nodeData = m_stack.back();
 
                 // Generate this node's path (will be stored in nodeData.m_path)
@@ -652,7 +658,8 @@ namespace AZ::Reflection
                 if (HandleNodeInParentGroup(nodeData, parentData))
                 {
                     m_nodeWasSkipped = true;
-                    return true;
+                    // Return false to prevent descendants from being enumerated.
+                    return false;
                 }
 
                 HandleNodeGroups(nodeData);
@@ -693,10 +700,8 @@ namespace AZ::Reflection
                     }
 
                     // Handle groups
-                    if (!nodeData.m_iteratingOnGroups && nodeData.m_groups.size() > 0)
+                    if (nodeData.m_groups.size() > 0)
                     {
-                        nodeData.m_iteratingOnGroups = true;
-
                         for (auto& groupPair : nodeData.m_groups)
                         {
                             if (groupPair.second.has_value())
@@ -712,10 +717,9 @@ namespace AZ::Reflection
 
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
-                                m_stack.push_back(groupEntry);
-                                CacheAttributes();
-                                m_visitor->VisitObjectBegin(*this, *this);
-                                m_visitor->VisitObjectEnd(*this, *this);
+                                m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
+                                m_serializeContext->EnumerateInstance(
+                                    m_enumerateContext, groupEntry.m_instance, groupEntry.m_typeId, groupEntry.m_classData, groupEntry.m_classElement);
                                 m_stack.pop_back();
                             }
 
@@ -726,7 +730,6 @@ namespace AZ::Reflection
                             }
                         }
 
-                        nodeData.m_iteratingOnGroups = false;
                         nodeData.m_propertyToGroupMap.clear();
                         nodeData.m_groupEntries.clear();
                         nodeData.m_groups.clear();
@@ -747,6 +750,11 @@ namespace AZ::Reflection
                     if (!parentData.m_group.empty())
                     {
                         EndNode();
+                    }
+
+                    if (!m_stack.empty() && parentData.m_computedVisibility == DocumentPropertyEditor::Nodes::PropertyVisibility::Show)
+                    {
+                        ++m_stack.back().m_childElementIndex;
                     }
                 }
 
@@ -1060,6 +1068,27 @@ namespace AZ::Reflection
                             pair.first = it->first;
                             pair.second = it->second.get();
                             checkAttribute(&pair, nodeData.m_instance, isParentAttribute);
+                        }
+
+                        // Lastly, check the AZ::SerializeContext::ClassData -> AZ::Edit::ClassData -> EditorData for attributes
+                        if (const auto* editClassData = nodeData.m_classData->m_editData; editClassData && !isParentAttribute)
+                        {
+                            if (const auto* classEditorData = editClassData->FindElementData(AZ::Edit::ClassElements::EditorData))
+                            {
+                                // Ignore EditorData attributes for UIElements (e.g. groups)
+                                bool ignore = false;
+                                if (nodeData.m_classElement)
+                                {
+                                    ignore = (nodeData.m_classElement->m_flags & AZ::SerializeContext::ClassElement::FLG_UI_ELEMENT) != 0;
+                                }
+                                if (!ignore)
+                                {
+                                    for (auto it = classEditorData->m_attributes.begin(); it != classEditorData->m_attributes.end(); ++it)
+                                    {
+                                        checkAttribute(it, nodeData.m_instanceToInvoke, isParentAttribute);
+                                    }
+                                }
+                            }
                         }
                     }
                 };
