@@ -12,6 +12,7 @@ set(FILES
     ShaderLib/Atom/RPI/TangentSpace.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultSceneSrg.azsli
+    ShaderLib/Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli
     ShaderLib/External/FidelityFX/ffx-spd/ffx_a.h
     ShaderLib/External/FidelityFX/ffx-spd/ffx_spd.h
     Shaders/DecomposeMsImage.azsl
