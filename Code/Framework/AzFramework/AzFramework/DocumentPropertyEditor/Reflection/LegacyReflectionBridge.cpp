@@ -364,9 +364,9 @@ namespace AZ::Reflection
                                                          currElement.m_serializeClassElement };
                                     nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
 
-                                    /*AZStd::string propertyPath = AZStd::string::format(
+                                    AZStd::string propertyPath = AZStd::string::format(
                                         "%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
-                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });*/
+                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
                                 }
                                 else
                                 {
@@ -747,6 +747,12 @@ namespace AZ::Reflection
 
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
+                                if (groupPair.second.has_value() &&
+                                    groupPair.second.value().m_classElement->m_editData->m_serializeClassElement == groupEntry.m_classElement)
+                                {
+                                    // skip the bool that represented the group toggle, it's already in-line with the group
+                                    continue;
+                                }
                                 m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
                                 m_serializeContext->EnumerateInstance(
                                     m_enumerateContext, groupEntry.m_instance, groupEntry.m_typeId, groupEntry.m_classData, groupEntry.m_classElement);
