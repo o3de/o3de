@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			  xsi:noNamespaceSchemaLocation="../../../AutoGen/ScriptCanvasNodeable.xsd">
+    <Class Name="CompactArctangent2Nodeable"
+        QualifiedName="Nodeables::CompactArctangent2Nodeable"
+        PreferredClassName="atan2"
+        Category="Compact/Trigonometry"
+        Namespace="ScriptCanvas"
+        Description="Gets the 2-argument arctangent of the input numbers in radians"
+        Preset="compact">
+
+        <Input Name="In" OutputName="Out">
+            <Parameter Name="y" Type="float" HideName="false"/>
+            <Parameter Name="x" Type="float" HideName="false"/>
+            <Return Name="Out" Type="float"/>
+        </Input>
+
+    </Class>
+</ScriptCanvas>

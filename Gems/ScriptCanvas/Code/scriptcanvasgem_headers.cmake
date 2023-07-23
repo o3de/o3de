@@ -140,6 +140,34 @@ set(FILES
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactNegateNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.h
     Include/ScriptCanvas/Libraries/Compact/BasicOperators/CompactSubtractNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactCeilingNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactCeilingNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactFloorNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactFloorNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactModuloNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactPowerNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactPowerNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactRoundNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactRoundNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareRootNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/MathematicalFunctions/CompactSquareRootNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArccosineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArcsineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangent2Nodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactArctangentNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactCosineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactSineNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.h
+    Include/ScriptCanvas/Libraries/Compact/Trigonometry/CompactTangentNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h

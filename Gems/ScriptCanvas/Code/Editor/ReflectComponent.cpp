@@ -130,7 +130,6 @@ namespace ScriptCanvasEditor
         CreateNodeGroupMimeEvent::Reflect(context);
         CreateCommentNodeMimeEvent::Reflect(context);
         CreateCustomNodeMimeEvent::Reflect(context);
-        CreateDataDrivenNodeMimeEvent::Reflect(context);
         CreateEBusHandlerMimeEvent::Reflect(context);
         CreateEBusHandlerEventMimeEvent::Reflect(context);
         CreateEBusSenderMimeEvent::Reflect(context);
