@@ -238,9 +238,10 @@ namespace ShaderManagementConsole
                 auto& vec = m_shaderVariantListSourceData.m_shaderVariants;
                 vec.erase(vec.begin() + row);
                 TransferViewModelToModel(CallOnModified);
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                    m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_documentId);
             });
             setCellWidget(row, 0, deleterButton);
-
         }
         horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
 
@@ -264,7 +265,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        if (column < 0 || column >= m_shaderOptionDescriptors.size())
+        if (column < 0 || column - 1 >= m_shaderOptionDescriptors.size())
         {
             return;
         }
