@@ -73,10 +73,8 @@ namespace ScriptCanvas
             else
             {
                 AZ_Error("ScriptCanvas", false, "Failed to load object: %s", fullpath.c_str());
-                return {};
             }
 #endif
-
             return {};
         }
 
