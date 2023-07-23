@@ -24,6 +24,11 @@ namespace LmbrCentral
                 ->Field("Behavior Type", &EditorAudioMultiPositionComponent::m_behaviorType)
                 ;
 
+            serializeContext->Enum<Audio::MultiPositionBehaviorType>()
+                ->Value("Separate", Audio::MultiPositionBehaviorType::Separate)
+                ->Value("Blended", Audio::MultiPositionBehaviorType::Blended)
+                ;
+
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<Audio::MultiPositionBehaviorType>("Behavior Type", "How multiple position audio behaves")

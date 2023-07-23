@@ -256,6 +256,19 @@ namespace AzToolsFramework
                     }
                     continue;
                 }
+                // Use the SerializedPath as the proxy class element name, which prior to this was always an empty string
+                // since it isn't used by the property handler. This helps when debugging the ConsumeAttribute method
+                // in the property handlers because the class element name gets passed as the debugName, so its easier
+                // to tell which property is currently processing the attributes.
+                else if (name == AZ::Reflection::DescriptorAttributes::SerializedPath)
+                {
+                    auto elementName = AZ::Dom::Utils::ValueToType<AZStd::string_view>(attributeIt->second);
+                    if (elementName.has_value())
+                    {
+                        m_proxyClassElement.m_name = elementName.value().data();
+                    }
+                    continue;
+                }
 
                 AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
 
@@ -284,7 +297,7 @@ namespace AzToolsFramework
                     if (AZ::StringFunc::LooksLikeInt(name.GetCStr()))
                     {
                         AZStd::string attributeIdString(name.GetStringView());
-                        AZ::u32 attributeIdHash = AZStd::stoul(attributeIdString);
+                        AZ::u32 attributeIdHash = static_cast<AZ::u32>(AZStd::stoul(attributeIdString));
                         attributeId = AZ::Crc32(attributeIdHash);
 
                         // If we failed to marshal the attribute in the above AZ::Reflection::WriteDomValueToGenericAttribute,
@@ -455,9 +468,11 @@ namespace AzToolsFramework
             //      e.g. AZ::Data::Asset<AZ::Data::AssetData> when the actual type is for a specific asset data such as
             //           AZ::Data::Asset<RPI::ModelAsset>
             // So we need to marshal it with a typed pointer, which is how the data gets read in as well
-            // For everything else, we can just use ValueFromType which can imply the type from the value itself
+            // NOTE: The exception to this is for enum types, which might have a specialized type vs. an underlying type (e.g. short, int,
+            // etc...) in which case, the proxy value still comes as a primitive instead of a pointer, so we still need to use ValueFromType
+            // for that case. For everything else, we can just use ValueFromType which can imply the type from the value itself.
             AZ::Dom::Value newValue;
-            if (!typeId.IsNull() && typeId != m_proxyClassData.m_typeId)
+            if (!typeId.IsNull() && (typeId != m_proxyClassData.m_typeId) && !m_domNode.HasMember(PropertyEditor::EnumType.GetName()))
             {
                 newValue = AZ::Dom::Utils::MarshalTypedPointerToValue(&m_proxyValue, typeId);
             }

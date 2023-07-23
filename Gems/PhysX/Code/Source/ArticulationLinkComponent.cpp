@@ -49,6 +49,7 @@ namespace PhysX
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        provided.push_back(AZ_CRC_CE("ArticulationLinkService"));
     }
 
     void ArticulationLinkComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -97,6 +98,11 @@ namespace PhysX
             }
         }
         return currentEntity;
+    }
+
+    AZStd::vector<AzPhysics::SimulatedBodyHandle> ArticulationLinkComponent::GetSimulatedBodyHandles() const
+    {
+        return m_articulationLinks;
     }
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)

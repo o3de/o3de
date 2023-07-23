@@ -7,6 +7,7 @@
  */
 
 #include "CameraComponentController.h"
+#include "AzCore/Component/TransformBus.h"
 #include "CameraViewRegistrationBus.h"
 
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -260,7 +261,9 @@ namespace Camera
             m_atomCameraViewGroup->Activate();
         }
 
-        UpdateCamera();
+        AZ::Transform local, world;
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::GetLocalAndWorld, local, world);
+        OnTransformChanged(local, world);
 
         CameraRequestBus::Handler::BusConnect(m_entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
