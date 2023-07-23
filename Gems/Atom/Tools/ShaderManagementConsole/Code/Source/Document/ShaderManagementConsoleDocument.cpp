@@ -81,6 +81,8 @@ namespace ShaderManagementConsole
             m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
             EndEdit();
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
+                m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
             return variantInfo.m_stableId;
         }
@@ -110,7 +112,6 @@ namespace ShaderManagementConsole
                 if (!AZ::RPI::JsonUtils::LoadObjectFromFile(fullPath.String(), systemOptionSetting))
                 {
                     AZ_Warning("ShaderManagementConsoleDocument", false, "System option setting not found : '%s.'", fullPath.c_str());
-                    return;
                 }
 
                 if (systemOptionSetting.size() > 0)
