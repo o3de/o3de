@@ -244,14 +244,14 @@
 								<xs:documentation>The namespace of this node, which should match with the outer namespace of custom nodeable class.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
-						<xs:attribute name="Uuid" type="xs:string" use="optional" >
-							<xs:annotation>
-								<xs:documentation>A UUID that can be used to identify the class.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
 						<xs:attribute name="Description" type="xs:string" use="required" >
 							<xs:annotation>
 								<xs:documentation>The node's description that appears when someone hovers their mouse over it in the Node Palette.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Uuid" type="xs:string" use="optional" >
+							<xs:annotation>
+								<xs:documentation>A UUID that can be used to identify the class.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="Base" type="xs:string" use="optional" >
