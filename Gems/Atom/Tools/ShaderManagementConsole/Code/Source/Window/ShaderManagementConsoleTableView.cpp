@@ -210,7 +210,7 @@ namespace ShaderManagementConsole
         }
         setHorizontalHeaderItem(0, new QTableWidgetItem(""));
 
-        QIcon emptyOptionIcon("D:/emptyoption.png");
+        QIcon emptyOptionIcon(":/Icons/emptyoption.svg");
 
         // Fill all the rows with values from each variant
         for (int row = 0; row < rowCount(); ++row)
@@ -350,7 +350,7 @@ namespace ShaderManagementConsole
                 if (variantItem->text().isEmpty())
                 {
                     shaderVariant.m_options.erase(AZ::Name{optionItem->text().toUtf8().constData()});
-                    variantItem->setIcon(QIcon("D:/emptyoption.png"));
+                    variantItem->setIcon(QIcon(":/Icons/emptyoption.svg"));
                     variantItem->setToolTip(tr("runtime variable"));
                 }
                 else
