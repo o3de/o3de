@@ -2,8 +2,7 @@
 <xs:schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xs:element name="ScriptCanvas">
 		<xs:annotation>
-            <xs:documentation>The ScriptCanvas Nodeable XML definition root element. All nodeables must be contained within ScriptCanvas tags.</xs:documentation>
-            <xs:documentation>See https://docs.o3de.org/docs/user-guide/scripting/script-canvas/programmer-guide/custom-nodes/custom-nodeable-nodes/ for more details.</xs:documentation>
+            <xs:documentation>The ScriptCanvas Nodeable XML definition root element. All nodeables must be contained within ScriptCanvas tags. See https://docs.o3de.org/docs/user-guide/scripting/script-canvas/programmer-guide/custom-nodes/custom-nodeable-nodes/ for more details.</xs:documentation>
         </xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
@@ -267,8 +266,7 @@
 						</xs:attribute>
 						<xs:attribute name="Preset" type="xs:string" use="optional" >
 							<xs:annotation>
-								<xs:documentation>This can be configured to alter the defaults of other attributes. The currently implemented presets are listed below:</xs:documentation>
-							    <xs:documentation>Compact: Sets the nodes to a compact style which makes the execution input slot connect implicitly, hides it, and sets the graph canvas sub-style to compact to make the node appear smaller. Also makes slot names and input fields hidden by default.</xs:documentation>
+								<xs:documentation>This can be configured to alter the defaults of other attributes. See https://docs.o3de.org/docs/user-guide/scripting/script-canvas/programmer-guide/custom-nodes/custom-nodeable-nodes/#advanced-scriptcanvasnodeablexml-usage for more details.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 					</xs:complexType>
