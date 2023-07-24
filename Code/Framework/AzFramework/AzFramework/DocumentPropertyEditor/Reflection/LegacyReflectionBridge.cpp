@@ -733,6 +733,7 @@ namespace AZ::Reflection
                             if (groupPair.second.has_value())
                             {
                                 auto& groupStackEntry = groupPair.second.value();
+                                groupStackEntry.m_group = groupPair.first;
 
                                 if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
                                 {
