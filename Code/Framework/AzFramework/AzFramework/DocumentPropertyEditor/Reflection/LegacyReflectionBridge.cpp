@@ -202,7 +202,6 @@ namespace AZ::Reflection
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
 
-
             InstanceVisitor(
                 IReadWrite* visitor,
                 void* instance,
@@ -354,9 +353,10 @@ namespace AZ::Reflection
 
                                 if (currElement.m_serializeClassElement)
                                 {
-                                    void* boolAddress = reinterpret_cast<void*>(reinterpret_cast<size_t>(nodeData.m_instance) +
-                                        currElement.m_serializeClassElement->m_offset);
-                                    
+                                    // groups with a serialize class element are toggle groups, make an entry for their bool value
+                                    void* boolAddress = reinterpret_cast<void*>(
+                                        reinterpret_cast<size_t>(nodeData.m_instance) + currElement.m_serializeClassElement->m_offset);
+
                                     StackEntry entry = { boolAddress,
                                                          nodeData.m_instance,
                                                          currElement.m_serializeClassElement->m_typeId,
@@ -370,6 +370,7 @@ namespace AZ::Reflection
                                 }
                                 else
                                 {
+                                    // not a toggle group, just make the normal group UI element
                                     AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
                                     UIElement->m_editData = &currElement;
                                     UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
@@ -654,7 +655,7 @@ namespace AZ::Reflection
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
 
-                // search up the stack for the "true parent",
+                // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
                 void* instanceToInvoke = nullptr;
                 for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
                 {
@@ -672,7 +673,7 @@ namespace AZ::Reflection
                 newEntry.m_createdByEnumerate = true;
 
                 m_stack.push_back(newEntry);
-                
+
                 StackEntry& nodeData = m_stack.back();
 
                 // Generate this node's path (will be stored in nodeData.m_path)
@@ -732,7 +733,7 @@ namespace AZ::Reflection
                             if (groupPair.second.has_value())
                             {
                                 auto& groupStackEntry = groupPair.second.value();
-                                
+
                                 if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
                                 {
                                     groupStackEntry.m_skipHandler = true;
@@ -748,14 +749,19 @@ namespace AZ::Reflection
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
                                 if (groupPair.second.has_value() &&
-                                    groupPair.second.value().m_classElement->m_editData->m_serializeClassElement == groupEntry.m_classElement)
+                                    groupPair.second.value().m_classElement->m_editData->m_serializeClassElement ==
+                                        groupEntry.m_classElement)
                                 {
                                     // skip the bool that represented the group toggle, it's already in-line with the group
                                     continue;
                                 }
                                 m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
                                 m_serializeContext->EnumerateInstance(
-                                    m_enumerateContext, groupEntry.m_instance, groupEntry.m_typeId, groupEntry.m_classData, groupEntry.m_classElement);
+                                    m_enumerateContext,
+                                    groupEntry.m_instance,
+                                    groupEntry.m_typeId,
+                                    groupEntry.m_classData,
+                                    groupEntry.m_classElement);
                                 m_stack.pop_back();
                             }
 

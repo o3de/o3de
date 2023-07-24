@@ -644,6 +644,7 @@ namespace AZ::DocumentPropertyEditor
             }
             else if (access.GetType() == azrtti_typeid<bool>())
             {
+                // handle bool pointers directly for elements like group toggles
                 ExtractAndCreateLabel(attributes);
 
                 bool& value = *reinterpret_cast<bool*>(access.Get());
