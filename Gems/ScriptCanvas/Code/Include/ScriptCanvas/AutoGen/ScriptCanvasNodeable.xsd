@@ -221,22 +221,17 @@
 						</xs:sequence>
 						<xs:attribute name="Name" type="xs:string" use="required" >
 							<xs:annotation>
-								<xs:documentation>The full name of the node.</xs:documentation>
+								<xs:documentation>The name of the custom nodeable class.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="QualifiedName" type="xs:string" use="required" >
 							<xs:annotation>
-								<xs:documentation>The full name of the node's C++ class, including any extra namespaces.</xs:documentation>
+								<xs:documentation>The full name of the nodeable's C++ class, including any extra namespaces.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="PreferredClassName" type="xs:string" use="required" >
 							<xs:annotation>
 								<xs:documentation>The name for the node that is displayed in the editor.</xs:documentation>
-							</xs:annotation>
-						</xs:attribute>
-						<xs:attribute name="Uuid" type="xs:string" use="optional" >
-							<xs:annotation>
-								<xs:documentation>A UUID that can be used to identify the class.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="Category" type="xs:string" use="required" >
@@ -246,7 +241,12 @@
 						</xs:attribute>
 						<xs:attribute name="Namespace" type="xs:string" use="required" >
 							<xs:annotation>
-								<xs:documentation>The namespace this node belongs to.</xs:documentation>
+								<xs:documentation>The namespace of this node, which should match with the outer namespace of custom nodeable class.</xs:documentation>
+							</xs:annotation>
+						</xs:attribute>
+						<xs:attribute name="Uuid" type="xs:string" use="optional" >
+							<xs:annotation>
+								<xs:documentation>A UUID that can be used to identify the class.</xs:documentation>
 							</xs:annotation>
 						</xs:attribute>
 						<xs:attribute name="Description" type="xs:string" use="required" >
