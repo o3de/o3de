@@ -268,6 +268,9 @@ namespace AZ
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
 
+                // Listen for application's window creation/destruction (e.g. window is created/destroyed on Android when suspending the app)
+                AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
+
                 // delay one frame for Initialize which asset system is ready by then
                 AZ::TickBus::QueueFunction(
                     [this]()
@@ -292,6 +295,7 @@ namespace AZ
 
             void BootstrapSystemComponent::Deactivate()
             {
+                AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
                 Render::Bootstrap::RequestBus::Handler::BusDisconnect();
                 Render::Bootstrap::DefaultWindowBus::Handler::BusDisconnect();
 
@@ -365,6 +369,25 @@ namespace AZ
                         }
                     }
                 }
+            }
+
+            void BootstrapSystemComponent::OnApplicationWindowCreated()
+            {
+                if (!m_nativeWindow)
+                {
+                    auto projectTitle = AZ::Utils::GetProjectDisplayName();
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, r_width, r_height));
+                    AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
+
+                    m_nativeWindow->Activate();
+
+                    OnWindowCreated(m_nativeWindow->GetWindowHandle());
+                }
+            }
+
+            void BootstrapSystemComponent::OnApplicationWindowDestroy()
+            {
+                m_nativeWindow = nullptr;
             }
 
             void BootstrapSystemComponent::CreateViewportContext()
@@ -681,7 +704,12 @@ namespace AZ
             {
                 m_windowHandle = nullptr;
                 m_viewportContext.reset();
+                // On some platforms (e.g. Android) the main window is destroyed when the app is suspended
+                // but this doesn't mean that we need to exit the app. The window will be recreated when the app
+                // is resumed.
+#if AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_EXIT_ON_WINDOW_CLOSE
                 AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::ExitMainLoop);
+#endif
                 AzFramework::WindowNotificationBus::Handler::BusDisconnect();
             }
 
