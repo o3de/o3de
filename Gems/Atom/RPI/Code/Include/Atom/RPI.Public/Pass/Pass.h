@@ -248,23 +248,21 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable) { m_flags.m_pipelineStatisticsQueryEnabled = enable; }
 
-            //! Readback an attachment attached to the specified slot name
+            //! Reads back one or more mip levels from an attachment attached to the specified slot name
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
             //! @param readbackIndex index from the frame capture system to identify which capture is in progress
             //! @param slotName The attachment bind to the slot with this slotName is to be readback
             //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
-            //!               It's ignored if the attachment isn't an InputOutput attachment.
+            //!        It's ignored if the attachment isn't an InputOutput attachment.
+            //!        This means that if @option == PassAttachmentReadbackOption::Input, then we'll read the attachment mips
+            //!        BEFORE the Pass runs its main shader.
+            //!        if @option ==  PassAttachmentReadbackOption::Output, then we'll read the attachment mips
+            //!        AFTER the Pass runs its main shader.
+            //! @param imageViewDescriptor If NOT null, defines the list of mip levels that will be read back.
+            //!        If null, then only mip level 0 will be read back.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
-            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
-
-            //! Same as above, but reads back several attachments at once.
-            //! This is mostly useful to read several Mips for the same Image, where each Mip is an attachment.
-            //! CAVEAT: Because several attachments are captured at once, the @option argument will apply equally to all attachments.
-            //!         This means that if @option == PassAttachmentReadbackOption::Input, then we'll read all attachments
-            //!         BEFORE the Pass runs its main shader.
-            //!         if @option ==  PassAttachmentReadbackOption::Output, then we'll read all attachments
-            //!         AFTER the Pass runs its main shader.
-            bool ReadbackAttachments(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const AZStd::vector<Name>& slotNames, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
+                , PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output, const RHI::ImageViewDescriptor* imageViewDescriptor = nullptr);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }

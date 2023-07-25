@@ -1484,7 +1484,8 @@ namespace AZ
             return GetPipelineStatisticsResultInternal();
         }
 
-        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName, PassAttachmentReadbackOption option)
+        bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
+            , PassAttachmentReadbackOption option, const RHI::ImageViewDescriptor* imageViewDescriptor)
         {
             // Return false if it's already readback
             if (m_attachmentReadback)
@@ -1505,7 +1506,7 @@ namespace AZ
                         // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                         AZStd::string readbackName = AZStd::string::format("%s_%d_%d_%s", attachmentId.GetCStr(),
                             readbackIndex, bindingIndex, GetName().GetCStr());
-                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName)))
+                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName), imageViewDescriptor))
                         {
                             m_readbackOption = PassAttachmentReadbackOption::Output;
                             // The m_readbackOption is only meaningful if the attachment is used for InputOutput.
@@ -1522,50 +1523,6 @@ namespace AZ
                 bindingIndex++;
             }
             AZ_Warning("Pass", false, "ReadbackAttachment: failed to find slot [%s] from pass [%s]", slotName.GetCStr(), m_path.GetCStr());
-            return false;
-        }
-
-        bool Pass::ReadbackAttachments(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const AZStd::vector<Name>& slotNames, PassAttachmentReadbackOption option)
-        {
-            // Return false if it's already readback
-            if (m_attachmentReadback)
-            {
-                AZ_Warning("Pass", false, "ReadbackAttachments: skip readback pass [%s] slot [%s] because there is an another active readback", m_path.GetCStr(), slotNames[0].GetCStr());
-                return false;
-            }
-            m_readbackOption = option;
-            uint32_t bindingIndex = 0;
-            AZStd::vector<AttachmentReadback::ReadbackRequestInfo> readbackRequests;
-            for (auto& binding : m_attachmentBindings)
-            {
-                for (const auto &slotName : slotNames)
-                {
-                    if (slotName == binding.m_name)
-                    {
-                        RHI::AttachmentType type = binding.GetAttachment()->GetAttachmentType();
-                        if (type == RHI::AttachmentType::Buffer || type == RHI::AttachmentType::Image)
-                        {
-                            RHI::AttachmentId attachmentId = binding.GetAttachment()->GetAttachmentId();
-
-                            // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
-                            AZStd::string readbackName = AZStd::string::format("%s_%d_%d_%s", attachmentId.GetCStr(),
-                                readbackIndex, bindingIndex, GetName().GetCStr());
-                            readbackRequests.push_back({});
-                            auto& reqInfo = readbackRequests.back();
-                            reqInfo.m_attachment = binding.GetAttachment().get();
-                            reqInfo.m_readbackName = AZ::Name(readbackName);
-                            reqInfo.m_imageViewDescriptor = binding.m_unifiedScopeDesc.GetImageViewDescriptor();
-                        }
-                        break;
-                    }
-                }
-                bindingIndex++;
-            }
-            if (readback->ReadPassAttachments(readbackRequests))
-            {
-                m_attachmentReadback = readback;
-                return true;
-            }
             return false;
         }
 
