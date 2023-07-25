@@ -259,13 +259,11 @@ namespace AZ
 
             //! Same as above, but reads back several attachments at once.
             //! This is mostly useful to read several Mips for the same Image, where each Mip is an attachment.
-            //! CAVEAT 1: This function will only succeed if @readback is a subclass of AttachmentReadback that
-            //!           implements reading back from multiple attachments.
-            //! CAVEAT 2: Because several attachments are captured at once, the @option argument will apply equally to all attachments.
-            //!           This means that if @option == PassAttachmentReadbackOption::Input, then we'll read all attachments
-            //!           BEFORE the Pass runs its main shader.
-            //!           if @option ==  PassAttachmentReadbackOption::Output, then we'll read all attachments
-            //!           AFTER the Pass runs its main shader.
+            //! CAVEAT: Because several attachments are captured at once, the @option argument will apply equally to all attachments.
+            //!         This means that if @option == PassAttachmentReadbackOption::Input, then we'll read all attachments
+            //!         BEFORE the Pass runs its main shader.
+            //!         if @option ==  PassAttachmentReadbackOption::Output, then we'll read all attachments
+            //!         AFTER the Pass runs its main shader.
             bool ReadbackAttachments(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const AZStd::vector<Name>& slotNames, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass

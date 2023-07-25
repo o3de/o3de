@@ -63,7 +63,6 @@ set(FILES
     Include/Atom/RPI.Public/Model/ModelTagSystemComponent.h
     Include/Atom/RPI.Public/Model/UvStreamTangentBitmask.h
     Include/Atom/RPI.Public/Pass/AttachmentReadback.h
-    Include/Atom/RPI.Public/Pass/AttachmentsReadbackGroup.h
     Include/Atom/RPI.Public/Pass/ComputePass.h
     Include/Atom/RPI.Public/Pass/CopyPass.h
     Include/Atom/RPI.Public/Pass/FullscreenTrianglePass.h
@@ -148,7 +147,6 @@ set(FILES
     Source/RPI.Public/Model/ModelTagSystemComponent.cpp
     Source/RPI.Public/Model/UvStreamTangentBitmask.cpp
     Source/RPI.Public/Pass/AttachmentReadback.cpp
-    Source/RPI.Public/Pass/AttachmentsReadbackGroup.cpp
     Source/RPI.Public/Pass/ComputePass.cpp
     Source/RPI.Public/Pass/CopyPass.cpp
     Source/RPI.Public/Pass/FullscreenTrianglePass.cpp

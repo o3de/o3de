@@ -21,7 +21,6 @@
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
-#include <Atom/RPI.Public/Pass/AttachmentsReadbackGroup.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassLibrary.h>

@@ -25,8 +25,10 @@ namespace AZ
 
     namespace RPI
     {
-        //! A scope producer which reads back a single buffer or image attachment 
-        class AttachmentReadback
+        //! A scope producer which reads back one or more attachments (supports both, buffers and images) to CPU memory.
+        //! In case of images it can also capture specific Mip Levels, as defined in the image view descriptors.
+        //! Also, for images, Volume Texture images (aka Texture3D) are supported to.
+        class AttachmentReadback final
         {
         public:
             AZ_RTTI(AttachmentReadback, "{9C70ACD3-8694-4EF3-A556-9DA25BD1237C}");
@@ -45,11 +47,13 @@ namespace AZ
             AttachmentReadback(const RHI::ScopeId& scopeId);
             virtual ~AttachmentReadback();
 
-            //! Readback a pass attachment.
+            //! Reads back a single pass attachment.
             //! @param readbackName is the name for the readback buffer. And it will be saved in ReadbackResult::m_name. If the name is empty, a name will be generated automatically.
             //! Return true if the pass attachment readback request was submitted.  
             //! The callback function set by SetCallback(CallbackFunction callback) will be called once the readback is finished
-            bool ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName);
+            //! @param imageViewDescriptor If null, by default it is assumed that @attachment refers to Mip Level 0.
+            //!        When different than null, the image view descriptor can be used to specify which mip level is the attachment bound to.
+            bool ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageViewDescriptor* imageViewDescriptor = nullptr);
 
 
             struct ReadbackRequestInfo
@@ -58,16 +62,20 @@ namespace AZ
                 const PassAttachment* m_attachment = nullptr;
                 // Same semantic as ReadPassAttachment Arg 1.
                 Name m_readbackName;
-                // With a properly set imageViewDescription we can readback
+                // With a properly set imageViewDescriptor we can readback
                 // a particular mip level.
                 RHI::ImageViewDescriptor m_imageViewDescriptor;
             };
-            //! Readback multiple pass attachments.
-            virtual bool ReadPassAttachments(const AZStd::vector<ReadbackRequestInfo>& /*readbackAttachmentRequests*/)
+            //! Reads back multiple pass attachments in one frame.
+            bool ReadPassAttachments(const AZStd::vector<ReadbackRequestInfo>& readbackAttachmentRequests);
+
+            // Helper struct that records mip level and mip dimensions
+            // for a particular attachment.
+            struct MipInfo
             {
-                AZ_Assert(false, "AttachmentReadback base class doesn't support reading back from multiple attachments!");
-                return false;
-            }
+                uint16_t m_slice = 0;
+                RHI::Size m_size = {};
+            };
 
             struct ReadbackResult
             {
@@ -79,9 +87,10 @@ namespace AZ
 
                 // only valid for image attachments
                 RHI::ImageDescriptor m_imageDescriptor;
+                MipInfo m_mipInfo;
             };
 
-            virtual void Reset();
+            void Reset();
 
             ReadbackState GetReadbackState();
 
@@ -103,24 +112,12 @@ namespace AZ
             //! Prepare this scope producer for the frame.
             void FrameBegin(Pass::FramePrepareParams params);
 
-        protected:
-            // Find a format for formats with two planars (DepthStencil) based on its ImageView's aspect flag
-            static RHI::Format FindFormatForAspect(RHI::Format format, RHI::ImageAspect imageAspect);
+        private:
 
             // Scope producer functions for copy
-            virtual void CopyPrepare(RHI::FrameGraphInterface frameGraph);
-            virtual void CopyCompile(const RHI::FrameGraphCompileContext& context);
-            virtual void CopyExecute(const RHI::FrameGraphExecuteContext& context);
-
-            AZStd::fixed_vector<bool, RHI::Limits::Device::FrameCountMax> m_isReadbackComplete;
-            uint32_t m_readbackBufferCurrentIndex = 0u;
-            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
-            ReadbackState m_state = ReadbackState::Uninitialized;
-            Ptr<RHI::Fence> m_fence;
-            // Callback function when read back finished
-            CallbackFunction m_callback = nullptr;
-
-        private:
+            void CopyPrepare(RHI::FrameGraphInterface frameGraph);
+            void CopyCompile(const RHI::FrameGraphCompileContext& context);
+            void CopyExecute(const RHI::FrameGraphExecuteContext& context);
 
             // Scope producer functions for decomposing multi-sample image
             void DecomposePrepare(RHI::FrameGraphInterface frameGraph);
@@ -131,33 +128,61 @@ namespace AZ
             bool CopyBufferData(uint32_t readbackBufferIndex);
 
             // Get read back data in a structure
-            ReadbackResult GetReadbackResult() const;
+            struct AttachmentReadbackItem;
+            ReadbackResult GetReadbackResult(const AttachmentReadbackItem& readbackItem) const;
 
-            // Attachment to be read back
-            RHI::AttachmentId m_attachmentId;
-            RHI::AttachmentType m_attachmentType;
+            // A helper function.
+            // This function is only called if @attachment is an image attachment.
+            RHI::ImageDescriptor GetImageDescriptorFromAttachment(const PassAttachment* attachment);
 
-            // For copy scope producer ...
-            // The buffer attachment's size in bytes
-            uint64_t m_bufferAttachmentByteSize = 0;
+            // A helper function that creates a default image view descriptor
+            // for cases when ReadPassAttachment() is called with null image view descriptor.
+            // The returned view descriptor will assume that the attachment is bound to Mip Level 0.
+            // This function is only called if @attachment is an image attachment.
+            RHI::ImageViewDescriptor CreateDefaultImageViewDescriptorFromAttachment(const RHI::ImageDescriptor& imageDescriptor);
 
-            // The copy item used to copy an image or buffer to a read back buffer
-            RHI::CopyItem m_copyItem;
+            struct AttachmentReadbackItem
+            {
+                // Attachment to be read back
+                RHI::AttachmentId m_attachmentId;
+                RHI::AttachmentType m_attachmentType;
 
-            // Host accessible buffer to save read back result
-            // Using triple buffer pointers, as it allows use to clear the buffer outside the async callback.
-            // It helps with an issue where during the buffer cleanup there was a chance to hit the assert
-            // related to disconnecting a bus during a dispatch on a lockless Bus.
-            AZStd::fixed_vector<Data::Instance<Buffer>, RHI::Limits::Device::FrameCountMax> m_readbackBufferArray;
-            AZ::Name m_readbackName;
+                // For copy scope producer ...
+                // The buffer attachment's size in bytes
+                uint64_t m_bufferAttachmentByteSize = 0;
 
-            RHI::AttachmentId m_copyAttachmentId;
+                // The copy item used to copy an image or buffer to a read back buffer
+                RHI::CopyItem m_copyItem;
 
-            // Data buffer for final result
-            AZStd::shared_ptr<AZStd::vector<uint8_t>> m_dataBuffer;
+                // Host accessible buffer to save read back result
+                // Using triple buffer pointers, as it allows use to clear the buffer outside the async callback.
+                // It helps with an issue where during the buffer cleanup there was a chance to hit the assert
+                // related to disconnecting a bus during a dispatch on a lockless Bus.
+                AZStd::fixed_vector<Data::Instance<Buffer>, RHI::Limits::Device::FrameCountMax> m_readbackBufferArray;
+                AZ::Name m_readbackName;
 
-            // The input image attachment's descriptor
-            RHI::ImageDescriptor m_imageDescriptor;
+                RHI::AttachmentId m_copyAttachmentId;
+
+                // Data buffer for final result
+                AZStd::shared_ptr<AZStd::vector<uint8_t>> m_dataBuffer;
+
+                // The input image attachment's descriptor
+                RHI::ImageDescriptor m_imageDescriptor;
+                RHI::ImageViewDescriptor m_imageViewDescriptor;
+                MipInfo m_imageMipInfo;
+            };
+            AZStd::vector<AttachmentReadbackItem> m_attachmentReadbackItems; // Contains all the copy items.
+
+            AZStd::fixed_vector<bool, RHI::Limits::Device::FrameCountMax> m_isReadbackComplete;
+            uint32_t m_readbackBufferCurrentIndex = 0u;
+            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
+
+            ReadbackState m_state = ReadbackState::Uninitialized;
+
+            Ptr<RHI::Fence> m_fence;
+
+            // Callback function when read back finished
+            CallbackFunction m_callback = nullptr;
 
             // For decompose multisample image to an non-multisample image
             Data::Instance<Shader> m_decomposeShader;
