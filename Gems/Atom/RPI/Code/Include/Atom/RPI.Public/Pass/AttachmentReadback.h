@@ -156,7 +156,7 @@ namespace AZ
                 // Data buffer for final result
                 AZStd::shared_ptr<AZStd::vector<uint8_t>> m_dataBuffer;
 
-                MipInfo m_mipInfo; // Only relevate for image type.
+                MipInfo m_mipInfo; // Only relevant for image type.
             };
             // Contains all the copy items.
             // When m_attachmentType is Buffer, there will be only one item
