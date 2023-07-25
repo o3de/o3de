@@ -85,6 +85,21 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
                 Legacy::CryCommon
     )
 
+    ly_add_target(
+        NAME Launcher.Server.Headless.Static STATIC
+        NAMESPACE AZ
+        FILES_CMAKE
+            launcher_server_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzGameFramework.Headless
+                Legacy::CryCommon
+    )
+
 endif()
 
 if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)

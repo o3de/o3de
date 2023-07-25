@@ -16,11 +16,13 @@ set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_
 if(O3DE_HEADLESS_SERVER_LAUNCHER)
     set(SERVER_LAUNCHERTYPE EXECUTABLE)
     set(server_build_dependencies 
-                AZ::Launcher.Headless.Static)
+                AZ::Launcher.Headless.Static
+                AZ::Launcher.Server.Headless.Static)
 else()
     set(SERVER_LAUNCHERTYPE APPLICATION)
     set(server_build_dependencies 
-                AZ::Launcher.Static)
+                AZ::Launcher.Static
+                AZ::Launcher.Server.Static)
 endif()
 
 # Launcher targets for a project need to be generated when configuring a project.
@@ -192,7 +194,6 @@ foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
             BUILD_DEPENDENCIES
                 PRIVATE
                     ${server_build_dependencies}
-                    AZ::Launcher.Server.Static
             RUNTIME_DEPENDENCIES
                 ${server_runtime_dependencies}
         )
