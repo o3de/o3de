@@ -378,7 +378,7 @@ namespace AzFramework
         //! The factory class to create a custom implementation for this input device
         struct ImplementationFactory
         {
-            AZ_TYPE_INFO(ImplementationFactory, "{D840FD45-97BC-40D6-A92B-C83B607EA9D5}");
+            AZ_TYPE_INFO(ImplementationFactory, "{D8056402-DD8B-4C79-8C8D-A6BD9821AB61}");
             virtual ~ImplementationFactory() = default;
             virtual Implementation* Create(InputDeviceKeyboard& inputDevice) = 0;
         };
