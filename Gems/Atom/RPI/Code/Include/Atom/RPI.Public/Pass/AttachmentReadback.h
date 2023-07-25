@@ -25,9 +25,10 @@ namespace AZ
 
     namespace RPI
     {
-        //! A scope producer which reads back one or more attachments (supports both, buffers and images) to CPU memory.
+        //! A scope producer which reads back one or more attachments to CPU memory.
+        //! Both buffer and image attachments are supported.
         //! In case of images it can also capture specific Mip Levels, as defined in the image view descriptors.
-        //! Also, for images, Volume Texture images (aka Texture3D) are supported to.
+        //! Also, for images, Volume Texture image attachments (aka Texture3D) are supported too.
         class AttachmentReadback final
         {
         public:
