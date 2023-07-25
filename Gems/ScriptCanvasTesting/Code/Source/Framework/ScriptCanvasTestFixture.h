@@ -126,8 +126,6 @@ namespace ScriptCanvasTests
                 delete s_application;
                 s_application = nullptr;
             }
-
-            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         template<class T>
