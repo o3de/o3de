@@ -25,7 +25,8 @@ namespace AZ
 
     namespace RPI
     {
-        //! A scope producer which reads back one or more attachments to CPU memory.
+        //! Adds one or two scope producers ((the second is to decompose an MS Texture)
+        //! which read back one or more attachments to CPU memory.
         //! Both buffer and image attachments are supported.
         //! In case of images it can also capture specific Mip Levels, as defined in the image view descriptors.
         //! Also, for images, Volume Texture image attachments (aka Texture3D) are supported too.
