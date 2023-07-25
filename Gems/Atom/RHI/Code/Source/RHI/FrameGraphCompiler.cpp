@@ -284,6 +284,11 @@ namespace AZ::RHI
         for (FrameAttachment* transientImage : attachmentDatabase.GetTransientImageAttachments())
         {
             Scope* firstScope = transientImage->GetFirstScope();
+            if (firstScope == nullptr)
+            {
+                // The attachment is unused: We will get a warning in ValidateEnd(), but we don't want to crash here
+                continue;
+            }
             const HardwareQueueClass mostCapableQueueUsage = GetMostCapableHardwareQueue(transientImage->GetSupportedQueueMask());
 
             if (firstScope->GetHardwareQueueClass() != mostCapableQueueUsage)
@@ -547,8 +552,15 @@ namespace AZ::RHI
             for (uint32_t attachmentIndex = 0; attachmentIndex < (uint32_t)transientBufferGraphAttachments.size(); ++attachmentIndex)
             {
                 BufferFrameAttachment* transientBuffer = transientBufferGraphAttachments[attachmentIndex];
-                const uint32_t scopeIndexFirst = transientBuffer->GetFirstScope()->GetIndex();
-                const uint32_t scopeIndexLast = transientBuffer->GetLastScope()->GetIndex();
+                const auto* firstScope = transientBuffer->GetFirstScope();
+                const auto* lastScope = transientBuffer->GetLastScope();
+                if (firstScope == nullptr || lastScope == nullptr)
+                {
+                    // The attachment is unused: We will get a warning in ValidateEnd(), but we don't want to crash here
+                    continue;
+                }
+                const uint32_t scopeIndexFirst = firstScope->GetIndex();
+                const uint32_t scopeIndexLast = lastScope->GetIndex();
                 commands.emplace_back(scopeIndexFirst, Action::ActivateBuffer, attachmentIndex);
                 commands.emplace_back(scopeIndexLast, Action::DeactivateBuffer, attachmentIndex);
             }
@@ -557,8 +569,15 @@ namespace AZ::RHI
             for (uint32_t attachmentIndex = 0; attachmentIndex < (uint32_t)transientImageGraphAttachments.size(); ++attachmentIndex)
             {
                 ImageFrameAttachment* transientImage = transientImageGraphAttachments[attachmentIndex];
-                const uint32_t scopeIndexFirst = transientImage->GetFirstScope()->GetIndex();
-                const uint32_t scopeIndexLast = transientImage->GetLastScope()->GetIndex();
+                const auto* firstScope = transientImage->GetFirstScope();
+                const auto* lastScope = transientImage->GetLastScope();
+                if (firstScope == nullptr || lastScope == nullptr)
+                {
+                        // The attachment is unused: We will get a warning in ValidateEnd(), but we don't want to crash here
+                        continue;
+                }
+                const uint32_t scopeIndexFirst = firstScope->GetIndex();
+                const uint32_t scopeIndexLast = lastScope->GetIndex();
                 commands.emplace_back(scopeIndexFirst, Action::ActivateImage, attachmentIndex);
                 commands.emplace_back(scopeIndexLast, Action::DeactivateImage, attachmentIndex);
             }
