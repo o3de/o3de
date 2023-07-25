@@ -248,18 +248,20 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable) { m_flags.m_pipelineStatisticsQueryEnabled = enable; }
 
-            //! Reads back one or more mip levels from an attachment attached to the specified slot name
+            //! For an image attachment, attached to a specific slot name, reads back, from GPU to CPU memory, one or more mip levels.
+            //! For a buffer attachment, attached to a specific slot name, reads it back from GPU memory to CPU memory. 
             //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
-            //! @param readbackIndex index from the frame capture system to identify which capture is in progress
-            //! @param slotName The attachment bind to the slot with this slotName is to be readback
+            //! @param readbackIndex index from the frame capture system to identify which capture is in progress.
+            //! @param slotName The attachment bound to the slot with this slotName is to be read back.
             //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
             //!        It's ignored if the attachment isn't an InputOutput attachment.
             //!        This means that if @option == PassAttachmentReadbackOption::Input, then we'll read the attachment mips
             //!        BEFORE the Pass runs its main shader.
             //!        if @option ==  PassAttachmentReadbackOption::Output, then we'll read the attachment mips
             //!        AFTER the Pass runs its main shader.
-            //! @param imageViewDescriptor If NOT null, defines the list of mip levels that will be read back.
-            //!        If null, then only mip level 0 will be read back.
+            //! @param imageViewDescriptor Applicable ONLY to Image Attachments.
+            //!        If NOT null, defines the list of mip levels that will be read back.
+            //!        If null, only mip level 0 will be read back.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
             bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
                 , PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output, const RHI::ImageViewDescriptor* imageViewDescriptor = nullptr);
