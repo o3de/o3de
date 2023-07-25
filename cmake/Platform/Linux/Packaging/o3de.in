@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+pushd @CPACK_PACKAGING_INSTALL_PREFIX@
+bin/Linux/profile/Default/o3de $@
+popd
