@@ -166,6 +166,9 @@ namespace AZ::Reflection
                 bool m_disableEditor = false;
                 bool m_isAncestorDisabled = false;
 
+                bool m_skipHandler = false;
+                bool m_createdByEnumerate = false;
+
                 // extra data necessary to support Containers composed of pair<> children (like maps!)
                 bool m_extractKeyedPair = false;
                 AZ::SerializeContext::IDataContainer* m_parentContainerInfo = nullptr;
@@ -198,7 +201,6 @@ namespace AZ::Reflection
 
             // Specify whether the visit starts from the root of the instance.
             bool m_visitFromRoot = true;
-
 
             InstanceVisitor(
                 IReadWrite* visitor,
@@ -326,36 +328,60 @@ namespace AZ::Reflection
             void HandleNodeGroups(StackEntry& nodeData)
             {
                 // Search through classData for Groups.
-                if (nodeData.m_classData->m_editData)
+                if (nodeData.m_classData && nodeData.m_classData->m_editData)
                 {
                     AZStd::string groupName = "";
                     int groupCounter = 0;
 
-                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin();
-                         iter != nodeData.m_classData->m_editData->m_elements.end();
+                    for (auto iter = nodeData.m_classData->m_editData->m_elements.begin(),
+                              endIter = nodeData.m_classData->m_editData->m_elements.end();
+                         iter != endIter;
                          ++iter)
                     {
+                        auto& currElement = *iter;
+
                         //! If this node has group definitions in its element, create the vectors.
-                        if (iter->m_elementId == AZ::Edit::ClassElements::Group)
+                        if (currElement.m_elementId == AZ::Edit::ClassElements::Group)
                         {
-                            AZStd::string_view itemDescription(iter->m_description);
+                            AZStd::string_view itemDescription(currElement.m_description);
 
                             if (!itemDescription.empty())
                             {
                                 // Update groupName to new group's name
-                                groupName = iter->m_description;
-
-                                AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
-                                UIElement->m_editData = &*iter;
-                                UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
-                                StackEntry entry = { nodeData.m_instance,
-                                                     nodeData.m_instance,
-                                                     nodeData.m_classData->m_typeId,
-                                                     nodeData.m_classData,
-                                                     UIElement };
-
+                                groupName = currElement.m_description;
                                 nodeData.m_groupEntries.insert(groupName);
-                                nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+
+                                if (currElement.m_serializeClassElement)
+                                {
+                                    // groups with a serialize class element are toggle groups, make an entry for their bool value
+                                    void* boolAddress = reinterpret_cast<void*>(
+                                        reinterpret_cast<size_t>(nodeData.m_instance) + currElement.m_serializeClassElement->m_offset);
+
+                                    StackEntry entry = { boolAddress,
+                                                         nodeData.m_instance,
+                                                         currElement.m_serializeClassElement->m_typeId,
+                                                         nullptr,
+                                                         currElement.m_serializeClassElement };
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+
+                                    AZStd::string propertyPath = AZStd::string::format(
+                                        "%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
+                                    nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
+                                }
+                                else
+                                {
+                                    // not a toggle group, just make the normal group UI element
+                                    AZ::SerializeContext::ClassElement* UIElement = new AZ::SerializeContext::ClassElement();
+                                    UIElement->m_editData = &currElement;
+                                    UIElement->m_flags = SerializeContext::ClassElement::Flags::FLG_UI_ELEMENT;
+                                    StackEntry entry = { nodeData.m_instance,
+                                                         nodeData.m_instance,
+                                                         nodeData.m_classData->m_typeId,
+                                                         nodeData.m_classData,
+                                                         UIElement };
+
+                                    nodeData.m_groups.emplace_back(AZStd::make_pair(groupName, AZStd::move(entry)));
+                                }
                             }
                             else
                             {
@@ -371,10 +397,10 @@ namespace AZ::Reflection
                         }
                         else
                         {
-                            if (!groupName.empty() && iter->m_serializeClassElement)
+                            if (!groupName.empty() && currElement.m_serializeClassElement)
                             {
                                 AZStd::string propertyPath =
-                                    AZStd::string::format("%s/%s", nodeData.m_path.c_str(), iter->m_serializeClassElement->m_name);
+                                    AZStd::string::format("%s/%s", nodeData.m_path.c_str(), currElement.m_serializeClassElement->m_name);
                                 nodeData.m_propertyToGroupMap.insert({ propertyPath, groupName });
                             }
                         }
@@ -385,7 +411,7 @@ namespace AZ::Reflection
             void HandleNodeUiElementsRetrieval(const StackEntry& nodeData)
             {
                 // Search through classData for UIElements and Editor Data.
-                if (nodeData.m_classData->m_editData)
+                if (nodeData.m_classData && nodeData.m_classData->m_editData)
                 {
                     // Store current group.
                     AZStd::string groupName = "";
@@ -629,25 +655,25 @@ namespace AZ::Reflection
                 // Prepare the node references for the handlers.
                 StackEntry& parentData = m_stack.back();
 
-                // search up the stack for the "true parent",
-                // the first entry with a different instance pointer
-                void* instanceToInvoke = instance;
+                // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
+                void* instanceToInvoke = nullptr;
                 for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
                 {
                     auto* currInstance = rIter->m_instance;
-                    if (currInstance != instance)
+                    if (rIter->m_createdByEnumerate && currInstance)
                     {
                         instanceToInvoke = currInstance;
                         break;
                     }
                 }
 
-                m_stack.push_back({ instance,
-                                    instanceToInvoke,
-                                    classData ? classData->m_typeId : Uuid::CreateNull(),
-                                    classData,
-                                    classElement });
-                
+                StackEntry newEntry = {
+                    instance, instanceToInvoke, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement
+                };
+                newEntry.m_createdByEnumerate = true;
+
+                m_stack.push_back(newEntry);
+
                 StackEntry& nodeData = m_stack.back();
 
                 // Generate this node's path (will be stored in nodeData.m_path)
@@ -706,8 +732,14 @@ namespace AZ::Reflection
                         {
                             if (groupPair.second.has_value())
                             {
-                                groupPair.second.value().m_group = groupPair.first;
-                                m_stack.push_back(groupPair.second.value());
+                                auto& groupStackEntry = groupPair.second.value();
+                                groupStackEntry.m_group = groupPair.first;
+
+                                if (groupStackEntry.m_classElement->m_editData->m_serializeClassElement)
+                                {
+                                    groupStackEntry.m_skipHandler = true;
+                                }
+                                m_stack.push_back(groupStackEntry);
                                 CacheAttributes();
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
@@ -717,9 +749,20 @@ namespace AZ::Reflection
 
                             for (const auto& groupEntry : nodeData.m_groupEntries[groupPair.first])
                             {
+                                if (groupPair.second.has_value() &&
+                                    groupPair.second.value().m_classElement->m_editData->m_serializeClassElement ==
+                                        groupEntry.m_classElement)
+                                {
+                                    // skip the bool that represented the group toggle, it's already in-line with the group
+                                    continue;
+                                }
                                 m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
                                 m_serializeContext->EnumerateInstance(
-                                    m_enumerateContext, groupEntry.m_instance, groupEntry.m_typeId, groupEntry.m_classData, groupEntry.m_classElement);
+                                    m_enumerateContext,
+                                    groupEntry.m_instance,
+                                    groupEntry.m_typeId,
+                                    groupEntry.m_classData,
+                                    groupEntry.m_classElement);
                                 m_stack.pop_back();
                             }
 
@@ -1027,7 +1070,7 @@ namespace AZ::Reflection
                         {
                             if (!isParentAttribute)
                             {
-                                if (elementEditData->m_elementId)
+                                if (!nodeData.m_skipHandler && elementEditData->m_elementId)
                                 {
                                     handlerName = propertyEditorSystem->LookupNameFromId(elementEditData->m_elementId);
                                 }
@@ -1185,7 +1228,7 @@ namespace AZ::Reflection
                           Dom::Value(true) });
                 }
 
-                if (nodeData.m_classData->m_container)
+                if (nodeData.m_classData && nodeData.m_classData->m_container)
                 {
                     nodeData.m_cachedAttributes.push_back(
                         { group, DescriptorAttributes::Container, Dom::Utils::ValueFromType<void*>(nodeData.m_classData->m_container) });
@@ -1212,7 +1255,8 @@ namespace AZ::Reflection
 
                 // If this node has no edit data and is not the child of a container, only show its children
                 auto parentData = m_stack.end() - 2;
-                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData && !parentData->m_classData->m_container)
+                if (nodeData.m_classElement && !nodeData.m_classElement->m_editData &&
+                    (parentData->m_classData && !parentData->m_classData->m_container))
                 {
                     visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
                 }

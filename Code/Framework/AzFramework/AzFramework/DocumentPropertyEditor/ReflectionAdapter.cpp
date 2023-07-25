@@ -642,6 +642,26 @@ namespace AZ::DocumentPropertyEditor
                     false, false);
                 return;
             }
+            else if (access.GetType() == azrtti_typeid<bool>())
+            {
+                // handle bool pointers directly for elements like group toggles
+                ExtractAndCreateLabel(attributes);
+
+                bool& value = *reinterpret_cast<bool*>(access.Get());
+                VisitValue(
+                    Dom::Utils::ValueFromType(value),
+                    &value,
+                    sizeof(value),
+                    attributes,
+                    [&value](const Dom::Value& newValue)
+                    {
+                        value = newValue.GetBool();
+                        return newValue;
+                    },
+                    false,
+                    false);
+                return;
+            }
             else
             {
                 auto containerAttribute = attributes.Find(Reflection::DescriptorAttributes::Container);
