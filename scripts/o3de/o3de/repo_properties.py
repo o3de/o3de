@@ -17,142 +17,14 @@ import json
 import logging
 import hashlib
 import shutil
-import requests
 import sys
-import msvcrt
-import time
-import re
+import urllib.parse
 from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
-from o3de import manifest, utils, validation
+from o3de import manifest, utils, validation, github_utils
 
 logger = logging.getLogger('o3de.repo_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
-
-def hide_credential(prompt):
-    """
-    Hide credentials displays a prompt to the user and waits for credential input. The entered characters
-    are masked with asterisks (*) to provide privacy. The function captures individual keystrokes, including backspace,
-    and supports a timeout feature to limit the duration for user input.
-
-    Args:
-        prompt (str): The prompt to display to the user.
-
-    Returns:
-        str: The user-entered credential/password as a string.
-
-    Timeout:
-        If no input is received within 60 seconds, the function will display an
-        timeout message, return an empty string, and terminate.
-    """
-    sys.stdout.write(prompt)
-    sys.stdout.flush()
-
-    secret_input = []
-    start_time = time.time()
-
-    while True:
-        if msvcrt.kbhit():
-            char = msvcrt.getch()
-            if char == b'\r':
-                break
-            elif char == b'\x08':
-                if secret_input:
-                    secret_input.pop()
-                    sys.stdout.write('\b \b')
-            else:
-                sys.stdout.write('*')
-                secret_input.append(char)
-            sys.stdout.flush()
-            start_time = time.time()
-
-        if time.time() - start_time > 60:
-            sys.stdout.write('\n')
-            print("Input timeout occurred")
-            return ""
-
-    sys.stdout.write('\n')
-    return b''.join(secret_input).decode('utf-8')
-
-def upload_release_to_github(repo_uri:str,
-                             zip_path: pathlib.Path,
-                             archive_filename: str,
-                             upload_github_release_tag: str):
-    """
-    Uploads a release asset to a GitHub repository. 
-    It enables users to specify the GitHub release tag for the asset.
-    :param repo_uri (str): The URL of the GitHub repository (e.g., "https://github.com/owner/repo.git").
-    :param zip_path (pathlib.Path): The path to the ZIP file that needs to be uploaded.
-    :param archive_filename (str): The filename to be used for the uploaded asset in the GitHub release.
-    :param upload_github_release_tag (str): The tag associated with the GitHub release.
-    """
-    access_token = hide_credential("Provide your github access token (Must have content - read and write permission)\n"
-                                   "Enter your Github Token: ")
-
-    tag_name = upload_github_release_tag
-    # Get github credentials
-    headers = {
-        'Authorization': f'Token {access_token}',
-        'Accept': 'application/vnd.github.v3+json',
-        "Content-Type": "application/zip"
-    }
-    
-    # Get owner (required)
-    owner = response = requests.get('https://api.github.com/user', headers=headers)
-    if response.status_code == 200:
-        user_data = response.json()
-        owner = user_data['login']
-    else:
-        logger.error(f'Failed to retrieve github user name. Status code: {response.status_code}')
-
-    # Get repo (required) repo_uri: https://github.com/<owner>/<repo>.git
-    repo_uri = repo_uri.split("/")
-    repo = repo_uri[-1].split(".git")[0]
-    
-    tag_check_url = f"https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag_name}"
-    response = requests.get(tag_check_url, headers=headers)
-    
-    release_payload = {
-        'tag_name': tag_name
-    }
-    # Valid release
-    if response.status_code == 200:
-        # Get the release end point to retrive release id
-        get_release_by_tag = f"https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag_name}"
-        response = requests.get(get_release_by_tag, headers=headers, json=release_payload)
-        release_id = response.json().get('id')
-       
-        if response.status_code == 200:
-            upload_url = f'https://uploads.github.com/repos/{owner}/{repo}/releases/{release_id}/assets?name={archive_filename}'
-
-            with open(zip_path, 'rb') as file:
-                response = requests.post(upload_url, headers=headers, data=file)
-                if not response.status_code == 201:
-                    logger.error(f'Failed to upload asset to existing release. Status code: {response.status_code}')
-        else:
-            logger.error(f'Failed to retrive release. Status code: {response.status_code}')
-
-    # Release doesn't exist, Create a new release endpoint with the given tag_name and upload assest  
-    elif response.status_code == 404:
-        release_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
-        response = requests.post(release_url, headers=headers, json=release_payload)
-
-        if response.status_code == 201:
-            release_id = response.json().get('id')
-            upload_url = f'https://uploads.github.com/repos/{owner}/{repo}/releases/{release_id}/assets?name={archive_filename}'
-
-            with open(zip_path, 'rb') as file:
-                response = requests.post(upload_url, headers=headers, data=file)
-                if not response.status_code == 201:
-                    logger.error(f'Failed to upload asset. Status code: {response.status_code}')
-        else:
-            logger.error(f'Failed to create release. Status code: {response.status_code}')
-    else:
-        logger.error(f'Error checking tag existence. Status code: {response.status_code}')
-  
-def _is_github_link(url):
-    github_url_pattern = r'^https?://github\.com/[a-zA-Z0-9\-_]+/[a-zA-Z0-9\-_]+(\.git)?$'
-    return bool(re.match(github_url_pattern, url))
 
 def merge_json_data(json_path: pathlib.Path, json_data: dict) -> dict:
     """
@@ -199,7 +71,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
                    repo_uri:str,
                    force: bool,
                    download_prefix: str = None,
-                   upload_github_release_tag: str = None) -> dict:
+                   upload_git_release_tag: str = None) -> dict:
     """
     Creates a release of a specific version of a 
     remote object for the given src_data_path.
@@ -228,23 +100,27 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         logger.error(f'{zip_path} already exists.  Use --force command to overwrite the existing zip or '
                      'provide a new location to save your archive.')
         return {}
-    if upload_github_release_tag is None and download_prefix is None:
+    if not upload_git_release_tag and not download_prefix:
         logger.error('You need to provide a --upload-github-release-tag if you want to upload to github.\n'
                      'If you want to use other version control systems you must provide --download-prefix argument\n'
                      'A url prefix for a file attached to a Github release might look like this:'
                      '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
         return {}
-    if upload_github_release_tag and download_prefix is None:
-        
-        if _is_github_link(repo_uri):
+    if upload_git_release_tag and download_prefix:
+        logger.error('Upload to GitHub will automatically generate a download prefix for you.\n'
+                     'Use the `--download-prefix` CLI only when you want to use other version control system.')
+    if upload_git_release_tag and not download_prefix:
+        repo_uri = urllib.parse.urlparse(repo_uri)
+        git_provider = github_utils.get_github_provider(repo_uri)
+        if git_provider:
         # Parse the URL to extract owner and repository name
-            owner_repo = repo_uri.split("github.com/")[1].rstrip('.git').split('/')
+            owner_repo = repo_uri.geturl().split("github.com/")[1].rstrip('.git').split('/')
             owner = owner_repo[0]
             repo = owner_repo[1]
         else:
-            logger.error(f'{repo_uri} is not a valid Github repository link, please update your repo_uri in your repo.json file.')
+            logger.error(f'Failed to determine Git provider from {repo_uri}.')
             return 1
-        download_prefix = f'https://github.com/{owner}/{repo}/releases/download/{upload_github_release_tag}/{archive_filename}'
+        download_prefix = f'https://github.com/{owner}/{repo}/releases/download/{upload_git_release_tag}/{archive_filename}'
      
         json_data = merge_json_data(json_data_path, {
             'repo_uri': repo_uri,
@@ -258,11 +134,10 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
             json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
         
         # Upload release archive zip to Github
-        upload_release_to_github(repo_uri, zip_path, archive_filename, upload_github_release_tag)
-        return json_data
-    
+        git_provider.upload_release_to_github(repo_uri, zip_path, archive_filename, upload_git_release_tag)
+      
     # For other version control systems
-    if download_prefix:
+    else:
         # create the release zip file
         json_data = merge_json_data(json_data_path, {
             'repo_uri':repo_uri,
@@ -275,7 +150,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         with zip_path.open('rb') as f:
             json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
 
-        return json_data
+    return json_data
     
 # retrieves json data of the repository from a file path
 def get_repo_props(path: pathlib.Path) -> dict or None:
@@ -310,7 +185,7 @@ def _edit_objects(object_typename:str,
                   release_archive_path: pathlib.Path = None,
                   force: bool = None,
                   download_prefix: str = None,
-                  upload_github_release_tag: str = None):
+                  upload_git_release_tag: str = None):
     """
     Modifies the 'gems_data/projects_data/templates_data' in repo_json
     :param object_typename: The type object field you want to change
@@ -347,7 +222,7 @@ def _edit_objects(object_typename:str,
                                 repo_json['repo_uri'],
                                 force,
                                 download_prefix,
-                                upload_github_release_tag)
+                                upload_git_release_tag)
                     # if create_remote_object_archive is not successful, then exit
                     if not json_data:
                         return 1
@@ -507,7 +382,7 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        release_archive_path: pathlib.Path = None,
                        force: bool = None,
                        download_prefix: str = None,
-                       upload_github_release_tag: str = None) -> int:
+                       upload_git_release_tag: str = None) -> int:
     """
     Edits and modifies the remote repo properties for the repo.json located at 'repo_path'.
     :param repo_path: The path to the repo.json file
@@ -551,13 +426,13 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         _auto_update_json(auto_update, repo_path, repo_json)
 
     if add_gems or delete_gems or replace_gems:
-        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix, upload_github_release_tag)
+        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix, upload_git_release_tag)
 
     if add_projects or delete_projects or replace_projects:
-        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix, upload_github_release_tag)
+        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix, upload_git_release_tag)
 
     if add_templates or delete_templates or replace_templates:
-        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix, upload_github_release_tag)
+        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix, upload_git_release_tag)
 
     if repo_json_original != repo_json and not dry_run:
         utils.backup_file(repo_path)
@@ -589,7 +464,7 @@ def _edit_repo_props(args: argparse) -> int:
                               release_archive_path=args.release_archive_path,
                               force=args.force,
                               download_prefix=args.download_prefix,
-                              upload_github_release_tag=args.upload_github_release_tag
+                              upload_git_release_tag=args.upload_git_release_tag
                               )
 
 
@@ -647,7 +522,7 @@ def add_parser_args(parser):
     modify_object_group.add_argument('--download-prefix', '-dp', type=str, required=False,
                                    help='A URL prefix for a file attached to a GitHub release might look like this:'
                                         '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
-    modify_object_group.add_argument('--upload-github-release-tag', '-ugrt', type=str, default=False,
+    modify_object_group.add_argument('--upload-git-release-tag', '-ugrt', type=str, default=False,
                                    help='Automatically uploads your object-release-archive.zip file to specified github release.\n'
                                         'Please provide a tag_name for the release. ')
     parser.set_defaults(func=_edit_repo_props)

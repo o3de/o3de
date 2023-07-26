@@ -28,9 +28,21 @@ class GitProviderInterface(ABC):
         """
         Clones a git repository from a uri into a given folder
         :param uri: uniform resource identifier
-        :param download_path: location path on disk to download file
+        :param download_path: location path on disk to download files
         :param force_overwrite: whether to force overwrite the contents that already exist on disk or not
         :param ref: optional source control reference which can be a commit hash, branch, tag or other reference type
         :return: return code, 0 on success
+        """
+        pass
+    
+    @abstractmethod
+    def upload_release_to_github(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str):
+        """
+        Uploads a release asset to a GitHub repository. 
+        It enables users to specify the GitHub release tag for the asset.
+        :param repo_uri (str): The URL of the GitHub repository (e.g., "https://github.com/owner/repo.git").
+        :param zip_path (pathlib.Path): The path to the ZIP file that needs to be uploaded.
+        :param archive_filename (str): The filename to be used for the uploaded asset in the GitHub release.
+        :param upload_github_release_tag (str): The tag associated with the GitHub release.
         """
         pass
