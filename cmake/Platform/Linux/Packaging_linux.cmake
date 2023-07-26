@@ -69,24 +69,4 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
     )
 
-    # Scripts to add executable files to PATH
-    configure_file("${CMAKE_CURRENT_LIST_DIR}/Packaging/o3de.in"
-        ${CMAKE_BINARY_DIR}/Packaging/o3de
-        @ONLY
-    )
-    configure_file("${CMAKE_CURRENT_LIST_DIR}/Packaging/o3de.assetprocessor.in"
-        ${CMAKE_BINARY_DIR}/Packaging/o3de.assetprocessor
-        @ONLY
-    )
-    configure_file("${CMAKE_CURRENT_LIST_DIR}/Packaging/o3de.editor.in"
-        ${CMAKE_BINARY_DIR}/Packaging/o3de.editor
-        @ONLY
-    )
-    ly_install_files(PROGRAMS FILES
-        ${CMAKE_BINARY_DIR}/Packaging/o3de
-        ${CMAKE_BINARY_DIR}/Packaging/o3de.assetprocessor
-        ${CMAKE_BINARY_DIR}/Packaging/o3de.editor
-        DESTINATION /usr/local/bin
-    )
-
 endif()
