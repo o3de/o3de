@@ -86,7 +86,7 @@ elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
         ${CMAKE_BINARY_DIR}/Packaging/o3de
         ${CMAKE_BINARY_DIR}/Packaging/o3de.assetprocessor
         ${CMAKE_BINARY_DIR}/Packaging/o3de.editor
-        DESTINATION /usr/bin
+        DESTINATION /usr/local/bin
     )
 
 endif()
