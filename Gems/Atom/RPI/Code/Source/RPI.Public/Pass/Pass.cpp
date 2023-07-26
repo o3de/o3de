@@ -1485,7 +1485,7 @@ namespace AZ
         }
 
         bool Pass::ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
-            , PassAttachmentReadbackOption option, const RHI::ImageViewDescriptor* imageViewDescriptor)
+            , PassAttachmentReadbackOption option, const RHI::ImageSubresourceRange* mipsRange)
         {
             // Return false if it's already readback
             if (m_attachmentReadback)
@@ -1506,7 +1506,7 @@ namespace AZ
                         // Append slot index and pass name so the read back's name won't be same as the attachment used in other passes.
                         AZStd::string readbackName = AZStd::string::format("%s_%d_%d_%s", attachmentId.GetCStr(),
                             readbackIndex, bindingIndex, GetName().GetCStr());
-                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName), imageViewDescriptor))
+                        if (readback->ReadPassAttachment(binding.GetAttachment().get(), AZ::Name(readbackName), mipsRange))
                         {
                             m_readbackOption = PassAttachmentReadbackOption::Output;
                             // The m_readbackOption is only meaningful if the attachment is used for InputOutput.

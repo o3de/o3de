@@ -54,9 +54,9 @@ namespace AZ
             //! @param readbackName is the name for the readback buffer. And it will be saved in ReadbackResult::m_name. If the name is empty, a name will be generated automatically.
             //! Return true if the pass attachment readback request was submitted.  
             //! The callback function set by SetCallback(CallbackFunction callback) will be called once the readback is finished
-            //! @param imageViewDescriptor If null, by default it is assumed that @attachment refers to Mip Level 0.
-            //!        When different than null, the image view descriptor can be used to specify which mip levels to readback from.
-            bool ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageViewDescriptor* imageViewDescriptor = nullptr);
+            //! @param mipsRange If null, by default it is assumed that @attachment refers to Mip Level 0.
+            //!        When different than null, it is used to specify which mip levels to readback from.
+            bool ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageSubresourceRange* mipsRange = nullptr);
 
             // Helper struct that records mip level and mip dimensions.
             struct MipInfo
@@ -140,7 +140,7 @@ namespace AZ
 
             // The input image attachment's descriptor
             RHI::ImageDescriptor m_imageDescriptor;
-            RHI::ImageViewDescriptor m_imageViewDescriptor;
+            RHI::ImageSubresourceRange m_imageMipsRange;
 
             struct ReadbackItem
             {

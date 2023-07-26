@@ -259,12 +259,12 @@ namespace AZ
             //!        BEFORE the Pass runs its main shader.
             //!        if @option ==  PassAttachmentReadbackOption::Output, then we'll read the attachment mips
             //!        AFTER the Pass runs its main shader.
-            //! @param imageViewDescriptor Applicable ONLY to Image Attachments.
+            //! @param mipsRange Applicable ONLY to Image Attachments.
             //!        If NOT null, defines the list of mip levels that will be read back.
             //!        If null, only mip level 0 will be read back.
             //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
             bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, uint32_t readbackIndex, const Name& slotName
-                , PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output, const RHI::ImageViewDescriptor* imageViewDescriptor = nullptr);
+                , PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output, const RHI::ImageSubresourceRange* mipsRange = nullptr);
 
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const { return m_flags.m_timestampQueryEnabled; }

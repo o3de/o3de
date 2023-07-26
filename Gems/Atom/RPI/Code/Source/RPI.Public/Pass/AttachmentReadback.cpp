@@ -179,7 +179,7 @@ namespace AZ
                 
         }
 
-        bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageViewDescriptor* imageViewDescriptor)
+        bool AttachmentReadback::ReadPassAttachment(const PassAttachment* attachment, const AZ::Name& readbackName, const RHI::ImageSubresourceRange* mipsRange)
         {
             if (AZ::RHI::IsNullRHI())
             {
@@ -227,10 +227,7 @@ namespace AZ
                 }
                 m_readbackItems.push_back({});
                 auto& item = m_readbackItems.back();
-                for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
-                {
-                    item.m_readbackBufferArray.push_back(nullptr);
-                }
+                item.m_readbackBufferArray.resize(RHI::Limits::Device::FrameCountMax, nullptr);
             }
             else
             {
@@ -244,17 +241,14 @@ namespace AZ
                     m_imageDescriptor = attachment->m_descriptor.m_image;
                 }
 
-                m_imageViewDescriptor = (imageViewDescriptor != nullptr)
-                    ? *imageViewDescriptor
-                    : CreateDefaultImageViewDescriptorFromAttachment(m_imageDescriptor);
-                for (uint32_t mipIndex = m_imageViewDescriptor.m_mipSliceMin; mipIndex <= m_imageViewDescriptor.m_mipSliceMax; mipIndex++)
+                m_imageMipsRange = (mipsRange != nullptr)
+                    ? *mipsRange
+                    : RHI::ImageSubresourceRange(0, 0, 0, 0);
+                for (uint32_t mipIndex = m_imageMipsRange.m_mipSliceMin; mipIndex <= m_imageMipsRange.m_mipSliceMax; mipIndex++)
                 {
                     m_readbackItems.push_back({});
                     auto& mipItem = m_readbackItems.back();
-                    for(uint32_t i = 0; i < RHI::Limits::Device::FrameCountMax; i++)
-                    {
-                        mipItem.m_readbackBufferArray.push_back(nullptr);
-                    }
+                    mipItem.m_readbackBufferArray.resize(RHI::Limits::Device::FrameCountMax, nullptr);
                 }
 
                 // Add decompose scope to convert multi-sampled images to image array
@@ -409,13 +403,13 @@ namespace AZ
                     // [GFX TODO] [ATOM-14140] [Pass Tree] Add the ability to output all the array subresources and planars
                     // only array 0, and one aspect (planar) at this moment.
                     // Note: Mip Levels and Texture3D images are supported.
-                    const uint16_t mipSlice = m_imageViewDescriptor.m_mipSliceMin + itemIdx;
+                    const uint16_t mipSlice = m_imageMipsRange.m_mipSliceMin + itemIdx;
                     RHI::ImageSubresourceRange range(mipSlice, mipSlice, 0, 0);
                     range.m_aspectFlags = RHI::ImageAspectFlags::Color;
 
                     // setup aspect 
                     RHI::ImageAspect imageAspect = RHI::ImageAspect::Color;
-                    RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageViewDescriptor.m_overrideFormat);
+                    RHI::ImageAspectFlags imageAspectFlags = RHI::GetImageAspectFlags(m_imageDescriptor.m_format);
                     if (RHI::CheckBitsAll(imageAspectFlags, RHI::ImageAspectFlags::Depth))
                     {
                         imageAspect = RHI::ImageAspect::Depth;
@@ -436,7 +430,7 @@ namespace AZ
                     readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex] = BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
 
                     // Use the aspect format as output format, this format is also used as copy destination's format
-                    m_imageViewDescriptor.m_overrideFormat = FindFormatForAspect(m_imageViewDescriptor.m_overrideFormat, imageAspect);
+                    m_imageDescriptor.m_format = FindFormatForAspect(m_imageDescriptor.m_format, imageAspect);
 
                     // copy descriptor for copying image to buffer
                     RHI::CopyImageToBufferDescriptor copyImageToBuffer;
@@ -447,7 +441,7 @@ namespace AZ
                     copyImageToBuffer.m_destinationBytesPerRow = imageSubresourceLayouts[mipSlice].m_bytesPerRow;
                     copyImageToBuffer.m_destinationBytesPerImage = imageSubresourceLayouts[mipSlice].m_bytesPerImage;
                     copyImageToBuffer.m_destinationBuffer = readbackItem.m_readbackBufferArray[m_readbackBufferCurrentIndex]->GetRHIBuffer();
-                    copyImageToBuffer.m_destinationFormat = m_imageViewDescriptor.m_overrideFormat;
+                    copyImageToBuffer.m_destinationFormat = m_imageDescriptor.m_format;
 
                     readbackItem.m_mipInfo.m_slice = mipSlice;
                     readbackItem.m_mipInfo.m_size = imageSubresourceLayouts[mipSlice].m_size;
@@ -589,7 +583,7 @@ namespace AZ
                     {
                         RHI::Size mipSize = readbackItem.m_mipInfo.m_size;
                         RHI::ImageSubresourceLayout imageLayout = RHI::GetImageSubresourceLayout(mipSize,
-                            m_imageViewDescriptor.m_overrideFormat);
+                            m_imageDescriptor.m_format);
 
                         auto rowCount = imageLayout.m_rowCount;
                         auto byteCount = imageLayout.m_bytesPerImage;
