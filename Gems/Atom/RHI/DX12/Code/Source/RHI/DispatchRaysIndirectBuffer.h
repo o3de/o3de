@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include "RHI/MemoryView.h"
 #include <Atom/RHI/DispatchRaysIndirectBuffer.h>
 #include <Atom/RHI/IndirectBufferView.h>
 
@@ -33,7 +34,7 @@ namespace AZ
 
             static RHI::Ptr<DispatchRaysIndirectBuffer> Create();
 
-            void Init(RHI::BufferPool* bufferPool, RHI::BufferPool* stagingBufferPool) override;
+            void Init(RHI::BufferPool* bufferPool) override;
             void Build(RHI::RayTracingShaderTable* shaderTable) override;
             const RHI::Buffer* GetBuffer() const
             {
@@ -47,8 +48,8 @@ namespace AZ
 
         private:
             RHI::Ptr<RHI::Buffer> m_buffer;
-            RHI::Ptr<RHI::Buffer> m_stagingBuffer;
-            bool m_shaderTableNeedsCopy = true;
+            MemoryView m_shaderTableStagingMemory;
+            bool m_shaderTableNeedsCopy = false;
         };
     } // namespace DX12
 } // namespace AZ

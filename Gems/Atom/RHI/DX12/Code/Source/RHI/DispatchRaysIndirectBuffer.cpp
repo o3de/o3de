@@ -9,6 +9,7 @@
 
 #include <RHI/Buffer.h>
 #include <RHI/DX12.h>
+#include <RHI/Device.h>
 #include <RHI/RayTracingShaderTable.h>
 
 #include <Atom/RHI/BufferPool.h>
@@ -24,24 +25,18 @@ namespace AZ
             return aznew DispatchRaysIndirectBuffer;
         }
 
-        void DispatchRaysIndirectBuffer::Init(RHI::BufferPool* bufferPool, RHI::BufferPool* stagingBufferPool)
+        void DispatchRaysIndirectBuffer::Init(RHI::BufferPool* bufferPool)
         {
-            auto CreateIndirectBuffer = [](RHI::BufferPool* bufferPool)
-            {
-                auto result = RHI::Factory::Get().CreateBuffer();
-                AZ::RHI::BufferDescriptor bufferDescriptor;
-                bufferDescriptor.m_bindFlags = bufferPool->GetDescriptor().m_bindFlags;
-                bufferDescriptor.m_byteCount = sizeof(D3D12_DISPATCH_RAYS_DESC);
+            m_buffer = RHI::Factory::Get().CreateBuffer();
+            AZ::RHI::BufferDescriptor bufferDescriptor;
+            bufferDescriptor.m_bindFlags = bufferPool->GetDescriptor().m_bindFlags;
+            bufferDescriptor.m_byteCount = sizeof(D3D12_DISPATCH_RAYS_DESC);
 
-                AZ::RHI::BufferInitRequest bufferRequest;
-                bufferRequest.m_buffer = result.get();
-                bufferRequest.m_descriptor = bufferDescriptor;
-                [[maybe_unused]] RHI::ResultCode resultCode = bufferPool->InitBuffer(bufferRequest);
-                AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create DispatchRaysIndirectBuffer buffer");
-                return result;
-            };
-            m_stagingBuffer = CreateIndirectBuffer(stagingBufferPool);
-            m_buffer = CreateIndirectBuffer(bufferPool);
+            AZ::RHI::BufferInitRequest bufferRequest;
+            bufferRequest.m_buffer = m_buffer.get();
+            bufferRequest.m_descriptor = bufferDescriptor;
+            [[maybe_unused]] RHI::ResultCode resultCode = bufferPool->InitBuffer(bufferRequest);
+            AZ_Assert(resultCode == RHI::ResultCode::Success, "failed to create DispatchRaysIndirectBuffer buffer");
         }
 
         void DispatchRaysIndirectBuffer::Build(RHI::RayTracingShaderTable* shaderTable)
@@ -64,17 +59,13 @@ namespace AZ
             desc.Height = 0;
             desc.Depth = 0;
 
-            // Map staging buffer, and copy data to it
-            RHI::BufferPool* pool = static_cast<RHI::BufferPool*>(m_stagingBuffer->GetPool());
-            RHI::BufferMapRequest request = {};
-            RHI::BufferMapResponse response = {};
-            request.m_buffer = m_stagingBuffer.get();
-            request.m_byteCount = sizeof(D3D12_DISPATCH_RAYS_DESC);
-            request.m_byteOffset = 0;
-            [[maybe_unused]] RHI::ResultCode result = pool->MapBuffer(request, response);
-            AZ_Assert(result == RHI::ResultCode::Success, "Failed to map buffer for IndirectBufferWriter");
-            memcpy(response.m_data, &desc, sizeof(D3D12_DISPATCH_RAYS_DESC));
-            pool->UnmapBuffer(*m_stagingBuffer);
+            // Acquire staging buffer, and copy data to it
+            m_shaderTableStagingMemory =
+                static_cast<Device*>(&m_buffer->GetDevice())->AcquireStagingMemory(sizeof(D3D12_DISPATCH_RAYS_DESC), 16);
+            auto cpuAddress = m_shaderTableStagingMemory.Map(RHI::HostMemoryAccess::Write);
+            AZ_Assert(cpuAddress != nullptr, "Failed to map buffer for IndirectBufferWriter");
+            memcpy(cpuAddress, &desc, sizeof(D3D12_DISPATCH_RAYS_DESC));
+            m_shaderTableStagingMemory.Unmap(RHI::HostMemoryAccess::Write);
             m_shaderTableNeedsCopy = true;
         }
 
@@ -99,14 +90,18 @@ namespace AZ
 
             if (m_shaderTableNeedsCopy)
             {
-                const Buffer* dx12StagingBuffer = static_cast<const Buffer*>(m_stagingBuffer.get());
+                AZ_Assert(
+                    m_shaderTableStagingMemory.IsValid(),
+                    "DispatchRaysIndirectBuffer: Staging memory is not valid."
+                    " The Build function must be called in the same frame as the CopyData function")
+                    commandList->CopyBufferRegion(
+                        dx12Buffer->GetMemoryView().GetMemory(),
+                        dx12Buffer->GetMemoryView().GetOffset(),
+                        m_shaderTableStagingMemory.GetMemory(),
+                        m_shaderTableStagingMemory.GetOffset(),
+                        widthOffset); // copy the shader table entries only
                 m_shaderTableNeedsCopy = false;
-                commandList->CopyBufferRegion(
-                    dx12Buffer->GetMemoryView().GetMemory(),
-                    dx12Buffer->GetMemoryView().GetOffset(),
-                    dx12StagingBuffer->GetMemoryView().GetMemory(),
-                    dx12StagingBuffer->GetMemoryView().GetOffset(),
-                    widthOffset); // copy the shader table entries only
+                m_shaderTableStagingMemory = {}; // The staging memory is only valid for one frame. Make sure to not access it again
             }
             constexpr ptrdiff_t sizeToCopy = sizeof(uint32_t) * 3;
 
