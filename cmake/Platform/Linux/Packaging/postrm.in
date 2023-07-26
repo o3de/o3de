@@ -10,7 +10,7 @@
 set -o errexit # exit on the first failure encountered
 
 {
-    rm /usr/local/bin/o3de
-    rm /usr/local/bin/o3de.assetprocessor
-    rm /usr/local/bin/o3de.editor
+    rm -f /usr/local/bin/o3de
+    rm -f /usr/local/bin/o3de.assetprocessor
+    rm -f /usr/local/bin/o3de.editor
 }
