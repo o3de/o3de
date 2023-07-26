@@ -59,7 +59,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/LookModificationTransform.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }
