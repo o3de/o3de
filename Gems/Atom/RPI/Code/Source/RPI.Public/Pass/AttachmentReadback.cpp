@@ -355,10 +355,7 @@ namespace AZ
                     }
                     if (m_callback)
                     {
-                        for (const auto& readbackItem : m_readbackItems)
-                        {
-                            m_callback(GetReadbackResult(readbackItem));
-                        }
+                        m_callback(GetReadbackResult());
                     }
 
                     Reset();
@@ -543,17 +540,29 @@ namespace AZ
             return !(m_state == ReadbackState::Reading || m_state == ReadbackState::Uninitialized);
         }
 
-        AttachmentReadback::ReadbackResult AttachmentReadback::GetReadbackResult(const ReadbackItem& readbackItem) const
+        AttachmentReadback::ReadbackResult AttachmentReadback::GetReadbackResult() const
         {
             ReadbackResult result;
             result.m_state = m_state;
             result.m_attachmentType = m_attachmentType;
-            result.m_dataBuffer = readbackItem.m_dataBuffer;
+            result.m_dataBuffer = m_readbackItems[0].m_dataBuffer;
             result.m_name = m_readbackName;
             result.m_userIdentifier = m_userIdentifier;
             result.m_imageDescriptor = m_imageDescriptor;
             result.m_imageDescriptor.m_arraySize = 1;
-            result.m_mipInfo = readbackItem.m_mipInfo;
+
+            if (m_attachmentType == RHI::AttachmentType::Image)
+            {
+                result.m_mipDataBuffers.reserve(m_readbackItems.size());
+                for (const auto& readbackItem : m_readbackItems)
+                {
+                    result.m_mipDataBuffers.push_back({});
+                    auto& mipDataBuffer = result.m_mipDataBuffers.back();
+                    mipDataBuffer.m_mipBuffer = readbackItem.m_dataBuffer;
+                    mipDataBuffer.m_mipInfo = readbackItem.m_mipInfo;
+                }
+            }
+
             return result;
         }
 

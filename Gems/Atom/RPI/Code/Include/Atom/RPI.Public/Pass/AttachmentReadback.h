@@ -73,10 +73,18 @@ namespace AZ
                 AZ::Name m_name;
                 uint32_t m_userIdentifier;
 
-                // only valid for image attachments
+                // Only valid for image attachments
                 RHI::ImageDescriptor m_imageDescriptor;
-                // Info about the mip level that has been read back into @m_dataBuffer.
-                MipInfo m_mipInfo;
+                // REMARK: For compatibility reasons, The above @m_dataBuffer will point
+                // to the the buffer of the first Mip Level.
+                struct MipDataBuffer
+                {
+                    AZStd::shared_ptr<AZStd::vector<uint8_t>> m_mipBuffer;
+                    MipInfo m_mipInfo;
+                };
+                // With this vector of buffers, we can notify in a single
+                // call, all the data for all the requested mip levels.
+                AZStd::vector<MipDataBuffer> m_mipDataBuffers;
             };
 
             void Reset();
@@ -118,7 +126,7 @@ namespace AZ
 
             // Get read back data in a structure
             struct ReadbackItem;
-            ReadbackResult GetReadbackResult(const ReadbackItem& readbackItem) const;
+            ReadbackResult GetReadbackResult() const;
 
             // Attachment to be read back
             RHI::AttachmentId m_attachmentId;
