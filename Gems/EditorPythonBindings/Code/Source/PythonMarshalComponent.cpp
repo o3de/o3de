@@ -960,7 +960,7 @@ namespace EditorPythonBindings
                 AZ::BehaviorObject instance = behaviorClass->Create();
                 AZ::BehaviorMethod* pushBackMethod = iteratorToPushBackMethod->second;
 
-                size_t vectorCount = 0;
+                [[maybe_unused]] size_t vectorCount = 0;
                 pybind11::list pyList(pyObj);
                 for (auto pyItem = pyList.begin(); pyItem != pyList.end(); ++pyItem)
                 {
@@ -1009,7 +1009,7 @@ namespace EditorPythonBindings
                 AZStd::any* newVector = new AZStd::any(serializeContext->CreateAny(m_typeId));
                 void* instance = AZStd::any_cast<void>(newVector);
 
-                size_t vectorCount = 0;
+                [[maybe_unused]] size_t vectorCount = 0;
                 pybind11::list pyList(pyObj);
                 for (auto pyItem = pyList.begin(); pyItem != pyList.end(); ++pyItem)
                 {
@@ -1179,7 +1179,7 @@ namespace EditorPythonBindings
                 AZ::BehaviorObject instance = behaviorClass->Create();
                 AZ::BehaviorMethod* insertMethod = iteratorToInsertMethod->second;
 
-                size_t itemCount = 0;
+                [[maybe_unused]] size_t itemCount = 0;
                 pybind11::set pySet(pyObj);
                 for (auto pyItem = pySet.begin(); pyItem != pySet.end(); ++pyItem)
                 {
@@ -1233,7 +1233,7 @@ namespace EditorPythonBindings
                 AZStd::any* newVector = new AZStd::any(serializeContext->CreateAny(m_typeId));
                 void* instance = AZStd::any_cast<void>(newVector);
 
-                size_t itemCount = 0;
+                [[maybe_unused]] size_t itemCount = 0;
                 pybind11::set pySet(pyObj);
                 for (auto pyItem = pySet.begin(); pyItem != pySet.end(); ++pyItem)
                 {

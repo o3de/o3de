@@ -275,9 +275,16 @@ namespace AWSClientAuth
             }
         }
 
-        // lock to protect getting identity id.
-        AZStd::lock_guard<AZStd::mutex> lock(m_persistentAnonymousCognitoIdentityProviderMutex);
         // Check anonymous credentials as they are optional settings in Cognito Identity pool.
+        if (m_cognitoIdentityPoolId.empty())
+        {
+            // If the identity pool isn't set, then the anonymous credential won't be found.
+            // Return null, instead of asking AWS for credentials to avoid failing AWS requests and AWS errors due to a null identity pool id.
+            return nullptr;
+        }
+
+        // Lock to protect getting identity id.
+        AZStd::lock_guard<AZStd::mutex> lock(m_persistentAnonymousCognitoIdentityProviderMutex);
         if (!m_cognitoCachingAnonymousCredentialsProvider->GetAWSCredentials().IsEmpty())
         {
             AZ_Warning("AWSCognitoAuthorizationCredentialHandler", false, "No logins found. Using Anonymous credential provider");

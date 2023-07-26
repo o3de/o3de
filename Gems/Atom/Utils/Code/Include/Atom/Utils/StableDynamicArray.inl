@@ -26,7 +26,7 @@ namespace AZ
         // Deallocate the pages and check for allocated items since that may mean there are
         // outstanding handles that we should warn the user about.
 
-        size_t occupiedPageCount = 0;
+        [[maybe_unused]] size_t occupiedPageCount = 0;
         size_t orphanedItemCount = 0;
 
         Page* page = m_firstPage;

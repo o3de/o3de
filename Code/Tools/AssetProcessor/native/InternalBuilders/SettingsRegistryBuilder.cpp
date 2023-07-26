@@ -273,8 +273,8 @@ namespace AssetProcessor
                 if (auto& operationMessages = mergeResult.GetMessages();
                     !operationMessages.empty())
                 {
-                    AZStd::string_view launcherString = specialization.GetSpecialization(LauncherTypeIndex);
-                    AZStd::string_view buildConfiguration = specialization.GetSpecialization(BuildConfigIndex);
+                    [[maybe_unused]] AZStd::string_view launcherString = specialization.GetSpecialization(LauncherTypeIndex);
+                    [[maybe_unused]] AZStd::string_view buildConfiguration = specialization.GetSpecialization(BuildConfigIndex);
                     AZ_Info("Settings Registry Builder", R"(Launcher Type: "%.*s", Build configuration: "%.*s")" "\n"
                         "Merging the Engine, Gem, Project Registry directories resulted in the following messages:\n%s\n",
                         AZ_STRING_ARG(launcherString), AZ_STRING_ARG(buildConfiguration),

@@ -177,7 +177,7 @@ void UiCanvasAssetRefComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/ui/canvas-asset-ref/")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c));
 
-            editInfo->DataElement("SimpleAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
+            editInfo->DataElement("CanvasAssetRef", &UiCanvasAssetRefComponent::m_canvasAssetRef,
                 "Canvas pathname", "The pathname of the canvas.")
                 ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
                 ->Attribute("EditButton", "")

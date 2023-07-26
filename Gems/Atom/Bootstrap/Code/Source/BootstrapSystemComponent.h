@@ -12,6 +12,7 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/NativeWindow.h>
@@ -38,6 +39,7 @@ namespace AZ
             class BootstrapSystemComponent
                 : public Component
                 , public TickBus::Handler
+                , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
                 , public AzFramework::WindowNotificationBus::Handler
                 , public AzFramework::WindowSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemRequestBus::Handler
@@ -83,6 +85,10 @@ namespace AZ
 
                 // AzFramework::WindowSystemNotificationBus::Handler overrides ...
                 void OnWindowCreated(AzFramework::NativeWindowHandle windowHandle) override;
+
+                // AzFramework::ApplicationLifecycleEvents::Bus::Handler overrides ...
+                void OnApplicationWindowCreated() override;
+                void OnApplicationWindowDestroy() override;
 
             private:
                 void Initialize();
