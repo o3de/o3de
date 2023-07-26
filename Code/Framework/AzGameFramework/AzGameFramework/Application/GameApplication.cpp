@@ -15,7 +15,7 @@
 #include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
-#if !LY_HEADLESS_LAUNCHER
+#if !LY_HEADLESS
 #include <AzFramework/AzFrameworkNativeUIModule.h>
 #endif
 
@@ -111,9 +111,9 @@ namespace AzGameFramework
         AzFramework::Application::CreateStaticModules(outModules);
 
         outModules.emplace_back(aznew AzGameFrameworkModule());
-#if !LY_HEADLESS_LAUNCHER
+#if !LY_HEADLESS
         outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
-#endif
+#endif // LY_HEADLESS
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
@@ -129,13 +129,13 @@ namespace AzGameFramework
     {
         AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
 
-        #if !LY_HEADLESS_LAUNCHER
+        #if !LY_HEADLESS
         components.insert(
             components.end(),
             {
                 azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
-        #endif
+        #endif // LY_HEADLESS
 
         return components;
     }

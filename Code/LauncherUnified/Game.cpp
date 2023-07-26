@@ -30,7 +30,7 @@ namespace O3DELauncher
 
     bool IsHeadless()
     {
-        #if LY_HEADLESS_LAUNCHER
+        #if LY_HEADLESS
         return true;
         #else
         return false;

@@ -41,9 +41,6 @@ ly_add_target(
         PRIVATE
             .
             ${pal_dir}
-    COMPILE_DEFINITIONS
-        PRIVATE
-            LY_HEADLESS_LAUNCHER=1
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore

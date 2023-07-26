@@ -31,7 +31,7 @@ ly_add_target(
             ..
     COMPILE_DEFINITIONS
         PUBLIC
-            LY_HEADLESS_LAUNCHER=1
+            LY_HEADLESS=1
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
