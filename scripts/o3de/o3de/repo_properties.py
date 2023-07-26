@@ -68,7 +68,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
                    json_data_path: pathlib.Path, 
                    archive_filename: str, 
                    releases_path: pathlib.Path, 
-                   repo_uri:str,
+                   repo_uri: str,
                    force: bool,
                    download_prefix: str = None,
                    upload_git_release_tag: str = None) -> dict:
@@ -160,13 +160,13 @@ def get_repo_props(path: pathlib.Path) -> dict or None:
         return None
     return repo_json
 
-def _find_index(data:list, key:str, value:str) -> int:
+def _find_index(data: list, key: str, value: str) -> int:
     for index, item in enumerate(data):
         if item.get(key) == value:
             return index
     return -1
 
-def _changed(original:dict, new:dict) -> dict:
+def _changed(original: dict, new: dict) -> dict:
     changed = {}
     for key, value in new.items():
         if key not in original:
@@ -176,8 +176,8 @@ def _changed(original:dict, new:dict) -> dict:
 
     return changed
 
-def _edit_objects(object_typename:str,
-                  validator:callable,
+def _edit_objects(object_typename: str,
+                  validator: callable,
                   repo_json: dict,
                   add_objects: pathlib.Path or list = None,
                   delete_objects: str or list = None,
