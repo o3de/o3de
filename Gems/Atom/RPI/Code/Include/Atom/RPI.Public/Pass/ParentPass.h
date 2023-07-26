@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 
 namespace AZ
