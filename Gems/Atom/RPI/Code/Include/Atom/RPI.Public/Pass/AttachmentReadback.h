@@ -120,12 +120,6 @@ namespace AZ
             struct ReadbackItem;
             ReadbackResult GetReadbackResult(const ReadbackItem& readbackItem) const;
 
-            // A helper function that creates a default image view descriptor
-            // for cases when ReadPassAttachment() is called with null image view descriptor.
-            // The returned view descriptor will assume that the attachment is bound to Mip Level 0.
-            // This function is only called if @attachment is an image attachment.
-            RHI::ImageViewDescriptor CreateDefaultImageViewDescriptorFromAttachment(const RHI::ImageDescriptor& imageDescriptor);
-
             // Attachment to be read back
             RHI::AttachmentId m_attachmentId;
             RHI::AttachmentType m_attachmentType;

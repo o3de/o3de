@@ -617,23 +617,5 @@ namespace AZ
             }
             return true;
         }
-
-        RHI::ImageViewDescriptor AttachmentReadback::CreateDefaultImageViewDescriptorFromAttachment(const RHI::ImageDescriptor& imageDescriptor)
-        {
-            RHI::ImageViewDescriptor imageViewDescriptor;
-            if (imageDescriptor.m_dimension == RHI::ImageDimension::Image3D)
-            {
-                const auto depthSliceMax = static_cast<uint16_t>(imageDescriptor.m_size.m_depth - 1);
-                imageViewDescriptor = RHI::ImageViewDescriptor::Create3D(imageDescriptor.m_format,
-                    0 /*mipSliceMin*/, 0 /*mipSliceMax*/,
-                    0 /*depthSliceMin*/,  depthSliceMax);
-            }
-            else
-            {
-                imageViewDescriptor = RHI::ImageViewDescriptor::Create(imageDescriptor.m_format,
-                    0 /*mipSliceMin*/, 0 /*mipSliceMax*/);
-            }
-            return imageViewDescriptor;
-        }
     }   // namespace RPI
 }   // namespace AZ
