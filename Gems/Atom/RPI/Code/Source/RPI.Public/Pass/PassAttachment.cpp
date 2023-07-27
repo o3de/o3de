@@ -127,6 +127,16 @@ namespace AZ
                 UpdateImageMultisampleState();
                 UpdateImageSize();
                 UpdateImageArraySize();
+
+                if (m_generateFullMipChain)
+                {
+                    uint32_t width = m_descriptor.m_image.m_size.m_width;
+                    uint32_t height = m_descriptor.m_image.m_size.m_height;
+
+                    double maxDimension = static_cast<double>(AZStd::max(width, height));
+                    double mipMapLevels = floor(log2(maxDimension)) + 1;
+                    m_descriptor.m_image.m_mipLevels = static_cast<uint16_t>(mipMapLevels);
+                }
             }
         }
 
