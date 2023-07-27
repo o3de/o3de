@@ -93,6 +93,14 @@ namespace ImageProcessingAtom
         RPI::StreamingImageAssetCreator builder;
         builder.Begin(imageAssetId);
 
+        uint32_t imageDepth = m_imageObject->GetDepth(0);
+        const bool isVolumeTexture = m_imageObject->HasImageFlags(EIF_Volumetexture) || (imageDepth > 1);
+        if (m_imageObject->HasImageFlags(EIF_Cubemap) && isVolumeTexture)
+        {
+            AZ_Assert(false, "An image can not be a cubemap and a volume texture at the same time!");
+            return false;
+        }
+
         int32_t arraySize = m_imageObject->HasImageFlags(EIF_Cubemap) ? 6 : 1;
         uint32_t imageWidth = m_imageObject->GetWidth(0);
         // The current cubemap faces are vertically aligned in the same buffer of image object. So the height should be divided by the array size.
@@ -100,7 +108,9 @@ namespace ImageProcessingAtom
         RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
         RHI::ImageBindFlags bindFlag = RHI::ImageBindFlags::ShaderRead;
 
-        RHI::ImageDescriptor imageDesc = RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, static_cast<uint16_t>(arraySize), format);
+        RHI::ImageDescriptor imageDesc = isVolumeTexture
+            ? RHI::ImageDescriptor::Create3D(bindFlag, imageWidth, imageHeight, imageDepth, format)
+            : RHI::ImageDescriptor::Create2DArray(bindFlag, imageWidth, imageHeight, static_cast<uint16_t>(arraySize), format);
         imageDesc.m_mipLevels = static_cast<uint16_t>(m_imageObject->GetMipCount());
         if (m_imageObject->HasImageFlags(EIF_Cubemap))
         {
@@ -265,13 +275,17 @@ namespace ImageProcessingAtom
             uint32_t pitch;
             m_imageObject->GetImagePointer(mip, mipBuffer, pitch);
             RHI::Format format = Utils::PixelFormatToRHIFormat(m_imageObject->GetPixelFormat(), m_imageObject->HasImageFlags(EIF_SRGBRead));
-            
-            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1), format);
+
+            const auto mipSize = (m_imageObject->GetDepth(0) == 1)
+                ? RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip) / arraySize, 1)
+                : RHI::Size(m_imageObject->GetWidth(mip), m_imageObject->GetHeight(mip), m_imageObject->GetDepth(mip));
+            RHI::ImageSubresourceLayout layout = RHI::GetImageSubresourceLayout(mipSize, format);
+            const auto mipSizeInBytes = layout.m_bytesPerImage * mipSize.m_depth;
             builder.BeginMip(layout);
 
             for (uint32_t arrayIndex = 0; arrayIndex < arraySize; ++arrayIndex)
             {
-                builder.AddSubImage(mipBuffer + arrayIndex * layout.m_bytesPerImage, layout.m_bytesPerImage);
+                builder.AddSubImage(mipBuffer + arrayIndex * mipSizeInBytes, mipSizeInBytes);
             }
 
             builder.EndMip();
