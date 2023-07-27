@@ -125,7 +125,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "forward",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
@@ -225,7 +225,7 @@
                     "PassData": {
                         "$type": "RasterPassData",
                         "DrawListTag": "forwardWithSubsurfaceOutput",
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "PassSrgShaderAsset": {
                             "FilePath": "Shaders/ForwardPassSrg.shader"
                         }
@@ -423,7 +423,7 @@
                             "FilePath": "Shaders/Reflections/ReflectionComposite.shader"
                         },
                         "StencilRef": 1, // See RenderCommon.h and ReflectionComposite.shader
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {
@@ -456,7 +456,7 @@
                         "ShaderAsset": {
                             "FilePath": "Shaders/PostProcessing/MSAAResolveCustom.shader"
                         },
-                        "PipelineViewTag": "MainCamera",
+                        "BindViewSrg": true,
                         "ShaderDataMappings": {
                             "UintMappings": [
                                 {
@@ -519,7 +519,7 @@
                             "FilePath": "Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.shader"
                         },
                         "Make Fullscreen Pass": true,
-                        "PipelineViewTag": "MainCamera"
+                        "BindViewSrg": true
                     }
                 },
                 {

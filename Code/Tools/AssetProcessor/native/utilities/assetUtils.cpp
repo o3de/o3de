@@ -710,7 +710,7 @@ namespace AssetUtilities
             return true;
         }
 
-        int retries = 0;
+        [[maybe_unused]] int retries = 0;
         QElapsedTimer timer;
         timer.start();
         do

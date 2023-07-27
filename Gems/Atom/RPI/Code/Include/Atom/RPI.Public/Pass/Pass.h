@@ -153,7 +153,10 @@ namespace AZ
             virtual bool IsEnabled() const { return m_flags.m_enabled; }
 
             bool HasDrawListTag() const { return m_flags.m_hasDrawListTag; }
-            bool HasPipelineViewTag() const { return m_flags.m_hasPipelineViewTag; }
+            bool BindViewSrg() const
+            {
+                return m_flags.m_bindViewSrg;
+            }
 
             // Searches this pass's attachment bindings for one with the provided Name (nullptr if none found)
             PassAttachmentBinding* FindAttachmentBinding(const Name& slotName);
@@ -422,6 +425,9 @@ namespace AZ
             // Pointer to the parent pass if this pass is a child pass
             ParentPass* m_parent = nullptr;
 
+            // View tag used to associate a pipeline view for this pass or its child-passes.
+            PipelineViewTag m_viewTag;
+
             struct
             {
                 union
@@ -451,7 +457,7 @@ namespace AZ
                         uint64_t m_hasDrawListTag : 1;
 
                         // Whether this pass has a PipelineViewTag
-                        uint64_t m_hasPipelineViewTag : 1;
+                        uint64_t m_bindViewSrg : 1;
 
                         // Whether the pass should gather timestamp query metrics
                         uint64_t m_timestampQueryEnabled : 1;

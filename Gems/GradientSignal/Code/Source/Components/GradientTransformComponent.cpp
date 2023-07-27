@@ -77,11 +77,13 @@ namespace GradientSignal
 
                     ->DataElement(0, &GradientTransformConfig::m_allowReference, "Allow Reference", "When enabled, the shape reference can be overridden. When disabled, all operations are relative to this entity.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_shapeReference, "Shape Reference", "An optional shape reference that can be used to drive bounds and transform")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsReferenceReadOnly)
                     
                     ->DataElement(0, &GradientTransformConfig::m_overrideBounds, "Override Bounds", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_bounds, "Bounds", "Local (untransformed) bounds of a box used to remap, clamp, wrap, scale incoming coordinates")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsBoundsReadOnly)
                     ->DataElement(0, &GradientTransformConfig::m_center, "Center", "Local (untransformed) center of a box used to remap, clamp, wrap, scale incoming coordinates")
@@ -89,14 +91,17 @@ namespace GradientSignal
 
                     ->DataElement(0, &GradientTransformConfig::m_overrideTranslate, "Override Translate", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_translate, "Translate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsTranslateReadOnly)
                     ->DataElement(0, &GradientTransformConfig::m_overrideRotate, "Override Rotate", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_rotate, "Rotate", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsRotateReadOnly)
                     ->DataElement(0, &GradientTransformConfig::m_overrideScale, "Override Scale", "Allow manual override of the associated parameter")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsAdvancedModeReadOnly)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(0, &GradientTransformConfig::m_scale, "Scale", "")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &GradientTransformConfig::IsScaleReadOnly)
                     

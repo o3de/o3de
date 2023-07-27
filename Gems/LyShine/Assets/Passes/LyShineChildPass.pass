@@ -37,7 +37,7 @@
             "PassData": {
                 "$type": "RasterPassData",
                 "DrawListTag": "lyshinepass",
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

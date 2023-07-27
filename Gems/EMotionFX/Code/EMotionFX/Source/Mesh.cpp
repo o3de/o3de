@@ -1108,7 +1108,7 @@ namespace EMotionFX
         //------------------------------------------------------------------------
         // Fix the submesh number of vertices and start vertex offset values
         //------------------------------------------------------------------------
-        uint32 numRemoved = 0;
+        [[maybe_unused]] uint32 numRemoved = 0;
         const uint32 v = startVertexNr;
         for (uint32 w = 0; w < numVertsToRemove; ++w)
         {

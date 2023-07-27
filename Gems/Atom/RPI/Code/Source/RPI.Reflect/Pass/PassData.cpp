@@ -52,7 +52,7 @@ namespace AZ
             {
                 serializeContext->Class<RenderPassData, PassData>()
                     ->Version(1)
-                    ->Field("PipelineViewTag", &RenderPassData::m_pipelineViewTag)
+                    ->Field("BindViewSrg", &RenderPassData::m_bindViewSrg)
                     ->Field("ShaderDataMappings", &RenderPassData::m_mappings);
             }
         }
@@ -92,6 +92,7 @@ namespace AZ
             {
                 serializeContext->Class<PassData>()
                     ->Version(1)
+                    ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
                     ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
             }
         }

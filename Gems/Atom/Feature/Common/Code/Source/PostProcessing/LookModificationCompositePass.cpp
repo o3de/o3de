@@ -132,7 +132,7 @@ namespace AZ
             if (scene)
             {
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+                AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 if (fp)
                 {
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
@@ -157,7 +157,7 @@ namespace AZ
             if (scene)
             {
                 PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-                AZ::RPI::ViewPtr view = scene->GetDefaultRenderPipeline()->GetDefaultView();
+                AZ::RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
                 if (fp)
                 {
                     PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);

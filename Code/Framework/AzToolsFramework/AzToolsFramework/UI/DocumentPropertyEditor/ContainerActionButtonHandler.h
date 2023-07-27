@@ -23,5 +23,10 @@ namespace AzToolsFramework
         {
             return AZ::DocumentPropertyEditor::Nodes::ContainerActionButton::Name;
         }
+
+    protected:
+        AZ::DocumentPropertyEditor::Nodes::ContainerAction m_action;
+
+        void OnClicked() override;
     };
 } // namespace AzToolsFramework
