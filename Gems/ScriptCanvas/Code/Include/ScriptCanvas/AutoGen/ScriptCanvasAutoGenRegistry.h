@@ -66,6 +66,6 @@ private:
 
     AZStd::unordered_map<AZStd::string, ReflectFunction> m_registeredReflections;
 
-    bool m_verbose = true;
+    bool m_verbose = false;
 };
 
