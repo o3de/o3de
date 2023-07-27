@@ -14,13 +14,7 @@ namespace AzToolsFramework
     {
         setAutoRaise(true);
 
-        connect(
-            this, &QToolButton::clicked, this,
-            [this]()
-            {
-                using AZ::DocumentPropertyEditor::Nodes::GenericButton;
-                GenericButton::OnActivate.InvokeOnDomNode(m_node);
-            });
+        connect(this, &QToolButton::clicked, this, &GenericButtonHandler::OnClicked);
     }
 
     void GenericButtonHandler::SetValueFromDom(const AZ::Dom::Value& node)
@@ -30,5 +24,11 @@ namespace AzToolsFramework
         m_node = node;
         auto buttonText = GenericButton::ButtonText.ExtractFromDomNode(node).value_or("");
         setText(QString::fromUtf8(AZStd::string(buttonText).c_str()));
+    }
+
+    void GenericButtonHandler::OnClicked()
+    {
+        using AZ::DocumentPropertyEditor::Nodes::GenericButton;
+        GenericButton::OnActivate.InvokeOnDomNode(m_node);
     }
 } // namespace AzToolsFramework

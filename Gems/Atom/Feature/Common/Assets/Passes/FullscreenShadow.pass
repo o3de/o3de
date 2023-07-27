@@ -98,7 +98,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
             // Todo: test Compute Shader version with async compute and LDS optimizations
             // "PassData": {
@@ -107,7 +107,7 @@
             //         "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
             //     },
             //     "Make Fullscreen Pass": true,
-            //     "PipelineViewTag": "MainCamera"
+            //     "BindViewSrg": true
             // }
         }
     }

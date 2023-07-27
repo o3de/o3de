@@ -656,7 +656,7 @@ namespace AZ::Reflection
                 StackEntry& parentData = m_stack.back();
 
                 // search up the stack for the "true parent", which is the last entry created by the serialize enumerate itself
-                void* instanceToInvoke = nullptr;
+                void* instanceToInvoke = instance;
                 for (auto rIter = m_stack.rbegin(), rEnd = m_stack.rend(); rIter != rEnd; ++rIter)
                 {
                     auto* currInstance = rIter->m_instance;

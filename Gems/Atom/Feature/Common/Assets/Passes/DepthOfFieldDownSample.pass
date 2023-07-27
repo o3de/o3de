@@ -53,7 +53,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthOfFieldDownSample.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

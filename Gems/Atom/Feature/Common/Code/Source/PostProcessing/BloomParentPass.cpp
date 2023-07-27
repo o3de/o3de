@@ -40,7 +40,7 @@ namespace AZ
                 return false;
             }
             PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
-            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetFirstView(GetPipelineViewTag());
             if (!fp)
             {
                 return false;

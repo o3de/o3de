@@ -6,9 +6,9 @@
  *
  */
 
-
 #include <Atom/RHI/DrawListTagRegistry.h>
 
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
@@ -423,13 +423,17 @@ namespace AZ
 
         ViewPtr RenderPipeline::GetDefaultView()
         {
-            ViewPtr defaultView;
-            const AZStd::vector<ViewPtr>& views = GetViews(m_mainViewTag);
+            return GetFirstView(m_mainViewTag);
+        }
+
+        ViewPtr RenderPipeline::GetFirstView(const PipelineViewTag& viewTag)
+        {
+            const AZStd::vector<ViewPtr>& views = GetViews(viewTag);
             if (!views.empty())
             {
-                defaultView = views[0];
+                return views[0];
             }
-            return defaultView;
+            return {};
         }
 
         void RenderPipeline::SetDefaultViewFromEntity(EntityId entityId)
@@ -489,7 +493,7 @@ namespace AZ
             return m_pipelineViewsByTag.find(viewTag) != m_pipelineViewsByTag.end();
         }
 
-        PipelineViewTag RenderPipeline::GetMainViewTag() const
+        const PipelineViewTag& RenderPipeline::GetMainViewTag() const
         {
             return m_mainViewTag;
         }
