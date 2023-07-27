@@ -42,24 +42,13 @@ namespace {{ qualifiedNamespace }}
 class {{className}}_Reflection
 {
 public:
-    AZ_TYPE_INFO({{ className }}_Reflection, "{{ className|createHashGuid }}");
+    {% set reflectionClassName = className|join("_Reflection") %}
+    AZ_TYPE_INFO({{ className }}_Reflection, "{{ reflectionClassName|createHashGuid }}");
 
     static void Reflect(AZ::ReflectContext* context);
 };
 
-class AutoReflection_{{className}}
-{
-public:
-
-    AutoReflection_{{className}}()
-    {
-        ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{className}}_Reflection::Reflect(context); });
-    }
-
-    static AutoReflection_{{className}}* Get() { static AutoReflection_{{className}} s_instance; return &s_instance; }
-};
-static AutoReflection_{{className}} s_autoReflection_{{className}} = *AutoReflection_{{className}}::Get();
-
+inline const auto AutoReflection_{{className}} = ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{className}}", [] (AZ::ReflectContext* context) { {{className}}_Reflection::Reflect(context); });
 
 }
 

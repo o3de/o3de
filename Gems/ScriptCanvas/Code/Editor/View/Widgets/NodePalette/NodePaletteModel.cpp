@@ -251,9 +251,9 @@ namespace
 
         nodePaletteModel.RegisterDefaultCateogryInformation();
 
-        for (auto& nodes : ScriptCanvasModel::Instance().GetEntries())
+        for (auto& descriptor : ScriptCanvasModel::Instance().GetDescriptors())
         {
-            const auto& classId = nodes.second.m_descriptor->GetUuid();
+            const auto& classId = descriptor->GetUuid();
             if (const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(classId))
             {
                 if (HasExcludeFromNodeListAttribute(&serializeContext, classId))

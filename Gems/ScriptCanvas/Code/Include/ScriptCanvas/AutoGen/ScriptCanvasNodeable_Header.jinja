@@ -94,7 +94,6 @@ public: \
           public:
 
               AZ_COMPONENT({{nodeableNodeName}}, {% if Class.attrib['NodeableUuid'] is defined %}"{{Class.attrib['NodeableUuid']}}"{% else %}"{{nodeableNodeName|createHashGuid}}"{% endif %}, ScriptCanvas::Nodes::NodeableNode);
-              SCRIPTCANVAS_NODE_FACTORY_DECL("{{ autogenTargetName }}_Nodeable", {{ nodeableNodeName }});
 
               static void Reflect(AZ::ReflectContext* context);
 
@@ -126,6 +125,19 @@ public: \
 
               {{Class.attrib['NodeDeclarations']}}
           };
+
+          class {{nodeableNodeName}}_Reflection
+            {
+            public:
+                AZ_TYPE_INFO({{ nodeableNodeName }}_Reflection, "{{ nodeableNodeName|createHashGuid }}");
+
+                static void Reflect(AZ::ReflectContext* ) {}
+
+                {{nodeableNodeName}}_Reflection();
+
+            };
+
+          inline const auto AutoReflection_{{nodeableNodeName}} = ScriptCanvasModel::Instance().RegisterReflection( "AutoReflection_{{nodeableNodeName}}", [] (AZ::ReflectContext* context) { {{nodeableNodeName}}::Reflect(context); }, {{nodeableNodeName}}::CreateDescriptor());
       }
 {% endif %}
 

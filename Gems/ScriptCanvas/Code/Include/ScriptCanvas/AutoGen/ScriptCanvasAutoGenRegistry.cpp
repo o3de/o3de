@@ -30,69 +30,57 @@ ScriptCanvasModel& ScriptCanvasModel::Instance()
     return s_scriptModel.Get();
 }
 
-void ScriptCanvasModel::Init()
+ScriptCanvasModel::~ScriptCanvasModel()
 {
-    if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
-    {
-        for (auto& it : m_registry)
-        {
-            if (m_verbose)
-            {
-                AZ_TracePrintf("ScriptCanvas", "Registering BaseClass Descriptor for: %s\n", it.second.m_factory->GetName().c_str());
-            }
-
-            it.second.m_descriptor = it.second.m_factory->GetDescriptor();
-            componentApplication->RegisterComponentDescriptor(it.second.m_descriptor);
-        }
-    }
+    Release();
 }
 
 void ScriptCanvasModel::Release()
 {
-    for (auto& entry : m_registry)
+    for (auto descriptor : m_descriptors)
     {
-        entry.second.m_descriptor->ReleaseDescriptor();
+        descriptor->ReleaseDescriptor();
     }
 }
 
-void ScriptCanvasModel::Register(const char* gemOrModuleName, [[maybe_unused]] const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory)
+void ScriptCanvasModel::Init()
 {
-    AZStd::string gemOrModule = gemOrModuleName;
-    if (m_registry.find(typeHash) != m_registry.end())
+    for (auto descriptor : m_descriptors)
     {
-        static int duplicateCounter = 1;
+        if (auto componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get())
+        {
+            componentApplication->RegisterComponentDescriptor(descriptor);
 
-        AZStd::string newName = AZStd::string::format("%s_%d", gemOrModuleName, duplicateCounter++);
+            if (m_verbose)
+            {
+                AZ_TracePrintf("ScriptCanvas", "Register Descriptor: %s\n", descriptor->GetName());
+            }
 
-        // Duplicate hash, emit warning and change the module name to avoid the problem
-        AZ_Warning("Duplicate ScriptCanvas registration, consider making the node name unique: %s::%s, %s - to retain functionality, it will be found with a new module name of: %s\n", gemOrModuleName, typeName, typeHash, newName.c_str());
-        gemOrModule.append(newName.c_str());
-    }
-
-    Entry entry;
-    entry.m_gemOrModuleName = gemOrModule;
-    entry.m_factory = factory;
-    // Do not assign m_descriptor, this is happening at static initialization time, the types do not yet exist, see ScriptCanvasModel::Init
-    m_registry[typeHash] = entry;
-
-    if (m_verbose)
-    {
-        AZ_TracePrintf("ScriptCanvas", "ScriptCanvas: >> REGISTERED: %s::%s, %s\n", gemOrModuleName, typeName, typeHash);
+        }
     }
 }
 
-void ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFunction reflect)
+bool ScriptCanvasModel::RegisterReflection(const AZStd::string& name, ReflectFunction reflect, AZ::ComponentDescriptor* descriptor/* = nullptr*/)
 {
     if (!m_registeredReflections.contains(name))
     {
-        if (m_verbose)
+        if (descriptor)
         {
-            AZ_TracePrintf("ScriptCanvas", "RegisterReflection: %s\n", name.c_str());
+            m_descriptors.push_back(descriptor);
+        }
+        else
+        {
+            m_registeredReflections[name] = reflect;
+
+            if (m_verbose)
+            {
+                AZ_TracePrintf("ScriptCanvas", "RegisterReflection: %s\n", name.c_str());
+            }
         }
 
-        m_registeredReflections[name] = reflect;
+        return true;
     }
-
+    return false;
 }
 
 void ScriptCanvasModel::Reflect(AZ::ReflectContext* context)
@@ -106,15 +94,4 @@ void ScriptCanvasModel::Reflect(AZ::ReflectContext* context)
 
         reflection.second(context);
     }
-}
-
-const AZ::ComponentDescriptor* ScriptCanvasModel::GetDescriptor(const char* typehash) const
-{
-    auto it = m_registry.find(AZStd::string(typehash));
-    if (it != m_registry.end())
-    {
-        return it->second.m_factory->GetDescriptor();
-    }
-
-    return nullptr;
 }

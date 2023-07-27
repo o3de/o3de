@@ -72,7 +72,6 @@ namespace {{attribute_Namespace}}
 #define SCRIPTCANVAS_NODE_{{ className }} \
 public: \
     AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClass }} ); \
-    SCRIPTCANVAS_NODE_FACTORY_DECL("{{ autogenTargetName }}", {{ className }}); \
     static void Reflect(AZ::ReflectContext* reflection); \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \
@@ -82,6 +81,8 @@ public: \
 {% endif %}
 public: \
     friend struct {% if attribute_Namespace is not defined %}::{% endif %}{{ className | replace(' ','') }}Property;
+
+
 
 // Helpers for easily accessing properties and slots
 struct {{ className | replace(' ','') }}Property
