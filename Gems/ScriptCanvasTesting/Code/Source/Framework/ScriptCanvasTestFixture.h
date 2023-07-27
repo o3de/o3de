@@ -112,14 +112,15 @@ namespace ScriptCanvasTests
                 TestSubClass::Reflect(context);
                 ScriptUnitTestEventHandler::Reflect(context);
             }
+
+            ScriptCanvasModel::Instance().Init();
+
         }
 
         static void TearDownTestCase()
         {
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
-
-            ScriptCanvasModel::Instance().Release();
 
             if (s_application)
             {
@@ -143,8 +144,6 @@ namespace ScriptCanvasTests
 
         void SetUp() override
         {
-            ScriptCanvasModel::Instance().Init();
-
             ASSERT_TRUE(s_setupSucceeded) << "ScriptCanvasTestFixture set up failed, unit tests can't work properly";
             m_serializeContext = s_application->GetSerializeContext();
             m_behaviorContext = s_application->GetBehaviorContext();

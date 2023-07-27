@@ -29,17 +29,16 @@ namespace ScriptCanvasUnitTest
         virtual ~MockRegistry() = default;
 
         MOCK_METHOD0(Init, void());
-        MOCK_METHOD4(Register, void(const char* gemOrModuleName, const char* typeName, const char* typeHash, IScriptCanvasNodeFactory* factory));
+
         MOCK_METHOD1(Reflect, void(AZ::ReflectContext*));
-        MOCK_METHOD2(RegisterReflection, void(const AZStd::string& name, ScriptCanvasModel::ReflectFunction reflect));
-        MOCK_METHOD1(GetDescriptor, const AZ::ComponentDescriptor*(const char* typehash));
+        MOCK_METHOD3(RegisterReflection, void(const AZStd::string& name, ScriptCanvasModel::ReflectFunction reflect, AZ::ComponentDescriptor*));
+        MOCK_METHOD0(GetDescriptors, const AZStd::vector<AZ::ComponentDescriptor*>&());
     };
 
-    class MockFactory : public AZ::Component
+    class MockNode : public AZ::Component
     {
     public:
-        AZ_COMPONENT(MockFactory, "{79A83E8A-0FFD-4CED-96E0-ADED256E6D8C}");
-        SCRIPTCANVAS_NODE_FACTORY_DECL("ScriptCanvasUnitTest", MockFactory);
+        AZ_COMPONENT(MockNode, "{79A83E8A-0FFD-4CED-96E0-ADED256E6D8C}");
 
         static void Reflect(AZ::ReflectContext*) {}
 
@@ -47,20 +46,18 @@ namespace ScriptCanvasUnitTest
         virtual void Activate() override { }
         virtual void Deactivate() override { }
     };
-    MockFactory::ScriptCanvasNodeFactory_MockFactory* s_factory_MockFactory = MockFactory::ScriptCanvasNodeFactory_MockFactory::Impl();
 
     TEST_F(ScriptCanvasUnitTestFixture, GetDescriptors_ExpectItExists)
     {
         MockRegistry mockRegistry;
 
-        AZStd::string input = AZStd::string::format("%s_%s", "ScriptCanvasUnitTest", "MockFactory").c_str();
-        AZStd::string hashStr = ScriptCanvasNodeHash::Encode(input);
-        auto* descriptor = ScriptCanvasModel::Instance().GetDescriptor(hashStr.c_str());
+        auto descriptor = MockNode::CreateDescriptor();
+        ScriptCanvasModel::Instance().RegisterReflection("MockNode", [](AZ::ReflectContext* context) {MockNode::Reflect(context); }, descriptor);
 
-        EXPECT_TRUE(descriptor != nullptr);
-        EXPECT_STREQ(descriptor->GetName(), "MockFactory");
+        auto descriptors = ScriptCanvasModel::Instance().GetDescriptors();
+        EXPECT_TRUE(!descriptors.empty());
 
-        delete descriptor;
+        descriptor->ReleaseDescriptor();
     }
 
 } // namespace ScriptCanvasUnitTest

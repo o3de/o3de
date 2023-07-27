@@ -22,6 +22,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include <ScriptCanvas/Grammar/ParsingUtilities.h>
 #include <ScriptCanvas/Utils/VersionConverters.h>
 
+#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
+
 {% for xml in dataFiles %}
 {%   for Class in xml.iter('Class') %}
 
@@ -258,11 +260,6 @@ ScriptCanvas::NodePropertyInterface* {{ attribute_QualifiedName }}::GetPropertyI
 
 {# ----------------------------------------------------------------------- #}
 ////////////////////////////////////////////////////////////////////////////
-
-namespace Nodes
-{
-    SCRIPTCANVAS_NODE_FACTORY_IMPL(Nodes, {{nodeableNodeName}});
-}
 
 {# Constructor #}
 Nodes::{{ nodeableNodeName }}::{{ nodeableNodeName }}() 
