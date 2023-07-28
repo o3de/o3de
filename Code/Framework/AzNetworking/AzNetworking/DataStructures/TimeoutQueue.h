@@ -89,7 +89,7 @@ namespace AzNetworking
 
         // TimeoutQueue is a shared resource among connections. A mutex (or a read-write sync object) is required with multi-threaded sends.
         // See @sv_multithreadedConnectionUpdates cvar.
-        AZStd::mutex m_mutex;
+        AZStd::recursive_mutex m_mutex;
     };
 }
 
