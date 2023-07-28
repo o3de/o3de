@@ -290,7 +290,7 @@ namespace AtomToolsFramework
         AzFramework::WindowNotificationBus::Event(
             windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
         AzFramework::WindowNotificationBus::Event(
-            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, uiWindowSize.width(), uiWindowSize.height());
+            windowId, &AzFramework::WindowNotificationBus::Events::OnResolutionChanged, windowSize.width(), windowSize.height());
     }
 
     void RenderViewportWidget::SendWindowCloseEvent()
@@ -462,7 +462,7 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
     {
-        return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
+        return GetClientAreaSize();
     }
 
     void RenderViewportWidget::SetRenderResolution([[maybe_unused]]AzFramework::WindowSize resolution)
