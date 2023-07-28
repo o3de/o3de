@@ -30,7 +30,7 @@ namespace AZ
             //! A grouping of values and value names used to bind data to the per-pass shader resource groups.
             RHI::ShaderDataMappings m_mappings;
 
-            Name m_pipelineViewTag;
+            bool m_bindViewSrg = false;
         };
     } // namespace RPI
 } // namespace AZ

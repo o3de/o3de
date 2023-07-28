@@ -29,7 +29,7 @@ namespace AzToolsFramework
         {
             namespace Internal
             {
-                static constexpr const char* const ComponentRemovalNotice =
+                [[maybe_unused]] static constexpr const char* const ComponentRemovalNotice =
                     "[INFORMATION] %s data has been altered to remove component '%s'. "
                     "Please edit and save %s to persist the change.";
 

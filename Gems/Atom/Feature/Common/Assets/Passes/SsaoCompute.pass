@@ -50,7 +50,7 @@
                     "FilePath": "Shaders/PostProcessing/SsaoCompute.shader"
                 },
                 "Make Fullscreen Pass": true,
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             },
             "FallbackConnections": [
                 {

@@ -69,7 +69,7 @@ namespace AZ
         AZStd::array<float, 2> LightCullingTilePreparePass::ComputeUnprojectConstants() const
         {
             AZStd::array<float, 2> unprojectConstants;
-            const auto& view = m_pipeline->GetDefaultView();
+            const auto& view = m_pipeline->GetFirstView(GetPipelineViewTag());
 
             // Our view to clip matrix is right-hand and column major
             // i.e. something like this:

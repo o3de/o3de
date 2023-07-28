@@ -12,6 +12,7 @@
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QLineEdit>
@@ -191,17 +192,22 @@ namespace AzToolsFramework
             m_engineFilter->AddFilter(FilterConstType(engineFilter));
 
             AZStd::vector<AZ::Data::AssetType> types = BuildAssetTypeList();
-            auto compositeTypeFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::OR);
-            compositeTypeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
-            for (AZ::Data::AssetType type : types)
+            auto productFilterFn = [types](const AssetBrowserEntry* entry)
             {
-                auto typeFilter = new AssetTypeFilter();
-                typeFilter->SetAssetType(type);
-                compositeTypeFilter->AddFilter(FilterConstType(typeFilter));
-            }
-            auto inverseTypeFilter = new InverseFilter();
-            inverseTypeFilter->SetFilter(FilterConstType(compositeTypeFilter));
-            m_unusableProductsFilter->AddFilter(FilterConstType(inverseTypeFilter));
+                if (const ProductAssetBrowserEntry* productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry))
+                {
+                    return !AZStd::any_of(
+                        types.begin(),
+                        types.end(),
+                        [&](const auto& type)
+                        {
+                            return productEntry->GetAssetType() == type;
+                        });
+                }
+                return true;
+            };
+            auto productFilter = new CustomFilter(productFilterFn);
+            m_unusableProductsFilter->AddFilter(FilterConstType(productFilter));
 
             auto directoryFilter = new EntryTypeFilter();
             directoryFilter->SetName("Folder");
