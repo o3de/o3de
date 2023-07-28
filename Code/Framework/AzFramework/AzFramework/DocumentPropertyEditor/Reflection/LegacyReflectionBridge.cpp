@@ -922,9 +922,18 @@ namespace AZ::Reflection
 
                 auto checkAttribute = [&](const AttributePair* it, void* instance, bool shouldDescribeChildren)
                 {
+                    bool describesChildren = it->second->m_describesChildren;
                     if (it->second->m_describesChildren != shouldDescribeChildren)
                     {
                         return;
+                    }
+
+                    // The m_describesChildren flag is true if the attribute is an ElementAttribute,
+                    // in which case the instance we want to invoke on is the actual container element
+                    // instance, as opposed to the usual invoke instance.
+                    if (describesChildren)
+                    {
+                        instance = nodeData.m_instance;
                     }
 
                     Name name = propertyEditorSystem->LookupNameFromId(it->first);
