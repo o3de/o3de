@@ -20,42 +20,31 @@ namespace AZ
 
 namespace ScriptCanvasUnitTest
 {
-
-    class MockRegistry
-        : public ScriptCanvasModel
-    {
-    public:
-        MockRegistry() = default;
-        virtual ~MockRegistry() = default;
-
-        MOCK_METHOD0(Init, void());
-
-        MOCK_METHOD1(Reflect, void(AZ::ReflectContext*));
-        MOCK_METHOD3(RegisterReflection, void(const AZStd::string& name, ScriptCanvasModel::ReflectFunction reflect, AZ::ComponentDescriptor*));
-        MOCK_METHOD0(GetDescriptors, const AZStd::vector<AZ::ComponentDescriptor*>&());
-    };
-
-    class MockNode : public AZ::Component
+    class MockNode
+        : public AZ::Component
     {
     public:
         AZ_COMPONENT(MockNode, "{79A83E8A-0FFD-4CED-96E0-ADED256E6D8C}");
 
+        ~MockNode() override = default;
+
         static void Reflect(AZ::ReflectContext*) {}
 
         // AZ::Component...
-        virtual void Activate() override { }
-        virtual void Deactivate() override { }
+        void Activate() override { }
+        void Deactivate() override { }
     };
 
     TEST_F(ScriptCanvasUnitTestFixture, GetDescriptors_ExpectItExists)
     {
-        MockRegistry mockRegistry;
+        auto* descriptor = MockNode::CreateDescriptor();
+        ScriptCanvasModel::Instance().RegisterReflection("MockNode", [](AZ::ReflectContext* context) { MockNode::Reflect(context); }, descriptor);
 
-        auto descriptor = MockNode::CreateDescriptor();
-        ScriptCanvasModel::Instance().RegisterReflection("MockNode", [](AZ::ReflectContext* context) {MockNode::Reflect(context); }, descriptor);
 
-        auto descriptors = ScriptCanvasModel::Instance().GetDescriptors();
+        auto& descriptors = ScriptCanvasModel::Instance().GetDescriptors();
         EXPECT_TRUE(!descriptors.empty());
+
+        ScriptCanvasModel::Instance().RemoveDescriptor(descriptor);
 
         descriptor->ReleaseDescriptor();
     }

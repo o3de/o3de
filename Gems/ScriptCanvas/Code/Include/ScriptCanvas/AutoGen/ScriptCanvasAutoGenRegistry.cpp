@@ -35,12 +35,20 @@ ScriptCanvasModel::~ScriptCanvasModel()
     Release();
 }
 
+void ScriptCanvasModel::RemoveDescriptor(AZ::ComponentDescriptor* descriptor)
+{
+    m_descriptors.remove(descriptor);
+}
+
 void ScriptCanvasModel::Release()
 {
     for (auto descriptor : m_descriptors)
     {
         descriptor->ReleaseDescriptor();
     }
+
+    m_descriptors.clear();
+    m_registeredReflections.clear();
 }
 
 void ScriptCanvasModel::Init()

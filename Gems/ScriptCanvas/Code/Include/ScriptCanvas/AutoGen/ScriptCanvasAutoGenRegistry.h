@@ -78,21 +78,22 @@ public:
     static ScriptCanvasModel& Instance();
 
     ScriptCanvasModel() = default;
-    ~ScriptCanvasModel();
+    virtual ~ScriptCanvasModel();
 
     void Init();
     void Release();
+    void RemoveDescriptor(AZ::ComponentDescriptor* descriptor);
 
     using ReflectFunction = AZStd::function<void(AZ::ReflectContext*)>;
     bool RegisterReflection(const AZStd::string& name, ReflectFunction reflect, AZ::ComponentDescriptor* descriptor = nullptr);
 
     void Reflect(AZ::ReflectContext* context);
 
-    const AZStd::vector<AZ::ComponentDescriptor*>& GetDescriptors() const { return m_descriptors; }
+    const AZStd::list<AZ::ComponentDescriptor*>& GetDescriptors() const { return m_descriptors; }
 
 private:
 
-    AZStd::vector<AZ::ComponentDescriptor*> m_descriptors;
+    AZStd::list<AZ::ComponentDescriptor*> m_descriptors;
 
     AZStd::unordered_map<AZStd::string, ReflectFunction> m_registeredReflections;
 
