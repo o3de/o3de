@@ -56,7 +56,6 @@ else:
     EXECUTABLE_EXTENSION = ""
     ADDITION_BUILD_ARGS = []
 
-
 def build_non_monolithic_code_modules( project_path: pathlib.Path,
                                         non_mono_build_path: pathlib.Path,
                                         force_rebuild_all = False):

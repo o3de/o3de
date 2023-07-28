@@ -38,6 +38,15 @@ from typing import List
 
 # For more information on the available parameters for this script, check the parse_arguments function defined at the bottom of the file
 
+
+# Account for some windows-specific attributes
+if platform.system().lower()=='windows':
+    EXECUTABLE_EXTENSION = '.exe'
+    ADDITION_BUILD_ARGS = ['--', '/m', '/ nologo']
+else:
+    EXECUTABLE_EXTENSION = ""
+    ADDITION_BUILD_ARGS = []
+
 def build_non_monolithic_tools_and_assets(engine_path: pathlib.Path,
                                           project_path: pathlib.Path,
                                           project_name: str,
@@ -45,9 +54,9 @@ def build_non_monolithic_tools_and_assets(engine_path: pathlib.Path,
     process_command(['cmake', '-S', engine_path, '-B', str(non_mono_build_path), 
                         '-DLY_DISABLE_TEST_MODULES=TRUE', '-DLY_STRIP_DEBUG_SYMBOLS=TRUE', f'-DLY_PROJECTS={project_path}'],
                         cwd=engine_path)
-    process_command(['cmake', '--build', str(non_mono_build_path), '--target', 'AssetBundlerBatch', 'AssetProcessorBatch', '--config','profile'],
+    process_command(['cmake', '--build', str(non_mono_build_path), '--target', 'AssetBundlerBatch', 'AssetProcessorBatch', '--config','profile'] + ADDITION_BUILD_ARGS,
                     cwd=engine_path)
-    process_command(['cmake', '--build', str(non_mono_build_path), '--target', f'{project_name}.Assets', '--config', 'profile'],
+    process_command(['cmake', '--build', str(non_mono_build_path), '--target', f'{project_name}.Assets', '--config', 'profile'] + ADDITION_BUILD_ARGS,
                     cwd=engine_path)
 
 def build_monolithic_project(engine_path: pathlib.Path,
@@ -61,13 +70,13 @@ def build_monolithic_project(engine_path: pathlib.Path,
     process_command(['cmake', '-S', '.', '-B', str(mono_build_path), '-DLY_MONOLITHIC_GAME=1', '-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=0', f'-DLY_PROJECTS={project_path}'],
                     cwd=engine_path)
     if should_build_game:
-        process_command(['cmake', '--build', str(mono_build_path), '--target', f'{project_name}.GameLauncher', '--config', build_config],
+        process_command(['cmake', '--build', str(mono_build_path), '--target', f'{project_name}.GameLauncher', '--config', build_config] + ADDITION_BUILD_ARGS,
                         cwd=engine_path) 
     if should_build_server:
-        process_command(['cmake', '--build', str(mono_build_path), '--target', f'{project_name}.ServerLauncher', '--config', build_config],
+        process_command(['cmake', '--build', str(mono_build_path), '--target', f'{project_name}.ServerLauncher', '--config', build_config] + ADDITION_BUILD_ARGS,
                         cwd=engine_path)
     if should_build_unified:
-        process_command(['cmake', '--build', str(mono_build_path), '--target', f'{project_name}.UnifiedLauncher', '--config', build_config],
+        process_command(['cmake', '--build', str(mono_build_path), '--target', f'{project_name}.UnifiedLauncher', '--config', build_config] + ADDITION_BUILD_ARGS,
                         cwd=engine_path)
 
 def bundle_project_and_engine_assets(engine_path: pathlib.Path,
@@ -173,7 +182,7 @@ def export_standalone_monolithic_engine_centric(engine_path: pathlib.Path,
                              should_build_unified_launcher)
 
     # Before bundling content, make sure that the necessary executables exist
-    asset_bundler_batch_path = non_mono_build_path / 'bin' / 'profile' / ('AssetBundlerBatch' + ('.exe' if platform.system().lower()=='windows' else ''))
+    asset_bundler_batch_path = non_mono_build_path / 'bin' / 'profile' / f'AssetBundlerBatch{EXECUTABLE_EXTENSION}'
     if not asset_bundler_batch_path.is_file():
         logger.error(f"AssetBundlerBatch not found at path '{asset_bundler_batch_path}'. In order to bundle the data for project, this executable must be present!")
         logger.error("To correct this issue, do 1 of the following: \n"
