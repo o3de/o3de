@@ -10,18 +10,9 @@
 
 #include "${Name}.h"
 
-/////////////////////////////////////////////////////////////
-// This registration only needs to happen once per module
-// You can keep it here, or move it into this module's 
-// system component
-#include <ScriptCanvas/AutoGen/ScriptCanvasAutoGenRegistry.h>
-#include <Source/${Name}_Nodeables.generated.h>
-REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(${Name}Object);
-/////////////////////////////////////////////////////////////
-
 namespace ScriptCanvas::Nodes
 {
-    void ${SanitizedCppName}::In()
+    void ${SanitizedCppName}::In([[maybe_unused]] Data::NumberType DataIn)
     {
 
     }
