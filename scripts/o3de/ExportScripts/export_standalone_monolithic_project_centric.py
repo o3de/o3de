@@ -52,9 +52,11 @@ $ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\
 if platform.system().lower()=='windows':
     EXECUTABLE_EXTENSION = '.exe'
     ADDITION_BUILD_ARGS = ['--', '/m', '/ nologo']
+    O3DE_SCRIPT_NAME = 'o3de.bat'
 else:
     EXECUTABLE_EXTENSION = ""
     ADDITION_BUILD_ARGS = []
+    O3DE_SCRIPT_NAME = 'o3de.sh'
 
 def build_non_monolithic_code_modules( project_path: pathlib.Path,
                                         non_mono_build_path: pathlib.Path,
@@ -104,8 +106,7 @@ def kill_existing_processes(project_name: str):
     processes_to_kill = []
     for process in psutil.process_iter():
         # strip off .exe and check process name
-        print(f"{process.name()}={process.pid}")
-        if os.path.splitext(process.name())[0].lower() in o3de_process_names and process.name() not in ('o3de.sh', 'o3de.bat'):
+        if os.path.splitext(process.name())[0].lower() in o3de_process_names and process.name() != O3DE_SCRIPT_NAME:
             processes_to_kill.append(process)
         
     if processes_to_kill:
