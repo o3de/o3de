@@ -48,7 +48,7 @@ public:
     static ScriptCanvasModel& Instance();
 
     ScriptCanvasModel() = default;
-    virtual ~ScriptCanvasModel();
+    ~ScriptCanvasModel() = default;
 
     void Init();
     void Release();
