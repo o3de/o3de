@@ -30,11 +30,6 @@ ScriptCanvasModel& ScriptCanvasModel::Instance()
     return s_scriptModel.Get();
 }
 
-ScriptCanvasModel::~ScriptCanvasModel()
-{
-    Release();
-}
-
 void ScriptCanvasModel::RemoveDescriptor(AZ::ComponentDescriptor* descriptor)
 {
     m_descriptors.remove(descriptor);
