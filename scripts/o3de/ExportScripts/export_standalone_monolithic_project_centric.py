@@ -48,10 +48,19 @@ $ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\
 
 # For more information on the available parameters for this script, check the parse_arguments function defined at the bottom of the file
 
+# Account for some windows-specific attributes
+if platform.system().lower()=='windows':
+    EXECUTABLE_EXTENSION = '.exe'
+    ADDITION_BUILD_ARGS = ['--', '/m', '/ nologo']
+else:
+    EXECUTABLE_EXTENSION = ""
+    ADDITION_BUILD_ARGS = []
+
 
 def build_non_monolithic_code_modules( project_path: pathlib.Path,
                                         non_mono_build_path: pathlib.Path,
                                         force_rebuild_all = False):
+
     #build the pre_requisite tools if needed
     os.makedirs(non_mono_build_path, exist_ok=True)
 
@@ -61,9 +70,9 @@ def build_non_monolithic_code_modules( project_path: pathlib.Path,
     process_command(["cmake", "-B", non_mono_build_path, "-S", project_path])
 
     if not processor_path.exists() or force_rebuild_all:
-        process_command(["cmake", "--build", non_mono_build_path, "--target", "AssetProcessorBatch", "--config", "profile"])
+        process_command(["cmake", "--build", non_mono_build_path, "--target", "AssetProcessorBatch", "--config", "profile"] + ADDITION_BUILD_ARGS)
     if not bundler_path.exists() or force_rebuild_all:
-        process_command(["cmake", "--build", non_mono_build_path, "--target", "AssetBundlerBatch", "--config", "profile"])
+        process_command(["cmake", "--build", non_mono_build_path, "--target", "AssetBundlerBatch", "--config", "profile"] + ADDITION_BUILD_ARGS)
 
 def build_monolithic_code_modules( project_path: pathlib.Path,
                         project_name: str,
@@ -80,32 +89,35 @@ def build_monolithic_code_modules( project_path: pathlib.Path,
     os.makedirs(mono_build_path, exist_ok=True)
     if should_build_server_launcher:
 
-        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.ServerLauncher", "--config", build_config, "--", "/m"])
+        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.ServerLauncher", "--config", build_config] + ADDITION_BUILD_ARGS)
 
     if should_build_game_launcher:
-        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.GameLauncher", "--config", build_config, "--", "/m"])
+        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.GameLauncher", "--config", build_config] + ADDITION_BUILD_ARGS)
     
     if should_build_unified_launcher:
-        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.UnifiedLauncher", "--config", build_config, "--", "/m"])
+        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.UnifiedLauncher", "--config", build_config] + ADDITION_BUILD_ARGS)
 
 
 def kill_existing_processes(project_name: str):
+
     o3de_process_names = ['o3de', 'editor', 'assetprocessor', f'{project_name.lower()}.serverlauncher', f'{project_name.lower()}.gamelauncher' ]
+
+    processes_to_kill = []
     for process in psutil.process_iter():
-        processes_to_kill = []
         # strip off .exe and check process name
-        if os.path.splitext(process.name())[0].lower() in o3de_process_names:
+        print(f"{process.name()}={process.pid}")
+        if os.path.splitext(process.name())[0].lower() in o3de_process_names and process.name() not in ('o3de.sh', 'o3de.bat'):
             processes_to_kill.append(process)
         
-        if processes_to_kill:
-            logging.error(f"The following processes are still running: {', '.join([process.name() for process in processes_to_kill])}")
-            user_input = input(f'Continuing may cause build errors.\nStop them before continuing? (y/n). Quit(q)')
-            if user_input.lower() == 'y':
-                for p in processes_to_kill:
-                    p.terminate()
-                    p.wait()
-            elif user_input.lower() == 'q':
-                quit()
+    if processes_to_kill:
+        logging.error(f"The following processes are still running: {', '.join([process.name() for process in processes_to_kill])}")
+        user_input = input(f'Continuing may cause build errors.\nStop them before continuing? (y/n). Quit(q)')
+        if user_input.lower() == 'y':
+            for p in processes_to_kill:
+                p.terminate()
+                p.wait()
+        elif user_input.lower() == 'q':
+            quit()
 
 
 def process_assets( project_name: str,
@@ -115,10 +127,10 @@ def process_assets( project_name: str,
     process_command(["cmake", "--build", non_mono_build_path, "--target", f"{project_name}.Assets", "--config", "profile"])
 
 def get_asset_processor_batch_path(non_mono_build_path: pathlib.Path):
-    return non_mono_build_path / 'bin/profile' / ('AssetProcessorBatch' + ('.exe' if platform.system().lower()=='windows' else ''))
+    return non_mono_build_path / 'bin/profile' / f'AssetProcessorBatch{EXECUTABLE_EXTENSION}'
 
 def get_asset_bundler_batch_path(non_mono_build_path: pathlib.Path):
-    return non_mono_build_path / 'bin/profile' / ('AssetBundlerBatch' + ('.exe' if platform.system().lower()=='windows' else ''))
+    return non_mono_build_path / 'bin/profile' / f'AssetBundlerBatch{EXECUTABLE_EXTENSION}'
 
 def bundle_assets(project_path: pathlib.Path,
                   selected_platform: str,
