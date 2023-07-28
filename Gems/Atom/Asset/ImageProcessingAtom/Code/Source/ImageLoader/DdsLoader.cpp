@@ -46,7 +46,7 @@ namespace ImageProcessingAtom
 
             uint32_t width = header.dwWidth;
             uint32_t height = header.dwHeight;
-            uint32_t depth = header.dwDepth;
+            uint32_t depth = AZStd::max(header.dwDepth, 1u);
             uint32_t mips = 1;
             if (header.dwFlags & DDS_HEADER_FLAGS_MIPMAP)
             {
