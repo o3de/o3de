@@ -5,7 +5,7 @@
     "ClassData": {
         "m_scriptCanvas": {
             "Id": {
-                "id": 552568057201831
+                "id": 386195971289733
             },
             "Name": "scriptcanvas/tests/expression/mathexpression/test_mathexpression_basic.scriptcanvas",
             "Components": {
@@ -16,7 +16,7 @@
                         "m_nodes": [
                             {
                                 "Id": {
-                                    "id": 552572352169127
+                                    "id": 386200266257029
                                 },
                                 "Name": "SC-Node(Start)",
                                 "Components": {
@@ -46,7 +46,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 552576647136423
+                                    "id": 386204561224325
                                 },
                                 "Name": "SC-Node(MathExpression)",
                                 "Components": {
@@ -215,6 +215,7 @@
                                                     "Value": {
                                                         "SupportedTypes": [
                                                             "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                                                            "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                                                             "{110C4B14-11A8-4E9D-8638-5051013A56AC}"
                                                         ],
                                                         "$type": "double",
@@ -228,6 +229,7 @@
                                                     "Value": {
                                                         "SupportedTypes": [
                                                             "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                                                            "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                                                             "{110C4B14-11A8-4E9D-8638-5051013A56AC}"
                                                         ],
                                                         "$type": "double",
@@ -240,6 +242,7 @@
                                                     },
                                                     "Value": {
                                                         "SupportedTypes": [
+                                                            "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                                                             "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                                                             "{110C4B14-11A8-4E9D-8638-5051013A56AC}"
                                                         ],
@@ -311,7 +314,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 552580942103719
+                                    "id": 386208856191621
                                 },
                                 "Name": "SC-Node(MarkComplete)",
                                 "Components": {
@@ -424,7 +427,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 552585237071015
+                                    "id": 386213151158917
                                 },
                                 "Name": "SC-Node(ExpectEqual)",
                                 "Components": {
@@ -623,7 +626,7 @@
                         "m_connections": [
                             {
                                 "Id": {
-                                    "id": 552589532038311
+                                    "id": 386217446126213
                                 },
                                 "Name": "srcEndpoint=(On Graph Start: Out), destEndpoint=(Math Expression: In)",
                                 "Components": {
@@ -632,7 +635,7 @@
                                         "Id": 11800985823572027909,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 552572352169127
+                                                "id": 386200266257029
                                             },
                                             "slotId": {
                                                 "m_id": "{06DB5CAE-0D47-431B-9D39-9BDA9841E869}"
@@ -640,7 +643,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 552576647136423
+                                                "id": 386204561224325
                                             },
                                             "slotId": {
                                                 "m_id": "{629F6545-7642-4575-80FA-726C40F91854}"
@@ -651,7 +654,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 552593827005607
+                                    "id": 386221741093509
                                 },
                                 "Name": "srcEndpoint=(Math Expression: Result), destEndpoint=(Expect Equal: Candidate)",
                                 "Components": {
@@ -660,7 +663,7 @@
                                         "Id": 14494884051702872132,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 552576647136423
+                                                "id": 386204561224325
                                             },
                                             "slotId": {
                                                 "m_id": "{E5F7DD30-2286-4DE3-9F5D-198BC5DC515D}"
@@ -668,7 +671,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 552585237071015
+                                                "id": 386213151158917
                                             },
                                             "slotId": {
                                                 "m_id": "{DE7A2119-62E0-4855-B483-09E6BA85FD88}"
@@ -679,7 +682,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 552598121972903
+                                    "id": 386226036060805
                                 },
                                 "Name": "srcEndpoint=(Math Expression: Out), destEndpoint=(Expect Equal: In)",
                                 "Components": {
@@ -688,7 +691,7 @@
                                         "Id": 1855432706477044157,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 552576647136423
+                                                "id": 386204561224325
                                             },
                                             "slotId": {
                                                 "m_id": "{01A54EFA-06FD-4B26-963D-91FE011AF824}"
@@ -696,7 +699,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 552585237071015
+                                                "id": 386213151158917
                                             },
                                             "slotId": {
                                                 "m_id": "{A05EEFC5-B851-4EF8-B714-658EACD36CA7}"
@@ -707,7 +710,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 552602416940199
+                                    "id": 386230331028101
                                 },
                                 "Name": "srcEndpoint=(Expect Equal: Out), destEndpoint=(Mark Complete: In)",
                                 "Components": {
@@ -716,7 +719,7 @@
                                         "Id": 11302576161136449168,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 552585237071015
+                                                "id": 386213151158917
                                             },
                                             "slotId": {
                                                 "m_id": "{B8424751-CB2F-4BB0-BA1F-80A8215691B9}"
@@ -724,7 +727,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 552580942103719
+                                                "id": 386208856191621
                                             },
                                             "slotId": {
                                                 "m_id": "{ADA5CB9F-9B60-4DE9-88BD-45F2005E6F58}"
@@ -744,7 +747,7 @@
                     "GraphCanvasData": [
                         {
                             "Key": {
-                                "id": 552568057201831
+                                "id": 386195971289733
                             },
                             "Value": {
                                 "ComponentData": {
@@ -760,7 +763,7 @@
                         },
                         {
                             "Key": {
-                                "id": 552572352169127
+                                "id": 386200266257029
                             },
                             "Value": {
                                 "ComponentData": {
@@ -791,7 +794,7 @@
                         },
                         {
                             "Key": {
-                                "id": 552576647136423
+                                "id": 386204561224325
                             },
                             "Value": {
                                 "ComponentData": {
@@ -822,7 +825,7 @@
                         },
                         {
                             "Key": {
-                                "id": 552580942103719
+                                "id": 386208856191621
                             },
                             "Value": {
                                 "ComponentData": {
@@ -853,7 +856,7 @@
                         },
                         {
                             "Key": {
-                                "id": 552585237071015
+                                "id": 386213151158917
                             },
                             "Value": {
                                 "ComponentData": {
