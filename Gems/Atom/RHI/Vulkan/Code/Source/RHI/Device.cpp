@@ -106,6 +106,7 @@ namespace AZ
             m_enabledDeviceFeatures.sampleRateShading = deviceFeatures.sampleRateShading;
             m_enabledDeviceFeatures.shaderImageGatherExtended = deviceFeatures.shaderImageGatherExtended;
             m_enabledDeviceFeatures.shaderInt64 = deviceFeatures.shaderInt64;
+            m_enabledDeviceFeatures.shaderInt16 = deviceFeatures.shaderInt16;
             m_enabledDeviceFeatures.sparseBinding = deviceFeatures.sparseBinding;
             m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
             m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;

@@ -303,6 +303,11 @@ AZ::Matrix4x4 UiRenderer::GetModelViewProjectionMatrix()
 AZ::Vector2 UiRenderer::GetViewportSize()
 {
     auto viewportContext = GetViewportContext();
+    if (!viewportContext)
+    {
+        return AZ::Vector2::CreateZero();
+    }
+
     auto windowContext = viewportContext->GetWindowContext();
 
     const AZ::RHI::Viewport& viewport = windowContext->GetViewport();
