@@ -53,10 +53,17 @@ namespace {{attribute_Namespace}}
 
 {% set className = Class.attrib['Name'] %}
 
+{% set classUuid = Class.attrib['Uuid'] %}
+{% if classUuid is not defined %}
+{% set classUuid = className|createHashGuid %}
+{% endif %}
+
+
 class {{className}}_Reflection
 {
 public:
-    AZ_TYPE_INFO({{ className }}_Reflection, "{{ className|createHashGuid }}");
+    {% set reflectionClassName = className|join("_Reflection") %}
+    AZ_TYPE_INFO({{ className }}_Reflection, "{{ reflectionClassName|createHashGuid }}");
 
     static void Reflect(AZ::ReflectContext* ) {}
 

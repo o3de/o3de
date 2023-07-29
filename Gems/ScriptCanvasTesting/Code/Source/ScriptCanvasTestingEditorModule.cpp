@@ -11,6 +11,7 @@
 #include <AzCore/Module/Module.h>
 #include <ScriptCanvasTestingSystemComponent.h>
 #include <Editor/Framework/ScriptCanvasTraceUtilities.h>
+#include <AutoGen/ScriptCanvasAutoGenRegistry.h>
 
 namespace ScriptCanvasTesting
 {
@@ -29,6 +30,8 @@ namespace ScriptCanvasTesting
                 ScriptCanvasTestingSystemComponent::CreateDescriptor(),
                 TraceMessageComponent::CreateDescriptor(),
             });
+
+            ScriptCanvasModel::Instance().Init();
         }
 
         /**
