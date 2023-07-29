@@ -129,7 +129,8 @@ public: \
           class {{nodeableNodeName}}_Reflection
             {
             public:
-                AZ_TYPE_INFO({{ nodeableNodeName }}_Reflection, "{{ nodeableNodeName|createHashGuid }}");
+                {% set reflectionClassName = nodeableNodeName|join("_Reflection") %}
+                AZ_TYPE_INFO({{ nodeableNodeName }}_Reflection, "{{ reflectionClassName|createHashGuid }}");
 
                 static void Reflect(AZ::ReflectContext* ) {}
 
