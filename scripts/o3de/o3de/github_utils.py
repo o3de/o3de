@@ -88,7 +88,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
     
-    def upload_release_to_github(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str):
+    def upload_release_to_github(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str) -> int:
         """
         Uploads a release asset to a GitHub repository. 
         It enables users to specify the GitHub release tag for the asset.
@@ -101,7 +101,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
                                         "Enter your GitHub Token (right click mouse to paste):")
         if len(access_token) == 0:
             logger.error('No input received! To paste your token into a terminal use mouse right click.')
-        
+            return 1
         tag_name = upload_git_release_tag
         # Get github credentials
         headers = {
@@ -117,7 +117,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
             owner = user_data['login']
         else:
             logger.error(f'Failed to retrieve github user name. Status code: {response.status_code}')
-
+            return 1
         # Get repo (required) repo_uri: https://github.com/<owner>/<repo>.git
         repo_uri = repo_uri.geturl().split("/")
         repo = repo_uri[-1].split(".git")[0]
@@ -142,9 +142,11 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
                     response = requests.post(upload_url, headers=headers, data=file)
                     if not response.status_code == 201:
                         logger.error(f'Failed to upload asset to existing release. Status code: {response.status_code}')
+                        return 1
             else:
-                logger.error(f'Failed to retrive release. Status code: {response.status_code}')
-
+                logger.error(f'Failed to retrieve release. Status code: {response.status_code}')
+                return 1
+            
         # Release doesn't exist, Create a new release endpoint with the given tag_name and upload assest  
         elif response.status_code == 404:
             release_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
@@ -158,10 +160,13 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
                     response = requests.post(upload_url, headers=headers, data=file)
                     if not response.status_code == 201:
                         logger.error(f'Failed to upload asset. Status code: {response.status_code}')
+                        return 1
             else:
                 logger.error(f'Failed to create release. Status code: {response.status_code}')
+                return 1
         else:
             logger.error(f'Error checking tag existence. Status code: {response.status_code}')
+            return 1
 
 def get_github_provider(parsed_uri: ParseResult) -> GitHubProvider or None:
     if 'github.com' in parsed_uri.netloc:

@@ -109,6 +109,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
     if upload_git_release_tag and download_prefix:
         logger.error('Upload to GitHub will automatically generate a download prefix for you.\n'
                      'Use the `--download-prefix` CLI only when you want to use other version control system.')
+        return {}
     if upload_git_release_tag and not download_prefix:
         repo_uri = urllib.parse.urlparse(repo_uri)
         git_provider = github_utils.get_github_provider(repo_uri)
@@ -119,7 +120,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
             repo = owner_repo[1]
         else:
             logger.error(f'Failed to determine Git provider from {repo_uri}.')
-            return 1
+            return {}
         download_prefix = f'https://github.com/{owner}/{repo}/releases/download/{upload_git_release_tag}/{archive_filename}'
      
         json_data = merge_json_data(json_data_path, {
@@ -134,7 +135,9 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
             json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
         
         # Upload release archive zip to Github
-        git_provider.upload_release_to_github(repo_uri, zip_path, archive_filename, upload_git_release_tag)
+        if git_provider.upload_release_to_github(repo_uri, zip_path, archive_filename, upload_git_release_tag) == 1:
+            logger.error('Failed to upload release to GitHub')
+            return {}
       
     # For other version control systems
     else:
