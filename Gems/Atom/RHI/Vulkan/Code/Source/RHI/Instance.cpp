@@ -122,7 +122,7 @@ namespace AZ
             }
 
             AZStd::vector<AZStd::string> collectedExtensions;
-            InstanceRequirementBus::Broadcast(&InstanceRequirementBus::Events::CollectAditionalRequiredInstanceExtensions, collectedExtensions);
+            InstanceRequirementBus::Broadcast(&InstanceRequirementBus::Events::CollectAdditionalRequiredInstanceExtensions, collectedExtensions);
             for (const auto& extension : collectedExtensions)
             {
                 m_descriptor.m_requiredExtensions.push_back(extension.c_str());

@@ -58,7 +58,7 @@ namespace AZ
         {
             StringList requiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
             AZStd::vector<AZStd::string> collectedExtensions;
-            DeviceRequirementBus::Broadcast(&DeviceRequirementBus::Events::CollectAditionalRequiredDeviceExtensions, collectedExtensions);
+            DeviceRequirementBus::Broadcast(&DeviceRequirementBus::Events::CollectAdditionalRequiredDeviceExtensions, collectedExtensions);
             requiredExtensions.insert(requiredExtensions.end(), collectedExtensions.begin(), collectedExtensions.end());
             return requiredExtensions;
         }
@@ -206,7 +206,7 @@ namespace AZ
             }
             else if (fragmenDensityMapFeatures.fragmentDensityMap)
             {
-                // Must disable the "pipelineFragmentShadingRate" amd "primitiveFragmentShadingRate" usage if "fragmentDensityMap" is enabled.
+                // Must disable the "pipelineFragmentShadingRate" and "primitiveFragmentShadingRate" usage if "fragmentDensityMap" is enabled.
                 physicalDevice.DisableOptionalDeviceExtension(OptionalDeviceExtension::FragmentShadingRate);
                 fragmenShadingRateFeatures.pipelineFragmentShadingRate = false;
                 fragmenShadingRateFeatures.primitiveFragmentShadingRate = false;

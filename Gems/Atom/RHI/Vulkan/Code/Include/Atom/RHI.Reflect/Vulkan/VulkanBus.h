@@ -13,15 +13,15 @@
 
 namespace AZ::Vulkan
 {
-    //! Ebus for collecting any aditional requeriments for creating a Vulkan instance.
-    class InstanceRequerimentsRequest
+    //! Ebus for collecting any additional requirements for creating a Vulkan instance.
+    class InstanceRequirementsRequest
         : public AZ::EBusTraits
     {
     public:
-        virtual ~InstanceRequerimentsRequest() = default;
+        virtual ~InstanceRequirementsRequest() = default;
 
-        //! Collects any aditional instance extensions needed for creating the Vulkan instance.
-        virtual void CollectAditionalRequiredInstanceExtensions([[maybe_unused]] AZStd::vector<AZStd::string>& extensions){};
+        //! Collects any additional instance extensions needed for creating the Vulkan instance.
+        virtual void CollectAdditionalRequiredInstanceExtensions([[maybe_unused]] AZStd::vector<AZStd::string>& extensions){};
         //! Collects the min/max versions required for creating the Vulkan instance.
         virtual void CollectMinMaxVulkanAPIVersions(
             [[maybe_unused]] AZStd::vector<uint32_t>& min, [[maybe_unused]] AZStd::vector<uint32_t>& max){};
@@ -30,17 +30,17 @@ namespace AZ::Vulkan
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
     };
 
-    using InstanceRequirementBus = AZ::EBus<InstanceRequerimentsRequest>;
+    using InstanceRequirementBus = AZ::EBus<InstanceRequirementsRequest>;
 
-    //! Ebus for collecting requeriments for creating a Vulkan device.
+    //! Ebus for collecting requirements for creating a Vulkan device.
     class DeviceRequirementsRequest
         : public AZ::EBusTraits
     {
     public:
         virtual ~DeviceRequirementsRequest() = default;
 
-        //! Collects any aditional device extensions needed for creating the Vulkan device.
-        virtual void CollectAditionalRequiredDeviceExtensions([[maybe_unused]] AZStd::vector<AZStd::string>& extensions){};
+        //! Collects any additional device extensions needed for creating the Vulkan device.
+        virtual void CollectAdditionalRequiredDeviceExtensions([[maybe_unused]] AZStd::vector<AZStd::string>& extensions){};
         //! Removes Vulkan devices that are not supported from a list of available devices.
         virtual void FilterSupportedDevices([[maybe_unused]] AZStd::vector<VkPhysicalDevice>& supportedDevices){};
 
