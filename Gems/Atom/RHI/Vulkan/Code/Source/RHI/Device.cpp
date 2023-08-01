@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/VulkanBus.h>
 #include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>

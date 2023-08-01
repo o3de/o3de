@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <vulkan/vulkan.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
