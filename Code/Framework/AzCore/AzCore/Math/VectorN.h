@@ -73,9 +73,6 @@ namespace AZ
         //! Checks if the vector is a zero vector, within the provided tolerance for zero.
         bool IsZero(float tolerance = AZ::Constants::FloatEpsilon) const;
 
-        //! Applies the rectified linear unit function (ReLU) to all elements within the vector.
-        void ReLU();
-
         //! Comparison functions, not implemented as operators since that would probably be a little dangerous.
         //! These functions return true only if all components pass the comparison test.
         //! @{
@@ -126,6 +123,9 @@ namespace AZ
         //! Returns the dot product of two vectors of equal dimension.
         float Dot(const VectorN& rhs) const;
 
+        //! Quickly zeros all elements of the vector to create a zero vector.
+        void SetZero();
+
         VectorN& operator+=(const VectorN& rhs);
         VectorN& operator-=(const VectorN& rhs);
         VectorN& operator*=(const VectorN& rhs); //! Hadamard product, not dot product.
@@ -160,6 +160,13 @@ namespace AZ
         AZStd::size_t m_numElements = 0;
         AZStd::vector<Vector4> m_values;
     };
+
+    //! Operators that allow scalars as lhs operands.
+    //! @{
+    VectorN operator+(float lhs, const VectorN& rhs);
+    VectorN operator-(float lhs, const VectorN& rhs);
+    VectorN operator*(float lhs, const VectorN& rhs);
+    //! @}
 }
 
 #include <AzCore/Math/VectorN.inl>

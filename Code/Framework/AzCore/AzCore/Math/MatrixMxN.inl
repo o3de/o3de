@@ -261,6 +261,18 @@ namespace AZ
         return returnValue;
     }
 
+    AZ_MATH_INLINE void MatrixMxN::SetZero()
+    {
+        const Simd::Vec4::FloatType zeroVec = Simd::Vec4::ZeroFloat();
+        for (Matrix4x4& element : m_values)
+        {
+            element.GetSimdValues()[0] = zeroVec;
+            element.GetSimdValues()[1] = zeroVec;
+            element.GetSimdValues()[2] = zeroVec;
+            element.GetSimdValues()[3] = zeroVec;
+        }
+    }
+
     AZ_MATH_INLINE MatrixMxN MatrixMxN::operator-() const
     {
         MatrixMxN returnValue(m_rowCount, m_colCount);
@@ -470,6 +482,29 @@ namespace AZ
         }
     }
 
+    AZ_MATH_INLINE void OuterProduct(const AZ::VectorN& lhs, const AZ::VectorN& rhs, AZ::MatrixMxN& output)
+    {
+        AZ_Assert(output.GetRowCount() == lhs.GetDimensionality(), "Output vector dimensionality must match matrix row count");
+        AZ_Assert(output.GetColumnCount() == rhs.GetDimensionality(), "Input vector dimensionality must match matrix column count");
+        for (AZStd::size_t colIter = 0; colIter < output.GetColumnGroups(); ++colIter)
+        {
+            AZ::Simd::Vec4::FloatType rhsElement = rhs.GetVectorValues()[colIter].GetSimdValue();
+            AZ::Simd::Vec4::FloatType splat0 = AZ::Simd::Vec4::SplatIndex0(rhsElement);
+            AZ::Simd::Vec4::FloatType splat1 = AZ::Simd::Vec4::SplatIndex1(rhsElement);
+            AZ::Simd::Vec4::FloatType splat2 = AZ::Simd::Vec4::SplatIndex2(rhsElement);
+            AZ::Simd::Vec4::FloatType splat3 = AZ::Simd::Vec4::SplatIndex3(rhsElement);
+            for (AZStd::size_t rowIter = 0; rowIter < output.GetRowGroups(); ++rowIter)
+            {
+                AZ::Simd::Vec4::FloatType lhsElement = lhs.GetVectorValues()[rowIter].GetSimdValue();
+                AZ::Matrix4x4& outputElement = output.GetSubmatrix(rowIter, colIter);
+                outputElement.GetSimdValues()[0] = AZ::Simd::Vec4::Madd(lhsElement, splat0, outputElement.GetSimdValues()[0]);
+                outputElement.GetSimdValues()[1] = AZ::Simd::Vec4::Madd(lhsElement, splat1, outputElement.GetSimdValues()[1]);
+                outputElement.GetSimdValues()[2] = AZ::Simd::Vec4::Madd(lhsElement, splat2, outputElement.GetSimdValues()[2]);
+                outputElement.GetSimdValues()[3] = AZ::Simd::Vec4::Madd(lhsElement, splat3, outputElement.GetSimdValues()[3]);
+            }
+        }
+    }
+
     AZ_MATH_INLINE void VectorMatrixMultiply(const MatrixMxN& matrix, const VectorN& vector, VectorN& output)
     {
         // Because we've stored our matrix in column major ordering, we can perform a vector matrix product using only multiply-accumulate
@@ -496,6 +531,23 @@ namespace AZ
                 outputElement.SetSimdValue(Simd::Vec4::Madd(splat1, matrixElement.GetRow(1).GetSimdValue(), outputElement.GetSimdValue()));
                 outputElement.SetSimdValue(Simd::Vec4::Madd(splat2, matrixElement.GetRow(2).GetSimdValue(), outputElement.GetSimdValue()));
                 outputElement.SetSimdValue(Simd::Vec4::Madd(splat3, matrixElement.GetRow(3).GetSimdValue(), outputElement.GetSimdValue()));
+            }
+        }
+        output.FixLastVectorElement();
+    }
+
+    AZ_MATH_INLINE void VectorMatrixMultiplyLeft(const VectorN& vector, const MatrixMxN& matrix, VectorN& output)
+    {
+        AZ_Assert(matrix.GetColumnCount() == output.GetDimensionality(), "Output vector dimensionality must match matrix column count");
+        AZ_Assert(matrix.GetRowCount() == vector.GetDimensionality(), "Input vector dimensionality must match matrix row count");
+        for (AZStd::size_t colIter = 0; colIter < matrix.GetColumnGroups(); ++colIter)
+        {
+            Vector4& outputElement = output.GetVectorValues()[colIter];
+            for (AZStd::size_t rowIter = 0; rowIter < matrix.GetRowGroups(); ++rowIter)
+            {
+                Simd::Vec4::FloatType vectorElement = vector.GetVectorValues()[rowIter].GetSimdValue();
+                const Matrix4x4& matrixElement = matrix.GetSubmatrix(rowIter, colIter);
+                outputElement.SetSimdValue(Simd::Vec4::Add(outputElement.GetSimdValue(), Simd::Vec4::Mat4x4TransformVector(matrixElement.GetSimdValues(), vectorElement)));
             }
         }
         output.FixLastVectorElement();

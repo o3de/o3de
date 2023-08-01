@@ -534,6 +534,11 @@ namespace AZ
             return Common::Atan2<Vec4>(y, x);
         }
 
+        AZ_MATH_INLINE Vec4::FloatType Vec4::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec4>(x);
+        }
+
         AZ_MATH_INLINE Vec1::FloatType Vec4::Dot(FloatArgType arg1, FloatArgType arg2)
         {
             return Vec1::LoadImmediate(vaddvq_f32(vmulq_f32(arg1, arg2)));
