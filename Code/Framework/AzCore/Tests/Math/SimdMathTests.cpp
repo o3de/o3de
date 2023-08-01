@@ -29,6 +29,7 @@ namespace UnitTest
             EXPECT_NEAR(testLoadValues[i], testStoreValues[i], AZ::Constants::Tolerance);
         }
     }
+
     template<typename VectorType>
     void TestFromVec1()
     {
