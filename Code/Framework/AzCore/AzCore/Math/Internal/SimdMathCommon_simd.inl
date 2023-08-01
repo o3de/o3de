@@ -385,7 +385,7 @@ namespace AZ
             AZ_MATH_INLINE typename VecType::FloatType ExpEstimate(typename VecType::FloatArgType x)
             {
                 // N. N. Schraudolph, 'A Fast, Compact Approximation of the Exponential Function'
-                // This method exploits the logrithmic nature of IEEE-754 floating point to quickly estimate exp(x)
+                // This method exploits the logarithmic nature of IEEE-754 floating point to quickly estimate exp(x)
                 typename VecType::Int32Type a = VecType::ConvertToIntNearest(VecType::Mul(FastLoadConstant<VecType>(Simd::g_expCoef1), x));
                 typename VecType::Int32Type b = VecType::And(a, FastLoadConstant<VecType>(Simd::g_expCoef2));
                 typename VecType::Int32Type c = VecType::Sub(a, b);

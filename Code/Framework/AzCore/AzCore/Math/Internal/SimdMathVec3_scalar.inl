@@ -609,7 +609,7 @@ AZ_POP_DISABLE_WARNING
 
         AZ_MATH_INLINE Vec3::FloatType Vec3::ExpEstimate(FloatArgType x)
         {
-            return {{ exp(x.v[0]), exp(x.v[1]), exp(x.v[2]) }};
+            return {{ Vec1::ExpEstimate(x.v[0]), Vec1::ExpEstimate(x.v[1]), Vec1::ExpEstimate(x.v[2]) }};
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec3::Dot(FloatArgType arg1, FloatArgType arg2)
