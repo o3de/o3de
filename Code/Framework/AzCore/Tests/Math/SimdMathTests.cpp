@@ -1528,7 +1528,6 @@ namespace UnitTest
         {
             float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
             typename VectorType::FloatType testVector = VectorType::ExpEstimate(sourceVectorX2);
-            float testStoreValues1[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
             VectorType::StoreUnaligned(testStoreValues, testVector);
 
             switch (VectorType::ElementCount)
