@@ -145,9 +145,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {% if hideInputField is defined %}
 {% if hideInputField == "true" %}
             dataSlotConfiguration.m_canHaveInputField = false;
+            dataSlotConfiguration.m_isUserAdded = true;
 {% endif %}
 {% elif preset == "compact" %}
             dataSlotConfiguration.m_canHaveInputField = false;
+            dataSlotConfiguration.m_isUserAdded = true;
 {% endif %}
 {% if hideName is defined %}
 {% if hideName == "true" %}
