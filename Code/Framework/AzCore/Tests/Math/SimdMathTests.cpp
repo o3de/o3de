@@ -9,7 +9,6 @@
 #include <AzCore/Math/Internal/MathTypes.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <Windows.h>
 
 using namespace AZ;
 
