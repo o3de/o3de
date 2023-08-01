@@ -64,10 +64,12 @@ namespace ScriptCanvas
             }
 
             template<typename t_Event>
-            void AddToLog(const t_Event& loggableEvent)
+            void AddToLog([[maybe_unused]] const t_Event& loggableEvent)
             {
+#if defined(SC_EXECUTION_TRACE_ENABLED) 
                 SCRIPT_CANVAS_DEBUGGER_TRACE_CLIENT("Logging: %s", loggableEvent.ToString().data());
                 m_logAsset.GetData().m_events.emplace_back(loggableEvent.Duplicate());
+#endif
             }
 
         private:
@@ -76,7 +78,9 @@ namespace ScriptCanvas
             bool m_logExecutionOverrideEnabled = false;
             bool m_logExecutionOverride = false;
 
+#if defined(SC_EXECUTION_TRACE_ENABLED) 
             ExecutionLogAsset m_logAsset;
+#endif
             ScriptCanvas::Debugger::Target m_target;
         };
     }

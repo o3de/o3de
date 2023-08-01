@@ -39,6 +39,7 @@ class QLabel;
 class QHBoxLayout;
 class QIcon;
 class QBoxLayout;
+class QSpacerItem;
 
 namespace AzQtComponents
 {
@@ -380,6 +381,8 @@ namespace AzQtComponents
         FilterTextButton* m_filterTextButton = nullptr;
         SelectionCountButton* m_selectionCountButton = nullptr;
         QToolButton* m_addFavoritesButton = nullptr;
+        QHBoxLayout* m_favoritesLayout = nullptr;
+        QSpacerItem* m_endSpacer = nullptr;
     private:
         int FindFilterIndex(const QString& category, const QString& displayName) const;
         void SetupContainerLayout();

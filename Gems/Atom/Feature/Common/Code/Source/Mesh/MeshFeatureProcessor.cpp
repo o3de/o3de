@@ -845,6 +845,12 @@ namespace AZ
                 // Per mesh shader option flags was on, but now turned off, so reset all the shader options.
                 for (auto& modelHandle : m_modelData)
                 {
+                    // skip if the model need to be initialized
+                    if (modelHandle.m_flags.m_needsInit)
+                    {
+                        continue;
+                    }
+                    
                     for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
                     {
                         for (RPI::MeshDrawPacket& drawPacket : drawPacketList)
@@ -878,6 +884,11 @@ namespace AZ
                 {
                     if (modelHandle.m_cullable.m_prevShaderOptionFlags != modelHandle.m_cullable.m_shaderOptionFlags)
                     {
+                        // skip if the model need to be initialized
+                        if (modelHandle.m_flags.m_needsInit)
+                        {
+                            continue;
+                        }
                         // Per mesh shader option flags have changed, so rebuild the draw packet with the new shader options.
                         for (RPI::MeshDrawPacketList& drawPacketList : modelHandle.m_drawPacketListsByLod)
                         {

@@ -27,6 +27,12 @@ namespace LmbrCentral
                 ->Field("Plays Immediately", &EditorAudioTriggerComponent::m_playsImmediately)
                 ;
 
+            serializeContext->Enum<Audio::ObstructionType>()
+                ->Value("Ignore", Audio::ObstructionType::Ignore)
+                ->Value("SingleRay", Audio::ObstructionType::SingleRay)
+                ->Value("MultiRay", Audio::ObstructionType::MultiRay)
+                ;
+
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Enum<Audio::ObstructionType>("Obstruction Type", "The types of ray-casts available for obstruction and occlusion")

@@ -175,7 +175,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Reflections/ReflectionScreenSpaceTrace.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

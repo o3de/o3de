@@ -266,14 +266,14 @@ namespace AzToolsFramework
             // Entries are in reverse order, so fix this
             AZStd::reverse(entries.begin(), entries.end());
 
-            uint32_t lastEntry = entries.size() - 1;
+            uint32_t lastEntry = aznumeric_cast<uint32_t>(entries.size()) - 1;
 
             // If we're in the thumbnail or table view, the actual asset will not appear in this treeview.
             // Trying to find the file in the treeview will fail, so don't search to the end.
             if ((m_attachedThumbnailView && m_attachedThumbnailView->GetThumbnailActiveView()) ||
                 (m_attachedTableView && m_attachedTableView->GetTableViewActive()))
             {
-                lastEntry = entries.size() - 2;
+                lastEntry = aznumeric_cast<uint32_t>(entries.size()) - 2;
             }
 
             SelectEntry(QModelIndex(), entries, lastEntry);
@@ -497,7 +497,7 @@ namespace AzToolsFramework
             AZStd::vector<AZStd::string> entries;
             AZ::StringFunc::Tokenize(folderPath, entries, "/");
 
-            SelectEntry(QModelIndex(), entries, entries.size() - 1, 0, true);
+            SelectEntry(QModelIndex(), entries, aznumeric_cast<uint32_t>(entries.size()) - 1, 0, true);
         }
 
 
@@ -535,7 +535,7 @@ namespace AzToolsFramework
 
             AZStd::reverse(entries.begin(), entries.end());
 
-            uint32_t lastEntry = entries.size() - 1;
+            uint32_t lastEntry = aznumeric_cast<uint32_t>(entries.size()) - 1;
 
             SelectEntry(QModelIndex(), entries, lastEntry, 0, true);
         }

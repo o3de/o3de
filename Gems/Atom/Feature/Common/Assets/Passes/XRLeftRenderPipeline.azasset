@@ -6,7 +6,7 @@
         "Name": "MultiViewXRLeftPipeline",
         "MainViewTag": "MainCamera",
         "MaterialPipelineTag": "MultiViewPipeline",
-        "RootPassTemplate": "MultiViewXRLeftPipelineTemplate",
+        "RootPassTemplate": "MultiViewPipelineTemplate",
         "AllowModification": true,
         "RenderSettings": {
             "MultisampleState": {

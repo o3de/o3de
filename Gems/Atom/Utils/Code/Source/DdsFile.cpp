@@ -666,6 +666,7 @@ namespace AZ
         {
             m_header.m_flags |= DdsFlags::Depth;
             m_header.m_depth = size.m_depth;
+            SetAsVolumeTexture();
         }
         else
         {
@@ -718,6 +719,12 @@ namespace AZ
         m_header.m_caps |= DdsCaps::Complex;
         m_header.m_caps_2 |= DdsCaps2::CubemapAll;
         m_headerDx10.m_miscFlag |= Dx10MiscFlags::TextureCube;
+    }
+
+    void DdsFile::SetAsVolumeTexture()
+    {
+        m_header.m_caps |= DdsCaps::Complex;
+        m_header.m_caps_2 |= DdsCaps2::Volume;
     }
 
     void DdsFile::SetMipLevels(uint32_t mipLevels)
