@@ -559,7 +559,7 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::ExpEstimate(FloatArgType x)
         {
-            return {{ exp(x.v[0]), exp(x.v[1]) }};
+            return {{ Vec1::ExpEstimate(x.v[0]), Vec1::ExpEstimate(x.v[1]) }};
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec2::Dot(FloatArgType arg1, FloatArgType arg2)
