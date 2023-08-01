@@ -21,7 +21,7 @@ import sys
 import urllib.parse
 from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
-from o3de import manifest, utils, validation, github_utils
+from o3de import manifest, utils, validation
 
 logger = logging.getLogger('o3de.repo_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -101,20 +101,20 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
                      'provide a new location to save your archive.')
         return {}
     if not upload_git_release_tag and not download_prefix:
-        logger.error('You need to provide a --upload-github-release-tag if you want to upload to github.\n'
+        logger.error('You need to provide a --upload-git-release-tag if you want to upload to a Git provider like GitHub.\n'
                      'If you want to use other version control systems you must provide --download-prefix argument\n'
                      'A url prefix for a file attached to a Github release might look like this:'
                      '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
         return {}
     if upload_git_release_tag and download_prefix:
-        logger.error('Upload to GitHub will automatically generate a download prefix for you.\n'
-                     'Use the `--download-prefix` CLI only when you want to use other version control system.')
+        logger.error('When a Git release tag is provided, no download prefix should be provided '
+                     'because the download prefix is automatically generated.')
         return {}
     if upload_git_release_tag and not download_prefix:
         repo_uri = urllib.parse.urlparse(repo_uri)
-        git_provider = github_utils.get_github_provider(repo_uri)
+        git_provider = utils.get_git_provider(repo_uri)
         if git_provider:
-        # Parse the URL to extract owner and repository name
+            # Parse the URL to extract owner and repository name
             owner_repo = repo_uri.geturl().split("github.com/")[1].rstrip('.git').split('/')
             owner = owner_repo[0]
             repo = owner_repo[1]
@@ -135,7 +135,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
             json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
         
         # Upload release archive zip to Github
-        if git_provider.upload_release_to_github(repo_uri, zip_path, archive_filename, upload_git_release_tag) == 1:
+        if git_provider.upload_release(repo_uri, zip_path, archive_filename, upload_git_release_tag) == 1:
             logger.error('Failed to upload release to GitHub')
             return {}
       

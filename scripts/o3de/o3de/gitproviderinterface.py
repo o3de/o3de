@@ -36,11 +36,11 @@ class GitProviderInterface(ABC):
         pass
     
     @abstractmethod
-    def upload_release_to_github(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str):
+    def upload_release(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, git_release_tag: str):
         """
-        Uploads a release asset to a GitHub repository. 
-        It enables users to specify the GitHub release tag for the asset. 
-        Creates a GitHub repository release if the specified tag doesn't already exist.
+        Uploads a release asset to a git repository. 
+        It enables users to specify the a release tag for the asset. 
+        Creates a git repository release if the specified tag doesn't already exist.
         :param repo_uri (str): The URL of the GitHub repository (e.g., "https://github.com/owner/repo.git").
         :param zip_path (pathlib.Path): The path to the ZIP file that needs to be uploaded.
         :param archive_filename (str): The filename to be used for the uploaded asset in the GitHub release.

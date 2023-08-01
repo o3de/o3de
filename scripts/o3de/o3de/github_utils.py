@@ -88,7 +88,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
     
-    def upload_release_to_github(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str) -> int:
+    def upload_release(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str) -> int:
         """
         Uploads a release asset to a GitHub repository. 
         It enables users to specify the GitHub release tag for the asset.
