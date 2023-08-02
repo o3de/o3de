@@ -78,6 +78,9 @@ namespace AZ
             AZStd::string m_shaderFilePath; // .shader file.
             AZStd::vector<VariantInfo> m_shaderVariants;
 
+            //! non-mandatory list of option-names that have been gatherd from material properties.
+            //! This allows for UX hints in differenciating system options from material options.
+            AZStd::unordered_set<Name> m_materialOptionsHint;
         };
 
     } // namespace RPI
