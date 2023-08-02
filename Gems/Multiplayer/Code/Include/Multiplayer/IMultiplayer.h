@@ -62,6 +62,7 @@ namespace Multiplayer
     using ClientMigrationStartEvent = AZ::Event<ClientInputId>;
     using ClientMigrationEndEvent = AZ::Event<>;
     using EndpointDisconnectedEvent = AZ::Event<MultiplayerAgentType>;
+    using NetworkInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using NotifyClientMigrationEvent = AZ::Event<AzNetworking::ConnectionId, const HostId&, uint64_t, ClientInputId, NetEntityId>;
     using NotifyEntityMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, const HostId&>;
     using ConnectionAcquiredEvent = AZ::Event<MultiplayerAgentDatum>;
@@ -147,6 +148,10 @@ namespace Multiplayer
         //! Adds a ServerAcceptanceReceived Handler which is invoked when the client receives the accept packet from the server.
         //! @param handler The ServerAcceptanceReceived Handler to add
         virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
+
+        //! Adds a NetworkInitEvent Handler which is invoked when the network is initialized on the dedicated server or client-server.
+        //! @param handler The NetworkInitEvent Handler to add
+        virtual void AddNetworkInitHandler(NetworkInitEvent::Handler& handler) = 0;
 
         //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or SessionNotificationBus::OnCreateSessionEnd
         virtual void AddSessionInitHandler(SessionInitEvent::Handler& handler) = 0;
