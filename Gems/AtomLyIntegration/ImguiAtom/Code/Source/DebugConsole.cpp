@@ -25,6 +25,8 @@
 #include <ImGui/ImGuiPass.h>
 #include <imgui/imgui.h>
 
+#include <AzFramework/Components/ConsoleBus.h>  // Gruber patch.
+
 using namespace AzFramework;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -300,7 +302,18 @@ namespace AZ
         m_currentHistoryIndex = -1;
 
         // Attempt to perform a console command.
+        // Gruber patch begin. LVB. If the command is not performed in the "Console" class then let's try to perform it in the "CXConsole" class (via ConsoleRequestBus)
+#ifdef CARBONATED
+        auto res = AZ::Interface<AZ::IConsole>::Get()->PerformCommand(inputTextString.c_str());
+        if (!res.IsSuccess())
+        {
+            AzFramework::ConsoleRequestBus::Broadcast(
+                &AzFramework::ConsoleRequestBus::Events::ExecuteConsoleCommand, inputTextString.c_str());
+        }
+#else
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(inputTextString.c_str());
+#endif
+        // Gruber patch end. LVB.
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
