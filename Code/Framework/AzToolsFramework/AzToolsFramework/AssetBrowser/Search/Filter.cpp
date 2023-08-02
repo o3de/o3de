@@ -13,6 +13,7 @@
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/EBusFindAssetTypeByName.h>
 
@@ -362,28 +363,33 @@ namespace AzToolsFramework
 
         bool AssetGroupFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            AZStd::string ext;
-            AzFramework::StringFunc::Path::GetExtension(entry->GetVisiblePath().c_str(), ext, false);
-            if (m_group == "Shader" && ext.starts_with("shadervariant"))
-            {
-                return true;
-            }
-
-            // this filter only works on products.
-            if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Product)
-            {
-                return false;
-            }
+            //AZStd::string ext;
+            //AzFramework::StringFunc::Path::GetExtension(entry->GetVisiblePath().c_str(), ext, false);
+            //if (m_group == "Shader" && ext.starts_with("shadervariant"))
+            //{
+            //    return true;
+            //}
 
             if (m_group.compare("All", Qt::CaseInsensitive) == 0)
             {
                 return true;
             }
 
-            auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
-
             QString group;
-            AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
+            if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+            {
+                auto product = static_cast<const ProductAssetBrowserEntry*>(entry);
+                AZ::AssetTypeInfoBus::EventResult(group, product->GetAssetType(), &AZ::AssetTypeInfo::GetGroup);
+            }
+            else if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+            {
+                const SourceAssetBrowserEntry* source = static_cast<const SourceAssetBrowserEntry*>(entry);
+                AZ::AssetTypeInfoBus::EventResult(group, source->GetPrimaryAssetType(), &AZ::AssetTypeInfo::GetGroup);
+            }
+            else
+            {
+                return false; // this filter only works on product or sources
+            }
 
             if (m_group.compare("Other", Qt::CaseInsensitive) == 0 && group.isEmpty())
             {
