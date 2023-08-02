@@ -10,6 +10,7 @@
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI/ObjectCache.h>
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/ThreadLocalContext.h>
 #include <Atom/RHI.Loader/LoaderContext.h>
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
@@ -67,6 +68,7 @@ namespace AZ
 
         class Device final
             : public RHI::Device
+            , public RHI::RHISystemNotificationBus::Handler
         {
             using Base = RHI::Device;
         public:
@@ -144,6 +146,10 @@ namespace AZ
 
             //! Returns the VMA allocator used by this device.
             VmaAllocator& GetVmaAllocator();
+
+        protected:
+            // RHI::RHISystemNotificationBus::Handler overrides...
+            void OnRHISystemInitialized() override;
 
         private:
             Device();
