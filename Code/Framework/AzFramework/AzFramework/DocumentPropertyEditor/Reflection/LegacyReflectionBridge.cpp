@@ -1005,15 +1005,26 @@ namespace AZ::Reflection
 
                         // See if any registered attribute definitions can read this attribute
                         Dom::Value attributeValue;
-                        propertyEditorSystem->EnumerateRegisteredAttributes(
-                            name,
-                            [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+
+                        bool fallback = false;
+                        auto readValue = [&](const DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                        {
+                            if (attributeValue.IsNull())
                             {
-                                if (attributeValue.IsNull())
-                                {
-                                    attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second);
-                                }
-                            });
+                                attributeValue = attributeReader.LegacyAttributeToDomValue(instance, it->second, fallback);
+                            }
+                        };
+
+
+                        // try it once without allowing type fallback
+                        propertyEditorSystem->EnumerateRegisteredAttributes(name, readValue);
+
+                        if (attributeValue.IsNull())
+                        {
+                            // failed to read without fallback, try with it on
+                            fallback = true;
+                            propertyEditorSystem->EnumerateRegisteredAttributes(name, readValue);
+                        }
 
                         // Fall back on a generic read that handles primitives.
                         if (attributeValue.IsNull())
