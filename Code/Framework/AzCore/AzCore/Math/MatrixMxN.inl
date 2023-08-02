@@ -263,14 +263,8 @@ namespace AZ
 
     AZ_MATH_INLINE void MatrixMxN::SetZero()
     {
-        const Simd::Vec4::FloatType zeroVec = Simd::Vec4::ZeroFloat();
-        for (Matrix4x4& element : m_values)
-        {
-            element.GetSimdValues()[0] = zeroVec;
-            element.GetSimdValues()[1] = zeroVec;
-            element.GetSimdValues()[2] = zeroVec;
-            element.GetSimdValues()[3] = zeroVec;
-        }
+        AZ::Matrix4x4* data = m_values.data();
+        memset(data, 0, sizeof(AZ::Matrix4x4) * m_values.size());
     }
 
     AZ_MATH_INLINE MatrixMxN MatrixMxN::operator-() const

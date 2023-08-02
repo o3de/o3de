@@ -21,6 +21,11 @@
 #   endif
 #endif
 
+#undef AZ_TRAIT_USE_PLATFORM_SIMD_SSE
+#undef AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+#undef AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
+#define AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR 1
+
 namespace AZ
 {
     namespace Simd

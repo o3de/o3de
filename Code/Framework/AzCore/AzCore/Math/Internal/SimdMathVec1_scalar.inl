@@ -434,9 +434,28 @@ namespace AZ
             return atan2f(y, x);
         }
 
+
         AZ_MATH_INLINE Vec1::FloatType Vec1::ExpEstimate(FloatArgType x)
         {
-            return exp(x);
+            static constexpr float   ExpCoef1 = 1.2102203e7f;
+            static constexpr int32_t ExpCoef2 = -8388608;
+            static constexpr float   ExpCoef3 = 1.1920929e-7f;
+            static constexpr float   ExpCoef4 = 3.371894346e-1f;
+            static constexpr float   ExpCoef5 = 6.57636276e-1f;
+            static constexpr float   ExpCoef6 = 1.00172476f;
+
+            const int32_t a = int32_t(ExpCoef1 * x);
+            const int32_t b = a & ExpCoef2;
+            const int32_t c = a - b;
+            const float f = ExpCoef3 * float(c);
+            const float i = f * ExpCoef4 + ExpCoef5;
+            const float j = i * f + ExpCoef6;
+            uint32_t k;
+            memcpy(&k, &j, sizeof(float));
+            k += b;
+            float r;
+            memcpy(&r, &k, sizeof(float));
+            return r;
         }
 
         AZ_MATH_INLINE Vec1::FloatType Vec1::ConvertToFloat(Int32ArgType value)

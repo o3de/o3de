@@ -31,16 +31,16 @@ namespace AZ
         alignas(16) static constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
         alignas(16) static constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
         alignas(16) static constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
-        alignas(16) static constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
-        alignas(16) static constexpr float g_atanCoef2[4]   = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
-        alignas(16) static constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
-        alignas(16) static constexpr float g_atanCoef4[4]   = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
-        alignas(16) static constexpr float g_expCoef1[4]    = { 1.2102203e7, 1.2102203e7, 1.2102203e7, 1.2102203e7 };
+        alignas(16) static constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f };
+        alignas(16) static constexpr float g_atanCoef2[4]   = { -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
+        alignas(16) static constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f };
+        alignas(16) static constexpr float g_atanCoef4[4]   = { -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        alignas(16) static constexpr float g_expCoef1[4]    = {  1.2102203e7f, 1.2102203e7f, 1.2102203e7f, 1.2102203e7f };
         alignas(16) static constexpr int32_t g_expCoef2[4]  = { -8388608, -8388608, -8388608, -8388608 };
-        alignas(16) static constexpr float g_expCoef3[4] = { 1.1920929e-7, 1.1920929e-7, 1.1920929e-7, 1.1920929e-7 };
-        alignas(16) static constexpr float g_expCoef4[4] = { 3.371894346e-1, 3.371894346e-1, 3.371894346e-1, 3.371894346e-1 };
-        alignas(16) static constexpr float g_expCoef5[4] = { 6.57636276e-1, 6.57636276e-1, 6.57636276e-1, 6.57636276e-1 };
-        alignas(16) static constexpr float g_expCoef6[4] = { 1.00172476f, 1.00172476f, 1.00172476f, 1.00172476f };
+        alignas(16) static constexpr float g_expCoef3[4]    = {  1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f };
+        alignas(16) static constexpr float g_expCoef4[4]    = {  3.371894346e-1, 3.371894346e-1, 3.371894346e-1f, 3.371894346e-1f };
+        alignas(16) static constexpr float g_expCoef5[4]    = {  6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f };
+        alignas(16) static constexpr float g_expCoef6[4]    = {  1.00172476f, 1.00172476f, 1.00172476f, 1.00172476f };
 
         namespace Common
         {
@@ -390,11 +390,9 @@ namespace AZ
                 typename VecType::Int32Type b = VecType::And(a, FastLoadConstant<VecType>(Simd::g_expCoef2));
                 typename VecType::Int32Type c = VecType::Sub(a, b);
                 typename VecType::FloatType f = VecType::Mul(FastLoadConstant<VecType>(Simd::g_expCoef3), VecType::ConvertToFloat(c)); // Approximately (x/log(2)) - floor(x/log(2))
-                typename VecType::FloatType i = VecType::Mul(FastLoadConstant<VecType>(Simd::g_expCoef4), f);
-                typename VecType::FloatType j = VecType::Add(i, FastLoadConstant<VecType>(Simd::g_expCoef5));
-                typename VecType::FloatType k = VecType::Mul(j, f);
-                typename VecType::FloatType l = VecType::Add(k, FastLoadConstant<VecType>(Simd::g_expCoef6)); // Approximately 2^f
-                return VecType::CastToFloat(VecType::Add(b, VecType::CastToInt(l)));
+                typename VecType::FloatType i = VecType::Madd(f, FastLoadConstant<VecType>(Simd::g_expCoef4), FastLoadConstant<VecType>(Simd::g_expCoef5));
+                typename VecType::FloatType j = VecType::Madd(i, f, FastLoadConstant<VecType>(Simd::g_expCoef6)); // Approximately 2^f
+                return VecType::CastToFloat(VecType::Add(b, VecType::CastToInt(j)));
             }
 
             template <typename VecType>

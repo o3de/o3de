@@ -310,11 +310,8 @@ namespace AZ
 
     AZ_MATH_INLINE void VectorN::SetZero()
     {
-        const AZ::Vector4 zero = AZ::Vector4::CreateZero();
-        for (Vector4& element : m_values)
-        {
-            element = zero;
-        }
+        AZ::Vector4* data = m_values.data();
+        memset(data, 0, sizeof(AZ::Vector4) * m_values.size());
     }
 
     AZ_MATH_INLINE VectorN& VectorN::operator+=(const VectorN& rhs)
