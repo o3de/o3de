@@ -1927,8 +1927,11 @@ void CXConsole::ExecuteStringInternal(const char* command, const bool bFromConso
                 if (nPos != AZStd::string::npos)
                 {
                     sTemp = sTemp.substr(nPos + 1);     // remove the command from sTemp
+#ifdef CARBONATED
+                    AZ::StringFunc::Strip(sTemp, " \t\r\n\"\'");    // Gruber patch. In LY it was "sTemp.Trim(" \t\r\n\"\'");" i.e. the trim from both sides not only at the end
+#else
                     AZ::StringFunc::StripEnds(sTemp, " \t\r\n\"\'");
-
+#endif
                     if (sTemp == "?")
                     {
                         ICVar* v = itrVar->second;
