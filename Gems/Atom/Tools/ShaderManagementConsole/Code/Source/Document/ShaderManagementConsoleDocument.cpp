@@ -80,6 +80,7 @@ namespace ShaderManagementConsole
                 : m_shaderVariantListSourceData.m_shaderVariants.back().m_stableId + 1;
             m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
             EndEdit();
+            m_modified = true;
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(
                 m_toolId, &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentObjectInfoInvalidated, m_id);
             AtomToolsFramework::AtomToolsDocumentNotificationBus::Event(

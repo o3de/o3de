@@ -16,6 +16,7 @@
 #include <QMenu>
 #include <QKeyEvent>
 #include <QPushButton>
+#include <QFont>
 
 #include <functional>
 
@@ -206,6 +207,13 @@ namespace ShaderManagementConsole
             const auto& shaderOptionDescriptor = m_shaderOptionDescriptors[column - 1];
             auto* tableItem = new QTableWidgetItem(shaderOptionDescriptor.GetName().GetCStr());
             tableItem->setToolTip(tr("cost %1").arg(shaderOptionDescriptor.GetCostEstimate()));
+            // color material options in yellow
+            if (m_shaderVariantListSourceData.m_materialOptionsHint.find(shaderOptionDescriptor.GetName()) !=
+                m_shaderVariantListSourceData.m_materialOptionsHint.end())
+            {
+                tableItem->setForeground(QColor{255, 255, 0});
+                //tableItem->setBackground(QColor{180, 40, 40});  // this has no effect
+            }
             setHorizontalHeaderItem(column, tableItem);
         }
         setHorizontalHeaderItem(0, new QTableWidgetItem(""));
@@ -232,7 +240,7 @@ namespace ShaderManagementConsole
                 setItem(row, column, newItem);
             }
             auto* deleterButton = new QPushButton;
-            deleterButton->setText(u8"❌");
+            deleterButton->setText(u8"\u274C"); // ❌
             deleterButton->setToolTip(tr("delete row"));
             connect(deleterButton, &QPushButton::clicked, this, [this, row](){
                 auto& vec = m_shaderVariantListSourceData.m_shaderVariants;
@@ -285,7 +293,10 @@ namespace ShaderManagementConsole
         case AZ::RPI::ShaderOptionType::Enumeration:
             {
                 auto* comboBox = new FocusOutConfigurable<QComboBox>(this);
-                comboBox->addItem("");
+                static auto italicFont = QFont(comboBox->fontInfo().family(), comboBox->fontInfo().pointSize(), comboBox->fontInfo().weight(), true);
+                comboBox->addItem("<dynamic>");
+                comboBox->setItemData(0, italicFont, Qt::FontRole);
+                comboBox->setItemIcon(0, QIcon(":/Icons/emptyoption.svg"));
                 for (uint32_t valueIndex = valueMin.GetIndex(); valueIndex <= valueMax.GetIndex(); ++valueIndex)
                 {
                     comboBox->addItem(shaderOptionDescriptor.GetValueName(AZ::RPI::ShaderOptionValue{ valueIndex }).GetCStr());
@@ -293,7 +304,7 @@ namespace ShaderManagementConsole
                 comboBox->setCurrentText(valueName.GetCStr());
                 setCellWidget(row, column, comboBox);
                 connect(comboBox, &QComboBox::currentTextChanged, this, [this, row, column](const QString& text) {
-                    item(row, column)->setText(text);
+                    item(row, column)->setText(text == "<dynamic>" ? "" : text);
                 });
                 comboBox->m_onExit = [this, row, column]() { removeCellWidget(row, column); };
                 break;
@@ -332,7 +343,7 @@ namespace ShaderManagementConsole
             return;
         }
 
-        if (column < 0 || column >= m_shaderOptionDescriptors.size())
+        if (column < 0 || column > m_shaderOptionDescriptors.size())
         {
             return;
         }

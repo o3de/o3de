@@ -57,17 +57,8 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindow::ShowContextMenu(const QPoint& pos)
     {
         QMenu contextMenu(tr("Context menu"), this);
-        QAction* action = new QAction(QString(tr("Open recent...")), this); // for example.
-        connect(
-            action,
-            &QAction::triggered,
-            this,
-            []()
-            {
-                
-            });
-        contextMenu.addAction(action);
-
+        UpdateRecentFileMenu();
+        contextMenu.insertMenu(0, m_menuOpenRecent);
         contextMenu.exec(mapToGlobal(pos));
     }
 
@@ -167,7 +158,7 @@ namespace ShaderManagementConsole
                 {
                     if (statisticData.m_shaderVariantUsage.find(shaderVariantId) == statisticData.m_shaderVariantUsage.end())
                     {
-                        // Varient not found
+                        // Variant not found
                         statisticData.m_shaderVariantUsage[shaderVariantId].m_count = 1;
                     }
                     else
