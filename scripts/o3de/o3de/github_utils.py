@@ -88,21 +88,21 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
     
-    def upload_release(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str) -> int:
+    def upload_release(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, git_release_tag: str) -> int:
         """
         Uploads a release asset to a GitHub repository. 
         It enables users to specify the GitHub release tag for the asset.
         :param repo_uri (str): The URL of the GitHub repository (e.g., "https://github.com/owner/repo.git").
         :param zip_path (pathlib.Path): The path to the ZIP file that needs to be uploaded.
         :param archive_filename (str): The filename to be used for the uploaded asset in the GitHub release.
-        :param upload_github_release_tag (str): The tag associated with the GitHub release.
+        :param git_release_tag (str): The tag associated with the GitHub release.
         """
         access_token = getpass.getpass("Provide your GitHub access token (Must have content - read and write permission)\n"
                                         "Enter your GitHub Token (right click mouse to paste):")
         if len(access_token) == 0:
             logger.error('No input received! To paste your token into a terminal use mouse right click.')
             return 1
-        tag_name = upload_git_release_tag
+        tag_name = git_release_tag
         # Get GitHub credentials
         headers = {
             'Authorization': f'Token {access_token}',

@@ -44,7 +44,7 @@ class GitProviderInterface(ABC):
         :param repo_uri (str): The URL of the GitHub repository (e.g., "https://github.com/owner/repo.git").
         :param zip_path (pathlib.Path): The path to the ZIP file that needs to be uploaded.
         :param archive_filename (str): The filename to be used for the uploaded asset in the GitHub release.
-        :param upload_github_release_tag (str): The tag associated with the GitHub release.
+        :param git_release_tag (str): The tag associated with the GitHub release.
         :return: return code, 0 on success
         """
         pass
