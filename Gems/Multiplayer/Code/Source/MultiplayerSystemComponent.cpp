@@ -1334,8 +1334,7 @@ namespace Multiplayer
 
         if (sessionStarted)
         {
-            SessionConfig sessionConfig; // TODO find a better place or populate this data
-            SessionNotificationBus::Broadcast(&SessionNotificationBus::Events::OnCreateSessionBegin, sessionConfig);
+            m_networkInitEvent.Signal(m_networkInterface);
         }
     }
 
@@ -1367,6 +1366,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
         handler.Connect(m_connectionAcquiredEvent);
+    }
+
+    void MultiplayerSystemComponent::AddNetworkInitHandler(NetworkInitEvent::Handler& handler)
+    {
+        handler.Connect(m_networkInitEvent);
     }
 
     void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
