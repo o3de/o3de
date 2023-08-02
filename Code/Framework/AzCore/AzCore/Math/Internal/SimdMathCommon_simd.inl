@@ -12,35 +12,35 @@ namespace AZ
 {
     namespace Simd
     {
-        alignas(16) static constexpr float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
-        alignas(16) static constexpr float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
-        alignas(16) static constexpr float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
-        alignas(16) static constexpr float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
-        alignas(16) static constexpr float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
-        alignas(16) static constexpr float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
-        alignas(16) static constexpr float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
-        alignas(16) static constexpr float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
-        alignas(16) static constexpr float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
-        alignas(16) static constexpr float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
-        alignas(16) static constexpr float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
-        alignas(16) static constexpr float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
-        alignas(16) static constexpr float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
-        alignas(16) static constexpr float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
-        alignas(16) static constexpr float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
-        alignas(16) static constexpr float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
-        alignas(16) static constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
-        alignas(16) static constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
-        alignas(16) static constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
-        alignas(16) static constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f };
-        alignas(16) static constexpr float g_atanCoef2[4]   = { -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
-        alignas(16) static constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f };
-        alignas(16) static constexpr float g_atanCoef4[4]   = { -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
-        alignas(16) static constexpr float g_expCoef1[4]    = {  1.2102203e7f, 1.2102203e7f, 1.2102203e7f, 1.2102203e7f };
-        alignas(16) static constexpr int32_t g_expCoef2[4]  = { -8388608, -8388608, -8388608, -8388608 };
-        alignas(16) static constexpr float g_expCoef3[4]    = {  1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f };
-        alignas(16) static constexpr float g_expCoef4[4]    = {  3.371894346e-1, 3.371894346e-1, 3.371894346e-1f, 3.371894346e-1f };
-        alignas(16) static constexpr float g_expCoef5[4]    = {  6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f };
-        alignas(16) static constexpr float g_expCoef6[4]    = {  1.00172476f, 1.00172476f, 1.00172476f, 1.00172476f };
+        alignas(16) constexpr float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
+        alignas(16) constexpr float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
+        alignas(16) constexpr float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
+        alignas(16) constexpr float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
+        alignas(16) constexpr float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
+        alignas(16) constexpr float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
+        alignas(16) constexpr float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
+        alignas(16) constexpr float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
+        alignas(16) constexpr float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
+        alignas(16) constexpr float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
+        alignas(16) constexpr float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
+        alignas(16) constexpr float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
+        alignas(16) constexpr float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
+        alignas(16) constexpr float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
+        alignas(16) constexpr float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
+        alignas(16) constexpr float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
+        alignas(16) constexpr float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
+        alignas(16) constexpr float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
+        alignas(16) constexpr float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
+        alignas(16) constexpr float g_atanCoef1[4]   = {  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f,  8.05374449538e-2f };
+        alignas(16) constexpr float g_atanCoef2[4]   = { -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
+        alignas(16) constexpr float g_atanCoef3[4]   = {  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f,  1.99777106478e-1f };
+        alignas(16) constexpr float g_atanCoef4[4]   = { -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        alignas(16) constexpr float g_expCoef1[4]    = {  1.2102203e7f, 1.2102203e7f, 1.2102203e7f, 1.2102203e7f };
+        alignas(16) constexpr int32_t g_expCoef2[4]  = { -8388608, -8388608, -8388608, -8388608 };
+        alignas(16) constexpr float g_expCoef3[4]    = {  1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f };
+        alignas(16) constexpr float g_expCoef4[4]    = {  3.371894346e-1, 3.371894346e-1, 3.371894346e-1f, 3.371894346e-1f };
+        alignas(16) constexpr float g_expCoef5[4]    = {  6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f };
+        alignas(16) constexpr float g_expCoef6[4]    = {  1.00172476f, 1.00172476f, 1.00172476f, 1.00172476f };
 
         namespace Common
         {
@@ -385,7 +385,9 @@ namespace AZ
             AZ_MATH_INLINE typename VecType::FloatType ExpEstimate(typename VecType::FloatArgType x)
             {
                 // N. N. Schraudolph, 'A Fast, Compact Approximation of the Exponential Function'
-                // This method exploits the logarithmic nature of IEEE-754 floating point to quickly estimate exp(x)
+                // This method exploits the logrithmic nature of IEEE-754 floating point to quickly estimate exp(x)
+                // While the concept is based on that paper, this specific implementation is based on a selection from several variants 
+                // of that algorithm to choose the fastest of the variants that had the highest accuracy.
                 typename VecType::Int32Type a = VecType::ConvertToIntNearest(VecType::Mul(FastLoadConstant<VecType>(Simd::g_expCoef1), x));
                 typename VecType::Int32Type b = VecType::And(a, FastLoadConstant<VecType>(Simd::g_expCoef2));
                 typename VecType::Int32Type c = VecType::Sub(a, b);
