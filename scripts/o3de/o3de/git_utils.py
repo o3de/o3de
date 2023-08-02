@@ -65,7 +65,7 @@ class GenericGitProvider(gitproviderinterface.GitProviderInterface):
         return proc.returncode
 
     def upload_release(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, upload_git_release_tag: str) -> int:
-        logger.warning(f"GenericGitProvider does not yet support upload release to git platforms other than GitHub")
+        logger.warning(f"GenericGitProvider does not yet support uploading a release to Git platforms other than GitHub")
         return 1
 
 def get_generic_git_provider(parsed_uri: ParseResult) -> GenericGitProvider or None:

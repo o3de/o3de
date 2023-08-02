@@ -103,7 +103,7 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
     if not upload_git_release_tag and not download_prefix:
         logger.error('You need to provide a --upload-git-release-tag if you want to upload to a Git provider like GitHub.\n'
                      'If you want to use other version control systems you must provide --download-prefix argument\n'
-                     'A url prefix for a file attached to a Github release might look like this:'
+                     'Example GitHub URL prefix:'
                      '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
         return {}
     if upload_git_release_tag and download_prefix:
@@ -526,7 +526,7 @@ def add_parser_args(parser):
                                    help='A URL prefix for a file attached to a GitHub release might look like this:'
                                         '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
     modify_object_group.add_argument('--upload-git-release-tag', '-ugrt', type=str, default=False,
-                                   help='Automatically uploads your object-release-archive.zip file to specified github release.\n'
+                                   help='Automatically uploads your object-release-archive.zip file to specified GitHub release.\n'
                                         'Please provide a tag_name for the release. ')
     parser.set_defaults(func=_edit_repo_props)
 

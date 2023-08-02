@@ -39,7 +39,7 @@ class GitProviderInterface(ABC):
     def upload_release(self, repo_uri: ParseResult, zip_path: pathlib.Path, archive_filename: str, git_release_tag: str):
         """
         Uploads a release asset to a git repository. 
-        It enables users to specify the a release tag for the asset. 
+        It enables users to specify the release tag for the asset. 
         Creates a git repository release if the specified tag doesn't already exist.
         :param repo_uri (str): The URL of the GitHub repository (e.g., "https://github.com/owner/repo.git").
         :param zip_path (pathlib.Path): The path to the ZIP file that needs to be uploaded.

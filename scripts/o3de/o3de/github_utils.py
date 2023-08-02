@@ -97,13 +97,13 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
         :param archive_filename (str): The filename to be used for the uploaded asset in the GitHub release.
         :param upload_github_release_tag (str): The tag associated with the GitHub release.
         """
-        access_token = getpass.getpass("Provide your github access token (Must have content - read and write permission)\n"
+        access_token = getpass.getpass("Provide your GitHub access token (Must have content - read and write permission)\n"
                                         "Enter your GitHub Token (right click mouse to paste):")
         if len(access_token) == 0:
             logger.error('No input received! To paste your token into a terminal use mouse right click.')
             return 1
         tag_name = upload_git_release_tag
-        # Get github credentials
+        # Get GitHub credentials
         headers = {
             'Authorization': f'Token {access_token}',
             'Accept': 'application/vnd.github.v3+json',
@@ -130,7 +130,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
         }
         # Valid release
         if response.status_code == 200:
-            # Get the release end point to retrive release id
+            # Get the release end point to retrieve release id
             get_release_by_tag = f"https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag_name}"
             response = requests.get(get_release_by_tag, headers=headers, json=release_payload)
             release_id = response.json().get('id')
@@ -147,7 +147,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
                 logger.error(f'Failed to retrieve release. Status code: {response.status_code}')
                 return 1
             
-        # Release doesn't exist, Create a new release endpoint with the given tag_name and upload assest  
+        # Release doesn't exist; create a new release endpoint with the given tag_name and upload assests  
         elif response.status_code == 404:
             release_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
             response = requests.post(release_url, headers=headers, json=release_payload)
