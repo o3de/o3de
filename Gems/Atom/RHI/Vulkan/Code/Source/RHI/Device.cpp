@@ -100,6 +100,7 @@ namespace AZ
             m_enabledDeviceFeatures.sampleRateShading = deviceFeatures.sampleRateShading;
             m_enabledDeviceFeatures.shaderImageGatherExtended = deviceFeatures.shaderImageGatherExtended;
             m_enabledDeviceFeatures.shaderInt64 = deviceFeatures.shaderInt64;
+            m_enabledDeviceFeatures.shaderInt16 = deviceFeatures.shaderInt16;
             m_enabledDeviceFeatures.sparseBinding = deviceFeatures.sparseBinding;
             m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
             m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
@@ -345,23 +346,14 @@ namespace AZ
             physicalDevice.LoadSupportedFeatures(m_context);
 
             RHI::ResultCode resultCode = InitVmaAllocator(physicalDeviceBase);
+            RHI::RHISystemNotificationBus::Handler::BusConnect();
             return resultCode;
         }
 
         RHI::ResultCode Device::InitInternalBindlessSrg(const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc)
         {
             RHI::ResultCode result = m_bindlessDescriptorPool.Init(*this, bindlessSrgDesc);
-            RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
-            if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
-            {
-                // Need to initialize the NullDescriptorManager AFTER the bindless descriptor pool, since we create images and buffers
-                // during the initialization of the NullDescriptorManager.
-                m_nullDescriptorManager = NullDescriptorManager::Create();
-                result = m_nullDescriptorManager->Init(*this);
-                RETURN_RESULT_IF_UNSUCCESSFUL(result);
-            }
-            return RHI::ResultCode::Success;
+            return result;
         }
 
         RHI::ResultCode Device::InitializeLimits()
@@ -679,6 +671,8 @@ namespace AZ
 
         void Device::ShutdownInternal()
         {
+            RHI::RHISystemNotificationBus::Handler::BusDisconnect();
+
             m_imageMemoryRequirementsCache.Clear();
             m_bufferMemoryRequirementsCache.Clear();
 
@@ -1506,6 +1500,19 @@ namespace AZ
         VmaAllocator& Device::GetVmaAllocator()
         {
             return m_vmaAllocator;
+        }
+
+        void Device::OnRHISystemInitialized()
+        {
+            const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetPhysicalDevice());
+            if (!physicalDevice.IsFeatureSupported(DeviceFeature::NullDescriptor))
+            {
+                // Need to initialize the NullDescriptorManager AFTER the bindless descriptor pool, since we create images and buffers
+                // during the initialization of the NullDescriptorManager.
+                m_nullDescriptorManager = NullDescriptorManager::Create();
+                [[maybe_unused]] RHI::ResultCode result = m_nullDescriptorManager->Init(*this);
+                AZ_Error("Vulkan", result == RHI::ResultCode::Success, "Failed to initialize Null descriptor manager");
+            }
         }
     }
 }
