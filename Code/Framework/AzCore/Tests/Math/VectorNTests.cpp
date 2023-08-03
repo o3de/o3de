@@ -54,19 +54,6 @@ namespace UnitTest
         }
     }
 
-    TEST_F(Math_VectorN, TestRelu)
-    {
-        AZ::VectorN relu = AZ::VectorN::CreateRandom(1024);
-        relu *= 100.0f;
-        relu -= 50.0f;
-        relu.ReLU();
-
-        for (AZStd::size_t iter = 0; iter < relu.GetDimensionality(); ++iter)
-        {
-            ASSERT_GE(relu.GetElement(iter), 0.0f);
-        }
-    }
-
     TEST_F(Math_VectorN, TestLength)
     {
         AZ::VectorN vec1 = AZ::VectorN::CreateZero(5);
@@ -187,6 +174,24 @@ namespace UnitTest
         for (AZStd::size_t iter = 0; iter < vec9.GetDimensionality(); ++iter)
         {
             EXPECT_FLOAT_EQ(vec9.GetElement(iter), -4.0f);
+        }
+
+        vec9 = 1.0f - vec5; // 1 - 2
+        for (AZStd::size_t iter = 0; iter < vec9.GetDimensionality(); ++iter)
+        {
+            EXPECT_FLOAT_EQ(vec9.GetElement(iter), -1.0f);
+        }
+
+        vec9 = 1.0f + vec5; // 1 + 2
+        for (AZStd::size_t iter = 0; iter < vec9.GetDimensionality(); ++iter)
+        {
+            EXPECT_FLOAT_EQ(vec9.GetElement(iter), 3.0f);
+        }
+
+        vec9 = 2.0f * vec5; // 2 * 2
+        for (AZStd::size_t iter = 0; iter < vec9.GetDimensionality(); ++iter)
+        {
+            EXPECT_FLOAT_EQ(vec9.GetElement(iter), 4.0f);
         }
     }
 
