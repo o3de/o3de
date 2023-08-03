@@ -120,7 +120,7 @@ namespace AZ::DocumentPropertyEditor
 
         /*! Converts this attribute from an AZ::Attribute to a Dom::Value usable in the DocumentPropertyEditor.
             @param fallback if false, a Read<AttributeType> failure will return a null Value; if true, it will attempt a fallback on failure */
-        virtual AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool fallback = true) const = 0;
+        virtual AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const = 0;
     };
 
     //! Defines an attribute applicable to a Node.
@@ -197,7 +197,7 @@ namespace AZ::DocumentPropertyEditor
             }
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool fallback = true) const override
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
         {
             if (attribute == nullptr)
             {
@@ -215,7 +215,7 @@ namespace AZ::DocumentPropertyEditor
                 if (!reader.Read<AttributeType>(value))
                 {
                     // Handle the attribute providing an invokable function instead of the value directly
-                    if (fallback && attribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
+                    if (attribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
                     {
                         return attribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
                     }
@@ -244,7 +244,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value ValueToDom(const AZ::TypeId& attribute) const override;
         AZStd::optional<AZ::TypeId> DomToValue(const Dom::Value& value) const override;
         AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool fallback = true) const override;
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool fallback = true) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
     //! Represents an attribute that should be stored as an AZ::Name, but legacy attribute instances (AZ::Attribute*)
@@ -260,7 +260,7 @@ namespace AZ::DocumentPropertyEditor
         Dom::Value ValueToDom(const AZ::Name& attribute) const override;
         AZStd::optional<AZ::Name> DomToValue(const Dom::Value& value) const override;
         AZStd::shared_ptr<AZ::Attribute> DomValueToLegacyAttribute(const AZ::Dom::Value& value, bool fallback = true) const override;
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool fallback = true) const override;
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override;
     };
 
     template<typename GenericValueType>
@@ -285,7 +285,7 @@ namespace AZ::DocumentPropertyEditor
             return result;
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool) const override
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
         {
             if (attribute == nullptr)
             {
@@ -360,7 +360,7 @@ namespace AZ::DocumentPropertyEditor
             return result;
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool) const override
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
         {
             if (attribute == nullptr)
             {
@@ -645,7 +645,7 @@ namespace AZ::DocumentPropertyEditor
             return AZStd::make_shared<AZ::AttributeInvocable<CallbackSignature>>(function.value());
         }
 
-        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool) const override
+        AZ::Dom::Value LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const override
         {
             return attribute->GetAsDomValue(instance);
         }

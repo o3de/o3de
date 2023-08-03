@@ -42,7 +42,7 @@ namespace AZ::DocumentPropertyEditor
         return AZStd::make_shared<AZ::AttributeData<AZ::Uuid>>(AZStd::move(uuidValue));
     }
 
-    AZ::Dom::Value TypeIdAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool) const
+    AZ::Dom::Value TypeIdAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
     {
         AZ::AttributeReader reader(instance, attribute);
         AZ::Uuid value;
@@ -78,7 +78,7 @@ namespace AZ::DocumentPropertyEditor
         return AZStd::make_shared<AZ::AttributeData<AZ::Crc32>>(crc);
     }
 
-    AZ::Dom::Value NamedCrcAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute, bool) const
+    AZ::Dom::Value NamedCrcAttributeDefinition::LegacyAttributeToDomValue(void* instance, AZ::Attribute* attribute) const
     {
         AZ::Name result;
         AZ::AttributeReader reader(instance, attribute);
