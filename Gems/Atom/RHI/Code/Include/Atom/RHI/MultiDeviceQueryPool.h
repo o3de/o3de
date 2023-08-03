@@ -62,10 +62,20 @@ namespace AZ::RHI
         //!  @param queryCount Number of queries.
         ResultCode InitQuery(MultiDeviceQuery** queries, uint32_t queryCount);
 
+        //! Get the number of results that have to be allocated.
+        //! The number returned is the number of results per query, multiplied by the number of queries and the number of devices.
+        //! The number of devices can also be queried from the RHISystem.
+        //! If the queryCount is omitted or equal to 0, the total number of queries in the pool is used.
+        uint32_t GetResultsCount(uint32_t queryCount = 0, uint32_t deviceCount = 0);
+
         //! Get the results from all queries (from all devices) in the pool, which are returned as uint64_t data.
-        //! The parameter "resultsCount" denotes the number of results requested per device.
+        //! The parameter "resultsCount" denotes the total number of results requested. It can be determined by calling GetResultsCount().
         //! The "results" parameter must contain enough space to save the results from all queries (from all devices) in the pool,
-        //! i.e. resultCount * deviceCount * sizeof(uint64_t) must be pre-allocated.
+        //! i.e. resultCount * sizeof(uint64_t), must be pre-allocated.
+        //! Results are ordered by device (using the deviceIndex) first and then per query, i.e., all results from a device are
+        //! consecutive in memory.
+        //! Data will only be written to the results array if the device actually exists, i.e., if its bit in the query's device mask is
+        //! set and the device index is lower than the RHISystem's device count.
         //! The function can return partial results. In case of failure of requesting results from a specific device, only results from
         //! lower-indexed devices (which already have successfully returned results) are returned.
         //! For further details related to device-specific query functionality, please check the related header.

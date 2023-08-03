@@ -149,16 +149,48 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
+    uint32_t MultiDeviceQueryPool::GetResultsCount(uint32_t queryCount, uint32_t deviceCount)
+    {
+        uint32_t perResultSize = m_descriptor.m_type == QueryType::PipelineStatistics
+            ? CountBitsSet(static_cast<uint64_t>(m_descriptor.m_pipelineStatisticsMask))
+            : 1;
+
+        if(deviceCount == 0)
+        {
+            deviceCount = RHISystemInterface::Get()->GetDeviceCount();
+        }
+
+        if(queryCount == 0)
+        {
+            queryCount = m_descriptor.m_queriesCount;
+        }
+
+        return perResultSize * queryCount * deviceCount;
+    }
+
     ResultCode MultiDeviceQueryPool::GetResults(MultiDeviceQuery* query, uint64_t* result, uint32_t resultsCount, QueryResultFlagBits flags)
     {
+        if (Validation::IsEnabled())
+        {
+            auto targetResultsCount = GetResultsCount(1);
+
+            if (targetResultsCount > resultsCount)
+            {
+                AZ_Error("RHI", false, "Results count is too small. Needed at least %d", targetResultsCount);
+                return RHI::ResultCode::InvalidArgument;
+            }
+        }
+
         auto resultCode{ ResultCode::Success };
+
+        auto perDeviceResultCount{GetResultsCount(1, 1)};
 
         for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
         {
             auto deviceQuery{ query->m_deviceQueries[deviceIndex].get() };
-            auto deviceResult{ result + (deviceIndex * resultsCount) };
+            auto deviceResult{ result + (deviceIndex * perDeviceResultCount) };
 
-            resultCode = deviceQueryPool->GetResults(&deviceQuery, 1, deviceResult, resultsCount, flags);
+            resultCode = deviceQueryPool->GetResults(&deviceQuery, 1, deviceResult, perDeviceResultCount, flags);
             if (resultCode != ResultCode::Success)
             {
                 break;
@@ -173,9 +205,6 @@ namespace AZ::RHI
     {
         AZ_Assert(queries && queryCount, "Null queries");
         AZ_Assert(results && resultsCount, "Null results");
-        uint32_t perResultSize = m_descriptor.m_type == QueryType::PipelineStatistics
-            ? CountBitsSet(static_cast<uint64_t>(m_descriptor.m_pipelineStatisticsMask))
-            : 1;
 
         if (Validation::IsEnabled())
         {
@@ -185,14 +214,18 @@ namespace AZ::RHI
                 return validationResult;
             }
 
-            if (perResultSize * queryCount > resultsCount)
+            auto targetResultsCount = GetResultsCount(queryCount);
+
+            if (targetResultsCount > resultsCount)
             {
-                AZ_Error("RHI", false, "Results count is too small. Needed at least %d", perResultSize * queryCount);
+                AZ_Error("RHI", false, "Results count is too small. Needed at least %d", targetResultsCount);
                 return RHI::ResultCode::InvalidArgument;
             }
         }
 
         auto resultCode{ ResultCode::Success };
+
+        auto perDeviceResultCount{GetResultsCount(queryCount, 1)};
 
         for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
         {
@@ -202,8 +235,8 @@ namespace AZ::RHI
                 deviceQueries[index] = queries[index]->m_deviceQueries[deviceIndex].get();
             }
 
-            auto deviceResults{ results + (deviceIndex * resultsCount) };
-            resultCode = deviceQueryPool->GetResults(deviceQueries.data(), queryCount, deviceResults, resultsCount, flags);
+            auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
+            resultCode = deviceQueryPool->GetResults(deviceQueries.data(), queryCount, deviceResults, perDeviceResultCount, flags);
 
             if (resultCode != ResultCode::Success)
             {
@@ -216,12 +249,25 @@ namespace AZ::RHI
 
     ResultCode MultiDeviceQueryPool::GetResults(uint64_t* results, uint32_t resultsCount, QueryResultFlagBits flags)
     {
+        if (Validation::IsEnabled())
+        {
+            auto targetResultsCount = GetResultsCount();
+
+            if (targetResultsCount > resultsCount)
+            {
+                AZ_Error("RHI", false, "Results count is too small. Needed at least %d", targetResultsCount);
+                return RHI::ResultCode::InvalidArgument;
+            }
+        }
+
         auto resultCode{ ResultCode::Success };
+
+        auto perDeviceResultCount{GetResultsCount(0, 1)};
 
         for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
         {
-            auto deviceResults{ results + (deviceIndex * resultsCount) };
-            resultCode = deviceQueryPool->GetResults(deviceResults, resultsCount, flags);
+            auto deviceResults{ results + (deviceIndex * perDeviceResultCount) };
+            resultCode = deviceQueryPool->GetResults(deviceResults, perDeviceResultCount, flags);
 
             if (resultCode != ResultCode::Success)
             {

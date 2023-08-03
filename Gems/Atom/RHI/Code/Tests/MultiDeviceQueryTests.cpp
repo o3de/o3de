@@ -249,14 +249,14 @@ namespace UnitTest
             auto& testQueryPoolIntervals = testQueryPool->m_calledIntervals;
             testQueryPoolIntervals.clear();
 
-            EXPECT_EQ(queryPool->GetResults(results, numQueries, RHI::QueryResultFlagBits::None), RHI::ResultCode::Success);
+            EXPECT_EQ(queryPool->GetResults(results, numQueries * DeviceCount, RHI::QueryResultFlagBits::None), RHI::ResultCode::Success);
 
             EXPECT_EQ(testQueryPoolIntervals.size(), 1);
             EXPECT_EQ(testQueryPoolIntervals.front(), RHI::Interval(0, numQueries - 1));
 
             testQueryPoolIntervals.clear();
             auto* queryToTest = queries[5].get();
-            EXPECT_EQ(queryPool->GetResults(queryToTest, results, 1, RHI::QueryResultFlagBits::None), RHI::ResultCode::Success);
+            EXPECT_EQ(queryPool->GetResults(queryToTest, results, DeviceCount, RHI::QueryResultFlagBits::None), RHI::ResultCode::Success);
 
             EXPECT_EQ(testQueryPoolIntervals.size(), 1);
             EXPECT_EQ(
@@ -275,9 +275,9 @@ namespace UnitTest
             testQueryPoolIntervals.clear();
             EXPECT_EQ(
                 queryPool->GetResults(
-                    queriesToTest.data(), static_cast<uint32_t>(queriesToTest.size()), results, numQueries, RHI::QueryResultFlagBits::None),
+                    queriesToTest.data(), static_cast<uint32_t>(queriesToTest.size()), results, numQueries * DeviceCount, RHI::QueryResultFlagBits::None),
                 RHI::ResultCode::Success);
-            EXPECT_EQ(testQueryPoolIntervals.size(), intervalsToTest.size());
+             EXPECT_EQ(testQueryPoolIntervals.size(), intervalsToTest.size());
             for (auto& interval : intervalsToTest)
             {
                 auto foundIt = AZStd::find(testQueryPoolIntervals.begin(), testQueryPoolIntervals.end(), interval);
@@ -461,14 +461,14 @@ namespace UnitTest
         // Using uninitialized query
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(
-            queryPools[0]->GetResults(results.data(), numPipelineStatistics, RHI::QueryResultFlagBits::None),
+            queryPools[0]->GetResults(results.data(), numPipelineStatistics * 2 * DeviceCount, RHI::QueryResultFlagBits::None),
             RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(3);
 
         // Wrong size for results count.
         queryPools[0]->InitQuery(query.get());
         AZ_TEST_START_ASSERTTEST;
-        EXPECT_EQ(queryPools[0]->GetResults(results.data(), 1, RHI::QueryResultFlagBits::None), RHI::ResultCode::InvalidArgument);
+        EXPECT_EQ(queryPools[0]->GetResults(results.data(), DeviceCount, RHI::QueryResultFlagBits::None), RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // Using a query from another pool
@@ -476,7 +476,7 @@ namespace UnitTest
         queryPools[1]->InitQuery(anotherQuery.get());
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(
-            queryPools[0]->GetResults(anotherQuery.get(), results.data(), numPipelineStatistics, RHI::QueryResultFlagBits::None),
+            queryPools[0]->GetResults(anotherQuery.get(), results.data(), numPipelineStatistics * DeviceCount, RHI::QueryResultFlagBits::None),
             RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
 
@@ -486,13 +486,13 @@ namespace UnitTest
         RHI::MultiDeviceQuery* queries[] = { query.get(), anotherQuery.get() };
         AZ_TEST_START_ASSERTTEST;
         EXPECT_EQ(
-            queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics, RHI::QueryResultFlagBits::None),
+            queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics * DeviceCount, RHI::QueryResultFlagBits::None),
             RHI::ResultCode::InvalidArgument);
         AZ_TEST_STOP_ASSERTTEST(1);
 
         // Correct usage
         EXPECT_EQ(
-            queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics * 5, RHI::QueryResultFlagBits::None),
+            queryPools[0]->GetResults(queries, 2, results.data(), numPipelineStatistics * 5 * DeviceCount, RHI::QueryResultFlagBits::None),
             RHI::ResultCode::Success);
 
         // Unsorted queries
@@ -517,7 +517,7 @@ namespace UnitTest
                 queries2[2].get(), queries2[0].get(), queries2[1].get(), queries2[3].get(), queries2[4].get()
             };
             EXPECT_EQ(
-                queryPool->GetResults(queriesPtr.data(), numQueries, results2.data(), numQueries, RHI::QueryResultFlagBits::None),
+                queryPool->GetResults(queriesPtr.data(), numQueries, results2.data(), numQueries * DeviceCount, RHI::QueryResultFlagBits::None),
                 RHI::ResultCode::Success);
             for (uint32_t i = 0; i < numQueries; ++i)
             {
