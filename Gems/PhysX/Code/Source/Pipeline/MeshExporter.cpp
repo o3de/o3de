@@ -139,7 +139,7 @@ namespace PhysX
             if (serializeContext)
             {
                 serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(6 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
+                    ->Version(7 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 

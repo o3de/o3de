@@ -500,7 +500,7 @@ namespace AZ::SceneAPI::Behaviors
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(1);
+            serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(2);
         }
 
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);

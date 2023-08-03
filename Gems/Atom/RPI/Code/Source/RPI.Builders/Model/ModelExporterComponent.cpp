@@ -338,7 +338,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelExporterComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(3);
+                    ->Version(4);
             }
         }
 
