@@ -42,6 +42,12 @@ namespace AZ
                 return m_sourceFilename;
             }
 
+            const AZStd::string Scene::GetSourceExtension() const
+            {
+                const AZ::IO::PathView sourcePath(m_sourceFilename);
+                return sourcePath.Extension().String();
+            }
+
             const Uuid& Scene::GetSourceGuid() const
             {
                 return m_sourceGuid;

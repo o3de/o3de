@@ -543,7 +543,8 @@ namespace PhysX
             SceneEvents::ProcessingResult result = SceneEvents::ProcessingResult::Ignored;
 
             AZStd::string assetName = meshGroup.GetName();
-            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(assetName, context.GetOutputDirectory(), MeshAssetHandler::s_assetFileExtension);
+            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(
+                assetName, context.GetOutputDirectory(), MeshAssetHandler::s_assetFileExtension, context.GetScene().GetSourceExtension());
 
             MeshAssetData assetData;
 
