@@ -429,6 +429,11 @@ namespace AZ
             return Common::Atan2<Vec1>(y, x);
         }
 
+        AZ_MATH_INLINE Vec1::FloatType Vec1::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec1>(x);
+        }
+
         AZ_MATH_INLINE Vec1::FloatType Vec1::ConvertToFloat(Int32ArgType value)
         {
             return NeonDouble::ConvertToFloat(value);

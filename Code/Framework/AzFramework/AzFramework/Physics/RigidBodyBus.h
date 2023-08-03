@@ -27,7 +27,7 @@ namespace Physics
         : public AZ::ComponentBus
     {
     public:
-        using MutexType = AZStd::mutex;
+        using MutexType = AZStd::recursive_mutex;
 
         virtual void EnablePhysics() = 0;
         virtual void DisablePhysics() = 0;

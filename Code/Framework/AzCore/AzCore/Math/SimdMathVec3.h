@@ -164,6 +164,7 @@ namespace AZ
             static FloatType Acos(FloatArgType value);
             static FloatType Atan(FloatArgType value);
             static FloatType Atan2(FloatArgType y, FloatArgType x);
+            static FloatType ExpEstimate(FloatArgType x);
 
             // Vector ops
             static Vec1::FloatType Dot(FloatArgType arg1, FloatArgType arg2);

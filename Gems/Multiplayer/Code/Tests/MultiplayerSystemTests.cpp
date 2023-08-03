@@ -47,6 +47,7 @@ namespace Multiplayer
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(m_ComponentApplicationRequests.get());
 
             m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
+            m_mockLevelSystem = AZStd::make_unique<MockLevelSystemLifecycle>();
 
             m_console.reset(aznew AZ::Console());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -97,6 +98,7 @@ namespace Multiplayer
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console.reset();
             m_mockTime.reset();
+            m_mockLevelSystem.reset();
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_ComponentApplicationRequests.get());
             m_ComponentApplicationRequests.reset();
             AZ::NameDictionary::Destroy();
@@ -137,6 +139,34 @@ namespace Multiplayer
         AZStd::unique_ptr<AZ::IConsole> m_console;
         AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
         AZStd::unique_ptr<AZ::Entity> m_systemEntity;
+
+        class MockLevelSystemLifecycle : public AzFramework::ILevelSystemLifecycle
+        {
+        public:
+            MockLevelSystemLifecycle()
+            {
+                AZ::Interface<AzFramework::ILevelSystemLifecycle>::Register(this);
+            }
+
+            ~MockLevelSystemLifecycle() override
+            {
+                AZ::Interface<AzFramework::ILevelSystemLifecycle>::Unregister(this);
+            }
+
+            const char* GetCurrentLevelName() const override
+            {
+                return m_levelName.c_str();
+            }
+
+            bool IsLevelLoaded() const override
+            {
+                return true;
+            }
+
+            AZStd::string m_levelName;
+        };
+
+        AZStd::unique_ptr<MockLevelSystemLifecycle> m_mockLevelSystem;
 
         uint32_t m_connectionAcquiredCount = 0;
         uint32_t m_endpointDisconnectedCount = 0;
@@ -458,7 +488,7 @@ namespace Multiplayer
 
         // server doesn't have a level loaded, expect a disconnect
         EXPECT_CALL(connection, Disconnect(DisconnectReason::ServerNoLevelLoaded, TerminationEndpoint::Local));
-        sv_map = "";
+        m_mockLevelSystem->m_levelName = "";
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
 
         AZ::Interface<IMultiplayerSpawner>::Unregister(&m_mpSpawnerMock);
@@ -476,7 +506,7 @@ namespace Multiplayer
         connection.SetUserData(&connectionUserData);
 
         // no mismatch, expect an acceptance packet
-        sv_map = "dummylevel";
+        m_mockLevelSystem->m_levelName = "dummylevel";
         EXPECT_CALL(connection, SendReliablePacket(IsMultiplayerPacketType(MultiplayerPackets::Accept::Type)));
         m_mpComponent->HandleRequest(&connection, UdpPacketHeader(), connectPacket);
 
@@ -489,6 +519,7 @@ namespace Multiplayer
         //   1. sv_versionMismatch_autoDisconnect
         //   2. sv_versionMismatch_sendManifestToClient
 
+        m_mockLevelSystem->m_levelName = "dummylevel";
         m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
 
         // Send a connection request with a different component hash to trigger a mismatch
