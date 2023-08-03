@@ -83,7 +83,7 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     )
 
     ly_add_target(
-        NAME Launcher.Server.Headless.Static STATIC
+        NAME Launcher.Headless.Server.Static STATIC
         NAMESPACE AZ
         FILES_CMAKE
             launcher_server_files.cmake

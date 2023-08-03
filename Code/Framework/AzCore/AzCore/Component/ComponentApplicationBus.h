@@ -44,7 +44,7 @@ namespace AZ
         bool IsGame() const;
         bool IsHeadless() const;
         bool IsValid() const;
-        
+
         enum class Masks
         {
             Invalid = 0,
