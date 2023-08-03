@@ -9,8 +9,6 @@
 # This will be used to turn on "PerMonitor" DPI scaling support. (Currently there is no way in CMake to specify "PerMonitorV2")
 set(O3DE_DPI_AWARENESS "PerMonitor")
 
-set(O3DE_HEADLESS_SERVER_LAUNCHER TRUE CACHE BOOL "Flag to indicating building the game server launcher as a headless console application")
-
 set_property(GLOBAL PROPERTY SERVER_LAUNCHER_TYPES ServerLauncher HeadlessServerLauncher)
 
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
