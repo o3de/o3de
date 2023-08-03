@@ -78,7 +78,7 @@ namespace Multiplayer
                 {
                     TestEndpointDisconnectedEvent(value);
                 });
-            m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);            
+            m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             m_mpComponent->Activate();
 
             m_systemEntity = AZStd::make_unique<AZ::Entity>();

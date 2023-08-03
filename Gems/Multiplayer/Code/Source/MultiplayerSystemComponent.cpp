@@ -630,7 +630,7 @@ namespace Multiplayer
     void MultiplayerSystemComponent::UpdatedMetricsConnectionCount()
     {
         MultiplayerStats& stats = GetStats();
-        auto sendNetworkUpdates = [&stats](IConnection& connection)
+        auto updateMetrics = [&stats](IConnection& connection)
         {
             if (connection.GetUserData() != nullptr)
             {
@@ -645,7 +645,7 @@ namespace Multiplayer
                 }
             }
         };
-        m_networkInterface->GetConnectionSet().VisitConnections(sendNetworkUpdates);
+        m_networkInterface->GetConnectionSet().VisitConnections(updateMetrics);
     }
 
     void MultiplayerSystemComponent::UpdateConnections()
