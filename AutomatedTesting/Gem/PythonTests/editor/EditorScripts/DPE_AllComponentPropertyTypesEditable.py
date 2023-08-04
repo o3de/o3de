@@ -112,7 +112,7 @@ def DPE_AllComponentPropertyTypesEditable():
         edit_component_property_value(light_component, 'Controller|Configuration|Color', math.Color(0.5, 0.5, 0.5, 0.5))
 
         # Asset Picker
-        asset_to_pick_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+        asset_to_pick_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
         asset_to_pick = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", asset_to_pick_path,
                                                      math.Uuid(), False)
         edit_component_property_value(mesh_component, 'Controller|Configuration|Model Asset', asset_to_pick)
