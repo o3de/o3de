@@ -543,18 +543,16 @@ class TestEditRepoProperties:
                             assert template in expected_templates
 
     # test copy_to_repo_subfolder
-    @pytest.mark.parametrize("repo_path, repo_name, add_gems, copy_to_repo_subfolder, \
-                            expected_result", [
+    @pytest.mark.parametrize("repo_name, expected_result", [
         # test copy a gem to repo subfolder
-        pytest.param(pathlib.Path('F:/repotest'), 'copytest1', [JSON_DICT['gem_archive_json_key']], temp_folder, 0)
+        pytest.param('copytest1', 0)
         
     ])
-    def test_copy_to_repo_subfolder(self, temp_folder, repo_path, repo_name, add_gems, copy_to_repo_subfolder,
+    def test_copy_to_repo_subfolder(self, temp_folder, repo_name,
                                     expected_result):
         def get_repo_props(repo_path: str or pathlib.Path = None) -> dict or None:
             if not repo_path:
                 self.repo_json.data = None
-                return None
             return self.repo_json.data
         
         def save_o3de_manifest(json_data: dict, manifest_path: pathlib.Path = None) -> bool:
@@ -570,12 +568,9 @@ class TestEditRepoProperties:
         with patch('o3de.repo_properties.get_repo_props', side_effect=get_repo_props) as get_repo_props_patch, \
             patch('o3de.utils.backup_file', side_effect=backup_file) as backup_file_patch, \
             patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
-            if copy_to_repo_subfolder:
-                add_gems = object_paths
-                temp_repo_folder = temp_folder / 'repo'
-                os.makedirs(temp_repo_folder)
-                repo_path = temp_repo_folder
-            result = repo_properties.edit_repo_props(repo_path, repo_name, add_gems, copy_to_repo_subfolder=copy_to_repo_subfolder)
+            temp_repo_folder = temp_folder / 'repo'
+            os.makedirs(temp_repo_folder)
+            result = repo_properties.edit_repo_props(temp_repo_folder, repo_name, object_paths, copy_to_repo_subfolder=True)
             assert self.repo_json.data.get('repo_name') == repo_name
             assert result == expected_result
             # Make sure the object got copied over to the repo folder you created
