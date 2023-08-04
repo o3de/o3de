@@ -37,10 +37,6 @@
             <Parameter Name="Tolerance" DefaultValue="Data::ToleranceEpsilon()"/>
         </Function>
 
-        <Function Name="ReLU">
-            <Parameter Name="Source"/>
-        </Function>
-
         <Function Name="GetMin">
             <Parameter Name="A"/>
             <Parameter Name="B"/>
