@@ -41,13 +41,13 @@ def on_notify_editor_initialized(args):
         else:
             print(f'Asset at path {generatedModelAssetPath} has unexpected asset ID ({assetIdString})!')
 
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive.azmodel')
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative.azmodel')
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive.azmodel')
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative.azmodel')
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive.azmodel')
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative.azmodel')
-    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive.fbx.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative.fbx.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_positive.fbx.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_y_negative.fbx.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_positive.fbx.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative.fbx.azmodel')
+    test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center.fbx.azmodel')
 
     # clear up notification handler
     global handler
