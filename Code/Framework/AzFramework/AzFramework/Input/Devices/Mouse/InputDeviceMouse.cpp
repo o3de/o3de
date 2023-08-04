@@ -56,7 +56,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouse::InputDeviceMouse(const InputDeviceId& inputDeviceId,
-                                       ImplementationFactory implementationFactory)
+                                       ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
@@ -87,7 +87,8 @@ namespace AzFramework
         m_allChannelsById[SystemCursorPosition] = m_cursorPositionChannel;
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        auto implementation = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
+        m_pimpl.reset(implementation);
 
         // Connect to the system cursor request bus
         InputSystemCursorRequestBus::Handler::BusConnect(GetInputDeviceId());

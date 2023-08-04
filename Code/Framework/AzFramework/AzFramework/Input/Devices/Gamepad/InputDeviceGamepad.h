@@ -51,11 +51,6 @@ namespace AzFramework
         static bool IsGamepadDevice(const InputDeviceId& inputDeviceId);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Get the maximum number of gamepads that are supported on the current platform
-        //! \return The maximum number of gamepads that are supported on the current platform
-        static AZ::u32 GetMaxSupportedGamepads();
-
-        ////////////////////////////////////////////////////////////////////////////////////////////
         //! All the input channel ids that identify game-pad digital button input
         struct Button
         {
@@ -187,8 +182,18 @@ namespace AzFramework
         class Implementation;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = Implementation*(InputDeviceGamepad&);
+        //! The factory class to create a custom implementation for this input device
+        struct ImplementationFactory
+        {
+            AZ_TYPE_INFO(ImplementationFactory, "{415C76AD-3397-4CA8-80EA-B5FACD6EDFFB}");
+            virtual ~ImplementationFactory() = default;
+            virtual Implementation* Create(InputDeviceGamepad& InputDeviceGamepad) = 0;
+
+            ////////////////////////////////////////////////////////////////////////////////////////////
+            //! Get the maximum number of gamepads that are supported on the current platform
+            //! \return The maximum number of gamepads that are supported on the current platform
+            virtual AZ::u32 GetMaxSupportedGamepads() = 0;
+        };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -204,7 +209,7 @@ namespace AzFramework
         //! \param[in] inputDeviceId Id of the input device
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceGamepad(const InputDeviceId& inputDeviceId,
-                                    ImplementationFactory implementationFactory = &Implementation::Create);
+                                    ImplementationFactory* implementationFactory = AZ::Interface<ImplementationFactory>::Get());
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

@@ -63,10 +63,46 @@ ly_add_target(
         Gem::AtomViewportDisplayInfo
 )
 
+ly_add_target(
+    NAME Atom_AtomBridge.Headless ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        atombridge_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+        PUBLIC
+            Include
+    COMPILE_DEFINITIONS
+        PRIVATE
+            ENABLE_ATOM_DEBUG_DISPLAY=1
+            LY_HEADLESS=1
+    BUILD_DEPENDENCIES
+        PRIVATE
+            Gem::Atom_AtomBridge.Static
+    RUNTIME_DEPENDENCIES
+        Gem::Atom_RHI.Private
+        Gem::Atom_RPI.Private
+        Gem::Atom_RHI_Null.Private
+        Gem::Atom_Feature_Common.Headless
+        Gem::Atom_Bootstrap
+        Gem::Atom_Component_DebugCamera
+        Gem::AtomImGuiTools
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::EMotionFX_Atom
+        Gem::ImguiAtom
+        Gem::AtomFont
+        Gem::AtomViewportDisplayInfo
+)
+
+if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+
+endif()
 # Any 'runtime-like' applications should use Gem::Atom_AtomBridge:
 ly_create_alias(NAME Atom_AtomBridge.Clients NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 ly_create_alias(NAME Atom_AtomBridge.Servers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
 ly_create_alias(NAME Atom_AtomBridge.Unified NAMESPACE Gem TARGETS Gem::Atom_AtomBridge)
+ly_create_alias(NAME Atom_AtomBridge.HeadlessServers NAMESPACE Gem TARGETS Gem::Atom_AtomBridge.Headless)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 

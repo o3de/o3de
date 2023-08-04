@@ -12,7 +12,12 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Archive/Archive.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzGameFramework/AzGameFrameworkModule.h>
+
+#if !LY_HEADLESS
+#include <AzFramework/AzFrameworkNativeUIModule.h>
+#endif
 
 namespace AzGameFramework
 {
@@ -55,6 +60,11 @@ namespace AzGameFramework
 
     GameApplication::~GameApplication()
     {
+    }
+
+    void GameApplication::SetHeadless(bool headless)
+    {
+        m_headless = headless;
     }
 
     void GameApplication::StartCommon(AZ::Entity* systemEntity)
@@ -101,11 +111,34 @@ namespace AzGameFramework
         AzFramework::Application::CreateStaticModules(outModules);
 
         outModules.emplace_back(aznew AzGameFrameworkModule());
+#if !LY_HEADLESS
+        outModules.emplace_back(aznew AzFramework::AzFrameworkNativeUIModule());
+#endif // LY_HEADLESS
     }
 
     void GameApplication::QueryApplicationType(AZ::ApplicationTypeQuery& appType) const
     {
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
+        if (m_headless)
+        {
+            appType.m_maskValue |= AZ::ApplicationTypeQuery::Masks::Headless;
+        }
     };
+
+    AZ::ComponentTypeList GameApplication::GetRequiredSystemComponents() const
+    {
+        AZ::ComponentTypeList components = AzFramework::Application::GetRequiredSystemComponents();
+
+        #if !LY_HEADLESS
+        components.insert(
+            components.end(),
+            {
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
+            });
+        #endif // LY_HEADLESS
+
+        return components;
+    }
+
 
 } // namespace AzGameFramework

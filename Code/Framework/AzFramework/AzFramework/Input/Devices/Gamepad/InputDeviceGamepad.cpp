@@ -92,7 +92,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::InputDeviceGamepad(const InputDeviceId& inputDeviceId,
-                                           ImplementationFactory implementationFactory)
+                                           ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
@@ -144,7 +144,8 @@ namespace AzFramework
         }
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        auto implementation = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
+        m_pimpl.reset(implementation);
 
         // Connect to the haptic feedback request bus
         InputHapticFeedbackRequestBus::Handler::BusConnect(GetInputDeviceId());

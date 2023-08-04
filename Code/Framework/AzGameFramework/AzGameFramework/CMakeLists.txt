@@ -18,4 +18,24 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzFramework.NativeUI
 )
+
+ly_add_target(
+    NAME AzGameFramework.Headless STATIC
+    NAMESPACE AZ
+    FILES_CMAKE
+        azgameframework_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            ..
+    COMPILE_DEFINITIONS
+        PUBLIC
+            LY_HEADLESS=1
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzCore
+            AZ::AzFramework
+)
+
+

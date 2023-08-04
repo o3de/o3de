@@ -180,7 +180,7 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceKeyboard::InputDeviceKeyboard(const InputDeviceId& inputDeviceId,
-                                             ImplementationFactory implementationFactory)
+                                             ImplementationFactory* implementationFactory)
         : InputDevice(inputDeviceId)
         , m_modifierKeyStates(AZStd::make_shared<ModifierKeyStates>())
         , m_allChannelsById()
@@ -202,7 +202,8 @@ namespace AzFramework
         }
 
         // Create the platform specific or custom implementation
-        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
+        auto implementation = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
+        m_pimpl.reset(implementation);
 
         // Connect to the text entry request bus
         InputTextEntryRequestBus::Handler::BusConnect(GetInputDeviceId());
