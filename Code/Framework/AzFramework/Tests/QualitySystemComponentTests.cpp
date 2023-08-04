@@ -219,8 +219,8 @@ namespace UnitTest
         EXPECT_EQ(m_console->GetCvarValue("d_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 42);
 
-        // when the group level 0 is loaded (low)
-        m_console->PerformCommand("q_test", { "low" });
+        // when the group level 0 is loaded (low) using mixed-case name 
+        m_console->PerformCommand("q_test", { "LoW" });
 
         // settings at index 0 are correctly loaded
         EXPECT_EQ(m_console->GetCvarValue("a_setting", intValue), AZ::GetValueResult::Success);
