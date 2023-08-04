@@ -282,7 +282,14 @@ namespace AzToolsFramework
                     {
                         if (marshalledAttribute == nullptr)
                         {
-                            marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second);
+                            // try the conversion once without type fallback
+                            marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second, false);
+
+                            if (marshalledAttribute == nullptr)
+                            {
+                                // still null, try it again allowing type fallback
+                                attributeReader.DomValueToLegacyAttribute(attributeIt->second, true);
+                            }
                         }
                     });
 
