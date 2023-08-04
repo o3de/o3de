@@ -286,7 +286,9 @@ namespace AZ::RHI
             Scope* firstScope = transientImage->GetFirstScope();
             if (firstScope == nullptr)
             {
-                // The attachment is unused: We will get a warning in ValidateEnd(), but we don't want to crash here
+                // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
+                // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't want to
+                // crash here
                 continue;
             }
             const HardwareQueueClass mostCapableQueueUsage = GetMostCapableHardwareQueue(transientImage->GetSupportedQueueMask());
@@ -556,7 +558,9 @@ namespace AZ::RHI
                 const auto* lastScope = transientBuffer->GetLastScope();
                 if (firstScope == nullptr || lastScope == nullptr)
                 {
-                    // The attachment is unused: We will get a warning in ValidateEnd(), but we don't want to crash here
+                    // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
+                    // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
+                    // want to crash here
                     continue;
                 }
                 const uint32_t scopeIndexFirst = firstScope->GetIndex();
@@ -573,8 +577,10 @@ namespace AZ::RHI
                 const auto* lastScope = transientImage->GetLastScope();
                 if (firstScope == nullptr || lastScope == nullptr)
                 {
-                        // The attachment is unused: We will get a warning in ValidateEnd(), but we don't want to crash here
-                        continue;
+                    // If the attachment is owned by a pass that isn't a scope-producer (e.g. Parent-Pass), and is not connected to
+                    // anything, the first and last scope will be empty. We will get a warning its unused in ValidateEnd(), but we don't
+                    // want to crash here
+                    continue;
                 }
                 const uint32_t scopeIndexFirst = firstScope->GetIndex();
                 const uint32_t scopeIndexLast = lastScope->GetIndex();
