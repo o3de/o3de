@@ -12,12 +12,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Quality/QualitySystemBus.h>
 
-namespace AZ
-{
-    class IConsole;
-    class SettingsRegistryInterface;
-}
-
 namespace AzFramework
 {
     class QualityCVarGroup;
@@ -51,11 +45,8 @@ namespace AzFramework
     private:
         void RegisterCvars();
 
-        AZ::IConsole* m_console = nullptr;
         AZStd::string m_defaultGroupName;
-        AZStd::vector<AZStd::string> m_qualityGroupStack;
         AZStd::vector<AZStd::unique_ptr<QualityCVarGroup>> m_settingsGroupCVars;
-        AZ::SettingsRegistryInterface* m_settingsRegistry = nullptr;
     };
 } // AzFramework
 

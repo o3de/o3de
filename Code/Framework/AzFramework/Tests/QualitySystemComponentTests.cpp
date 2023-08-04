@@ -10,13 +10,15 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzFramework/Application/Application.h>
 #include <AzFramework/Quality/QualitySystemComponent.h>
+#include <AzFramework/Quality/QualityCVarGroup.h>
 
 namespace UnitTest
 {
-    using namespace AZ;
-    using namespace AzFramework;
-
     class QualitySystemComponentTestFixture : public LeakDetectionFixture
     {
     public:
@@ -28,33 +30,34 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            m_settingsRegistry = AZStd::make_unique<SettingsRegistryImpl>();
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
             AZ::SettingsRegistry::Register(m_settingsRegistry.get());
 
-            m_console = AZStd::make_unique<AZ::Console>();
-            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
-            AZ::Interface<AZ::IConsole>::Register(m_console.get());
+            m_application = AZStd::make_unique<AzFramework::Application>();
 
-            m_qualitySystemComponent = AZStd::make_unique<QualitySystemComponent>();
+            // setup the runtime paths for the FileTagComponent
+            auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            AZ::IO::FixedMaxPath enginePath;
+            m_settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            m_settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
+
+            m_console = AZ::Interface<AZ::IConsole>::Get();
         }
 
         void TearDown() override
         {
-            // reset the console first so all the variables are moved to deferred head
-            AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
-            m_console.reset();
-
-            // next deactivate/reset to unlink from deferred head
-            m_qualitySystemComponent->Deactivate();
-            m_qualitySystemComponent.reset();
-
+            m_application->Stop();
+            m_application.reset();
 
             AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
             m_settingsRegistry.reset();
         }
 
-        AZStd::unique_ptr<AZ::Console> m_console;
-        AZStd::unique_ptr<QualitySystemComponent> m_qualitySystemComponent;
+        AZ::IConsole* m_console;
+        AZStd::unique_ptr<AzFramework::Application> m_application;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
     };
 
@@ -91,15 +94,24 @@ namespace UnitTest
         ASSERT_TRUE(result);
 
         // when the quality system component registers group cvars
-        m_qualitySystemComponent->Activate();
+        AZ::ComponentApplication::Descriptor desc;
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        startupParameters.m_loadAssetCatalog = false;
+        m_application->Start(desc, startupParameters);
+
+        // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
+        // in the unit tests.
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         // expect the cvars are created with their default values
-        int value = -1;
+        auto value = AzFramework::QualityLevels::LevelFromDeviceRules;
         EXPECT_EQ(m_console->GetCvarValue("q_test", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, 1);
+        EXPECT_EQ(value, AzFramework::QualityLevels{1});
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, 0);
+        EXPECT_EQ(value, AzFramework::QualityLevels{0});
     }
 
     AZ_CVAR(int32_t, a_setting, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Example integer setting 1");
@@ -144,9 +156,14 @@ namespace UnitTest
         ASSERT_TRUE(result);
 
         // when the cvar values are first created 
-        m_qualitySystemComponent->Activate();
+        AZ::ComponentApplication::Descriptor desc;
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        startupParameters.m_loadAssetCatalog = false;
+        m_application->Start(desc, startupParameters);
 
-        int intValue = -1;
+        auto value = AzFramework::QualityLevels::LevelFromDeviceRules;
+        int32_t intValue = -42;
         AZ::CVarFixedString stringValue;
 
         // expect the value  defaults
@@ -160,11 +177,13 @@ namespace UnitTest
         EXPECT_EQ(intValue, -2);
 
         // when the default group is loaded
-        QualitySystemEvents::Bus::Broadcast(&QualitySystemEvents::LoadDefaultQualityGroup, QualitySystemEvents::LevelFromDeviceRules);
+        AzFramework::QualitySystemEvents::Bus::Broadcast(
+            &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
+            AzFramework::QualitySystemEvents::LevelFromDeviceRules);
 
         // expect the values are set based on the default for q_test which is 2 
-        EXPECT_EQ(m_console->GetCvarValue("q_test", intValue), AZ::GetValueResult::Success);
-        EXPECT_EQ(intValue, 2);
+        EXPECT_EQ(m_console->GetCvarValue("q_test", value), AZ::GetValueResult::Success);
+        EXPECT_EQ(value, AzFramework::QualityLevels{2});
 
         EXPECT_EQ(m_console->GetCvarValue("a_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 2);
@@ -172,8 +191,8 @@ namespace UnitTest
         EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
         EXPECT_STREQ(stringValue.c_str(), "c");
 
-        EXPECT_EQ(m_console->GetCvarValue("q_test_sub", intValue), AZ::GetValueResult::Success);
-        EXPECT_EQ(intValue, 1);
+        EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
+        EXPECT_EQ(value, AzFramework::QualityLevels{1});
 
         EXPECT_EQ(m_console->GetCvarValue("c_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 234);
@@ -191,8 +210,8 @@ namespace UnitTest
         EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
         EXPECT_STREQ(stringValue.c_str(), "b");
 
-        EXPECT_EQ(m_console->GetCvarValue("q_test_sub", intValue), AZ::GetValueResult::Success);
-        EXPECT_EQ(intValue, 1);
+        EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
+        EXPECT_EQ(value, AzFramework::QualityLevels{1});
 
         EXPECT_EQ(m_console->GetCvarValue("c_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 234);

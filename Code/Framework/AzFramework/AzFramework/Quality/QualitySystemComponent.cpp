@@ -10,6 +10,7 @@
 #include <AzFramework/Quality/QualityCVarGroup.h>
 
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Preprocessor/EnumReflectUtils.h> 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
@@ -27,10 +28,14 @@ namespace AzFramework
     QualitySystemComponent::QualitySystemComponent() = default;
     QualitySystemComponent::~QualitySystemComponent() = default;
 
+    AZ_ENUM_DEFINE_REFLECT_UTILITIES(QualityLevels);
+
     void QualitySystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
+            QualityLevelsReflect(*serializeContext);
+
             serializeContext->Class<QualitySystemComponent, AZ::Component>();
 
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -46,17 +51,17 @@ namespace AzFramework
 
     void QualitySystemComponent::Activate()
     {
-        m_settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ_Assert(m_settingsRegistry, "QualitySystemComponent requires a SettingsRegistry but no instance has been created.");
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ_Assert(settingsRegistry, "QualitySystemComponent requires a SettingsRegistry but no instance has been created.");
 
-        m_console = AZ::Interface<AZ::IConsole>::Get();
-        AZ_Assert(m_console, "QualitySystemComponent requires an IConsole interface but no instance has been created.");
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        AZ_Assert(console, "QualitySystemComponent requires an IConsole interface but no instance has been created.");
 
-        if (m_settingsRegistry && m_console)
+        if (settingsRegistry && console)
         {
-            QualitySystemEvents::Bus::Handler::BusConnect();
-            m_settingsRegistry->Get(m_defaultGroupName, QualitySettingsDefaultGroupKey);
+            settingsRegistry->Get(m_defaultGroupName, QualitySettingsDefaultGroupKey);
             RegisterCvars();
+            QualitySystemEvents::Bus::Handler::BusConnect();
         }
     }
 
@@ -64,7 +69,6 @@ namespace AzFramework
     {
         QualitySystemEvents::Bus::Handler::BusDisconnect();
         m_settingsGroupCVars.clear();
-        m_qualityGroupStack.clear();
     }
 
     void QualitySystemComponent::LoadDefaultQualityGroup(int qualityLevel)
@@ -72,11 +76,12 @@ namespace AzFramework
         if (m_defaultGroupName.empty())
         {
             AZ_Warning("QualitySystemComponent", false, "No default quality group settings will be loaded because no default group name was defined at %s", QualitySettingsDefaultGroupKey);
-            return;
         }
-
-        m_console->PerformCommand(AZStd::string_view(m_defaultGroupName),
-            { AZStd::to_string(qualityLevel).c_str() }, AZ::ConsoleSilentMode::Silent);
+        else if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->PerformCommand(AZStd::string_view(m_defaultGroupName),
+                { AZStd::to_string(qualityLevel).c_str() }, AZ::ConsoleSilentMode::Silent);
+        }
     }
 
     void QualitySystemComponent::RegisterCvars()
@@ -94,10 +99,12 @@ namespace AzFramework
                 return AZ::SettingsRegistryInterface::VisitResponse::Skip;
             }
 
-            m_settingsGroupCVars.push_back(AZStd::make_unique<QualityCVarGroup>(m_settingsRegistry, m_console, visitArgs.m_fieldName, visitArgs.m_jsonKeyPath));
+            m_settingsGroupCVars.push_back(AZStd::make_unique<QualityCVarGroup>(visitArgs.m_fieldName, visitArgs.m_jsonKeyPath));
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
-        AZ::SettingsRegistryVisitorUtils::VisitObject(*m_settingsRegistry, groupVisitorCallback, QualitySettingsGroupsRootKey);
+
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::SettingsRegistryVisitorUtils::VisitObject(*settingsRegistry, groupVisitorCallback, QualitySettingsGroupsRootKey);
     }
 
     void QualitySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

@@ -17,91 +17,37 @@
 
 namespace AzFramework
 {
-    QualityCVarGroup::QualityCVarGroup(AZ::SettingsRegistryInterface* registry, AZ::IConsole* console, AZStd::string_view name, AZStd::string_view path)
-        : m_console(console)
-        , m_numQualityLevels(0)
+    QualityCVarGroup::QualityCVarGroup(AZStd::string_view name, AZStd::string_view path)
+        : m_name(name)
         , m_path(path)
-        , m_qualityLevel(0)
-        , m_settingsRegistry(registry)
+        , m_qualityLevel(QualityLevels::LevelFromDeviceRules)
     {
-        AZ_Assert(registry, "QualityCVarGroup requireds a valid settings registry.");
-        AZ_Assert(console, "QualityCVarGroup requireds a valid settings registry.");
-
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-
-        // optional default quality level
-        registry->Get(m_qualityLevel, FixedValueString::format("%.*s/Default", AZ_STRING_ARG(path)));
-
-        // count the number of quality levels for error checking
-        auto callback = [&]([[maybe_unused]] const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
-        {
-            m_numQualityLevels++;
-            return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-        };
-        auto levelsKey = FixedValueString::format("%.*s/Levels", AZ_STRING_ARG(path));
-        AZ::SettingsRegistryVisitorUtils::VisitArray(*registry, callback, levelsKey);
-
-        // optional description
         FixedValueString description;
-        registry->Get(description, FixedValueString::format("%.*s/Description", AZ_STRING_ARG(path)));
+
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            // optional default quality level
+            settingsRegistry->GetObject(m_qualityLevel, FixedValueString::format("%.*s/Default", AZ_STRING_ARG(path)));
+
+            // optional description
+            settingsRegistry->Get(description, FixedValueString::format("%.*s/Description", AZ_STRING_ARG(path)));
+        }
 
         m_functor = AZStd::make_unique<QualityCVarGroupFunctor>(
-            name.data(),
-            description.data(),
+            m_name.c_str(),
+            description.c_str(),
             AZ::ConsoleFunctorFlags::DontReplicate,
             AZ::AzTypeInfo<ValueType>::Uuid(),
             *this,
             &QualityCVarGroup::CvarFunctor);
     }
 
-    QualityCVarGroup::~QualityCVarGroup()
-    {
-    }
+    QualityCVarGroup::~QualityCVarGroup() = default;
 
     inline void QualityCVarGroup::CvarFunctor(const AZ::ConsoleCommandContainer& arguments)
     {
         StringToValue(arguments);
-    }
-
-    QualityCVarGroup::ValueType QualityCVarGroup::GetQualityLevelFromName(AZStd::string_view levelName)
-    {
-        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-
-        ValueType levelIndex = -1;
-        ValueType currentIndex = 0;
-        FixedValueString level;
-
-        // walk the quality group levels and find the one matching name 
-        auto callback = [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
-        {
-            if (visitArgs.m_registry.Get(level, visitArgs.m_jsonKeyPath))
-            {
-                if (levelName.compare(level.c_str()) == 0)
-                {
-                    levelIndex = currentIndex;
-                    return AZ::SettingsRegistryInterface::VisitResponse::Done;
-                }
-            }
-
-            currentIndex++;
-            return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-        };
-
-        auto key = FixedValueString::format("%s/Levels", m_path.c_str());
-        AZ::SettingsRegistryVisitorUtils::VisitArray(*m_settingsRegistry, callback, key);
-        return levelIndex;
-    }
-
-    QualityCVarGroup::ValueType QualityCVarGroup::GetHighestQualityForSetting(AZStd::string_view path)
-    {
-        ValueType maxQualityLevel = -1;
-        auto callback = [&]([[maybe_unused]] const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
-        {
-            maxQualityLevel++;
-            return AZ::SettingsRegistryInterface::VisitResponse::Continue;
-        };
-        AZ::SettingsRegistryVisitorUtils::VisitArray(*m_settingsRegistry, callback, path);
-        return maxQualityLevel;
     }
 
     void QualityCVarGroup::LoadQualityLevel(ValueType qualityLevel)
@@ -110,101 +56,114 @@ namespace AzFramework
         using VisitResponse = AZ::SettingsRegistryInterface::VisitResponse;
         using Type = AZ::SettingsRegistryInterface::Type;
 
-        if (qualityLevel >= m_numQualityLevels || qualityLevel < 0)
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry == nullptr)
         {
-            AZ_Warning("QualityCVarGroup",
-                       false,
-                       "Invalid quality level %lld requested for %s which only supports quality levels 0..%lld",
-                       qualityLevel,
-                       m_functor->GetName(),
-                       m_numQualityLevels - 1);
             return;
         }
 
         auto key = FixedValueString::format("%s/Settings", m_path.c_str());
-        auto settingsVisitorCallback = [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
+        auto settingsVisitorCallback = [&, settingsRegistry](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
+            AZStd::string_view command = visitArgs.m_fieldName;
+
             if (visitArgs.m_type == Type::Object ||
                 visitArgs.m_type == Type::Null ||
                 visitArgs.m_type == Type::NoType)
             {
-                AZ_Warning("QualityCVarGroup", false, "Invalid setting value type for %.*s, objects and null are not supported, only arrays, bool, string, or numbers.", AZ_STRING_ARG(visitArgs.m_fieldName));
+                AZ_Warning("QualityCVarGroup", false, "Invalid setting value type for %.*s, objects and null are not supported, only arrays, bool, string, or numbers.", AZ_STRING_ARG(command));
                 return VisitResponse::Skip;
             }
 
-            AZStd::string_view command = visitArgs.m_fieldName;
-            AZStd::string_view valueKey = visitArgs.m_jsonKeyPath;
+            AZ::PerformCommandResult result{};
             if (visitArgs.m_type == Type::Array)
             {
-                valueKey = FixedValueString::format("%.*s/%d", AZ_STRING_ARG(valueKey), qualityLevel);
-                if (visitArgs.m_registry.GetType(valueKey) == Type::NoType)
+                AzFramework::QualityLevels currentQualityLevel{ 0 };
+                AZStd::string_view arrayValueKey = visitArgs.m_jsonKeyPath;
+                auto getHighestQualityLevel = [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArrayArg)
                 {
-                    // if the array index doesn't exist, use the value for the highest index
-                    ValueType maxQualityLevel = GetHighestQualityForSetting(visitArgs.m_jsonKeyPath);
-                    if (maxQualityLevel < 0)
+                    if (currentQualityLevel == qualityLevel)
                     {
-                        AZ_Warning("QualityCVarGroup", false, "Not applying settings for %.s because the array is empty.", AZ_STRING_ARG(command));
-                        return VisitResponse::Continue;
+                        result = PerformConsoleCommand(command, visitArrayArg.m_jsonKeyPath);
+                        return VisitResponse::Done;
                     }
-                    valueKey = FixedValueString::format("%.*s/%d", AZ_STRING_ARG(visitArgs.m_jsonKeyPath), maxQualityLevel);
+                    currentQualityLevel++;
+                    return VisitResponse::Continue;
+                };
+                AZ::SettingsRegistryVisitorUtils::VisitArray(*settingsRegistry, getHighestQualityLevel, visitArgs.m_jsonKeyPath);
+                if (currentQualityLevel == AzFramework::QualityLevels(0))
+                {
+                    AZ_Error("QualityCVarGroup", false, "No valid value found for %.*s, the array is empty.", AZ_STRING_ARG(visitArgs.m_jsonKeyPath));
+                }
+                else if (!result)
+                {
+                    // the key was not found, use the highest quality level
+                    PerformConsoleCommand(command, FixedValueString::format("%.*s/%d", AZ_STRING_ARG(visitArgs.m_jsonKeyPath), --currentQualityLevel));
                 }
             }
-
-            PerformConsoleCommand(command, valueKey);
+            else
+            {
+                PerformConsoleCommand(command, visitArgs.m_jsonKeyPath);
+            }
 
             return VisitResponse::Continue;
         };
-        AZ::SettingsRegistryVisitorUtils::VisitObject(*m_settingsRegistry, settingsVisitorCallback, key);
+        AZ::SettingsRegistryVisitorUtils::VisitObject(*settingsRegistry, settingsVisitorCallback, key);
     }
 
-    void QualityCVarGroup::PerformConsoleCommand(AZStd::string_view command, AZStd::string_view key)
+    AZ::PerformCommandResult QualityCVarGroup::PerformConsoleCommand(AZStd::string_view command, AZStd::string_view key)
     {
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        auto console = AZ::Interface<AZ::IConsole>::Get();
+        if (!settingsRegistry || !console)
+        {
+            return AZ::Failure("Unable to perform console command without a valid Console and Settings Registry");
+        }
+
         AZStd::string value;
-        switch (m_settingsRegistry->GetType(key))
+        switch (settingsRegistry->GetType(key))
         {
         case AZ::SettingsRegistryInterface::Type::FloatingPoint:
             {
                 double floatingPointValue;
-                if (m_settingsRegistry->Get(floatingPointValue, key))
+                if (settingsRegistry->Get(floatingPointValue, key))
                 {
-                    value = AZStd::to_string(floatingPointValue);
+                    value = AZ::ConsoleTypeHelpers::ToString(floatingPointValue);
                 }
             }
             break;
         case AZ::SettingsRegistryInterface::Type::Boolean:
             {
                 bool boolValue;
-                if (m_settingsRegistry->Get(boolValue, key))
+                if (settingsRegistry->Get(boolValue, key))
                 {
-                    value = boolValue ? "True" : "False";
+                    value = AZ::ConsoleTypeHelpers::ToString(boolValue);
                 }
             }
             break;
         case AZ::SettingsRegistryInterface::Type::Integer:
             {
                 AZ::s64 intValue;
-                if (m_settingsRegistry->Get(intValue, key))
+                if (settingsRegistry->Get(intValue, key))
                 {
-                    value = AZStd::to_string(intValue);
+                    value = AZ::ConsoleTypeHelpers::ToString(intValue);
                 }
             }
             break;
         case AZ::SettingsRegistryInterface::Type::String:
         default:
             {
-                m_settingsRegistry->Get(value, key);
+                settingsRegistry->Get(value, key);
             }
             break;
         }
 
         if (!value.empty())
         {
-            m_console->PerformCommand(command, { value }, AZ::ConsoleSilentMode::Silent);
+            return console->PerformCommand(command, { value }, AZ::ConsoleSilentMode::Silent);
         }
-        else
-        {
-            AZ_Warning("QualityCVarGroup", false, "Failed to convert the value for %.*s to a string, or the value is empty.", AZ_STRING_ARG(command));
-        }
+
+        return AZ::Failure(AZStd::string::format("Failed to convert the value for %.*s to a string, or the value is empty.", AZ_STRING_ARG(command)));
     }
 
     bool QualityCVarGroup::StringToValue(const AZ::ConsoleCommandContainer& arguments)
@@ -212,20 +171,22 @@ namespace AzFramework
         if (!arguments.empty())
         {
             AZ::CVarFixedString convertCandidate{ arguments.front() };
-            char* endPtr = nullptr;
 
-            // TODO support loading quality levels using names
+            ValueType qualityLevel = QualityLevels::LevelFromDeviceRules;
+            AZ::ConsoleTypeHelpers::ToValue(qualityLevel, convertCandidate);
 
-            ValueType qualityLevel = aznumeric_cast<ValueType>(strtoll(convertCandidate.c_str(), &endPtr, 0));
-            if (qualityLevel == aznumeric_cast<ValueType>(QualitySystemEvents::LevelFromDeviceRules))
+            if (qualityLevel == QualityLevels::LevelFromDeviceRules)
             {
-                using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-
                 // TODO use device rules
 
                 // fall back to default
-                m_settingsRegistry->Get(qualityLevel, FixedValueString::format("%.*s/Default", AZ_STRING_ARG(m_path)));
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+                    settingsRegistry->GetObject(qualityLevel, FixedValueString::format("%.*s/Default", AZ_STRING_ARG(m_path)));
+                }
             }
+
             m_qualityLevel = qualityLevel;
 
             LoadQualityLevel(m_qualityLevel);
@@ -238,7 +199,7 @@ namespace AzFramework
 
     void QualityCVarGroup::ValueToString(AZ::CVarFixedString& outString) const
     {
-        AZStd::to_string(outString, m_qualityLevel);
+        outString = AZ::ConsoleTypeHelpers::ToString(m_qualityLevel);
     }
 } // namespace AzFramework
 

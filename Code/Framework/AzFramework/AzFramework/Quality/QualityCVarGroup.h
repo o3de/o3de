@@ -8,17 +8,21 @@
 #pragma once
 
 #include <AzCore/Memory/Memory_fwd.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ConsoleFunctor.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
-
-namespace AZ
-{
-    class SettingsRegistryInterface;
-}
+#include <AzCore/Preprocessor/Enum.h> 
 
 namespace AzFramework
 {
+    AZ_ENUM_CLASS(QualityLevels,
+        (LevelFromDeviceRules, -1),
+        (DefaultQualityLevel, 0)
+    );
+    AZ_DEFINE_ENUM_ARITHMETIC_OPERATORS(QualityLevels);
+    AZ_DEFINE_ENUM_RELATIONAL_OPERATORS(QualityLevels);
+
     // QualityCVarGroup wraps an integer CVar for a quality group that, when set,
     // notifies the QualitySystemBus to load all the settings for the group and the
     // requested level
@@ -32,18 +36,15 @@ namespace AzFramework
     class QualityCVarGroup
     {
     public:
-        typedef AZ::s64 ValueType;
+        using ValueType = QualityLevels;
 
-        QualityCVarGroup(AZ::SettingsRegistryInterface* registry, AZ::IConsole* console, AZStd::string_view name, AZStd::string_view path);
+        QualityCVarGroup(AZStd::string_view name, AZStd::string_view path);
         ~QualityCVarGroup();
 
-        inline operator ValueType() const { return m_qualityLevel; }
+        explicit inline operator ValueType() const { return m_qualityLevel; }
 
         //! required to set the value
         inline void CvarFunctor(const AZ::ConsoleCommandContainer& arguments);
-
-        //! get the quality level from a name, or -1 if not found
-        ValueType GetQualityLevelFromName(AZStd::string_view levelName);
 
         //! required to set the value
         bool StringToValue(const AZ::ConsoleCommandContainer& arguments);
@@ -57,15 +58,18 @@ namespace AzFramework
     private:
         AZ_DISABLE_COPY(QualityCVarGroup);
 
-        ValueType GetHighestQualityForSetting(AZStd::string_view path);
-        void PerformConsoleCommand(AZStd::string_view command, AZStd::string_view key);
+        AZ::PerformCommandResult PerformConsoleCommand(AZStd::string_view command, AZStd::string_view key);
 
-        AZ::IConsole* m_console;
-        using QualityCVarGroupFunctor = AZ::ConsoleFunctor<QualityCVarGroup, /*replicate=*/true>;
+        inline static constexpr bool ReplicateCommand = true;
+        using QualityCVarGroupFunctor = AZ::ConsoleFunctor<QualityCVarGroup, ReplicateCommand>;
         AZStd::unique_ptr<QualityCVarGroupFunctor> m_functor;
-        AZ::u16 m_numQualityLevels;
+        AZStd::string m_name;
         AZStd::string m_path;
-        ValueType m_qualityLevel;
-        AZ::SettingsRegistryInterface* m_settingsRegistry;
+        ValueType m_qualityLevel = QualityLevels::DefaultQualityLevel;
     };
 } // namespace AzFramework
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzFramework::QualityLevels, "{9AABD1B2-D433-49FE-A89D-2BEF09A252C0}");
+}
