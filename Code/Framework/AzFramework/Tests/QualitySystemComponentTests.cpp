@@ -56,6 +56,27 @@ namespace UnitTest
             m_settingsRegistry.reset();
         }
 
+        void StartApplicationWithSettings(AZStd::string_view settings)
+        {
+            auto result = m_settingsRegistry->MergeSettings(settings,
+                AZ::SettingsRegistryInterface::Format::JsonMergePatch,
+                "");
+            ASSERT_TRUE(result);
+
+            // When the application starts and activates the QualitySystemComponent
+            // it will register CVARS based on what is in the registry
+            AZ::ComponentApplication::Descriptor desc;
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            startupParameters.m_loadAssetCatalog = false;
+            m_application->Start(desc, startupParameters);
+
+            // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
+            // in the unit tests.
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+        }
+
         AZ::IConsole* m_console;
         AZStd::unique_ptr<AzFramework::Application> m_application;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
@@ -63,7 +84,8 @@ namespace UnitTest
 
     TEST_F(QualitySystemComponentTestFixture, QualitySystem_Registers_Group_CVars)
     {
-        auto result = m_settingsRegistry->MergeSettings(R"(
+        // when the quality system component registers group cvars
+        StartApplicationWithSettings(R"(
             {
                 "O3DE": {
                     "Quality": {
@@ -88,30 +110,15 @@ namespace UnitTest
                     }
                 }
             }
-            )",
-            AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-            "");
-        ASSERT_TRUE(result);
-
-        // when the quality system component registers group cvars
-        AZ::ComponentApplication::Descriptor desc;
-        AZ::ComponentApplication::StartupParameters startupParameters;
-        startupParameters.m_loadSettingsRegistry = false;
-        startupParameters.m_loadAssetCatalog = false;
-        m_application->Start(desc, startupParameters);
-
-        // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
-        // in the unit tests.
-        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
+            )");
 
         // expect the cvars are created with their default values
-        auto value = AzFramework::QualityLevels::LevelFromDeviceRules;
+        auto value = AzFramework::QualityLevel::LevelFromDeviceRules;
         EXPECT_EQ(m_console->GetCvarValue("q_test", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, AzFramework::QualityLevels{1});
+        EXPECT_EQ(value, AzFramework::QualityLevel{1});
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, AzFramework::QualityLevels{0});
+        EXPECT_EQ(value, AzFramework::QualityLevel::DefaultQualityLevel);
     }
 
     AZ_CVAR(int32_t, a_setting, 0, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Example integer setting 1");
@@ -121,7 +128,8 @@ namespace UnitTest
 
     TEST_F(QualitySystemComponentTestFixture, QualitySystem_Loads_Group_Level)
     {
-        auto result = m_settingsRegistry->MergeSettings(R"(
+        // when the quality system component registers group cvars
+        StartApplicationWithSettings(R"(
             {
                 "O3DE": {
                     "Quality": {
@@ -139,7 +147,7 @@ namespace UnitTest
                             },
                             "q_test_sub": {
                                 "Levels": [ "low", "high" ],
-                                "Default": 0,
+                                "Default": "DefaultQualityLevel",
                                 "Description": "q_test_sub quality group",
                                 "Settings": {
                                     "c_setting": [123,234],
@@ -150,19 +158,9 @@ namespace UnitTest
                     }
                 }
             }
-            )",
-            AZ::SettingsRegistryInterface::Format::JsonMergePatch,
-            "");
-        ASSERT_TRUE(result);
+            )");
 
-        // when the cvar values are first created 
-        AZ::ComponentApplication::Descriptor desc;
-        AZ::ComponentApplication::StartupParameters startupParameters;
-        startupParameters.m_loadSettingsRegistry = false;
-        startupParameters.m_loadAssetCatalog = false;
-        m_application->Start(desc, startupParameters);
-
-        auto value = AzFramework::QualityLevels::LevelFromDeviceRules;
+        auto value = AzFramework::QualityLevel::LevelFromDeviceRules;
         int32_t intValue = -42;
         AZ::CVarFixedString stringValue;
 
@@ -179,11 +177,11 @@ namespace UnitTest
         // when the default group is loaded
         AzFramework::QualitySystemEvents::Bus::Broadcast(
             &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
-            AzFramework::QualitySystemEvents::LevelFromDeviceRules);
+            AzFramework::QualityLevel::LevelFromDeviceRules);
 
         // expect the values are set based on the default for q_test which is 2 
         EXPECT_EQ(m_console->GetCvarValue("q_test", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, AzFramework::QualityLevels{2});
+        EXPECT_EQ(value, AzFramework::QualityLevel{2});
 
         EXPECT_EQ(m_console->GetCvarValue("a_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 2);
@@ -192,7 +190,7 @@ namespace UnitTest
         EXPECT_STREQ(stringValue.c_str(), "c");
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, AzFramework::QualityLevels{1});
+        EXPECT_EQ(value, AzFramework::QualityLevel{1});
 
         EXPECT_EQ(m_console->GetCvarValue("c_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 234);
@@ -200,7 +198,7 @@ namespace UnitTest
         EXPECT_EQ(m_console->GetCvarValue("d_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 42);
 
-        // when the group level is loaded 1 : "medium" ( which is "high" for q_test_sub )
+        // when the group level 1 is loaded ("medium" which is "high" for q_test_sub)
         m_console->PerformCommand("q_test", { "1" });
 
         // expect the values are set based on the group level settings
@@ -211,13 +209,32 @@ namespace UnitTest
         EXPECT_STREQ(stringValue.c_str(), "b");
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
-        EXPECT_EQ(value, AzFramework::QualityLevels{1});
+        EXPECT_EQ(value, AzFramework::QualityLevel{1});
 
         EXPECT_EQ(m_console->GetCvarValue("c_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 234);
 
         // d_settings doesn't specify a value for "high" so it should use highest available setting
         // which is "low" -> 42
+        EXPECT_EQ(m_console->GetCvarValue("d_setting", intValue), AZ::GetValueResult::Success);
+        EXPECT_EQ(intValue, 42);
+
+        // when the group level 0 is loaded (low)
+        m_console->PerformCommand("q_test", { "low" });
+
+        // settings at index 0 are correctly loaded
+        EXPECT_EQ(m_console->GetCvarValue("a_setting", intValue), AZ::GetValueResult::Success);
+        EXPECT_EQ(intValue, 0);
+
+        EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
+        EXPECT_STREQ(stringValue.c_str(), "a");
+
+        EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
+        EXPECT_EQ(value, AzFramework::QualityLevel{0});
+
+        EXPECT_EQ(m_console->GetCvarValue("c_setting", intValue), AZ::GetValueResult::Success);
+        EXPECT_EQ(intValue, 123);
+
         EXPECT_EQ(m_console->GetCvarValue("d_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 42);
     }

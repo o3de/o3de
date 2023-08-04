@@ -28,13 +28,13 @@ namespace AzFramework
     QualitySystemComponent::QualitySystemComponent() = default;
     QualitySystemComponent::~QualitySystemComponent() = default;
 
-    AZ_ENUM_DEFINE_REFLECT_UTILITIES(QualityLevels);
+    AZ_ENUM_DEFINE_REFLECT_UTILITIES(QualityLevel);
 
     void QualitySystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            QualityLevelsReflect(*serializeContext);
+            QualityLevelReflect(*serializeContext);
 
             serializeContext->Class<QualitySystemComponent, AZ::Component>();
 
@@ -51,15 +51,15 @@ namespace AzFramework
 
     void QualitySystemComponent::Activate()
     {
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ_Assert(settingsRegistry, "QualitySystemComponent requires a SettingsRegistry but no instance has been created.");
+        auto registry = AZ::SettingsRegistry::Get();
+        AZ_Assert(registry, "QualitySystemComponent requires a SettingsRegistry but no instance has been created.");
 
         auto console = AZ::Interface<AZ::IConsole>::Get();
         AZ_Assert(console, "QualitySystemComponent requires an IConsole interface but no instance has been created.");
 
-        if (settingsRegistry && console)
+        if (registry && console)
         {
-            settingsRegistry->Get(m_defaultGroupName, QualitySettingsDefaultGroupKey);
+            registry->Get(m_defaultGroupName, QualitySettingsDefaultGroupKey);
             RegisterCvars();
             QualitySystemEvents::Bus::Handler::BusConnect();
         }
@@ -71,23 +71,25 @@ namespace AzFramework
         m_settingsGroupCVars.clear();
     }
 
-    void QualitySystemComponent::LoadDefaultQualityGroup(int qualityLevel)
+    void QualitySystemComponent::LoadDefaultQualityGroup(QualityLevel qualityLevel)
     {
         if (m_defaultGroupName.empty())
         {
-            AZ_Warning("QualitySystemComponent", false, "No default quality group settings will be loaded because no default group name was defined at %s", QualitySettingsDefaultGroupKey);
+            AZ_Warning("QualitySystemComponent", false,
+                "No default quality settings loaded because no default group name defined at %s",
+                QualitySettingsDefaultGroupKey);
         }
         else if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
             console->PerformCommand(AZStd::string_view(m_defaultGroupName),
-                { AZStd::to_string(qualityLevel).c_str() }, AZ::ConsoleSilentMode::Silent);
+                { AZ::ConsoleTypeHelpers::ToString(qualityLevel) }, AZ::ConsoleSilentMode::Silent);
         }
     }
 
     void QualitySystemComponent::RegisterCvars()
     {
         // walk the quality groups in the settings registry and create cvars for every group
-        auto groupVisitorCallback = [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
+        auto callback = [&](const AZ::SettingsRegistryInterface::VisitArgs& visitArgs)
         {
             if (visitArgs.m_type != AZ::SettingsRegistryInterface::Type::Object)
             {
@@ -103,8 +105,8 @@ namespace AzFramework
             return AZ::SettingsRegistryInterface::VisitResponse::Continue;
         };
 
-        auto settingsRegistry = AZ::SettingsRegistry::Get();
-        AZ::SettingsRegistryVisitorUtils::VisitObject(*settingsRegistry, groupVisitorCallback, QualitySettingsGroupsRootKey);
+        auto registry = AZ::SettingsRegistry::Get();
+        AZ::SettingsRegistryVisitorUtils::VisitObject(*registry, callback, QualitySettingsGroupsRootKey);
     }
 
     void QualitySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

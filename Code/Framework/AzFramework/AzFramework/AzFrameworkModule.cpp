@@ -69,6 +69,7 @@ namespace AzFramework
         return AZ::ComponentTypeList
         {
             azrtti_typeid<AzFramework::OctreeSystemComponent>(),
+            azrtti_typeid<AzFramework::QualitySystemComponent>(),
         };
     }
 }

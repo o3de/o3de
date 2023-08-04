@@ -20,7 +20,7 @@ namespace AzFramework
     // stored in the SettingsRegistry
     class QualitySystemComponent final
         : public AZ::Component
-        , public AzFramework::QualitySystemEvents::Bus::Handler
+        , public QualitySystemEvents::Bus::Handler
     {
     public:
         AZ_COMPONENT(QualitySystemComponent, "{CA269E6A-A420-4B68-93E9-2E09A604D29A}", AZ::Component);
@@ -40,7 +40,7 @@ namespace AzFramework
         void Deactivate() override;
 
         // AzFramework::QualitySystemBus
-        void LoadDefaultQualityGroup(int qualityLevel = QualitySystemEvents::LevelFromDeviceRules) override;
+        void LoadDefaultQualityGroup(QualityLevel qualityLevel = QualityLevel::LevelFromDeviceRules) override;
 
     private:
         void RegisterCvars();

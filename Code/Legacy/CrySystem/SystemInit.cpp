@@ -1117,7 +1117,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     // using device rules to auto-detected the correct quality level 
     AzFramework::QualitySystemEvents::Bus::Broadcast(
         &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
-        AzFramework::QualitySystemEvents::LevelFromDeviceRules);
+        AzFramework::QualityLevel::LevelFromDeviceRules);
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
