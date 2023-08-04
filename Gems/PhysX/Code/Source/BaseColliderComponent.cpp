@@ -133,7 +133,13 @@ namespace PhysX
     // TransformNotificationsBus
     void BaseColliderComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
+        const float oldScale = m_shapeInfoCache.GetWorldTransform().GetUniformScale();
         m_shapeInfoCache.SetWorldTransform(world);
+        if (oldScale != world.GetUniformScale())
+        {
+            InitShapes(); // scale was changed, so shapes need to be recreated
+            return;
+        }
         m_shapeInfoCache.InvalidateCache();
     }
 
@@ -273,8 +279,8 @@ namespace PhysX
 
     bool BaseColliderComponent::InitShapes()
     {
+        m_shapes.clear();
         UpdateScaleForShapeConfigs();
-
         if (IsMeshCollider())
         {
             return InitMeshCollider();
