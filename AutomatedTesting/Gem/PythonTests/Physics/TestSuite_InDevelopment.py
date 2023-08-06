@@ -97,7 +97,7 @@ class EditorTestAutomation(EditorTestSuite):
     class Tick_CharacterGameplayComponentMotionIsSmooth(EditorBatchedTest):
         from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
 
-    @pytest.mark.xfail(reason="AssertionError: Couldn't find Asset with path: Objects/SphereBot/r0-b_body.azmodel")
+    @pytest.mark.xfail(reason="AssertionError: Couldn't find Asset with path: Objects/SphereBot/r0-b_body.fbx.azmodel")
     class Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent(EditorBatchedTest):
         from .tests.collider import Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent as test_module
 

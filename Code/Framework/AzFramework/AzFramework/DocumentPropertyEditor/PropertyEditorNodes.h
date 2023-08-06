@@ -174,6 +174,11 @@ namespace AZ::DocumentPropertyEditor::Nodes
     };
 
     template<typename T = Dom::Value>
+    struct NumericEditor;
+
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(NumericEditor, "NumericEditor", "{C891BF19-B60C-45E2-BFD0-027D15DDC939}", AZ_TYPE_INFO_CLASS);
+
+    template<typename T>
     struct NumericEditor : PropertyEditorDefinition
     {
         static_assert(
@@ -182,9 +187,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         using StorageType = AZStd::conditional_t<
             AZStd::is_same_v<T, Dom::Value>,
             Dom::Value,
-            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, int64_t, uint64_t>>>;
+            AZStd::conditional_t<AZStd::is_floating_point_v<T>, double, AZStd::conditional_t<AZStd::is_signed_v<T>, AZ::s64, AZ::u64>>>;
 
-        static constexpr AZStd::string_view Name = "NumericEditor";
+        inline static const AZStd::string_view Name = AzTypeInfo<NumericEditor>::Name();
         static constexpr auto Min = AttributeDefinition<StorageType>("Min");
         static constexpr auto Max = AttributeDefinition<StorageType>("Max");
         static constexpr auto Step = AttributeDefinition<StorageType>("Step");

@@ -194,7 +194,7 @@ blackbox_fbx_tests = [
                                     sub_id=330338417,
                                     asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                                 asset_db_utils.DBProduct(
-                                    product_name='softnamingphysics/physicstest.pxmesh',
+                                    product_name='softnamingphysics/physicstest.fbx.pxmesh',
                                     sub_id=640975857,
                                     asset_type=b'7a2871b95eab4de0a901b0d2c6920ddb'),
                                 asset_db_utils.DBProduct(
