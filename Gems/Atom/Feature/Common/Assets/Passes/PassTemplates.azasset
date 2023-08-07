@@ -485,6 +485,10 @@
                 "Path": "Passes/OpaqueParent.pass"
             },
             {
+                "Name": "OutlinePassTemplate",
+                "Path": "Passes/Outline.pass"
+            },
+            {
                 "Name": "ToolsPipeline",
                 "Path": "Passes/ToolsPipeline.pass"
             },
