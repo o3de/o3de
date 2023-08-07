@@ -52,6 +52,11 @@ namespace AZ
         
         bool Instance::Init(const Descriptor& descriptor)
         {
+            m_loaderContext = LoaderContext::Create();
+            if (!m_loaderContext)
+            {
+                return false;
+            }
 #if defined(USE_NSIGHT_AFTERMATH)
             m_gpuCrashHandler.EnableGPUCrashDumps();
 #endif
@@ -134,15 +139,15 @@ namespace AZ
             m_instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
             m_instanceCreateInfo.pApplicationInfo = &m_appInfo;
 
-            StringList instanceLayerNames = m_loaderContext.GetInstanceLayerNames();
+            StringList instanceLayerNames = m_loaderContext->GetInstanceLayerNames();
             RawStringList optionalLayers = FilterList(m_descriptor.m_optionalLayers, instanceLayerNames);
             m_descriptor.m_requiredLayers.insert(m_descriptor.m_requiredLayers.end(), optionalLayers.begin(), optionalLayers.end());
 
-            StringList instanceExtensions = m_loaderContext.GetInstanceExtensionNames();
+            StringList instanceExtensions = m_loaderContext->GetInstanceExtensionNames();
             // Add the extensions provided by layers
             for (const auto& extension : m_descriptor.m_requiredLayers)
             {
-                StringList layerExtensions = m_loaderContext.GetInstanceExtensionNames(extension);
+                StringList layerExtensions = m_loaderContext->GetInstanceExtensionNames(extension);
                 instanceExtensions.insert(instanceExtensions.end(), layerExtensions.begin(), layerExtensions.end());
             }
 
@@ -191,7 +196,7 @@ namespace AZ
             loaderDescriptor.m_instance = m_instance;
             loaderDescriptor.m_loadedExtensions = GetLoadedExtensions();
             loaderDescriptor.m_loadedLayers = GetLoadedLayers();
-            if (!m_loaderContext.Init(loaderDescriptor))
+            if (!m_loaderContext->Init(loaderDescriptor))
             {
                 AZ_Warning("Vulkan", false, "Failed to load function pointers for instance");
                 return false;
@@ -208,7 +213,11 @@ namespace AZ
         void Instance::Shutdown() 
         {
             ShutdownNativeInstance();
-            m_loaderContext.Shutdown();
+            if (m_loaderContext)
+            {
+                m_loaderContext->Shutdown();
+                m_loaderContext = nullptr;
+            }
         }
 
         void Instance::ShutdownNativeInstance()

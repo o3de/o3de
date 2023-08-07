@@ -206,7 +206,7 @@ namespace AZ
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
-            LoaderContext m_loaderContext;
+            AZStd::unique_ptr<LoaderContext> m_loaderContext;
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;

@@ -16,10 +16,14 @@ namespace AZ
 {
     namespace Vulkan
     {
-        LoaderContext::LoaderContext()
+        AZStd::unique_ptr<LoaderContext> LoaderContext::Create()
         {
-            // Load functions from the dynamic library until we have a Vulkan instance or device.
-            gladLoaderLoadVulkanContext(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE);
+            AZStd::unique_ptr<LoaderContext> loader(aznew LoaderContext());
+            if (!loader->Preload())
+            {
+                return nullptr;
+            }
+            return loader;
         }
 
         LoaderContext::~LoaderContext()
@@ -42,6 +46,14 @@ namespace AZ
         void LoaderContext::Shutdown()
         {
             gladLoaderUnloadVulkanContext(&m_context);
+        }
+
+        bool LoaderContext::Preload()
+        {
+            // Load functions from the dynamic library until we have a Vulkan instance or device.
+            int result = gladLoaderLoadVulkanContext(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE);
+            FilterAvailableExtensions();
+            return result != 0;
         }
 
         void LoaderContext::LoadLayerExtensions(const LoaderContext::Descriptor& descriptor)

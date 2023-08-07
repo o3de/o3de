@@ -74,6 +74,12 @@ namespace AZ
 
         RHI::ResultCode Device::InitInternal(RHI::PhysicalDevice& physicalDeviceBase)
         {
+            m_loaderContext = LoaderContext::Create();
+            if (!m_loaderContext)
+            {
+                return RHI::ResultCode::Fail;
+            }
+
             auto& physicalDevice = static_cast<Vulkan::PhysicalDevice&>(physicalDeviceBase);
             StringList requiredLayerStrings = GetRequiredLayers();
             StringList requiredExtensionStrings = GetRequiredExtensions();
@@ -335,7 +341,7 @@ namespace AZ
             loaderDescriptor.m_device = m_nativeDevice;
             loaderDescriptor.m_loadedExtensions = instance.GetLoadedExtensions();
             loaderDescriptor.m_loadedLayers = instance.GetLoadedLayers();
-            if (!m_loaderContext.Init(loaderDescriptor))
+            if (!m_loaderContext->Init(loaderDescriptor))
             {
                 AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                 return RHI::ResultCode::Fail;
@@ -468,7 +474,7 @@ namespace AZ
 
         const GladVulkanContext& Device::GetContext() const
         {
-            return m_loaderContext.GetContext();
+            return m_loaderContext->GetContext();
         }
 
         uint32_t Device::FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const
@@ -710,7 +716,11 @@ namespace AZ
                 m_nativeDevice = VK_NULL_HANDLE;
             }
 
-            m_loaderContext.Shutdown();
+            if (m_loaderContext)
+            {
+                m_loaderContext->Shutdown();
+                m_loaderContext = nullptr;
+            }
         }
 
         RHI::ResultCode Device::BeginFrameInternal()

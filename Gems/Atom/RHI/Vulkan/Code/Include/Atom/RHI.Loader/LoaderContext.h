@@ -31,8 +31,9 @@ namespace AZ
                 AZStd::vector<const char*> m_loadedExtensions;
             };
 
-            //! Loads the function pointers directly from the dynamic library during construction.
-            LoaderContext();
+            //! Creates a new instance of a loader context.
+            static AZStd::unique_ptr<LoaderContext> Create();
+
             ~LoaderContext();
 
             //! Loads the function pointer using the instance, device and physical device provided.
@@ -49,6 +50,10 @@ namespace AZ
             const GladVulkanContext& GetContext() const;
 
         private:
+            LoaderContext() = default;
+
+            //! Loads function pointers from the dynamic library directly (no trampoline).
+            bool Preload();
             //! Loads extensions from a layer.
             void LoadLayerExtensions(const Descriptor& descriptor);
             //! Removes layers that were not loaded correctly.

@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <RHI/PhysicalDevice.h>
 #include <Atom/RHI/ValidationLayer.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -48,7 +49,7 @@ namespace AZ
             }
             GladVulkanContext& GetContext()
             {
-                return m_loaderContext.GetContext();
+                return m_loaderContext->GetContext();
             }
             const Descriptor& GetDescriptor() const;
             StringList GetInstanceLayerNames() const;
@@ -68,7 +69,7 @@ namespace AZ
 
             Descriptor m_descriptor;
             VkInstance m_instance = VK_NULL_HANDLE;
-            LoaderContext m_loaderContext;
+            AZStd::unique_ptr<LoaderContext> m_loaderContext;
             RHI::PhysicalDeviceList m_supportedDevices;
             VkInstanceCreateInfo m_instanceCreateInfo = {};
             VkApplicationInfo m_appInfo = {};
