@@ -13,6 +13,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/utility/charconv.h>
 
 namespace AzFramework
 {
@@ -90,11 +91,12 @@ namespace AzFramework
 
     QualityLevel QualityCVarGroup::FromNumber(const AZ::CVarFixedString& value) const
     {
-        char* endPtr = nullptr;
-        int32_t intValue = aznumeric_cast<int32_t>(strtoll(value.c_str(), &endPtr, 0));
+        int32_t intValue{ 0 };
+        auto result = AZStd::from_chars(value.begin(), value.end(), intValue);
 
-        // don't allow values higher than the user-defined levels
-        if (endPtr == value.c_str() || intValue >= m_numQualityLevels)
+        // don't allow values outside the known quality level ranges 
+        constexpr int32_t minValue = static_cast<int32_t>(QualityLevel::LevelFromDeviceRules);
+        if (result.ec != AZStd::errc() || intValue >= m_numQualityLevels || intValue < minValue)
         {
             return QualityLevel::Invalid;
         }
@@ -105,11 +107,11 @@ namespace AzFramework
     QualityLevel QualityCVarGroup::FromEnum(const AZ::CVarFixedString& value) const
     {
         using EnumMemberPair = typename AZ::AzEnumTraits<QualityLevel>::MembersArrayType::value_type;
-        auto findEnumOptionValue = [firstArg = value](EnumMemberPair enumPair)
+        auto findEnumOptionValue = [&value](EnumMemberPair enumPair)
         {
             // case-insensitive comparison
             constexpr bool caseSensitive{ false };
-            return AZ::StringFunc::Equal(firstArg, enumPair.m_string, caseSensitive);
+            return AZ::StringFunc::Equal(value, enumPair.m_string, caseSensitive);
         };
         if (auto foundIt = AZStd::ranges::find_if(AZ::AzEnumTraits<QualityLevel>::Members,
             findEnumOptionValue); foundIt != AZ::AzEnumTraits<QualityLevel>::Members.end())
@@ -169,7 +171,7 @@ namespace AzFramework
             return;
         }
 
-        auto callback = [&, registry](const auto& visitArgs)
+        auto callback = [&](const auto& visitArgs)
         {
             AZStd::string_view command = visitArgs.m_fieldName;
 

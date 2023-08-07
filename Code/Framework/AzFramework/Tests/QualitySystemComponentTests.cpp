@@ -136,7 +136,7 @@ namespace UnitTest
                         "DefaultGroup":"q_test",
                         "Groups": {
                             "q_test": {
-                                "Levels": [ "low", "medium","high", "veryhigh"],
+                                "Levels": [ "low", "medium", "high", "veryhigh"],
                                 "Default": 2,
                                 "Description": "q_test quality group",
                                 "Settings": {
@@ -164,11 +164,11 @@ namespace UnitTest
         int32_t intValue = -42;
         AZ::CVarFixedString stringValue;
 
-        // expect the value  defaults
+        // expect the value defaults
         EXPECT_EQ(m_console->GetCvarValue("a_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, 0);
         EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
-        EXPECT_STREQ(stringValue.c_str(), "default");
+        EXPECT_EQ(stringValue, "default");
         EXPECT_EQ(m_console->GetCvarValue("c_setting", intValue), AZ::GetValueResult::Success);
         EXPECT_EQ(intValue, -1);
         EXPECT_EQ(m_console->GetCvarValue("d_setting", intValue), AZ::GetValueResult::Success);
@@ -187,7 +187,7 @@ namespace UnitTest
         EXPECT_EQ(intValue, 2);
 
         EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
-        EXPECT_STREQ(stringValue.c_str(), "c");
+        EXPECT_EQ(stringValue, "c");
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
         EXPECT_EQ(value, AzFramework::QualityLevel{1});
@@ -206,7 +206,7 @@ namespace UnitTest
         EXPECT_EQ(intValue, 1);
 
         EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
-        EXPECT_STREQ(stringValue.c_str(), "b");
+        EXPECT_EQ(stringValue, "b");
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
         EXPECT_EQ(value, AzFramework::QualityLevel{1});
@@ -227,7 +227,7 @@ namespace UnitTest
         EXPECT_EQ(intValue, 0);
 
         EXPECT_EQ(m_console->GetCvarValue("b_setting", stringValue), AZ::GetValueResult::Success);
-        EXPECT_STREQ(stringValue.c_str(), "a");
+        EXPECT_EQ(stringValue, "a");
 
         EXPECT_EQ(m_console->GetCvarValue("q_test_sub", value), AZ::GetValueResult::Success);
         EXPECT_EQ(value, AzFramework::QualityLevel{0});

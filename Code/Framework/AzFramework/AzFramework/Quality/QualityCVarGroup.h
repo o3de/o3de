@@ -20,6 +20,26 @@ namespace AzFramework
     // QualityCVarGroup wraps a QualityLevel CVAR for a quality group that, when set,
     // iterates over all settings in the group and performs console commands to
     // apply the settings for the requested quality level.
+    // The general format of a quality group entry in the Settings Registry is:
+    // {
+    //     "O3DE" : {
+    //         "Quality" : {
+    //             "Groups" : {
+    //                 "<group CVAR>" : {
+    //                      "Description" : "<optional description>",
+    //                      "Levels" : [ "<quality level 0>", "<quality level n>" ],
+    //                      "Default" : "<default quality level>",
+    //                      "Settings" : {
+    //                          "<setting CVAR>" : [<level 0 value>, <level n value> ]
+    //                      }
+    //                  }
+    //             }
+    //         }
+    //     }
+    // }
+    //    
+    // QualityCVarGroup only creates a CVAR for the quality group itself, it does not
+    // create CVARs for any entries in the quality groups "Settings" object.
     // Quality levels are assumed to be ordered low to high as in the example below.
     //
     // Example:
