@@ -44,7 +44,7 @@ namespace MaterialCanvas
         void BuildInstructionsForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
         void BuildMaterialSrgForCurrentNode();
         bool BuildMaterialTypeForCurrentNode(const GraphModel::ConstNodePtr& currentNode);
-        bool ExportTemplatesMatchingRegex(const AZStd::string& pattern);
+        bool ExportTemplatesMatchingRegex(const AZStd::string& pattern, bool forceDelete = false);
 
         // Convert the template file path into a save file path based on the document name.
         AZStd::string GetOutputPathFromTemplatePath(const AZStd::string& templatePath) const;

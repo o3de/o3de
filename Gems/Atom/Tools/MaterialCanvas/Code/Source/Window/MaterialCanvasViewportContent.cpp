@@ -143,7 +143,7 @@ namespace MaterialCanvas
     void MaterialCanvasViewportContent::OnCompileGraphStarted(const AZ::Uuid& documentId)
     {
         if (m_lastOpenedDocumentId == documentId &&
-            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted", true))
+            AtomToolsFramework::GetSettingsValue("/O3DE/Atom/MaterialCanvas/Viewport/ClearMaterialOnCompileGraphStarted", false))
         {
             ApplyMaterial({});
         }

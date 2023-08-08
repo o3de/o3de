@@ -254,6 +254,8 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
+        m_assetStatusReporterSystem.reset(aznew AtomToolsFramework::AssetStatusReporterSystem(m_toolId));
+
         m_graphTemplateFileDataCache.reset(aznew AtomToolsFramework::GraphTemplateFileDataCache(m_toolId));
 
         // Acquiring default Material Canvas document type info so that it can be customized before registration
