@@ -272,6 +272,7 @@ namespace AZ
             MaterialConsumerRequestBus::Handler::BusConnect(entityId);
             MaterialComponentNotificationBus::Handler::BusConnect(entityId);
             AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
+            AzFramework::VisibleGeometryRequestBus::Handler::BusConnect(entityId);
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, entityContextId });
             AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationBus, entityContextId);
 
@@ -285,6 +286,7 @@ namespace AZ
             UnregisterModel();
 
             AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
+            AzFramework::VisibleGeometryRequestBus::Handler::BusDisconnect();
             AzFramework::BoundsRequestBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
             MaterialConsumerRequestBus::Handler::BusDisconnect();
@@ -697,6 +699,74 @@ namespace AZ
             }
 
             return Aabb::CreateNull();
+        }
+
+        void MeshComponentController::GetVisibleGeometry(AzFramework::VisibleGeometryContainer& geometryContainer) const
+        {
+            // Attempt to copy the triangle list geometry data out of the model asset into the visible geometry structure
+            const auto& modelAsset = GetModelAsset();
+            if (!modelAsset.IsReady() || modelAsset->GetLodAssets().empty())
+            {
+                return;
+            }
+
+            // This will only extract data from the first LOD. It might be necessary to make the LOD selectable.
+            const auto& lodAsset = modelAsset->GetLodAssets().front();
+            if (!lodAsset.IsReady())
+            {
+                return;
+            }
+
+            const AZ::Name positionName{ "POSITION" };
+            for (const auto& mesh : lodAsset->GetMeshes())
+            {
+                // Get the index buffer data, confirming that the asset is valid and indices are 32 bit integers. Other formats are
+                // currently not supported.
+                const AZ::RPI::BufferAssetView& indexBufferView = mesh.GetIndexBufferAssetView();
+                const AZ::RHI::BufferViewDescriptor& indexBufferViewDesc = indexBufferView.GetBufferViewDescriptor();
+                const AZ::Data::Asset<AZ::RPI::BufferAsset> indexBufferAsset = indexBufferView.GetBufferAsset();
+                if (!indexBufferAsset.IsReady() || indexBufferViewDesc.m_elementSize != sizeof(uint32_t))
+                {
+                    continue;
+                }
+
+                // Get the position buffer data, if it exists with the expected name.
+                const AZ::RPI::BufferAssetView* positionBufferView = mesh.GetSemanticBufferAssetView(positionName);
+                if (!positionBufferView)
+                {
+                    continue;
+                }
+
+                // Confirm that the position buffer is valid and contains 3 32 bit floats for each position. Other formats are currently not
+                // supported.
+                const AZ::RHI::BufferViewDescriptor& positionBufferViewDesc = positionBufferView->GetBufferViewDescriptor();
+                const AZ::Data::Asset<AZ::RPI::BufferAsset> positionBufferAsset = positionBufferView->GetBufferAsset();
+                if (!positionBufferAsset.IsReady() || positionBufferViewDesc.m_elementSize != sizeof(float) * 3)
+                {
+                    continue;
+                }
+
+                const AZStd::span<const uint8_t> indexRawBuffer = indexBufferAsset->GetBuffer();
+                const uint32_t* indexPtr = reinterpret_cast<const uint32_t*>(
+                    indexRawBuffer.data() + (indexBufferViewDesc.m_elementOffset * indexBufferViewDesc.m_elementSize));
+
+                const AZStd::span<const uint8_t> positionRawBuffer = positionBufferAsset->GetBuffer();
+                const float* positionPtr = reinterpret_cast<const float*>(
+                    positionRawBuffer.data() + (positionBufferViewDesc.m_elementOffset * positionBufferViewDesc.m_elementSize));
+
+                // Copy the index and position data into the visible geometry structure.
+                AzFramework::VisibleGeometry visibleGeometry;
+                visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
+
+                // This resize and copy assumes the stride between elements is 0.
+                visibleGeometry.m_indices.resize(indexBufferViewDesc.m_elementCount);
+                memcpy(&visibleGeometry.m_indices[0], indexPtr, indexBufferViewDesc.m_elementCount * indexBufferViewDesc.m_elementSize);
+
+                visibleGeometry.m_vertices.resize(positionBufferViewDesc.m_elementCount * 3);
+                memcpy(&visibleGeometry.m_vertices[0], positionPtr, positionBufferViewDesc.m_elementCount * positionBufferViewDesc.m_elementSize);
+
+                geometryContainer.emplace_back(AZStd::move(visibleGeometry));
+            }
         }
 
         AzFramework::RenderGeometry::RayResult MeshComponentController::RenderGeometryIntersect(

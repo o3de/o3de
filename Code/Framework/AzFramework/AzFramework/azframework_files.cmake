@@ -478,11 +478,13 @@ set(FILES
     Visibility/OctreeSystemComponent.cpp
     Visibility/BoundsBus.h
     Visibility/BoundsBus.cpp
-    Visibility/VisibilityDebug.h
-    Visibility/VisibilityDebug.cpp
     Visibility/EntityBoundsUnionBus.h
     Visibility/EntityVisibilityBoundsUnionSystem.h
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityQuery.h
     Visibility/EntityVisibilityQuery.cpp
+    Visibility/VisibilityDebug.h
+    Visibility/VisibilityDebug.cpp
+    Visibility/VisibleGeometryBus.h
+    Visibility/VisibleGeometryBus.cpp
 )
