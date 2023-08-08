@@ -98,7 +98,7 @@ def ScaleModifierOverrides_InstancesProperlyScale():
 
     # 2) Create a new entity with components "Vegetation Layer Spawner", "Vegetation Asset List", "Box Shape"
     entity_position = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "ScaleMod_PinkFlower2")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", entity_position, 16.0, 16.0, 16.0,
                                                                pink_flower_prefab)

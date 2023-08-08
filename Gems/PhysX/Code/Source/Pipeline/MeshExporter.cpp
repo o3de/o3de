@@ -139,7 +139,7 @@ namespace PhysX
             if (serializeContext)
             {
                 serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(6 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
+                    ->Version(7 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 
@@ -543,7 +543,8 @@ namespace PhysX
             SceneEvents::ProcessingResult result = SceneEvents::ProcessingResult::Ignored;
 
             AZStd::string assetName = meshGroup.GetName();
-            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(assetName, context.GetOutputDirectory(), MeshAssetHandler::s_assetFileExtension);
+            AZStd::string filename = SceneUtil::FileUtilities::CreateOutputFileName(
+                assetName, context.GetOutputDirectory(), MeshAssetHandler::s_assetFileExtension, context.GetScene().GetSourceExtension());
 
             MeshAssetData assetData;
 
