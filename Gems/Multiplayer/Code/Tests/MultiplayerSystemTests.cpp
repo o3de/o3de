@@ -81,7 +81,7 @@ namespace Multiplayer
             m_mpComponent->AddEndpointDisconnectedHandler(m_endpointDisconnectedHandler);
             m_mpComponent->Activate();
 
-            m_systemEntity = AZStd::make_unique<AZ::Entity>(0);
+            m_systemEntity = AZStd::make_unique<AZ::Entity>(AZ::EntityId(0));
             m_systemEntity->CreateComponent<AZ::JobManagerComponent>(); // Needed by Job system when @sv_multithreadedConnectionUpdates is on.
             m_systemEntity->Init();
             m_systemEntity->Activate();
