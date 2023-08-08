@@ -63,7 +63,6 @@ namespace AzNetworking
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
         bool Serialize(bool& value, const char* name) override;
-        bool Serialize(char& value, const char* name, char minValue, char maxValue) override;
         bool Serialize(int8_t& value, const char* name, int8_t minValue, int8_t maxValue) override;
         bool Serialize(int16_t& value, const char* name, int16_t minValue, int16_t maxValue) override;
         bool Serialize(int32_t& value, const char* name, int32_t minValue, int32_t maxValue) override;
@@ -123,7 +122,6 @@ namespace AzNetworking
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
         bool Serialize(bool& value, const char* name) override;
-        bool Serialize(char& value, const char* name, char minValue, char maxValue) override;
         bool Serialize(int8_t& value, const char* name, int8_t minValue, int8_t maxValue) override;
         bool Serialize(int16_t& value, const char* name, int16_t minValue, int16_t maxValue) override;
         bool Serialize(int32_t& value, const char* name, int32_t minValue, int32_t maxValue) override;

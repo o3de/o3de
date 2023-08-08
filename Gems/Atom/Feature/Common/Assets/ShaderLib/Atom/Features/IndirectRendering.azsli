@@ -33,6 +33,13 @@ struct DispatchIndirectCommand
     uint m_threadGroupCountZ;
 };
 
+struct DispatchRaysIndirectCommand
+{
+    uint m_width;
+    uint m_height;
+    uint m_depth;
+};
+
 struct VertexViewIndirectCommand
 {
     uint4 m_vertexArguments;

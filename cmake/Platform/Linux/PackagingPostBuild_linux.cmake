@@ -11,8 +11,10 @@ include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 include(${CPACK_CODESIGN_SCRIPT})
 
 if("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "SNAP")
-    set(snap_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_NAME}_amd64.snap")
-    set(assertion_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.assert")
+    set(snap_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
+    set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}_amd64.snap.sha384")
+    file(SHA384 ${snap_file} file_checksum) # Snap asserts use SHA384
+    file(WRITE ${hash_file} "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}_amd64.snap")
 elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
     set(deb_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb")
     set(hash_file "${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256")
@@ -42,8 +44,8 @@ if(CPACK_UPLOAD_URL)
     file(GLOB _artifacts 
         "${CPACK_TOPLEVEL_DIRECTORY}/*.deb" 
         "${CPACK_TOPLEVEL_DIRECTORY}/*.sha256"
+        "${CPACK_TOPLEVEL_DIRECTORY}/*.sha384"
         "${CPACK_TOPLEVEL_DIRECTORY}/*.snap"
-        "${CPACK_TOPLEVEL_DIRECTORY}/*.assert"
         "${LY_ROOT_FOLDER}/scripts/signer/Platform/Linux/*.gpg"
         "${CPACK_3P_LICENSE_FILE}"
         "${CPACK_3P_MANIFEST_FILE}"
@@ -56,7 +58,7 @@ if(CPACK_UPLOAD_URL)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
         ${CPACK_UPLOAD_DIRECTORY}
-        ".*(.deb|.gpg|.sha256|.snap|.assert|.txt|.json)$"
+        ".*(.deb|.gpg|.sha256|.sha384|.snap|.txt|.json)$"
     )
 
     # for auto tagged builds, we will also upload a second copy of the package
@@ -70,13 +72,10 @@ if(CPACK_UPLOAD_URL)
             )
             ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_snap_package}")
 
-            # Generate a assert file for latest and upload it
-            set(latest_assertion_file ${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest_amd64.snap.assert)
-            file(COPY_FILE
-                ${assertion_file}
-                ${latest_assertion_file}
-            )
-            ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_assertion_file}")
+            # Generate a checksum file for latest and upload it
+            set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.snap.sha384")
+            file(WRITE "${latest_hash_file}" "${file_checksum}  ${latest_snap_package}")
+            ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_hash_file}")
         elseif("$ENV{O3DE_PACKAGE_TYPE}" STREQUAL "DEB")
             set(latest_deb_package "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb")
             file(COPY_FILE

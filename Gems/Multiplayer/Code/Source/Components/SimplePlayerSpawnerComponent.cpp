@@ -152,13 +152,30 @@ namespace Multiplayer
             GetNetworkEntityManager()->CreateEntitiesImmediate(prefabEntityId, NetEntityRole::Authority, transform);
 
         NetworkEntityHandle controlledEntity;
-        if (!entityList.empty())
+        if (entityList.empty())
         {
+            // Failure: The player prefab has no networked entities in it.
+            AZLOG_ERROR(
+                "Attempt to spawn prefab '%s' failed, no entities were spawned. Ensure that the prefab contains a single entity "
+                "that is network enabled with a Network Binding component.",
+                prefabEntityId.m_prefabName.GetCStr());
+        }
+        else if (entityList.size() == 1)
+        {
+            // Success: The player prefab has exactly one networked entity in it.
             controlledEntity = entityList[0];
         }
         else
         {
-            AZLOG_WARN("Attempt to spawn prefab %s failed. Check that prefab is network enabled.", prefabEntityId.m_prefabName.GetCStr());
+            // Failure: The player prefab has too many networked entities in it.
+            AZLOG_ERROR(
+                "Attempt to spawn prefab '%s' failed, it contains too many networked entities. "
+                "A player prefab must only have a single networked entity inside of it.",
+                prefabEntityId.m_prefabName.GetCStr());
+            for (auto& entityHandle : entityList)
+            {
+                AZ::Interface<IMultiplayer>::Get()->GetNetworkEntityManager()->MarkForRemoval(entityHandle);
+            }
         }
 
         return controlledEntity;

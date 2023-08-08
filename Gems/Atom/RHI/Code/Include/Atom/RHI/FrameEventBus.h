@@ -9,49 +9,35 @@
 
 #include <Atom/RHI/DeviceBusTraits.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! A bus for frame lifecycle events. The RHI defines a 'Frame' with respect to the
+    //! Frame Scheduler's full cycle where it takes control of submitting work items to
+    //! the GPU.
+    //!
+    //! Each device has its own frame lifecycle. Therefore, the raw device pointer is used as
+    //! the bus address. Handlers of this bus should be holding Ptr<RHI::Device> references.
+    //! This is done implicitly if the class inherits from RHI::DeviceObject.
+    class FrameGraph;
+    class FrameEventInterface
+        : public DeviceBusTraits
     {
-        /**
-         * A bus for frame lifecycle events. The RHI defines a 'Frame' with respect to the
-         * Frame Scheduler's full cycle where it takes control of submitting work items to
-         * the GPU.
-         *
-         * Each device has its own frame lifecycle. Therefore, the raw device pointer is used as
-         * the bus address. Handlers of this bus should be holding Ptr<RHI::Device> references.
-         * This is done implicitly if the class inherits from RHI::DeviceObject.
-         */
-        class FrameGraph;
-        class FrameEventInterface
-            : public DeviceBusTraits
-        {
-        public:
+    public:
             
-            using MutexType = AZStd::recursive_mutex;
+        using MutexType = AZStd::recursive_mutex;
             
-            /**
-             * Called just after the frame scheduler begins a frame.
-             */
-            virtual void OnFrameBegin() {}
+        //! Called just after the frame scheduler begins a frame.
+        virtual void OnFrameBegin() {}
 
-            /**
-             * Called just before the frame scheduler compiles the frame graph.
-             */
-            virtual void OnFrameCompile() {}
+        //! Called just before the frame scheduler compiles the frame graph.
+        virtual void OnFrameCompile() {}
 
-            /**
-             * Called just after the frame scheduler ends a frame.
-             */
-            virtual void OnFrameEnd() {}
+        //! Called just after the frame scheduler ends a frame.
+        virtual void OnFrameEnd() {}
 
+        //! Called after frame compiles.
+        virtual void OnFrameCompileEnd([[maybe_unused]] FrameGraph& frameGraph) {}
+    };
 
-            /**
-             * Called after frame compiles.
-             */
-            virtual void OnFrameCompileEnd([[maybe_unused]] FrameGraph& frameGraph) {}
-        };
-
-        using FrameEventBus = AZ::EBus<FrameEventInterface>;
-    }
+    using FrameEventBus = AZ::EBus<FrameEventInterface>;
 }

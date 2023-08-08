@@ -40,8 +40,8 @@ namespace AZ
 
         //! Default constructor, which does not initialize the matrix.
         Matrix3x4() = default;
+        Matrix3x4(const Matrix3x4& rhs) = default;
 
-        Matrix3x4(const Matrix3x4& rhs);
         Matrix3x4(Simd::Vec4::FloatArgType row0, Simd::Vec4::FloatArgType row1, Simd::Vec4::FloatArgType row2);
 
         //! Creates an identity Matrix3x4.
@@ -138,9 +138,6 @@ namespace AZ
         //! Sets the element in the specified row and column.
         //! Accessing individual elements can be slower than working with entire rows.
         void SetElement(int32_t row, int32_t col, const float value);
-
-        //! Assignment operator.
-        Matrix3x4& operator=(const Matrix3x4& rhs);
 
         //! Accesses the element in the specified row and column.
         //! Accessing individual elements can be slower than working with entire rows.

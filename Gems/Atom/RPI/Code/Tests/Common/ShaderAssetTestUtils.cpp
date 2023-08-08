@@ -62,7 +62,6 @@ namespace UnitTest
         using namespace AZ;
         RPI::ShaderVariantAssetCreator shaderVariantAssetCreator;
         shaderVariantAssetCreator.Begin(Uuid::CreateRandom(), id, stableId, false);
-        shaderVariantAssetCreator.SetBuildTimestamp(AZStd::sys_time_t(1)); // Make non-zero.
 
         for (RHI::ShaderStage rhiStage : stagesToActivate)
         {

@@ -31,6 +31,42 @@ namespace AZ
             "Enable allowing systems to set shader options on a per-mesh basis."
         );
 
+        
+        AZ_CVAR(
+            bool,
+            r_meshInstancingEnabled,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable instanced draw calls in the MeshFeatureProcessor.");
+
+        AZ_CVAR(
+            bool,
+            r_meshInstancingEnabledForTransparentObjects,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable instanced draw calls for transparent objects in the MeshFeatureProcessor. Use this only if you have many instances of the same "
+            "transparent object, but don't have multiple different transparent objects mixed together. See documentation for details.");
+
+        AZ_CVAR(
+            size_t,
+            r_meshInstancingBucketSortScatterBatchSize,
+            512,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Batch size for the first stage of the mesh instancing bucket sort. "
+            "Can be modified to find optimal load balancing for the multi-threaded tasks.");
+
+        AZ_CVAR(
+            bool,
+            r_meshInstancingDebugForceUniqueObjectsForProfiling,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable instanced draw calls in the MeshFeatureProcessor, but force one object per draw call. "
+            "This is helpful for simulating the worst case scenario for instancing for profiling performance.");
+
         class ModelDataInstance;
 
         //! Mesh feature processor data types for customizing model materials
@@ -74,6 +110,7 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
+            using ObjectSrgCreatedEvent = Event<const Data::Instance<RPI::ShaderResourceGroup>&>;
 
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
@@ -115,6 +152,9 @@ namespace AZ
             virtual const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const = 0;
             //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
             virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
+
+            //! Connects a handler to ObjectSrg creation
+            virtual void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) = 0;
 
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,

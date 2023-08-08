@@ -114,6 +114,8 @@ namespace GraphCanvas
 
         bool HasConnections() const override;
 
+        bool IsNameHidden() const;
+
         AZ::EntityId GetLastConnection() const override;
         AZStd::vector<AZ::EntityId> GetConnections() const override;
 

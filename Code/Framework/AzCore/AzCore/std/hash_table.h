@@ -641,7 +641,7 @@ namespace AZStd
         template <class InsertReturnType, class NodeHandle>
         InsertReturnType node_handle_insert(NodeHandle&& nodeHandle);
         template <class NodeHandle>
-        auto node_handle_insert(const iterator hint, NodeHandle&& nodeHandle) -> iterator;
+        auto node_handle_insert(const_iterator hint, NodeHandle&& nodeHandle) -> iterator;
 
         //! Searches for an element which matches the value of key and extracts it from the hash_table
         //! @return A NodeHandle which can be used to insert the an element between unique and non-unique containers of the same type
@@ -1199,7 +1199,7 @@ namespace AZStd
 
     template <class Traits>
     template <class NodeHandle>
-    inline auto hash_table<Traits>::node_handle_insert(const iterator, NodeHandle&& nodeHandle) -> iterator
+    inline auto hash_table<Traits>::node_handle_insert(const_iterator, NodeHandle&& nodeHandle) -> iterator
     {
         return node_handle_insert<insert_return_type<iterator, NodeHandle>>(AZStd::move(nodeHandle)).position;
     }

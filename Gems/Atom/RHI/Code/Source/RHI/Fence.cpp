@@ -10,140 +10,137 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    Fence::~Fence() {}
+
+    bool Fence::ValidateIsInitialized() const
     {
-        Fence::~Fence() {}
-
-        bool Fence::ValidateIsInitialized() const
+        if (Validation::IsEnabled())
         {
-            if (Validation::IsEnabled())
+            if (!IsInitialized())
             {
-                if (!IsInitialized())
-                {
-                    AZ_Error("Fence", false, "Fence is not initialized!");
-                    return false;
-                }
+                AZ_Error("Fence", false, "Fence is not initialized!");
+                return false;
             }
-
-            return true;
         }
 
-        ResultCode Fence::Init(Device& device, FenceState initialState)
-        {
-            if (Validation::IsEnabled())
-            {
-                if (IsInitialized())
-                {
-                    AZ_Error("Fence", false, "Fence is already initialized!");
-                    return ResultCode::InvalidOperation;
-                }
-            }
+        return true;
+    }
 
-            const ResultCode resultCode = InitInternal(device, initialState);
-
-            if (resultCode == ResultCode::Success)
-            {
-                DeviceObject::Init(device);
-            }
-            else
-            {
-                AZ_Assert(false, "Failed to create a fence");
-            }
-
-            return resultCode;
-        }
-
-        void Fence::Shutdown()
+    ResultCode Fence::Init(Device& device, FenceState initialState)
+    {
+        if (Validation::IsEnabled())
         {
             if (IsInitialized())
             {
-                if (m_waitThread.joinable())
-                {
-                    m_waitThread.join();
-                }
-
-                ShutdownInternal();
-                DeviceObject::Shutdown();
+                AZ_Error("Fence", false, "Fence is already initialized!");
+                return ResultCode::InvalidOperation;
             }
         }
 
-        ResultCode Fence::SignalOnCpu()
-        {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
+        const ResultCode resultCode = InitInternal(device, initialState);
 
-            SignalOnCpuInternal();
-            return ResultCode::Success;
+        if (resultCode == ResultCode::Success)
+        {
+            DeviceObject::Init(device);
+        }
+        else
+        {
+            AZ_Assert(false, "Failed to create a fence");
         }
 
-        ResultCode Fence::WaitOnCpu() const
+        return resultCode;
+    }
+
+    void Fence::Shutdown()
+    {
+        if (IsInitialized())
         {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
-            WaitOnCpuInternal();
-            return ResultCode::Success;
-        }
-
-        ResultCode Fence::WaitOnCpuAsync(SignalCallback callback)
-        {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            if (!callback)
-            {
-                AZ_Error("Fence", false, "Callback is null.");
-                return ResultCode::InvalidOperation;
-            }
-
             if (m_waitThread.joinable())
             {
                 m_waitThread.join();
             }
 
-            AZStd::thread_desc threadDesc{ "Fence WaitOnCpu Thread" };
-
-            m_waitThread = AZStd::thread(threadDesc, [this, callback]()
-            {
-                ResultCode resultCode = WaitOnCpu();
-                if (resultCode != ResultCode::Success)
-                {
-                    AZ_Error("Fence", false, "Failed to call WaitOnCpu in async thread.");
-                }
-                callback();
-            });
-
-            return ResultCode::Success;
+            ShutdownInternal();
+            DeviceObject::Shutdown();
         }
+    }
 
-        ResultCode Fence::Reset()
+    ResultCode Fence::SignalOnCpu()
+    {
+        if (!ValidateIsInitialized())
         {
-            if (!ValidateIsInitialized())
-            {
-                return ResultCode::InvalidOperation;
-            }
-
-            ResetInternal();
-            return ResultCode::Success;
+            return ResultCode::InvalidOperation;
         }
 
-        FenceState Fence::GetFenceState() const
+        SignalOnCpuInternal();
+        return ResultCode::Success;
+    }
+
+    ResultCode Fence::WaitOnCpu() const
+    {
+        if (!ValidateIsInitialized())
         {
-            if (!ValidateIsInitialized())
-            {
-                return FenceState::Reset;
-            }
-
-            return GetFenceStateInternal();
+            return ResultCode::InvalidOperation;
         }
+
+        AZ_PROFILE_SCOPE(RHI, "Fence: WaitOnCpu");
+        WaitOnCpuInternal();
+        return ResultCode::Success;
+    }
+
+    ResultCode Fence::WaitOnCpuAsync(SignalCallback callback)
+    {
+        if (!ValidateIsInitialized())
+        {
+            return ResultCode::InvalidOperation;
+        }
+
+        if (!callback)
+        {
+            AZ_Error("Fence", false, "Callback is null.");
+            return ResultCode::InvalidOperation;
+        }
+
+        if (m_waitThread.joinable())
+        {
+            m_waitThread.join();
+        }
+
+        AZStd::thread_desc threadDesc{ "Fence WaitOnCpu Thread" };
+
+        m_waitThread = AZStd::thread(threadDesc, [this, callback]()
+        {
+            ResultCode resultCode = WaitOnCpu();
+            if (resultCode != ResultCode::Success)
+            {
+                AZ_Error("Fence", false, "Failed to call WaitOnCpu in async thread.");
+            }
+            callback();
+        });
+
+        return ResultCode::Success;
+    }
+
+    ResultCode Fence::Reset()
+    {
+        if (!ValidateIsInitialized())
+        {
+            return ResultCode::InvalidOperation;
+        }
+
+        ResetInternal();
+        return ResultCode::Success;
+    }
+
+    FenceState Fence::GetFenceState() const
+    {
+        if (!ValidateIsInitialized())
+        {
+            return FenceState::Reset;
+        }
+
+        return GetFenceStateInternal();
     }
 }

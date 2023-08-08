@@ -415,39 +415,6 @@ namespace AzToolsFramework
         }
 
         //////////////////////////////////////////////////////////////////////////
-        // AssetPathFilter
-        //////////////////////////////////////////////////////////////////////////
-        AssetPathFilter::AssetPathFilter()
-            : m_assetPath("")
-        {
-        }
-
-        void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
-        {
-            m_assetPath = path.LexicallyNormal();
-        }
-
-        QString AssetPathFilter::GetNameInternal() const
-        {
-            return QString::fromUtf8(m_assetPath.c_str(), static_cast<int32_t>(m_assetPath.Native().size()));
-        }
-
-        bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
-        {
-            if (m_assetPath.empty())
-            {
-                return false;
-            }
-
-            AZ::IO::Path absolutePath =
-                (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product && entry->GetParent()
-                    ? entry->GetParent()->GetFullPath()
-                    : AZ::IO::Path(entry->GetFullPath()));
-
-            return absolutePath.IsRelativeTo(m_assetPath);
-        }
-
-        //////////////////////////////////////////////////////////////////////////
         // CompositeFilter
         //////////////////////////////////////////////////////////////////////////
         CompositeFilter::CompositeFilter(LogicOperatorType logicOperator)

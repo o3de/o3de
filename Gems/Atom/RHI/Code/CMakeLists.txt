@@ -140,6 +140,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::Atom_RHI.Tests
+            LABELS REQUIRES_tiaf
         )
 
         ly_add_target_files(

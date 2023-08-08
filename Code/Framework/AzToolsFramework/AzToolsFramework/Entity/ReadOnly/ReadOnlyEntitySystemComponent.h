@@ -45,7 +45,7 @@ namespace AzToolsFramework
         void RefreshReadOnlyStateForAllEntities() override;
 
         // EditorEntityContextNotificationBus overrides ...
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
 
     private:
         void QueryReadOnlyStateForEntity(const AZ::EntityId& entityId);

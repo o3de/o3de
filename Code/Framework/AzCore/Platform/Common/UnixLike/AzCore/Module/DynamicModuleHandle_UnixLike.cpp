@@ -16,15 +16,16 @@
 #include <dlfcn.h>
 #include <libgen.h>
 
+namespace AZ::Platform
+{
+    AZ::IO::FixedMaxPath GetModulePath();
+    void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
+    void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
+    AZ::IO::FixedMaxPath CreateFrameworkModulePath(const AZ::IO::PathView& moduleName);
+}
+
 namespace AZ
 {
-    namespace Platform
-    {
-        AZ::IO::FixedMaxPath GetModulePath();
-        void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
-        void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
-    }
-
     class DynamicModuleHandleUnixLike
         : public DynamicModuleHandle
     {
@@ -60,6 +61,15 @@ namespace AZ
             if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
                 AZ::IO::FixedMaxPath candidatePath = Platform::GetModulePath() / fullFilePath;
+                if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
+                {
+                    m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());
+                    return;
+                }
+
+                // If the executable is bundle, such as on an Apple platform
+                // Check if the module is in the <bundle.app>/Frameworks directory
+                candidatePath = Platform::CreateFrameworkModulePath(fullFilePath);
                 if (AZ::IO::SystemFile::Exists(candidatePath.c_str()))
                 {
                     m_fileName.assign(candidatePath.Native().c_str(), candidatePath.Native().size());

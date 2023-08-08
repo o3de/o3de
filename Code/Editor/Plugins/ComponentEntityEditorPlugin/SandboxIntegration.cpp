@@ -80,11 +80,9 @@
 #include <LmbrCentral/Scripting/EditorTagComponentBus.h>
 
 // Sandbox imports.
-#include <Editor/ActionManager.h>
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
-#include <Editor/IconManager.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
@@ -190,22 +188,6 @@ void SandboxIntegrationManager::Setup()
     AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler::BusConnect();
 
     AzFramework::DisplayContextRequestBus::Handler::BusConnect();
-
-    if (!AzToolsFramework::IsNewActionManagerEnabled())
-    {
-        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
-            ID_FILE_SAVE_SLICE_TO_ROOT,
-            [this]()
-            {
-                SaveSlice(false);
-            });
-        MainWindow::instance()->GetActionManager()->RegisterActionHandler(
-            ID_FILE_SAVE_SELECTED_SLICE,
-            [this]()
-            {
-                SaveSlice(true);
-            });
-    }
 
     // Keep a reference to the interface EditorEntityUiInterface.
     // This is used to register layer entities to their UI handler when the layer component is activated.
@@ -1183,11 +1165,6 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     return AZ::Vector3::CreateZero();
 }
 
-int SandboxIntegrationManager::GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath)
-{
-    return GetIEditor()->GetIconManager()->GetIconTexture(entityIconPath.c_str());
-}
-
 void SandboxIntegrationManager::ClearRedoStack()
 {
     // We have two separate undo systems that are assumed to be kept in sync,
@@ -1391,7 +1368,7 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
 }
 
-void SandboxIntegrationManager::OnContextReset()
+void SandboxIntegrationManager::OnPrepareForContextReset()
 {
     // Deselect everything.
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(

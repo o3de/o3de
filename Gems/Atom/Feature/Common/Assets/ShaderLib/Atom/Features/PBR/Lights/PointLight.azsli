@@ -9,7 +9,14 @@
 #pragma once
 
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+#if ENABLE_SHADOWS
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
+#endif
+
+#if ENABLE_SPHERE_LIGHTS
+
+#if ENABLE_SHADOWS
 
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
@@ -63,6 +70,8 @@ uint ComputeShadowIndex(const ViewSrg::PointLight light, const Surface surface)
     const int shadowCubemapFace = GetPointLightShadowCubemapFace(biasedPosition, light.m_position);
     return UnpackPointLightShadowIndex(light, shadowCubemapFace);
 }
+
+#endif // ENABLE_SHADOWS
 
 void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingData lightingData)
 {
@@ -184,7 +193,6 @@ void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout Lighti
 
 void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_SPHERE_LIGHTS
     if (o_enableSphereLights)
     {
         ViewSrg::PointLight light = ViewSrg::m_pointLights[lightIndex];
@@ -200,7 +208,6 @@ void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingDat
             ApplyPointLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_SPHERE_LIGHTS
 }
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
@@ -222,3 +229,11 @@ void ApplyPointLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+
+void ApplyPointLights(Surface surface, inout LightingData lightingData)
+{
+    //Not Enabled
+}
+#endif

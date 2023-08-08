@@ -9,45 +9,42 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void Buffer::SetDescriptor(const BufferDescriptor& descriptor)
     {
-        void Buffer::SetDescriptor(const BufferDescriptor& descriptor)
-        {
-            m_descriptor = descriptor;
-        }
+        m_descriptor = descriptor;
+    }
 
-        const RHI::BufferDescriptor& Buffer::GetDescriptor() const
-        {
-            return m_descriptor;
-        }
+    const RHI::BufferDescriptor& Buffer::GetDescriptor() const
+    {
+        return m_descriptor;
+    }
 
-        const BufferFrameAttachment* Buffer::GetFrameAttachment() const
-        {
-            return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
-        }
+    const BufferFrameAttachment* Buffer::GetFrameAttachment() const
+    {
+        return static_cast<const BufferFrameAttachment*>(Resource::GetFrameAttachment());
+    }
 
-        void Buffer::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
-        {
-            const BufferDescriptor& descriptor = GetDescriptor();
+    void Buffer::ReportMemoryUsage(MemoryStatisticsBuilder& builder) const
+    {
+        const BufferDescriptor& descriptor = GetDescriptor();
 
-            MemoryStatistics::Buffer* bufferStats = builder.AddBuffer();
-            bufferStats->m_name = GetName();
-            bufferStats->m_bindFlags = descriptor.m_bindFlags;
-            bufferStats->m_sizeInBytes = descriptor.m_byteCount;
-        }
+        MemoryStatistics::Buffer* bufferStats = builder.AddBuffer();
+        bufferStats->m_name = GetName();
+        bufferStats->m_bindFlags = descriptor.m_bindFlags;
+        bufferStats->m_sizeInBytes = descriptor.m_byteCount;
+    }
     
-        Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
-        {
-            return Base::GetResourceView(bufferViewDescriptor);
-        }
+    Ptr<BufferView> Buffer::GetBufferView(const BufferViewDescriptor& bufferViewDescriptor)
+    {
+        return Base::GetResourceView(bufferViewDescriptor);
+    }
 
-        const HashValue64 Buffer::GetHash() const
-        {
-            HashValue64 hash = HashValue64{ 0 };
-            hash = m_descriptor.GetHash();
-            return hash;
-        }
+    const HashValue64 Buffer::GetHash() const
+    {
+        HashValue64 hash = HashValue64{ 0 };
+        hash = m_descriptor.GetHash();
+        return hash;
     }
 }

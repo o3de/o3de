@@ -67,7 +67,7 @@ namespace AzNetworking
         //! @param minValue the minimum value expected during serialization
         //! @param maxValue the maximum value expected during serialization
         //! @return boolean true for success, false for failure
-        virtual bool Serialize(char& value, const char* name, char minValue = AZStd::numeric_limits<char>::min(), char maxValue = AZStd::numeric_limits<char>::max()) = 0;
+        bool Serialize(char& value, const char* name, uint8_t minValue = AZStd::numeric_limits<uint8_t>::min(), uint8_t maxValue = AZStd::numeric_limits<uint8_t>::max());
 
         //! Serialize a signed byte.
         //! @param value    signed byte input value to serialize

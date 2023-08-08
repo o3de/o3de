@@ -1155,27 +1155,20 @@ namespace ScriptCanvasEditor
         setMinimumSize(0, 0);
         ResizeColumns();
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
-            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->AssignWidgetToActionContext(
-                    ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, this);
-            }
+            hotKeyManagerInterface->AssignWidgetToActionContext(
+                ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, this);
         }
     }
 
     GraphVariablesTableView::~GraphVariablesTableView()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
         {
-            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(
-                    ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, this);
-            }
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(
+                ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, this);
         }
-
     }
 
     void GraphVariablesTableView::SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId)

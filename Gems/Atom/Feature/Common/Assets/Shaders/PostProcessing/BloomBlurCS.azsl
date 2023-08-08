@@ -47,7 +47,7 @@ void MainCS(uint3 dID : SV_DispatchThreadID)
 
     // Kernel has been normalized beforehand
     float3 sum = (PassSrg::m_kernelRadius > 0 ? PassSrg::m_weights[0] : 1.0) * 
-                 PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv, PassSrg::m_mipLevel);
+                 PassSrg::m_inputTexture.SampleLevel(PassSrg::LinearSampler, uv, PassSrg::m_mipLevel).rgb;
 
     float2 t = (PassSrg::m_direction ? float2(1.0, 0.0) : float2(0.0, 1.0)) * PassSrg::m_sourceImageTexelSize;
     for(int i = 1; i < PassSrg::m_kernelRadius; ++i)

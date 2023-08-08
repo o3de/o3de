@@ -131,6 +131,7 @@ namespace Multiplayer
         void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
+        void AddNetworkInitHandler(NetworkInitEvent::Handler& handler) override;
 
         //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or
         //! SessionNotificationBus::OnCreateSessionEnd.
@@ -202,6 +203,7 @@ namespace Multiplayer
         IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
+        NetworkInitEvent m_networkInitEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         EndpointDisconnectedEvent m_endpointDisconnectedEvent;
         ClientMigrationStartEvent m_clientMigrationStartEvent;

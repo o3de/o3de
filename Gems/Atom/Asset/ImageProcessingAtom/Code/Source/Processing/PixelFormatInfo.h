@@ -176,7 +176,7 @@ namespace ImageProcessingAtom
         EPixelFormat FindPixelFormatByName(const char* name);
 
         //returns maximum lod levels for image which has certain pixel format, width and height.
-        uint32 ComputeMaxMipCount(EPixelFormat format, uint32 imageWidth, uint32 imageHeight);
+        uint32 ComputeMaxMipCount(EPixelFormat format, uint32 imageWidth, uint32 imageHeight, uint32_t imageDepth = 1);
 
         //check if the input image size work with the pixel format. Some compression formats have requirements with the input image size.
         bool IsImageSizeValid(EPixelFormat format, uint32 imageWidth, uint32 imageHeight, bool logWarning);

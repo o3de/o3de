@@ -83,7 +83,6 @@ CGameExporter::~CGameExporter()
 bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportEndian, const char* subdirectory)
 {
     CAutoDocNotReady autoDocNotReady;
-    CObjectManagerLevelIsExporting levelIsExportingFlag;
     QWaitCursor waitCursor;
 
     IEditor* pEditor = GetIEditor();
@@ -179,7 +178,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             ////////////////////////////////////////////////////////////////////////
             // Exporting map setttings
             ////////////////////////////////////////////////////////////////////////
-            ExportOcclusionMesh(sLevelPath.toUtf8().data());
 
             //! Export Level data.
             CLogFile::WriteLine("Exporting leveldata.xml");
@@ -234,29 +232,6 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
     }
 
     return exportSuccessful;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CGameExporter::ExportOcclusionMesh(const char* pszGamePath)
-{
-    IEditor* pEditor = GetIEditor();
-    pEditor->SetStatusText(QObject::tr("including Occluder Mesh \"occluder.ocm\" if available"));
-
-    char resolvedLevelPath[AZ_MAX_PATH_LEN] = { 0 };
-    AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(pszGamePath, resolvedLevelPath, AZ_MAX_PATH_LEN);
-    QString levelDataFile = QString(resolvedLevelPath) + "occluder.ocm";
-    QFile FileIn(levelDataFile);
-    if (FileIn.open(QFile::ReadOnly))
-    {
-        CMemoryBlock Temp;
-        const size_t Size   =   FileIn.size();
-        Temp.Allocate(static_cast<int>(Size));
-        FileIn.read(reinterpret_cast<char*>(Temp.GetBuffer()), Size);
-        FileIn.close();
-        CCryMemFile FileOut;
-        FileOut.Write(Temp.GetBuffer(), static_cast<int>(Size));
-        m_levelPak.m_pakFile.UpdateFile(levelDataFile.toUtf8().data(), FileOut);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

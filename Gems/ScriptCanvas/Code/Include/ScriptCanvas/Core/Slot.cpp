@@ -211,6 +211,8 @@ namespace ScriptCanvas
                 ->Field("VariableReference", &Slot::m_variableReference)
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
                 ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
+                ->Field("CreatesImplicitConnections", &Slot::m_createsImplicitConnections)
+                ->Field("IsNameHidden", &Slot::m_isNameHidden)
                 ;
         }
 
@@ -226,6 +228,8 @@ namespace ScriptCanvas
         , m_id(slotConfiguration.m_slotId)
         , m_isVisible(slotConfiguration.m_isVisible)
         , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
+        , m_createsImplicitConnections(slotConfiguration.m_createsImplicitConnections)
+        , m_isNameHidden(slotConfiguration.m_isNameHidden)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -437,6 +441,16 @@ namespace ScriptCanvas
     bool Slot::CanHaveInputField() const
     {
         return m_canHaveInputField;
+    }
+
+    bool Slot::CreatesImplicitConnections() const
+    {
+        return m_createsImplicitConnections;
+    }
+
+    bool Slot::IsNameHidden() const
+    {
+        return m_isNameHidden;
     }
 
     bool Slot::CanConvertToValue() const
@@ -867,12 +881,29 @@ namespace ScriptCanvas
         }
 
         // At this point we need to confirm the types are a match.
-        const auto& thisType = GetDataType();
+        // Get the slot definition's data type so that we can verify that the new data type is a compatible type.
+        // We specifcally don't use GetSlotDataType() here, because that will return the data type for any currently-attached
+        // variable, which might have a subtype that's more restrictive that the slot's base type.
+        const auto& slotType = m_node->GetUnderlyingSlotDataType(GetId());
 
-        if (thisType.IS_A(dataType))
+        if (slotType.IsValid())
         {
-            return AZ::Success();
+            // As long as the data type is a type of slotType (actual type or subclass), it's a match.
+            if (dataType.IS_A(slotType))
+            {
+                return AZ::Success();
+            }
         }
+        else
+        {
+            // If the underlying slot type is invalid, but there's a display type set, then matching the display type is
+            // still a valid match.
+            if (HasDisplayType() && dataType.IS_A(GetDisplayType()))
+            {
+                return AZ::Success();
+            }
+        }
+
 
         return AZ::Failure(AZStd::string::format("%s is not a type match for %s", ScriptCanvas::Data::GetName(GetDataType()).c_str(), ScriptCanvas::Data::GetName(dataType).c_str()));
     }

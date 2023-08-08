@@ -741,7 +741,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.split_batched_editor_log_file', mock.MagicMock())
     def test_ExecMultitest_OneCrash_ReportsOnUnknownResult(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                            mock_retrieve_log, mock_retrieve_editor_log,
                                                            mock_get_results, mock_retrieve_crash):
@@ -768,7 +767,7 @@ class TestRunningTests(unittest.TestCase):
         assert mock_get_results.called
         assert isinstance(results[mock_test_spec.__name__], multi_test_framework.Result.Crash)
         # Save executable log output, crash log, and crash dmp
-        assert mock_workspace.artifact_manager.save_artifact.call_count == 2
+        assert mock_workspace.artifact_manager.save_artifact.call_count == 3
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_crash_output')
     @mock.patch('ly_test_tools.o3de.multi_test_framework.MultiTestSuite._get_results_using_output')
@@ -781,7 +780,6 @@ class TestRunningTests(unittest.TestCase):
     @mock.patch('os.path.join', mock.MagicMock())
     @mock.patch('os.path.basename', mock.MagicMock())
     @mock.patch('os.path.dirname', mock.MagicMock())
-    @mock.patch('ly_test_tools.o3de.editor_test_utils.split_batched_editor_log_file', mock.MagicMock())
     def test_ExecMultitest_ManyUnknown_ReportsUnknownResults(self, mock_cycle_crash, mock_get_testcase_filepath,
                                                              mock_retrieve_log, mock_retrieve_editor_log,
                                                              mock_get_results, mock_retrieve_crash):

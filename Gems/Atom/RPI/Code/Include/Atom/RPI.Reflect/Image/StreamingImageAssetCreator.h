@@ -48,7 +48,9 @@ namespace AZ
 
             //! Set the average color of the image.
             void SetAverageColor(Color avgColor);
-            
+
+            void AddTag(AZ::Name tag);
+
             //! Finalizes and assigns ownership of the asset to result, if successful. 
             //! Otherwise false is returned and result is left untouched.
             bool End(Data::Asset<StreamingImageAsset>& result);

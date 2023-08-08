@@ -19,7 +19,7 @@
  */
 
 // a smaller epsilon is required for avoiding artifacts in the generated BRDF texture
-#define GGX_EPSILON 1e-8f
+#define GGX_EPSILON 1e-8
 
 #include <Atom/RPI/Math.azsli>
 
@@ -33,10 +33,10 @@
 //! @param N            macrosurface normal
 //! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
 //! @return             factor for how much of the macrosurface has normals in the direction M. The value non-negative, but it's not normalized, so values are not restricted to [0, 1].
-float NormalDistributionGGX(const float NdotH, const float roughnessA2)
+real NormalDistributionGGX(const real NdotH, const real roughnessA2)
 {
     // Walter equation 33, simplified given that the positive characteristic function is handled elsewhere
-    float b = (NdotH * roughnessA2 - NdotH) * NdotH + 1.0;
+    real b = (NdotH * roughnessA2 - NdotH) * NdotH + 1.0;
     return roughnessA2 / (PI * b * b);
 }
 
@@ -48,13 +48,13 @@ float NormalDistributionGGX(const float NdotH, const float roughnessA2)
 //! @param L            direction to the light
 //! @param roughnessA2  alpha roughness ^ 2 (alpha roughness is the unpacked form of artist authored linear roughness and is what is used for lighting calculations)
 //! @return             probability that V and L are not masked.
-float GeometricShadowingMaskingGGXCorrelated(const float NdotV, const float NdotL, const float roughnessA2)
+real GeometricShadowingMaskingGGXCorrelated(const real NdotV, const real NdotL, const real roughnessA2)
 {
     // See Frostbite PBR guide (page 12)
     // https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/course-notes-moving-frostbite-to-pbr-v32.pdf
-    float ggxV = NdotL * sqrt((-NdotV * roughnessA2 + NdotV) * NdotV + roughnessA2);
-    float ggxL = NdotV * sqrt((-NdotL * roughnessA2 + NdotL) * NdotL + roughnessA2);
-    return 0.5f / max(ggxV + ggxL, GGX_EPSILON);
+    real ggxV = NdotL * sqrt((-NdotV * roughnessA2 + NdotV) * NdotV + roughnessA2);
+    real ggxL = NdotV * sqrt((-NdotL * roughnessA2 + NdotL) * NdotL + roughnessA2);
+    return 0.5 / max(ggxV + ggxL, GGX_EPSILON);
 }
 
 
@@ -66,16 +66,16 @@ float GeometricShadowingMaskingGGXCorrelated(const float NdotV, const float Ndot
 //! @param t    - rotated surface tangent for calculating anisotropic response
 //! @param b    - rotated surface bitangent for calculating anisotropic response
 //! @param anisotropyFactors - anisotropic tangent and bitangent factor 
-float NormalDistibution_AnisotropicGGX( float NdotH, const float3 h, const float3 t, const float3 b, float2 anisotropyFactors )
+real NormalDistibution_AnisotropicGGX( real NdotH, const real3 h, const real3 t, const real3 b, real2 anisotropyFactors )
 {
-    const float atFactor = anisotropyFactors.x;
-    const float abFactor = anisotropyFactors.y;
-    float TdotH = dot(t, h);
-    float BdotH = dot(b, h);
-    float a2 = atFactor * abFactor;
-    float3 v = float3( abFactor * TdotH, atFactor * BdotH, a2 * NdotH);
-    float v2 = dot(v, v);
-    float w2 = a2 / max(EPSILON, v2);
+    const real atFactor = anisotropyFactors.x;
+    const real abFactor = anisotropyFactors.y;
+    real TdotH = dot(t, h);
+    real BdotH = dot(b, h);
+    real a2 = atFactor * abFactor;
+    real3 v = real3( abFactor * TdotH, atFactor * BdotH, a2 * NdotH);
+    real v2 = dot(v, v);
+    real w2 = a2 / max(EPSILON, v2);
     return a2 * w2 * w2 * (1.0 / PI);
 }
 
@@ -83,19 +83,19 @@ float NormalDistibution_AnisotropicGGX( float NdotH, const float3 h, const float
 //! @param t    - rotated surface tangent for calculating anisotropic response
 //! @param b    - rotated surface bitangent for calculating anisotropic response
 //! @param anisotropyFactors - anisotropic tangent and bitangent factor 
-float ShadowingMasking_AnisotropicSmithGGXCorrelated( 
-    const float3 t, const float3 b, const float3 dirToCamera, const float3 dirToLight, 
-    float NdotV, float NdotL, float2 anisotropyFactors ) 
+real ShadowingMasking_AnisotropicSmithGGXCorrelated( 
+    const real3 t, const real3 b, const real3 dirToCamera, const real3 dirToLight, 
+    real NdotV, real NdotL, real2 anisotropyFactors ) 
 {
-    const float atFactor = anisotropyFactors.x;
-    const float abFactor = anisotropyFactors.y;
-    float TdotV = dot(t, dirToCamera);
-    float BdotV = dot(b, dirToCamera);
-    float TdotL = dot(t, dirToLight);
-    float BdotL = dot(b, dirToLight);
-    float lambdaV = NdotL * length(float3(atFactor * TdotV, abFactor * BdotV, NdotV));
-    float lambdaL = NdotV * length(float3(atFactor * TdotL, abFactor * BdotL, NdotL));
-    float v = 0.5 / (lambdaV + lambdaL);
+    const real atFactor = anisotropyFactors.x;
+    const real abFactor = anisotropyFactors.y;
+    real TdotV = dot(t, dirToCamera);
+    real BdotV = dot(b, dirToCamera);
+    real TdotL = dot(t, dirToLight);
+    real BdotL = dot(b, dirToLight);
+    real lambdaV = NdotL * length(real3(atFactor * TdotV, abFactor * BdotV, NdotV));
+    real lambdaL = NdotV * length(real3(atFactor * TdotL, abFactor * BdotL, NdotL));
+    real v = 0.5 / (lambdaV + lambdaL);
     return min(v, FLOAT_16_MAX);
 }
 

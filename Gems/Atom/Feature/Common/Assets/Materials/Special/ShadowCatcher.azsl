@@ -44,19 +44,20 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 //! Shades the entire geometry with the shadow color, not just what's in shadow. For debugging.
 option bool o_shadeAll = false;
 
-VSOutput ShadowCatcherVS(VSInput IN)
+VSOutput ShadowCatcherVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
  
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
   
     OUT.m_worldPosition = worldPosition;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
-    OUT.m_worldNormal = normalize(mul(ObjectSrg::GetWorldMatrixInverseTranspose(), IN.m_normal));
+    OUT.m_worldNormal = normalize(mul(GetObjectToWorldMatrixInverseTranspose(instanceId), IN.m_normal));
     
 
     

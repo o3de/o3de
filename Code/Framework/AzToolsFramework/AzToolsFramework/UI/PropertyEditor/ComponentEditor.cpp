@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -145,26 +146,25 @@ namespace AzToolsFramework
         AZ::SerializeContext* context,
         IPropertyEditorNotify* notifyTarget /* = nullptr */,
         QWidget* parent /* = nullptr */,
-        bool replaceRPE /* = false */,
-        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> customDpeComponentAdapter /* = nullptr */)
+        ComponentAdapterFactory adapterFactory /* nullptr factory */)
         : AzQtComponents::Card(new ComponentEditorHeader(), parent)
         , m_serializeContext(context)
+        , m_adapterFactory(adapterFactory)
     {
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
-        if (replaceRPE)
+        m_adapter = m_adapterFactory();
+        if (m_adapter)
         {
-            // Instantiate the DPE without the RPE
-            m_adapter = customDpeComponentAdapter;
-            if (!m_adapter)
-            {
-                // Create a default component adapter.
-                m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
-            }
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
+
+            // this DPE is going into a scroll area, don't allow it to provide its own scrollbar
+            m_dpe->SetAllowVerticalScroll(false);
             m_filterAdapter->SetSourceAdapter(m_adapter);
             m_dpe->SetAdapter(m_filterAdapter);
+            connect(m_dpe, &DocumentPropertyEditor::ExpanderChangedByUser, this, &ComponentEditor::OnExpansionContractionDone);
+            connect(m_dpe, &DocumentPropertyEditor::RequestSizeUpdate, this, &ComponentEditor::OnSizeUpdateRequested);
             setContentWidget(m_dpe);
         }
         else
@@ -211,11 +211,40 @@ namespace AzToolsFramework
 
         if (m_adapter)
         {
+            // aggregateInstance will be null unless we're adding to multi-edit
             if (!aggregateInstance)
             {
-                // Set the adapter component to this instance.
-                // Note: multiple selection with DPE is not yet supported
+                // not in multi-edit, just set the adapter component to this instance.
                 m_adapter->SetComponent(componentInstance);
+
+                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter
+                if (m_aggregateAdapter)
+                {
+                    m_filterAdapter->SetSourceAdapter(m_adapter);
+                    m_aggregateAdapter.reset();
+                }
+            }
+            else
+            {
+                // there's an aggregateInstance, so we're in multi-edit. Create the AggregateAdapter if it doesn't exist yet
+                if (!m_aggregateAdapter)
+                {
+                    m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+
+                    // for now, disable "values differ rows", since there are so many pointer and opaque types in the Inspector
+                    // and the output is noisy and unpleasant.
+                    m_aggregateAdapter->SetGenerateDiffRows(false);
+
+                    // add the original adapter which was already set in a prior AddInstance with a null aggregateInstance
+                    m_aggregateAdapter->AddAdapter(m_adapter);
+                    m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
+                }
+
+                // create the new ComponentAdapter for the componentInstance using the factory from our constructor
+                auto newAdapter = m_adapterFactory();
+                AZ_Assert(newAdapter, "m_adapterFactory should always return a valid ComponentAdapter in DPE mode!");
+                newAdapter->SetComponent(componentInstance);
+                m_aggregateAdapter->AddAdapter(newAdapter);
             }
         }
         else
@@ -542,7 +571,7 @@ namespace AzToolsFramework
     {
         if (m_dpe)
         {
-            return !m_filterAdapter->IsEmpty();
+            return !m_filterAdapter->FilterIsActive() || !m_filterAdapter->IsEmpty() || GetHeader()->TitleMatchesFilter();
         }
         else
         {
@@ -626,7 +655,7 @@ namespace AzToolsFramework
 
         m_componentType = componentType;
 
-        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()));
+        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()), "componenteditor");
 
         GetHeader()->SetTitle(GetFriendlyComponentName(&componentInstance).c_str());
 

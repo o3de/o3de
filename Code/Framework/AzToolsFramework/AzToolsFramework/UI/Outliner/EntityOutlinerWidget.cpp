@@ -295,8 +295,6 @@ namespace AzToolsFramework
             }
         }
 
-        SetupActions();
-
         m_emptyIcon = QIcon();
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
@@ -590,108 +588,9 @@ namespace AzToolsFramework
             return;
         }
 
-        if (IsNewActionManagerEnabled())
+        if (auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get())
         {
-            if (auto menuManagerInterface = AZ::Interface<MenuManagerInterface>::Get())
-            {
-                menuManagerInterface->DisplayMenuUnderCursor(EditorIdentifiers::EntityOutlinerContextMenuIdentifier);
-            }
-        }
-        else
-        {
-            QMenu* contextMenu = new QMenu(this);
-
-            // Populate global context menu.
-            AzToolsFramework::EditorContextMenuBus::Broadcast(
-                &AzToolsFramework::EditorContextMenuEvents::PopulateEditorGlobalContextMenu,
-                contextMenu,
-                AZStd::nullopt,
-                EditorEvents::eECMF_HIDE_ENTITY_CREATION);
-
-            PrepareSelection();
-
-            // Remove the "Find in Entity Outliner" option from the context menu
-            for (QAction* action : contextMenu->actions())
-            {
-                if (action->text() == "Find in Entity Outliner")
-                {
-                    contextMenu->removeAction(action);
-                    break;
-                }
-            }
-
-            // register rename menu action
-            if (!m_selectedEntityIds.empty())
-            {
-                contextMenu->addSeparator();
-
-                if (m_selectedEntityIds.size() == 1)
-                {
-                    auto entityId = m_selectedEntityIds.front();
-
-                    // Only allow renaming the entity if the UI Handler did not block it.
-                    auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId);
-                    bool canRename = !entityUiHandler || entityUiHandler->CanRename(entityId);
-
-                    // Disable renaming for read-only entities.
-                    bool isReadOnly = m_readOnlyEntityPublicInterface->IsReadOnly(entityId);
-
-                    if (canRename && !isReadOnly)
-                    {
-                        contextMenu->addAction(m_actionToRenameSelection);
-                    }
-                }
-
-                if (m_selectedEntityIds.size() == 1)
-                {
-                    AZ::EntityId entityId = m_selectedEntityIds[0];
-
-                    // Don't allow moving the entity if it's the focus root.
-                    if (m_focusModeInterface->GetFocusRoot(m_editorEntityContextId) != entityId)
-                    {
-                        AZ::EntityId parentId;
-                        EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-
-                        EntityOrderArray entityOrderArray = GetEntityChildOrder(parentId);
-
-                        if (entityOrderArray.size() > 1)
-                        {
-                            if (AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), entityId) != entityOrderArray.end())
-                            {
-                                if (entityOrderArray.front() != entityId)
-                                {
-                                    contextMenu->addAction(m_actionToMoveEntityUp);
-                                }
-
-                                if (entityOrderArray.back() != entityId)
-                                {
-                                    contextMenu->addAction(m_actionToMoveEntityDown);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                contextMenu->addSeparator();
-
-                bool canGoToEntitiesInViewport = true;
-                EditorRequestBus::BroadcastResult(canGoToEntitiesInViewport, &EditorRequestBus::Events::CanGoToSelectedEntitiesInViewports);
-                if (!canGoToEntitiesInViewport)
-                {
-                    m_actionGoToEntitiesInViewport->setEnabled(false);
-                    m_actionGoToEntitiesInViewport->setToolTip(
-                        QObject::tr("The selection contains no entities that exist in the viewport."));
-                }
-                else
-                {
-                    m_actionGoToEntitiesInViewport->setEnabled(true);
-                    m_actionGoToEntitiesInViewport->setToolTip(QObject::tr("Moves the viewports to the bounding box for the selection."));
-                }
-                contextMenu->addAction(m_actionGoToEntitiesInViewport);
-            }
-
-            contextMenu->exec(m_gui->m_objectTree->mapToGlobal(pos));
-            delete contextMenu;
+            menuManagerInterface->DisplayMenuUnderCursor(EditorIdentifiers::EntityOutlinerContextMenuIdentifier);
         }
     }
 
@@ -877,57 +776,6 @@ namespace AzToolsFramework
 
         ToolsApplicationRequestBus::Broadcast(
             &ToolsApplicationRequests::SetSelectedEntities, EntityIdList{ entityId });
-    }
-
-    void EntityOutlinerWidget::SetupActions()
-    {
-        m_actionToCreateEntity = new QAction(tr("Create Entity"), this);
-        m_actionToCreateEntity->setShortcut(tr("Ctrl+Alt+N"));
-        m_actionToCreateEntity->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToCreateEntity, &QAction::triggered, this, &EntityOutlinerWidget::DoCreateEntity);
-        addAction(m_actionToCreateEntity);
-
-        m_actionToDeleteSelection = new QAction(tr("Delete"), this);
-        m_actionToDeleteSelection->setShortcut(QKeySequence("Shift+Delete"));
-        m_actionToDeleteSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToDeleteSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelection);
-        addAction(m_actionToDeleteSelection);
-
-        if (!IsNewActionManagerEnabled())
-        {
-            m_actionToDeleteSelectionAndDescendants = new QAction(tr("Delete Selection And Descendants"), this);
-            m_actionToDeleteSelectionAndDescendants->setShortcut(QKeySequence::Delete);
-            m_actionToDeleteSelectionAndDescendants->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-            connect(m_actionToDeleteSelectionAndDescendants, &QAction::triggered, this, &EntityOutlinerWidget::DoDeleteSelectionAndDescendants);
-            addAction(m_actionToDeleteSelectionAndDescendants);
-        }
-
-        m_actionToRenameSelection = new QAction(tr("Rename"), this);
-    #if defined(Q_OS_MAC)
-        // "Alt+Return" translates to Option+Return on macOS
-        m_actionToRenameSelection->setShortcut(tr("Alt+Return"));
-    #elif defined(Q_OS_WIN)
-        m_actionToRenameSelection->setShortcut(tr("F2"));
-    #endif
-        m_actionToRenameSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToRenameSelection, &QAction::triggered, this, &EntityOutlinerWidget::DoRenameSelection);
-        addAction(m_actionToRenameSelection);
-
-        m_actionToMoveEntityUp = new QAction(tr("Move up"), this);
-        m_actionToMoveEntityUp->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToMoveEntityUp, &QAction::triggered, this, &EntityOutlinerWidget::DoMoveEntityUp);
-        addAction(m_actionToMoveEntityUp);
-
-        m_actionToMoveEntityDown = new QAction(tr("Move down"), this);
-        m_actionToMoveEntityDown->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        connect(m_actionToMoveEntityDown, &QAction::triggered, this, &EntityOutlinerWidget::DoMoveEntityDown);
-        addAction(m_actionToMoveEntityDown);
-
-        m_actionGoToEntitiesInViewport = new QAction(tr("Find in viewport"), this);
-        m_actionGoToEntitiesInViewport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-        m_actionGoToEntitiesInViewport->setShortcut(tr("Z"));
-        connect(m_actionGoToEntitiesInViewport, &QAction::triggered, this, &EntityOutlinerWidget::GoToEntitiesInViewport);
-        addAction(m_actionGoToEntitiesInViewport);
     }
 
     void EntityOutlinerWidget::SetDefaultTreeViewEditTriggers()

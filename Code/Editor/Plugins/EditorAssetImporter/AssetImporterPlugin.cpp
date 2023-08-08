@@ -20,7 +20,6 @@ AssetImporterPlugin* AssetImporterPlugin::s_instance;
 
 AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
     : m_editor(editor)
-    , m_toolName(LyViewPane::SceneSettings)
     , m_assetBrowserContextProvider()
     , m_sceneSerializationHandler()
 {
@@ -29,12 +28,6 @@ AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
     m_sceneUIModule = LoadSceneLibrary("SceneUI", true);
 
     m_sceneSerializationHandler.Activate();
-    
-    AzToolsFramework::ViewPaneOptions opt;
-    opt.isPreview = true;
-    opt.showInMenu = false; // this view pane is used to display scene settings, but the user never opens it directly through the Tools menu
-    opt.saveKeyName = "Scene Settings (PREVIEW)"; // user settings for this pane were originally saved with PREVIEW, so ensure that's how they are loaded as well, even after the PREVIEW is removed from the name
-    AzToolsFramework::RegisterViewPane<AssetImporterWindow>(m_toolName.c_str(), LyViewPane::CategoryTools, opt);
 
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
         &AzToolsFramework::ToolsApplicationRequests::CreateAndAddEntityFromComponentTags,
@@ -56,7 +49,11 @@ AssetImporterPlugin::AssetImporterPlugin(IEditor* editor)
 
 void AssetImporterPlugin::Release()
 {
-    AzToolsFramework::UnregisterViewPane(m_toolName.c_str());
+    if (m_assetImporterWindow)
+    {
+        delete m_assetImporterWindow;
+    }
+
     m_sceneSerializationHandler.Deactivate();
 
     auto uninit = m_sceneUIModule->GetFunction<AZ::UninitializeDynamicModuleFunction>(AZ::UninitializeDynamicModuleFunctionName);
@@ -102,21 +99,53 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> AssetImporterPlugin::LoadSceneLibrary
 
 QMainWindow* AssetImporterPlugin::EditImportSettings(const AZStd::string& sourceFilePath)
 {
-    const QtViewPane* assetImporterPane = GetIEditor()->OpenView(m_toolName.c_str());
-
-    if(!assetImporterPane)
+    if (!m_assetImporterWindow)
     {
         return nullptr;
     }
 
-    AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(assetImporterPane->Widget());
+    AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(m_assetImporterWindow);
     if (!assetImporterWindow)
     {
         return nullptr;
     }
 
     assetImporterWindow->OpenFile(sourceFilePath);
-    return assetImporterWindow;
+    return m_assetImporterWindow;
+}
+
+QMainWindow* AssetImporterPlugin::OpenImportSettings()
+{
+    // Can only be one asset importer window at a time
+    if (m_assetImporterWindow)
+    {
+        return nullptr;
+    }
+
+    m_assetImporterWindow = new AssetImporterWindow();
+    return m_assetImporterWindow;
+}
+
+bool AssetImporterPlugin::SaveBeforeClosing()
+{
+    if (!m_assetImporterWindow)
+    {
+        return false;
+    }
+
+    AssetImporterWindow* assetImporterWindow = qobject_cast<AssetImporterWindow*>(m_assetImporterWindow);
+    if (!assetImporterWindow)
+    {
+        return false;
+    }
+
+    bool canClose = assetImporterWindow->CanClose();
+    if (canClose)
+    {
+        delete m_assetImporterWindow;
+    }
+
+    return !canClose;
 }
 
 SceneSettingsAssetImporterForScriptRequestHandler::SceneSettingsAssetImporterForScriptRequestHandler()

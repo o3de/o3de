@@ -64,7 +64,7 @@ def AssetPicker_UI_UX():
         file_path = ["AutomatedTesting", "Assets", "Objects", "Foliage"]
 
         def is_asset_assigned(component, interaction_option):
-            path = os.path.join("assets", "objects", "foliage", "cedar.azmodel")
+            path = os.path.join("assets", "objects", "foliage", "cedar.fbx.azmodel")
             expected_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, 'GetAssetIdByPath', path, math.Uuid(),
                                                              False)
             result = hydra.get_component_property_value(component, "Controller|Configuration|Model Asset")
@@ -224,7 +224,7 @@ def AssetPicker_UI_UX():
 
         # 3) Access Entity Inspector
         editor_window = pyside_utils.get_editor_main_window()
-        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Entity Inspector")
+        entity_inspector = editor_window.findChild(QtWidgets.QDockWidget, "Inspector")
         component_list_widget = entity_inspector.findChild(QtWidgets.QWidget, "m_componentListContents")
 
         # 4) Click on Asset Picker (Model Asset)
@@ -235,7 +235,7 @@ def AssetPicker_UI_UX():
 
         # Assign Model Asset via OK button
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "ok")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "ok")
 
         # 5) Verify if Model Asset is assigned
         try:
@@ -259,7 +259,7 @@ def AssetPicker_UI_UX():
 
         # Assign Model Asset via Enter
         pyside_utils.click_button_async(attached_button)
-        await asset_picker(["azmodel", "fbx"], "cedar (ModelAsset)", "enter")
+        await asset_picker(["azmodel", "fbx"], "cedar.fbx (ModelAsset)", "enter")
 
         # 5) Verify if Model Asset is assigned
         try:

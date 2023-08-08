@@ -528,14 +528,11 @@ namespace LandscapeCanvasEditor
 
         UpdateGraphEnabled();
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            static constexpr AZStd::string_view LandscapeCanvasActionContextIdentifier = "o3de.context.editor.landscapecanvas";
+        static constexpr AZStd::string_view LandscapeCanvasActionContextIdentifier = "o3de.context.editor.landscapecanvas";
 
-            if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                hotKeyManagerInterface->AssignWidgetToActionContext(LandscapeCanvasActionContextIdentifier, this);
-            }
+        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(LandscapeCanvasActionContextIdentifier, this);
         }
     }
 

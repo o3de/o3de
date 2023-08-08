@@ -149,16 +149,6 @@ namespace AzToolsFramework
 
         void SetIndexAsCurrentAndSelected(const QModelIndex& index);
 
-        void SetupActions();
-
-        QAction* m_actionToCreateEntity;
-        QAction* m_actionToDeleteSelection;
-        QAction* m_actionToDeleteSelectionAndDescendants;
-        QAction* m_actionToRenameSelection;
-        QAction* m_actionToMoveEntityUp;
-        QAction* m_actionToMoveEntityDown;
-        QAction* m_actionGoToEntitiesInViewport;
-
         void OnTreeItemClicked(const QModelIndex& index);
         void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);

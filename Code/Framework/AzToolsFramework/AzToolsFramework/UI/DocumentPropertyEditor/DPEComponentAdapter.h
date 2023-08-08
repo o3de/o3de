@@ -12,6 +12,7 @@
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+#include <AzCore/Component/EntityBus.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -23,6 +24,7 @@ namespace AZ::DocumentPropertyEditor
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationEvents::Bus::Handler
         , private AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler
+        , private AZ::EntitySystemBus::Handler
     {
     public:
         //! Creates an uninitialized (empty) ComponentAdapter.
@@ -55,12 +57,20 @@ namespace AZ::DocumentPropertyEditor
         //! @param serializedPath The serialized path to use to check whether an override is present corresponding to it.
         void CreateLabel(AdapterBuilder* adapterBuilder, AZStd::string_view labelText, AZStd::string_view serializedPath) override;
 
+        //! Gets notification from the EntitySystemBus before destroying an entity.
+        void OnEntityDestruction(const AZ::EntityId&) override;
+
+    private:
+        //! Checks if the component is still valid in the entity.
+        bool IsComponentValid() const;
+
     protected:
         AZ::EntityId m_entityId;
 
-        AZ::Component* m_componentInstance = nullptr;
+        // Should call IsComponentValid() for validity check before using the component id and its component instance.
+        AZ::ComponentId m_componentId = AZ::InvalidComponentId;
 
-        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
+        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoBatch = nullptr;
 
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;

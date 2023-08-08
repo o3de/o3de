@@ -109,6 +109,13 @@ namespace Multiplayer
         "Should the server send all its individual multiplayer component version information to the client when there's a mismatch? "
         "Upon receiving the information, the client will print the mismatch information to the game log. "
         "Provided for debugging during development, but you may want to mark false for release builds.");
+    AZ_CVAR(
+        bool,
+        sv_versionMismatch_check_enabled,
+        true,
+        nullptr,
+        AZ::ConsoleFunctorFlags::DontReplicate,
+        "If true, the server will check that client version of multiplayer component matches the server's.");
 
     AZ_CVAR(bool, bg_capturePhysicsTickMetric, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "Should the Multiplayer gem record average physics tick time?");
@@ -484,13 +491,6 @@ namespace Multiplayer
                     AZ::CVarFixedString commandString = "net_SslExternalCertificateFile " + externalCertPath;
                     console->PerformCommand(commandString.c_str());
                 }
-
-                AZ::CVarFixedString externalKeyPath = AZ::CVarFixedString(sessionProviderHandler->GetExternalSessionPrivateKey().c_str());
-                if (!externalKeyPath.empty())
-                {
-                    AZ::CVarFixedString commandString = "net_SslExternalPrivateKeyFile " + externalKeyPath;
-                    console->PerformCommand(commandString.c_str());
-                }
             }
         }
 
@@ -736,7 +736,8 @@ namespace Multiplayer
             }
         }
 
-        if (static_cast<AZ::CVarFixedString>(sv_map).empty())
+        const char* levelName = AZ::Interface<AzFramework::ILevelSystemLifecycle>::Get()->GetCurrentLevelName();
+        if (!levelName || strlen(levelName) == 0)
         {
             AZLOG_WARN("Server does not have a multiplayer level loaded! Make sure the server has a level loaded before accepting clients.");
             m_noServerLevelLoadedEvent.Signal();
@@ -745,7 +746,7 @@ namespace Multiplayer
             return true;
         }
 
-        if (connection->SendReliablePacket(MultiplayerPackets::Accept(sv_map)))
+        if (connection->SendReliablePacket(MultiplayerPackets::Accept(levelName)))
         {
             reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData())->SetDidHandshake(true);
 
@@ -784,7 +785,7 @@ namespace Multiplayer
         }
 
         // Make sure the client that's trying to connect has the same multiplayer components
-        if (GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetSystemVersionHash())
+        if (sv_versionMismatch_check_enabled && GetMultiplayerComponentRegistry()->GetSystemVersionHash() != packet.GetSystemVersionHash())
         {
             // There's a multiplayer component mismatch. Send the server's component information back to the client so they can compare.
             if (sv_versionMismatch_sendManifestToClient)
@@ -1011,8 +1012,8 @@ namespace Multiplayer
                     "Because this component is missing, the name isn't available, only its hash. "
                     "To find the missing component go to the other machine and search for 's_versionHash = AZ::HashValue64{ 0x%llx }' "
                     "inside the generated multiplayer auto-component build folder.",
-                    theirComponentHash,
-                    theirComponentHash);
+                    static_cast<AZ::u64>(theirComponentHash),
+                    static_cast<AZ::u64>(theirComponentHash));
             }
         }
 
@@ -1245,6 +1246,8 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::InitializeMultiplayer(MultiplayerAgentType multiplayerType)
     {
+        bool sessionStarted = false;
+
         if (bg_capturePhysicsTickMetric)
         {
             if (auto* physXSystem = PhysX::GetPhysXSystem())
@@ -1275,6 +1278,7 @@ namespace Multiplayer
             m_spawnNetboundEntities = false;
             if (multiplayerType == MultiplayerAgentType::ClientServer || multiplayerType == MultiplayerAgentType::DedicatedServer)
             {
+                sessionStarted = true;
                 m_spawnNetboundEntities = true;
                 if (!m_networkEntityManager.IsInitialized())
                 {
@@ -1327,6 +1331,11 @@ namespace Multiplayer
         {
             statSystem->Register();
         }
+
+        if (sessionStarted)
+        {
+            m_networkInitEvent.Signal(m_networkInterface);
+        }
     }
 
     void MultiplayerSystemComponent::AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler)
@@ -1357,6 +1366,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler)
     {
         handler.Connect(m_connectionAcquiredEvent);
+    }
+
+    void MultiplayerSystemComponent::AddNetworkInitHandler(NetworkInitEvent::Handler& handler)
+    {
+        handler.Connect(m_networkInitEvent);
     }
 
     void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)

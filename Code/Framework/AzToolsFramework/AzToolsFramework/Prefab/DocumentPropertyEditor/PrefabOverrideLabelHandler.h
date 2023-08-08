@@ -31,7 +31,7 @@ namespace AzToolsFramework::Prefab
 
         //! Specifies the behavior when override label property is encountered in the DPE DOM.
         //! @param value The value holding the override label property in the DPE DOM
-        void SetValueFromDom(const AZ::Dom::Value& value);
+        void SetValueFromDom(const AZ::Dom::Value& value) override;
 
         static constexpr const AZStd::string_view GetHandlerName()
         {

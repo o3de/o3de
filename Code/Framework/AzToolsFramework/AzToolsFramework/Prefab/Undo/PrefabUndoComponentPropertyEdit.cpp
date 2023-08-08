@@ -6,53 +6,81 @@
  *
  */
 
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
-#include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyEdit.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUtils.h>
 
 namespace AzToolsFramework::Prefab
 {
     PrefabUndoComponentPropertyEdit::PrefabUndoComponentPropertyEdit(const AZStd::string& undoOperationName)
         : PrefabUndoBase(undoOperationName)
+        , m_changed(false)
     {
-        m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
-        AZ_Assert(m_instanceEntityMapperInterface, "Failed to grab instance entity mapper interface");
     }
 
     void PrefabUndoComponentPropertyEdit::Capture(
-        const PrefabDomValue& initialState,
-        const PrefabDomValue& endState,
-        AZ::EntityId entityId,
-        AZStd::string_view pathToComponentProperty,
+        Instance& owningInstance,
+        const AZStd::string& pathToPropertyFromOwningPrefab,
+        const PrefabDomValue& afterStateOfComponentProperty,
         bool updateCache)
     {
-        // get the entity alias for future undo/redo
-        auto instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-        AZ_Error(
-            "Prefab", instanceReference, "Failed to find an owning instance for the entity with id %llu.", static_cast<AZ::u64>(entityId));
-        Instance& instance = instanceReference->get();
-        m_templateId = instance.GetTemplateId();
+        m_templateId = owningInstance.GetTemplateId();
 
+        // Get the current state of property value from the owning prefab template (which is also the focused template).
+        const PrefabDom& owningTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(m_templateId);
+        PrefabDomPath domPathToPropertyFromOwningPrefab(pathToPropertyFromOwningPrefab.c_str());
+        const PrefabDomValue* currentPropertyDomValue = domPathToPropertyFromOwningPrefab.Get(owningTemplateDom);
 
-        // generate undo/redo patches
-        PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch, initialState, endState, pathToComponentProperty);
-        PrefabUndoUtils::GenerateUpdateEntityPatch(m_undoPatch, endState, initialState, pathToComponentProperty);
+        if (currentPropertyDomValue)
+        {
+            PrefabDom changePatches;
+            m_instanceToTemplateInterface->GeneratePatch(changePatches, *currentPropertyDomValue, afterStateOfComponentProperty);
+            m_changed = !(changePatches.GetArray().Empty());
+
+            if (m_changed)
+            {
+                // Adds 'replace' patches to replace the property value.
+                PrefabUndoUtils::AppendUpdateValuePatch(
+                    m_redoPatch, afterStateOfComponentProperty, pathToPropertyFromOwningPrefab, PatchType::Edit);
+                PrefabUndoUtils::AppendUpdateValuePatch(
+                    m_undoPatch, *currentPropertyDomValue, pathToPropertyFromOwningPrefab, PatchType::Edit);
+            }
+        }
+        else
+        {
+            // If the DOM value from owning template is not present, it means the value is new to the template.
+            m_changed = true;
+
+            // Adds 'add' and 'remove' patches for the property value.
+            PrefabUndoUtils::AppendUpdateValuePatch(
+                m_redoPatch, afterStateOfComponentProperty, pathToPropertyFromOwningPrefab, PatchType::Add);
+            PrefabUndoUtils::AppendRemovePatch(m_undoPatch, pathToPropertyFromOwningPrefab);
+        }
 
         // Preemptively updates the cached DOM to prevent reloading instance DOM.
-        if (updateCache)
+        if (m_changed && updateCache)
         {
-            PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
+            PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, endState, pathToComponentProperty);
+                PrefabUndoUtils::UpdateValueInPrefabDom(
+                    cachedOwningInstanceDom, afterStateOfComponentProperty, pathToPropertyFromOwningPrefab);
             }
         }
     }
 
+    bool PrefabUndoComponentPropertyEdit::Changed() const
+    {
+        return m_changed;
+    }
+
     void PrefabUndoComponentPropertyEdit::Undo()
     {
-        m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+        if (m_changed)
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_undoPatch, m_templateId);
+        }
     }
 
     void PrefabUndoComponentPropertyEdit::Redo()
@@ -62,6 +90,9 @@ namespace AzToolsFramework::Prefab
 
     void PrefabUndoComponentPropertyEdit::Redo(InstanceOptionalConstReference instance)
     {
-        m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
+        if (m_changed)
+        {
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
+        }
     }
 }

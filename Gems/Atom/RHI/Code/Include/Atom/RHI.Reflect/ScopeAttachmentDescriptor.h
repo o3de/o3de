@@ -14,31 +14,26 @@
 #include <Atom/RHI.Reflect/ImageViewDescriptor.h>
 #include <Atom/RHI.Reflect/ClearValue.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    //! Describes the binding of an attachment to a scope.
+    struct ScopeAttachmentDescriptor
     {
-        /**
-         * Describes the binding of an attachment to a scope.
-         */
-        struct ScopeAttachmentDescriptor
-        {
-            AZ_TYPE_INFO(ScopeAttachmentDescriptor, "{04BBA36D-9A61-4E24-9CA0-7A4307C6A411}");
+        AZ_TYPE_INFO(ScopeAttachmentDescriptor, "{04BBA36D-9A61-4E24-9CA0-7A4307C6A411}");
             
-            static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context);
 
-            ScopeAttachmentDescriptor() = default;
-            virtual ~ScopeAttachmentDescriptor() = default;
+        ScopeAttachmentDescriptor() = default;
+        virtual ~ScopeAttachmentDescriptor() = default;
 
-            explicit ScopeAttachmentDescriptor(
-                const AttachmentId& attachmentId,
-                const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction());
+        explicit ScopeAttachmentDescriptor(
+            const AttachmentId& attachmentId,
+            const AttachmentLoadStoreAction& loadStoreAction = AttachmentLoadStoreAction());
 
-            /// The attachment id associated with the binding.
-            AttachmentId m_attachmentId;
+        /// The attachment id associated with the binding.
+        AttachmentId m_attachmentId;
 
-            /// The load/store action for the scope attachment
-            AttachmentLoadStoreAction m_loadStoreAction;
-        };
-    }
+        /// The load/store action for the scope attachment
+        AttachmentLoadStoreAction m_loadStoreAction;
+    };
 }

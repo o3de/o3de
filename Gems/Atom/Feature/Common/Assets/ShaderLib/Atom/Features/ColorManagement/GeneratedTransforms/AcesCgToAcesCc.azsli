@@ -59,7 +59,7 @@ UNDISCLOSED.
 
 #pragma once
 
-float LinearToAcesCc(float value)
+real LinearToAcesCc(real value)
 {
   if (value <= 0)
     return -0.3584474886; // =(log2( pow(2.,-16.))+9.72)/17.52
@@ -69,9 +69,9 @@ float LinearToAcesCc(float value)
     return (log2(value) + 9.72) / 17.52;
 }
 
-float3 AcesCgToAcesCc(float3 color)
+real3 AcesCgToAcesCc(real3 color)
 {
-    return float3(
+    return real3(
         LinearToAcesCc(color.r),
         LinearToAcesCc(color.g),
         LinearToAcesCc(color.b)

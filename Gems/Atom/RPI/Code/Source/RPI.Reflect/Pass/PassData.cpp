@@ -52,7 +52,7 @@ namespace AZ
             {
                 serializeContext->Class<RenderPassData, PassData>()
                     ->Version(1)
-                    ->Field("PipelineViewTag", &RenderPassData::m_pipelineViewTag)
+                    ->Field("BindViewSrg", &RenderPassData::m_bindViewSrg)
                     ->Field("ShaderDataMappings", &RenderPassData::m_mappings);
             }
         }
@@ -62,12 +62,13 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<RasterPassData, RenderPassData>()
-                    ->Version(3) // ATOM-15472
+                    ->Version(4) // antonmic: added m_viewportAndScissorOutputTargetIndex
                     ->Field("DrawListTag", &RasterPassData::m_drawListTag)
                     ->Field("PassSrgShaderAsset", &RasterPassData::m_passSrgShaderReference)
                     ->Field("Viewport", &RasterPassData::m_overrideViewport)
                     ->Field("Scissor", &RasterPassData::m_overrideScissor)
                     ->Field("DrawListSortType", &RasterPassData::m_drawListSortType)
+                    ->Field("ViewportScissorTargetOutputIndex", &RasterPassData::m_viewportAndScissorTargetOutputIndex)
                     ;
             }
         }
@@ -91,6 +92,7 @@ namespace AZ
             {
                 serializeContext->Class<PassData>()
                     ->Version(1)
+                    ->Field("PipelineViewTag", &PassData::m_pipelineViewTag)
                     ->Field("PipelineGlobalConnections", &PassData::m_pipelineGlobalConnections);
             }
         }

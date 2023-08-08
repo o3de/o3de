@@ -2,6 +2,14 @@
 <ui version="4.0">
  <class>AZ::SceneAPI::UI::ManifestWidget</class>
  <widget class="QWidget" name="AZ::SceneAPI::UI::ManifestWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>438</width>
+    <height>189</height>
+   </rect>
+  </property>
   <property name="sizePolicy">
    <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
     <horstretch>0</horstretch>
@@ -9,6 +17,18 @@
    </sizepolicy>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="AzQtComponents::TabWidget" name="m_tabs"/>
    </item>

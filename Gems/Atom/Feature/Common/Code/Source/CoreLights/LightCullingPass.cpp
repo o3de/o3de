@@ -213,7 +213,7 @@ namespace AZ
                 uint32_t             m_padding[3];
             } cullingConstants{};
 
-            RPI::ViewPtr view = m_pipeline->GetDefaultView();
+            RPI::ViewPtr view = m_pipeline->GetFirstView(GetPipelineViewTag());
             view->GetWorldToViewMatrix().StoreToRowMajorFloat16(cullingConstants.m_worldToView.data());
             cullingConstants.m_screenUVToRay = GenerateScreenUVToRayConstants(view->GetViewToClipMatrix());
             cullingConstants.m_gridPixel = ComputeGridPixelSize();

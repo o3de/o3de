@@ -58,6 +58,14 @@ namespace AZ
 
                 BuildHelpButton();
 
+                m_editMenu = new QMenu("Edit Scene Settings Menu", ui->m_editButton);
+                ui->m_editButton->setMenu(m_editMenu);
+
+                connect(m_editMenu, &QMenu::aboutToShow, this, &ManifestWidgetPage::AddEditMenu);
+
+                connect(ui->m_saveButton, &QPushButton::clicked, this, &ManifestWidgetPage::SaveClicked);
+                connect(ui->m_inspectButton, &QPushButton::clicked, this, &ManifestWidgetPage::InspectClicked);
+
                 BusConnect();
             }
 
@@ -296,7 +304,6 @@ namespace AZ
                 else if (m_classTypeIds.size() == 1)
                 {
                     AZStd::string className = ClassIdToName(m_classTypeIds[0]);
-                    AZStd::to_lower(className.begin(), className.end());
 
                     AZ::SerializeContext* serializeContext = nullptr;
                     AZ::ComponentApplicationBus::BroadcastResult(
@@ -316,7 +323,7 @@ namespace AZ
                         }
                     }
 
-                    ui->m_addButton->setText(QString::fromLatin1("Add another %1").arg(className.c_str()));
+                    ui->m_addButton->setText(QString::fromLatin1("Add %1").arg(className.c_str()));
                     connect(ui->m_addButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnSingleGroupAdd);
                 }
                 else
@@ -347,7 +354,7 @@ namespace AZ
 
                     ui->m_addButton->setMenu(menu);
 
-                    AZStd::string buttonText = "Add another ";
+                    AZStd::string buttonText = "Add ";
                     AzFramework::StringFunc::Join(buttonText, classNames.begin(), classNames.end(), " or ");
                     ui->m_addButton->setText(buttonText.c_str());
                 }
@@ -384,7 +391,7 @@ namespace AZ
                     }
                 }
 
-                connect(ui->m_supportButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnHelpButtonClicked);
+                connect(ui->m_helpButton, &QPushButton::clicked, this, &ManifestWidgetPage::OnHelpButtonClicked);
             }
 
             void ManifestWidgetPage::OnHelpButtonClicked()
@@ -558,6 +565,52 @@ namespace AZ
                     }
                 }
                 return false;
+            }
+
+            void ManifestWidgetPage::AppendUnsavedChangesToTitle(bool hasUnsavedChanges)
+            {
+                QString title(ui->m_saveButton->text());
+
+                if (hasUnsavedChanges && title.back() != "*")
+                {
+                    title.push_back("*");
+                }
+                else if (!hasUnsavedChanges && title.back() == "*")
+                {
+                    title.remove(title.size() - 1, 1);
+                }
+                ui->m_saveButton->setText(title);
+            }
+
+            void ManifestWidgetPage::AddEditMenu()
+            {
+                m_editMenu->clear();
+
+                m_editMenu->addAction(
+                    QObject::tr("Reset settings to default..."),
+                    [this]()
+                    {
+                        emit ResetSettings();
+                    });
+
+                m_editMenu->addAction(
+                    QObject::tr("Clear unsaved changes..."),
+                    [this]()
+                    {
+                        emit ClearChanges();
+                    });
+
+                m_editMenu->addAction(
+                    QObject::tr("Assign build script..."),
+                    [this]()
+                    {
+                        emit AssignScript();
+                    });
+            }
+
+            void ManifestWidgetPage::EnableInspector(bool enableInspector)
+            {
+                ui->m_inspectButton->setVisible(enableInspector);
             }
         } // namespace UI
     } // namespace SceneAPI

@@ -249,6 +249,9 @@ namespace AssetProcessor
         //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
         void SetMetaCreationDelay(AZ::u32 milliseconds);
 
+        //! Gets the maximum amount of time to wait before generating a metadata file.
+        AZ::u32 GetMetaCreationDelay() const { return m_metaCreationDelayMs; }
+
         void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
@@ -287,7 +290,7 @@ namespace AssetProcessor
 
         void JobComplete(JobEntry jobEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void JobProcessDurationChanged(JobEntry jobEntry, int durationMs);
-        void CreateJobsDurationChanged(QString sourceName);
+        void CreateJobsDurationChanged(QString sourceName, AZ::s64 scanFolderID);
 
         void IntermediateAssetCreated(QString newFileAbsolutePath);
 
@@ -389,7 +392,12 @@ namespace AssetProcessor
             AZStd::string_view autoFailReason,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
-        void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
+        void AutoFailJob(
+            AZStd::string_view consoleMsg,
+            AZStd::string_view autoFailReason,
+            const AZStd::vector<AssetProcessedEntry>::iterator& assetIter,
+            AZ::s64 failureCauseSourceId = AzToolsFramework::AssetDatabase::InvalidEntryId,
+            AZ::u32 failureCauseFingerprint = 0);
 
         using ProductInfoList = AZStd::vector<AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>>;
 
@@ -462,7 +470,7 @@ namespace AssetProcessor
         *   If there's a problem that makes it unusable (such as no fields being filled in), the string will be blank
         *     and this function will return false.
         */
-        bool ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceNames, QStringList& resolvedDependencyList);
+        bool ResolveSourceFileDependencyPath(AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceNames, QStringList& resolvedDependencyList);
         //! Updates the database with all the changes related to source dependency / job dependency:
         void UpdateSourceFileDependenciesDatabase(JobToProcessEntry& entry);
 
@@ -681,6 +689,11 @@ namespace AssetProcessor
         bool m_builderDebugFlag = false;
 
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
+
+        // Cache of source -> list of dependencies for startup
+        AZStd::unordered_map<AZ::Uuid, AZStd::vector<AzToolsFramework::AssetDatabase::PathOrUuid>> m_dependencyCache;
+        // Cache is turned off after initial idle, it is not meant to handle invalidation or mixed dependency type queries.
+        bool m_dependencyCacheEnabled = true;
 
 protected Q_SLOTS:
         void FinishAnalysis(SourceAssetReference sourceAsset);

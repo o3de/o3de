@@ -10,11 +10,11 @@
 
 option bool o_transmission_useTexture;
 
-float4 GeTransmissionInput(Texture2D map, sampler mapSampler, float2 uv, float4 transmissionTintThickness)
+real4 GeTransmissionInput(Texture2D map, sampler mapSampler, float2 uv, real4 transmissionTintThickness)
 {
     if(o_transmission_useTexture)
     {
-        transmissionTintThickness.w *= map.Sample(mapSampler, uv).r;
+        transmissionTintThickness.w *= real(map.Sample(mapSampler, uv).r);
     }
     return transmissionTintThickness;
 }

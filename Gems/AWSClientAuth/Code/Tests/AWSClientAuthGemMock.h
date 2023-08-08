@@ -92,6 +92,7 @@ namespace AWSClientAuthUnitTest
 
             ON_CALL(*this, GetResourceRegion).WillByDefault(testing::Return(TEST_REGION));
             ON_CALL(*this, GetDefaultAccountId).WillByDefault(testing::Return(TEST_ACCOUNT_ID));
+            ON_CALL(*this, HasResource).WillByDefault(testing::Return(true));
             ON_CALL(*this, GetResourceAccountId).WillByDefault(testing::Return(TEST_ACCOUNT_ID));
             ON_CALL(*this, GetResourceNameId).WillByDefault(testing::Return(TEST_RESOURCE_NAME_ID));
             ON_CALL(*this, GetDefaultRegion).WillByDefault(testing::Return(TEST_REGION));
@@ -104,6 +105,7 @@ namespace AWSClientAuthUnitTest
 
         MOCK_CONST_METHOD0(GetDefaultAccountId, AZStd::string());
         MOCK_CONST_METHOD0(GetDefaultRegion, AZStd::string());
+        MOCK_CONST_METHOD1(HasResource, bool(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetResourceAccountId, AZStd::string(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetResourceNameId, AZStd::string(const AZStd::string& resourceKeyName));
         MOCK_CONST_METHOD1(GetResourceRegion, AZStd::string(const AZStd::string& resourceKeyName));
@@ -225,6 +227,11 @@ namespace AWSClientAuthUnitTest
             AZ_UNUSED(headers);
             AZ_UNUSED(body);
             AZ_UNUSED(callback);
+        }
+
+        AZStd::chrono::milliseconds GetLastRoundTripTime() const override
+        {
+            return {};
         }
     };
 

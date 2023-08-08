@@ -54,10 +54,11 @@ namespace Camera
         float m_frustumWidth = DefaultFrustumDimension;
         float m_frustumHeight = DefaultFrustumDimension;
         bool m_specifyFrustumDimensions = false;
-        AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
         bool m_makeActiveViewOnActivation = true;
         bool m_orthographic = false;
         float m_orthographicHalfWidth = 5.f;
+
+        AZ::u64 m_editorEntityId = AZ::EntityId::InvalidEntityId;
 
         // Members for render to texture
         // The texture assets which is used for render to texture feature. It defines the resolution, format etc.

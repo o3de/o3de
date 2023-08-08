@@ -10,25 +10,21 @@
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void DeviceDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void DeviceDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<DeviceDescriptor>()
-                    ->Version(2)
-                    ->Field("m_frameCountMax", &DeviceDescriptor::m_frameCountMax)
-                    ;
-            }
+            serializeContext->Class<DeviceDescriptor>()
+                ->Version(2)
+                ->Field("m_frameCountMax", &DeviceDescriptor::m_frameCountMax)
+                ;
         }
+    }
 
-        DeviceDescriptor::~DeviceDescriptor()
-        {
-            m_platformLimitsDescriptor = nullptr;
-        }
-
+    DeviceDescriptor::~DeviceDescriptor()
+    {
+        m_platformLimitsDescriptor = nullptr;
     }
 }

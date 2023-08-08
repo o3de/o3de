@@ -3,19 +3,20 @@
     "restricted": "o3de",
     "O3DEVersion": "0.1.0.0",
     "O3DEBuildNumber": 0,
-    "display_version":"00.00",
-    "version":"1.2.0",
+    "display_version": "00.00",
+    "version": "2.1.0",
     "api_versions": {
-        "editor":"1.0.0",
-        "framework":"1.0.0",
-        "launcher":"1.0.0",
-        "tools":"1.0.0"
+        "editor": "1.0.0",
+        "framework": "1.1.0",
+        "launcher": "1.0.0",
+        "tools": "1.1.0"
     },
     "file_version": 2,
     "copyright_year": 2023,
     "build": 0,
     "external_subdirectories": [
         "Gems/Achievements",
+        "Gems/Archive",
         "Gems/AssetValidation",
         "Gems/Atom",
         "Gems/AtomContent",
@@ -104,8 +105,10 @@
     "gem_names": [
         "Atom_Bootstrap",
         "AtomShader",
+        "AtomViewportDisplayInfo",
         "Camera",
         "CommonFeaturesAtom",
+        "EditorModeFeedback",
         "Maestro",
         "PrefabBuilder",
         "SceneProcessing"
@@ -120,9 +123,11 @@
         "Templates/DefaultGem",
         "Templates/DefaultProject",
         "Templates/GemRepo",
+        "Templates/GraphicsGem",
         "Templates/MinimalProject",
         "Templates/PrebuiltGem",
         "Templates/PythonToolGem",
+        "Templates/RemoteRepo",
         "Templates/ScriptCanvasNode",
         "Templates/UnifiedMultiplayerGem"
     ],

@@ -623,11 +623,11 @@ namespace AZ
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const RHI::ImageView* const> imageViews,
             uint32_t* outIndices,
-            bool viewReadOnly,
+            AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
-            m_data.SetBindlessViews(indirectResourceBufferIndex,indirectResourceBuffer,
-                                    imageViews, outIndices,viewReadOnly, arrayIndex);
+            m_data.SetBindlessViews(indirectResourceBufferIndex, indirectResourceBuffer,
+                                    imageViews, outIndices, isViewReadOnly, arrayIndex);
         }
     
         void ShaderResourceGroup::SetBindlessViews(
@@ -635,11 +635,11 @@ namespace AZ
             const RHI::BufferView* indirectResourceBuffer,
             AZStd::span<const RHI::BufferView* const> bufferViews,
             uint32_t* outIndices,
-            bool viewReadOnly,
+            AZStd::span<bool> isViewReadOnly,
             uint32_t arrayIndex)
         {
-            m_data.SetBindlessViews(indirectResourceBufferIndex,indirectResourceBuffer,
-                                    bufferViews, outIndices,viewReadOnly, arrayIndex);
+            m_data.SetBindlessViews(indirectResourceBufferIndex, indirectResourceBuffer,
+                                    bufferViews, outIndices, isViewReadOnly, arrayIndex);
         }
 
     } // namespace RPI

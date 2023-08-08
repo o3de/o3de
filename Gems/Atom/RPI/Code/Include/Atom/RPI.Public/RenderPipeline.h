@@ -108,7 +108,11 @@ namespace AZ
             using PipelineViewMap = AZStd::unordered_map<PipelineViewTag, PipelineViews>;
             using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
-            //! Assign a view for a PipelineViewTag used in this pipeline. 
+            // Removes a registered view from the pipeline, either transient or persistent
+            // This is only needed if you want to re-register a view with another viewtag
+            void UnregisterView(ViewPtr view);
+
+            //! Assign a view for a PipelineViewTag used in this pipeline.
             //! This reference of this view will be saved until it's replaced in another SetPersistentView call.
             void SetPersistentView(const PipelineViewTag& viewId, ViewPtr view);
 
@@ -129,6 +133,10 @@ namespace AZ
             //! It's the same as GetViews(GetMainViewTag()) and using first element.
             ViewPtr GetDefaultView();
 
+            //! Get the frist view for the view tag.
+            //! It's the same as GetViews("tag") and using first element.
+            ViewPtr GetFirstView(const PipelineViewTag& viewTag);
+
             //! Set default view from an entity which should have a ViewProvider handler.
             void SetDefaultViewFromEntity(EntityId entityId);
 
@@ -136,7 +144,7 @@ namespace AZ
             bool HasViewTag(const PipelineViewTag& viewTag) const;
 
             //! Get the main view tag (the tag used for the default view).
-            PipelineViewTag GetMainViewTag() const;
+            const PipelineViewTag& GetMainViewTag() const;
 
             //! Get views that are associated with specified view tag.
             const AZStd::vector<ViewPtr>& GetViews(const PipelineViewTag& viewTag) const;
@@ -233,6 +241,9 @@ namespace AZ
             //! Return the view type associated with this pipeline.
             ViewType GetViewType() const;
 
+            //! Update viewport and scissor based on pass tree's output
+            void UpdateViewportScissor();
+
         private:
             RenderPipeline() = default;
 
@@ -248,6 +259,10 @@ namespace AZ
 
             // Checks if the view is already registered with a different viewTag
             bool CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const;
+
+            // Removes a registered view from the pipeline
+            void RemoveTransientView(const PipelineViewTag viewId, ViewPtr view);
+            void ResetPersistentView(const PipelineViewTag viewId, ViewPtr view);
 
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             // This is called from the pipeline root pass during the pass reset phase
@@ -289,8 +304,6 @@ namespace AZ
             // End of functions accessed by Scene class
             //////////////////////////////////////////////////
 
-            // update viewport and scissor based on pass tree's output
-            void UpdateViewportScissor();
 
             RenderMode m_renderMode = RenderMode::RenderEveryTick;
 

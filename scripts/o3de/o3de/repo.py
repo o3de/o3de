@@ -24,6 +24,11 @@ REPO_IMPLICIT_SCHEMA_VERSION = "0.0.0"
 REPO_SCHEMA_VERSION_1_0_0 = "1.0.0"
 
 def get_cache_file_uri(uri: str):
+    # check if the passed in uri is a path or uri
+    uri_path = pathlib.Path(uri)
+    if uri_path.exists():
+        uri = uri_path.as_uri()
+
     parsed_uri = urllib.parse.urlparse(uri)
     uri_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
     cache_file = manifest.get_o3de_cache_folder() / str(uri_sha256.hexdigest() + '.json')
@@ -249,8 +254,13 @@ def get_object_versions_json_data(remote_object_list:list, required_json_key:str
 
         versions_data = remote_object_json_data.pop('versions_data', None)
         if versions_data:
+            version_found = False
             for version_json_data in versions_data:
+                if remote_object_json_data.get('version') == version_json_data.get('version'):
+                    version_found = True
                 object_json_data_list.append(remote_object_json_data | version_json_data)
+            if not version_found:
+                object_json_data_list.append(remote_object_json_data)
         else:
             object_json_data_list.append(remote_object_json_data)
 

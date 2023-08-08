@@ -115,8 +115,6 @@ public:
     // THIS FUNCTION IS NOT DESIGNED FOR MULTI-THREADED USAGE
     ECopyTreeResult MoveTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse = true, bool boConfirmOverwrite = false) override;
 
-    void GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase = false, bool bMakeUnixPath = false) override;
-
     // Get file attributes include source control attributes if available
     uint32 GetAttributes(const char* filename, bool bUseSourceControl = true) override;
 
