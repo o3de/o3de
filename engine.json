@@ -15,7 +15,6 @@
     "copyright_year": 2023,
     "build": 0,
     "external_subdirectories": [
-        "Gems/PopcornFX",
         "Gems/Achievements",
         "Gems/Archive",
         "Gems/AssetValidation",
