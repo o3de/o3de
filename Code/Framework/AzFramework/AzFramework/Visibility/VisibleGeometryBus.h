@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -21,7 +22,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    //! VisibleGeometry describes details about visible geometry surfaces stored as generic indexed triangle lists
+    //! VisibleGeometry describes visible geometry surfaces stored as generic indexed triangle lists
     struct VisibleGeometry
     {
         AZ_TYPE_INFO(VisibleGeometry, "{4B011208-B105-4BC1-A4F3-FD5C44785D71}");
@@ -29,8 +30,13 @@ namespace AzFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
+        //! Local to world matrix transforming vertices into world space. 
         AZ::Matrix4x4 m_transform;
+
+        //! Vertex list must contain 3 floats, XYZ, per vertex.
         AZStd::vector<float> m_vertices;
+
+        //! Index list must contain 3 uint32_t per triangle face. Each index references a position in the vertex list.
         AZStd::vector<uint32_t> m_indices;
     };
 
@@ -42,8 +48,13 @@ namespace AzFramework
     public:
         static void Reflect(AZ::ReflectContext* context);
 
-        //! Returns a container of visible geometry
-        virtual void GetVisibleGeometry(VisibleGeometryContainer& geometryContainer) const = 0;
+        //! This function should be implemented by components to add VisibleGeometry items to the VisibleGeometryContainer.
+        //! @param bounds is a bounding volume in world space used for sampling geometric data. If bounds is invalid it should be ignored.
+        //! @param geometryContainer is a container of all of the geometry added by the connected entity. It is passed by reference to give
+        //! multiple components on an entity an opportunity to add their geometry. It is the caller's responsibility to manage and clear the
+        //! container between calls. The container should not be cleared within the function, which might destroy a prior components
+        //! contribution.
+        virtual void GetVisibleGeometry(const AZ::Aabb& bounds, VisibleGeometryContainer& geometryContainer) const = 0;
 
     protected:
         ~VisibleGeometryRequests() = default;

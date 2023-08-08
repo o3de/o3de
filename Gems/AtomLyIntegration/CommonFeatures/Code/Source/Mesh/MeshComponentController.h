@@ -138,7 +138,7 @@ namespace AZ
             AZ::Aabb GetLocalBounds() override;
 
             // AzFramework::VisibleGeometryRequestBus::Handler overrides ...
-            void GetVisibleGeometry(AzFramework::VisibleGeometryContainer& geometryContainer) const override;
+            void GetVisibleGeometry(const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const override;
 
             // IntersectionRequestBus overrides ...
             AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;

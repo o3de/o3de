@@ -701,12 +701,14 @@ namespace AZ
             return Aabb::CreateNull();
         }
 
-        void MeshComponentController::GetVisibleGeometry(AzFramework::VisibleGeometryContainer& geometryContainer) const
+        void MeshComponentController::GetVisibleGeometry(
+            [[maybe_unused]] const AZ::Aabb& bounds, AzFramework::VisibleGeometryContainer& geometryContainer) const
         {
             // Attempt to copy the triangle list geometry data out of the model asset into the visible geometry structure
             const auto& modelAsset = GetModelAsset();
             if (!modelAsset.IsReady() || modelAsset->GetLodAssets().empty())
             {
+                AZ_Warning("MeshComponentController", false, "Unable to get geometry because mesh asset is not ready or empty.");
                 return;
             }
 
@@ -714,6 +716,7 @@ namespace AZ
             const auto& lodAsset = modelAsset->GetLodAssets().front();
             if (!lodAsset.IsReady())
             {
+                AZ_Warning("MeshComponentController", false, "Unable to get geometry because selected LOD asset is not ready.");
                 return;
             }
 
@@ -727,6 +730,7 @@ namespace AZ
                 const AZ::Data::Asset<AZ::RPI::BufferAsset> indexBufferAsset = indexBufferView.GetBufferAsset();
                 if (!indexBufferAsset.IsReady() || indexBufferViewDesc.m_elementSize != sizeof(uint32_t))
                 {
+                    AZ_Warning("MeshComponentController", false, "Unable to get geometry for mesh because index buffer asset is not ready or is an incompatible format.");
                     continue;
                 }
 
@@ -734,15 +738,18 @@ namespace AZ
                 const AZ::RPI::BufferAssetView* positionBufferView = mesh.GetSemanticBufferAssetView(positionName);
                 if (!positionBufferView)
                 {
+                    AZ_Warning("MeshComponentController", false, "Unable to get geometry for mesh because position buffer data was not found.");
                     continue;
                 }
 
                 // Confirm that the position buffer is valid and contains 3 32 bit floats for each position. Other formats are currently not
                 // supported.
+                constexpr uint32_t ElementsPerVertex = 3;
                 const AZ::RHI::BufferViewDescriptor& positionBufferViewDesc = positionBufferView->GetBufferViewDescriptor();
                 const AZ::Data::Asset<AZ::RPI::BufferAsset> positionBufferAsset = positionBufferView->GetBufferAsset();
-                if (!positionBufferAsset.IsReady() || positionBufferViewDesc.m_elementSize != sizeof(float) * 3)
+                if (!positionBufferAsset.IsReady() || positionBufferViewDesc.m_elementSize != sizeof(float) * ElementsPerVertex)
                 {
+                    AZ_Warning("MeshComponentController", false, "Unable to get geometry for mesh because position buffer asset is not ready or is an incompatible format.");
                     continue;
                 }
 
@@ -759,10 +766,10 @@ namespace AZ
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
 
                 // This resize and copy assumes the stride between elements is 0.
-                visibleGeometry.m_indices.resize(indexBufferViewDesc.m_elementCount);
+                visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);
                 memcpy(&visibleGeometry.m_indices[0], indexPtr, indexBufferViewDesc.m_elementCount * indexBufferViewDesc.m_elementSize);
 
-                visibleGeometry.m_vertices.resize(positionBufferViewDesc.m_elementCount * 3);
+                visibleGeometry.m_vertices.resize_no_construct(positionBufferViewDesc.m_elementCount * ElementsPerVertex);
                 memcpy(&visibleGeometry.m_vertices[0], positionPtr, positionBufferViewDesc.m_elementCount * positionBufferViewDesc.m_elementSize);
 
                 geometryContainer.emplace_back(AZStd::move(visibleGeometry));
