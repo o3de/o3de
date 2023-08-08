@@ -328,6 +328,11 @@ set(FILES
     Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
+    Quality/QualityCVarGroup.cpp
+    Quality/QualityCVarGroup.h
+    Quality/QualitySystemComponent.cpp
+    Quality/QualitySystemComponent.h
+    Quality/QualitySystemBus.h
     Render/GameIntersectorComponent.h
     Render/GameIntersectorComponent.cpp
     Render/GeometryIntersectionBus.h
