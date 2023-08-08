@@ -78,7 +78,7 @@ def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z
 
 def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     # Creates an entity with the assigned mesh_asset as the specified scale and sets up as a planting surface
-    mesh_asset_path = os.path.join("models", "sphere.azmodel")
+    mesh_asset_path = os.path.join("models", "sphere.fbx.azmodel")
     mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(),
                                               False)
     surface_entity = hydra.Entity(name)

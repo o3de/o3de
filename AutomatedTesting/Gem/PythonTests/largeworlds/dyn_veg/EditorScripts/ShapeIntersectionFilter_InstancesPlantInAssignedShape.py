@@ -68,7 +68,7 @@ def ShapeIntersectionFilter_InstancesPlantInAssignedShape():
 
     # 2) Create a new entity with required vegetation area components and Vegetation Shape Intersection Filter
     center_point = math.Vector3(512.0, 512.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "ShapeIntersection_PinkFlower2")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", center_point, 16.0, 16.0, 1.0,
                                                                pink_flower_prefab)

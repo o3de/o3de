@@ -17,13 +17,14 @@ import json
 import logging
 import hashlib
 import shutil
+import sys
+import urllib.parse
 from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 from o3de import manifest, utils, validation
 
 logger = logging.getLogger('o3de.repo_properties')
 logging.basicConfig(format=utils.LOG_FORMAT)
-
 
 def merge_json_data(json_path: pathlib.Path, json_data: dict) -> dict:
     """
@@ -67,9 +68,10 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
                    json_data_path: pathlib.Path, 
                    archive_filename: str, 
                    releases_path: pathlib.Path, 
-                   repo_uri:str,
+                   repo_uri: str,
                    force: bool,
-                   download_prefix:str) -> dict:
+                   download_prefix: str = None,
+                   upload_git_release_tag: str = None) -> dict:
     """
     Creates a release of a specific version of a 
     remote object for the given src_data_path.
@@ -92,16 +94,52 @@ def create_remote_object_archive(src_data_path: pathlib.Path,
         FileNotFoundError: If the json_data_path does not exist.
         ValueError: If the json_data_path is not a dict.
     """
-    if download_prefix is None:
-        logger.error('The --download-prefix argument must be provided. A url prefix for a file attached to a Github release might look like this:'
-                     '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
-        return {}
     zip_path = releases_path / archive_filename
     # check if a object.zip folder already exist in the path - ask user if they want to overwrite the current zip
     if not force and zip_path.exists():
         logger.error(f'{zip_path} already exists.  Use --force command to overwrite the existing zip or '
                      'provide a new location to save your archive.')
         return {}
+    if not upload_git_release_tag and not download_prefix:
+        logger.error('You need to provide a --upload-git-release-tag if you want to upload to a Git provider like GitHub.\n'
+                     'If you want to use other version control systems you must provide --download-prefix argument\n'
+                     'Example GitHub URL prefix:'
+                     '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0')
+        return {}
+    if upload_git_release_tag and download_prefix:
+        logger.error('When a Git release tag is provided, no download prefix should be provided '
+                     'because the download prefix is automatically generated.')
+        return {}
+    if upload_git_release_tag and not download_prefix:
+        repo_uri = urllib.parse.urlparse(repo_uri)
+        git_provider = utils.get_git_provider(repo_uri)
+        if git_provider:
+            # Parse the URL to extract owner and repository name
+            owner_repo = repo_uri.geturl().split("github.com/")[1].rstrip('.git').split('/')
+            owner = owner_repo[0]
+            repo = owner_repo[1]
+        else:
+            logger.error(f'Failed to determine Git provider from {repo_uri}.')
+            return {}
+        download_prefix = f'https://github.com/{owner}/{repo}/releases/download/{upload_git_release_tag}/{archive_filename}'
+     
+        json_data = merge_json_data(json_data_path, {
+            'repo_uri': repo_uri,
+            'download_source_uri': download_prefix
+        })
+
+        logging.info(f"Creating '{download_prefix}'")
+
+        shutil.make_archive(releases_path / pathlib.Path(archive_filename).stem, 'zip', src_data_path)
+        with zip_path.open('rb') as f:
+            json_data['sha256'] = hashlib.sha256(f.read()).hexdigest()
+        
+        # Upload release archive zip to Github
+        if git_provider.upload_release(repo_uri, zip_path, archive_filename, upload_git_release_tag) == 1:
+            logger.error('Failed to upload release to GitHub')
+            return {}
+      
+    # For other version control systems
     else:
         # create the release zip file
         json_data = merge_json_data(json_data_path, {
@@ -125,13 +163,13 @@ def get_repo_props(path: pathlib.Path) -> dict or None:
         return None
     return repo_json
 
-def _find_index(data:list, key:str, value:str) -> int:
+def _find_index(data: list, key: str, value: str) -> int:
     for index, item in enumerate(data):
         if item.get(key) == value:
             return index
     return -1
 
-def _changed(original:dict, new:dict) -> dict:
+def _changed(original: dict, new: dict) -> dict:
     changed = {}
     for key, value in new.items():
         if key not in original:
@@ -141,15 +179,16 @@ def _changed(original:dict, new:dict) -> dict:
 
     return changed
 
-def _edit_objects(object_typename:str,
-                  validator:callable,
+def _edit_objects(object_typename: str,
+                  validator: callable,
                   repo_json: dict,
                   add_objects: pathlib.Path or list = None,
                   delete_objects: str or list = None,
                   replace_objects: pathlib.Path or list = None,
                   release_archive_path: pathlib.Path = None,
                   force: bool = None,
-                  download_prefix: str = None):
+                  download_prefix: str = None,
+                  upload_git_release_tag: str = None):
     """
     Modifies the 'gems_data/projects_data/templates_data' in repo_json
     :param object_typename: The type object field you want to change
@@ -183,9 +222,10 @@ def _edit_objects(object_typename:str,
                                 object_path / f'{object_typename}.json', 
                                 archive_filename, 
                                 release_archive_path, 
-                                repo_json['repo_uri'], 
+                                repo_json['repo_uri'],
                                 force,
-                                download_prefix)
+                                download_prefix,
+                                upload_git_release_tag)
                     # if create_remote_object_archive is not successful, then exit
                     if not json_data:
                         return 1
@@ -344,8 +384,8 @@ def edit_repo_props(repo_path: pathlib.Path = None,
                        dry_run: bool = False,
                        release_archive_path: pathlib.Path = None,
                        force: bool = None,
-                       download_prefix: str = None
-                       ) -> int:
+                       download_prefix: str = None,
+                       upload_git_release_tag: str = None) -> int:
     """
     Edits and modifies the remote repo properties for the repo.json located at 'repo_path'.
     :param repo_path: The path to the repo.json file
@@ -389,13 +429,13 @@ def edit_repo_props(repo_path: pathlib.Path = None,
         _auto_update_json(auto_update, repo_path, repo_json)
 
     if add_gems or delete_gems or replace_gems:
-        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix)
+        _edit_objects('gem', validation.valid_o3de_gem_json, repo_json, add_gems, delete_gems, replace_gems, release_archive_path, force, download_prefix, upload_git_release_tag)
 
     if add_projects or delete_projects or replace_projects:
-        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix)
+        _edit_objects('project', validation.valid_o3de_project_json, repo_json, add_projects, delete_projects, replace_projects, release_archive_path, force, download_prefix, upload_git_release_tag)
 
     if add_templates or delete_templates or replace_templates:
-        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix)
+        _edit_objects('template', validation.valid_o3de_template_json, repo_json, add_templates, delete_templates, replace_templates, release_archive_path, force, download_prefix, upload_git_release_tag)
 
     if repo_json_original != repo_json and not dry_run:
         utils.backup_file(repo_path)
@@ -426,7 +466,8 @@ def _edit_repo_props(args: argparse) -> int:
                               dry_run=args.dry_run,
                               release_archive_path=args.release_archive_path,
                               force=args.force,
-                              download_prefix=args.download_prefix
+                              download_prefix=args.download_prefix,
+                              upload_git_release_tag=args.upload_git_release_tag
                               )
 
 
@@ -484,6 +525,9 @@ def add_parser_args(parser):
     modify_object_group.add_argument('--download-prefix', '-dp', type=str, required=False,
                                    help='A URL prefix for a file attached to a GitHub release might look like this:'
                                         '-dp https://github.com/o3de/o3de-extras/releases/download/2305.0/')
+    modify_object_group.add_argument('--upload-git-release-tag', '-ugrt', type=str, default=False,
+                                   help='Automatically uploads your object-release-archive.zip file to specified GitHub release.\n'
+                                        'Please provide a tag_name for the release. ')
     parser.set_defaults(func=_edit_repo_props)
 
 
