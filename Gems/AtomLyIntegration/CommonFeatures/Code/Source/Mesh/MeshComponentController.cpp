@@ -106,7 +106,7 @@ namespace AZ
 
         bool MeshComponentConfig::ShowLodConfig()
         {
-            return LodTypeIsScreenCoverage() && LodTypeIsSpecificLOD();
+            return LodTypeIsScreenCoverage() || LodTypeIsSpecificLOD();
         }
 
         AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> MeshComponentConfig::GetLodOverrideValues()
