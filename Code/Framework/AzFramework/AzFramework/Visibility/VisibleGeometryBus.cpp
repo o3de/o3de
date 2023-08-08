@@ -31,6 +31,13 @@ namespace AzFramework
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<VisibleGeometry>("VisibleGeometry")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Visibility")
+                ->Attribute(AZ::Script::Attributes::Module, "visibility")
+                ->Constructor()
+                ->Constructor<const VisibleGeometry&>()
+                ->Property("vertices", BehaviorValueProperty(&VisibleGeometry::m_vertices))
+                ->Property("indices", BehaviorValueProperty(&VisibleGeometry::m_indices))
                 ;
         }
     }
@@ -40,6 +47,9 @@ namespace AzFramework
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<VisibleGeometryRequestBus>("VisibleGeometryRequestBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Attribute(AZ::Script::Attributes::Category, "Visibility")
+                ->Attribute(AZ::Script::Attributes::Module, "visibility")
                 ->Event("GetVisibleGeometry", &VisibleGeometryRequestBus::Events::GetVisibleGeometry)
                 ;
         }

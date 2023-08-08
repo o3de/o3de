@@ -21,7 +21,7 @@ namespace AZ
 
 namespace AzFramework
 {
-    //! Structure containing vertices and indices for an indexed triangle list
+    //! VisibleGeometry describes details about visible geometry surfaces stored as generic indexed triangle lists
     struct VisibleGeometry
     {
         AZ_TYPE_INFO(VisibleGeometry, "{4B011208-B105-4BC1-A4F3-FD5C44785D71}");
@@ -36,13 +36,13 @@ namespace AzFramework
 
     using VisibleGeometryContainer = AZStd::vector<VisibleGeometry>;
 
-    //! Interface for components to provide generic geometric data for occlusion culling and other purposes
+    //! Interface for components to provide generic geometric data, potentially for occlusion culling and other systems
     class VisibleGeometryRequests : public AZ::ComponentBus
     {
     public:
         static void Reflect(AZ::ReflectContext* context);
 
-        //! Returns a container of visible geometry vertices and indices
+        //! Returns a container of visible geometry
         virtual void GetVisibleGeometry(VisibleGeometryContainer& geometryContainer) const = 0;
 
     protected:
