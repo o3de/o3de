@@ -81,6 +81,7 @@ namespace AZ
             const VkPhysicalDeviceMemoryProperties& GetMemoryProperties() const;
             bool IsFeatureSupported(DeviceFeature feature) const;
             bool IsOptionalDeviceExtensionSupported(OptionalDeviceExtension optionalDeviceExtension) const;
+            void DisableOptionalDeviceExtension(OptionalDeviceExtension optionalDeviceExtension);
             const VkPhysicalDeviceLimits& GetDeviceLimits() const;
             const VkPhysicalDeviceFeatures& GetPhysicalDeviceFeatures() const;
             const VkPhysicalDeviceProperties& GetPhysicalDeviceProperties() const;

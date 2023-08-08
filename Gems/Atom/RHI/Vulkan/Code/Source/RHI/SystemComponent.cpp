@@ -67,6 +67,11 @@ namespace AZ
             required.push_back(RHI::Factory::GetManagerComponentService());
         }
 
+        void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+        {
+            required.push_back(AZ_CRC_CE("VulkanRequirementsService"));
+        }
+
         void SystemComponent::Reflect(AZ::ReflectContext* context)
         {
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -129,13 +134,6 @@ namespace AZ
 
         RHI::PhysicalDeviceList SystemComponent::EnumeratePhysicalDevices()
         {
-            RHI::XRRenderingInterface* xrSystem = RHI::RHISystemInterface::Get()->GetXRSystem();
-            if (xrSystem)
-            {
-                //Update VkInstance from the one provided by XR::Vulkan module
-                Instance::GetInstance().UpdateNativeInstance(xrSystem);
-                
-            }
             return Instance::GetInstance().GetSupportedDevices();
         }
 
