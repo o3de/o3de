@@ -78,6 +78,11 @@ set(FILES
     Asset/Benchmark/BenchmarkSettingsAsset.h
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
+    Device/DeviceAttributeInterface.h
+    Device/DeviceAttributes.cpp
+    Device/DeviceAttributes.h
+    Device/DeviceAttributesSystemComponent.cpp
+    Device/DeviceAttributesSystemComponent.h
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h

@@ -16,6 +16,7 @@ set(FILES
     AzFramework/Process/ProcessWatcher_Mac.cpp
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Mac.cpp
+    ../Common/UnixLike/AzFramework/Device/DeviceAttributesCommon_UnixLike.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     AzFramework/TargetManagement/TargetManagementComponent_Mac.cpp
