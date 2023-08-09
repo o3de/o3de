@@ -95,9 +95,6 @@ namespace AZ::RHI
         XRRenderingInterface() = default;
         virtual ~XRRenderingInterface() = default;
 
-        //! Rendering api to create a native instance.
-        virtual AZ::RHI::ResultCode InitNativeInstance(AZ::RHI::XRInstanceDescriptor* instanceDescriptor) = 0;
-
         //! Rendering api to get the number of physical devices
         virtual AZ::u32 GetNumPhysicalDevices() const = 0;
 
