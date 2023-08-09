@@ -317,6 +317,33 @@ namespace AzFramework
         bool m_checkAliasSpawnables{ true };
     };
 
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+    struct SpawnableInstanceAddress
+    {
+        AZ::Data::AssetId m_assetId; ///< AssetId of the spawnable
+        Spawnable::SpawnableInstanceId m_spawnableInstanceId; ///< UUid of the unique instantiated spawnable
+
+        SpawnableInstanceAddress()
+            : m_assetId()
+            , m_spawnableInstanceId(Spawnable::SpawnableInstanceId::CreateNull())
+        {
+        }
+
+        SpawnableInstanceAddress(const AZ::Data::AssetId& assetId, const Spawnable::SpawnableInstanceId& spawnableInstanceId)
+            : m_assetId(assetId)
+            , m_spawnableInstanceId(spawnableInstanceId)
+        {
+        }
+
+        bool IsValid() const
+        {
+            return m_assetId.IsValid() && !m_spawnableInstanceId.IsNull();
+        }
+    };
+#endif
+// Gruber patch end. // LVB. // Support unique instances
+
     //! Interface definition to (de)spawn entities from a spawnable into the game world.
     //! 
     //! While the callbacks of the individual calls are being processed they will block processing any other request. Callbacks can be
@@ -420,6 +447,17 @@ namespace AzFramework
         //! @param optionalArgs Optional additional arguments, see BarrierOptionalArgs.
         virtual void LoadBarrier(
             EntitySpawnTicket& ticket, BarrierCallback completionCallback, LoadBarrierOptionalArgs optionalArgs = {}) = 0;
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+        /**
+         * Gets the address of the spawnable instance that owns the entity.
+         *
+         * @return SpawnableInstanceAddress
+         */
+        virtual SpawnableInstanceAddress GetOwningSpawnable(const AZ::EntityId& entityId) = 0;
+#endif
+// Gruber patch end. // LVB. // Support unique instances
 
     protected:
         [[nodiscard]] virtual void* CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;

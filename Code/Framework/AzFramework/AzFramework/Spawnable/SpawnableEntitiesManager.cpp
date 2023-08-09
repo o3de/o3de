@@ -287,6 +287,20 @@ namespace AzFramework
         return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
 
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+    SpawnableInstanceAddress SpawnableEntitiesManager::GetOwningSpawnable(const AZ::EntityId& entityId)
+    {
+        auto entityInfoMapIt = m_entitySpawnableMap.find(entityId);
+        if (entityInfoMapIt != m_entitySpawnableMap.end())
+        {
+            return entityInfoMapIt->second;
+        }
+        return SpawnableInstanceAddress();
+    }
+#endif
+    // Gruber patch end. // LVB. // Support unique instances
+
     void* SpawnableEntitiesManager::CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable)
     {
         static AZStd::atomic_uint32_t idCounter { 1 };
@@ -294,6 +308,11 @@ namespace AzFramework
         auto result = aznew Ticket();
         result->m_spawnable = AZStd::move(spawnable);
         result->m_ticketId = idCounter++;
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+        result->m_spawnable->GeneratetInstanceId();
+#endif
+ // Gruber patch end. // LVB. // Support unique instances
 
         m_totalTickets++;
         m_ticketsPendingRegistration++;
@@ -543,6 +562,13 @@ namespace AzFramework
                     AZ::Entity* clone = (*it);
                     clone->SetEntitySpawnTicketId(request.m_ticketId);
                     GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+                    m_entitySpawnableMap.insert(
+                        AZStd::make_pair(clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+#endif
+// Gruber patch end. // LVB. // Support unique instances
                 }
 
                 // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -676,6 +702,13 @@ namespace AzFramework
                     AZ::Entity* clone = (*it);
                     clone->SetEntitySpawnTicketId(request.m_ticketId);
                     GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+                    m_entitySpawnableMap.insert(AZStd::make_pair(
+                        clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+#endif
+// Gruber patch end. // LVB. // Support unique instances
                 }
 
                 if (request.m_completionCallback)
@@ -706,6 +739,12 @@ namespace AzFramework
                     entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+                    m_entitySpawnableMap.erase(entity->GetId());
+#endif
+// Gruber patch end. // LVB. // Support unique instances
                 }
             }
 
@@ -740,6 +779,13 @@ namespace AzFramework
                     (*entityIterator)->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, (*entityIterator)->GetId());
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+                    m_entitySpawnableMap.erase((*entityIterator)->GetId());
+#endif
+// Gruber patch end. // LVB. // Support unique instances
+
                     AZStd::iter_swap(entityIterator, spawnedEntities.rbegin());
                     spawnedEntities.pop_back();
                     break;
@@ -777,6 +823,11 @@ namespace AzFramework
                     entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+                    m_entitySpawnableMap.erase(entity->GetId());
+#endif
+// Gruber patch end. // LVB. // Support unique instances
                 }
             }
 
@@ -1043,6 +1094,12 @@ namespace AzFramework
                     entity->SetEntitySpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+                    m_entitySpawnableMap.erase(entity->GetId());
+#endif
+// Gruber patch end. // LVB. // Support unique instances
+
                 }
             }
 

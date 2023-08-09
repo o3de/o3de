@@ -18,6 +18,8 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
+#include <AzCore/Component/EntityId.h> // Gruber path. // LVB. // Support unique instances
+
 namespace AZ
 {
     class Entity;
@@ -81,6 +83,12 @@ namespace AzFramework
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
         void LoadBarrier(
             EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, LoadBarrierOptionalArgs optionalArgs = {}) override;
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+        SpawnableInstanceAddress GetOwningSpawnable(const AZ::EntityId& entityId) override;
+#endif
+// Gruber patch end. // LVB. // Support unique instances
 
         //
         // The following function is thread safe but intended to be run from the main thread.
@@ -315,6 +323,13 @@ namespace AzFramework
         AZStd::unordered_map<EntitySpawnTicket::Id, Ticket*> m_entitySpawnTicketMap;
         AZStd::atomic_int m_totalTickets{ 0 };
         AZStd::atomic_int m_ticketsPendingRegistration{ 0 };
+
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+        AZStd::unordered_map<AZ::EntityId, SpawnableInstanceAddress> m_entitySpawnableMap;  ///< A cached mapping built for quick lookups between an EntityId and its owning SpawnableInstance.
+#endif
+// Gruber patch end. // LVB. // Support unique instances
+
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);

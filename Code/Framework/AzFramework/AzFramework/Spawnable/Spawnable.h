@@ -15,6 +15,9 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
+#ifdef CARBONATED
+#include <AzCore/Math/Uuid.h>       // Gruber patch. // LVB. // Support unique instances
+#endif
 
 namespace AZ
 {
@@ -68,6 +71,10 @@ namespace AzFramework
 
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
         using EntityAliasList = AZStd::vector<EntityAlias>;
+
+#ifdef CARBONATED
+        using SpawnableInstanceId = AZ::Uuid;   // Gruber patch. // LVB. // Support unique instances
+#endif
 
         class EntityAliasConstVisitor
         {
@@ -170,9 +177,31 @@ namespace AzFramework
         SpawnableMetaData& GetMetaData();
         const SpawnableMetaData& GetMetaData() const;
 
+// Gruber patch begin. // LVB. // Support unique instances
+#ifdef CARBONATED
+        /// Returns the instance's unique Id.
+        const SpawnableInstanceId& GetInstanceId() const
+        {
+            return m_instanceId;
+        }
+
+        void SetInstanceId(const SpawnableInstanceId& id)
+        {
+            m_instanceId = id;
+        }
+
+        // Genreate random InstanceId for this Spawnable
+        void GeneratetInstanceId();
+#endif
+// Gruber patch end. // LVB. // Support unique instances
+
         static void Reflect(AZ::ReflectContext* context);
 
     private:
+#ifdef CARBONATED
+        SpawnableInstanceId m_instanceId; ///< Unique Id of the instance.   // Gruber patch. // LVB. // Support unique instances
+#endif
+
         SpawnableMetaData m_metaData;
 
         // Aliases that optionally replace the ones stored in this spawnable.
