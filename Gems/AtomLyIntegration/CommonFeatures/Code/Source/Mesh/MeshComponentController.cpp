@@ -765,11 +765,24 @@ namespace AZ
                 AzFramework::VisibleGeometry visibleGeometry;
                 visibleGeometry.m_transform = AZ::Matrix4x4::CreateFromTransform(m_transformInterface->GetWorldTM());
 
-                // This resize and copy assumes the stride between elements is 0.
+                // Reserve space for indices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_indices.resize_no_construct(indexBufferViewDesc.m_elementCount);
+
+                AZ_Assert(
+                    (sizeof(visibleGeometry.m_indices[0]) * visibleGeometry.m_indices.size()) >=
+                    (indexBufferViewDesc.m_elementSize * indexBufferViewDesc.m_elementCount),
+                    "Index buffer size exceeds memory allocated for visible geometry indices.");
+
                 memcpy(&visibleGeometry.m_indices[0], indexPtr, indexBufferViewDesc.m_elementCount * indexBufferViewDesc.m_elementSize);
 
+                // Reserve space for vertices and copy data, assuming stride between elements is 0.
                 visibleGeometry.m_vertices.resize_no_construct(positionBufferViewDesc.m_elementCount * ElementsPerVertex);
+
+                AZ_Assert(
+                    (sizeof(visibleGeometry.m_vertices[0]) * visibleGeometry.m_vertices.size()) >=
+                    (positionBufferViewDesc.m_elementSize * positionBufferViewDesc.m_elementCount),
+                    "Position buffer size exceeds memory allocated for visible geometry vertices.");
+
                 memcpy(&visibleGeometry.m_vertices[0], positionPtr, positionBufferViewDesc.m_elementCount * positionBufferViewDesc.m_elementSize);
 
                 geometryContainer.emplace_back(AZStd::move(visibleGeometry));
