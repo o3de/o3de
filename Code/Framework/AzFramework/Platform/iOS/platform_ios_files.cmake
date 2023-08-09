@@ -13,6 +13,7 @@ set(FILES
     AzFramework/API/ApplicationAPI_iOS.h
     AzFramework/Application/Application_iOS.mm
     ../Common/Unimplemented/AzFramework/Asset/AssetSystemComponentHelper_Unimplemented.cpp
+    ../Common/UnixLike/AzFramework/Device/DeviceAttributesCommon_UnixLike.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
