@@ -72,9 +72,9 @@ namespace AzFramework
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceTouch::Implementation* InputDeviceTouch::Implementation::Create(InputDeviceTouch& inputDevice)
+    AZStd::unique_ptr<InputDeviceTouch::Implementation> InputDeviceTouch::Implementation::Create(InputDeviceTouch& inputDevice)
     {
-        return aznew InputDeviceTouchAndroid(inputDevice);
+        return AZStd::make_unique<InputDeviceTouchAndroid>(inputDevice);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////

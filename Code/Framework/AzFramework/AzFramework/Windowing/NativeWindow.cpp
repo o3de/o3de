@@ -57,9 +57,8 @@ namespace AzFramework
     {
         // Create the platform specific or custom implementation
         auto implementationFactory = AZ::Interface<ImplementationFactory>::Get();
-        auto implementation = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
-        m_pimpl.reset(implementation);
-        if (m_pimpl != nullptr)
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
+        if (m_pimpl)
         {
             m_pimpl->InitWindow(title, geometry, styleMasks);
         }

@@ -89,7 +89,7 @@ namespace AzFramework
         {
             AZ_TYPE_INFO(ImplementationFactory, "{A6440C08-1367-4F45-87E4-5D85B3DA64E4}");
             virtual ~ImplementationFactory() = default;
-            virtual Implementation* Create(InputDeviceTouch& inputDevice) = 0;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceTouch& inputDevice) = 0;
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ namespace AzFramework
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Default factory create function
             //! \param[in] inputDevice Reference to the input device being implemented
-            static Implementation* Create(InputDeviceTouch& inputDevice);
+            static AZStd::unique_ptr<Implementation> Create(InputDeviceTouch& inputDevice);
 
             ////////////////////////////////////////////////////////////////////////////////////////
             //! Constructor

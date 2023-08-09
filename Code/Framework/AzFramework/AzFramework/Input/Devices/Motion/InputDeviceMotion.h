@@ -136,7 +136,7 @@ namespace AzFramework
         {
             AZ_TYPE_INFO(ImplementationFactory, "{97354B61-7599-4D06-9888-823D5B082191}");
             virtual ~ImplementationFactory() = default;
-            virtual Implementation* Create(InputDeviceMotion& inputDevice) = 0;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceMotion& inputDevice) = 0;
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

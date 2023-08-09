@@ -46,22 +46,22 @@ namespace AzFramework
         void Deactivate() override;
 
     private:
-        Application::ImplementationFactory* CreateApplicationImplementationFactory() const;
-        InputDeviceGamepad::ImplementationFactory* GetDeviceGamepadImplentationFactory() const;
-        InputDeviceKeyboard::ImplementationFactory* GetDeviceKeyboardImplementationFactory() const;
-        InputDeviceMotion::ImplementationFactory* GetDeviceMotionImplentationFactory() const; 
-        InputDeviceMouse::ImplementationFactory* GetDeviceMouseImplentationFactory() const;
-        InputDeviceTouch::ImplementationFactory* GetDeviceTouchImplentationFactory() const;
-        InputDeviceVirtualKeyboard::ImplementationFactory* GetDeviceVirtualKeyboardImplentationFactory() const;
-        NativeWindow::ImplementationFactory* GetNativeWindowImplementationFactory() const;
+        void InitializeApplicationImplementationFactory();
+        void InitializeDeviceGamepadImplentationFactory();
+        void InitializeDeviceKeyboardImplementationFactory();
+        void InitializeDeviceMotionImplentationFactory(); 
+        void InitializeDeviceMouseImplentationFactory();
+        void InitializeDeviceTouchImplentationFactory();
+        void InitializeDeviceVirtualKeyboardImplentationFactory();
+        void InitializeNativeWindowImplementationFactory();
 
-        Application::ImplementationFactory* m_applicationImplFactory = nullptr;
-        InputDeviceGamepad::ImplementationFactory* m_deviceGamepadImplFactory = nullptr;
-        InputDeviceKeyboard::ImplementationFactory* m_deviceKeyboardImplFactory = nullptr;
-        InputDeviceMotion::ImplementationFactory* m_deviceMotionImplFactory = nullptr;
-        InputDeviceMouse::ImplementationFactory* m_deviceMouseImplFactory = nullptr;
-        InputDeviceTouch::ImplementationFactory* m_deviceTouchImplFactory = nullptr;
-        InputDeviceVirtualKeyboard::ImplementationFactory* m_deviceVirtualKeyboardImplFactory = nullptr;
-        NativeWindow::ImplementationFactory* m_nativeWindowImplFactory = nullptr;
+        AZStd::unique_ptr<Application::ImplementationFactory> m_applicationImplFactory {};
+        AZStd::unique_ptr<InputDeviceGamepad::ImplementationFactory> m_deviceGamepadImplFactory {};
+        AZStd::unique_ptr<InputDeviceKeyboard::ImplementationFactory> m_deviceKeyboardImplFactory {};
+        AZStd::unique_ptr<InputDeviceMotion::ImplementationFactory> m_deviceMotionImplFactory {};
+        AZStd::unique_ptr<InputDeviceMouse::ImplementationFactory> m_deviceMouseImplFactory {};
+        AZStd::unique_ptr<InputDeviceTouch::ImplementationFactory> m_deviceTouchImplFactory {};
+        AZStd::unique_ptr<InputDeviceVirtualKeyboard::ImplementationFactory> m_deviceVirtualKeyboardImplFactory {};
+        AZStd::unique_ptr<NativeWindow::ImplementationFactory> m_nativeWindowImplFactory {};
     };
 } // namespace AzFramework

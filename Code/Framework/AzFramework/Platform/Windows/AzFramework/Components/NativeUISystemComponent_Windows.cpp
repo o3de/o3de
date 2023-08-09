@@ -22,18 +22,18 @@ namespace AzFramework
         : public Application::ImplementationFactory
     {
     public:
-        Application::Implementation* Create() override
+        AZStd::unique_ptr<Application::Implementation> Create() override
         {
-            return aznew ApplicationWindows();
+            return AZStd::make_unique<ApplicationWindows>();
         }
     };
 
     struct WindowsDeviceKeyboardImplFactory
         : public InputDeviceKeyboard::ImplementationFactory
     {
-        InputDeviceKeyboard::Implementation* Create(InputDeviceKeyboard& inputDevice) override
+        AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
         {
-            return aznew InputDeviceKeyboardWindows(inputDevice);
+            return AZStd::make_unique<InputDeviceKeyboardWindows>(inputDevice);
         }
     };
 
@@ -41,9 +41,9 @@ namespace AzFramework
         : public InputDeviceMouse::ImplementationFactory
     {
     public:
-        InputDeviceMouse::Implementation* Create(InputDeviceMouse& inputDevice) override
+        AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
         {
-            return aznew InputDeviceMouseWindows(inputDevice);
+            return AZStd::make_unique<InputDeviceMouseWindows>(inputDevice);
         }
     };
 
@@ -51,7 +51,7 @@ namespace AzFramework
         : public InputDeviceGamepad::ImplementationFactory
     {
     public:
-        InputDeviceGamepad::Implementation* Create(InputDeviceGamepad& inputDevice) override
+        AZStd::unique_ptr<InputDeviceGamepad::Implementation> Create(InputDeviceGamepad& inputDevice) override
         {
             // Before creating any instances of InputDeviceGamepadWindows, ensure that XInput is loaded
             AZStd::shared_ptr<AZ::DynamicModuleHandle> xinputModuleHandle = XInput::LoadDynamicModule();
@@ -67,7 +67,7 @@ namespace AzFramework
                 inputDevice.GetInputDeviceId().GetIndex(),
                 GetMaxSupportedGamepads());
 
-            return aznew InputDeviceGamepadWindows(inputDevice, xinputModuleHandle);
+            return AZStd::make_unique<InputDeviceGamepadWindows>(inputDevice, xinputModuleHandle);
         }
         AZ::u32 GetMaxSupportedGamepads() override
         {
@@ -78,50 +78,54 @@ namespace AzFramework
     struct WindowsNativeWindowFactory 
         : public NativeWindow::ImplementationFactory
     {
-        NativeWindow::Implementation* Create() override
+        AZStd::unique_ptr<NativeWindow::Implementation> Create() override
         {
-            return aznew NativeWindowImpl_Win32();
+            return AZStd::make_unique<NativeWindowImpl_Win32>();
         }
     };
 
-    Application::ImplementationFactory* NativeUISystemComponent::CreateApplicationImplementationFactory() const
+    void NativeUISystemComponent::InitializeApplicationImplementationFactory()
     {
-        return aznew WindowsApplicationImplFactory();
+        m_applicationImplFactory = AZStd::make_unique<WindowsApplicationImplFactory>();
+        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
     }
 
-    InputDeviceKeyboard::ImplementationFactory* NativeUISystemComponent::GetDeviceKeyboardImplementationFactory() const
+    void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
     {
-        return aznew WindowsDeviceKeyboardImplFactory();
+        m_deviceGamepadImplFactory = AZStd::make_unique<WindowsDeviceGamepadImplFactory>();
+        AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory.get());
+    }
+
+    void NativeUISystemComponent::InitializeGetDeviceKeyboardImplementationFactory()
+    {
+        m_deviceKeyboardImplFactory = AZStd::make_unique<WindowsDeviceKeyboardImplFactory>();
+        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
+    }
+
+    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory() const
+    {
+        // Motion Input not supported on Windows
     }
 
     InputDeviceMouse::ImplementationFactory* NativeUISystemComponent::GetDeviceMouseImplentationFactory() const
     {
-        return aznew WindowsDeviceMouseImplFactory();
-    }
-
-    InputDeviceGamepad::ImplementationFactory* NativeUISystemComponent::GetDeviceGamepadImplentationFactory() const
-    {
-        return aznew WindowsDeviceGamepadImplFactory();
-    }
-
-    InputDeviceMotion::ImplementationFactory* NativeUISystemComponent::GetDeviceMotionImplentationFactory() const
-    {
-        return nullptr;
+        m_deviceMouseImplFactory = AZStd::make_unique<WindowsDeviceMouseImplFactory>();
+        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
     }
 
     InputDeviceTouch::ImplementationFactory* NativeUISystemComponent::GetDeviceTouchImplentationFactory() const
     {
-        return nullptr;
+        // Touch Input not supported on Windows
     }
+
     InputDeviceVirtualKeyboard::ImplementationFactory* NativeUISystemComponent::GetDeviceVirtualKeyboardImplentationFactory() const
     {
-        return nullptr;
+        // Virtual Keyboard not supported on Windows
     }
+
     NativeWindow::ImplementationFactory* NativeUISystemComponent::GetNativeWindowImplementationFactory() const
     {
-        return aznew WindowsNativeWindowFactory();
+        m_nativeWindowImplFactory = AZStd::make_unique<WindowsNativeWindowFactory>();
+        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
     }
-
-
-
 } // namespace AzFramework

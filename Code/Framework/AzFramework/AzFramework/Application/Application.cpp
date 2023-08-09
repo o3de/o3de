@@ -214,8 +214,7 @@ namespace AzFramework
     {
         
         auto implementationFactory = AZ::Interface<Application::ImplementationFactory>::Get();
-        auto implementation = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
-        m_pimpl.reset(implementation);
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create() : nullptr;
 
         systemEntity->Init();
         systemEntity->Activate();

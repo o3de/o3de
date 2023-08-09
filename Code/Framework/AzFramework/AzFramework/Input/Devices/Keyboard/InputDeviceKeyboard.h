@@ -380,7 +380,7 @@ namespace AzFramework
         {
             AZ_TYPE_INFO(ImplementationFactory, "{D8056402-DD8B-4C79-8C8D-A6BD9821AB61}");
             virtual ~ImplementationFactory() = default;
-            virtual Implementation* Create(InputDeviceKeyboard& inputDevice) = 0;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceKeyboard& inputDevice) = 0;
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////

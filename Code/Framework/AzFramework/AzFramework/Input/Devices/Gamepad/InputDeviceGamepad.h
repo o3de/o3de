@@ -187,7 +187,7 @@ namespace AzFramework
         {
             AZ_TYPE_INFO(ImplementationFactory, "{415C76AD-3397-4CA8-80EA-B5FACD6EDFFB}");
             virtual ~ImplementationFactory() = default;
-            virtual Implementation* Create(InputDeviceGamepad& InputDeviceGamepad) = 0;
+            virtual AZStd::unique_ptr<Implementation> Create(InputDeviceGamepad& InputDeviceGamepad) = 0;
 
             ////////////////////////////////////////////////////////////////////////////////////////////
             //! Get the maximum number of gamepads that are supported on the current platform

@@ -26,7 +26,7 @@ namespace AzFramework
     struct LinuxApplicationImplFactory 
         : public Application::ImplementationFactory
     {
-        Application::Implementation* Create() override
+        AZStd::unique_ptr<Application::Implementation> Create() override
         {
             // The default open file limit for processes may not be enough for O3DE applications. 
             // We will need to increase to the recommended value if the current open file limit
@@ -46,7 +46,7 @@ namespace AzFramework
                 AZ_Assert(set_limit_result == 0, "Unable to update open file limits");
             }
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            return aznew XcbApplication();
+            return AZStd::make_unique<XcbApplication>();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
             #error "Linux Window Manager Wayland not supported."
             return nullptr;
@@ -60,10 +60,10 @@ namespace AzFramework
     struct LinuxDeviceKeyboardImplFactory
         : public InputDeviceKeyboard::ImplementationFactory
     {
-        InputDeviceKeyboard::Implementation* Create(InputDeviceKeyboard& inputDevice) override
+        AZStd::unique_ptr<InputDeviceKeyboard::Implementation> Create(InputDeviceKeyboard& inputDevice) override
         {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            return aznew XcbInputDeviceKeyboard(inputDevice);
+            return AZStd::make_unique<XcbInputDeviceKeyboard>(inputDevice);
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
             #error "Linux Window Manager Wayland not supported."
             return nullptr;
@@ -77,10 +77,11 @@ namespace AzFramework
     struct LinuxDeviceMouseImplFactory
         : public InputDeviceMouse::ImplementationFactory
     {
-        InputDeviceMouse::Implementation* Create(InputDeviceMouse& inputDevice) override
+        AZStd::unique_ptr<InputDeviceMouse::Implementation> Create(InputDeviceMouse& inputDevice) override
         {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            return XcbInputDeviceMouse::Create(inputDevice);
+            
+            return AZStd::unique_ptr<InputDeviceMouse::Implementation>(XcbInputDeviceMouse::Create(inputDevice));
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
 #error "Linux Window Manager Wayland not supported."
             return nullptr;
@@ -94,10 +95,10 @@ namespace AzFramework
     struct LinuxNativeWindowFactory 
         : public NativeWindow::ImplementationFactory
     {
-        NativeWindow::Implementation* Create() override
+        AZStd::unique_ptr<NativeWindow::Implementation> Create() override
         {
 #if PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
-            return aznew XcbNativeWindow();
+            return AZStd::make_unique<XcbNativeWindow>();
 #elif PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND
             #error "Linux Window Manager Wayland not supported."
             return nullptr;
@@ -107,45 +108,48 @@ namespace AzFramework
 #endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
         }
     };
-
-    Application::ImplementationFactory* NativeUISystemComponent::CreateApplicationImplementationFactory() const
+    
+    void NativeUISystemComponent::InitializeApplicationImplementationFactory()
     {
-        return aznew LinuxApplicationImplFactory();
+        m_applicationImplFactory = AZStd::make_unique<LinuxApplicationImplFactory>();
+        AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory.get());
     }
 
-    InputDeviceKeyboard::ImplementationFactory* NativeUISystemComponent::GetDeviceKeyboardImplementationFactory() const
+    void NativeUISystemComponent::InitializeDeviceGamepadImplentationFactory()
     {
-        return aznew LinuxDeviceKeyboardImplFactory();
+        // Gamepad not supported on Linux
     }
 
-    InputDeviceMouse::ImplementationFactory* NativeUISystemComponent::GetDeviceMouseImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
     {
-        return aznew LinuxDeviceMouseImplFactory();
+        m_deviceKeyboardImplFactory = AZStd::make_unique<LinuxDeviceKeyboardImplFactory>();
+        AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
     }
 
-    InputDeviceGamepad::ImplementationFactory* NativeUISystemComponent::GetDeviceGamepadImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
     {
-        return nullptr;
+        // Motion Input not supported on Linux
     }
 
-    InputDeviceMotion::ImplementationFactory* NativeUISystemComponent::GetDeviceMotionImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
     {
-        return nullptr;
+        m_deviceMouseImplFactory = AZStd::make_unique<LinuxDeviceMouseImplFactory>();
+        AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
     }
 
-    InputDeviceTouch::ImplementationFactory* NativeUISystemComponent::GetDeviceTouchImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
     {
-        return nullptr;
-    }
-    InputDeviceVirtualKeyboard::ImplementationFactory* NativeUISystemComponent::GetDeviceVirtualKeyboardImplentationFactory() const
-    {
-        return nullptr;
-    }
-    NativeWindow::ImplementationFactory* NativeUISystemComponent::GetNativeWindowImplementationFactory() const
-    {
-        return aznew LinuxNativeWindowFactory();
+        // Touch Input not supported on Linux
     }
 
+    void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
+    {
+        // Virtual Keyboard not supported on Linux
+    }
 
-
+    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
+    {
+        m_nativeWindowImplFactory = AZStd::make_unique<LinuxNativeWindowFactory>();
+        AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());
+    }
 } // namespace AzFramework

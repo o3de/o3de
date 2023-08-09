@@ -61,7 +61,7 @@ namespace AzFramework
         {
             AZ_TYPE_INFO(ImplementationFactory, "{D840FD45-97BC-40D6-A92B-C83B607EA9D5}");
             virtual ~ImplementationFactory() = default;
-            virtual Implementation* Create() = 0;
+            virtual AZStd::unique_ptr<Implementation> Create() = 0;
         };
 
         AZ_RTTI(Application, "{0BD2388B-F435-461C-9C84-D0A96CAF32E4}", AZ::ComponentApplication);

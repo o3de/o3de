@@ -144,8 +144,7 @@ namespace AzFramework
         }
 
         // Create the platform specific or custom implementation
-        auto implementation = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
-        m_pimpl.reset(implementation);
+        m_pimpl = (implementationFactory != nullptr) ? implementationFactory->Create(*this) : nullptr;
 
         // Connect to the haptic feedback request bus
         InputHapticFeedbackRequestBus::Handler::BusConnect(GetInputDeviceId());
