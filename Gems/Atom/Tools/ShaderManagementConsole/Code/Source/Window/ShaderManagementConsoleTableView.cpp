@@ -211,8 +211,7 @@ namespace ShaderManagementConsole
             if (m_shaderVariantListSourceData.m_materialOptionsHint.find(shaderOptionDescriptor.GetName()) !=
                 m_shaderVariantListSourceData.m_materialOptionsHint.end())
             {
-                tableItem->setForeground(QColor{255, 255, 0});
-                //tableItem->setBackground(QColor{180, 40, 40});  // this has no effect
+                tableItem->setForeground(QColorConstants::Yellow);
             }
             setHorizontalHeaderItem(column, tableItem);
         }
