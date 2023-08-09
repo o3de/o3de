@@ -406,11 +406,6 @@ namespace AzFramework
     void Spawnable::GeneratetInstanceId()
     {
         m_instanceId = SpawnableInstanceId::CreateRandom();
-        AZ_Printf(
-            "Spawnable",
-            "*** GeneratetInstanceId(%s), m_instanceId=%s",
-            this->GetId().ToFixedString().c_str(),
-            m_instanceId.ToFixedString().c_str());
     }
 #endif
     // Gruber patch end. // LVB. // Support unique instances
