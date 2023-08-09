@@ -21,3 +21,4 @@ server*.cfg
 _savebackup/
 *.swatches
 /imgui.ini
+Gems/PopcornFX/
