@@ -298,7 +298,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::OpenSucceeded()
     {
-        AZ_TracePrintf("AtomToolsDocument", "Document opened: '%s'.\n", m_absolutePath.c_str());
+        AZ_TracePrintf("AtomToolsDocument", "Document opened: '%s' (uuid %s)\n", m_absolutePath.c_str(), m_id.ToString<AZStd::string>().c_str());
         AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         AtomToolsDocumentNotificationBus::Event(m_toolId, &AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
