@@ -27,9 +27,9 @@ from typing import List
 # Example invocation on Linux
 '''
 $ cd <project-path>
-$ <engine-path>/scripts/o3de.sh export-project --export-scripts ExportScripts/export_standalone_monolithic.py \
+$ <engine-path>/scripts/o3de.sh export-project --export-scripts <engine-path>/scripts/o3de/ExportScripts/export_standalone_monolithic_project_centric.py \
  --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output xz \
- --seedlist ./Assets/seedlist1.seed --seedlist ./Assets/seedlist2.seed <etc..> 
+ --seedlist ./Assets/seedlist1.seed --seedlist ./Assets/seedlist2.seed <etc..> -code -assets
 '''
 
 # Example invocation on Windows
@@ -92,6 +92,11 @@ def build_monolithic_code_modules( project_path: pathlib.Path,
 def kill_existing_processes(project_name: str):
     o3de_process_names = ['o3de', 'editor', 'assetprocessor', f'{project_name.lower()}.serverlauncher', f'{project_name.lower()}.gamelauncher' ]
     for process in psutil.process_iter():
+        # o3de app (Project Mananger) and o3de.sh/bat (script) are both named o3de.
+        # Ignore the shell script, since that's what's used to run this exporter.
+        if process.name() == 'o3de.sh':
+            continue
+
         processes_to_kill = []
         # strip off .exe and check process name
         if os.path.splitext(process.name())[0].lower() in o3de_process_names:
