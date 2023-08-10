@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <TestImpactFramework/TestImpactClientTestRun.h>
+
 #include <Process/JobRunner/TestImpactProcessJobMeta.h>
 
 namespace TestImpact

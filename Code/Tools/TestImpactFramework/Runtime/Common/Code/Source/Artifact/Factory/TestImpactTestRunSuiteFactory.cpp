@@ -33,7 +33,7 @@ namespace TestImpact
                 "time"
             };
 
-            enum
+            enum Fields
             {
                 TestSuitesKey,
                 TestSuiteKey,
@@ -42,9 +42,12 @@ namespace TestImpact
                 StatusKey,
                 RunKey,
                 NotRunKey,
-                DurationKey
+                DurationKey,
+                // Checksum
+                _CHECKSUM_
             };
 
+            static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
             AZ_TestImpact_Eval(!testRunData.empty(), ArtifactException, "Cannot parse test run, string is empty");
             AZStd::vector<TestRunSuite> testSuites;
             AZStd::vector<char> rawData(testRunData.begin(), testRunData.end());
@@ -157,7 +160,7 @@ namespace TestImpact
                 "failure"
             };
 
-            enum
+            enum Fields
             {
                 TestSuitesKey,
                 TestSuiteKey,
@@ -171,9 +174,12 @@ namespace TestImpact
                 TestCaseNameKey,
                 TestCaseErrorKey,
                 TestCaseSkippedKey,
-                TestCaseFailedKey
+                TestCaseFailedKey,
+                // Checksum
+                _CHECKSUM_
             };
 
+            static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
             AZ_TestImpact_Eval(!testRunData.empty(), ArtifactException, "Cannot parse test run, string is empty");
             AZStd::vector<TestRunSuite> testSuites;
             AZStd::vector<char> rawData(testRunData.begin(), testRunData.end());

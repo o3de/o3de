@@ -31,7 +31,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/PostProcessing/DepthToLinearDepth.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

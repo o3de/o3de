@@ -75,7 +75,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/EditorModeDesaturation.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }

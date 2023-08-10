@@ -6,11 +6,7 @@
  *
  */
 
-#include <stdarg.h>
-#include <algorithm>
-#include <Atom/RHI.Reflect/Bits.h>
-#include <Atom/RHI.Reflect/Limits.h>
-#include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <RHI/Vulkan.h>
 #include <RHI/Device.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/BufferView.h>
@@ -20,6 +16,14 @@
 #include <RHI/Instance.h>
 #include <Vulkan_Traits_Platform.h>
 #include <Atom/RHI.Reflect/VkAllocator.h>
+#include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI.Reflect/Limits.h>
+#include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <AzCore/StringFunc/StringFunc.h>
+
+#define VMA_IMPLEMENTATION
+
+#include <vma/vk_mem_alloc.h>
 
 namespace AZ
 {
@@ -107,6 +111,23 @@ namespace AZ
             {
                 dest.push_back(s.c_str());
             }
+        }
+
+        void RemoveRawStringList(RawStringList& removeFrom, const RawStringList& toRemove)
+        {
+            AZStd::erase_if(
+                removeFrom,
+                [&](const auto& x)
+                {
+                    return AZStd::find_if(
+                               toRemove.begin(),
+                               toRemove.end(),
+                               [&](const auto& y)
+                               {
+                                   return AZ::StringFunc::Equal(x, y);
+                               }
+                    ) != toRemove.end();
+                });
         }
 
         RawStringList FilterList(const RawStringList& source, const StringList& filter)
@@ -422,6 +443,18 @@ namespace AZ
 #endif
                 }
                 return RawStringList{};
+            }
+
+            RawStringList GetValidationExtensions()
+            {
+                if (Instance::GetInstance().GetValidationMode() != RHI::ValidationMode::Disabled)
+                {
+                    return
+                    {
+                            VK_EXT_DEBUG_REPORT_EXTENSION_NAME
+                    };
+                }
+                return RawStringList();
             }
 
             VkDebugUtilsLabelEXT CreateVkDebugUtilLabel(const char* label, const AZ::Color color)

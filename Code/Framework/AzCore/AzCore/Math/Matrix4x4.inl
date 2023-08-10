@@ -13,19 +13,6 @@
 
 namespace AZ
 {
-    AZ_MATH_INLINE Matrix4x4::Matrix4x4(const Matrix4x4& rhs)
-    {
-#if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
-        memcpy(m_rows, rhs.m_rows, sizeof(m_rows));
-#else
-        m_rows[0] = rhs.m_rows[0];
-        m_rows[1] = rhs.m_rows[1];
-        m_rows[2] = rhs.m_rows[2];
-        m_rows[3] = rhs.m_rows[3];
-#endif
-    }
-
-
     AZ_MATH_INLINE Matrix4x4::Matrix4x4(Simd::Vec4::FloatArgType row0, Simd::Vec4::FloatArgType row1, Simd::Vec4::FloatArgType row2, Simd::Vec4::FloatArgType row3)
     {
         m_rows[0] = Vector4(row0);
@@ -34,7 +21,6 @@ namespace AZ
         m_rows[3] = Vector4(row3);
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateIdentity()
     {
         return Matrix4x4(Simd::Vec4::LoadAligned(Simd::g_vec1000)
@@ -42,7 +28,6 @@ namespace AZ
                        , Simd::Vec4::LoadAligned(Simd::g_vec0010)
                        , Simd::Vec4::LoadAligned(Simd::g_vec0001));
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateZero()
     {
@@ -56,13 +41,11 @@ namespace AZ
 #endif
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromValue(float value)
     {
         const Simd::Vec4::FloatType values = Simd::Vec4::Splat(value);
         return Matrix4x4(values, values, values, values);
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromRowMajorFloat16(const float* values)
     {
@@ -72,14 +55,12 @@ namespace AZ
                             , Vector4::CreateFromFloat4(&values[12]));
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromRows(const Vector4& row0, const Vector4& row1, const Vector4& row2, const Vector4& row3)
     {
         Matrix4x4 m;
         m.SetRows(row0, row1, row2, row3);
         return m;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromColumnMajorFloat16(const float* values)
     {
@@ -89,14 +70,12 @@ namespace AZ
                                , Vector4::CreateFromFloat4(&values[12]));
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromColumns(const Vector4& col0, const Vector4& col1, const Vector4& col2, const Vector4& col3)
     {
         Matrix4x4 m;
         m.SetColumns(col0, col1, col2, col3);
         return m;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateRotationX(float angle)
     {
@@ -110,7 +89,6 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateRotationY(float angle)
     {
         Matrix4x4 result;
@@ -122,7 +100,6 @@ namespace AZ
         result.m_rows[3] = Vector4(Simd::Vec4::LoadAligned(Simd::g_vec0001));
         return result;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateRotationZ(float angle)
     {
@@ -136,7 +113,6 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromQuaternion(const Quaternion& q)
     {
         Matrix4x4 result;
@@ -146,7 +122,6 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromQuaternionAndTranslation(const Quaternion& q, const Vector3& p)
     {
         Matrix4x4 result;
@@ -155,7 +130,6 @@ namespace AZ
         result.m_rows[3] = Vector4(Simd::Vec4::LoadAligned(Simd::g_vec0001));
         return result;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromMatrix3x4(const Matrix3x4& matrix3x4)
     {
@@ -167,18 +141,15 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateFromTransform(const Transform& transform)
     {
         return CreateFromMatrix3x4(Matrix3x4::CreateFromTransform(transform));
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateScale(const Vector3& scale)
     {
         return CreateDiagonal(Vector4(scale.GetX(), scale.GetY(), scale.GetZ(), 1.0f));
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateDiagonal(const Vector4& diagonal)
     {
@@ -190,7 +161,6 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::CreateTranslation(const Vector3& translation)
     {
         Matrix4x4 result;
@@ -201,7 +171,6 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::StoreToRowMajorFloat16(float* values) const
     {
         GetRow(0).StoreToFloat4(values);
@@ -209,7 +178,6 @@ namespace AZ
         GetRow(2).StoreToFloat4(values + 8);
         GetRow(3).StoreToFloat4(values + 12);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::StoreToColumnMajorFloat16(float* values) const
     {
@@ -219,14 +187,12 @@ namespace AZ
         GetColumn(3).StoreToFloat4(values + 12);
     }
 
-
     AZ_MATH_INLINE float Matrix4x4::GetElement(int32_t row, int32_t col) const
     {
         AZ_MATH_ASSERT((row >= 0) && (row < RowCount), "Invalid index for component access.\n");
         AZ_MATH_ASSERT((col >= 0) && (col < ColCount), "Invalid index for component access.\n");
         return m_rows[row].GetElement(col);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetElement(int32_t row, int32_t col, float value)
     {
@@ -235,12 +201,10 @@ namespace AZ
         m_rows[row].SetElement(col, value);
     }
 
-
     AZ_MATH_INLINE float Matrix4x4::operator()(int32_t row, int32_t col) const
     {
         return GetElement(row, col);
     }
-
 
     AZ_MATH_INLINE Vector4 Matrix4x4::GetRow(int32_t row) const
     {
@@ -248,13 +212,11 @@ namespace AZ
         return m_rows[row];
     }
 
-
     AZ_MATH_INLINE Vector3 Matrix4x4::GetRowAsVector3(int32_t row) const
     {
         AZ_MATH_ASSERT((row >= 0) && (row < RowCount), "Invalid index for component access.\n");
         return m_rows[row].GetAsVector3();
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::GetRows(Vector4* row0, Vector4* row1, Vector4* row2, Vector4* row3) const
     {
@@ -264,12 +226,10 @@ namespace AZ
         *row3 = GetRow(3);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetRow(int32_t row, float x, float y, float z, float w)
     {
         SetRow(row, Vector4(x, y, z, w));
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetRow(int32_t row, const Vector3& v)
     {
@@ -279,7 +239,6 @@ namespace AZ
         m_rows[row].SetElement(2, v.GetZ());
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetRow(int32_t row, const Vector3& v, float w)
     {
         AZ_MATH_ASSERT((row >= 0) && (row < RowCount), "Invalid index for component access.\n");
@@ -287,13 +246,11 @@ namespace AZ
         m_rows[row].SetElement(3, w);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetRow(int32_t row, const Vector4& v)
     {
         AZ_MATH_ASSERT((row >= 0) && (row < RowCount), "Invalid index for component access.\n");
         m_rows[row] = v;
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetRows(const Vector4& row0, const Vector4& row1, const Vector4& row2, const Vector4& row3)
     {
@@ -303,20 +260,17 @@ namespace AZ
         SetRow(3, row3);
     }
 
-
     AZ_MATH_INLINE Vector4 Matrix4x4::GetColumn(int32_t col) const
     {
         AZ_MATH_ASSERT((col >= 0) && (col < ColCount), "Invalid index for component access.\n");
         return Vector4(m_rows[0].GetElement(col), m_rows[1].GetElement(col), m_rows[2].GetElement(col), m_rows[3].GetElement(col));
     }
 
-
     AZ_MATH_INLINE Vector3 Matrix4x4::GetColumnAsVector3(int32_t col) const
     {
         AZ_MATH_ASSERT((col >= 0) && (col < ColCount), "Invalid index for component access.\n");
         return Vector3(m_rows[0].GetElement(col), m_rows[1].GetElement(col), m_rows[2].GetElement(col));
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::GetColumns(Vector4* col0, Vector4* col1, Vector4* col2, Vector4* col3) const
     {
@@ -326,12 +280,10 @@ namespace AZ
         *col3 = GetColumn(3);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetColumn(int32_t col, float x, float y, float z, float w)
     {
         SetColumn(col, Vector4(x, y, z, w));
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetColumn(int32_t col, const Vector3& v)
     {
@@ -340,7 +292,6 @@ namespace AZ
         m_rows[1].SetElement(col, v.GetY());
         m_rows[2].SetElement(col, v.GetZ());
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetColumn(int32_t col, const Vector3& v, float w)
     {
@@ -351,7 +302,6 @@ namespace AZ
         m_rows[3].SetElement(col, w);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetColumn(int32_t col, const Vector4& v)
     {
         AZ_MATH_ASSERT((col >= 0) && (col < ColCount), "Invalid index for component access.\n");
@@ -361,7 +311,6 @@ namespace AZ
         m_rows[3].SetElement(col, v.GetW());
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetColumns(const Vector4& col0, const Vector4& col1, const Vector4& col2, const Vector4& col3)
     {
         SetColumn(0, col0);
@@ -370,108 +319,90 @@ namespace AZ
         SetColumn(3, col3);
     }
 
-
     AZ_MATH_INLINE Vector4 Matrix4x4::GetBasisX() const
     {
         return GetColumn(0);
     }
-
 
     AZ_MATH_INLINE Vector3 Matrix4x4::GetBasisXAsVector3() const
     {
         return GetColumnAsVector3(0);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetBasisX(float x, float y, float z, float w)
     {
         SetColumn(0, x, y, z, w);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetBasisX(const Vector4& v)
     {
         SetColumn(0, v);
     }
 
-
     AZ_MATH_INLINE Vector4 Matrix4x4::GetBasisY() const
     {
         return GetColumn(1);
     }
-
 
     AZ_MATH_INLINE Vector3 Matrix4x4::GetBasisYAsVector3() const
     {
         return GetColumnAsVector3(1);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetBasisY(float x, float y, float z, float w)
     {
         SetColumn(1, x, y, z, w);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetBasisY(const Vector4& v)
     {
         SetColumn(1, v);
     }
 
-
     AZ_MATH_INLINE Vector4 Matrix4x4::GetBasisZ() const
     {
         return GetColumn(2);
     }
-
 
     AZ_MATH_INLINE Vector3 Matrix4x4::GetBasisZAsVector3() const
     {
         return GetColumnAsVector3(2);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetBasisZ(float x, float y, float z, float w)
     {
         SetColumn(2, x, y, z, w);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetBasisZ(const Vector4& v)
     {
         SetColumn(2, v);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::GetBasisAndTranslation(Vector4* basisX, Vector4* basisY, Vector4* basisZ, Vector4* pos) const
     {
         GetColumns(basisX, basisY, basisZ, pos);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetBasisAndTranslation(const Vector4& basisX, const Vector4& basisY, const Vector4& basisZ, const Vector4& pos)
     {
         SetColumns(basisX, basisY, basisZ, pos);
     }
 
-
     AZ_MATH_INLINE Vector3 Matrix4x4::GetTranslation() const
     {
         return GetColumnAsVector3(3);
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::SetTranslation(float x, float y, float z)
     {
         SetTranslation(Vector3(x, y, z));
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::SetTranslation(const Vector3& v)
     {
         SetColumn(3, v);
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator+(const Matrix4x4& rhs) const
     {
@@ -489,7 +420,6 @@ namespace AZ
         *this = *this + rhs;
         return *this;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator-(const Matrix4x4& rhs) const
     {
@@ -515,13 +445,11 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator*=(const Matrix4x4& rhs)
     {
         *this = *this * rhs;
         return *this;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator*(float multiplier) const
     {
@@ -535,13 +463,11 @@ namespace AZ
         );
     }
 
-
     AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator*=(float multiplier)
     {
         *this = *this * multiplier;
         return *this;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator/(float divisor) const
     {
@@ -555,13 +481,11 @@ namespace AZ
         );
     }
 
-
     AZ_MATH_INLINE Matrix4x4& Matrix4x4::operator/=(float divisor)
     {
         *this = *this / divisor;
         return *this;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::operator-() const
     {
@@ -575,18 +499,15 @@ namespace AZ
         );
     }
 
-
     AZ_MATH_INLINE Vector3 Matrix4x4::operator*(const Vector3& rhs) const
     {
         return Vector3(Simd::Vec4::Mat4x4TransformPoint3(GetSimdValues(), rhs.GetSimdValue()));
     }
 
-
     AZ_MATH_INLINE Vector4 Matrix4x4::operator*(const Vector4& rhs) const
     {
         return Vector4(Simd::Vec4::Mat4x4TransformVector(GetSimdValues(), rhs.GetSimdValue()));
     }
-
 
     AZ_MATH_INLINE Vector3 Matrix4x4::TransposedMultiply3x3(const Vector3& v) const
     {
@@ -594,13 +515,11 @@ namespace AZ
         return Vector3(Simd::Vec3::Mat3x3TransposeTransformVector(rows, v.GetSimdValue()));
     }
 
-
     AZ_MATH_INLINE Vector3 Matrix4x4::Multiply3x3(const Vector3& v) const
     {
         const Simd::Vec3::FloatType rows[3] = { Simd::Vec4::ToVec3(m_rows[0].GetSimdValue()), Simd::Vec4::ToVec3(m_rows[1].GetSimdValue()), Simd::Vec4::ToVec3(m_rows[2].GetSimdValue()) };
         return Vector3(Simd::Vec3::Mat3x3TransformVector(rows, v.GetSimdValue()));
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::GetTranspose() const
     {
@@ -609,24 +528,20 @@ namespace AZ
         return result;
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::Transpose()
     {
         *this = GetTranspose();
     }
-
 
     AZ_MATH_INLINE void Matrix4x4::InvertFull()
     {
         *this = GetInverseFull();
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::InvertTransform()
     {
         *this = GetInverseTransform();
     }
-
 
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::GetInverseFast() const
     {
@@ -635,24 +550,20 @@ namespace AZ
         return out;
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::InvertFast()
     {
         *this = GetInverseFast();
     }
-
 
     AZ_MATH_INLINE Vector3 Matrix4x4::RetrieveScale() const
     {
         return Vector3(GetBasisX().GetLength(), GetBasisY().GetLength(), GetBasisZ().GetLength());
     }
 
-
     AZ_MATH_INLINE Vector3 Matrix4x4::RetrieveScaleSq() const
     {
         return Vector3(GetBasisX().GetLengthSq(), GetBasisY().GetLengthSq(), GetBasisZ().GetLengthSq());
     }
-
 
     AZ_MATH_INLINE Vector3 Matrix4x4::ExtractScale()
     {
@@ -668,7 +579,6 @@ namespace AZ
         return Vector3(lengthX, lengthY, lengthZ);
     }
 
-
     AZ_MATH_INLINE void Matrix4x4::MultiplyByScale(const Vector3& scale)
     {
         const Vector4 scalars = Vector4::CreateFromVector3AndFloat(scale, 1.0f);
@@ -677,14 +587,12 @@ namespace AZ
         m_rows[2] = m_rows[2] * scalars;
     }
 
-
     AZ_MATH_INLINE Matrix4x4 Matrix4x4::GetReciprocalScaled() const
     {
         Matrix4x4 result = *this;
         result.MultiplyByScale(RetrieveScaleSq().GetReciprocal());
         return result;
     }
-
 
     AZ_MATH_INLINE bool Matrix4x4::IsClose(const Matrix4x4& rhs, float tolerance) const
     {
@@ -700,7 +608,6 @@ namespace AZ
         return true;
     }
 
-
     AZ_MATH_INLINE bool Matrix4x4::operator==(const Matrix4x4& rhs) const
     {
         return (Simd::Vec4::CmpAllEq(m_rows[0].GetSimdValue(), rhs.m_rows[0].GetSimdValue())
@@ -709,36 +616,30 @@ namespace AZ
              && Simd::Vec4::CmpAllEq(m_rows[3].GetSimdValue(), rhs.m_rows[3].GetSimdValue()));
     }
 
-
     AZ_MATH_INLINE bool Matrix4x4::operator!=(const Matrix4x4& rhs) const
     {
         return !operator==(rhs);
     }
-
 
     AZ_MATH_INLINE Vector4 Matrix4x4::GetDiagonal() const
     {
         return Vector4(GetElement(0, 0), GetElement(1, 1), GetElement(2, 2), GetElement(3, 3));
     }
 
-
     AZ_MATH_INLINE bool Matrix4x4::IsFinite() const
     {
         return GetRow(0).IsFinite() && GetRow(1).IsFinite() && GetRow(2).IsFinite() && GetRow(3).IsFinite();
     }
-
 
     AZ_MATH_INLINE const Simd::Vec4::FloatType* Matrix4x4::GetSimdValues() const
     {
         return reinterpret_cast<const Simd::Vec4::FloatType*>(m_rows);
     }
 
-
     AZ_MATH_INLINE Simd::Vec4::FloatType* Matrix4x4::GetSimdValues()
     {
         return reinterpret_cast<Simd::Vec4::FloatType*>(m_rows);
     }
-
 
     AZ_MATH_INLINE const Vector3 operator*(const Vector3& lhs, const Matrix4x4& rhs)
     {
@@ -747,13 +648,11 @@ namespace AZ
                        lhs(0) * rhs(0, 2) + lhs(1) * rhs(1, 2) + lhs(2) * rhs(2, 2) + rhs(3, 2));
     }
 
-
     AZ_MATH_INLINE Vector3& operator*=(Vector3& lhs, const Matrix4x4& rhs)
     {
         lhs = lhs * rhs;
         return lhs;
     }
-
 
     AZ_MATH_INLINE const Vector4 operator*(const Vector4& lhs, const Matrix4x4& rhs)
     {
@@ -763,13 +662,11 @@ namespace AZ
                        lhs(0) * rhs(0, 3) + lhs(1) * rhs(1, 3) + lhs(2) * rhs(2, 3) + lhs(3) * rhs(3, 3));
     }
 
-
     AZ_MATH_INLINE Vector4& operator*=(Vector4& lhs, const Matrix4x4& rhs)
     {
         lhs = lhs * rhs;
         return lhs;
     }
-
 
     AZ_MATH_INLINE Matrix4x4 operator*(float lhs, const Matrix4x4& rhs)
     {

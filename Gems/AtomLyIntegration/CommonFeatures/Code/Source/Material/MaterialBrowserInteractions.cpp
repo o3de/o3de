@@ -91,7 +91,7 @@ namespace AZ
                       CreateDocumentDialog dialog(
                           QObject::tr("Create Material"),
                           QObject::tr("Select Material Type"),
-                          QObject::tr("Select Material Path"),
+                          fullSourceFolderNameInCallback.empty() ? QObject::tr("Select Material Path") : QString(),
                           fullSourceFolderNameInCallback.c_str(),
                           { "material" },
                           defaultMaterialType.c_str(),
@@ -146,7 +146,7 @@ namespace AZ
                       CreateDocumentDialog dialog(
                           QObject::tr("Create Material Graph"),
                           QObject::tr("Select Material Graph Template"),
-                          QObject::tr("Select Path"),
+                          fullSourceFolderNameInCallback.empty() ? QObject::tr("Select Material Path") : QString(),
                           fullSourceFolderNameInCallback.c_str(),
                           { "materialgraph" },
                           defaultMaterialGraphTemplate.c_str(),

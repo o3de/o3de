@@ -182,10 +182,9 @@ namespace AzToolsFramework
         void InvalidateFilter();
 
     protected:
-
-        //! Editor entity context notification bus
+        // EditorEntityContextNotificationBus overrides ...
         void OnEditorEntityDuplicated(const AZ::EntityId& oldEntity, const AZ::EntityId& newEntity) override;
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
 

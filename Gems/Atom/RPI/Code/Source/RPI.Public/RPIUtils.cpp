@@ -648,34 +648,7 @@ namespace AZ
 
         AZ::Data::Instance<RPI::StreamingImage> LoadStreamingTexture(AZStd::string_view path)
         {
-            AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
-            AzFramework::AssetSystemRequestBus::BroadcastResult(
-                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, path);
-
-            // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
-            AZ_Error(
-                "RPIUtils",
-                status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown,
-                "Could not compile image at '%s'",
-                path.data());
-
-            Data::AssetId streamingImageAssetId;
-            Data::AssetCatalogRequestBus::BroadcastResult(
-                streamingImageAssetId,
-                &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
-                path.data(),
-                azrtti_typeid<RPI::StreamingImageAsset>(),
-                false);
-            if (!streamingImageAssetId.IsValid())
-            {
-                AZ_Error("RPI Utils", false, "Failed to get streaming image asset id with path " AZ_STRING_FORMAT, AZ_STRING_ARG(path));
-                return AZ::Data::Instance<RPI::StreamingImage>();
-            }
-
-            auto streamingImageAsset = Data::AssetManager::Instance().GetAsset<RPI::StreamingImageAsset>(
-                streamingImageAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
-
-            streamingImageAsset.BlockUntilLoadComplete();
+            auto streamingImageAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::StreamingImageAsset>(path);
 
             if (!streamingImageAsset.IsReady())
             {

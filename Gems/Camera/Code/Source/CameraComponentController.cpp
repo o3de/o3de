@@ -7,6 +7,7 @@
  */
 
 #include "CameraComponentController.h"
+#include "AzCore/Component/TransformBus.h"
 #include "CameraViewRegistrationBus.h"
 
 #include <Atom/RPI.Public/Pass/PassFilter.h>
@@ -28,7 +29,7 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("Orthographic", &CameraComponentConfig::m_orthographic)
                 ->Field("Orthographic Half Width", &CameraComponentConfig::m_orthographicHalfWidth)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
@@ -37,7 +38,6 @@ namespace Camera
                 ->Field("SpecifyDimensions", &CameraComponentConfig::m_specifyFrustumDimensions)
                 ->Field("FrustumWidth", &CameraComponentConfig::m_frustumWidth)
                 ->Field("FrustumHeight", &CameraComponentConfig::m_frustumHeight)
-                ->Field("EditorEntityId", &CameraComponentConfig::m_editorEntityId)
                 ->Field("MakeActiveViewOnActivation", &CameraComponentConfig::m_makeActiveViewOnActivation)
                 ->Field("RenderToTexture", &CameraComponentConfig::m_renderTextureAsset)
                 ->Field("PipelineTemplate", &CameraComponentConfig::m_pipelineTemplate)
@@ -261,7 +261,9 @@ namespace Camera
             m_atomCameraViewGroup->Activate();
         }
 
-        UpdateCamera();
+        AZ::Transform local, world;
+        AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::GetLocalAndWorld, local, world);
+        OnTransformChanged(local, world);
 
         CameraRequestBus::Handler::BusConnect(m_entityId);
         AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);

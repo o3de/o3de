@@ -510,7 +510,7 @@ namespace O3DE::ProjectManager
 
         for (QString& gemName : dependingGemNames)
         {
-            const QModelIndex& dependingIndex = FindIndexByNameString(gemName);
+            const QModelIndex dependingIndex = FindIndexByNameString(gemName);
             if (dependingIndex.isValid())
             {
                 tags.push_back({ GetDisplayName(dependingIndex), GetName(dependingIndex) });

@@ -62,10 +62,12 @@ namespace GraphCanvas
 
             const char* const CommentText = ".commentText";
 
+            // The compact sub-style makes a node appear more compact by reducing margins and placing the node title between
+            // slots instead of above them.
+            const char* const Compact = ".compact";
+
             // Custom Widgets
             const char* const CheckBox = "checkBox";
-
-            const char* const Small = ".small";
 
         } // namespace Elements
 

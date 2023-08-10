@@ -65,8 +65,8 @@ void ClosestHit(inout PayloadData payload, BuiltInTriangleIntersectionAttributes
         
         float3 tangentWS = float3(0.0f, 0.0f, 0.0f);
         float3 bitangentWS = float3(0.0f, 0.0f, 0.0f);            
-        ConstructTBN(vertexData.m_normal, 
-                     vertexData.m_tangent, 
+        ConstructTBN(real3(vertexData.m_normal), 
+                     real4(vertexData.m_tangent), 
                      world44, 
                      (float3x3)meshInfo.m_worldInvTranspose, 
                      normalWS, 

@@ -9,7 +9,6 @@
 #pragma once 
 
 #include <Atom/Features/SrgSemantics.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/RPI/Math.azsli>
 

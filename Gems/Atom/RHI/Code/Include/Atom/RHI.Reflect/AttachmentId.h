@@ -9,10 +9,7 @@
 
 #include <AzCore/Name/Name.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
-    {
-        using AttachmentId = AZ::Name;
-    }
+    using AttachmentId = AZ::Name;
 }

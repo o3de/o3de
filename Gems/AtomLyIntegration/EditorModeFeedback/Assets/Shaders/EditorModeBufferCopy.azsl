@@ -13,7 +13,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     // Copy the input buffer over to the output buffer
-    OUT.m_color.rgb = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord);
+    OUT.m_color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord);
 
     return OUT;
 }

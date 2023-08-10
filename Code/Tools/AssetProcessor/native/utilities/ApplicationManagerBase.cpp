@@ -11,6 +11,7 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/sort.h>
 
+#include <native/assetprocessor.h>
 #include <native/utilities/BuilderConfigurationManager.h>
 #include <native/resourcecompiler/rccontroller.h>
 #include <native/AssetManager/assetScanner.h>
@@ -1309,6 +1310,11 @@ void ApplicationManagerBase::CheckForIdle()
             AssetProcessor::AssetRegistryRequestBus::Broadcast(&AssetProcessor::AssetRegistryRequests::ValidatePreLoadDependency);
         }
     }
+}
+
+WId ApplicationManagerBase::GetWindowId() const
+{
+    return {};
 }
 
 void ApplicationManagerBase::InitBuilderManager()

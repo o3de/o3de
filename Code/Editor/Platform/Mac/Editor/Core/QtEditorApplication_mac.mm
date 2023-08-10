@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -13,6 +12,8 @@
 
 // AzFramework
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 
 // Qt
 #include <QCursor>
@@ -32,7 +33,16 @@ namespace Editor
         if (GetIEditor()->IsInGameMode())
         {
             AzFramework::RawInputNotificationBusMac::Broadcast(&AzFramework::RawInputNotificationsMac::OnRawInputEvent, event);
-            return true;
+
+            auto systemCursorState = AzFramework::SystemCursorState::Unknown;
+            AzFramework::InputSystemCursorRequestBus::EventResult(systemCursorState, 
+                AzFramework::InputDeviceMouse::Id,
+                &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
+
+            // filter Qt input events while in game mode if system cursor not visible
+            // to prevent the user from activating Qt menu actions
+            const bool filterInputEvents = systemCursorState != AzFramework::SystemCursorState::UnconstrainedAndVisible;
+            return filterInputEvents;
         }
 
         if ([event type] == NSEventTypeMouseEntered)

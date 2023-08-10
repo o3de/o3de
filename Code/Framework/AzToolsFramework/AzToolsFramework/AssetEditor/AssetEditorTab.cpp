@@ -159,7 +159,8 @@ namespace AzToolsFramework
             setObjectName("AssetEditorTab");
 
             QWidget* propertyEditor = nullptr;
-            m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
+            // TODO: Re-enable the DPE in the Asset Editor
+            //m_useDPE = DocumentPropertyEditor::ShouldReplaceRPE();
             if (!m_useDPE)
             {
                 m_propertyEditor = new ReflectedPropertyEditor(this);
@@ -362,6 +363,7 @@ namespace AzToolsFramework
             if (!m_sourceAssetId.IsValid())
             {
                 SaveAsDialog();
+                return;
             }
 
             if (!m_dirty)
@@ -399,6 +401,7 @@ namespace AzToolsFramework
 
                     AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, targetFilePath);
                     m_expectedAddedAssetPath = targetFilePath;
+                    AZStd::to_lower(m_expectedAddedAssetPath.begin(), m_expectedAddedAssetPath.end());
 
                     SourceControlCommandBus::Broadcast(
                         &SourceControlCommandBus::Events::RequestEdit,

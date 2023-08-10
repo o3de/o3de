@@ -49,6 +49,8 @@ namespace AZ
 
             // Specifies global pipeline connections to the pipeline's immediate child passes
             PipelineGlobalConnectionList m_pipelineGlobalConnections;
+
+            Name m_pipelineViewTag;
         };
     } // namespace RPI
 } // namespace AZ

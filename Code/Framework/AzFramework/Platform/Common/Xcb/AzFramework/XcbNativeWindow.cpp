@@ -275,9 +275,18 @@ namespace AzFramework
     void XcbNativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
         const uint32_t values[] = { clientAreaSize.m_width, clientAreaSize.m_height };
-
+        
+        if (m_activated)
+        {
+            xcb_unmap_window(m_xcbConnection, m_xcbWindow);
+        }
         xcb_configure_window(m_xcbConnection, m_xcbWindow, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
-
+        
+        if (m_activated)
+        {
+            xcb_map_window(m_xcbConnection, m_xcbWindow);
+            xcb_flush(m_xcbConnection);
+        }
         //Notify the RHI to rebuild swapchain and swapchain images after updating the surface
         WindowSizeChanged(clientAreaSize.m_width, clientAreaSize.m_height);
     }
@@ -423,6 +432,10 @@ namespace AzFramework
             {
                 WindowNotificationBus::Event(
                     reinterpret_cast<NativeWindowHandle>(m_xcbWindow), &WindowNotificationBus::Events::OnWindowResized, width, height);
+                if (!m_enableCustomizedResolution)
+                {
+                    WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnResolutionChanged, width, height);
+                }
             }
         }
     }

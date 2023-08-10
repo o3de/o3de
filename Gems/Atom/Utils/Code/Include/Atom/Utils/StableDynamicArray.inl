@@ -26,7 +26,7 @@ namespace AZ
         // Deallocate the pages and check for allocated items since that may mean there are
         // outstanding handles that we should warn the user about.
 
-        size_t occupiedPageCount = 0;
+        [[maybe_unused]] size_t occupiedPageCount = 0;
         size_t orphanedItemCount = 0;
 
         Page* page = m_firstPage;
@@ -137,9 +137,9 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
-    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> AZStd::vector<AZStd::pair<pageIterator, pageIterator>>
+    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> ParallelRanges
     {
-        AZStd::vector<AZStd::pair<pageIterator, pageIterator>> pageIterators;
+        ParallelRanges pageIterators;
         Page* page = m_firstPage;
         while (page)
         {
@@ -280,6 +280,12 @@ namespace AZ
     auto StableDynamicArray<T, ElementsPerPage, Allocator>::cend() const -> const_iterator
     {
         return const_iterator();
+    }
+
+    template<typename T, size_t ElementsPerPage, class Allocator>
+    size_t StableDynamicArray<T, ElementsPerPage, Allocator>::GetPageIndex(const Handle& handle) const
+    {
+        return static_cast<Page*>(handle.m_page)->m_pageIndex;
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
@@ -581,6 +587,12 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
+    size_t StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::GetPageIndex() const
+    {
+        return m_page->m_pageIndex;
+    }
+
+    template<typename T, size_t ElementsPerPage, class Allocator>
     void StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::SkipEmptyBitGroups()
     {
         // skip the next bit group in the page until one is found with entries
@@ -644,6 +656,24 @@ namespace AZ
     ValueType* StableDynamicArrayWeakHandle<ValueType>::operator->() const
     {
         return m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return m_data == rhs.m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator<(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return m_data < rhs.m_data;
     }
 
     // StableDynamicArray::Handle

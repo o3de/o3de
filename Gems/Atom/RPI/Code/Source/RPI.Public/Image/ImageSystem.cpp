@@ -101,8 +101,8 @@ namespace AZ
     }
 
     // cvars for changing streaming image pool budget and setup mip bias of streaming controller
-    AZ_CVAR(size_t, r_streamingImagePoolBudgetMb, cvar_r_streamingImagePoolBudgetMb_Init(), cvar_r_streamingImagePoolBudgetMb_Changed, ConsoleFunctorFlags::Null, "Change gpu memory budget for the RPI system streaming image pool");
-    AZ_CVAR(int16_t, r_streamingImageMipBias, cvar_r_streamingImageMipBias_Init(), cvar_r_streamingImageMipBias_Changed, ConsoleFunctorFlags::Null, "Set a mipmap bias for all streamable images created from the system streaming image pool");
+    AZ_CVAR(size_t, r_streamingImagePoolBudgetMb, cvar_r_streamingImagePoolBudgetMb_Init(), cvar_r_streamingImagePoolBudgetMb_Changed, ConsoleFunctorFlags::DontReplicate, "Change gpu memory budget for the RPI system streaming image pool");
+    AZ_CVAR(int16_t, r_streamingImageMipBias, cvar_r_streamingImageMipBias_Init(), cvar_r_streamingImageMipBias_Changed, ConsoleFunctorFlags::DontReplicate, "Set a mipmap bias for all streamable images created from the system streaming image pool");
 
     namespace RPI
     {

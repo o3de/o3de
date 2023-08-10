@@ -165,6 +165,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     Tests
                     Source
+                    Include
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
@@ -172,11 +173,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::Compression.Private.Object
         )
 
-        # Add Compression.Tests to googletest
-        # Commented out as currently there are no Compression tests
-        #ly_add_googletest(
-            #NAME Gem::Compression.Tests
-        #)
+        ly_add_googletest(
+            NAME Gem::Compression.Tests
+        )
     endif()
 
     # If we are a host platform we want to add tools test like editor tests here
@@ -194,17 +193,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         Tests
                         Source
+                        Include
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::Compression.Private.Object
+                        Gem::Compression.Editor.Private.Object
             )
 
-            # Add Compression.Editor.Tests to googletest
-            # Commented out as currently there are no Compression Editor tests
-            # ly_add_googletest(
-                # NAME Gem::Compression.Editor.Tests
-            # )
+            ly_add_googletest(
+                NAME Gem::Compression.Editor.Tests
+            )
         endif()
     endif()
 endif()

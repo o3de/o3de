@@ -169,6 +169,9 @@ namespace ScriptCanvasEditor
         void DisconnectConnection(const GraphCanvas::ConnectionId& connectionId) override;
         bool CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) override;
 
+        // Adds or removes an implicit execution connection between the nodes these endpoints are connected if necessary
+        void UpdateCorrespondingImplicitConnection(const ScriptCanvas::Endpoint& sourceEndpoint, const ScriptCanvas::Endpoint& targetEndpoint);
+
         bool IsValidConnection(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const override;
 
         AZStd::string GetDataTypeString(const AZ::Uuid& typeId) override;

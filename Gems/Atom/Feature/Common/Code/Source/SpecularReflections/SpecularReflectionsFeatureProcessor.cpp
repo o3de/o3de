@@ -167,7 +167,7 @@ namespace AZ
                 AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
                     {
                         // size multiplier
-                        static AZStd::vector<AZ::Name> attachmentNames = { AZ::Name("ScreenSpaceReflectionOutput"), AZ::Name("TraceCoordsOutput"), AZ::Name("DownsampledDepthOutput") };
+                        static AZStd::vector<AZ::Name> attachmentNames = { AZ::Name("ScreenSpaceReflectionOutput"), AZ::Name("TraceCoordsOutput") };
                         for (const auto& attachmentName : attachmentNames)
                         {
                             RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(attachmentName);
@@ -186,6 +186,31 @@ namespace AZ
                             }
                         }
 
+                        return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
+            }
+
+            // downsample depth linear pass
+            {
+                AZ::RPI::PassFilter passFilter = AZ::RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceDownsampleDepthLinearPass"), (AZ::RPI::Scene*) nullptr);
+                AZ::RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [sizeMultiplier](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+                    {
+                        // size multiplier
+                        RPI::PassAttachmentBinding* attachmentBinding = pass->FindAttachmentBinding(AZ::Name("DownsampledDepthLinearInputOutput"));
+                        AZ_Assert(attachmentBinding, "Failed to retrieve attachment binding [DownsampledDepthLinearInputOutput] on ReflectionScreenSpaceDownsampleDepthLinearPass");
+            
+                        if (attachmentBinding)
+                        {
+                            RPI::Ptr<RPI::PassAttachment> attachment = attachmentBinding->GetAttachment();
+                            if (attachment.get())
+                            {
+                                RPI::PassAttachmentSizeMultipliers& sizeMultipliers = attachment->m_sizeMultipliers;
+            
+                                sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                                sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                            }
+                        }
+            
                         return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
                     });
             }

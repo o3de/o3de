@@ -32,7 +32,7 @@ void InitializeLightingData_StandardPBR(inout Surface surface, float4 screenPosi
     if(o_clearCoat_feature_enabled)
     {
         // Clear coat layer has fixed IOR = 1.5 and transparent => F0 = (1.5 - 1)^2 / (1.5 + 1)^2 = 0.04
-        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, float3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
+        lightingData.diffuseResponse *= 1.0 - (FresnelSchlickWithRoughness(lightingData.NdotV, real3(0.04, 0.04, 0.04), surface.clearCoat.roughness) * surface.clearCoat.factor);
     }
 #endif
 }

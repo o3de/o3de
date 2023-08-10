@@ -59,8 +59,6 @@ namespace AtomToolsFramework
         m_frameworkScene->SetSubsystem(m_scene);
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
-        ActivateRenderPipeline(defaultRenderPipelineAssetPath);
-
         // Create the BRDF texture generation pipeline
         AZ::RPI::RenderPipelineDescriptor brdfPipelineDesc;
         brdfPipelineDesc.m_mainViewTagName = "MainCamera";
@@ -74,6 +72,10 @@ namespace AtomToolsFramework
         m_scene->Activate();
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
+
+        // activate the render pipeline
+        // Note: this is done after the scene is registered in order to properly update the MSAA state
+        ActivateRenderPipeline(defaultRenderPipelineAssetPath);
     }
 
     EntityPreviewViewportScene::~EntityPreviewViewportScene()

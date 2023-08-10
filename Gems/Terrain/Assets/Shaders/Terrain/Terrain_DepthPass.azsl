@@ -9,7 +9,6 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <TerrainCommon.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
 struct VSDepthOutput
 {

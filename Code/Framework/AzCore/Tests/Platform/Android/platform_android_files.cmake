@@ -8,6 +8,7 @@
 
 set(FILES
     ../Common/UnixLike/Tests/Process/ProcessInfoTests_UnixLike.cpp
+    Tests/IO/SystemFileTest_Android.cpp
     Tests/UtilsTests_Android.cpp
     Tests/Memory/AllocatorBenchmarks_Android.cpp
 )

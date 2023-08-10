@@ -67,44 +67,56 @@ namespace AZ
                 return;
             }
 
-            // ray generation shader
-            m_rayGenerationShader = LoadShader(m_passData->m_rayGenerationShaderAssetReference);
-            if (m_rayGenerationShader == nullptr)
+            struct RTShaderLib
             {
-                AZ_Error("PassSystem", false, "RayTracingPass [%s]: Failed to load RayGeneration shader [%s]", GetPathName().GetCStr(), m_passData->m_rayGenerationShaderAssetReference.m_filePath.data());
-                return;
-            }
+                AZ::Data::AssetId m_shaderAssetId;
+                AZ::Data::Instance<AZ::RPI::Shader> m_shader;
+                AZ::RHI::PipelineStateDescriptorForRayTracing m_pipelineStateDescriptor;
+                AZ::Name m_rayGenerationShaderName;
+                AZ::Name m_missShaderName;
+                AZ::Name m_closestHitShaderName;
+            };
+            AZStd::fixed_vector<RTShaderLib, 3> shaderLibs;
 
-            auto shaderVariant = m_rayGenerationShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            RHI::PipelineStateDescriptorForRayTracing rayGenerationShaderDescriptor;
-            shaderVariant.ConfigurePipelineState(rayGenerationShaderDescriptor);
-
-            // closest hit shader
-            m_closestHitShader = LoadShader(m_passData->m_closestHitShaderAssetReference);
-            if (m_closestHitShader == nullptr)
+            auto loadRayTracingShader = [&](auto& assetReference) -> RTShaderLib&
             {
-                AZ_Error("PassSystem", false, "RayTracingPass [%s]: Failed to load ClosestHit shader [%s]", GetPathName().GetCStr(), m_passData->m_closestHitShaderAssetReference.m_filePath.data());
-                return;
-            }
+                auto it = std::find_if(
+                    shaderLibs.begin(),
+                    shaderLibs.end(),
+                    [&](auto& entry)
+                    {
+                        return entry.m_shaderAssetId == assetReference.m_assetId;
+                    });
+                if (it != shaderLibs.end())
+                {
+                    return *it;
+                }
+                auto shaderAsset{ AZ::RPI::FindShaderAsset(assetReference.m_assetId, assetReference.m_filePath) };
+                AZ_Assert(shaderAsset.GetId().IsValid(), "Failed to load shader %s", assetReference.m_filePath.c_str());
+                auto shader{ AZ::RPI::Shader::FindOrCreate(shaderAsset) };
+                auto shaderVariant{ shader->GetVariant(AZ::RPI::ShaderAsset::RootShaderVariantStableId) };
+                AZ::RHI::PipelineStateDescriptorForRayTracing pipelineStateDescriptor;
+                shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+                auto& shaderLib = shaderLibs.emplace_back();
+                shaderLib.m_shaderAssetId = assetReference.m_assetId;
+                shaderLib.m_shader = shader;
+                shaderLib.m_pipelineStateDescriptor = pipelineStateDescriptor;
+                return shaderLib;
+            };
 
-            shaderVariant = m_closestHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
-            shaderVariant.ConfigurePipelineState(closestHitShaderDescriptor);
+            auto& rayGenShaderLib{ loadRayTracingShader(m_passData->m_rayGenerationShaderAssetReference) };
+            rayGenShaderLib.m_rayGenerationShaderName = m_passData->m_rayGenerationShaderName;
+            m_rayGenerationShader = rayGenShaderLib.m_shader;
 
-            // miss shader
-            m_missShader = LoadShader(m_passData->m_missShaderAssetReference);
-            if (m_missShader == nullptr)
-            {
-                AZ_Error("PassSystem", false, "RayTracingPass [%s]: Failed to load Miss shader [%s]", GetPathName().GetCStr(), m_passData->m_missShaderAssetReference.m_filePath.data());
-                return;
-            }
+            auto& closestHitShaderLib{ loadRayTracingShader(m_passData->m_closestHitShaderAssetReference) };
+            closestHitShaderLib.m_closestHitShaderName = m_passData->m_closestHitShaderName;
+            m_closestHitShader = closestHitShaderLib.m_shader;
 
-            shaderVariant = m_missShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            RHI::PipelineStateDescriptorForRayTracing missShaderDescriptor;
-            shaderVariant.ConfigurePipelineState(missShaderDescriptor);
+            auto& missShaderLib{ loadRayTracingShader(m_passData->m_missShaderAssetReference) };
+            missShaderLib.m_missShaderName = m_passData->m_missShaderName;
+            m_missShader = missShaderLib.m_shader;
 
-            // retrieve global pipeline state
-            m_globalPipelineState = m_rayGenerationShader->AcquirePipelineState(rayGenerationShaderDescriptor);
+            m_globalPipelineState = m_rayGenerationShader->AcquirePipelineState(shaderLibs.front().m_pipelineStateDescriptor);
             AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
 
             // create global srg
@@ -134,15 +146,24 @@ namespace AZ
                 ->PipelineState(m_globalPipelineState.get())
                 ->MaxPayloadSize(m_passData->m_maxPayloadSize)
                 ->MaxAttributeSize(m_passData->m_maxAttributeSize)
-                ->MaxRecursionDepth(m_passData->m_maxRecursionDepth)
-                ->ShaderLibrary(rayGenerationShaderDescriptor)
-                    ->RayGenerationShaderName(AZ::Name(m_passData->m_rayGenerationShaderName.c_str()))
-                ->ShaderLibrary(missShaderDescriptor)
-                    ->MissShaderName(AZ::Name(m_passData->m_missShaderName.c_str()))
-                ->ShaderLibrary(closestHitShaderDescriptor)
-                    ->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitShaderName.c_str()))
-                ->HitGroup(AZ::Name("HitGroup"))
-                    ->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitShaderName.c_str()));
+                ->MaxRecursionDepth(m_passData->m_maxRecursionDepth);
+            for (auto& shaderLib : shaderLibs)
+            {
+                descriptor.ShaderLibrary(shaderLib.m_pipelineStateDescriptor);
+                if (!shaderLib.m_rayGenerationShaderName.IsEmpty())
+                {
+                    descriptor.RayGenerationShaderName(AZ::Name{ m_passData->m_rayGenerationShaderName });
+                }
+                if (!shaderLib.m_closestHitShaderName.IsEmpty())
+                {
+                    descriptor.ClosestHitShaderName(AZ::Name{ m_passData->m_closestHitShaderName });
+                }
+                if (!shaderLib.m_missShaderName.IsEmpty())
+                {
+                    descriptor.MissShaderName(AZ::Name{ m_passData->m_missShaderName });
+                }
+            }
+            descriptor.HitGroup(AZ::Name("HitGroup"))->ClosestHitShaderName(AZ::Name(m_passData->m_closestHitShaderName.c_str()));
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
@@ -333,15 +354,15 @@ namespace AZ
 
                 RHI::Size imageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-                dispatchRaysItem.m_width = imageSize.m_width;
-                dispatchRaysItem.m_height = imageSize.m_height;
-                dispatchRaysItem.m_depth = imageSize.m_depth;
+                dispatchRaysItem.m_arguments.m_direct.m_width = imageSize.m_width;
+                dispatchRaysItem.m_arguments.m_direct.m_height = imageSize.m_height;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = imageSize.m_depth;
             }
             else
             {
-                dispatchRaysItem.m_width = m_passData->m_threadCountX;
-                dispatchRaysItem.m_height = m_passData->m_threadCountY;
-                dispatchRaysItem.m_depth = m_passData->m_threadCountZ;
+                dispatchRaysItem.m_arguments.m_direct.m_width = m_passData->m_threadCountX;
+                dispatchRaysItem.m_arguments.m_direct.m_height = m_passData->m_threadCountY;
+                dispatchRaysItem.m_arguments.m_direct.m_depth = m_passData->m_threadCountZ;
             }
 
             // bind RayTracingGlobal, RayTracingScene, and View Srgs

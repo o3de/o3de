@@ -21,6 +21,8 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <Atom/RHI.Reflect/Base.h>
+#include <Atom/RHI/RHISystem.h>
+#include <Tests/Factory.h>
 
 namespace UnitTest
 {
@@ -56,5 +58,34 @@ namespace UnitTest
             m_reflectionManager->Clear();
             m_reflectionManager.reset();
         }
+    };
+
+    class MultiDeviceRHITestFixture : public RHITestFixture
+    {
+    public:
+        void SetUp() override
+        {
+            RHITestFixture::SetUp();
+
+            m_factory.reset(aznew Factory());
+
+            m_rhiSystem.reset(aznew AZ::RHI::RHISystem);
+
+            m_rhiSystem->InitDevices(AZ::RHI::InitDevicesFlags::MultiDevice);
+            m_rhiSystem->Init();
+        }
+
+        void TearDown() override
+        {
+            m_rhiSystem->Shutdown();
+            m_rhiSystem.reset();
+            m_factory.reset();
+
+            RHITestFixture::TearDown();
+        }
+
+    private:
+        AZStd::unique_ptr<AZ::RHI::RHISystem> m_rhiSystem;
+        AZStd::unique_ptr<Factory> m_factory;
     };
 }

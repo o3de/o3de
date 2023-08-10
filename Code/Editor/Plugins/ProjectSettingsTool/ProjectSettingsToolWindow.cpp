@@ -364,6 +364,12 @@ namespace ProjectSettingsTool
             }
         }
 
+        if (index == -1)
+        {
+            // If there is no current tab, return
+            return;
+        }
+
         // resize for current tab
         m_ui->platformTabs->widget(index)->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         m_ui->platformTabs->widget(index)->resize(m_ui->platformTabs->widget(index)->minimumSizeHint());

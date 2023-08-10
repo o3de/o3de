@@ -768,5 +768,62 @@ namespace ScriptCanvasTests
         }
     };
 
+    // Test class that's used to test inheritance with Script Canvas slots
+    class TestBaseClass
+    {
+    public:
+        AZ_RTTI(TestBaseClass, "{C1F80F17-BE3C-49B5-862D-3C41F04208E0}");
 
-} // ScriptCanvasTests
+        TestBaseClass() = default;
+        virtual ~TestBaseClass() = default;
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+            {
+                serializeContext->Class<TestBaseClass>();
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<TestBaseClass>("TestBaseClass", "");
+                }
+            }
+
+            // reflect API for the node
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+            {
+                behaviorContext->Class<TestBaseClass>("TestBaseClass");
+            }
+        }
+    };
+
+    // Test class that's used to test inheritance with Script Canvas slots
+    class TestSubClass : public TestBaseClass
+    {
+    public:
+        AZ_RTTI(TestSubClass, "{2ED5B680-F097-4044-B1C8-0977A0E3F027}", TestBaseClass);
+
+        TestSubClass() = default;
+        ~TestSubClass() override = default;
+
+        static void Reflect(AZ::ReflectContext* reflectContext)
+        {
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext))
+            {
+                serializeContext->Class<TestSubClass, TestBaseClass>();
+
+                if (auto editContext = serializeContext->GetEditContext())
+                {
+                    editContext->Class<TestSubClass>("TestSubClass", "");
+                }
+            }
+
+            // reflect API for the node
+            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
+            {
+                behaviorContext->Class<TestSubClass>("TestSubClass");
+            }
+        }
+    };
+
+} // namespace ScriptCanvasTests

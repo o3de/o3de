@@ -63,26 +63,38 @@ namespace AtomToolsFramework
             });
             verticalLayout->addWidget(m_sourceSelectionComboBox);
         }
-
-        auto targetSelectionBrowserLabel = new QLabel(this);
-        targetSelectionBrowserLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-        targetSelectionBrowserLabel->setText(targetLabel);
-        verticalLayout->addWidget(targetSelectionBrowserLabel);
-
-        m_targetSelectionBrowser = new AzQtComponents::BrowseEdit(this);
-        m_targetSelectionBrowser->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-        m_targetSelectionBrowser->setLineEditReadOnly(true);
-        verticalLayout->addWidget(m_targetSelectionBrowser);
-
         // Select a default location and unique name for the new document
-        UpdateTargetPath(QFileInfo(GetUniqueFilePath(
-            AZStd::string::format("%s/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData())).c_str()));
+        AZStd::string filename = GetUniqueFilePath(
+            AZStd::string::format("%s/untitled.%s", m_initialPath.toUtf8().constData(), supportedExtensions.front().toUtf8().constData()));
+        if (targetLabel.size())
+        {
+            auto targetSelectionBrowserLabel = new QLabel(this);
+            targetSelectionBrowserLabel->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+            targetSelectionBrowserLabel->setText(targetLabel);
+            verticalLayout->addWidget(targetSelectionBrowserLabel);
 
-        // When the file selection button is pressed, open a file dialog to select where the document will be saved
-        QObject::connect(m_targetSelectionBrowser, &AzQtComponents::BrowseEdit::attachedButtonTriggered, m_targetSelectionBrowser, [this, supportedExtensions]() {
-            UpdateTargetPath(AzQtComponents::FileDialog::GetSaveFileName(this, m_targetLabel, m_targetPath, QString("(*.%1)").arg(supportedExtensions.join(");;(*."))));
-        });
+            m_targetSelectionBrowser = new AzQtComponents::BrowseEdit(this);
+            m_targetSelectionBrowser->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
+            m_targetSelectionBrowser->setLineEditReadOnly(true);
+            verticalLayout->addWidget(m_targetSelectionBrowser);
 
+            UpdateTargetPath(QFileInfo(filename.c_str()));
+
+            // When the file selection button is pressed, open a file dialog to select where the document will be saved
+            QObject::connect(
+                m_targetSelectionBrowser,
+                &AzQtComponents::BrowseEdit::attachedButtonTriggered,
+                m_targetSelectionBrowser,
+                [this, supportedExtensions]()
+                {
+                    UpdateTargetPath(AzQtComponents::FileDialog::GetSaveFileName(
+                        this, m_targetLabel, m_targetPath, QString("(*.%1)").arg(supportedExtensions.join(");;(*."))));
+                });
+        }
+        else
+        {
+            m_targetPath = filename.c_str();
+        }
         // Connect ok and cancel buttons
         auto buttonBox = new QDialogButtonBox(this);
         buttonBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));

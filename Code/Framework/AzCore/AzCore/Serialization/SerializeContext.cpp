@@ -1300,7 +1300,7 @@ namespace AZ
         // Call beginElemCB for this element if there is one. If the callback
         // returns false, stop enumeration of this branch
         // pass the original ptr to the user instead of objectPtr because
-        // he may want to replace the actual object.
+        // they may want to replace the actual object.
         if (!callContext->m_beginElemCB || callContext->m_beginElemCB(ptr, dataClassInfo, classElement))
         {
             if (dataClassInfo->m_container)

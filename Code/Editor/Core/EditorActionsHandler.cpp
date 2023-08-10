@@ -48,6 +48,7 @@
 
 #include <QDesktopServices>
 #include <QDir>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QMainWindow>
 #include <QMenu>
@@ -974,55 +975,6 @@ void EditorActionsHandler::OnActionRegistrationHook()
         m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
     }
 
-    // Export Selected Objects
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.exportSelectedObjects";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Export Selected Objects";
-        actionProperties.m_description = "Export Selected Objects.";
-        actionProperties.m_category = "Game";
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnExportSelectedObjects();
-            }
-        );
-
-        m_actionManagerInterface->InstallEnabledStateCallback(actionIdentifier, AreEntitiesSelected);
-        m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
-
-        // This action is only accessible outside of Component Modes
-        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
-    }
-
-    // Export Occlusion Mesh
-    {
-        constexpr AZStd::string_view actionIdentifier = "o3de.action.game.exportOcclusionMesh";
-        AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Export Occlusion Mesh";
-        actionProperties.m_description = "Export Occlusion Mesh.";
-        actionProperties.m_category = "Game";
-        actionProperties.m_menuVisibility = AzToolsFramework::ActionVisibility::AlwaysShow;
-
-        m_actionManagerInterface->RegisterAction(
-            EditorIdentifiers::MainWindowActionContextIdentifier,
-            actionIdentifier,
-            actionProperties,
-            [cryEdit = m_cryEditApp]
-            {
-                cryEdit->OnFileExportOcclusionMesh();
-            }
-        );
-
-        // This action is only accessible outside of Component Modes
-        m_actionManagerInterface->AssignModeToAction(AzToolsFramework::DefaultActionContextModeIdentifier, actionIdentifier);
-    }
-
     // Move Player and Camera Separately
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.game.movePlayerAndCameraSeparately";
@@ -1940,8 +1892,6 @@ void EditorActionsHandler::OnMenuBindingHook()
         }
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.simulate", 200);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 300);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.exportSelectedObjects", 400);
-        m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.exportOcclusionMesh", 500);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 600);
         m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::GameMenuIdentifier, "o3de.action.game.movePlayerAndCameraSeparately", 700);
         m_menuManagerInterface->AddSeparatorToMenu(EditorIdentifiers::GameMenuIdentifier, 800);
@@ -2646,7 +2596,7 @@ void EditorActionsHandler::RefreshToolActions()
                 },
                 [viewpaneManager = m_qtViewPaneManager, viewpaneName = viewpane.m_name]() -> bool
                 {
-                    return viewpaneManager->IsVisible(viewpaneName);
+                    return viewpaneManager->IsEnumeratedInstanceVisible(viewpaneName);
                 }
             );
 

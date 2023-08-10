@@ -23,7 +23,15 @@
             "isTemplated": false
         },
         {
+            "file": "ExportScripts/export_standalone_monolithic.py",
+            "isTemplated": false
+        },
+        {
             "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "CMakePresets.json",
             "isTemplated": true
         },
         {
@@ -52,6 +60,10 @@
         },
         {
             "file": "Gem/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Include/${Name}/${Name}TypeIds.h",
             "isTemplated": true
         },
         {

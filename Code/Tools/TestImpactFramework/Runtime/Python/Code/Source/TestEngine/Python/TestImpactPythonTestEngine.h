@@ -53,7 +53,6 @@ namespace TestImpact
         //! Performs a test run without any instrumentation and, for each test target, returns the test run results and metrics about the
         //! run.
         //! @param testTargets The test targets to run.
-        //! @param testShardingPolicy Test sharding policy to use for test targets in this run.
         //! @param executionFailurePolicy Policy for how test execution failures should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.

@@ -8,18 +8,15 @@
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-namespace AZ
+namespace AZ::RHI
 {
-    namespace RHI
+    void ImagePoolDescriptor::Reflect(AZ::ReflectContext* context)
     {
-        void ImagePoolDescriptor::Reflect(AZ::ReflectContext* context)
+        if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
         {
-            if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
-            {
-                serializeContext->Class<ImagePoolDescriptor, ResourcePoolDescriptor>()
-                    ->Version(1)
-                    ->Field("m_bindFlags", &ImagePoolDescriptor::m_bindFlags);
-            }
+            serializeContext->Class<ImagePoolDescriptor, ResourcePoolDescriptor>()
+                ->Version(1)
+                ->Field("m_bindFlags", &ImagePoolDescriptor::m_bindFlags);
         }
     }
 }

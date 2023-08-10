@@ -10,7 +10,7 @@
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
-#include <Atom/RPI.Public/Scene.h> 
+#include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -18,7 +18,7 @@
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
 namespace AZ
-{   
+{
     namespace RPI
     {
         AZ_CVAR(bool,
@@ -46,13 +46,16 @@ namespace AZ
             {
                 m_material = GetMesh().m_material;
             }
+
+            // set to all true so no items would be skipped
+            m_drawListFilter.set();
         }
 
         Data::Instance<Material> MeshDrawPacket::GetMaterial() const
         {
             return m_material;
         }
-        
+
         const ModelLod::Mesh& MeshDrawPacket::GetMesh() const
         {
             AZ_Assert(m_modelLodMeshIndex < m_modelLod->GetMeshes().size(), "m_modelLodMeshIndex %zu is out of range %zu", m_modelLodMeshIndex, m_modelLod->GetMeshes().size());
@@ -78,6 +81,24 @@ namespace AZ
                 });
         }
 
+        void MeshDrawPacket::SetStencilRef(uint8_t stencilRef)
+        {
+            if (m_stencilRef != stencilRef)
+            {
+                m_needUpdate = true;
+                m_stencilRef = stencilRef;
+            }
+        }
+
+        void MeshDrawPacket::SetSortKey(RHI::DrawItemSortKey sortKey)
+        {
+            if (m_sortKey != sortKey)
+            {
+                m_needUpdate = true;
+                m_sortKey = sortKey;
+            }
+        }
+
         bool MeshDrawPacket::SetShaderOption(const Name& shaderOptionName, ShaderOptionValue value)
         {
             // check if the material owns this option in any of its shaders, if so it can't be set externally
@@ -92,6 +113,7 @@ namespace AZ
                 if (shaderOptionPair.first == shaderOptionName)
                 {
                     shaderOptionPair.second = value;
+                    m_needUpdate = true;
                     return true;
                 }
             }
@@ -106,6 +128,7 @@ namespace AZ
                 }
             );
 
+            m_needUpdate = true;
             return true;
         }
 
@@ -118,6 +141,7 @@ namespace AZ
                 {
                     shaderOptionPair = m_shaderOptions.back();
                     m_shaderOptions.pop_back();
+                    m_needUpdate = true;
                     return true;
                 }
             }
@@ -126,7 +150,34 @@ namespace AZ
 
         void MeshDrawPacket::ClearShaderOptions()
         {
+            m_needUpdate = m_shaderOptions.size() > 0;
             m_shaderOptions.clear();
+        }
+
+        void MeshDrawPacket::SetEnableDraw(RHI::DrawListTag drawListTag, bool enableDraw)
+        {
+            if (drawListTag.IsNull())
+            {
+                return;
+            }
+
+            uint8_t index = drawListTag.GetIndex();
+            if (m_drawListFilter[index] != enableDraw)
+            {
+                m_needUpdate = true;
+                m_drawListFilter[index] = enableDraw;
+            }
+        }
+
+        RHI::DrawListMask MeshDrawPacket::GetDrawListFilter()
+        {
+            return m_drawListFilter;
+        }
+
+        void MeshDrawPacket::ClearDrawListFilter()
+        {
+            m_drawListFilter.set();
+            m_needUpdate = true;
         }
 
         bool MeshDrawPacket::Update(const Scene& parentScene, bool forceUpdate /*= false*/)
@@ -145,26 +196,34 @@ namespace AZ
             //      - MeshDrawPacket::Update() is called. But since the GetCurrentChangeId() hasn't changed since last time, DoUpdate() is not called.
             //      - The mesh continues rendering with only the "foo" change applied, indefinitely.
 
-            if (forceUpdate || (!m_material->NeedsCompile() && m_materialChangeId != m_material->GetCurrentChangeId()))
+            if (forceUpdate || (!m_material->NeedsCompile() && m_materialChangeId != m_material->GetCurrentChangeId())
+                || m_needUpdate)
             {
                 DoUpdate(parentScene);
                 m_materialChangeId = m_material->GetCurrentChangeId();
+                m_needUpdate = false;
                 return true;
             }
 
             return false;
         }
 
+        static bool HasRootConstants(const RHI::ConstantsLayout* rootConstantsLayout)
+        {
+            return rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0;
+        }
+
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
-            const ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
+            const auto meshes = m_modelLod->GetMeshes();
+            const ModelLod::Mesh& mesh = meshes[m_modelLodMeshIndex];
 
             if (!m_material)
             {
                 AZ_Warning("MeshDrawPacket", false, "No material provided for mesh. Skipping.");
                 return false;
             }
-            
+
             ShaderReloadDebugTracker::ScopedSection reloadSection("MeshDrawPacket::DoUpdate");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
@@ -184,6 +243,12 @@ namespace AZ
             // keeps pointers to StreamBufferViews until DrawPacketBuilder::End() is called. And we use a fixed_vector to guarantee
             // that the memory won't be relocated when new entries are added.
             AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
+
+            // The root constants are shared by all draw items in the draw packet. We must populate them with default values.
+            // The draw packet builder needs to know where the data is coming from during appendShader, but it's not actually read
+            // until drawPacketBuilder.End(), so store the default data out here.
+            AZStd::vector<uint8_t> rootConstants;
+            bool isFirstShaderItem = true;
 
             m_perDrawSrgs.clear();
 
@@ -214,6 +279,12 @@ namespace AZ
                     }
 
                     drawListTag = drawListTagRegistry->FindTag(shaderAsset->GetDrawListName());
+                }
+
+                // draw list tag is filtered out. skip this item
+                if (drawListTag.IsNull() || !m_drawListFilter[drawListTag.GetIndex()])
+                {
+                    return false;
                 }
 
                 if (!parentScene.HasOutputForPipelineState(drawListTag))
@@ -252,6 +323,9 @@ namespace AZ
                     RPI::ShaderOptionValue& value = meshShaderOption.second;
 
                     ShaderOptionIndex index = shaderOptions.FindShaderOptionIndex(name);
+
+                    // Shader options will be applied to any shader item that supports it, even if
+                    // not all the shader items in the draw packet support it
                     if (index.IsValid())
                     {
                         shaderOptions.SetValue(name, value);
@@ -310,6 +384,32 @@ namespace AZ
                     return false;
                 }
 
+                const RHI::ConstantsLayout* rootConstantsLayout =
+                    pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
+                if(isFirstShaderItem)
+                {
+                    if (HasRootConstants(rootConstantsLayout))
+                    {
+                        m_rootConstantsLayout = rootConstantsLayout;
+                        rootConstants.resize(m_rootConstantsLayout->GetDataSize());
+                        drawPacketBuilder.SetRootConstants(rootConstants);
+                    }
+
+                    isFirstShaderItem = false;
+                }
+                else
+                {
+                    AZ_Error(
+                        "MeshDrawPacket",
+                        (!m_rootConstantsLayout && !HasRootConstants(rootConstantsLayout)) ||
+                        (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
+                        "Shader %s has mis-matched root constant layout in material %s. "
+                        "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
+                        "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.",
+                        shaderItem.GetShaderAsset()->GetName().GetCStr(),
+                        m_material->GetAsset().ToString<AZStd::string>().c_str());
+                }
+
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
@@ -319,6 +419,7 @@ namespace AZ
                 if (drawSrg)
                 {
                     drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                    // Hold on to a reference to the drawSrg so the refcount doesn't drop to zero
                     m_perDrawSrgs.push_back(drawSrg);
                 }
 
@@ -330,7 +431,7 @@ namespace AZ
                 }
 
                 drawPacketBuilder.AddDrawItem(drawRequest);
-                
+
                 ShaderData shaderData;
                 shaderData.m_shader = AZStd::move(shader);
                 shaderData.m_materialPipelineName = materialPipelineName;
@@ -380,6 +481,11 @@ namespace AZ
         const RHI::DrawPacket* MeshDrawPacket::GetRHIDrawPacket() const
         {
             return m_drawPacket.get();
+        }
+
+        const RHI::ConstPtr<RHI::ConstantsLayout> MeshDrawPacket::GetRootConstantsLayout() const
+        {
+            return m_rootConstantsLayout;
         }
     } // namespace RPI
 } // namespace AZ

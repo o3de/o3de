@@ -130,7 +130,17 @@ namespace TestImpact
 
 namespace AZStd
 {
-    //! Hash function for BuildTarget types for use in maps and sets.
+    //! Less function for BuildTarget types for use in maps and sets.
+    template<typename ProductionTarget, typename TestTarget>
+    struct less<TestImpact::BuildTarget<ProductionTarget, TestTarget>>
+    {
+        bool operator()(const TestImpact::BuildTarget<ProductionTarget, TestTarget>& lhs, const TestImpact::BuildTarget<ProductionTarget, TestTarget>& rhs) const
+        {
+            return reinterpret_cast<size_t>(lhs.GetTarget()) < reinterpret_cast<size_t>(rhs.GetTarget());
+        }
+    };
+
+    //! Hash function for BuildTarget types for use in unordered maps and sets.
     template<typename ProductionTarget, typename TestTarget>
     struct hash<TestImpact::BuildTarget<ProductionTarget, TestTarget>>
     {

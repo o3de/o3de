@@ -33,19 +33,46 @@ namespace AZ
                 }
             }
 
-            Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting, Data::AssetType assetType, bool autoGenerateId)
+            bool TryToCompileAsset(const AZStd::string& assetFilePath, TraceLevel reporting)
             {
+                AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                        status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetFilePath);
+
+                if ((status != AzFramework::AssetSystem::AssetStatus_Compiled) && (status != AzFramework::AssetSystem::AssetStatus_Unknown))
+                {
+                    AssetUtilsInternal::ReportIssue(
+                        reporting,
+                        AZStd::string::format(
+                            "Could not compile asset '%s', status = %u.", assetFilePath.c_str(), static_cast<uint32_t>(status))
+                            .c_str());
+
+                    return false;
+                }
+
+                return true;
+            }
+
+            Data::AssetId GetAssetIdForProductPath(const char* productPath, TraceLevel reporting, Data::AssetType assetType)
+            {
+                // Don't create a new entry in the asset catalog for this asset if it doesn't exist.
+                // Since we only have a product path and not an asset id, any entry we create will have an incorrect id,
+                // incorrect size and dependency information, and will point to a file that doesn't exist. Any attempt to use
+                // that id will fail.
+                constexpr bool AutoGenerateId = false;
+
                 Data::AssetId assetId;
                 Data::AssetCatalogRequestBus::BroadcastResult(
                     assetId,
                     &Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
                     productPath,
                     assetType,
-                    autoGenerateId);
+                    AutoGenerateId);
 
                 if (!assetId.IsValid())
                 {
-                    AZStd::string errorMessage = AZStd::string::format("Unable to find product asset '%s'. Has the source asset finished building?", productPath);
+                    AZStd::string errorMessage = AZStd::string::format(
+                        "Unable to find product asset '%s'. Has the source asset finished building?", productPath);
                     AssetUtilsInternal::ReportIssue(reporting, errorMessage.c_str());
                 }
 

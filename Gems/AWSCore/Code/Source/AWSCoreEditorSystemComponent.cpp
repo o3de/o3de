@@ -73,19 +73,16 @@ namespace AWSCore
 
     void AWSCoreEditorSystemComponent::Activate()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
-        {
-            AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
 
-            m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
-            AZ_Assert(m_actionManagerInterface, "AWSCoreEditorSystemComponent - could not get ActionManagerInterface");
+        m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(m_actionManagerInterface, "AWSCoreEditorSystemComponent - could not get ActionManagerInterface");
 
-            m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
-            AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
+        m_menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInterface");
 
-            m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
-            AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInternalInterface");
-        }
+        m_menuManagerInternalInterface = AZ::Interface<AzToolsFramework::MenuManagerInternalInterface>::Get();
+        AZ_Assert(m_menuManagerInterface, "AWSCoreEditorSystemComponent - could not get MenuManagerInternalInterface");
 
         AWSCoreEditorRequestBus::Handler::BusConnect();
     }
