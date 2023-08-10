@@ -141,7 +141,7 @@ namespace PhysX
         }
         else
         {
-            // We do not need to recreate the shapes list if only rotation or translation was changed,
+            // We don't need to recreate the shapes list if only rotation or translation was changed,
             // simply need to invalidate the cache. A scale difference, however, requires us to reset the collider.
             // In the future, it would likely be more efficient to instead modify just the parts of the shapes list that
             // need modifying rather than recreate the whole thing.
