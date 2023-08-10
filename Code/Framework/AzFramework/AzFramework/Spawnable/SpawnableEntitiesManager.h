@@ -18,7 +18,7 @@
 #include <AzCore/std/parallel/mutex.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
-#include <AzCore/Component/EntityId.h> // Gruber path. // LVB. // Support unique instances
+#include <AzCore/Component/EntityId.h> // Gruber patch. // LVB. // Support unique instances
 
 namespace AZ
 {

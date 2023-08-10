@@ -403,7 +403,7 @@ namespace AzFramework
 
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
-    void Spawnable::GeneratetInstanceId()
+    void Spawnable::GenerateInstanceId()
     {
         m_instanceId = SpawnableInstanceId::CreateRandom();
     }

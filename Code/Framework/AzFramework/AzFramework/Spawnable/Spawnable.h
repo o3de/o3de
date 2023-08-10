@@ -190,8 +190,8 @@ namespace AzFramework
             m_instanceId = id;
         }
 
-        // Genreate random InstanceId for this Spawnable
-        void GeneratetInstanceId();
+        // Generate random InstanceId for this Spawnable
+        void GenerateInstanceId();
 #endif
 // Gruber patch end. // LVB. // Support unique instances
 
