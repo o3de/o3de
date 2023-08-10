@@ -27,7 +27,7 @@ from typing import List
 # Example invocation on Linux
 '''
 $ cd <project-path>
-$ <engine-path>/scripts/o3de.sh export-project --export-scripts <engine-path>/scripts/o3de/ExportScripts/export_standalone_monolithic_project_centric.py \
+$ <engine-path>/scripts/o3de.sh export-project --export-script <engine-path>/scripts/o3de/ExportScripts/export_standalone_monolithic_project_centric.py \
  --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output xz \
  --seedlist ./Assets/seedlist1.seed --seedlist ./Assets/seedlist2.seed <etc..> -code -assets
 '''
@@ -35,9 +35,9 @@ $ <engine-path>/scripts/o3de.sh export-project --export-scripts <engine-path>/sc
 # Example invocation on Windows
 '''
 $ cd <project-path>
-$ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\export_standalone_monolithic_project_centric.py \
+$ <engine-path>\scripts\o3de.bat  export-project --export-script ExportScripts\export_standalone_monolithic_project_centric.py \
  --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output zip \
- --seedlist .\Assets\seedlist1.seed --seedlist .\Assets\seedlist2.seed <etc..> 
+ --seedlist .\Assets\seedlist1.seed --seedlist .\Assets\seedlist2.seed <etc..> -code -assets
 ''' 
 
 # The following parameters are optional, but may be helpful:
