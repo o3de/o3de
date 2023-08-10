@@ -77,6 +77,11 @@ namespace AzFramework
         MOCK_METHOD1(DestroyTicket, void(void* ticket));
         MOCK_METHOD1(GetTicketId, EntitySpawnTicket::Id(void* ticket));
         MOCK_METHOD1(GetSpawnableOnTicket, const AZ::Data::Asset<Spawnable>&(void* ticket));
+// Gruber patch begin // VMED // Added mock for GetOwningSpawnable method
+#ifdef CARBONATED
+        MOCK_METHOD1(GetOwningSpawnable, SpawnableInstanceAddress(const AZ::EntityId& entityId));
+#endif // CARBONATED
+// Gruber patch end // VMED // Added mock for GetOwningSpawnable method
 
         /** Installs some default result values for the above functions.
          *   Note that you can always override these in scope of your test by adding additional ON_CALL / EXPECT_CALL
