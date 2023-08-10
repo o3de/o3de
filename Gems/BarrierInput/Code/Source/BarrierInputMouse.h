@@ -106,7 +106,7 @@ namespace BarrierInput
     struct InputDeviceMouseBarrierImplFactory 
         : public AzFramework::InputDeviceMouse::ImplementationFactory
     {
-        AzFramework::InputDeviceMouse::Implementation* Create(AzFramework::InputDeviceMouse& inputDevice) override;
+        AZStd::unique_ptr<AzFramework::InputDeviceMouse::Implementation> Create(AzFramework::InputDeviceMouse& inputDevice) override;
     };
 
 } // namespace BarrierInput

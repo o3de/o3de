@@ -252,9 +252,9 @@ namespace BarrierInput
         return shiftOrCapsLockActive ? it->second.second : it->second.first;
     }
 
-    AzFramework::InputDeviceKeyboard::Implementation* InputDeviceKeyboardBarrierImplFactory::Create(AzFramework::InputDeviceKeyboard& inputDevice)
+    AZStd::unique_ptr<AzFramework::InputDeviceKeyboard::Implementation> InputDeviceKeyboardBarrierImplFactory::Create(AzFramework::InputDeviceKeyboard& inputDevice)
     {
-        return aznew InputDeviceKeyboardBarrier(inputDevice);
+        return AZStd::make_unique<InputDeviceKeyboardBarrier>(inputDevice);
     }
 
 } // namespace BarrierInput

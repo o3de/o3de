@@ -188,9 +188,9 @@ namespace BarrierInput
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::Implementation* InputDeviceMouseBarrierImplFactory::Create(InputDeviceMouse& inputDevice)
+    AZStd::unique_ptr<InputDeviceMouse::Implementation> InputDeviceMouseBarrierImplFactory::Create(InputDeviceMouse& inputDevice)
     {
-        return aznew InputDeviceMouseBarrier(inputDevice);
+        return AZStd::make_unique<InputDeviceMouseBarrier>(inputDevice);
     }
 
 

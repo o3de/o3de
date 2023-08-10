@@ -106,6 +106,6 @@ namespace BarrierInput
     struct InputDeviceKeyboardBarrierImplFactory 
         : public AzFramework::InputDeviceKeyboard::ImplementationFactory
     {
-        AzFramework::InputDeviceKeyboard::Implementation* Create(AzFramework::InputDeviceKeyboard& inputDevice) override;
+        AZStd::unique_ptr<AzFramework::InputDeviceKeyboard::Implementation> Create(AzFramework::InputDeviceKeyboard& inputDevice) override;
     };
 } // namespace BarrierInput
