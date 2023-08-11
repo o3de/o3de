@@ -35,7 +35,7 @@ namespace InputUnitTests
         {
             // Many input tests are only valid if the GamePad device is supported on this platform.
             auto deviceGamepadImplFactory = AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Get();
-            m_gamepadSupported = (deviceGamepadImplFactory != nullptr) ? (deviceGamepadImplFactory->GetMaxSupportedGamepads() > 0) : false;
+            m_gamepadSupported = (deviceGamepadImplFactory != nullptr) && (deviceGamepadImplFactory->GetMaxSupportedGamepads() > 0);
         }
 
     protected:

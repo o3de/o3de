@@ -10,7 +10,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
-#if LY_HEADLESS
+#if O3DE_HEADLESS_SERVER
 int main(int argc, char* argv[])
 {
     const AZ::Debug::Trace tracer;
@@ -57,7 +57,7 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     return static_cast<int>(status);
 }
-#endif // LY_HEADLESS
+#endif // O3DE_HEADLESS_SERVER
 
 void CVar_OnViewportPosition(const AZ::Vector2& value)
 {

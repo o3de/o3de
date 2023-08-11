@@ -15,11 +15,11 @@ set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_
 
 set(SERVER_LAUNCHER_TYPES ServerLauncher HeadlessServerLauncher)
 
-set(SERVER_LAUNCHERTYPE_ServerLauncher EXECUTABLE)
+set(SERVER_LAUNCHERTYPE_ServerLauncher APPLICATION)
 set(SERVER_BUILD_DEPENDENCIES_ServerLauncher AZ::Launcher.Static AZ::Launcher.Server.Static)
 set(SERVER_VARIANT_ServerLauncher Servers)
 
-set(SERVER_LAUNCHERTYPE_HeadlessServerLauncher APPLICATION)
+set(SERVER_LAUNCHERTYPE_HeadlessServerLauncher EXECUTABLE)
 set(SERVER_BUILD_DEPENDENCIES_HeadlessServerLauncher AZ::Launcher.Headless.Static AZ::Launcher.Headless.Server.Static)
 set(SERVER_VARIANT_HeadlessServerLauncher HeadlessServers)
 

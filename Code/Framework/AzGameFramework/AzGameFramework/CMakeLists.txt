@@ -31,11 +31,9 @@ ly_add_target(
             ..
     COMPILE_DEFINITIONS
         PUBLIC
-            LY_HEADLESS=1
+            O3DE_HEADLESS_SERVER=1
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
 )
-
-

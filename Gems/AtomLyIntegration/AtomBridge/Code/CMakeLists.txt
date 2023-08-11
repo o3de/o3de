@@ -76,7 +76,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PRIVATE
             ENABLE_ATOM_DEBUG_DISPLAY=1
-            LY_HEADLESS=1
+            O3DE_HEADLESS_SERVER=1
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::Atom_AtomBridge.Static

@@ -29,7 +29,7 @@ namespace AzFramework
         // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
         if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
         {
-            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType*>("GetDpiForWindow");
+            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType>("GetDpiForWindow");
         }
     }
 

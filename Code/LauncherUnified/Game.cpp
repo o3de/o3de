@@ -27,13 +27,4 @@ namespace O3DELauncher
     {
         return "client";
     }
-
-    bool IsHeadless()
-    {
-        #if LY_HEADLESS
-        return true;
-        #else
-        return false;
-        #endif
-    }
 }

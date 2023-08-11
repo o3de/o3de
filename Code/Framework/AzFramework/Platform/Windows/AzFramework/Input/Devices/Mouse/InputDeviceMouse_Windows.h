@@ -82,23 +82,23 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The current system cursor state
-        SystemCursorState m_systemCursorState;
+        SystemCursorState m_systemCursorState{};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Does the window attached to the input (main) thread's message queue have focus?
         // https://msdn.microsoft.com/en-us/library/windows/desktop/ms646294(v=vs.85).aspx
-        bool m_hasFocus;
+        bool m_hasFocus{};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The client rect of the window obtained the last time this input device was ticked.
-        RECT m_lastClientRect;
+        RECT m_lastClientRect{};
 
         //! The flags sent with the last received MOUSE_MOVE_RELATIVE or MOUSE_MOVE_ABSOLUTE event.
-        USHORT m_lastMouseMoveEventFlags;
+        USHORT m_lastMouseMoveEventFlags{};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The last absolute mouse position, reported by a MOUSE_MOVE_ABSOLUTE raw input API event,
         //! which will more than likely only ever be received when running a remote desktop session.
-        AZ::Vector2 m_lastMouseMoveEventAbsolutePosition;
+        AZ::Vector2 m_lastMouseMoveEventAbsolutePosition{};
     };
 } // namespace AzFramework

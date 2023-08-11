@@ -45,7 +45,7 @@ namespace AzGameFramework
         void MergeSettingsToRegistry(AZ::SettingsRegistryInterface& registry) override;
         //////////////////////////////////////////////////////////////////////////
 
-        bool m_headless { false };
+        bool m_headless{ false };
     };
 } // namespace AzGameFramework
 

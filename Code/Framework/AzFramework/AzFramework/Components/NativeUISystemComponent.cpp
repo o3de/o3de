@@ -15,29 +15,22 @@ namespace AzFramework
 {
     NativeUISystemComponent::NativeUISystemComponent()
     {
+        // Initialize any supported native control / window implementation factories for this platform
         InitializeApplicationImplementationFactory();
-        // AZ::Interface<Application::ImplementationFactory>::Register(m_applicationImplFactory);
 
         InitializeDeviceGamepadImplentationFactory();
-        // AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory);
         
         InitializeDeviceKeyboardImplementationFactory();
-        // AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory);
 
         InitializeDeviceMotionImplentationFactory();
-        // AZ::Interface<InputDeviceMotion::ImplementationFactory>::Register(m_deviceMotionImplFactory);
 
         InitializeDeviceMouseImplentationFactory();
-        // AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory);
 
         InitializeDeviceTouchImplentationFactory();
-        // AZ::Interface<InputDeviceTouch::ImplementationFactory>::Register(m_deviceTouchImplFactory);
 
         InitializeDeviceVirtualKeyboardImplentationFactory();
-        // AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Register(m_deviceVirtualKeyboardImplFactory);
 
         InitializeNativeWindowImplementationFactory();
-        // AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory);
     }
 
     NativeUISystemComponent::~NativeUISystemComponent()
@@ -77,7 +70,7 @@ namespace AzFramework
             AZ::Interface<InputDeviceVirtualKeyboard::ImplementationFactory>::Unregister(m_deviceVirtualKeyboardImplFactory.get());
         }
 
-        if (m_nativeWindowImplFactory != nullptr)
+        if (m_nativeWindowImplFactory)
         {
             AZ::Interface<NativeWindow::ImplementationFactory>::Unregister(m_nativeWindowImplFactory.get());
         }

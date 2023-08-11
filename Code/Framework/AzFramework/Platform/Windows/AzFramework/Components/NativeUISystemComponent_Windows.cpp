@@ -96,34 +96,34 @@ namespace AzFramework
         AZ::Interface<InputDeviceGamepad::ImplementationFactory>::Register(m_deviceGamepadImplFactory.get());
     }
 
-    void NativeUISystemComponent::InitializeGetDeviceKeyboardImplementationFactory()
+    void NativeUISystemComponent::InitializeDeviceKeyboardImplementationFactory()
     {
         m_deviceKeyboardImplFactory = AZStd::make_unique<WindowsDeviceKeyboardImplFactory>();
         AZ::Interface<InputDeviceKeyboard::ImplementationFactory>::Register(m_deviceKeyboardImplFactory.get());
     }
 
-    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceMotionImplentationFactory()
     {
         // Motion Input not supported on Windows
     }
 
-    InputDeviceMouse::ImplementationFactory* NativeUISystemComponent::GetDeviceMouseImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceMouseImplentationFactory()
     {
         m_deviceMouseImplFactory = AZStd::make_unique<WindowsDeviceMouseImplFactory>();
         AZ::Interface<InputDeviceMouse::ImplementationFactory>::Register(m_deviceMouseImplFactory.get());
     }
 
-    InputDeviceTouch::ImplementationFactory* NativeUISystemComponent::GetDeviceTouchImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceTouchImplentationFactory()
     {
         // Touch Input not supported on Windows
     }
 
-    InputDeviceVirtualKeyboard::ImplementationFactory* NativeUISystemComponent::GetDeviceVirtualKeyboardImplentationFactory() const
+    void NativeUISystemComponent::InitializeDeviceVirtualKeyboardImplentationFactory()
     {
         // Virtual Keyboard not supported on Windows
     }
 
-    NativeWindow::ImplementationFactory* NativeUISystemComponent::GetNativeWindowImplementationFactory() const
+    void NativeUISystemComponent::InitializeNativeWindowImplementationFactory()
     {
         m_nativeWindowImplFactory = AZStd::make_unique<WindowsNativeWindowFactory>();
         AZ::Interface<NativeWindow::ImplementationFactory>::Register(m_nativeWindowImplFactory.get());

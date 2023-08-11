@@ -58,15 +58,15 @@ namespace AzFramework
         void ExitBorderlessWindowFullScreen();
 
         HWND m_win32Handle = nullptr;
-        RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
-        UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
-        UINT m_windowExtendedStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
+        RECT m_windowRectToRestoreOnFullScreenExit{};          //!< The position and size of the window to restore when exiting full screen.
+        UINT m_windowStyleToRestoreOnFullScreenExit{};         //!< The style(s) of the window to restore when exiting full screen.
+        UINT m_windowExtendedStyleToRestoreOnFullScreenExit{}; //!< The style(s) of the window to restore when exiting full screen.
 
-        bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
-        bool m_shouldEnterFullScreenStateOnActivate = false; //!< Should we enter full screen state when the window is activated?
+        bool m_isInBorderlessWindowFullScreenState = false;    //!< Was a borderless window used to enter full screen state?
+        bool m_shouldEnterFullScreenStateOnActivate = false;   //!< Should we enter full screen state when the window is activated?
 
-        using GetDpiForWindowType = UINT(HWND hwnd);
-        GetDpiForWindowType* m_getDpiFunction = nullptr;
+        using GetDpiForWindowType = UINT(*)(HWND hwnd);
+        GetDpiForWindowType m_getDpiFunction = nullptr;
         uint32_t m_mainDisplayRefreshRate = 0;
     };
 } // namespace AzFramework

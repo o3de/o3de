@@ -6,6 +6,7 @@
  *
  */
 #pragma once
+
 #include <AzCore/PlatformIncl.h>
 #include <AzFramework/Input/Devices/Gamepad/InputDeviceGamepad.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
@@ -13,7 +14,6 @@
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
-#include <AzCore/std/smart_ptr/weak_ptr.h>
 
 #include <xinput.h>
 
@@ -74,8 +74,8 @@ namespace AzFramework
         // Variables
         AZStd::shared_ptr<AZ::DynamicModuleHandle> m_xinputModuleHandle; //!< Handle to the xinput module
         RawGamepadState                            m_rawGamepadState;    //!< The last known raw game-pad state
-        bool                                       m_isConnected;        //!< Is this game-pad currently connected?
-        bool                                       m_tryConnect;         //!< Check whether this game-pad just connected?
+        bool                                       m_isConnected{};      //!< Is this game-pad currently connected?
+        bool                                       m_tryConnect{};       //!< Check whether this game-pad just connected?
     };
 
 } // namespace AzFramework

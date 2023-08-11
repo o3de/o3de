@@ -106,7 +106,7 @@ ly_add_target(
             Include
     COMPILE_DEFINITIONS
         PRIVATE
-            LY_HEADLESS=1
+            O3DE_HEADLESS_SERVER=1
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
