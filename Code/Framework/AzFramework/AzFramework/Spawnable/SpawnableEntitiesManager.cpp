@@ -308,11 +308,6 @@ namespace AzFramework
         auto result = aznew Ticket();
         result->m_spawnable = AZStd::move(spawnable);
         result->m_ticketId = idCounter++;
-// Gruber patch begin. // LVB. // Support unique instances
-#ifdef CARBONATED
-        result->m_spawnable->GenerateInstanceId();
-#endif
- // Gruber patch end. // LVB. // Support unique instances
 
         m_totalTickets++;
         m_ticketsPendingRegistration++;
