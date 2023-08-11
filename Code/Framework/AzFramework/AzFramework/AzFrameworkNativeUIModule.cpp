@@ -22,4 +22,19 @@ namespace AzFramework
             AzFramework::NativeUISystemComponent::CreateDescriptor(),
         });
     }
+
+    AZ::ComponentTypeList AzFrameworkNativeUIModule::GetRequiredSystemComponents() const
+    {
+        AZ::ComponentTypeList components{};
+
+        #if !O3DE_HEADLESS_SERVER
+        components.insert(
+            components.end(),
+            {
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
+            });
+        #endif // O3DE_HEADLESS_SERVER
+
+        return components;
+    }
 }
