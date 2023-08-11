@@ -13,24 +13,15 @@
 #if O3DE_HEADLESS_SERVER
 int main(int argc, char* argv[])
 {
-    const AZ::Debug::Trace tracer;
-    InitRootDir();
-
-    using namespace O3DELauncher;
-
-    PlatformMainInfo mainInfo;
-
-    mainInfo.m_instance = GetModuleHandle(0);
-
-    mainInfo.CopyCommandLine(argc, argv);
-
-    ReturnCode status = Run(mainInfo);
-
-    return static_cast<int>(status);
-}
+    int argCount = argc;
+    char** argValues = argv;
 #else
 int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINSTANCE hPrevInstance, [[maybe_unused]] LPSTR lpCmdLine, [[maybe_unused]] int nCmdShow)
 {
+    int argCount = __argc;
+    char** argValues = __argv;
+#endif // O3DE_HEADLESS_SERVER
+
     const AZ::Debug::Trace tracer;
     InitRootDir();
 
@@ -38,13 +29,15 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
 
     PlatformMainInfo mainInfo;
 
-    mainInfo.m_instance = GetModuleHandle(0);
+    mainInfo.m_instance = GetModuleHandle(nullptr);
 
-    mainInfo.CopyCommandLine(__argc, __argv);
+    mainInfo.CopyCommandLine(argCount, argValues);
 
     ReturnCode status = Run(mainInfo);
 
-#if !defined(_RELEASE)
+#if !O3DE_HEADLESS_SERVER
+
+    #if !defined(_RELEASE)
     bool noPrompt = (strstr(mainInfo.m_commandLine, "-noprompt") != nullptr);
 #else
     bool noPrompt = false;
@@ -54,10 +47,10 @@ int APIENTRY WinMain([[maybe_unused]] HINSTANCE hInstance, [[maybe_unused]] HINS
     {
         MessageBoxA(0, GetReturnCodeString(status), "Error", MB_OK | MB_DEFAULT_DESKTOP_ONLY | MB_ICONERROR);
     }
+#endif // !O3DE_HEADLESS_SERVER
 
     return static_cast<int>(status);
 }
-#endif // O3DE_HEADLESS_SERVER
 
 void CVar_OnViewportPosition(const AZ::Vector2& value)
 {
