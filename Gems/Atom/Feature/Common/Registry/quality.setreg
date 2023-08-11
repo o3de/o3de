@@ -1,0 +1,38 @@
+{
+    "O3DE": {
+        "Quality": {
+            "Groups": {
+                "q_general": {
+                    "Settings": {
+                        "q_graphics": [ 0, 1, 2, 3 ] // map q_general levels 1 to 1 with graphics levels
+                    }
+                },
+                "q_graphics": {
+                    "Description": "Graphics quality settings.  0 : Low, 1 : Medium, 2 : High, 3 : VeryHigh",
+                    "Levels": [
+                        "Low",
+                        "Medium",
+                        "High",
+                        "VeryHigh"
+                    ],
+                    "Default": 3,
+                    "Settings": {
+                        "q_shadows": [ 0, 1, 2, 3 ]
+                    }
+                },
+                "q_shadows": {
+                    "Description": "Shadow quality settings.  0 : Low, 1 : Medium, 2 : High, 3 : VeryHigh",
+                    "Levels": [
+                        "Low",
+                        "Medium",
+                        "High",
+                        "VeryHigh"
+                    ],
+                    "Settings": {
+                        // shadows console variable settings
+                    }
+                }
+            }
+        }
+    }
+}

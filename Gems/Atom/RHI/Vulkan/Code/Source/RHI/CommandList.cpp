@@ -224,6 +224,15 @@ namespace AZ
                 copy.imageExtent.height = descriptor.m_sourceSize.m_height;
                 copy.imageExtent.depth = descriptor.m_sourceSize.m_depth;
 
+                // [GFX TODO] https://github.com/o3de/o3de/issues/16444
+                // It was found that after submitting the copy command, there could occur
+                // a Vulkan validation error if the Source Attachment image is later used as an SRV
+                // because this CmdCopyImageToBuffer command will change and leave the layout as VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
+                // The solution would be to add another MemoryBarrier to change the layout back to its original
+                // state. 
+                // [ UNASSIGNED-CoreValidation-DrawState-InvalidImageLayout ]
+                //     (subresource: aspectMask 0x1 array layer 0, mip level 0) to be in layout VK_IMAGE_LAYOUT_GENERAL
+                //     --instead, current layout is VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL.
                 context.CmdCopyImageToBuffer(
                     m_nativeCommandBuffer,
                     sourceImage->GetNativeImage(),

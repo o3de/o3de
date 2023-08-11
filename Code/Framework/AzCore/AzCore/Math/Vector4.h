@@ -272,6 +272,9 @@ namespace AZ
         //! Gets the arctangent of each component.
         Vector4 GetAtan() const;
 
+        //! Gets an estimate of the exponential function for each component.
+        Vector4 GetExpEstimate() const;
+
         //! Wraps the angle in each component into the [-pi,pi] range.
         Vector4 GetAngleMod() const;
 

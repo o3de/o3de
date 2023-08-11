@@ -504,6 +504,11 @@ namespace AZ
             return Common::Atan2<Vec3>(y, x);
         }
 
+        AZ_MATH_INLINE Vec3::FloatType Vec3::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec3>(x);
+        }
+
         AZ_MATH_INLINE Vec1::FloatType Vec3::Dot(FloatArgType arg1, FloatArgType arg2)
         {
             // Ensure we zero out the last element before summing them.

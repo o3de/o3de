@@ -59,7 +59,7 @@ def Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent():
     # Open 3D Engine Imports
     import azlmbr.legacy.general as general
 
-    MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.azmodel")
+    MESH_ASSET_PATH = os.path.join("Objects", "SphereBot", "r0-b_body.fbx.azmodel")
     MESH_PROPERTY_PATH = "Controller|Configuration|Model Asset"
     TESTED_PROPERTY_PATH = "Shape Configuration|Asset|PhysX Mesh"
 

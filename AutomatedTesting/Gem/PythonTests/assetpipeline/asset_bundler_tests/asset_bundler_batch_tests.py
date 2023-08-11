@@ -1124,8 +1124,8 @@ class TestsAssetBundlerBatch(object):
 
         asset_processor.batch_process(platforms=workspace.asset_processor_platform)
         expected_assets = [
-            "objects/cube_lod0.azlod",
-            "objects/cube_lod0_index.azbuffer",
+            "objects/cube_lod0.fbx.azlod",
+            "objects/cube_lod0_index.fbx.azbuffer",
             "resourcepools/defaultvertexbufferpool.pool"
         ]
         # Test Asset Structure:
@@ -1138,10 +1138,10 @@ class TestsAssetBundlerBatch(object):
         # Even if we exclude all parents besides "ParentA", we should still have "CommonChild" since it is a product dependency of "ParentA"
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
-            addSeed="objects/cube_lod0.azlod",
-            skip="objects/cube_lod0_position0.azbuffer, objects/cube_lod0_tangent0.azbuffer,"
-                 "objects/cube_lod0_normal0.azbuffer, objects/cube_lod0_bitangent0.azbuffer,"
-                 "objects/cube_lod0_uv0.azbuffer",
+            addSeed="objects/cube_lod0.fbx.azlod",
+            skip="objects/cube_lod0_position0.fbx.azbuffer, objects/cube_lod0_tangent0.fbx.azbuffer,"
+                 "objects/cube_lod0_normal0.fbx.azbuffer, objects/cube_lod0_bitangent0.fbx.azbuffer,"
+                 "objects/cube_lod0_uv0.fbx.azbuffer",
             platform=workspace.asset_processor_platform
         )
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
