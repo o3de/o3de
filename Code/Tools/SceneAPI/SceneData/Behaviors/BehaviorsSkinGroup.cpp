@@ -30,7 +30,7 @@ namespace AZ
         {
             const char* SkinGroup::s_skinVirtualTypeName = "Skin";
             Crc32 SkinGroup::s_skinVirtualType = AZ_CRC(SkinGroup::s_skinVirtualTypeName, 0x0279681e);
-            const int SkinGroup::s_rigsPreferredTabOrder = 1;
+            const int SkinGroup::s_rigsPreferredTabOrder = 2;
 
             void SkinGroup::Activate()
             {

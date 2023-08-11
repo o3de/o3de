@@ -28,7 +28,7 @@ namespace AZ
     {
         namespace Behaviors
         {
-            const int SkeletonGroup::s_rigsPreferredTabOrder = 1;
+            const int SkeletonGroup::s_rigsPreferredTabOrder = 2;
 
             void SkeletonGroup::Activate()
             {

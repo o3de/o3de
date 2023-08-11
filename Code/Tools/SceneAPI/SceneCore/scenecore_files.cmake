@@ -28,6 +28,7 @@ set(FILES
     DataTypes/GraphData/IAnimationData.h
     DataTypes/GraphData/IBlendShapeData.h
     DataTypes/Groups/IGroup.h
+    DataTypes/Groups/IImportGroup.h
     DataTypes/Groups/ISceneNodeGroup.h
     DataTypes/Groups/IMeshGroup.h
     DataTypes/Groups/ISkeletonGroup.h
