@@ -38,7 +38,7 @@ namespace AZ
         alignas(16) constexpr float g_expCoef1[4]    = {  1.2102203e7f, 1.2102203e7f, 1.2102203e7f, 1.2102203e7f };
         alignas(16) constexpr int32_t g_expCoef2[4]  = { -8388608, -8388608, -8388608, -8388608 };
         alignas(16) constexpr float g_expCoef3[4]    = {  1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f, 1.1920929e-7f };
-        alignas(16) constexpr float g_expCoef4[4]    = {  3.371894346e-1, 3.371894346e-1, 3.371894346e-1f, 3.371894346e-1f };
+        alignas(16) constexpr float g_expCoef4[4]    = {  3.371894346e-1f, 3.371894346e-1f, 3.371894346e-1f, 3.371894346e-1f };
         alignas(16) constexpr float g_expCoef5[4]    = {  6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f, 6.57636276e-1f };
         alignas(16) constexpr float g_expCoef6[4]    = {  1.00172476f, 1.00172476f, 1.00172476f, 1.00172476f };
 
