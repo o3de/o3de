@@ -7,14 +7,13 @@
 #
 
 import argparse
+import fnmatch
 import glob
 import logging
 import os
 import o3de.export_project as exp
 import pathlib
-import platform
 import shutil
-import psutil
 
 from o3de.export_project import process_command
 from o3de import manifest
@@ -49,266 +48,133 @@ $ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\
 # For more information on the available parameters for this script, check the parse_arguments function defined at the bottom of the file
 
 
-def build_non_monolithic_code_modules( project_path: pathlib.Path,
-                                        non_mono_build_path: pathlib.Path,
-                                        force_rebuild_all = False):
-    #build the pre_requisite tools if needed
-    os.makedirs(non_mono_build_path, exist_ok=True)
-
-    bundler_path = get_asset_bundler_batch_path(non_mono_build_path)
-    processor_path = get_asset_processor_batch_path(non_mono_build_path)
-
-    process_command(["cmake", "-B", non_mono_build_path, "-S", project_path])
-
-    if not processor_path.exists() or force_rebuild_all:
-        process_command(["cmake", "--build", non_mono_build_path, "--target", "AssetProcessorBatch", "--config", "profile"])
-    if not bundler_path.exists() or force_rebuild_all:
-        process_command(["cmake", "--build", non_mono_build_path, "--target", "AssetBundlerBatch", "--config", "profile"])
-
-def build_monolithic_code_modules( project_path: pathlib.Path,
-                        project_name: str,
-                        build_config: str,
-                        mono_build_path: pathlib.Path,
-                        should_build_game_launcher: bool,
-                        should_build_server_launcher: bool,
-                        should_build_unified_launcher: bool,
-                        allow_registry_overrides: bool):
-    
-    process_command(["cmake", "-B", mono_build_path, "-S", project_path, "-DLY_MONOLITHIC_GAME=1",
-                     f"-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES={'0' if not allow_registry_overrides else '1'}"])
-
-    os.makedirs(mono_build_path, exist_ok=True)
-    if should_build_server_launcher:
-
-        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.ServerLauncher", "--config", build_config, "--", "/m"])
-
-    if should_build_game_launcher:
-        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.GameLauncher", "--config", build_config, "--", "/m"])
-    
-    if should_build_unified_launcher:
-        process_command(["cmake", "--build", mono_build_path, "--target", f"{project_name}.UnifiedLauncher", "--config", build_config, "--", "/m"])
-
-
-def kill_existing_processes(project_name: str):
-    o3de_process_names = ['o3de', 'editor', 'assetprocessor', f'{project_name.lower()}.serverlauncher', f'{project_name.lower()}.gamelauncher' ]
-    for process in psutil.process_iter():
-        processes_to_kill = []
-        # strip off .exe and check process name
-        if os.path.splitext(process.name())[0].lower() in o3de_process_names:
-            processes_to_kill.append(process)
-        
-        if processes_to_kill:
-            logging.error(f"The following processes are still running: {', '.join([process.name() for process in processes_to_kill])}")
-            user_input = input(f'Continuing may cause build errors.\nStop them before continuing? (y/n). Quit(q)')
-            if user_input.lower() == 'y':
-                for p in processes_to_kill:
-                    p.terminate()
-                    p.wait()
-            elif user_input.lower() == 'q':
-                quit()
-
-
-def process_assets( project_name: str,
-                    project_path: pathlib.Path,
-                    non_mono_build_path: pathlib.Path):
-    build_non_monolithic_code_modules(project_path, non_mono_build_path)
-    process_command(["cmake", "--build", non_mono_build_path, "--target", f"{project_name}.Assets", "--config", "profile"])
-
-def get_asset_processor_batch_path(non_mono_build_path: pathlib.Path):
-    return non_mono_build_path / 'bin/profile' / ('AssetProcessorBatch' + ('.exe' if platform.system().lower()=='windows' else ''))
-
-def get_asset_bundler_batch_path(non_mono_build_path: pathlib.Path):
-    return non_mono_build_path / 'bin/profile' / ('AssetBundlerBatch' + ('.exe' if platform.system().lower()=='windows' else ''))
-
-def bundle_assets(project_path: pathlib.Path,
-                  selected_platform: str,
-                  seedlist_paths: List[str],
-                  non_mono_build_path: pathlib.Path,
-                  custom_asset_list_path: pathlib.Path|None = None,
-                  max_bundle_size: int = 2048):
-    asset_bundler_batch_path = get_asset_bundler_batch_path(non_mono_build_path)
-    asset_list_path = (project_path / 'AssetBundling/AssetLists') if not custom_asset_list_path else custom_asset_list_path
-
-    game_asset_list_path = asset_list_path /  f'game_{selected_platform}.assetlist'
-    engine_asset_list_path = asset_list_path / f'engine_{selected_platform}.assetlist'
-    bundles_path = project_path / 'AssetBundling/Bundles'
-
-    #generate the asset lists for the project
-    gen_game_asset_list_command = [
-        asset_bundler_batch_path,
-        'assetLists',
-        '--assetListFile',
-        game_asset_list_path,
-        '--platform',
-        selected_platform,
-        '--allowOverwrites']
- 
-    for seed in seedlist_paths:
-        gen_game_asset_list_command.append("--seedListFile")
-        gen_game_asset_list_command.append(str(seed))
-    process_command(gen_game_asset_list_command)
-
-    gen_engine_asset_list_command = [
-        asset_bundler_batch_path,
-        "assetLists",
-        "--assetListFile",
-        engine_asset_list_path,
-        "--platform",
-        selected_platform,
-        "--allowOverwrites",
-        "--addDefaultSeedListFiles"
-    ]
-    process_command(gen_engine_asset_list_command)
-
-    #generate the bundles. We will place it in the project directory for now, since the files need to be copied multiple times (one for each separate launcher distribution)
-    process_command([asset_bundler_batch_path, "bundles", "--maxSize", str(max_bundle_size), "--platform", selected_platform, "--allowOverwrites",
-                         "--outputBundlePath", bundles_path / f"game_{selected_platform}.pak",
-                         "--assetListFile", game_asset_list_path])
-    
-    process_command([asset_bundler_batch_path, "bundles", "--maxSize", str(max_bundle_size), "--platform", selected_platform, "--allowOverwrites",
-                         "--outputBundlePath", bundles_path / f"engine_{selected_platform}.pak",
-                         "--assetListFile", engine_asset_list_path])
-    return bundles_path
-
-def setup_launcher_layout_directory(project_path: pathlib.Path,
-                                     output_path: pathlib.Path,
-                                     platform: str,
-                                     mono_build_path:pathlib.Path,
-                                     build_config: str,
-                                     bundles_to_copy: List[pathlib.Path],
-                                     project_file_patterns_to_copy: List[str],
-                                     archive_output_format: str = "none",
-                                     logger: logging.Logger|None = None):
-    
-    if output_path.exists():
-        shutil.rmtree(output_path)
-    
-    output_cache_path = output_path / 'Cache' / platform
-        
-    os.makedirs(output_cache_path, exist_ok=True)
-
-    for bundle in bundles_to_copy:
-        shutil.copy(bundle, output_cache_path)
-
-    for file in glob.glob(str(mono_build_path/f'bin/{build_config}/*')):
-        file_path = pathlib.Path(file)
-        if file_path.is_dir():
-            shutil.copytree(file, output_path / file_path.name, dirs_exist_ok=True)
-        else:
-            shutil.copy(file, output_path)
-
-    for project_file_pattern in project_file_patterns_to_copy:
-        for file in glob.glob(str(pathlib.PurePath(project_path / project_file_pattern))):
-            shutil.copy(file, output_path)
-    
-    # Optionally compress the layout directory into an archive if the user requests
-    if archive_output_format != "none":
-        if logger:
-            logger.info(f"Archiving output directory {output_path} (this may take a while)...")
-        shutil.make_archive(output_path, archive_output_format, root_dir = output_path)
-
-
-def export_standalone_monolithic_project_centric(project_path: pathlib.Path,
-                                                selected_platform: str,
-                                                output_path: pathlib.Path,
-                                                should_build_non_mono_tools: bool,
-                                                build_config: str,
-                                                seedlist_paths: List[pathlib.Path],
-                                                game_project_file_patterns_to_copy: List[str] = [],
-                                                server_project_file_patterns_to_copy: List[str] = [],
-                                                project_file_patterns_to_copy: List[str] = [],
-                                                preferred_asset_list_path: pathlib.Path|None = None,
-                                                max_bundle_size: int = 2048,
-                                                should_build_all_code: bool = True,
-                                                should_build_all_assets: bool = True,
-                                                should_build_game_launcher: bool = True,
-                                                should_build_server_launcher: bool = True,
-                                                should_build_unified_launcher: bool = True,
-                                                allow_registry_overrides: bool = False,
-                                                non_mono_build_path: pathlib.Path|None =None,
-                                                mono_build_path: pathlib.Path|None =None,
-                                                archive_output_format: str = "none",
-                                                logger: logging.Logger|None = None):
+def export_standalone_monolithic_project_centric(ctx: exp.O3DEScriptExportContext,
+                                                 selected_platform: str,
+                                                 output_path: pathlib.Path,
+                                                 should_export_toolchain: bool,
+                                                 build_config: str,
+                                                 seedlist_paths: List[pathlib.Path],
+                                                 game_project_file_patterns_to_copy: List[str] = [],
+                                                 server_project_file_patterns_to_copy: List[str] = [],
+                                                 project_file_patterns_to_copy: List[str] = [],
+                                                 preferred_asset_list_path: pathlib.Path|None = None,
+                                                 max_bundle_size: int = 2048,
+                                                 should_build_all_code: bool = True,
+                                                 should_build_all_assets: bool = True,
+                                                 should_build_game_launcher: bool = True,
+                                                 should_build_server_launcher: bool = True,
+                                                 should_build_unified_launcher: bool = True,
+                                                 allow_registry_overrides: bool = False,
+                                                 tools_build_path: pathlib.Path | None =None,
+                                                 game_build_path: pathlib.Path | None =None,
+                                                 archive_output_format: str = "none",
+                                                 fail_on_asset_errors: bool = False,
+                                                 logger: logging.Logger|None = None):
     if not logger:
         logger = logging.getLogger()
         logger.setLevel(logging.ERROR)
-    
-    project_json_data = manifest.get_project_json_data(project_path= o3de_context.project_path)
-    project_name = project_json_data.get('project_name')
 
-    if not non_mono_build_path:
-        non_mono_build_path = (project_path) / 'build/non_mono'
-    if not mono_build_path:
-        mono_build_path = (project_path) / 'build/mono' 
+    default_base_build_path = ctx.engine_path / 'build' if ctx.is_engine_centric else ctx.project_path / 'build'
 
-    kill_existing_processes(project_name)
+    if not tools_build_path:
+        tools_build_path = default_base_build_path / 'tools'
+    if not game_build_path:
+        game_build_path = default_base_build_path / 'game'
 
-    if should_build_all_code:
-        if should_build_non_mono_tools:
-            build_non_monolithic_code_modules(project_path, non_mono_build_path, force_rebuild_all=True)
-        
-        build_tools = [get_asset_bundler_batch_path(non_mono_build_path),get_asset_processor_batch_path(non_mono_build_path)]
+    exp.kill_existing_processes(ctx.project_name)
+
+    # Optionally build the toolchain needed to bundle the assets
+    if should_export_toolchain:
+        exp.build_export_toolchain(ctx=ctx,
+                                   tools_build_path=tools_build_path,
+                                   logger=logger)
+    else:
+        # Otherwise make sure the tools exist already
+        build_tools = [exp.get_asset_bundler_batch_path(tools_build_path), exp.get_asset_processor_batch_path(tools_build_path)]
         tools_missing = [b for b in build_tools if not b.exists()]
         if len(tools_missing) > 0:
-            logger.error(f"Necessary Build Tools have not been created! The following are missing: {', '.join(tools_missing)}")
-            logger.error("Please ensure that these tools exist before proceeding on with the build!")
-            quit()
+            raise exp.ExportProjectError(f"Necessary Build Tools have not been created! The following are missing: {', '.join(tools_missing)}"
+                                         "Please ensure that these tools exist before proceeding on with the build!")
 
-        build_monolithic_code_modules(project_path, project_name, build_config, mono_build_path,
-                                      should_build_game_launcher, should_build_server_launcher, should_build_unified_launcher,
-                                      allow_registry_overrides)
-    
-    expected_bundles_path = None
+    if should_build_all_code:
+        exp.build_game_targets(ctx=ctx,
+                               build_config=build_config,
+                               game_build_path=game_build_path,
+                               should_build_game_launcher=should_build_game_launcher,
+                               should_build_server_launcher=should_build_server_launcher,
+                               should_build_unified_launcher=should_build_unified_launcher,
+                               allow_registry_overrides=allow_registry_overrides,
+                               logger=logger)
+
     if should_build_all_assets:
-        process_assets(project_name, project_path, non_mono_build_path)
+        exp.build_assets(ctx=ctx,
+                         tools_build_path=tools_build_path,
+                         fail_on_ap_errors=fail_on_asset_errors,
+                         logger=logger)
 
-        expected_bundles_path = bundle_assets(project_path,
-                                            selected_platform,
-                                            seedlist_paths,
-                                            non_mono_build_path,
-                                            preferred_asset_list_path,
-                                            max_bundle_size)
+        expected_bundles_path = exp.bundle_assets(ctx=ctx,
+                                                  selected_platform=selected_platform,
+                                                  seedlist_paths=seedlist_paths,
+                                                  non_mono_build_path=tools_build_path,
+                                                  custom_asset_list_path=preferred_asset_list_path,
+                                                  max_bundle_size=max_bundle_size)
     else:
-        expected_bundles_path = project_path / "AssetBundling/Bundles"    
-    for should_do, expected_output_dir, project_file_patterns in zip(
+        expected_bundles_path = ctx.project_path / "AssetBundling/Bundles"
+
+    for should_do, expected_output_dir, project_file_patterns, ignore_patterns in zip(
                                               [should_build_game_launcher, should_build_server_launcher, should_build_unified_launcher],
-                                              [output_path / f'{project_name}GamePackage',
-                                               output_path / f'{project_name}ServerPackage',
-                                               output_path / f'{project_name}UnifiedPackage'],
+                                              [output_path / f'{ctx.project_name}GamePackage',
+                                               output_path / f'{ctx.project_name}ServerPackage',
+                                               output_path / f'{ctx.project_name}UnifiedPackage'],
                                               [project_file_patterns_to_copy + game_project_file_patterns_to_copy,
                                                project_file_patterns_to_copy + server_project_file_patterns_to_copy,
-                                               project_file_patterns_to_copy + game_project_file_patterns_to_copy + server_project_file_patterns_to_copy]):
+                                               project_file_patterns_to_copy + game_project_file_patterns_to_copy + server_project_file_patterns_to_copy],
+                                              [['*.ServerLauncher', '*.UnifiedLauncher'],
+                                               ['*.GameLauncher', '*.UnifiedLauncher'],
+                                               ['*.ServerLauncher', '*.GameLauncher']]
+    ):
         if should_do:
-            setup_launcher_layout_directory(project_path,
-                                         expected_output_dir,
-                                         selected_platform,
-                                         mono_build_path,
-                                         build_config,
-                                         [expected_bundles_path / f'game_{selected_platform}.pak', expected_bundles_path / f'engine_{selected_platform}.pak'],
-                                         project_file_patterns,
-                                         archive_output_format,
-                                         logger)
-    
+            exp.setup_launcher_layout_directory(project_path=ctx.project_path,
+                                                output_path=expected_output_dir,
+                                                asset_platform=selected_platform,
+                                                mono_build_path=game_build_path,
+                                                build_config=build_config,
+                                                bundles_to_copy=[expected_bundles_path / f'game_{selected_platform}.pak', expected_bundles_path / f'engine_{selected_platform}.pak'],
+                                                project_file_patterns_to_copy=project_file_patterns,
+                                                archive_output_format=archive_output_format,
+                                                logger=logger,
+                                                ignore_file_patterns=ignore_patterns)
 
 
-
-#This code is only run by the 'export-project' O3DE CLI command
+# This code is only run by the 'export-project' O3DE CLI command
 if "o3de_context" in globals():
+
+    global o3de_context
+    global o3de_logger
+
     def parse_args(unprocessed_args: List[str]):
+
         parser = argparse.ArgumentParser(
                     prog='Exporter for standalone builds',
                     description="Exports a project as standalone to the desired output directory with release layout. "
-                                "In order to use this script, the engine and project must be setup and registered beforehand. ")
+                                "In order to use this script, the engine and project must be setup and registered beforehand. ",
+                    epilog="Note: You can pass additional arguments to the cmake command to build the projects during the export"
+                           "process by adding a '/' between the arguments for this script and the additional arguments you would"
+                           "like to pass down to cmake build."
+        )
         parser.add_argument('-out', '--output-path', type=pathlib.Path, required=True, help='Path that describes the final resulting Release Directory path location.')
         parser.add_argument('-cfg', '--config', type=str, default='profile', choices=['release', 'profile'],
-                                help='The CMake build configuration to use when building project binaries.  Tool binaries built with this script will always be built with the profile configuration.')
-        parser.add_argument('-a', '--archive-output',
-                                type=str,
-                                help="Option to create a compressed archive the output. "
-                                "Specify the format of archive to create from the output directory. If 'none' specified, no archiving will occur.",
-                                choices=["none", "zip", "gzip", "bz2", "xz"], default="none")
-        parser.add_argument('-code', '--should-build-code', default=False,action='store_true', help='Toggles building all code for the project by launcher type (game, server, unified).')
-        parser.add_argument('-assets', '--should-build-assets', default=False, action='store_true', help='Toggles building all assets for the project by launcher type (game, server, unified).')
+                            help='The CMake build configuration to use when building project binaries.  Tool binaries built with this script will always be built with the profile configuration.')
+        parser.add_argument('-a', '--archive-output',  type=str,
+                            help="Option to create a compressed archive the output. "
+                                 "Specify the format of archive to create from the output directory. If 'none' specified, no archiving will occur.",
+                            choices=["none", "zip", "gzip", "bz2", "xz"], default="none")
+        parser.add_argument('-code', '--should-build-code', default=False,action='store_true',
+                            help='Toggles building all code for the project by launcher type (game, server, unified).')
+        parser.add_argument('-assets', '--should-build-assets', default=False, action='store_true',
+                            help='Toggles building all assets for the project by launcher type (game, server, unified).')
+        parser.add_argument('-foa', '--fail-on-asset-errors', default=False, action='store_true',
+                            help='Option to fail the project export process on any failed asset during asset building (applicable if --should-build-assets is true)')
         parser.add_argument('-sl', '--seedlist', type=pathlib.Path, dest='seedlist_paths', action='append',
                                 help='Path to a seed list file for asset bundling. Specify multiple times for each seed list.')
         parser.add_argument('-gpfp', '--game-project-file-pattern-to-copy', type=str, dest='game_project_file_patterns_to_copy', action='append',
@@ -340,24 +206,25 @@ if "o3de_context" in globals():
     args = parse_args(o3de_context.args)
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
-    export_standalone_monolithic_project_centric(o3de_context.project_path,
-                                                args.platform,
-                                                args.output_path,
-                                                args.build_non_mono_tools,
-                                                args.config,
-                                                [] if not args.seedlist_paths else args.seedlist_paths,
-                                                [] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
-                                                [] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
-                                                [] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,
-                                                args.preferred_asset_list_path,
-                                                args.max_bundle_size,
-                                                args.should_build_code,
-                                                args.should_build_assets,
-                                                not args.no_game_launcher,
-                                                not args.no_server_launcher,
-                                                not args.no_unified_launcher,
-                                                args.allow_registry_overrides,
-                                                args.non_mono_build_path,
-                                                args.mono_build_path, 
-                                                args.archive_output,
-                                                o3de_logger)
+    export_standalone_monolithic_project_centric(ctx=o3de_context,
+                                                 selected_platform=args.platform,
+                                                 output_path=args.output_path,
+                                                 should_export_toolchain=args.build_non_mono_tools,
+                                                 build_config=args.config,
+                                                 seedlist_paths=[] if not args.seedlist_paths else args.seedlist_paths,
+                                                 game_project_file_patterns_to_copy=[] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
+                                                 server_project_file_patterns_to_copy=[] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
+                                                 project_file_patterns_to_copy=[] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,
+                                                 preferred_asset_list_path=args.preferred_asset_list_path,
+                                                 max_bundle_size=args.max_bundle_size,
+                                                 should_build_all_code=args.should_build_code,
+                                                 should_build_all_assets=args.should_build_assets,
+                                                 fail_on_asset_errors=args.fail_on_asset_errors,
+                                                 should_build_game_launcher=not args.no_game_launcher,
+                                                 should_build_server_launcher=not args.no_server_launcher,
+                                                 should_build_unified_launcher=not args.no_unified_launcher,
+                                                 allow_registry_overrides=args.allow_registry_overrides,
+                                                 tools_build_path=args.non_mono_build_path,
+                                                 game_build_path=args.mono_build_path,
+                                                 archive_output_format=args.archive_output,
+                                                 logger=o3de_logger)
