@@ -398,6 +398,16 @@ namespace AZ::Render
         IntensityChanged();
     }
 
+    // This is deprecated. Use SetIntensityAndMode instead.
+    void AreaLightComponentController::SetIntensity(float intensity, PhotometricUnit intensityMode)
+    {
+        m_configuration.m_intensityMode = intensityMode;
+        m_configuration.m_intensity = intensity;
+
+        AreaLightNotificationBus::Event(m_entityId, &AreaLightNotifications::OnIntensityChanged, intensity, intensityMode);
+        IntensityChanged();
+    }
+
     void AreaLightComponentController::SetIntensity(float intensity)
     {
         m_configuration.m_intensity = intensity;

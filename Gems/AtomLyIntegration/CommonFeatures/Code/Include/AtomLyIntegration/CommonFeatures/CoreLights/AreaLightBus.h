@@ -57,6 +57,9 @@ namespace AZ
             //! Sets an area light's intensity and intensity mode. This value is independent from its color.
             virtual void SetIntensityAndMode(float intensity, PhotometricUnit intensityMode) = 0;
 
+            //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            AZ_DEPRECATED(virtual void SetIntensity(float intensity, PhotometricUnit intensityMode) = 0, "AreaLightRequestBus::SetIntensity has been deprecated, please use AreaLightRequestBus::SetIntensityAndMode instead.");
+
             //! Sets an area light's intensity. This value is independent from its color.
             //! Assumes no change in the current photometric unit of the intensity.
             virtual void SetIntensity(float intensity) = 0;
