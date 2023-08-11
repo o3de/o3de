@@ -556,14 +556,15 @@ namespace AzFramework
                 {
                     AZ::Entity* clone = (*it);
                     clone->SetEntitySpawnTicketId(request.m_ticketId);
-                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
-
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
-                    m_entitySpawnableMap.insert(
-                        AZStd::make_pair(clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
+                    // We should add that into m_entitySpawnableMap before "Events::AddGameEntity" because Activate is called there and we
+                    // need this data there
+                    m_entitySpawnableMap.insert(AZStd::make_pair(
+                        clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
 #endif
 // Gruber patch end. // LVB. // Support unique instances
+                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, clone);
                 }
 
                 // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -696,14 +697,16 @@ namespace AzFramework
                 {
                     AZ::Entity* clone = (*it);
                     clone->SetEntitySpawnTicketId(request.m_ticketId);
-                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
-
 // Gruber patch begin. // LVB. // Support unique instances
 #ifdef CARBONATED
+                    // We should add that into m_entitySpawnableMap before "Events::AddGameEntity" because Activate is called there and we
+                    // need this data there
                     m_entitySpawnableMap.insert(AZStd::make_pair(
                         clone->GetId(), SpawnableInstanceAddress(ticket.m_spawnable.GetId(), ticket.m_spawnable->GetInstanceId())));
 #endif
 // Gruber patch end. // LVB. // Support unique instances
+                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+
                 }
 
                 if (request.m_completionCallback)
