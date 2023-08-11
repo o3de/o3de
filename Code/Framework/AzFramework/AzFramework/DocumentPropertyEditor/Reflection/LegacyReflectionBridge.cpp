@@ -1275,7 +1275,7 @@ namespace AZ::Reflection
                         newChangeNotifyValue.SetArray();
                         addValueToArray(*parentValue, newChangeNotifyValue);
                         addValueToArray(*existingValue, newChangeNotifyValue);
-                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, newChangeNotifyValue });
+                        it->m_value = newChangeNotifyValue;
                     }
                     else
                     {
