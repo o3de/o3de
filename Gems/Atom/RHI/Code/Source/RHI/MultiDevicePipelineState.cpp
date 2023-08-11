@@ -37,6 +37,11 @@ namespace AZ::RHI
             return ResultCode::InvalidOperation;
         }
 
+        if (pipelineLibrary)
+        {
+            deviceMask &= pipelineLibrary->GetDeviceMask();
+        }
+
         MultiDeviceObject::Init(deviceMask);
 
         ResultCode resultCode = ResultCode::Success;

@@ -82,18 +82,26 @@ namespace AZ::RHI
 
         for (auto& [deviceIndex, devicePipelineLibrary] : m_devicePipelineLibraries)
         {
-            AZStd::vector<const PipelineLibrary*> deviceLibrariesToMerge(librariesToMerge.size());
+            AZStd::vector<const PipelineLibrary*> deviceLibrariesToMerge;
 
             for (int i = 0; i < librariesToMerge.size(); ++i)
             {
-                deviceLibrariesToMerge[i] = librariesToMerge[i]->m_devicePipelineLibraries.at(deviceIndex).get();
+                auto it = librariesToMerge[i]->m_devicePipelineLibraries.find(deviceIndex);
+
+                if (it != librariesToMerge[i]->m_devicePipelineLibraries.end())
+                {
+                    deviceLibrariesToMerge.emplace_back(it->second.get());
+                }
             }
 
-            result = devicePipelineLibrary->MergeInto(deviceLibrariesToMerge);
-
-            if (result != ResultCode::Success)
+            if (!deviceLibrariesToMerge.empty())
             {
-                break;
+                result = devicePipelineLibrary->MergeInto(deviceLibrariesToMerge);
+
+                if (result != ResultCode::Success)
+                {
+                    break;
+                }
             }
         }
 
