@@ -219,7 +219,16 @@ def get_asset_bundler_batch_path(non_mono_build_path: pathlib.Path):
 def build_assets(ctx: O3DEScriptExportContext,
                  tools_build_path: pathlib.Path,
                  fail_on_ap_errors: bool,
-                 logger: logging.Logger = None):
+                 logger: logging.Logger = None) -> None:
+    """
+    Build the assets for the project
+    @param ctx:                 Export Context
+    @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
+    @param fail_on_ap_errors:   Option to fail the whole process if an error occurs during asset processing
+    @param logger:              Optional Logger
+    @return: None
+    """
+
     # Make sure `AssetProcessorBatch` is available
     asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path)
     if not asset_processor_batch_path.exists():
@@ -244,10 +253,16 @@ def build_assets(ctx: O3DEScriptExportContext,
 
 def build_export_toolchain(ctx: O3DEScriptExportContext,
                            tools_build_path: pathlib.Path,
-                           build_cwd: pathlib.Path = None,
-                           logger: logging.Logger = None):
+                           logger: logging.Logger = None) -> None:
+    """
+    Build (or rebuild) the export tool chain (AssetProcessorBatch and AssetBundlerBatch)
 
-    # TODO: Detect if this is coming from an SDK build, in which case we only check for the tools existence
+    @param ctx:                 Export Context
+    @param tools_build_path:    The tools (cmake) build path to create the build project for the tools
+    @param build_cwd:           The working directory to use when executing A
+    @param logger:              Optional Logger
+    @return: None
+    """
 
     # Generate the project for export toolchain
     cmake_configure_command = ["cmake", "-B", tools_build_path]
@@ -266,7 +281,7 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path.name}'])
     if logger:
         logger.info(f"Generating tool chain files for project {ctx.project_name}.")
-    ret = process_command(cmake_configure_command, cwd=build_cwd)
+    ret = process_command(cmake_configure_command)
     if ret != 0:
         raise ExportProjectError("Error generating the project for the pre-requisite tools.")
 
@@ -292,7 +307,20 @@ def build_game_targets(ctx: O3DEScriptExportContext,
                        should_build_server_launcher: bool,
                        should_build_unified_launcher: bool,
                        allow_registry_overrides: bool,
-                       logger: logging.Logger = None):
+                       logger: logging.Logger = None) -> None:
+    """
+    Build the launchers for the project (game, server, unified)
+
+    @param ctx:                             Export Context
+    @param build_config:                    The build config to build (profile or release)
+    @param game_build_path:                 The cmake build folder target
+    @param should_build_game_launcher:      Option to build the game launcher
+    @param should_build_server_launcher:    Option to build the server launcher
+    @param should_build_unified_launcher:   Option to build the unified launcher
+    @param allow_registry_overrides:        Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
+    @param logger:              Optional Logger
+    @return: None
+    """
 
     if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher):
         return
@@ -345,7 +373,18 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                   seedlist_paths: List[str],
                   non_mono_build_path: pathlib.Path,
                   custom_asset_list_path: pathlib.Path|None = None,
-                  max_bundle_size: int = 2048):
+                  max_bundle_size: int = 2048) -> None:
+    """
+    Execute the 'bundle assets' phase of the export
+
+    @param ctx:                         Export Context
+    @param selected_platform:           The desired asset platform
+    @param seedlist_paths:              The list of seedlist files
+    @param non_mono_build_path:         The path to the tools cmake build project
+    @param custom_asset_list_path:      Optional custom asset list path, otherwise use the expectged 'AssetBundling/AssetLists'path in the project folder
+    @param max_bundle_size:             The size limit to put on the bundle
+    @return: None
+    """
 
     asset_bundler_batch_path = get_asset_bundler_batch_path(non_mono_build_path)
     asset_list_path = (ctx.project_path / 'AssetBundling/AssetLists') if not custom_asset_list_path else custom_asset_list_path
@@ -438,7 +477,22 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
                                     project_file_patterns_to_copy: List[str],
                                     archive_output_format: str = "none",
                                     logger: logging.Logger | None = None,
-                                    ignore_file_patterns: List[str] = []):
+                                    ignore_file_patterns: List[str] = []) -> None:
+    """
+    Setup the launcher layout directory for a path
+
+    @param project_path:                    The base project path
+    @param output_path:                     The target path for the layout
+    @param asset_platform:                  The desired asset platform
+    @param mono_build_path:                 The path where the launcher executables cmake build project was created
+    @param build_config:                    The build configuration to locate the launcher executables in the cmake build project
+    @param bundles_to_copy:                 List of bundles to copy to the layout
+    @param project_file_patterns_to_copy:   List of additional file patterns to copy over from the project to the layout
+    @param archive_output_format:           The archive format to use when archiving the layout
+    @param logger:                          Optional Logger
+    @param ignore_file_patterns:            List of additional file ignore patterns to prevent from copying into the layout
+    @return:
+    """
     if output_path.exists():
         shutil.rmtree(output_path)
 
@@ -454,6 +508,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
         if file_path.is_dir():
             shutil.copytree(file, output_path / file_path.name, dirs_exist_ok=True)
         else:
+            # Make sure the individual file is not in any ignore patterns before copying
             skip_file = False
             for ignore_file_pattern in ignore_file_patterns:
                 if fnmatch.fnmatch(file, ignore_file_pattern):

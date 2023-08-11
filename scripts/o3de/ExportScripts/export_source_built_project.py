@@ -11,6 +11,8 @@ import fnmatch
 import glob
 import logging
 import os
+import sys
+
 import o3de.export_project as exp
 import pathlib
 import shutil
@@ -20,21 +22,21 @@ from o3de import manifest
 from typing import List
 
 # This script is meant to be run via o3de cli export-project command, not from Python directly!
-# This export script operates in a project-centric manner, meaning all build artifacts are centered around the project folder. 
-# In order to use this script, the command should look like the following (on windows use o3de.bat, on linux use o3de.sh):
+# This export script supports optional building of asset tools, so it is only compatible with the source distribution
+# of O3DE (https://github.com/o3de/o3de)
 
 # Example invocation on Linux
 '''
 $ cd <project-path>
-$ <engine-path>/scripts/o3de.sh export-project --export-scripts ExportScripts/export_standalone_monolithic.py \
- --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output xz \
+$ <engine-path>/scripts/o3de.sh export-project --export-scripts ExportScripts/export_source_built_project.py \
+ --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output zip \
  --seedlist ./Assets/seedlist1.seed --seedlist ./Assets/seedlist2.seed <etc..> 
 '''
 
 # Example invocation on Windows
 '''
 $ cd <project-path>
-$ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\export_standalone_monolithic_project_centric.py \
+$ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\eexport_source_built_project.py \
  --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output zip \
  --seedlist .\Assets\seedlist1.seed --seedlist .\Assets\seedlist2.seed <etc..> 
 ''' 
@@ -206,25 +208,29 @@ if "o3de_context" in globals():
     args = parse_args(o3de_context.args)
     if args.quiet:
         o3de_logger.setLevel(logging.ERROR)
-    export_standalone_monolithic_project_centric(ctx=o3de_context,
-                                                 selected_platform=args.platform,
-                                                 output_path=args.output_path,
-                                                 should_export_toolchain=args.build_non_mono_tools,
-                                                 build_config=args.config,
-                                                 seedlist_paths=[] if not args.seedlist_paths else args.seedlist_paths,
-                                                 game_project_file_patterns_to_copy=[] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
-                                                 server_project_file_patterns_to_copy=[] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
-                                                 project_file_patterns_to_copy=[] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,
-                                                 preferred_asset_list_path=args.preferred_asset_list_path,
-                                                 max_bundle_size=args.max_bundle_size,
-                                                 should_build_all_code=args.should_build_code,
-                                                 should_build_all_assets=args.should_build_assets,
-                                                 fail_on_asset_errors=args.fail_on_asset_errors,
-                                                 should_build_game_launcher=not args.no_game_launcher,
-                                                 should_build_server_launcher=not args.no_server_launcher,
-                                                 should_build_unified_launcher=not args.no_unified_launcher,
-                                                 allow_registry_overrides=args.allow_registry_overrides,
-                                                 tools_build_path=args.non_mono_build_path,
-                                                 game_build_path=args.mono_build_path,
-                                                 archive_output_format=args.archive_output,
-                                                 logger=o3de_logger)
+    try:
+        export_standalone_monolithic_project_centric(ctx=o3de_context,
+                                                     selected_platform=args.platform,
+                                                     output_path=args.output_path,
+                                                     should_export_toolchain=args.build_non_mono_tools,
+                                                     build_config=args.config,
+                                                     seedlist_paths=[] if not args.seedlist_paths else args.seedlist_paths,
+                                                     game_project_file_patterns_to_copy=[] if not args.game_project_file_patterns_to_copy else args.game_project_file_patterns_to_copy,
+                                                     server_project_file_patterns_to_copy=[] if not args.server_project_file_patterns_to_copy else args.server_project_file_patterns_to_copy,
+                                                     project_file_patterns_to_copy=[] if not args.project_file_patterns_to_copy else args.project_file_patterns_to_copy,
+                                                     preferred_asset_list_path=args.preferred_asset_list_path,
+                                                     max_bundle_size=args.max_bundle_size,
+                                                     should_build_all_code=args.should_build_code,
+                                                     should_build_all_assets=args.should_build_assets,
+                                                     fail_on_asset_errors=args.fail_on_asset_errors,
+                                                     should_build_game_launcher=not args.no_game_launcher,
+                                                     should_build_server_launcher=not args.no_server_launcher,
+                                                     should_build_unified_launcher=not args.no_unified_launcher,
+                                                     allow_registry_overrides=args.allow_registry_overrides,
+                                                     tools_build_path=args.non_mono_build_path,
+                                                     game_build_path=args.mono_build_path,
+                                                     archive_output_format=args.archive_output,
+                                                     logger=o3de_logger)
+    except exp.ExportProjectError as err:
+        print(exp)
+        sys.exit(1)
