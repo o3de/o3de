@@ -13,6 +13,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Class for controlling White Balance effect
         class WhiteBalancePass final : public RPI::ComputePass
         {
             AZ_RPI_PASS(WhiteBalancePass);

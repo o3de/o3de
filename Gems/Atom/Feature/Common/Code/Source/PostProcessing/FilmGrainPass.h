@@ -13,6 +13,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Class for controlling Film Grain effect
         class FilmGrainPass final : public RPI::ComputePass
         {
             AZ_RPI_PASS(FilmGrainPass);
@@ -32,7 +33,6 @@ namespace AZ
 
         private:
             FilmGrainPass(const RPI::PassDescriptor& descriptor);
-
 
             Data::Instance<RPI::Image> m_grainImage;
 

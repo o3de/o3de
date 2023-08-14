@@ -64,6 +64,7 @@ namespace AZ
                 AZStd::array<u32, 2> m_outputSize;
                 AZStd::array<float, 2> m_outputCenter;
                 float m_depth = PaniniProjection::DefaultDepth;
+                AZStd::array<float, 3> m_pad;
             } constants{};
 
             RPI::Scene* scene = GetScene();

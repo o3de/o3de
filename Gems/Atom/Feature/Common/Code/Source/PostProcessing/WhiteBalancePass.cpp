@@ -65,6 +65,7 @@ namespace AZ
                 AZStd::array<float, 2> m_outputCenter;
                 float m_temperature = WhiteBalance::DefaultTemperature;
                 float m_tint = WhiteBalance::DefaultTint;
+                AZStd::array<float, 2> m_pad;
             } constants{};
 
             RPI::Scene* scene = GetScene();

@@ -20,6 +20,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float2 m_outputCenter; // center of image in pixel coords
         float m_temperature; // Color temperature. Higher values result in a warmer color temperature and lower values result in a colder color temperature.
         float m_tint; // Factor for compensate for a green or magenta tint
+        [[pad_to(16)]]
     };
     Constants m_constants;
 }
@@ -35,7 +36,7 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
     }
 
     // Range ~[-1.67;1.67] works best
-    float t1 = PassSrg::m_constants.m_temperature;//* 10 / 6
+    float t1 = PassSrg::m_constants.m_temperature;
     float t2 = PassSrg::m_constants.m_tint;
 
     // Get the CIE xy chromaticity of the reference white point.

@@ -66,6 +66,7 @@ namespace AZ
                 float m_intensity = FilmGrain::DefaultIntensity;
                 float m_luminanceDampening = FilmGrain::DefaultLuminanceDampening;
                 float m_tilingScale = FilmGrain::DefaultTilingScale;
+                float m_pad;
             } constants{};
 
             RPI::Scene* scene = GetScene();

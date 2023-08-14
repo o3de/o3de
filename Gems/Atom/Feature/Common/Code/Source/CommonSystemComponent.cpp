@@ -277,13 +277,13 @@ namespace AZ
             passSystem->AddPassCreator(Name("BloomBlurPass"), &BloomBlurPass::Create);
             passSystem->AddPassCreator(Name("BloomCompositePass"), &BloomCompositePass::Create);
 
-            // Add ChromaticAberration
+            // Add Chromatic Aberration
             passSystem->AddPassCreator(Name("ChromaticAberrationPass"), &ChromaticAberrationPass::Create);
 
-            // Add PaniniProjection
+            // Add Panini Projection
             passSystem->AddPassCreator(Name("PaniniProjectionPass"), &PaniniProjectionPass::Create);
 
-            // Add FilmGrain
+            // Add Film Grain
             passSystem->AddPassCreator(Name("FilmGrainPass"), &FilmGrainPass::Create);
 
             // Add White Balance pass

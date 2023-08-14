@@ -13,6 +13,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Class for controlling Vignette effect
         class VignettePass final : public RPI::ComputePass
         {
             AZ_RPI_PASS(VignettePass);

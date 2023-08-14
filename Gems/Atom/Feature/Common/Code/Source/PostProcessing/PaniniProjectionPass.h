@@ -13,6 +13,7 @@ namespace AZ
 {
     namespace Render
     {
+        // Class for controlling Panini Projection effect
         class PaniniProjectionPass final : public RPI::ComputePass
         {
             AZ_RPI_PASS(PaniniProjectionPass);
