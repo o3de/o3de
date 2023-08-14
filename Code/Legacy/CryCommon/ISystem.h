@@ -49,6 +49,7 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct ICryFont;
+struct IGame;
 struct IMovieSystem;
 struct SFileVersion;
 struct INameTable;
@@ -588,6 +589,7 @@ struct SSystemGlobalEnvironment
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
     ICryFont*                  pCryFont;
+    IGame*                     pGame;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;

@@ -169,6 +169,14 @@ public:
         m_pSerialize->Value(szName, value);
     }
 
+// Gruber patch begin 
+    template<typename T_Value>
+    ILINE void Value(const char* szName, T_Value& value, int)  //??? third param
+    {
+        m_pSerialize->Value(szName, value);
+    }
+// Gruber patch end
+
     void Value(const char* szName, AZStd::string& value)
     {
         if (IsWriting())
