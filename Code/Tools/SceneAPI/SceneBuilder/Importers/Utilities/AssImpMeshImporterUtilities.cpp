@@ -22,7 +22,7 @@
 namespace AZ::SceneAPI::SceneBuilder
 {
     bool BuildSceneMeshFromAssImpMesh(const aiNode* currentNode, const aiScene* scene, const SceneSystem& sceneSystem, AZStd::vector<AZStd::shared_ptr<DataTypes::IGraphObject>>& meshes,
-        const AZStd::function<AZStd::shared_ptr<SceneData::GraphData::MeshData>()>& makeMeshFunc)
+        const AZStd::function<AZStd::shared_ptr<AZ::SceneData::GraphData::MeshData>()>& makeMeshFunc)
     {
         AZStd::unordered_map<int, int> assImpMatIndexToLYIndex;
         int lyMeshIndex = 0;
@@ -110,10 +110,10 @@ namespace AZ::SceneAPI::SceneBuilder
             return AZ::Failure(Events::ProcessingResult::Failure);
         }
 
-        if (!parentData->RTTI_IsTypeOf(SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
+        if (!parentData->RTTI_IsTypeOf(AZ::SceneData::GraphData::MeshData::TYPEINFO_Uuid()))
         {
             // The parent node may contain bone information and not mesh information, skip it.
-            if (parentData->RTTI_IsTypeOf(SceneData::GraphData::BoneData::TYPEINFO_Uuid()))
+            if (parentData->RTTI_IsTypeOf(AZ::SceneData::GraphData::BoneData::TYPEINFO_Uuid()))
             {
                 // Return the ignore processing result in the failure.
                 return AZ::Failure(Events::ProcessingResult::Ignored);
@@ -123,8 +123,8 @@ namespace AZ::SceneAPI::SceneBuilder
             return AZ::Failure(Events::ProcessingResult::Failure);
         }
 
-        const SceneData::GraphData::MeshData* const parentMeshData =
-            azrtti_cast<const SceneData::GraphData::MeshData* const>(parentData);
+        const AZ::SceneData::GraphData::MeshData* const parentMeshData =
+            azrtti_cast<const AZ::SceneData::GraphData::MeshData* const>(parentData);
         return AZ::Success(parentMeshData);
     }
 
