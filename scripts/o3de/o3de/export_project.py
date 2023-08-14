@@ -287,8 +287,8 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
 
     # Build the project for the pre-requisite tools
     cmake_build_command = ["cmake", "--build", tools_build_path,
-                                    "--target", "AssetProcessorBatch", "AssetBundlerBatch",
-                                    "--config", PREREQUISITE_TOOL_BUILD_CONFIG]
+                                    "--config", PREREQUISITE_TOOL_BUILD_CONFIG,
+                                    "--target", "AssetProcessorBatch", "AssetBundlerBatch"]
     if ctx.cmake_additional_build_args:
         cmake_build_command.extend(ctx.cmake_additional_build_args)
     if logger:
@@ -373,7 +373,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
                   seedlist_paths: List[str],
                   non_mono_build_path: pathlib.Path,
                   custom_asset_list_path: pathlib.Path|None = None,
-                  max_bundle_size: int = 2048) -> None:
+                  max_bundle_size: int = 2048) -> pathlib.Path:
     """
     Execute the 'bundle assets' phase of the export
 
@@ -383,7 +383,7 @@ def bundle_assets(ctx: O3DEScriptExportContext,
     @param non_mono_build_path:         The path to the tools cmake build project
     @param custom_asset_list_path:      Optional custom asset list path, otherwise use the expectged 'AssetBundling/AssetLists'path in the project folder
     @param max_bundle_size:             The size limit to put on the bundle
-    @return: None
+    @return: The path to the bundle
     """
 
     asset_bundler_batch_path = get_asset_bundler_batch_path(non_mono_build_path)
@@ -491,7 +491,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
     @param archive_output_format:           The archive format to use when archiving the layout
     @param logger:                          Optional Logger
     @param ignore_file_patterns:            List of additional file ignore patterns to prevent from copying into the layout
-    @return:
+    @return: None
     """
     if output_path.exists():
         shutil.rmtree(output_path)
@@ -511,7 +511,7 @@ def setup_launcher_layout_directory(project_path: pathlib.Path,
             # Make sure the individual file is not in any ignore patterns before copying
             skip_file = False
             for ignore_file_pattern in ignore_file_patterns:
-                if fnmatch.fnmatch(file, ignore_file_pattern):
+                if fnmatch.fnmatch(file_path.name, ignore_file_pattern):
                     skip_file = True
                     break
             if not skip_file:

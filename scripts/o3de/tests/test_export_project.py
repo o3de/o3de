@@ -9,8 +9,8 @@
 import pytest
 import pathlib
 import unittest.mock as mock
-from unittest.mock import patch
-from o3de.export_project import _export_script, process_command
+from unittest.mock import patch, create_autospec
+from o3de.export_project import _export_script, process_command, setup_launcher_layout_directory, O3DEScriptExportContext, build_assets, ExportProjectError, bundle_assets, build_export_toolchain, build_game_targets
 
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
@@ -95,7 +95,7 @@ def test_export_script(tmp_path,
                        input_script, 
                        args, 
                        should_pass_project_folder, 
-                       project_folder_subpath, 
+                       project_folder_subpath,
                        script_folder_subpath, 
                        output_filename, 
                        is_expecting_error, 
@@ -103,29 +103,32 @@ def test_export_script(tmp_path,
                        expected_result):
     import sys
 
-    project_folder = tmp_path / project_folder_subpath
-    project_folder.mkdir()
+    engine_folder = tmp_path / "test_engine"
+    engine_folder.mkdir()
 
-    script_folder = tmp_path / script_folder_subpath
-    script_folder.mkdir()
+    with patch('o3de.manifest.get_project_engine_path', return_value=pathlib.Path) as mock_get_project_engine_path:
+        mock_get_project_engine_path.return_value = engine_folder
 
+        project_folder = tmp_path / project_folder_subpath
+        project_folder.mkdir()
 
-    project_json = project_folder / "project.json"
-    project_json.write_text(TEST_PROJECT_JSON_PAYLOAD)
+        script_folder = tmp_path / script_folder_subpath
+        script_folder.mkdir()
 
+        project_json = project_folder / "project.json"
+        project_json.write_text(TEST_PROJECT_JSON_PAYLOAD)
 
-    test_script = script_folder / "test.py"
-    test_script.write_text(input_script)
+        test_script = script_folder / "test.py"
+        test_script.write_text(input_script)
 
-    if output_filename:
-        test_output = script_folder / output_filename
+        if output_filename:
+            test_output = script_folder / output_filename
 
-        assert not test_output.is_file()
-    
-    result = _export_script(test_script, project_folder if should_pass_project_folder else None, args)
+            assert not test_output.is_file()
 
-    assert result == expected_result
+        result = _export_script(test_script, project_folder if should_pass_project_folder else None, args)
 
+        assert result == expected_result
 
     # only check for these if we're simulating a successful case
     if result == 0 and not is_expecting_error:
@@ -144,3 +147,368 @@ def test_export_script(tmp_path,
 
         assert o3de_cli_folder in [pathlib.Path(sysPath) for sysPath in sys.path]
 
+
+@pytest.mark.parametrize("engine_centric, fail_on_ap_errors", [
+    pytest.param(False, False),
+    pytest.param(False, True)
+])
+def test_build_assets(tmp_path, engine_centric, fail_on_ap_errors):
+
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+    test_tools_build_path = (test_project_path / "build" / "test") if engine_centric else (test_engine_path / "build" / "test")
+    test_tools_build_path.mkdir(parents=True)
+    test_asset_processor_batch_path = test_tools_build_path / "AssetProcessorBatch"
+    test_asset_processor_batch_path.write_bytes(b'fake processor')
+
+    # Run through a mock success and mock failure run of AssetProcessorBatch
+    for test_process_return_values in [0, 1]:
+
+        with patch("o3de.export_project.process_command", return_value=test_process_return_values) as mock_process_command, \
+             patch("o3de.export_project.get_asset_processor_batch_path", return_value=test_asset_processor_batch_path):
+
+            mock_ctx = create_autospec(O3DEScriptExportContext)
+            mock_ctx.project_path = test_project_path
+            mock_ctx.engine_path = test_engine_path
+            mock_ctx.is_engine_centric = engine_centric
+            mock_ctx.project_name = test_project_name
+
+            try:
+                build_assets(ctx=mock_ctx,
+                             tools_build_path=test_tools_build_path,
+                             fail_on_ap_errors=fail_on_ap_errors)
+            except ExportProjectError:
+                ap_error_raised = True
+            else:
+                ap_error_raised = False
+
+            mock_build_assets_process_input = mock_process_command.call_args_list[0][0][0]
+
+            # Expected process command to asset processor: <AssetProcessorBatchPath> --project-path <Project Path>
+            expected_build_assets_args = [
+                test_asset_processor_batch_path,
+                "--project-path",
+                test_project_path
+            ]
+            # Validate the expected arguments
+            assert mock_build_assets_process_input == expected_build_assets_args
+
+            # Validate the 'fail_on_ap_errors' option if applicable
+            if test_process_return_values == 1:
+                assert ap_error_raised == fail_on_ap_errors
+            else:
+                assert not ap_error_raised
+
+
+@pytest.mark.parametrize("engine_centric, additional_build_args", [
+    pytest.param(False, []),
+    pytest.param(True, []),
+    pytest.param(False, ['-j', '24']),
+])
+def test_build_export_toolchain(tmp_path, engine_centric, additional_build_args):
+
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_engine_path = tmp_path / "engine"
+    test_tools_build_path = (test_project_path / "build" / "test") if engine_centric else (test_engine_path / "build" / "test")
+    test_additional_args = additional_build_args
+    test_generator = "Test Generator"
+    test_generator_options = ["-DTEST_OPTION1", "-DTEST_OPTION2"]
+    test_build_configuration = "profile"
+
+    with patch("o3de.export_project.process_command", return_value=0) as mock_process_command, \
+         patch("o3de.export_project.GENERATOR", test_generator), \
+         patch("o3de.export_project.CMAKE_GENERATOR_OPTIONS", test_generator_options), \
+         patch("o3de.export_project.PREREQUISITE_TOOL_BUILD_CONFIG", test_build_configuration):
+
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.cmake_additional_build_args = test_additional_args
+        mock_ctx.is_engine_centric = engine_centric
+        mock_ctx.project_name = test_project_name
+
+        build_export_toolchain(ctx=mock_ctx,
+                               tools_build_path=test_tools_build_path)
+
+        # Validate the cmake project generation calls
+        mock_generate_process_input = mock_process_command.call_args_list[0][0][0]
+
+        expected_project_path = test_engine_path if engine_centric else test_project_path
+
+        expected_generate_args = [
+            'cmake',
+            '-B', test_tools_build_path,
+            '-S', expected_project_path,
+            '-G', test_generator
+        ]
+        expected_generate_args.extend(test_generator_options)
+        if engine_centric:
+            expected_generate_args.extend([
+                f'-DLY_PROJECTS={test_project_path.name}'
+            ])
+        assert mock_generate_process_input == expected_generate_args
+
+        # Validate the cmake project build calls
+        mock_build_process_input = mock_process_command.call_args_list[1][0][0]
+        expected_build_args = [
+            'cmake',
+            '--build', test_tools_build_path,
+            '--config', test_build_configuration,
+            '--target',
+            'AssetProcessorBatch',
+            'AssetBundlerBatch',
+        ]
+        if test_additional_args:
+            expected_build_args.extend(test_additional_args)
+
+        assert mock_build_process_input == expected_build_args
+
+
+@pytest.mark.parametrize("build_config, build_game_launcher, build_server_launcher, build_unified_launcher, allow_registry_overrides, engine_centric, additional_build_args", [
+    pytest.param("profile", True, True, True, True, False, []),
+    pytest.param("release", True, True, True, True, False, []),
+    pytest.param("release", True, False, False, True, False, []),
+    pytest.param("release", True, True, False, True, False, []),
+    pytest.param("release", False, False, False, True, False, []),
+    pytest.param("release", False, True, False, True, False, []),
+    pytest.param("profile", True, True, True, True, True, []),
+    pytest.param("profile", True, True, True, True, True, ['-j', '16'])
+])
+def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_server_launcher, build_unified_launcher, allow_registry_overrides, engine_centric, additional_build_args):
+
+    test_project_name = "TestProject"
+    test_project_path = tmp_path / "project"
+    test_game_build_path = test_project_path / "build" / "test"
+    test_engine_path = tmp_path / "engine"
+    test_additional_args = additional_build_args
+    test_generator = "Test Generator"
+    test_generator_options = ["-DTEST_OPTION1", "-DTEST_OPTION2"]
+
+    with patch("o3de.export_project.process_command", return_value=0) as mock_process_command, \
+         patch("o3de.export_project.GENERATOR", test_generator), \
+         patch("o3de.export_project.CMAKE_GENERATOR_OPTIONS", test_generator_options):
+
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+        mock_ctx.engine_path = test_engine_path
+        mock_ctx.cmake_additional_build_args = test_additional_args
+        mock_ctx.is_engine_centric = engine_centric
+        mock_ctx.project_name = test_project_name
+
+        build_game_targets(ctx=mock_ctx,
+                           build_config=build_config,
+                           game_build_path=test_game_build_path,
+                           should_build_game_launcher=build_game_launcher,
+                           should_build_server_launcher=build_server_launcher,
+                           should_build_unified_launcher=build_unified_launcher,
+                           allow_registry_overrides=allow_registry_overrides)
+
+        if not build_game_launcher and not build_server_launcher and not build_unified_launcher:
+            assert len(mock_process_command.call_args_list) == 0
+
+        else:
+            # Validate the cmake project generation calls
+            mock_generate_process_input = mock_process_command.call_args_list[0][0][0]
+
+            expected_project_path = test_engine_path if engine_centric else test_project_path
+
+            expected_generate_args = [
+                'cmake',
+                '-B', test_game_build_path,
+                '-S', expected_project_path,
+                '-G', test_generator
+            ]
+            expected_generate_args.extend(test_generator_options)
+            if engine_centric:
+                expected_generate_args.extend([
+                    f'-DLY_PROJECTS={test_project_path.name}'
+                ])
+            expected_generate_args.extend(
+                [
+                    '-DLY_MONOLITHIC_GAME=1',
+                    '-DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES=1',
+                ]
+            )
+            assert mock_generate_process_input == expected_generate_args
+
+            # Validate the cmake project build calls
+            mock_build_process_input = mock_process_command.call_args_list[1][0][0]
+            expected_build_args = [
+                'cmake',
+                '--build', test_game_build_path,
+                '--config', build_config,
+                '--target'
+            ]
+            if build_server_launcher:
+                expected_build_args.extend([f'{test_project_name}.ServerLauncher'])
+            if build_game_launcher:
+                expected_build_args.extend([f'{test_project_name}.GameLauncher'])
+            if build_unified_launcher:
+                expected_build_args.extend([f'{test_project_name}.UnifiedLauncher'])
+            if test_additional_args:
+                expected_build_args.extend(test_additional_args)
+
+            assert mock_build_process_input == expected_build_args
+
+
+@pytest.mark.parametrize("asset_platform", [
+    pytest.param("linux")
+])
+def test_bundle_assets(tmp_path, asset_platform):
+
+    test_project_path = tmp_path / "project"
+
+    test_seedlist_file = "test.SeedList"
+    test_seedlist_base_path = test_project_path / "AssetSeedLists"
+    test_seedlist_base_path.mkdir(parents=True)
+    test_seedlist_path = test_seedlist_base_path / test_seedlist_file
+    test_seedlist_path.write_text("seedlist file")
+
+    test_custom_asset_base_path = test_project_path / "AssetList" / "Assets"
+    test_custom_asset_base_path.mkdir(parents=True)
+
+    test_build_tool_path = tmp_path / "tools"
+    test_build_tool_asset_bundler_path = test_build_tool_path / "bin" / "profile" / "AssetBundler"
+
+    test_max_bundle_size = 2048
+
+    with patch("o3de.export_project.process_command", return_value=0) as mock_process_command, \
+         patch("o3de.export_project.get_asset_bundler_batch_path", return_value=test_build_tool_asset_bundler_path):
+
+        mock_ctx = create_autospec(O3DEScriptExportContext)
+        mock_ctx.project_path = test_project_path
+
+        result = bundle_assets(ctx=mock_ctx,
+                               selected_platform=asset_platform,
+                               seedlist_paths=[test_seedlist_path],
+                               non_mono_build_path=test_build_tool_path,
+                               custom_asset_list_path=test_custom_asset_base_path,
+                               max_bundle_size=test_max_bundle_size)
+
+        assert len(mock_process_command.call_args_list) == 4
+
+        # Validate the expected call for generating the asset lists for the project
+        for arg_index, assetlist_type in [(0, 'game'), (1, 'engine')]:
+            mock_process_input = mock_process_command.call_args_list[arg_index][0]
+            mock_process_input_arglist = mock_process_input[0]
+
+            expected_assetlist_path = test_custom_asset_base_path / f'{assetlist_type}_{asset_platform}.assetlist'
+
+            expected_values = [
+                test_build_tool_asset_bundler_path, # Test path to the fake AssetBundler
+                'assetLists',                       # Main argument to the bundler
+                '--assetListFile',                  # Argument parameter to the bundler
+                expected_assetlist_path,
+                '--platform',                       # Argument parameter '--platform' for the Asset Bundler
+                asset_platform,                     # Argument value for '--platform'
+                '--project-path',                   # Argument parameter '--project-path' for the Asset Bundler
+                test_project_path,                  # Argument value for '--project-path'
+                '--allowOverwrites'                # Argument parameter '--allowOverwrites' for the Asset Bundler
+            ]
+            if assetlist_type == 'engine':
+                expected_values.extend(['--addDefaultSeedListFiles'])
+            else:
+                expected_values.extend([
+                    '--seedListFile',                   # Argument parameter '--seedListFile' for the Asset Bundler
+                    str(test_seedlist_path)           # Argument value for '--seedListFile'
+                ])
+            assert mock_process_input_arglist == expected_values
+
+        # Validate the expected call for generating the asset bundles for the project
+        for arg_index, assetlist_type in [(2, 'game'), (3, 'engine')]:
+            mock_process_input = mock_process_command.call_args_list[arg_index][0]
+            mock_process_input_arglist = mock_process_input[0]
+
+            expected_assetlist_path = test_custom_asset_base_path / f'{assetlist_type}_{asset_platform}.assetlist'
+            expected_output_bundle_path = test_project_path / 'AssetBundling' / 'Bundles' / f'{assetlist_type}_{asset_platform}.pak'
+
+            expected_values = [
+                test_build_tool_asset_bundler_path, # Test path to the fake AssetBundler
+                'bundles',                       # Main argument to the bundler
+                '--maxSize',
+                str(test_max_bundle_size),
+                '--platform',                       # Argument parameter '--platform' for the Asset Bundler
+                asset_platform,                     # Argument value for '--platform'
+                '--project-path',                   # Argument parameter '--project-path' for the Asset Bundler
+                test_project_path,                  # Argument value for '--project-path'
+                '--allowOverwrites',               # Argument parameter '--allowOverwrites' for the Asset Bundler
+                '--outputBundlePath',
+                expected_output_bundle_path,
+                '--assetListFile',
+                expected_assetlist_path
+            ]
+            assert mock_process_input_arglist == expected_values
+
+
+@pytest.mark.parametrize("build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format", [
+    pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "zip"),
+    pytest.param("profile", "linux", ["include_me1.cfg", "include_me2.cfg"], ["*.ServerLauncher"], "zip"),
+    pytest.param("profile", "pc", ["include*.cfg"], ["ExcludeMe.ServerLauncher"], "none"),
+])
+def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform, project_files_to_copy, file_patterns_to_ignore, archive_format):
+
+    test_project_path = tmp_path / "project"
+    test_project_path.mkdir()
+
+    test_output_path = tmp_path / "output"
+    test_output_path.mkdir()
+
+    test_asset_platform = asset_platform
+
+    test_build_config = build_config
+
+    test_mono_build_path = tmp_path / "build"
+
+    test_mono_build_path_bin_dir = test_mono_build_path / "bin" / test_build_config
+    test_mono_build_path_bin_dir.mkdir(parents=True)
+
+    test_include_mono_launcher_name = "IncludeMe.GameLauncher"
+    test_include_mono_launcher_path = test_mono_build_path_bin_dir / test_include_mono_launcher_name
+    test_include_mono_launcher_path.write_bytes(b'test_launcher bytes')
+
+    test_exclude_mono_launcher_name = "ExcludeMe.ServerLauncher"
+    test_exclude_mono_launcher_path = test_mono_build_path_bin_dir / test_exclude_mono_launcher_name
+    test_exclude_mono_launcher_path.write_bytes(b'test_launcher bytes')
+
+    test_bundle_file = tmp_path / "test_bundle.pak"
+    test_bundle_file.write_bytes(b'test_pak bytes')
+
+    test_project_files_to_copy = project_files_to_copy
+    test_project_include_me1_cfg = test_project_path / "include_me1.cfg"
+    test_project_include_me1_cfg.write_text("test include me1")
+    test_project_include_me2_cfg = test_project_path / "include_me2.cfg"
+    test_project_include_me2_cfg.write_text("test include me2")
+
+    test_archive_output_format = archive_format
+
+    setup_launcher_layout_directory(project_path=test_project_path,
+                                    output_path=test_output_path,
+                                    asset_platform=test_asset_platform,
+                                    mono_build_path=test_mono_build_path,
+                                    build_config=test_build_config,
+                                    bundles_to_copy=[test_bundle_file],
+                                    project_file_patterns_to_copy=test_project_files_to_copy,
+                                    archive_output_format=test_archive_output_format,
+                                    logger=None,
+                                    ignore_file_patterns=file_patterns_to_ignore)
+
+    result_bundle_file = test_output_path / "Cache" / test_asset_platform / "test_bundle.pak"
+    assert result_bundle_file.is_file(), f"Missing <output>/Cache/{test_asset_platform}/test_bundle.pak"
+
+    result_include_me1 = test_output_path / "include_me1.cfg"
+    assert result_include_me1.is_file(), "Missing <output>/include_me1.cfg"
+
+    result_include_me2 = test_output_path / "include_me2.cfg"
+    assert result_include_me2.is_file(), "Missing <output>/include_me2.cfg"
+
+    result_include_game_launcher = test_output_path / test_include_mono_launcher_name
+    assert result_include_game_launcher.is_file(), f"Missing <output>/{test_include_mono_launcher_name}"
+
+    result_exclude_server_launcher = test_output_path / test_exclude_mono_launcher_name
+    assert not result_exclude_server_launcher.is_file(), f"<output>/{test_exclude_mono_launcher_name} not excluded"
+
+    if test_archive_output_format != "none":
+        result_archive_file = tmp_path / f"output.{test_archive_output_format}"
+        assert result_archive_file.is_file(), f"Missing <output>.{test_archive_output_format}"
