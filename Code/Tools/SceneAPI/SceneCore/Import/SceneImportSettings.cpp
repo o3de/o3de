@@ -40,8 +40,9 @@ namespace AZ
                         ->DataElement(
                             AZ::Edit::UIHandlers::Default,
                             &SceneImportSettings::m_optimizeMeshes,
-                            "Optimize Meshes",
-                            "This attempts to reduce the total number of meshes in the scene, which will reduce the number of draw calls.");
+                            "Merge Duplicate Meshes",
+                            "Non-instanced unskinned meshes with the same vertices and faces are merged into instanced meshes. "
+                            "This will reduce the number of draw calls in the scene.");
                 }
             }
         }
