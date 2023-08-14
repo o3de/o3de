@@ -1,0 +1,7 @@
+2023-07-12 10:02:50.762 11276 Info [MrightInit 109]SDK version: mRIGHT SDK 1.0.2.B004 v1.04
+2023-07-12 10:02:50.763 11276 Info [Mright::CheckInputParams 26]Begin CheckInputParams
+2023-07-12 10:02:50.763 11276 Info [Mright::CheckInputParams 65]CheckInputParams finished.
+2023-07-12 10:02:50.763 11276 Debug [Mright::SocketUtil::InitiateWinSock 78]The Winsock 2.2 dll was found okay
+2023-07-12 10:02:50.763 11276 Info [Mright::SocketUtil::SetSocketInfo 89]Socket localIP 127.0.0.1 localPort 13000 remoteIP 127.0.0.1 remotePort 13002
+2023-07-12 10:02:50.763 11276 Error [Mright::SocketUtil::SocketAndBind 163]SocketAndBind error.
+2023-07-12 10:02:50.763 11276 Error [MrightInit 121]SocketAndBind error.

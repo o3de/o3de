@@ -19,6 +19,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         uint2 m_outputSize; // texture size of output
         float2 m_outputCenter; // center of image in pixel coords
         float m_depth; // factor for modifying projection
+        [[pad_to(16)]]
     };
     Constants m_constants;
 }

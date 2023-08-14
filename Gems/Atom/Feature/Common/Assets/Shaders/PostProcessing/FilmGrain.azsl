@@ -29,6 +29,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_intensity; // intensity of effect (0 to 1)
         float m_luminanceDampening; // factor for dampening effect in areas of high and low luminance
         float m_tilingScale; // scaling factor for tiling
+        [[pad_to(16)]]
     };
     Constants m_constants;
 }
@@ -45,7 +46,7 @@ void MainCS(uint3 dispatchThreadID : SV_DispatchThreadID)
 
     // Determine UV wrt tiling scale and vary UV according to time
     // The float2 is random and acts as a way of "skipping" across the grain texture
-    // The multiplier is equivalent to dividing by 1/24, mimicing a frame rate of 24fps as found inin many films
+    // The multiplier is equivalent to dividing by 1/24, mimicking a frame rate of 24fps as found in many films
     float2 grainUV = PassSrg::m_constants.m_tilingScale * dispatchThreadID.xy / PassSrg::m_constants.m_grainTextureSize;
     grainUV += float2(0.6379, 1.7358) * trunc(SceneSrg::m_time * 24);
 
