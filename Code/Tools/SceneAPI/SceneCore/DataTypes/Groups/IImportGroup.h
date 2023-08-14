@@ -9,6 +9,7 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 
 namespace AZ::SceneAPI::DataTypes
 {
@@ -19,5 +20,7 @@ namespace AZ::SceneAPI::DataTypes
         AZ_RTTI(IImportGroup, "{CF09F740-5A5A-4865-A9A7-FAD1A70C045E}", ISceneNodeGroup);
 
         ~IImportGroup() override = default;
+
+        virtual const SceneImportSettings& GetImportSettings() const = 0;
     };
 }

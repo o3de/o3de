@@ -28,7 +28,7 @@ namespace AZ::SceneAPI::SceneData
         static void Reflect(AZ::ReflectContext* context);
 
         ImportGroup();
-        ~ImportGroup() override;
+        ~ImportGroup() override = default;
 
         const AZStd::string& GetName() const override;
         const Uuid& GetId() const override;
@@ -39,9 +39,10 @@ namespace AZ::SceneAPI::SceneData
         DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
         const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
 
+        const SceneImportSettings& GetImportSettings() const override;
+
     private:
-        bool m_optimizeScene = false;
-        bool m_optimizeMeshes = false;
+        SceneImportSettings m_importSettings;
 
         SceneNodeSelectionList m_nodeSelectionList;
         Containers::RuleContainer m_rules;

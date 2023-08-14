@@ -120,6 +120,8 @@ set(FILES
     Events/SceneSerializationBus.h
     Import/ManifestImportRequestHandler.h
     Import/ManifestImportRequestHandler.cpp
+    Import/SceneImportSettings.h
+    Import/SceneImportSettings.cpp
     Utilities/CoordinateSystemConverter.h
     Utilities/CoordinateSystemConverter.cpp
     Utilities/SceneGraphSelector.h

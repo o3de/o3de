@@ -56,6 +56,7 @@
 
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
+#include <SceneAPI/SceneCore/Import/SceneImportSettings.h>
 #include <SceneAPI/SceneCore/Utilities/PatternMatcher.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
@@ -193,6 +194,9 @@ namespace AZ
                     // Register utilities
                     AZ::SceneAPI::SceneCore::PatternMatcher::Reflect(context);
                     AZ::SceneAPI::Utilities::DebugSceneGraph::Reflect(context);
+
+                    // Register import settings
+                    AZ::SceneAPI::SceneImportSettings::Reflect(context);
                 }
             }
 

@@ -47,7 +47,8 @@ namespace AZ
         }
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const char* fileName,
+            [[maybe_unused]] const AZ::SceneAPI::SceneImportSettings& importSettings)
         {
             AZ_TracePrintf(SceneAPI::Utilities::LogWindow, "AssImpSceneWrapper::LoadSceneFromFile %s", fileName);
             AZ_TraceContext("Filename", fileName);
@@ -71,6 +72,13 @@ namespace AZ
             // aiProcess_JoinIdenticalVertices is not enabled because O3DE has a mesh optimizer that also does this,
             // this flag is disabled to keep AssImp output similar to FBX SDK to reduce downstream bugs for the initial AssImp release.
             // There's currently a minimum of properties and flags set to maximize compatibility with the existing node graph.
+            unsigned int importFlags =
+                aiProcess_Triangulate                                               // Triangulates all faces of all meshes
+                | static_cast<unsigned long>(aiProcess_GenBoundingBoxes)            // Generate bounding boxes
+                | aiProcess_GenNormals                                              // Generate normals for meshes
+                | (importSettings.m_optimizeScene ? aiProcess_OptimizeGraph : 0)    // Merge excess scene nodes together
+                | (importSettings.m_optimizeMeshes ? aiProcess_OptimizeMeshes : 0)  // Combines meshes in the scene together
+                ;
 
             // aiProcess_LimitBoneWeights is not enabled because it will remove bones which are not associated with a mesh.
             // This results in the loss of the offset matrix data for nodes without a mesh which is required for the Transform Importer.
@@ -81,10 +89,7 @@ namespace AZ
             // This is here as a bread crumb to save others times investigating issues with empty bones.
             // m_importer.SetPropertyBool(AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES, false);
             m_sceneFileName = fileName;
-            m_assImpScene = m_importer->ReadFile(fileName,
-                aiProcess_Triangulate //Triangulates all faces of all meshes
-                | static_cast<unsigned long>(aiProcess_GenBoundingBoxes) // Generate bounding boxes
-                | aiProcess_GenNormals); //Generate normals for meshes
+            m_assImpScene = m_importer->ReadFile(fileName, importFlags);
 
             CalculateAABBandVertices(m_assImpScene, m_aabb, m_vertices);
 
@@ -105,9 +110,9 @@ namespace AZ
             return true;
         }
 
-        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName)
+        bool AssImpSceneWrapper::LoadSceneFromFile(const AZStd::string& fileName, const AZ::SceneAPI::SceneImportSettings& importSettings)
         {
-            return LoadSceneFromFile(fileName.c_str());
+            return LoadSceneFromFile(fileName.c_str(), importSettings);
         }
 
         const std::shared_ptr<SDKNode::NodeWrapper> AssImpSceneWrapper::GetRootNode() const
