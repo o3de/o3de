@@ -232,5 +232,5 @@ if "o3de_context" in globals():
                                                      archive_output_format=args.archive_output,
                                                      logger=o3de_logger)
     except exp.ExportProjectError as err:
-        print(exp)
+        print(err)
         sys.exit(1)

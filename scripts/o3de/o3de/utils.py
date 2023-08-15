@@ -112,7 +112,7 @@ class CLICommand(object):
             line = process.stdout.readline()
             if not line: break
 
-            log_line = line.decode('utf-8', 'ignore')
+            log_line = line.decode('utf-8', 'ignore').rstrip()
             self._stdout_lines.append(log_line)
             self.logger.info(log_line)
     
