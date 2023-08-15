@@ -38,7 +38,7 @@ $ <engine-path>/scripts/o3de.sh export-project --export-scripts ExportScripts/ex
 $ cd <project-path>
 $ <engine-path>\scripts\o3de.bat  export-project --export-scripts ExportScripts\eexport_source_built_project.py \
  --project-path . --log-level INFO --output-path <install-path> --build-non-mono-tools --config release --archive-output zip \
- --seedlist .\Assets\seedlist1.seed --seedlist .\Assets\seedlist2.seed <etc..> 
+--seedlist .\Assets\seedlist1.seed --seedlist .\Assets\seedlist2.seed <etc..> --should-build-code --should-build-assets
 ''' 
 
 # The following parameters are optional, but may be helpful:
