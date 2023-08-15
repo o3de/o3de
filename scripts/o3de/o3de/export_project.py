@@ -70,7 +70,12 @@ def process_command(args: list,
     if len(args) == 0:
         logging.error("function `process_command` must be supplied a non-empty list of arguments")
         return 1
-    return utils.CLICommand(args, cwd, logging.getLogger(), env=env).run()
+
+    # Raise an error if there was any issue running an export command
+    result = utils.CLICommand(args, cwd, logging.getLogger(), env=env).run()
+    if result != 0:
+        raise RuntimeError(f"Error running command: {args}")
+    return result
 
 
 def execute_python_script(target_script_path: pathlib.Path or str, o3de_context: O3DEScriptExportContext = None) -> int:
