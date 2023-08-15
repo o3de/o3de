@@ -51,6 +51,12 @@ ShaderResourceGroup MaterialSrg : SRG_PerMaterial
         MipFilter = Linear;
     };
 
+    // Parameters for dual specular
+    float m_dualSpecFactor;
+    float m_dualSpecRoughnessExponent;
+    float m_dualSpecRoughnessMultiplier;
+    float m_dualSpecF0Multiplier;
+
     // Parameters for subsurface scattering
     float m_subsurfaceScatteringFactor;
     float m_subsurfaceScatteringQuality;
