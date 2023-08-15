@@ -59,7 +59,9 @@ namespace AZ
                 Method("GetClamp", &MatrixMxN::GetClamp)->
                 Method("GetAbs", &MatrixMxN::GetAbs)->
                 Method("GetSquare", &MatrixMxN::GetSquare)->
+                Method("OuterProduct", &OuterProduct)->
                 Method("VectorMatrixMultiply", &VectorMatrixMultiply)->
+                Method("VectorMatrixMultiplyLeft", &VectorMatrixMultiplyLeft)->
                 Method("MatrixMatrixMultiply", &MatrixMatrixMultiply)
                 ;
         }

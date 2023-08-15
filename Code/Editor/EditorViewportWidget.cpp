@@ -347,7 +347,7 @@ void EditorViewportWidget::mousePressEvent(QMouseEvent* event)
 AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point) const
 {
     AzToolsFramework::ViewportInteraction::MousePick mousePick;
-    mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point);
+    mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point * devicePixelRatioF());
     const auto [origin, direction] = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
     mousePick.m_rayOrigin = origin;
     mousePick.m_rayDirection = direction;
@@ -1424,7 +1424,8 @@ Vec3 EditorViewportWidget::ViewToWorld(
     AZ_UNUSED(bSkipVegetation);
     AZ_UNUSED(collideWithObject);
 
-    auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
+    auto ray =
+        m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp * devicePixelRatioF()));
 
     const float maxDistance = 10000.f;
     Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;

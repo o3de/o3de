@@ -82,7 +82,10 @@ namespace AtomToolsFramework
 
         m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(GetDefaultCamera());
         m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
-        m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
+        m_viewportInteractionImpl->m_screenSizeFn = [this] {
+            AzFramework::WindowSize screenSize = GetClientAreaSize();
+            return AzFramework::ScreenSize(screenSize.m_width, screenSize.m_height);
+        };
         m_viewportInteractionImpl->Connect(newId);
 
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
@@ -264,7 +267,7 @@ namespace AtomToolsFramework
             eventType == QEvent::Type::MouseMove)
         {
             const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
-            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos() * devicePixelRatioF());
         }
     }
 
@@ -275,7 +278,7 @@ namespace AtomToolsFramework
 
     void RenderViewportWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
     {
-        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos() * devicePixelRatioF());
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
@@ -413,6 +416,7 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetClientAreaSize() const
     {
+        // The client area size need to be measured in device pixel size. 
         const auto pixelRatio = devicePixelRatioF();
         return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()*pixelRatio), aznumeric_cast<uint32_t>(height()*pixelRatio)};
     }
@@ -462,6 +466,7 @@ namespace AtomToolsFramework
 
     AzFramework::WindowSize RenderViewportWidget::GetRenderResolution() const
     {
+        // We want render resolution matches the screen's resolution
         return GetClientAreaSize();
     }
 

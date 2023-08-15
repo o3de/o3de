@@ -33,6 +33,7 @@
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Quality/QualitySystemBus.h>
 
 #include "AZCoreLogSink.h"
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -1111,6 +1112,12 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     }
 
     InlineInitializationProcessing("CSystem::Init End");
+
+    // All CVARs should now be registered, load and apply quality settings for the default quality group
+    // using device rules to auto-detected the correct quality level 
+    AzFramework::QualitySystemEvents::Bus::Broadcast(
+        &AzFramework::QualitySystemEvents::LoadDefaultQualityGroup,
+        AzFramework::QualityLevel::LevelFromDeviceRules);
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
