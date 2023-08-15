@@ -43,10 +43,19 @@ namespace AZ
             {
             }
 
+            PatternMatcher& PatternMatcher::operator=(const PatternMatcher& rhs)
+            {
+                m_pattern = rhs.m_pattern;
+                m_matcher = rhs.m_matcher;
+                m_regexMatcher.reset();
+                return *this;
+            }
+
             PatternMatcher& PatternMatcher::operator=(PatternMatcher&& rhs)
             {
                 m_pattern = AZStd::move(rhs.m_pattern);
                 m_matcher = rhs.m_matcher;
+                m_regexMatcher.reset();
                 return *this;
             }
 
@@ -119,9 +128,14 @@ namespace AZ
                 }
                 case MatchApproach::Regex:
                 {
-                    AZStd::regex comparer(m_pattern, AZStd::regex::extended);
+                    // Because PatternMatcher can get default constructed and serialized into directly, there's no good place
+                    // to initialize the regex matcher on construction, so we'll lazily initialize it here on first use.
+                    if (m_regexMatcher == nullptr)
+                    {
+                        m_regexMatcher = AZStd::make_unique<AZStd::regex>(m_pattern, AZStd::regex::extended);
+                    }
                     AZStd::smatch match;
-                    return AZStd::regex_match(name, match, comparer);
+                    return AZStd::regex_match(name, match, *m_regexMatcher);
                 }
                 default:
                     AZ_Assert(false, "Unknown option '%i' for pattern matcher.", m_matcher);

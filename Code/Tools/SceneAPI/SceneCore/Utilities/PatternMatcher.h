@@ -9,6 +9,7 @@
  */
 
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/JSON/document.h>
 #include <SceneAPI/SceneCore/SceneCoreConfiguration.h>
@@ -47,7 +48,7 @@ namespace AZ
                 SCENE_CORE_API PatternMatcher(const PatternMatcher& rhs) = default;
                 SCENE_CORE_API PatternMatcher(PatternMatcher&& rhs);
 
-                SCENE_CORE_API PatternMatcher& operator=(const PatternMatcher& rhs) = default;
+                SCENE_CORE_API PatternMatcher& operator=(const PatternMatcher& rhs);
                 SCENE_CORE_API PatternMatcher& operator=(PatternMatcher&& rhs);
 
                 SCENE_CORE_API bool LoadFromJson(rapidjson::Document::ConstMemberIterator member);
@@ -62,6 +63,7 @@ namespace AZ
             private:
                 AZStd::string m_pattern;
                 MatchApproach m_matcher = MatchApproach::PostFix;
+                mutable AZStd::unique_ptr<AZStd::regex> m_regexMatcher;
             };
         } // SceneCore
     } // SceneAPI
