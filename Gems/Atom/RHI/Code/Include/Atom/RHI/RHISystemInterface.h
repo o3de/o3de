@@ -77,6 +77,9 @@ namespace AZ::RHI
             
         //! Notify that the input device was removed
         virtual void OnDeviceRemoved(Device* ) {};
+
+        //! Notify that the RHISystem has been initialized
+        virtual void OnRHISystemInitialized() {};
     };
 
     using RHISystemNotificationBus = AZ::EBus<RHISystemNotificiationInterface>;

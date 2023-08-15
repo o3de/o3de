@@ -708,38 +708,7 @@ namespace AzToolsFramework
         if (ValueHasChildRows(domArray))
         {
             // determine whether this node should be expanded, so we know whether to populate row children
-            if (m_forceAutoExpand.has_value())
-            {
-                // forced attribute always wins, set the expansion state
-                SetExpanded(m_forceAutoExpand.value());
-            }
-            else
-            {
-                // nothing forced, so the user's saved expansion state, if it exists, should be used
-                DocumentPropertyEditor* dpe = GetDPE();
-                if (dpe->IsRecursiveExpansionOngoing())
-                {
-                    SetExpanded(true);
-                    dpe->SetSavedExpanderStateForRow(domPath, true);
-                }
-                else if (dpe->HasSavedExpanderStateForRow(domPath))
-                {
-                    SetExpanded(dpe->GetSavedExpanderStateForRow(domPath));
-                }
-                else
-                {
-                    // no prior expansion state set, use the AutoExpand attribute, if it's set
-                    if (m_expandByDefault.has_value())
-                    {
-                        SetExpanded(m_expandByDefault.value());
-                    }
-                    else
-                    {
-                        // expander state is not explicitly set or saved anywhere, default to expanded
-                        SetExpanded(true);
-                    }
-                }
-            }
+            ApplyExpansionState(domPath, nullptr);
         }
 
         // populate all direct children of this row
@@ -1261,6 +1230,45 @@ namespace AzToolsFramework
         return m_columnLayout->IsExpanded();
     }
 
+    void DPERowWidget::ApplyExpansionState(const AZ::Dom::Path& rowPath, DocumentPropertyEditor* rowDPE)
+    {
+        if (m_forceAutoExpand.has_value())
+        {
+            // forced attribute always wins, set the expansion state
+            SetExpanded(m_forceAutoExpand.value());
+        }
+        else
+        {
+            // nothing forced, so the user's saved expansion state, if it exists, should be used
+            if (!rowDPE)
+            {
+                rowDPE = GetDPE();
+            }
+            if (rowDPE->IsRecursiveExpansionOngoing())
+            {
+                SetExpanded(true);
+                rowDPE->SetSavedExpanderStateForRow(rowPath, true);
+            }
+            else if (rowDPE->HasSavedExpanderStateForRow(rowPath))
+            {
+                SetExpanded(rowDPE->GetSavedExpanderStateForRow(rowPath));
+            }
+            else
+            {
+                // no prior expansion state set, use the AutoExpand attribute, if it's set
+                if (m_expandByDefault.has_value())
+                {
+                    SetExpanded(m_expandByDefault.value());
+                }
+                else
+                {
+                    // expander state is not explicitly set or saved anywhere, default to expanded
+                    SetExpanded(true);
+                }
+            }
+        }
+    }
+
     void DPERowWidget::onExpanderChanged(int expanderState)
     {
         DocumentPropertyEditor* dpe = GetDPE();
@@ -1350,6 +1358,7 @@ namespace AzToolsFramework
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
@@ -1427,7 +1436,11 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
     {
         m_allowVerticalScroll = allowVerticalScroll;
-        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+
+        /* as a temporary work-around to https://github.com/o3de/o3de/issues/14863 , never prevent vertical scrollbars
+           setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+         */
+
         auto existingPolicy = sizePolicy();
         setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
     }
@@ -1437,7 +1450,8 @@ namespace AzToolsFramework
         auto hint = QScrollArea::sizeHint();
         if (!m_allowVerticalScroll)
         {
-            hint.setHeight(m_layout->sizeHint().height());
+            auto margins = QWidget::contentsMargins();
+            hint.setHeight(m_layout->sizeHint().height() + margins.top() + margins.bottom());
         }
         return hint;
     }
@@ -1476,8 +1490,8 @@ namespace AzToolsFramework
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
         {
-            // We need to rebuild the view using the stored expander states
-            HandleReset();
+            // Apply the newly loaded expansion states to the tree
+            ApplyExpansionStates();
         }
     }
 
@@ -1524,6 +1538,26 @@ namespace AzToolsFramework
         {
             m_dpeSettings->RemoveExpanderStateForRow(rowPath);
         }
+    }
+
+    void DocumentPropertyEditor::ApplyExpansionStates()
+    {
+        auto applyExpansionRecursively =
+            [](DPERowWidget* currRow, AZ::Dom::Path rowPath, DocumentPropertyEditor* theDPE, auto&& applyExpansionRecursively) -> void
+        {
+            // apply the saved expansion state to the current row and then each of its row children
+            currRow->ApplyExpansionState(rowPath, theDPE);
+            for (size_t childIndex = 0, numChildren = currRow->m_domOrderedChildren.size(); childIndex < numChildren; ++childIndex)
+            {
+                auto rowChild = qobject_cast<DPERowWidget*>(currRow->m_domOrderedChildren[childIndex]);
+                if (rowChild)
+                {
+                    applyExpansionRecursively(rowChild, rowPath / childIndex, theDPE, applyExpansionRecursively);
+                }
+            }
+        };
+
+        applyExpansionRecursively(m_rootNode, AZ::Dom::Path(), this, applyExpansionRecursively);
     }
 
     void DocumentPropertyEditor::ExpandAll()
@@ -1668,6 +1702,7 @@ namespace AzToolsFramework
             }
         }
         m_layout->addStretch();
+        emit RequestSizeUpdate();
     }
 
     void DocumentPropertyEditor::HandleDomChange(const AZ::Dom::Patch& patch)
@@ -1678,6 +1713,7 @@ namespace AzToolsFramework
             {
                 m_rootNode->HandleOperationAtPath(*operationIterator, 0);
             }
+            emit RequestSizeUpdate();
         }
     }
 

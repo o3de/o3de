@@ -76,7 +76,7 @@ namespace AZ
             m_hash = CalculateHash(optionValuesHash, m_variantInfo);
         }
 
-        static constexpr char ShaderVariantListBuilderName[] = "ShaderVariantListBuilder";
+        [[maybe_unused]] static constexpr char ShaderVariantListBuilderName[] = "ShaderVariantListBuilder";
 
         //! Adds source file dependencies for every place a referenced file may appear, and detects if one of
         //! those possible paths resolves to the expected file.

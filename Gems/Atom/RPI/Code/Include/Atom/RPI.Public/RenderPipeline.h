@@ -133,6 +133,10 @@ namespace AZ
             //! It's the same as GetViews(GetMainViewTag()) and using first element.
             ViewPtr GetDefaultView();
 
+            //! Get the frist view for the view tag.
+            //! It's the same as GetViews("tag") and using first element.
+            ViewPtr GetFirstView(const PipelineViewTag& viewTag);
+
             //! Set default view from an entity which should have a ViewProvider handler.
             void SetDefaultViewFromEntity(EntityId entityId);
 
@@ -140,7 +144,7 @@ namespace AZ
             bool HasViewTag(const PipelineViewTag& viewTag) const;
 
             //! Get the main view tag (the tag used for the default view).
-            PipelineViewTag GetMainViewTag() const;
+            const PipelineViewTag& GetMainViewTag() const;
 
             //! Get views that are associated with specified view tag.
             const AZStd::vector<ViewPtr>& GetViews(const PipelineViewTag& viewTag) const;

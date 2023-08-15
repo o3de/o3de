@@ -290,7 +290,8 @@ namespace AZ
             [[maybe_unused]] const char* assetTypeDebugName) const
         {
             const AZStd::string assetFileName = SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
-                assetContext.m_relativeFileName, context.GetOutputDirectory(), assetContext.m_extension);
+                assetContext.m_relativeFileName, context.GetOutputDirectory(), assetContext.m_extension,
+                context.GetScene().GetSourceExtension());
 
             if (!Utils::SaveObjectToFile(assetFileName, assetContext.m_dataStreamType, asset.Get()))
             {
@@ -337,7 +338,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelExporterComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(3);
+                    ->Version(4);
             }
         }
 

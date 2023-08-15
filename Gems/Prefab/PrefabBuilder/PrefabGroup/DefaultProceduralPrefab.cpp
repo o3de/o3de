@@ -263,7 +263,8 @@ namespace AZ::SceneAPI
     bool DefaultProceduralPrefabGroup::AddEditorMeshComponent(
         const AZ::EntityId& entityId,
         const AZStd::string& relativeSourcePath,
-        const AZStd::string& meshGroupName) const
+        const AZStd::string& meshGroupName,
+        const AZStd::string& sourceFileExtension) const
     {
         // Since the mesh component lives in a gem, then create it by name
         AzFramework::BehaviorComponentId editorMeshComponent;
@@ -280,15 +281,14 @@ namespace AZ::SceneAPI
         }
 
         // assign mesh asset id hint using JSON
-        AZStd::string modelAssetPath;
-        modelAssetPath = relativeSourcePath;
-        AZ::StringFunc::Path::ReplaceFullName(modelAssetPath, meshGroupName.c_str());
-        AZ::StringFunc::Replace(modelAssetPath, "\\", "/"); // asset paths use forward slashes
+        AZ::IO::Path modelAssetPath(relativeSourcePath, '/');
+        modelAssetPath.ReplaceFilename(AZ::IO::PathView(meshGroupName));
+        modelAssetPath.ReplaceExtension(AZ::IO::PathView(sourceFileExtension));
 
         auto meshAssetJson = AZStd::string::format(
             R"JSON(
                    {"Controller": {"Configuration": {"ModelAsset": { "assetHint": "%s.azmodel"}}}}
-             )JSON", modelAssetPath.c_str());
+             )JSON", modelAssetPath.LexicallyNormal().String().c_str());
 
         bool result = false;
         AzToolsFramework::EntityUtilityBus::BroadcastResult(
@@ -313,7 +313,7 @@ namespace AZ::SceneAPI
         AZStd::shared_ptr<SceneData::MeshGroup> meshGroup(BuildMeshGroupForNode(scene, nodeData, nodeDataMap));
         manifestUpdates.emplace_back(meshGroup);
 
-        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroup->GetName()) == false)
+        if (AddEditorMeshComponent(entityId, relativeSourcePath, meshGroup->GetName(), scene.GetSourceExtension()) == false)
         {
             return false;
         }

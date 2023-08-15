@@ -11,10 +11,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {# Macros for Nodeables #}
 
 {# CleanName #}
-{# Returns a clean name without quotations, commas, slashes or white space #}
+{# Returns a clean name without quotations, commas, or white space #}
 
 {%- macro CleanName(name) -%}
-{{name|replace(' ','')|replace('"','')|replace('/','')|replace(':','')}}
+{{name|replace(' ','')|replace('"','')|replace(':','')}}
 {%- endmacro -%}
 
 {# ------- #}
@@ -145,9 +145,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 {% if hideInputField is defined %}
 {% if hideInputField == "true" %}
             dataSlotConfiguration.m_canHaveInputField = false;
+            dataSlotConfiguration.m_isUserAdded = true;
 {% endif %}
 {% elif preset == "compact" %}
             dataSlotConfiguration.m_canHaveInputField = false;
+            dataSlotConfiguration.m_isUserAdded = true;
 {% endif %}
 {% if hideName is defined %}
 {% if hideName == "true" %}

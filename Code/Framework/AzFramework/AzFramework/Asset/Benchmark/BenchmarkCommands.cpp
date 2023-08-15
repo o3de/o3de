@@ -44,7 +44,7 @@ namespace AzFramework::AssetBenchmark
         {
             // Define the set of loading stats to track
             [[maybe_unused]] const size_t initialRequests = assetList.size();
-            size_t previouslyLoadedAssets = 0;
+            [[maybe_unused]] size_t previouslyLoadedAssets = 0;
             size_t newlyLoadedAssets = 0;
             size_t loadErrors = 0;
 

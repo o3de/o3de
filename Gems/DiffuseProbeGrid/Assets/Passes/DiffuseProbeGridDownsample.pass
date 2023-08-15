@@ -108,7 +108,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader"
                 },
-                "PipelineViewTag": "MainCamera"
+                "BindViewSrg": true
             }
         }
     }
