@@ -15,6 +15,10 @@
 #define GetDiffuseLighting(surface, lightingData, lightIntensity, dirToLight)       GetDiffuseLighting_Skin(surface, lightingData, lightIntensity, dirToLight)
 #endif
 
+#ifndef GetSpecularLighting
+#define GetSpecularLighting(surface, lightingData, lightIntensity, dirToLight)      GetSpecularLighting_Skin(surface, lightingData, lightIntensity, dirToLight)
+#endif
+
 #include "../BasePBR/BasePBR_LightingBrdf.azsli"
 
 #ifndef LightingData
@@ -42,3 +46,16 @@ real3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, real3 
     diffuse *= lightIntensity;
     return diffuse;
 }
+
+
+real3 GetSpecularLighting_Skin(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
+{
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+
+    real3 dualSpecular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.dualSpecF0.xxx, lightingData.NdotV, surface.dualSpecRoughnessA2, lightingData.multiScatterCompensation);
+    specular = lerp(specular, dualSpecular, surface.dualSpecFactor);
+
+    specular *= lightIntensity;
+    return specular;
+}
+

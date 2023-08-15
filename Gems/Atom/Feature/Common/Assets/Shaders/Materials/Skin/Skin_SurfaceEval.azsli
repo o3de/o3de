@@ -199,6 +199,17 @@ Surface EvaluateSurface_Skin(
                                         real(MaterialSrg::m_roughnessLowerBound), real(MaterialSrg::m_roughnessUpperBound), o_roughness_useTexture);
     surface.CalculateRoughnessA();
 
+    // ------- Dual Specular -------
+
+    float dummyRoughnessA = 0;
+    surface.dualSpecFactor = MaterialSrg::m_dualSpecFactor;
+    surface.dualSpecRoughness = pow(surface.roughnessLinear, MaterialSrg::m_dualSpecRoughnessExponent) * MaterialSrg::m_dualSpecRoughnessMultiplier;
+    CalculateRoughnessValues(surface.normal, surface.dualSpecRoughness, dummyRoughnessA, surface.dualSpecRoughnessA2);
+    surface.dualSpecF0 = surface.specularF0.x * MaterialSrg::m_dualSpecF0Multiplier;
+
+    if(!o_enableDualSpecular)
+        surface.dualSpecFactor = 0;
+
     // ------- Subsurface -------
 
     float2 subsurfaceUv = uvs[MaterialSrg::m_subsurfaceScatteringInfluenceMapUvIndex];
