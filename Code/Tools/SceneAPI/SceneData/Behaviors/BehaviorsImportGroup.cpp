@@ -64,7 +64,7 @@ namespace AZ
             }
 
             Events::ProcessingResult ImportGroup::UpdateManifest(
-                [[maybe_unused]] Containers::Scene& scene, [[maybe_unused]] ManifestAction action,
+                Containers::Scene& scene, [[maybe_unused]] ManifestAction action,
                 [[maybe_unused]] RequestingApplication requester)
             {
                 // ignore empty scenes (i.e. only has the root node)
@@ -73,6 +73,17 @@ namespace AZ
                     return Events::ProcessingResult::Ignored;
                 }
 
+                // If there's already an ImportGroup in the manifest, leave it there and return.
+                size_t count = scene.GetManifest().GetEntryCount();
+                for (size_t index = 0; index < count; index++)
+                {
+                    if (auto* importGroup = azrtti_cast<DataTypes::IImportGroup*>(scene.GetManifest().GetValue(index).get()); importGroup)
+                    {
+                        return Events::ProcessingResult::Success;
+                    }
+                }
+
+                // There's no ImportGroup yet, so add one.
                 auto importGroup = AZStd::make_shared<SceneData::ImportGroup>();
                 scene.GetManifest().AddEntry(importGroup);
                 return Events::ProcessingResult::Success;
