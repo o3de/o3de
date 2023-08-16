@@ -86,7 +86,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(42);  // Fix vertex welding
+                    ->Version(36);  // Pad Skinning mesh buffers to respect appropriate alignment
             }
         }
 
