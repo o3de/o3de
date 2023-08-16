@@ -116,16 +116,6 @@ namespace AZ
         return true;
     }
 
-    AZ_MATH_INLINE void VectorN::ReLU()
-    {
-        const Simd::Vec4::FloatType zero = Simd::Vec4::ZeroFloat();
-        for (Vector4& element : m_values)
-        {
-            const Simd::Vec4::FloatType mask = Simd::Vec4::CmpGtEq(element.GetSimdValue(), zero); // 1's if >= 0, 0's otherwise
-            element.SetSimdValue(Simd::Vec4::Select(element.GetSimdValue(), zero, mask)); // Returns first if mask is non-zero, returns second otherwise
-        }
-    }
-
     AZ_MATH_INLINE bool VectorN::IsLessThan(const VectorN& v) const
     {
         AZ_Assert(m_numElements == v.m_numElements, "Dimensionality must be equal");
@@ -318,6 +308,12 @@ namespace AZ
         return dot;
     }
 
+    AZ_MATH_INLINE void VectorN::SetZero()
+    {
+        AZ::Vector4* data = m_values.data();
+        memset(data, 0, sizeof(AZ::Vector4) * m_values.size());
+    }
+
     AZ_MATH_INLINE VectorN& VectorN::operator+=(const VectorN& rhs)
     {
         AZ_Assert(m_numElements == rhs.m_numElements, "Dimensionality must be equal");
@@ -325,6 +321,7 @@ namespace AZ
         {
             m_values[i] += rhs.m_values[i];
         }
+        FixLastVectorElement();
         return *this;
     }
 
@@ -335,6 +332,7 @@ namespace AZ
         {
             m_values[i] -= rhs.m_values[i];
         }
+        FixLastVectorElement();
         return *this;
     }
 
@@ -418,6 +416,7 @@ namespace AZ
         {
             returnValue.m_values[i] = m_values[i] + rhs.m_values[i];
         }
+        returnValue.FixLastVectorElement();
         return returnValue;
     }
 
@@ -429,6 +428,7 @@ namespace AZ
         {
             returnValue.m_values[i] = m_values[i] - rhs.m_values[i];
         }
+        returnValue.FixLastVectorElement();
         return returnValue;
     }
 
@@ -507,5 +507,40 @@ namespace AZ
     {
         m_values.resize((m_numElements + 3) / 4);
         FixLastVectorElement();
+    }
+
+    AZ_MATH_INLINE VectorN operator+(float lhs, const VectorN& rhs)
+    {
+        VectorN returnValue(rhs.GetDimensionality());
+        const AZ::Vector4 lhsVec = AZ::Vector4(lhs);
+        for (AZStd::size_t i = 0; i < rhs.GetVectorValues().size(); ++i)
+        {
+            returnValue.GetVectorValues()[i] = lhsVec + rhs.GetVectorValues()[i];
+        }
+        returnValue.FixLastVectorElement();
+        return returnValue;
+    }
+
+    AZ_MATH_INLINE VectorN operator-(float lhs, const VectorN& rhs)
+    {
+        VectorN returnValue(rhs.GetDimensionality());
+        const AZ::Vector4 lhsVec = AZ::Vector4(lhs);
+        for (AZStd::size_t i = 0; i < rhs.GetVectorValues().size(); ++i)
+        {
+            returnValue.GetVectorValues()[i] = lhsVec - rhs.GetVectorValues()[i];
+        }
+        returnValue.FixLastVectorElement();
+        return returnValue;
+    }
+
+    AZ_MATH_INLINE VectorN operator*(float lhs, const VectorN& rhs)
+    {
+        VectorN returnValue(rhs.GetDimensionality());
+        const AZ::Vector4 lhsVec = AZ::Vector4(lhs);
+        for (AZStd::size_t i = 0; i < rhs.GetVectorValues().size(); ++i)
+        {
+            returnValue.GetVectorValues()[i] = lhsVec * rhs.GetVectorValues()[i];
+        }
+        return returnValue;
     }
 }

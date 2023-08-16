@@ -59,7 +59,7 @@ namespace AZ
 
             // We don't have to pre-load this asset before passing it to MeshFeatureProcessor, because the MeshFeatureProcessor will handle the async-load for us.
             m_visualizationModelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>(
-                "Models/ReflectionProbeSphere.azmodel",
+                "Models/ReflectionProbeSphere.fbx.azmodel",
                 AZ::RPI::AssetUtils::TraceLevel::Assert);
 
             MeshHandleDescriptor visualizationMeshDescriptor;

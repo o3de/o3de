@@ -29,8 +29,6 @@ namespace ScriptCanvas
 
         Data::BooleanType IsZero(const Data::VectorNType& source, Data::NumberType tolerance);
 
-        Data::VectorNType& ReLU(Data::VectorNType& source);
-
         Data::VectorNType GetMin(const Data::VectorNType& a, const Data::VectorNType& b);
 
         Data::VectorNType GetMax(const Data::VectorNType& a, const Data::VectorNType& b);

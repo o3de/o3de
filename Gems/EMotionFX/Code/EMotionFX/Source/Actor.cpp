@@ -1242,12 +1242,19 @@ namespace EMotionFX
 
     AZ::Data::AssetId Actor::ConstructSkinMetaAssetId(const AZ::Data::AssetId& meshAssetId)
     {
+        // Get the full mesh asset path (ex: 'objects/model.fbx.azmodel')
         AZStd::string meshAssetPath;
         AZ::Data::AssetCatalogRequestBus::BroadcastResult(meshAssetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, meshAssetId);
+
+        // Get just the filename, stripping off the path and the extension (ex: 'model.fbx')
         AZStd::string meshAssetFileName;
         AzFramework::StringFunc::Path::GetFileName(meshAssetPath.c_str(), meshAssetFileName);
 
-        return AZ::RPI::SkinMetaAsset::ConstructAssetId(meshAssetId, meshAssetFileName);
+        // Strip off the source extension as well, to bring us down to the base asset name (ex: 'model')
+        AZStd::string baseMeshAssetFileName;
+        AzFramework::StringFunc::Path::GetFileName(meshAssetFileName.c_str(), baseMeshAssetFileName);
+
+        return AZ::RPI::SkinMetaAsset::ConstructAssetId(meshAssetId, baseMeshAssetFileName);
     }
 
     bool Actor::DoesSkinMetaAssetExist(const AZ::Data::AssetId& meshAssetId)

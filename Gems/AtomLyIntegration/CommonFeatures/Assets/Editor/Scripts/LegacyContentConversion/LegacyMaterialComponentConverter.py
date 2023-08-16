@@ -222,7 +222,7 @@ class Material_Component_Converter(object):
         if isActor:
             cacheFbxPath = "".join((oldFbxRelativePathWithoutExtension, ".actor"))
         else:
-            cacheFbxPath = "".join((oldFbxRelativePathWithoutExtension, ".azmodel"))
+            cacheFbxPath = "".join((oldFbxRelativePathWithoutExtension, ".fbx.azmodel"))
 
         if cacheFbxPath in self.assetCatalogHelper.relativePathToAssetIdDict:
             fbxAssetId = self.assetCatalogHelper.relativePathToAssetIdDict[cacheFbxPath]

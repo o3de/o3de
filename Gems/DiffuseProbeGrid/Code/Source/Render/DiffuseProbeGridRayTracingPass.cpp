@@ -106,6 +106,9 @@ namespace AZ
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
             m_rayTracingPipelineState->Init(*device.get(), &descriptor);
+
+            // Since the ray tracing pipeline state changed, we need to rebuilt the shader table
+            m_rayTracingRevision = 0;
         }
 
         bool DiffuseProbeGridRayTracingPass::IsEnabled() const

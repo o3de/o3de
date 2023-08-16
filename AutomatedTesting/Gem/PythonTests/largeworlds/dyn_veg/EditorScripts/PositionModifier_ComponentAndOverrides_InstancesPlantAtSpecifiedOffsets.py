@@ -109,7 +109,7 @@ def PositionModifier_ComponentAndOverrides_InstancesPlantAtSpecifiedOffsets():
 
     # 2) Create a new entity with required vegetation area components
     spawner_center_point = math.Vector3(16.0, 16.0, 32.0)
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "PosMod_PinkFlower2")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", spawner_center_point, 1.0, 1.0,
                                                                1.0, pink_flower_prefab)

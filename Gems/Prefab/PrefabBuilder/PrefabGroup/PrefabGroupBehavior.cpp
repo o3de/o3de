@@ -367,10 +367,18 @@ namespace AZ::SceneAPI::Behaviors
         const SceneData::PrefabGroup* prefabGroup,
         const rapidjson::Document& doc) const
     {
+        // Since the prefab group name already has the source file extension added as a part of the name (ex: "model_fbx"),
+        // we won't pass the source file extension again to CreateOuputFileName. This prevents names like "model_fbx.fbx.procprefab".
+        // CreateOutputFileName has been changed to preserve the model's extension as a bugfix, which occurred after the procprefab
+        // system was built, so we need to be concerned with backwards compatibility. Procprefab files are typically referenced
+        // by file name, not by asset ID or source GUID, so we can't introduce changes that would change the procprefab file name.
+        const AZStd::string emptySourceExtension;
+
         AZStd::string filePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
             prefabGroup->GetName().c_str(),
             context.GetOutputDirectory(),
-            AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+            AZ::Prefab::PrefabGroupAssetHandler::s_Extension,
+            emptySourceExtension);
 
         bool result = WriteOutProductAssetFile(filePath, context, prefabGroup, doc, false);
 
@@ -379,7 +387,8 @@ namespace AZ::SceneAPI::Behaviors
             AZStd::string debugFilePath = AZ::SceneAPI::Utilities::FileUtilities::CreateOutputFileName(
                 prefabGroup->GetName().c_str(),
                 context.GetOutputDirectory(),
-                AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
+                AZ::Prefab::PrefabGroupAssetHandler::s_Extension,
+                emptySourceExtension);
             debugFilePath.append(".json");
             WriteOutProductAssetFile(debugFilePath, context, prefabGroup, doc, true);
         }
@@ -491,7 +500,7 @@ namespace AZ::SceneAPI::Behaviors
         SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
         if (serializeContext)
         {
-            serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(1);
+            serializeContext->Class<PrefabGroupBehavior, BehaviorComponent>()->Version(2);
         }
 
         BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
