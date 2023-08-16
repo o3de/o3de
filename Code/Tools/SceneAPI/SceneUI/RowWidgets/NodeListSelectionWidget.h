@@ -70,7 +70,7 @@ namespace AZ
 
                 void BuildList(const Containers::SceneGraph& graph);
                 bool IsCorrectType(const DataTypes::IGraphObject& object) const;
-                void AddEntry(EntrySet& entries, const Containers::SceneGraph::Name& name);
+                void AddEntry(const Containers::SceneGraph::Name& name, EntrySet& entries, QStringList& comboListEntries);
                 void SetSelection();
                 void AddDisabledOption();
 

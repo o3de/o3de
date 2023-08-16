@@ -137,6 +137,7 @@ namespace AZ
             void NodeListSelectionWidget::BuildList(const Containers::SceneGraph& graph)
             {
                 EntrySet entries;
+                QStringList comboBoxEntries;
 
                 auto view = Containers::Views::MakePairView(graph.GetNameStorage(), graph.GetContentStorage());
                 for (auto it = view.begin(); it != view.end(); ++it)
@@ -160,7 +161,12 @@ namespace AZ
                         }
                     }
 
-                    AddEntry(entries, it->first);
+                    AddEntry(it->first, entries, comboBoxEntries);
+                }
+
+                if (!comboBoxEntries.empty())
+                {
+                    addItems(comboBoxEntries);
                 }
             }
 
@@ -180,7 +186,8 @@ namespace AZ
                 }
             }
 
-            void NodeListSelectionWidget::AddEntry(EntrySet& entries, const Containers::SceneGraph::Name& name)
+            void NodeListSelectionWidget::AddEntry(
+                const Containers::SceneGraph::Name& name, EntrySet& entries, QStringList& comboListEntries)
             {
                 if (m_useShortNames)
                 {
@@ -188,7 +195,7 @@ namespace AZ
                     if (entries.find(shortName) == entries.end())
                     {
                         entries.insert(shortName);
-                        addItem(shortName);
+                        comboListEntries.append(QString(shortName));
                     }
                 }
                 else
@@ -197,7 +204,7 @@ namespace AZ
                     if (entries.find(pathName) == entries.end())
                     {
                         entries.insert(pathName);
-                        addItem(pathName);
+                        comboListEntries.append(QString(pathName));
                     }
                 }
             }
