@@ -574,52 +574,7 @@ namespace AZ::Reflection
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent, if it exists
-                const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
-                auto parentValue = Find(Name(), changeNotifyName, parentData);
-                if (parentValue && !parentValue->IsNull())
-                {
-                    Dom::Value* existingValue = nullptr;
-                    auto it = AZStd::find_if(
-                        nodeData.m_cachedAttributes.begin(),
-                        nodeData.m_cachedAttributes.end(),
-                        [&changeNotifyName](const AttributeData& attributeData)
-                        {
-                            return (attributeData.m_name == changeNotifyName);
-                        });
-
-                    if (it != nodeData.m_cachedAttributes.end())
-                    {
-                        existingValue = &it->m_value;
-                    }
-
-                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
-                    {
-                        if (source.IsArray())
-                        {
-                            auto& destinationArray = destination.GetMutableArray();
-                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
-                        }
-                        else
-                        {
-                            destination.ArrayPushBack(source);
-                        }
-                    };
-
-                    // calling order matters! Add parent's attributes first then existing attribute
-                    if (existingValue)
-                    {
-                        Dom::Value newChangeNotifyValue;
-                        newChangeNotifyValue.SetArray();
-                        addValueToArray(*parentValue, newChangeNotifyValue);
-                        addValueToArray(*existingValue, newChangeNotifyValue);
-                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, newChangeNotifyValue });
-                    }
-                    else
-                    {
-                        // no existing changeNotify, so let's just inherit the parent's one
-                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
-                    }
-                }
+                InheritChangeNotify(parentData, nodeData);
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
                 AZStd::optional<AZ::TypeId> enumTypeId = {};
@@ -739,8 +694,10 @@ namespace AZ::Reflection
                                 {
                                     groupStackEntry.m_skipHandler = true;
                                 }
+                                auto& parentEntry = m_stack.back();
                                 m_stack.push_back(groupStackEntry);
                                 CacheAttributes();
+                                InheritChangeNotify(parentEntry, m_stack.back());
                                 m_visitor->VisitObjectBegin(*this, *this);
                             }
 
@@ -756,7 +713,9 @@ namespace AZ::Reflection
                                     // skip the bool that represented the group toggle, it's already in-line with the group
                                     continue;
                                 }
+                                auto& parentEntry = m_stack.back();
                                 m_stack.push_back({ groupEntry.m_instance, nullptr, AZ::TypeId() });
+                                InheritChangeNotify(parentEntry, m_stack.back());
                                 m_serializeContext->EnumerateInstance(
                                     m_enumerateContext,
                                     groupEntry.m_instance,
@@ -1273,6 +1232,57 @@ namespace AZ::Reflection
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
+            }
+
+
+            void InheritChangeNotify(StackEntry& parentData, StackEntry& nodeData)
+            {
+                const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
+                auto parentValue = Find(Name(), changeNotifyName, parentData);
+                if (parentValue && !parentValue->IsNull())
+                {
+                    Dom::Value* existingValue = nullptr;
+                    auto it = AZStd::find_if(
+                        nodeData.m_cachedAttributes.begin(),
+                        nodeData.m_cachedAttributes.end(),
+                        [&changeNotifyName](const AttributeData& attributeData)
+                        {
+                            return (attributeData.m_name == changeNotifyName);
+                        });
+
+                    if (it != nodeData.m_cachedAttributes.end())
+                    {
+                        existingValue = &it->m_value;
+                    }
+
+                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
+                    {
+                        if (source.IsArray())
+                        {
+                            auto& destinationArray = destination.GetMutableArray();
+                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
+                        }
+                        else
+                        {
+                            destination.ArrayPushBack(source);
+                        }
+                    };
+
+                    // calling order matters! Add parent's attributes first then existing attribute
+                    if (existingValue)
+                    {
+                        Dom::Value newChangeNotifyValue;
+                        newChangeNotifyValue.SetArray();
+                        addValueToArray(*parentValue, newChangeNotifyValue);
+                        addValueToArray(*existingValue, newChangeNotifyValue);
+                        it->m_value = newChangeNotifyValue;
+                    }
+                    else
+                    {
+                        // no existing changeNotify, so let's just inherit the parent's one
+                        nodeData.m_cachedAttributes.push_back({ Name(), changeNotifyName, *parentValue });
+                    }
+                }
             }
 
             const AttributeDataType* Find(Name name) const override

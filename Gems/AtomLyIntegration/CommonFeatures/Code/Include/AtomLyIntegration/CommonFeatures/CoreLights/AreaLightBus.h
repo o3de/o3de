@@ -55,6 +55,10 @@ namespace AZ
             virtual PhotometricUnit GetIntensityMode() const = 0;
 
             //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            virtual void SetIntensityAndMode(float intensity, PhotometricUnit intensityMode) = 0;
+            
+            //! Sets an area light's intensity and intensity mode. This value is independent from its color.
+            //! O3DE_DEPRECATION_NOTICE(GHI-16553)
             virtual void SetIntensity(float intensity, PhotometricUnit intensityMode) = 0;
 
             //! Sets an area light's intensity. This value is independent from its color.
