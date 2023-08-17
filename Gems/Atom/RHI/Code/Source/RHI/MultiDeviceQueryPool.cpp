@@ -149,30 +149,18 @@ namespace AZ::RHI
         return ResultCode::Success;
     }
 
-    uint32_t MultiDeviceQueryPool::GetResultsCount(uint32_t queryCount, uint32_t deviceCount)
+    uint32_t MultiDeviceQueryPool::CalculateResultsCount(uint32_t queryCount)
     {
-        uint32_t perResultSize = m_descriptor.m_type == QueryType::PipelineStatistics
-            ? CountBitsSet(static_cast<uint64_t>(m_descriptor.m_pipelineStatisticsMask))
-            : 1;
+        auto deviceCount{RHISystemInterface::Get()->GetDeviceCount()};
 
-        if(deviceCount == 0)
-        {
-            deviceCount = RHISystemInterface::Get()->GetDeviceCount();
-        }
-
-        if(queryCount == 0)
-        {
-            queryCount = m_descriptor.m_queriesCount;
-        }
-
-        return perResultSize * queryCount * deviceCount;
+        return CalculatePerDeviceResultsCount(queryCount) * deviceCount;
     }
 
     ResultCode MultiDeviceQueryPool::GetResults(MultiDeviceQuery* query, uint64_t* result, uint32_t resultsCount, QueryResultFlagBits flags)
     {
         if (Validation::IsEnabled())
         {
-            auto targetResultsCount = GetResultsCount(1);
+            auto targetResultsCount = CalculateResultsCount(1);
 
             if (targetResultsCount > resultsCount)
             {
@@ -183,7 +171,7 @@ namespace AZ::RHI
 
         auto resultCode{ ResultCode::Success };
 
-        auto perDeviceResultCount{GetResultsCount(1, 1)};
+        auto perDeviceResultCount{CalculatePerDeviceResultsCount(1)};
 
         for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
         {
@@ -214,7 +202,7 @@ namespace AZ::RHI
                 return validationResult;
             }
 
-            auto targetResultsCount = GetResultsCount(queryCount);
+            auto targetResultsCount = CalculateResultsCount(queryCount);
 
             if (targetResultsCount > resultsCount)
             {
@@ -225,7 +213,7 @@ namespace AZ::RHI
 
         auto resultCode{ ResultCode::Success };
 
-        auto perDeviceResultCount{GetResultsCount(queryCount, 1)};
+        auto perDeviceResultCount{CalculatePerDeviceResultsCount(queryCount)};
 
         for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
         {
@@ -251,7 +239,7 @@ namespace AZ::RHI
     {
         if (Validation::IsEnabled())
         {
-            auto targetResultsCount = GetResultsCount();
+            auto targetResultsCount = CalculateResultsCount();
 
             if (targetResultsCount > resultsCount)
             {
@@ -262,7 +250,7 @@ namespace AZ::RHI
 
         auto resultCode{ ResultCode::Success };
 
-        auto perDeviceResultCount{GetResultsCount(0, 1)};
+        auto perDeviceResultCount{CalculatePerDeviceResultsCount(0)};
 
         for (auto& [deviceIndex, deviceQueryPool] : m_deviceQueryPools)
         {
@@ -291,5 +279,19 @@ namespace AZ::RHI
         }
 
         MultiDeviceResourcePool::Shutdown();
+    }
+
+    uint32_t MultiDeviceQueryPool::CalculatePerDeviceResultsCount(uint32_t queryCount)
+    {
+        uint32_t perResultSize = m_descriptor.m_type == QueryType::PipelineStatistics
+            ? CountBitsSet(static_cast<uint64_t>(m_descriptor.m_pipelineStatisticsMask))
+            : 1;
+
+        if(queryCount == 0)
+        {
+            queryCount = m_descriptor.m_queriesCount;
+        }
+
+        return perResultSize * queryCount;
     }
 } // namespace AZ::RHI

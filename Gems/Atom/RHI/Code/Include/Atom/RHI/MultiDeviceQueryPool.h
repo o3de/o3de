@@ -64,9 +64,9 @@ namespace AZ::RHI
 
         //! Get the number of results that have to be allocated.
         //! The number returned is the number of results per query, multiplied by the number of queries and the number of devices.
-        //! The number of devices can also be queried from the RHISystem.
+        //! The number of devices is queried from the RHISystem.
         //! If the queryCount is omitted or equal to 0, the total number of queries in the pool is used.
-        uint32_t GetResultsCount(uint32_t queryCount = 0, uint32_t deviceCount = 0);
+        uint32_t CalculateResultsCount(uint32_t queryCount = 0);
 
         //! Get the results from all queries (from all devices) in the pool, which are returned as uint64_t data.
         //! The parameter "resultsCount" denotes the total number of results requested. It can be determined by calling GetResultsCount().
@@ -98,6 +98,11 @@ namespace AZ::RHI
         void Shutdown() override final;
 
     private:
+        //! Get the number of results that have to be allocated per device.
+        //! The number returned is the number of results per query, multiplied by the number of queries.
+        //! If the queryCount is omitted or equal to 0, the total number of queries in the pool is used.
+        uint32_t CalculatePerDeviceResultsCount(uint32_t queryCount = 0);
+
         //! Validates that the queries are not null and that they belong to this pool.
         ResultCode ValidateQueries(MultiDeviceQuery** queries, uint32_t queryCount);
 
