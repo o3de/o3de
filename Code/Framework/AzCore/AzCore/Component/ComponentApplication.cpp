@@ -1631,12 +1631,7 @@ namespace AZ
         Name::Reflect(context);
         // reflect path
         IO::PathReflect(context);
-
-        // reflect the SettingsRegistryInterface, SettignsRegistryImpl and the global Settings Registry
-        // instance (AZ::SettingsRegistry::Get()) into the Behavior Context
-        if (auto behaviorContext{ azrtti_cast<AZ::BehaviorContext*>(context) }; behaviorContext != nullptr)
-        {
-            AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
-        }
+        // reflect the SettingsRegistryInterface and SettingsRegistryImpl
+        AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistry(context);
     }
 } // namespace AZ
