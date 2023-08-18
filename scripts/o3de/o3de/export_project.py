@@ -18,6 +18,7 @@ import shutil
 
 from o3de import manifest, utils
 from typing import List
+from enum import IntEnum
 
 # Account for some windows-specific attributes
 if platform.system().lower() == 'windows':
@@ -25,13 +26,20 @@ if platform.system().lower() == 'windows':
     O3DE_SCRIPT_NAME = 'o3de.bat'
     GENERATOR = None
     CMAKE_GENERATOR_OPTIONS = ['-DLY_DISABLE_TEST_MODULES=ON']
+    ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.pdb', '*.lock']
 else:
     EXECUTABLE_EXTENSION = ""
     O3DE_SCRIPT_NAME = 'o3de.sh'
     GENERATOR = "Ninja Multi-Config"
     CMAKE_GENERATOR_OPTIONS = ['-DLY_DISABLE_TEST_MODULES=ON', '-DLY_STRIP_DEBUG_SYMBOLS=ON']
+    ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.dbg', '*.lock']
 
-# Regardless of the output package configuration, the tools used for the export process must be built with the profile configuration
+CUSTOM_SCRIPT_HELP_ARGUMENT = '--script-help'
+
+LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
+
+# Regardless of the output package configuration, the tools used for the export process must be built with
+# the profile configuration
 PREREQUISITE_TOOL_BUILD_CONFIG = "profile"
 
 
@@ -107,6 +115,24 @@ class O3DEScriptExportContext(object):
         return self._is_engine_centric
 
 
+class ExportLayoutConfig(object):
+    def __init__(self,
+                 output_path: pathlib.Path,
+                 project_file_patterns: List[str],
+                 ignore_file_patterns: List[str]):
+        self.output_path = output_path
+        self.project_file_patterns = project_file_patterns
+        self.ignore_file_patterns = ignore_file_patterns
+
+
+class LauncherType(IntEnum):
+    """
+    Enum support to identify the different type of launchers that can be exported into a single package.
+    """
+    GAME = 1
+    SERVER = 2
+    UNIFIED = 4
+
 # Helper API
 def get_default_asset_platform():
     host_platform_to_asset_platform_map = { 'windows': 'pc',
@@ -148,39 +174,72 @@ def execute_python_script(target_script_path: pathlib.Path or str, o3de_context:
 
 
 def _export_script(export_script_path: pathlib.Path, project_path: pathlib.Path, passthru_args: list) -> int:
-    if not export_script_path.is_file() or export_script_path.suffix != '.py':
-        logging.error(f"Export script path unrecognized: '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
+
+    if export_script_path.suffix != '.py':
+        logging.error(f"Invalid export script type for '{export_script_path}'. Please provide a file path to an existing python script with '.py' extension.")
         return 1
 
+    # Validate that the export script being passed in is valid.
+    validated_export_script_path = None
+    if export_script_path.is_absolute():
+        # If it is an absolute path, then validate it directly
+        if export_script_path.is_file():
+            validated_export_script_path = export_script_path
+    else:
+        # If the script is relative, try to match its root path based on the following order of search priorities
+        possible_root_paths = [project_path,
+                               LOCAL_ENGINE_PATH,
+                               LOCAL_ENGINE_PATH / 'scripts' / 'o3de',
+                               LOCAL_ENGINE_PATH / 'scripts' / 'o3de' / 'ExportScripts']
+        for possible_root_path in possible_root_paths:
+            if possible_root_path is None:
+                continue
+            if (possible_root_path / export_script_path).is_file():
+                validated_export_script_path = possible_root_path / export_script_path
+                break
+
+    if validated_export_script_path is None:
+        logging.error(f"Invalid export script '{export_script_path}'. File does not exist.")
+        return 1
+
+    # Look for a custom export script argument to process the argument '--help' functionality in the pass-through
+    # arguments since the parent arg parsing will eat up any '--help' argument before we can get to this point.
+    if CUSTOM_SCRIPT_HELP_ARGUMENT in passthru_args:
+        return execute_python_script(validated_export_script_path, None)
+
     # Compute and validate the given project path is a valid path
-    computed_project_path = utils.get_project_path_from_file(export_script_path, project_path)
+    computed_project_path = utils.get_project_path_from_file(validated_export_script_path, project_path)
+    if not computed_project_path and project_path is not None and not project_path.is_absolute():
+        # If the `project_path` is not absolute and we couldn't find it based on the logic from 'utils.get_project_path_from_file', then
+        # perform a second attempt assuming that the `project_path` is relative to the engine folder from where this script originates
+        computed_project_path = utils.get_project_path_from_file(validated_export_script_path, LOCAL_ENGINE_PATH / project_path)
+
     if not computed_project_path:
         if project_path:
             logging.error(f"Project path '{project_path}' is invalid: does not contain a project.json file.")
         else:
-            logging.error(f"Unable to find project folder associated with file '{export_script_path}'. Please specify using --project-path, or ensure the file is inside a project folder.")
+            logging.error(f"Unable to find project folder associated with file '{validated_export_script_path}'. Please specify using --project-path, or ensure the file is inside a project folder.")
         return 1
 
-    # Collect and isolate any custom cmake build arguments that may have been passed through, use `/` as the separator in the args
-    export_process_args = []
-    cmake_custom_build_args = []
-    additional_arg_marker_found = False
-    for arg in passthru_args:
-        if arg == '/' and not additional_arg_marker_found:
-            additional_arg_marker_found = True
-            continue
-        if additional_arg_marker_found:
-            cmake_custom_build_args.append(arg)
-        else:
-            export_process_args.append(arg)
+    try:
+        custom_cmake_argument_marker_index = passthru_args.index('/')
+    except ValueError:
+        custom_cmake_argument_marker_index = -1
 
-    o3de_context = O3DEScriptExportContext(export_script_path=export_script_path,
+    if custom_cmake_argument_marker_index >= 0:
+        export_process_args = passthru_args[:custom_cmake_argument_marker_index]
+        cmake_custom_build_args = passthru_args[custom_cmake_argument_marker_index+1:]
+    else:
+        export_process_args = passthru_args
+        cmake_custom_build_args = []
+
+    o3de_context = O3DEScriptExportContext(export_script_path=validated_export_script_path,
                                            project_path=computed_project_path,
                                            engine_path=manifest.get_project_engine_path(computed_project_path),
                                            args=export_process_args,
                                            cmake_additional_build_args=cmake_custom_build_args)
 
-    return execute_python_script(export_script_path, o3de_context)
+    return execute_python_script(validated_export_script_path, o3de_context)
 
 # Export Script entry point
 def _run_export_script(args: argparse, passthru_args: list) -> int:
@@ -208,12 +267,35 @@ def add_args(subparsers) -> None:
     add_parser_args(export_subparser)
 
 
-def get_asset_processor_batch_path(non_mono_build_path: pathlib.Path):
-    return non_mono_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+def get_asset_processor_batch_path(tools_build_path: pathlib.Path,
+                                   required: bool = False) -> pathlib.Path:
+    """
+    Get the expected path to the asset bundler tool
+
+    @param tools_build_path:    The tools (cmake) build path to locate AssetProcessorBatch
+    @param required:            If true, check if the asset bundler actually exists on file at the expected location, and raise an error if not
+    @return: Path to the asset processor tool
+    """
+    asset_processor_batch_path = tools_build_path / f'bin/profile/AssetProcessorBatch{EXECUTABLE_EXTENSION}'
+    if required and not asset_processor_batch_path.is_file():
+        raise ExportProjectError(f"Missing the 'AssetProcessorBatch' tool, expected at '{asset_processor_batch_path}'")
+    return asset_processor_batch_path
 
 
-def get_asset_bundler_batch_path(non_mono_build_path: pathlib.Path):
-    return non_mono_build_path / f'bin/profile/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+def get_asset_bundler_batch_path(tools_build_path: pathlib.Path,
+                                 required: bool = False) -> pathlib.Path:
+    """
+    Get the expected path to the asset bundler tool
+
+    @param tools_build_path:    The tools (cmake) build path to locate AssetBundlerBatch
+    @param required:            If true, check if the asset bundler actually exists on file at the expected location, and raise an error if not
+    @return: Path to the asset bundler tool
+    """
+
+    asset_bundler_batch_path = tools_build_path / f'bin/profile/AssetBundlerBatch{EXECUTABLE_EXTENSION}'
+    if required and not asset_bundler_batch_path.is_file():
+        raise ExportProjectError(f"Missing the 'AssetBundlerBatch' tool, expected at '{asset_bundler_batch_path}'")
+    return asset_bundler_batch_path
 
 
 def build_assets(ctx: O3DEScriptExportContext,
@@ -230,7 +312,7 @@ def build_assets(ctx: O3DEScriptExportContext,
     """
 
     # Make sure `AssetProcessorBatch` is available
-    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path)
+    asset_processor_batch_path = get_asset_processor_batch_path(tools_build_path, required=True)
     if not asset_processor_batch_path.exists():
         raise ExportProjectError("Missing AssetProcessorBatch. The pre-requisite tools must be built first.")
 
@@ -293,34 +375,52 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         cmake_build_command.extend(ctx.cmake_additional_build_args)
     if logger:
         logger.info(f"Building tool chain files for project {ctx.project_name}.")
-    ret = process_command(cmake_build_command, )
+    ret = process_command(cmake_build_command)
     if ret != 0:
         raise ExportProjectError("Error building the project for the pre-requisite tools.")
     if logger:
         logger.info(f"Tool chain built successfully.")
 
 
+def validate_export_toolchain(tools_build_path: pathlib.Path):
+    """
+    Validate that the required command line tools are available for the export process
+
+    @param tools_build_path:    The base tools build path
+    """
+    # Otherwise make sure the tools exist already
+    build_tools = [get_asset_bundler_batch_path(tools_build_path),
+                   get_asset_processor_batch_path(tools_build_path)]
+    tools_missing = [b for b in build_tools if not b.exists()]
+    if len(tools_missing) > 0:
+        raise ExportProjectError(f"Necessary Build Tools have not been created! The following are missing: {', '.join(tools_missing)}"
+                                 "Please ensure that these tools exist before proceeding on with the build!")
+
+
 def build_game_targets(ctx: O3DEScriptExportContext,
                        build_config: str,
                        game_build_path: pathlib.Path,
-                       should_build_game_launcher: bool,
-                       should_build_server_launcher: bool,
-                       should_build_unified_launcher: bool,
+                       launcher_types: int,
                        allow_registry_overrides: bool,
                        logger: logging.Logger = None) -> None:
     """
     Build the launchers for the project (game, server, unified)
 
-    @param ctx:                             Export Context
-    @param build_config:                    The build config to build (profile or release)
-    @param game_build_path:                 The cmake build folder target
-    @param should_build_game_launcher:      Option to build the game launcher
-    @param should_build_server_launcher:    Option to build the server launcher
-    @param should_build_unified_launcher:   Option to build the unified launcher
-    @param allow_registry_overrides:        Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
-    @param logger:              Optional Logger
+    @param ctx:                         Export Context
+    @param build_config:                The build config to build (profile or release)
+    @param game_build_path:             The cmake build folder target
+    @param launcher_types:              The launcher type options (bit mask from the LauncherType enum) to specify which launcher types to build
+    @param allow_registry_overrides:    Custom Flag argument for 'DALLOW_SETTINGS_REGISTRY_DEVELOPMENT_OVERRIDES' to pass down to the project generation
+    @param logger:                      Optional Logger
     @return: None
     """
+
+    if launcher_types == 0:
+        return
+
+    should_build_game_launcher = (launcher_types & LauncherType.GAME) == LauncherType.GAME
+    should_build_server_launcher = (launcher_types & LauncherType.SERVER) == LauncherType.SERVER
+    should_build_unified_launcher = (launcher_types & LauncherType.UNIFIED) == LauncherType.UNIFIED
 
     if not (should_build_server_launcher or should_build_game_launcher or should_build_unified_launcher):
         return
@@ -370,23 +470,23 @@ def build_game_targets(ctx: O3DEScriptExportContext,
 
 def bundle_assets(ctx: O3DEScriptExportContext,
                   selected_platform: str,
-                  seedlist_paths: List[str],
-                  non_mono_build_path: pathlib.Path,
+                  seedlist_paths: List[pathlib.Path],
+                  tools_build_path: pathlib.Path,
                   custom_asset_list_path: pathlib.Path|None = None,
                   max_bundle_size: int = 2048) -> pathlib.Path:
     """
     Execute the 'bundle assets' phase of the export
 
-    @param ctx:                         Export Context
-    @param selected_platform:           The desired asset platform
-    @param seedlist_paths:              The list of seedlist files
-    @param non_mono_build_path:         The path to the tools cmake build project
-    @param custom_asset_list_path:      Optional custom asset list path, otherwise use the expectged 'AssetBundling/AssetLists'path in the project folder
-    @param max_bundle_size:             The size limit to put on the bundle
+    @param ctx:                      Export Context
+    @param selected_platform:        The desired asset platform
+    @param seedlist_paths:           The list of seedlist files
+    @param tools_build_path:         The path to the tools cmake build project
+    @param custom_asset_list_path:   Optional custom asset list path, otherwise use the expectged 'AssetBundling/AssetLists'path in the project folder
+    @param max_bundle_size:          The size limit to put on the bundle
     @return: The path to the bundle
     """
 
-    asset_bundler_batch_path = get_asset_bundler_batch_path(non_mono_build_path)
+    asset_bundler_batch_path = get_asset_bundler_batch_path(tools_build_path, required=True)
     asset_list_path = (ctx.project_path / 'AssetBundling/AssetLists') if not custom_asset_list_path else custom_asset_list_path
 
     game_asset_list_path = asset_list_path / f'game_{selected_platform}.assetlist'
@@ -469,60 +569,88 @@ def kill_existing_processes(project_name: str):
 
 
 def setup_launcher_layout_directory(project_path: pathlib.Path,
-                                    output_path: pathlib.Path,
                                     asset_platform: str,
-                                    mono_build_path: pathlib.Path,
+                                    game_build_path: pathlib.Path,
                                     build_config: str,
                                     bundles_to_copy: List[pathlib.Path],
-                                    project_file_patterns_to_copy: List[str],
+                                    export_layout: ExportLayoutConfig,
                                     archive_output_format: str = "none",
-                                    logger: logging.Logger | None = None,
-                                    ignore_file_patterns: List[str] = []) -> None:
+                                    logger: logging.Logger | None = None
+                                    ) -> None:
     """
     Setup the launcher layout directory for a path
 
-    @param project_path:                    The base project path
-    @param output_path:                     The target path for the layout
-    @param asset_platform:                  The desired asset platform
-    @param mono_build_path:                 The path where the launcher executables cmake build project was created
-    @param build_config:                    The build configuration to locate the launcher executables in the cmake build project
-    @param bundles_to_copy:                 List of bundles to copy to the layout
-    @param project_file_patterns_to_copy:   List of additional file patterns to copy over from the project to the layout
-    @param archive_output_format:           The archive format to use when archiving the layout
-    @param logger:                          Optional Logger
-    @param ignore_file_patterns:            List of additional file ignore patterns to prevent from copying into the layout
+    @param project_path:            The base project path
+    @param asset_platform:          The desired asset platform
+    @param game_build_path:         The path where the launcher executables cmake build project was created
+    @param build_config:            The build configuration to locate the launcher executables in the cmake build project
+    @param bundles_to_copy:         List of bundles to copy to the layout
+    @param export_layout:           The export layout information to build the layout directory
+    @param archive_output_format:   The archive format to use when archiving the layout
+    @param logger:                  Optional Logger
     @return: None
     """
-    if output_path.exists():
-        shutil.rmtree(output_path)
+    if export_layout.output_path.exists():
+        shutil.rmtree(export_layout.output_path)
 
-    output_cache_path = output_path / 'Cache' / asset_platform
+    output_cache_path = export_layout.output_path / 'Cache' / asset_platform
 
     os.makedirs(output_cache_path, exist_ok=True)
+
+    ignore_file_patterns = export_layout.ignore_file_patterns + ADDITIONAL_PLATFORM_IGNORE_FILES
 
     for bundle in bundles_to_copy:
         shutil.copy(bundle, output_cache_path)
 
-    for file in glob.glob(str(mono_build_path / f'bin/{build_config}/*')):
+    for file in glob.glob(str(game_build_path / f'bin/{build_config}/*')):
         file_path = pathlib.Path(file)
-        if file_path.is_dir():
-            shutil.copytree(file, output_path / file_path.name, dirs_exist_ok=True)
-        else:
-            # Make sure the individual file is not in any ignore patterns before copying
-            skip_file = False
-            for ignore_file_pattern in ignore_file_patterns:
-                if fnmatch.fnmatch(file_path.name, ignore_file_pattern):
-                    skip_file = True
-                    break
-            if not skip_file:
-                shutil.copy(file, output_path)
 
-    for project_file_pattern in project_file_patterns_to_copy:
+        # Make sure the individual file path is not in any ignore patterns before copying
+        skip = False
+        for ignore_file_pattern in ignore_file_patterns:
+            if fnmatch.fnmatch(file_path.name, ignore_file_pattern):
+                skip = True
+                break
+        if not skip:
+            if file_path.is_dir():
+                shutil.copytree(file, export_layout.output_path / file_path.name, dirs_exist_ok=True)
+            else:
+                shutil.copy(file, export_layout.output_path)
+
+    for project_file_pattern in export_layout.project_file_patterns:
         for file in glob.glob(str(pathlib.PurePath(project_path / project_file_pattern))):
-            shutil.copy(file, output_path)
+            shutil.copy(file, export_layout.output_path)
 
     # Optionally compress the layout directory into an archive if the user requests
     if archive_output_format != "none":
         if logger:
-            logger.info(f"Archiving output directory {output_path} (this may take a while)...")
-        shutil.make_archive(output_path, archive_output_format, root_dir=output_path)
+            logger.info(f"Archiving output directory {export_layout.output_path} (this may take a while)...")
+        shutil.make_archive(export_layout.output_path, archive_output_format, root_dir=export_layout.output_path)
+
+
+def validate_project_artifact_paths(project_path: pathlib.Path,
+                                    artifact_paths: List[pathlib.Path],
+                                    file_description: str = "file") -> List[pathlib.Path]:
+    """
+    Validate and adjust project artifact paths as necessary. If paths are provide as relative, then check it
+    against the project path for existence.
+
+    @param project_path:            The base project path
+    @param artifact_paths:          The project artifact file to check
+    @param file_description:        A description of the artifact file type for error reporting
+    @return: List of validate project artifact files, all absolute paths and verified to exist
+    """
+    validated_project_artifact_paths = []
+    for input_artifact_path in artifact_paths:
+        validated_artifact_path = None
+        if input_artifact_path.is_file():
+            validated_artifact_path = input_artifact_path
+        elif not input_artifact_path.is_absolute():
+            abs_input_seedlist_path = project_path / input_artifact_path
+            if abs_input_seedlist_path.is_file():
+                validated_artifact_path = abs_input_seedlist_path
+        if validated_artifact_path is None:
+            raise ExportProjectError(f"Invalid {file_description} provided: '{input_artifact_path}' does not exist.")
+        else:
+            validated_project_artifact_paths.append(validated_artifact_path)
+    return validated_project_artifact_paths

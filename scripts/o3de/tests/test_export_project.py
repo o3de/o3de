@@ -10,7 +10,10 @@ import pytest
 import pathlib
 import unittest.mock as mock
 from unittest.mock import patch, create_autospec
-from o3de.export_project import _export_script, process_command, setup_launcher_layout_directory, O3DEScriptExportContext, build_assets, ExportProjectError, bundle_assets, build_export_toolchain, build_game_targets
+from o3de.export_project import _export_script, process_command, setup_launcher_layout_directory, \
+                                 O3DEScriptExportContext, ExportLayoutConfig, build_assets, ExportProjectError, \
+                                 bundle_assets, build_export_toolchain, build_game_targets, \
+                                 validate_project_artifact_paths, LauncherType
 
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
@@ -297,12 +300,18 @@ def test_build_game_targets(tmp_path, build_config, build_game_launcher, build_s
         mock_ctx.is_engine_centric = engine_centric
         mock_ctx.project_name = test_project_name
 
+        launcher_types = 0
+        if build_game_launcher:
+            launcher_types |= LauncherType.GAME
+        if build_server_launcher:
+            launcher_types |= LauncherType.SERVER
+        if build_unified_launcher:
+            launcher_types |= LauncherType.UNIFIED
+
         build_game_targets(ctx=mock_ctx,
                            build_config=build_config,
                            game_build_path=test_game_build_path,
-                           should_build_game_launcher=build_game_launcher,
-                           should_build_server_launcher=build_server_launcher,
-                           should_build_unified_launcher=build_unified_launcher,
+                           launcher_types=launcher_types,
                            allow_registry_overrides=allow_registry_overrides)
 
         if not build_game_launcher and not build_server_launcher and not build_unified_launcher:
@@ -383,7 +392,7 @@ def test_bundle_assets(tmp_path, asset_platform):
         result = bundle_assets(ctx=mock_ctx,
                                selected_platform=asset_platform,
                                seedlist_paths=[test_seedlist_path],
-                               non_mono_build_path=test_build_tool_path,
+                               tools_build_path=test_build_tool_path,
                                custom_asset_list_path=test_custom_asset_base_path,
                                max_bundle_size=test_max_bundle_size)
 
@@ -483,16 +492,19 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
 
     test_archive_output_format = archive_format
 
+    export_layout = ExportLayoutConfig(
+                output_path=test_output_path,
+                project_file_patterns=test_project_files_to_copy,
+                ignore_file_patterns=file_patterns_to_ignore)
+
     setup_launcher_layout_directory(project_path=test_project_path,
-                                    output_path=test_output_path,
                                     asset_platform=test_asset_platform,
-                                    mono_build_path=test_mono_build_path,
+                                    game_build_path=test_mono_build_path,
                                     build_config=test_build_config,
                                     bundles_to_copy=[test_bundle_file],
-                                    project_file_patterns_to_copy=test_project_files_to_copy,
+                                    export_layout=export_layout,
                                     archive_output_format=test_archive_output_format,
-                                    logger=None,
-                                    ignore_file_patterns=file_patterns_to_ignore)
+                                    logger=None)
 
     result_bundle_file = test_output_path / "Cache" / test_asset_platform / "test_bundle.pak"
     assert result_bundle_file.is_file(), f"Missing <output>/Cache/{test_asset_platform}/test_bundle.pak"
@@ -512,3 +524,44 @@ def test_setup_launcher_layout_directory(tmp_path, build_config, asset_platform,
     if test_archive_output_format != "none":
         result_archive_file = tmp_path / f"output.{test_archive_output_format}"
         assert result_archive_file.is_file(), f"Missing <output>.{test_archive_output_format}"
+
+
+@pytest.mark.parametrize("project_path, create_files, check_abs_files, check_rel_files, expect_error",[
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["project/SeedLists/seed1", "project/SeedLists/seed2"], [], False),
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["project/SeedLists/seed1"], ["SeedLists/seed2"], False),
+    pytest.param("project", ["project/SeedLists/seed1", "project/SeedLists/seed2"], ["project/SeedLists/seed1", "project/SeedLists/seed3"], [], True)
+])
+def test_validate_project_artifact_paths(tmp_path, project_path, create_files, check_abs_files, check_rel_files, expect_error):
+
+    test_project_path = tmp_path / project_path
+    test_project_path.mkdir(parents=True, exist_ok=True)
+    for create_file in create_files:
+        create_file_path = tmp_path / create_file
+        create_file_path.parent.mkdir(parents=True, exist_ok=True)
+        create_file_path.write_text(create_file)
+    artifact_list = []
+    for check_abs_file in check_abs_files:
+        check_abs_file_path = tmp_path / check_abs_file
+        artifact_list.append(check_abs_file_path)
+    for check_rel_file in check_rel_files:
+        artifact_list.append(pathlib.Path(check_rel_file))
+
+    try:
+        validated_list = validate_project_artifact_paths(project_path=test_project_path,
+                                                         artifact_paths=artifact_list)
+    except ExportProjectError:
+        assert expect_error, "Error condition expected"
+    else:
+        assert not expect_error
+        assert len(artifact_list) == len(validated_list)
+        for index in range(len(artifact_list)):
+            original = artifact_list[index]
+            validated = validated_list[index]
+            if not original.is_absolute():
+                original = test_project_path / original
+            assert original == validated
+
+
+
+
+
