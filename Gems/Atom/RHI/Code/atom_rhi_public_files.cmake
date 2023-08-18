@@ -16,17 +16,27 @@ set(FILES
     Source/RHI/LinearAllocator.cpp
     Source/RHI/PoolAllocator.cpp
     Include/Atom/RHI/Buffer.h
+    Include/Atom/RHI/MultiDeviceBuffer.h
     Include/Atom/RHI/BufferView.h
     Include/Atom/RHI/IndexBufferView.h
+    Include/Atom/RHI/MultiDeviceIndexBufferView.h
     Include/Atom/RHI/StreamBufferView.h
+    Include/Atom/RHI/MultiDeviceStreamBufferView.h
     Source/RHI/Buffer.cpp
+    Source/RHI/MultiDeviceBuffer.cpp
     Source/RHI/BufferView.cpp
     Source/RHI/IndexBufferView.cpp
+    Source/RHI/MultiDeviceIndexBufferView.cpp
     Source/RHI/StreamBufferView.cpp
+    Source/RHI/MultiDeviceStreamBufferView.cpp
     Include/Atom/RHI/BufferPool.h
+    Include/Atom/RHI/MultiDeviceBufferPool.h
     Include/Atom/RHI/BufferPoolBase.h
+    Include/Atom/RHI/MultiDeviceBufferPoolBase.h
     Source/RHI/BufferPool.cpp
+    Source/RHI/MultiDeviceBufferPool.cpp
     Source/RHI/BufferPoolBase.cpp
+    Source/RHI/MultiDeviceBufferPoolBase.cpp
     Include/Atom/RHI/CommandList.h
     Include/Atom/RHI/CommandListValidator.h
     Include/Atom/RHI/CommandListStates.h
