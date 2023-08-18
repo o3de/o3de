@@ -1358,6 +1358,7 @@ namespace AzToolsFramework
         m_spawnDebugView = AZ::DocumentPropertyEditor::PropertyEditorSystem::DPEDebugEnabled();
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // register as a co-owner of the recycled widgets lists if they exist; create if not
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
@@ -1435,7 +1436,11 @@ namespace AzToolsFramework
     void DocumentPropertyEditor::SetAllowVerticalScroll(bool allowVerticalScroll)
     {
         m_allowVerticalScroll = allowVerticalScroll;
-        setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+
+        /* as a temporary work-around to https://github.com/o3de/o3de/issues/14863 , never prevent vertical scrollbars
+           setVerticalScrollBarPolicy(allowVerticalScroll ? Qt::ScrollBarAsNeeded : Qt::ScrollBarAlwaysOff);
+         */
+
         auto existingPolicy = sizePolicy();
         setSizePolicy(existingPolicy.horizontalPolicy(), (allowVerticalScroll ? existingPolicy.verticalPolicy() : QSizePolicy::Fixed));
     }
@@ -1445,7 +1450,8 @@ namespace AzToolsFramework
         auto hint = QScrollArea::sizeHint();
         if (!m_allowVerticalScroll)
         {
-            hint.setHeight(m_layout->sizeHint().height());
+            auto margins = QWidget::contentsMargins();
+            hint.setHeight(m_layout->sizeHint().height() + margins.top() + margins.bottom());
         }
         return hint;
     }
