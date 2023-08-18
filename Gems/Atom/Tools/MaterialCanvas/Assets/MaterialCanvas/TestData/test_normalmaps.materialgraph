@@ -277,7 +277,7 @@
                                             "guid": "{0B360C33-D5CB-57FF-BDD4-AD64A9AAEA86}",
                                             "subId": 1000
                                         },
-                                        "assetHint": "TestData/Objects/cube/cube_norm.tif"
+                                        "assetHint": "testdata/objects/cube/cube_norm.tif.streamingimage"
                                     }
                                 }
                             }
@@ -386,7 +386,7 @@
                             "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
                                 "$type": "GeometrySaveData",
                                 "Position": [
-                                    640.0,
+                                    500.0,
                                     80.0
                                 ]
                             },
@@ -396,6 +396,10 @@
                             "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
                                 "$type": "PersistentIdComponentSaveData",
                                 "PersistentId": "{2E9C56AC-2A02-4154-817C-0FAC54C324B9}"
+                            },
+                            "{FC18625B-1E97-415D-9832-B222DE054680}": {
+                                "$type": "GraphCanvasSelectionData",
+                                "selected": true
                             }
                         }
                     }
@@ -424,6 +428,10 @@
                             "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
                                 "$type": "PersistentIdComponentSaveData",
                                 "PersistentId": "{E2264C64-3943-46D4-A181-AEF618CC2DD9}"
+                            },
+                            "{FC18625B-1E97-415D-9832-B222DE054680}": {
+                                "$type": "GraphCanvasSelectionData",
+                                "selected": true
                             }
                         }
                     }
@@ -452,6 +460,10 @@
                             "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
                                 "$type": "PersistentIdComponentSaveData",
                                 "PersistentId": "{A77666B7-CA19-471B-99D5-4547155CB359}"
+                            },
+                            "{FC18625B-1E97-415D-9832-B222DE054680}": {
+                                "$type": "GraphCanvasSelectionData",
+                                "selected": true
                             }
                         }
                     }

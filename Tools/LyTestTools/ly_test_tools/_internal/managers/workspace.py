@@ -83,11 +83,11 @@ class AbstractWorkspaceManager:
                 ly_test_tools.environment.file_system.delete([self.tmp_path], True, True)
 
             print("Creating tmp path")
-            os.makedirs(self.tmp_path)
+            os.makedirs(self.tmp_path, exist_ok=True)
 
         if not os.path.exists(self.output_path):
             print(f"Creating logs path at {self.output_path}")
-            os.makedirs(self.output_path)
+            os.makedirs(self.output_path, exist_ok=True)
 
         print(f"Configuring Artifact Manager with path {self.output_path}")
         self.artifact_manager = artifact_manager.ArtifactManager(self.output_path)
@@ -139,7 +139,7 @@ class AbstractWorkspaceManager:
         temp_file_dir = os.path.join(tempfile.gettempdir(), "LyTestTools")
         temp_file_path = os.path.join(temp_file_dir, log_file_name)
         if not os.path.exists(temp_file_dir):
-            os.makedirs(temp_file_dir)
+            os.makedirs(temp_file_dir, exist_ok=True)
 
         if os.path.exists(temp_file_path):
             # assume temp is not being used for long-term storage, and safe to delete

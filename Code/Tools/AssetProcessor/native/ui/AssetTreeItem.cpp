@@ -27,7 +27,7 @@ namespace AssetProcessor
         m_scanFolderID(scanFolderID)
     {
         QFileInfo fileInfo(name);
-        m_extension = fileInfo.completeSuffix();
+        m_extension = fileInfo.suffix();
     }
 
     int AssetTreeItemData::GetColumnCount() const

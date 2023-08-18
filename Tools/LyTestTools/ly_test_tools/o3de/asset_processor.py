@@ -719,7 +719,7 @@ class AssetProcessor(object):
         for copy_dir in [self._workspace.project, 'Assets/Engine', 'Registry']:
             make_dir = os.path.join(self._temp_asset_root, copy_dir)
             if not os.path.isdir(make_dir):
-                os.makedirs(make_dir)
+                os.makedirs(make_dir, exist_ok=True)
         for copyfile_name in ['Registry/AssetProcessorPlatformConfig.setreg',
                               os.path.join(self._workspace.project, "project.json"),
                               os.path.join('Assets', 'Engine', 'exclude.filetag')]:
@@ -813,7 +813,7 @@ class AssetProcessor(object):
             scan_folder = os.path.join(self._temp_asset_root if self._temp_asset_root else self._workspace.paths.engine_root(),
                                        folder_name)
             if not os.path.isdir(scan_folder):
-                os.makedirs(scan_folder)
+                os.makedirs(scan_folder, exist_ok=True)
             if folder_name not in self._override_scan_folders:
                 self._override_scan_folders.append(scan_folder)
                 logger.debug(f"Adding scan folder {scan_folder}")
@@ -865,7 +865,7 @@ class AssetProcessor(object):
         test_folder = os.path.join(test_asset_root, function_name if existing_function_name is None
                                    else existing_function_name)
         if not os.path.isdir(test_folder):
-            os.makedirs(test_folder)
+            os.makedirs(test_folder, exist_ok=True)
         if add_scan_folder:
             self.add_scan_folder(test_asset_root)
         self._function_name = function_name
@@ -962,7 +962,7 @@ class AssetProcessor(object):
         dest_root = dest_root or self._temp_asset_root
         make_dir = os.path.dirname(os.path.join(dest_root, relative_asset))
         if not os.path.isdir(make_dir):
-            os.makedirs(make_dir)
+            os.makedirs(make_dir, exist_ok=True)
         shutil.copyfile(os.path.join(source_root, relative_asset),
                         os.path.join(dest_root, relative_asset))
 
