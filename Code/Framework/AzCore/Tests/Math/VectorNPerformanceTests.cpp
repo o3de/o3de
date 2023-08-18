@@ -28,10 +28,10 @@ namespace Benchmark
         }
         void internalTearDown()
         {
-            m_vector1 = AZ::VectorN(0);
-            m_vector2 = AZ::VectorN(0);
-            m_vector3 = AZ::VectorN(0);
-            m_result1 = AZ::VectorN(0);
+            m_vector1 = AZ::VectorN();
+            m_vector2 = AZ::VectorN();
+            m_vector3 = AZ::VectorN();
+            m_result1 = AZ::VectorN();
         }
     public:
         void SetUp(const benchmark::State&) override

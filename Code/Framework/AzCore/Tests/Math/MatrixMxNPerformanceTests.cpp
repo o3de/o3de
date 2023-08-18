@@ -24,6 +24,13 @@ namespace Benchmark
             m_vector1 = AZ::VectorN::CreateRandom(1000);
             m_vector2 = AZ::VectorN::CreateRandom(500);
         }
+        void internalTearDown()
+        {
+            m_matrix1 = AZ::MatrixMxN();
+            m_matrix2 = AZ::MatrixMxN();
+            m_vector1 = AZ::VectorN();
+            m_vector2 = AZ::VectorN();
+        }
     public:
         void SetUp(const benchmark::State&) override
         {
@@ -32,6 +39,14 @@ namespace Benchmark
         void SetUp(benchmark::State&) override
         {
             internalSetUp();
+        }
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
         AZ::MatrixMxN m_matrix1;
