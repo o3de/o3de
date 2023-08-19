@@ -7,6 +7,8 @@
  */
 
 #include <AzCore/Utils/Utils.h>
+
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileReader.h>
@@ -16,6 +18,44 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
+namespace AZ::Utils::ConsoleCommands
+{
+    // Register Console Command that can query the OS environment variables
+    constexpr const char* GetEnvCommandName = "os_GetEnv";
+    void GetEnv(const AZ::ConsoleCommandContainer& commandArgs)
+    {
+        if (commandArgs.empty())
+        {
+            AZ_Error(
+                "os_GetEnv",
+                false,
+                "No environment variable name has been supplied.");
+            return;
+        }
+
+        for (AZStd::string_view commandArg : commandArgs)
+        {
+            auto QueryOSEnvironmentVariable = [commandArg](char* buffer, size_t size)
+            {
+                AZStd::fixed_string<1024> envKey{ commandArg };
+                auto getEnvOutcome = AZ::Utils::GetEnv(AZStd::span(buffer, size), envKey.c_str());
+                return getEnvOutcome ? getEnvOutcome.GetValue().size() : 0;
+            };
+
+            AZStd::fixed_string<4096> envValue;
+            envValue.resize_and_overwrite(envValue.capacity(), QueryOSEnvironmentVariable);
+            auto formattedEnvOutput = AZStd::fixed_string<4096>::format("%.*s=%s\n", AZ_STRING_ARG(commandArg), envValue.c_str());
+            AZ::Debug::Trace::Instance().Output(GetEnvCommandName, formattedEnvOutput.c_str());
+        }
+    }
+    AZ_CONSOLEFREEFUNC("os_GetEnv", GetEnv, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Queries the OS for an environment variable with the specified name(s).\n"
+        "Each argument is the name of the environment variable to query.\n"
+        "Multiple arguments can be specified and each of their values are output on separate lines.\n"
+        "Usage: os_GetEnv PATH\n"
+        "Usage: os_GetEnv LD_LIBRARY_PATH HOME\n");
+}
 
 namespace AZ::Utils
 {
