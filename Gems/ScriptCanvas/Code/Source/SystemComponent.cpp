@@ -141,6 +141,8 @@ namespace ScriptCanvas
 
     void SystemComponent::Init()
     {
+        ScriptCanvasModel::Instance().Init();
+
         RegisterCreatableTypes();
 
         m_infiniteLoopDetectionMaxIterations = ScriptCanvasSystemComponentCpp::k_infiniteLoopDetectionMaxIterations;

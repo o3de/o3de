@@ -141,6 +141,7 @@ namespace AZ
             static FloatType Acos(FloatArgType value);
             static FloatType Atan(FloatArgType value);
             static FloatType Atan2(FloatArgType y, FloatArgType x);
+            static FloatType ExpEstimate(FloatArgType x);
 
             static FloatType ConvertToFloat(Int32ArgType value);
             static Int32Type ConvertToInt(FloatArgType value); // Truncates

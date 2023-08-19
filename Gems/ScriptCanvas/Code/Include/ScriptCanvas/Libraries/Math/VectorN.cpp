@@ -49,12 +49,6 @@ namespace ScriptCanvas
             return source.IsZero(aznumeric_cast<float>(tolerance));
         }
 
-        Data::VectorNType& ReLU(Data::VectorNType& source)
-        {
-            source.ReLU();
-            return source;
-        }
-
         Data::VectorNType GetMin(const Data::VectorNType& a, const Data::VectorNType& b)
         {
             if (a.GetDimensionality() == b.GetDimensionality())

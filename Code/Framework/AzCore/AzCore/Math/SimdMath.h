@@ -25,24 +25,24 @@ namespace AZ
 {
     namespace Simd
     {
-        alignas(16) static constexpr float g_vec1111[4]         = { 1.0f, 1.0f, 1.0f, 1.0f };
-        alignas(16) static constexpr float g_vec1000[4]         = { 1.0f, 0.0f, 0.0f, 0.0f };
-        alignas(16) static constexpr float g_vec0100[4]         = { 0.0f, 1.0f, 0.0f, 0.0f };
-        alignas(16) static constexpr float g_vec0010[4]         = { 0.0f, 0.0f, 1.0f, 0.0f };
-        alignas(16) static constexpr float g_vec0001[4]         = { 0.0f, 0.0f, 0.0f, 1.0f };
-        alignas(16) static constexpr float g_Pi[4]              = { Constants::Pi, Constants::Pi, Constants::Pi, Constants::Pi };
-        alignas(16) static constexpr float g_TwoPi[4]           = { Constants::TwoPi, Constants::TwoPi, Constants::TwoPi, Constants::TwoPi };
-        alignas(16) static constexpr float g_HalfPi[4]          = { Constants::HalfPi, Constants::HalfPi, Constants::HalfPi, Constants::HalfPi };
-        alignas(16) static constexpr float g_QuarterPi[4]       = { Constants::QuarterPi, Constants::QuarterPi, Constants::QuarterPi, Constants::QuarterPi };
-        alignas(16) static constexpr float g_TwoOverPi[4]       = { Constants::TwoOverPi, Constants::TwoOverPi, Constants::TwoOverPi, Constants::TwoOverPi };
-        alignas(16) static constexpr int32_t g_absMask[4]       = { (int32_t)0x7fffffff, (int32_t)0x7fffffff, (int32_t)0x7fffffff, (int32_t)0x7fffffff };
-        alignas(16) static constexpr int32_t g_negateMask[4]    = { (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x80000000 };
-        alignas(16) static constexpr int32_t g_negateXMask[4]   = { (int32_t)0x80000000, (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x00000000 };
-        alignas(16) static constexpr int32_t g_negateYMask[4]   = { (int32_t)0x00000000, (int32_t)0x80000000, (int32_t)0x00000000, (int32_t)0x00000000 };
-        alignas(16) static constexpr int32_t g_negateZMask[4]   = { (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x80000000, (int32_t)0x00000000 };
-        alignas(16) static constexpr int32_t g_negateWMask[4]   = { (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x80000000 };
-        alignas(16) static constexpr int32_t g_negateXYZMask[4] = { (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x00000000 };
-        alignas(16) static constexpr int32_t g_wMask[4]         = { (int32_t)0xffffffff, (int32_t)0xffffffff, (int32_t)0xffffffff, (int32_t)0x00000000 };
+        alignas(16) constexpr float g_vec1111[4]         = { 1.0f, 1.0f, 1.0f, 1.0f };
+        alignas(16) constexpr float g_vec1000[4]         = { 1.0f, 0.0f, 0.0f, 0.0f };
+        alignas(16) constexpr float g_vec0100[4]         = { 0.0f, 1.0f, 0.0f, 0.0f };
+        alignas(16) constexpr float g_vec0010[4]         = { 0.0f, 0.0f, 1.0f, 0.0f };
+        alignas(16) constexpr float g_vec0001[4]         = { 0.0f, 0.0f, 0.0f, 1.0f };
+        alignas(16) constexpr float g_Pi[4]              = { Constants::Pi, Constants::Pi, Constants::Pi, Constants::Pi };
+        alignas(16) constexpr float g_TwoPi[4]           = { Constants::TwoPi, Constants::TwoPi, Constants::TwoPi, Constants::TwoPi };
+        alignas(16) constexpr float g_HalfPi[4]          = { Constants::HalfPi, Constants::HalfPi, Constants::HalfPi, Constants::HalfPi };
+        alignas(16) constexpr float g_QuarterPi[4]       = { Constants::QuarterPi, Constants::QuarterPi, Constants::QuarterPi, Constants::QuarterPi };
+        alignas(16) constexpr float g_TwoOverPi[4]       = { Constants::TwoOverPi, Constants::TwoOverPi, Constants::TwoOverPi, Constants::TwoOverPi };
+        alignas(16) constexpr int32_t g_absMask[4]       = { (int32_t)0x7fffffff, (int32_t)0x7fffffff, (int32_t)0x7fffffff, (int32_t)0x7fffffff };
+        alignas(16) constexpr int32_t g_negateMask[4]    = { (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x80000000 };
+        alignas(16) constexpr int32_t g_negateXMask[4]   = { (int32_t)0x80000000, (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x00000000 };
+        alignas(16) constexpr int32_t g_negateYMask[4]   = { (int32_t)0x00000000, (int32_t)0x80000000, (int32_t)0x00000000, (int32_t)0x00000000 };
+        alignas(16) constexpr int32_t g_negateZMask[4]   = { (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x80000000, (int32_t)0x00000000 };
+        alignas(16) constexpr int32_t g_negateWMask[4]   = { (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x00000000, (int32_t)0x80000000 };
+        alignas(16) constexpr int32_t g_negateXYZMask[4] = { (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x80000000, (int32_t)0x00000000 };
+        alignas(16) constexpr int32_t g_wMask[4]         = { (int32_t)0xffffffff, (int32_t)0xffffffff, (int32_t)0xffffffff, (int32_t)0x00000000 };
     }
 }
 

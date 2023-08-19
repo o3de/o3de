@@ -27,7 +27,11 @@ namespace ScriptCanvas
 
         Data::MatrixMxNType Transpose(const Data::MatrixMxNType& source);
 
-        Data::VectorNType MultiplyByVector(const Data::MatrixMxNType& lhs, const Data::VectorNType& rhs);
+        Data::MatrixMxNType OuterProduct(const Data::VectorNType& lhs, const Data::VectorNType& rhs);
+
+        Data::VectorNType RightMultiplyByVector(const Data::MatrixMxNType& lhs, const Data::VectorNType& rhs);
+
+        Data::VectorNType LeftMultiplyByVector(const Data::VectorNType& lhs, const Data::MatrixMxNType& rhs);
 
         Data::MatrixMxNType MultiplyByMatrix(const Data::MatrixMxNType& lhs, const Data::MatrixMxNType& rhs);
     } // namespace MatrixMxNFunctions

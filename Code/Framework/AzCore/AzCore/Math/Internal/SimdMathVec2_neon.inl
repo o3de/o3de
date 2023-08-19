@@ -479,6 +479,11 @@ namespace AZ
             return Common::Atan2<Vec1>(Vec1::Splat(SelectIndex1(value)), Vec1::Splat(SelectIndex0(value)));
         }
 
+        AZ_MATH_INLINE Vec2::FloatType Vec2::ExpEstimate(FloatArgType x)
+        {
+            return Common::ExpEstimate<Vec2>(x);
+        }
+
         AZ_MATH_INLINE Vec1::FloatType Vec2::Dot(FloatArgType arg1, FloatArgType arg2)
         {
             return Vec1::LoadImmediate(vaddv_f32(vmul_f32(arg1, arg2)));

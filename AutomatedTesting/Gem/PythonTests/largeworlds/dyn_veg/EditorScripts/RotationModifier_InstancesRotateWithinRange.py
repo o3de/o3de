@@ -124,7 +124,7 @@ def RotationModifier_InstancesRotateWithinRange():
     general.set_current_view_position(512.0, 480.0, 38.0)
 
     # 2) Set up vegetation entities
-    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    pink_flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     pink_flower_prefab = dynveg.create_temp_mesh_prefab(pink_flower_asset_path, "RotMod_PinkFlower")[0]
     spawner_entity = dynveg.create_temp_prefab_vegetation_area("Instance Spawner", LEVEL_CENTER, 2.0, 2.0, 2.0,
                                                                pink_flower_prefab)
