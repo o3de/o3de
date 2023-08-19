@@ -5,7 +5,7 @@
     "ClassData": {
         "m_scriptCanvas": {
             "Id": {
-                "id": 704285763786798
+                "id": 103330990009796
             },
             "Name": "LY_SC_UnitTest_NodeableDurationSubgraphDirectionExposedOut",
             "Components": {
@@ -16,81 +16,7 @@
                         "m_nodes": [
                             {
                                 "Id": {
-                                    "id": 704290058754094
-                                },
-                                "Name": "FunctionNode",
-                                "Components": {
-                                    "Component_[13772609083470312289]": {
-                                        "$type": "FunctionCallNode",
-                                        "Id": 13772609083470312289,
-                                        "Slots": [
-                                            {
-                                                "id": {
-                                                    "m_id": "{3C5891FC-E8D0-4BDB-9386-A13481023F89}"
-                                                },
-                                                "contracts": [
-                                                    {
-                                                        "$type": "SlotTypeContract"
-                                                    }
-                                                ],
-                                                "slotName": "On Tick",
-                                                "DisplayGroup": {
-                                                    "Value": 608626060
-                                                },
-                                                "Descriptor": {
-                                                    "ConnectionType": 2,
-                                                    "SlotType": 1
-                                                },
-                                                "IsLatent": true
-                                            }
-                                        ],
-                                        "NodeDisabledFlag": 2,
-                                        "m_sourceId": "{00000000-0000-0000-0000-000000000000}",
-                                        "m_asset": {
-                                            "assetId": {
-                                                "guid": "{E4D01F8B-1225-5691-9ABE-875271B08B9D}",
-                                                "subId": 3756448882
-                                            },
-                                            "assetHint": "scriptcanvas/unittests/ly_sc_unittest_nodeabledurationfunctiondirectexposure.scriptcanvas_fn_compiled"
-                                        },
-                                        "m_slotExecutionMap": {
-                                            "latents": [
-                                                {
-                                                    "_slotId": {
-                                                        "m_id": "{3C5891FC-E8D0-4BDB-9386-A13481023F89}"
-                                                    },
-                                                    "_name": "On Tick",
-                                                    "_interfaceSourceId": "{706BACE3-BB11-4FB6-A92F-33036E47C4A1}"
-                                                }
-                                            ]
-                                        },
-                                        "m_slotExecutionMapSourceInterface": {
-                                            "isActiveDefaultObject": true,
-                                            "latents": [
-                                                {
-                                                    "displayName": "On Tick",
-                                                    "parsedName": "OnTick",
-                                                    "sourceID": "{706BACE3-BB11-4FB6-A92F-33036E47C4A1}"
-                                                }
-                                            ],
-                                            "outKeys": [
-                                                {
-                                                    "Value": 608626060
-                                                }
-                                            ],
-                                            "namespacePath": [
-                                                "scriptcanvas",
-                                                "unittests",
-                                                "ly_sc_unittest_nodeabledurationfunctiondirectexposure_VM"
-                                            ],
-                                            "executionCharacteristics": 0
-                                        }
-                                    }
-                                }
-                            },
-                            {
-                                "Id": {
-                                    "id": 704302943655982
+                                    "id": 103339579944388
                                 },
                                 "Name": "SC-Node(OperatorAdd)",
                                 "Components": {
@@ -167,6 +93,12 @@
                                                             },
                                                             {
                                                                 "m_type": 15
+                                                            },
+                                                            {
+                                                                "m_type": 20
+                                                            },
+                                                            {
+                                                                "m_type": 21
                                                             }
                                                         ]
                                                     }
@@ -231,6 +163,12 @@
                                                             },
                                                             {
                                                                 "m_type": 15
+                                                            },
+                                                            {
+                                                                "m_type": 20
+                                                            },
+                                                            {
+                                                                "m_type": 21
                                                             }
                                                         ]
                                                     }
@@ -294,6 +232,12 @@
                                                             },
                                                             {
                                                                 "m_type": 15
+                                                            },
+                                                            {
+                                                                "m_type": 20
+                                                            },
+                                                            {
+                                                                "m_type": 21
                                                             }
                                                         ]
                                                     }
@@ -347,7 +291,80 @@
                             },
                             {
                                 "Id": {
-                                    "id": 704298648688686
+                                    "id": 107187870641604
+                                },
+                                "Name": "FunctionCallNode",
+                                "Components": {
+                                    "Component_[17370703822984106528]": {
+                                        "$type": "FunctionCallNode",
+                                        "Id": 17370703822984106528,
+                                        "Slots": [
+                                            {
+                                                "id": {
+                                                    "m_id": "{89A332EA-04E7-480B-802C-A74DF977BBE8}"
+                                                },
+                                                "contracts": [
+                                                    {
+                                                        "$type": "SlotTypeContract"
+                                                    }
+                                                ],
+                                                "slotName": "On Tick : Out",
+                                                "DisplayGroup": {
+                                                    "Value": 3004918486
+                                                },
+                                                "Descriptor": {
+                                                    "ConnectionType": 2,
+                                                    "SlotType": 1
+                                                },
+                                                "IsLatent": true
+                                            }
+                                        ],
+                                        "m_sourceId": "{00000000-0000-0000-8C46-2ECA30FC71AD}",
+                                        "m_asset": {
+                                            "assetId": {
+                                                "guid": "{3C8A084B-E9EE-5B5F-AD4D-56C1BBC7753B}",
+                                                "subId": 3756448882
+                                            },
+                                            "assetHint": "scriptcanvas/unittests/ly_sc_unittest_nodeabledurationfunctiondirectexposeout.scriptcanvas_fn_compiled"
+                                        },
+                                        "m_slotExecutionMap": {
+                                            "latents": [
+                                                {
+                                                    "_slotId": {
+                                                        "m_id": "{89A332EA-04E7-480B-802C-A74DF977BBE8}"
+                                                    },
+                                                    "_name": "On Tick : Out",
+                                                    "_interfaceSourceId": "{7D53F416-8A9D-4CC3-BF29-867808B46C5F}"
+                                                }
+                                            ]
+                                        },
+                                        "m_slotExecutionMapSourceInterface": {
+                                            "isActiveDefaultObject": true,
+                                            "latents": [
+                                                {
+                                                    "displayName": "On Tick : Out",
+                                                    "parsedName": "OnTickOut",
+                                                    "sourceID": "{7D53F416-8A9D-4CC3-BF29-867808B46C5F}"
+                                                }
+                                            ],
+                                            "outKeys": [
+                                                {
+                                                    "Value": 3004918486
+                                                }
+                                            ],
+                                            "namespacePath": [
+                                                "ScriptCanvas",
+                                                "UnitTests",
+                                                "LY_SC_UnitTest_NodeableDurationFunctionDirectExposeOut_VM"
+                                            ],
+                                            "executionCharacteristics": 0
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 103343874911684
                                 },
                                 "Name": "SC-Node(Greater)",
                                 "Components": {
@@ -506,7 +523,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 704307238623278
+                                    "id": 103348169878980
                                 },
                                 "Name": "SC-Node(Mark Complete)",
                                 "Components": {
@@ -616,7 +633,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 704294353721390
+                                    "id": 103335284977092
                                 },
                                 "Name": "SC-Node(Expect False)",
                                 "Components": {
@@ -756,7 +773,7 @@
                         "m_connections": [
                             {
                                 "Id": {
-                                    "id": 704311533590574
+                                    "id": 103356759813572
                                 },
                                 "Name": "srcEndpoint=(Add (+): Out), destEndpoint=(Greater Than (>): In)",
                                 "Components": {
@@ -765,7 +782,7 @@
                                         "Id": 11484251557429787565,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 704302943655982
+                                                "id": 103339579944388
                                             },
                                             "slotId": {
                                                 "m_id": "{25F4CA6E-8FC2-433F-A6FA-5CB6A574092D}"
@@ -773,7 +790,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 704298648688686
+                                                "id": 103343874911684
                                             },
                                             "slotId": {
                                                 "m_id": "{B19F063A-E18C-4255-B3EE-BB4714EC4D35}"
@@ -784,7 +801,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 704315828557870
+                                    "id": 103361054780868
                                 },
                                 "Name": "srcEndpoint=(Greater Than (>): False), destEndpoint=(Expect False: In)",
                                 "Components": {
@@ -793,7 +810,7 @@
                                         "Id": 1145660856482781192,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 704298648688686
+                                                "id": 103343874911684
                                             },
                                             "slotId": {
                                                 "m_id": "{D1B41034-C3AA-43C2-A433-B2921C7668F4}"
@@ -801,7 +818,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 704294353721390
+                                                "id": 103335284977092
                                             },
                                             "slotId": {
                                                 "m_id": "{ED111219-EB7E-4757-9256-0D2072D60D8E}"
@@ -812,7 +829,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 704320123525166
+                                    "id": 103365349748164
                                 },
                                 "Name": "srcEndpoint=(Greater Than (>): Result), destEndpoint=(Expect False: Candidate)",
                                 "Components": {
@@ -821,7 +838,7 @@
                                         "Id": 9257209633321724623,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 704298648688686
+                                                "id": 103343874911684
                                             },
                                             "slotId": {
                                                 "m_id": "{8141D56C-C9F5-433F-8799-43484DE9067A}"
@@ -829,7 +846,7 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 704294353721390
+                                                "id": 103335284977092
                                             },
                                             "slotId": {
                                                 "m_id": "{C75F163B-0DAF-45DE-863E-0CB6AF770617}"
@@ -840,7 +857,7 @@
                             },
                             {
                                 "Id": {
-                                    "id": 704324418492462
+                                    "id": 103369644715460
                                 },
                                 "Name": "srcEndpoint=(Greater Than (>): True), destEndpoint=(Mark Complete: In)",
                                 "Components": {
@@ -849,7 +866,7 @@
                                         "Id": 2399628447169485965,
                                         "sourceEndpoint": {
                                             "nodeId": {
-                                                "id": 704298648688686
+                                                "id": 103343874911684
                                             },
                                             "slotId": {
                                                 "m_id": "{799D93DE-D1A9-42BC-982B-D2D671F50B10}"
@@ -857,10 +874,38 @@
                                         },
                                         "targetEndpoint": {
                                             "nodeId": {
-                                                "id": 704307238623278
+                                                "id": 103348169878980
                                             },
                                             "slotId": {
                                                 "m_id": "{3BACA73A-3EFA-4A95-81FB-C0A017B7126B}"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            {
+                                "Id": {
+                                    "id": 108072633904580
+                                },
+                                "Name": "srcEndpoint=(Function Call Node: On Tick : Out), destEndpoint=(Add (+): In)",
+                                "Components": {
+                                    "Component_[1428809218094050321]": {
+                                        "$type": "{64CA5016-E803-4AC4-9A36-BDA2C890C6EB} Connection",
+                                        "Id": 1428809218094050321,
+                                        "sourceEndpoint": {
+                                            "nodeId": {
+                                                "id": 107187870641604
+                                            },
+                                            "slotId": {
+                                                "m_id": "{89A332EA-04E7-480B-802C-A74DF977BBE8}"
+                                            }
+                                        },
+                                        "targetEndpoint": {
+                                            "nodeId": {
+                                                "id": 103339579944388
+                                            },
+                                            "slotId": {
+                                                "m_id": "{84B7B67E-429C-41CD-B9F4-AE55A01811B5}"
                                             }
                                         }
                                     }
@@ -878,16 +923,16 @@
                     "GraphCanvasData": [
                         {
                             "Key": {
-                                "id": 704285763786798
+                                "id": 103330990009796
                             },
                             "Value": {
                                 "ComponentData": {
                                     "{5F84B500-8C45-40D1-8EFC-A5306B241444}": {
                                         "$type": "SceneComponentSaveData",
                                         "ViewParams": {
-                                            "Scale": 0.5244564,
-                                            "AnchorX": -286.01043701171875,
-                                            "AnchorY": -482.404296875
+                                            "Scale": 0.7621429606368456,
+                                            "AnchorX": -543.2052001953125,
+                                            "AnchorY": -451.35888671875
                                         }
                                     }
                                 }
@@ -895,38 +940,7 @@
                         },
                         {
                             "Key": {
-                                "id": 704290058754094
-                            },
-                            "Value": {
-                                "ComponentData": {
-                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
-                                        "$type": "NodeSaveData"
-                                    },
-                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
-                                        "$type": "GeneralNodeTitleComponentSaveData",
-                                        "PaletteOverride": "MethodNodeTitlePalette"
-                                    },
-                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
-                                        "$type": "GeometrySaveData",
-                                        "Position": [
-                                            -240.0,
-                                            -60.0
-                                        ]
-                                    },
-                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
-                                        "$type": "StylingComponentSaveData",
-                                        "SubStyle": ".method"
-                                    },
-                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
-                                        "$type": "PersistentIdComponentSaveData",
-                                        "PersistentId": "{F5ED68B9-967F-4B79-9A5D-EFAD2577D2EC}"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "id": 704294353721390
+                                "id": 103335284977092
                             },
                             "Value": {
                                 "ComponentData": {
@@ -957,37 +971,7 @@
                         },
                         {
                             "Key": {
-                                "id": 704298648688686
-                            },
-                            "Value": {
-                                "ComponentData": {
-                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
-                                        "$type": "NodeSaveData"
-                                    },
-                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
-                                        "$type": "GeneralNodeTitleComponentSaveData",
-                                        "PaletteOverride": "MathNodeTitlePalette"
-                                    },
-                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
-                                        "$type": "GeometrySaveData",
-                                        "Position": [
-                                            800.0,
-                                            -60.0
-                                        ]
-                                    },
-                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
-                                        "$type": "StylingComponentSaveData"
-                                    },
-                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
-                                        "$type": "PersistentIdComponentSaveData",
-                                        "PersistentId": "{E8A9648C-1282-4D38-8D96-D141ACA6315C}"
-                                    }
-                                }
-                            }
-                        },
-                        {
-                            "Key": {
-                                "id": 704302943655982
+                                "id": 103339579944388
                             },
                             "Value": {
                                 "ComponentData": {
@@ -1017,7 +1001,37 @@
                         },
                         {
                             "Key": {
-                                "id": 704307238623278
+                                "id": 103343874911684
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MathNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            800.0,
+                                            -60.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{E8A9648C-1282-4D38-8D96-D141ACA6315C}"
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "Key": {
+                                "id": 103348169878980
                             },
                             "Value": {
                                 "ComponentData": {
@@ -1045,6 +1059,37 @@
                                     }
                                 }
                             }
+                        },
+                        {
+                            "Key": {
+                                "id": 107187870641604
+                            },
+                            "Value": {
+                                "ComponentData": {
+                                    "{24CB38BB-1705-4EC5-8F63-B574571B4DCD}": {
+                                        "$type": "NodeSaveData"
+                                    },
+                                    "{328FF15C-C302-458F-A43D-E1794DE0904E}": {
+                                        "$type": "GeneralNodeTitleComponentSaveData",
+                                        "PaletteOverride": "MethodNodeTitlePalette"
+                                    },
+                                    "{7CC444B1-F9B3-41B5-841B-0C4F2179F111}": {
+                                        "$type": "GeometrySaveData",
+                                        "Position": [
+                                            -400.0,
+                                            20.0
+                                        ]
+                                    },
+                                    "{B0B99C8A-03AF-4CF6-A926-F65C874C3D97}": {
+                                        "$type": "StylingComponentSaveData",
+                                        "SubStyle": ".method"
+                                    },
+                                    "{B1F49A35-8408-40DA-B79E-F1E3B64322CE}": {
+                                        "$type": "PersistentIdComponentSaveData",
+                                        "PersistentId": "{B3B6F55F-A594-4BAA-8DD9-A651830F0B48}"
+                                    }
+                                }
+                            }
                         }
                     ],
                     "StatisticsHelper": {
@@ -1054,15 +1099,15 @@
                                 "Value": 1
                             },
                             {
-                                "Key": 4511496914810470227,
+                                "Key": 7721683751185626951,
                                 "Value": 1
                             },
                             {
-                                "Key": 6840657073857873079,
+                                "Key": 9815218044492189981,
                                 "Value": 1
                             },
                             {
-                                "Key": 15746490057935251043,
+                                "Key": 10204019744198319120,
                                 "Value": 1
                             },
                             {
