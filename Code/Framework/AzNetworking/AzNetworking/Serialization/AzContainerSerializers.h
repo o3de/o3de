@@ -341,7 +341,7 @@ namespace AzNetworking
     {
         static bool SerializeObject(ISerializer& serializer, AZ::Matrix3x4& value)
         {
-            float values[9];
+            float values[12];
             value.StoreToRowMajorFloat12(values);
             serializer.Serialize(values[ 0], "0");
             serializer.Serialize(values[ 1], "1");
@@ -365,7 +365,7 @@ namespace AzNetworking
     {
         static bool SerializeObject(ISerializer& serializer, AZ::Matrix4x4& value)
         {
-            float values[9];
+            float values[16];
             value.StoreToRowMajorFloat16(values);
             serializer.Serialize(values[ 0], "0");
             serializer.Serialize(values[ 1], "1");
