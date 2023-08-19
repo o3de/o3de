@@ -425,6 +425,11 @@ namespace AZ
         m_values[rowGroup * m_numColGroups + colGroup] = subMatrix;
     }
 
+    AZ_MATH_INLINE AZStd::vector<Matrix4x4>& MatrixMxN::GetMatrixElements()
+    {
+        return m_values;
+    }
+
     AZ_MATH_INLINE void MatrixMxN::FixUnusedElements()
     {
         if (m_values.empty())
