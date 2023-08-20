@@ -127,9 +127,9 @@ namespace ScriptCanvasEditor
         return m_translationDuration;
     }
 
-    AZ_INLINE const AZStd::string& Reporter::GetFilePath() const
+    AZ_INLINE const AZStd::string Reporter::GetFilePath() const
     {
-        return m_filePath;
+        return m_filePath.String();
     }
 
     AZ_INLINE bool Reporter::IsActivated() const
