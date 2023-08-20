@@ -94,7 +94,7 @@ namespace ScriptCanvasEditor
 
         AZStd::sys_time_t GetTranslateDuration() const;
 
-        const AZStd::string& GetFilePath() const;
+        const AZStd::string GetFilePath() const;
 
         bool IsActivated() const;
 
@@ -194,7 +194,7 @@ namespace ScriptCanvasEditor
         bool m_isParseAttemptMade = false;
         bool m_isReportFinished = false;
         bool m_processOnly = false;
-        AZStd::string m_filePath;
+        AZ::IO::Path m_filePath;
         ExecutionConfiguration m_configuration = ExecutionConfiguration::Release;
         ExecutionMode m_mode;
         Execution::PerformanceTrackingReport m_performanceReport;
