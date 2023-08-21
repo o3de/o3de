@@ -128,6 +128,7 @@ namespace AZ
         const Matrix4x4& GetSubmatrix(AZStd::size_t rowGroup, AZStd::size_t colGroup) const;
         Matrix4x4& GetSubmatrix(AZStd::size_t rowGroup, AZStd::size_t colGroup);
         void SetSubmatrix(AZStd::size_t rowGroup, AZStd::size_t colGroup, const Matrix4x4& subMatrix);
+        AZStd::vector<Matrix4x4>& GetMatrixElements();
         //! @}
 
         //! Zeros out unused components of any submatrices

@@ -15,7 +15,7 @@ void ApplySimpleSpotLight(ViewSrg::SimpleSpotLight light, Surface surface, inout
     real3 posToLight = real3(light.m_position - surface.position);
     
     real3 dirToLight = normalize(posToLight);
-    real dotWithDirection = dot(dirToLight, -normalize(real3(light.m_direction)));
+    real dotWithDirection = dot(dirToLight, -real3(light.m_direction));
 
     // If outside the outer cone angle return.
     if (dotWithDirection < real(light.m_cosOuterConeAngle))
