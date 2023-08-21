@@ -187,7 +187,7 @@ void ApplySimpleSpotLight(RayTracingSceneSrg::SimpleSpotLight light, RayTracingL
         return;
 
     // test for outside of outer cone
-    float dotWithDirection = dot(dirToLight, -normalize(light.m_direction));
+    float dotWithDirection = dot(dirToLight, -light.m_direction);
     if (dotWithDirection <= light.m_cosOuterConeAngle)
         return;
 
