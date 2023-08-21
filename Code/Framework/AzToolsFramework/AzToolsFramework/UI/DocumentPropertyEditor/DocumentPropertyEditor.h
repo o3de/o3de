@@ -97,7 +97,6 @@ namespace AzToolsFramework
 
     public:
         explicit DPERowWidget();
-        void Init(int depth, DPERowWidget* parentRow);
         void Clear(); //!< destroy all layout contents and clear DOM children
         ~DPERowWidget();
 
@@ -144,7 +143,7 @@ namespace AzToolsFramework
         static bool ValueHasChildRows(const AZ::Dom::Value& rowValue);
 
         DPERowWidget* m_parentRow = nullptr;
-        int m_depth = 0; //!< number of levels deep in the tree. Used for indentation
+        int m_depth = -1; //!< number of levels deep in the tree. Used for indentation
         DPELayout* m_columnLayout = nullptr;
 
         //! widget children in DOM specified order; mix of row and column widgets

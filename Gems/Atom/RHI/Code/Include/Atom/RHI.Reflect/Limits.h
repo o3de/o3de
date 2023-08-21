@@ -52,7 +52,7 @@ namespace AZ::RHI
 #else
             constexpr uint32_t FrameCountMax = 3;
 #endif
-            
+
             // Due to the fact that D3D12 only supports the flip model we need to allocate at least
             // a minimum of 2 swapChain images or the drivers will complain.
             constexpr uint32_t MinSwapChainImages = 2;
@@ -92,6 +92,7 @@ namespace AZ::RHI
         enum class DeviceMask : uint32_t
         {
         };
+        AZ_DEFINE_ENUM_BITWISE_OPERATORS(DeviceMask);
         constexpr DeviceMask AllDevices{ static_cast<DeviceMask>(AZStd::numeric_limits<uint32_t>::max()) };
         constexpr DeviceMask DefaultDevice{ 1u };
 
