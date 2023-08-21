@@ -16,7 +16,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzFramework/AzFrameworkNativeUIModule.h>
+#include <AzFramework/Components/NativeUISystemComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
 
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
@@ -311,6 +313,7 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::GlobalPaintBrushSettingsSystemComponent>(),
                 azrtti_typeid<AzToolsFramework::MetadataManager>(),
                 azrtti_typeid<AzToolsFramework::UuidUtilComponent>(),
+                azrtti_typeid<AzFramework::NativeUISystemComponent>(),
             });
 
         return components;

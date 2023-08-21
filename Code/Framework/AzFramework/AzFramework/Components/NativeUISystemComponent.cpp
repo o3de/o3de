@@ -101,7 +101,7 @@ namespace AzFramework
 
     void NativeUISystemComponent::GetProvidedServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("NativeUIInputSystemService", 0x67675d29));
+        provided.push_back(AZ_CRC_CE("NativeUIInputSystemService"));
     }
 
     void NativeUISystemComponent::Activate()

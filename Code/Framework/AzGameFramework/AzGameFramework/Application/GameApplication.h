@@ -23,6 +23,12 @@ namespace AzGameFramework
         GameApplication(int argc, char** argvS);
         ~GameApplication();
 
+        //////////////////////////////////////////////////////////////////////////
+        // AZ::ComponentApplication
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
+        //////////////////////////////////////////////////////////////////////////
+
+
         void SetHeadless(bool headless);
 
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;

@@ -165,7 +165,7 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////////////////////////
     void InputSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("NativeUIInputSystemService", 0x67675d29));
+        dependent.push_back(AZ_CRC_CE("NativeUIInputSystemService"));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
