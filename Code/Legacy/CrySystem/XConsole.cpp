@@ -806,7 +806,6 @@ void CXConsole::DumpCVars(ICVarDumpSink* pCallback, unsigned int nFlagsFilter)
 //////////////////////////////////////////////////////////////////////////
 ICVar* CXConsole::GetCVar(const char* sName)
 {
-    assert(this);
     assert(sName);
 
     if (con_debug)

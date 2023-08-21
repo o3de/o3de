@@ -52,6 +52,8 @@ set(FILES
     Tests/ImagePropertyTests.cpp
     Tests/BufferPropertyTests.cpp
     Tests/IntervalMapTests.cpp
+
+    Tests/MultiDevicePipelineStateTests.cpp
 )
 
 set(SKIP_UNITY_BUILD_INCLUSION_FILES
