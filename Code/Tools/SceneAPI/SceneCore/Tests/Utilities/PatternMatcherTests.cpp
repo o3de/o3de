@@ -27,6 +27,12 @@ namespace AZ
                 EXPECT_FALSE(matcher.MatchesPattern("string_with_something_else"));
             }
 
+            TEST(PatternMatcherTest, MatchesPattern_CaseInsensitiveMatchingNameWithPostFix_ReturnsTrue)
+            {
+                PatternMatcher matcher("_PoStFiX", PatternMatcher::MatchApproach::PostFix);
+                EXPECT_TRUE(matcher.MatchesPattern("string_with_postfix"));
+            }
+
             TEST(PatternMatcherTest, MatchesPattern_NonMatchingNameWithPostFixAndEarlyOutForSmallerTestThanPattern_ReturnsFalse)
             {
                 PatternMatcher matcher("_postfix", PatternMatcher::MatchApproach::PostFix);
@@ -45,6 +51,12 @@ namespace AZ
                 EXPECT_FALSE(matcher.MatchesPattern("string_with_something_else"));
             }
 
+            TEST(PatternMatcherTest, MatchesPattern_CaseInsensitiveMatchingNameWithPreFix_ReturnsTrue)
+            {
+                PatternMatcher matcher("PrEFiX_", PatternMatcher::MatchApproach::PreFix);
+                EXPECT_TRUE(matcher.MatchesPattern("prefix_for_string"));
+            }
+
             TEST(PatternMatcherTest, MatchesPattern_MatchingNameWithRegex_ReturnsTrue)
             {
                 PatternMatcher matcher("^.{4}$", PatternMatcher::MatchApproach::Regex);
@@ -56,6 +68,23 @@ namespace AZ
                 PatternMatcher matcher("^.{4}$", PatternMatcher::MatchApproach::Regex);
                 EXPECT_FALSE(matcher.MatchesPattern("string_to_long_for_regex"));
             }
+
+            TEST(PatternMatcherTest, MatchesPattern_MatchingPrefixInArrayOfPatterns_ReturnsTrue)
+            {
+                AZStd::array<AZStd::string_view, 3> patterns = { "postfix", "xxx", "prefix_" };
+
+                PatternMatcher matcher(patterns, PatternMatcher::MatchApproach::PreFix);
+                EXPECT_TRUE(matcher.MatchesPattern("prefix_for_string"));
+            }
+
+            TEST(PatternMatcherTest, MatchesPattern_NonMatchingPrefixInArrayOfPatterns_ReturnsFalse)
+            {
+                AZStd::array<AZStd::string_view, 2> patterns = { "postfix", "xxx" };
+
+                PatternMatcher matcher(patterns, PatternMatcher::MatchApproach::PreFix);
+                EXPECT_FALSE(matcher.MatchesPattern("prefix_for_string"));
+            }
+
         } // SceneCore
     } // SceneAPI
 } // AZ
