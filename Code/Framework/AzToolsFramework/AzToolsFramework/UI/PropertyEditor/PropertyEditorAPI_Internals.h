@@ -276,15 +276,25 @@ namespace AzToolsFramework
                 // Attribute definitions may be templated and will thus support multiple types.
                 // Therefore we must try all registered definitions for a particular attribute
                 // in an effort to find one that can successfully extract the attribute data.
-                propertyEditorSystem->EnumerateRegisteredAttributes(
-                    name,
-                    [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+
+                bool fallback = false;
+                auto getAttributeFromValue = [&](const AZ::DocumentPropertyEditor::AttributeDefinitionInterface& attributeReader)
+                {
+                    if (marshalledAttribute == nullptr)
                     {
-                        if (marshalledAttribute == nullptr)
-                        {
-                            marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second);
-                        }
-                    });
+                        marshalledAttribute = attributeReader.DomValueToLegacyAttribute(attributeIt->second, fallback);
+                    }
+                };
+
+                // try the conversion once without type fallback
+                propertyEditorSystem->EnumerateRegisteredAttributes(name, getAttributeFromValue);
+
+                if (marshalledAttribute == nullptr)
+                {
+                    // still null, try it again allowing type fallback
+                    fallback = true;
+                    propertyEditorSystem->EnumerateRegisteredAttributes(name, getAttributeFromValue);
+                }
 
                 if (!marshalledAttribute)
                 {

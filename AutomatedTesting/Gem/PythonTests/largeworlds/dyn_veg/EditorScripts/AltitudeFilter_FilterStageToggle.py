@@ -49,7 +49,7 @@ def AltitudeFilter_FilterStageToggle():
     # Create basic vegetation entity
     position = math.Vector3(512.0, 512.0, 32.0)
 
-    flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.azmodel")
+    flower_asset_path = os.path.join("assets", "objects", "foliage", "grass_flower_pink.fbx.azmodel")
     flower_prefab = dynveg.create_temp_mesh_prefab(flower_asset_path, "AltFilter_PinkFlower2")[0]
 
     vegetation = dynveg.create_temp_prefab_vegetation_area("vegetation", position, 16.0, 16.0, 16.0, flower_prefab)

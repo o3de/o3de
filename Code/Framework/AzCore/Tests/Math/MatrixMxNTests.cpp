@@ -294,6 +294,34 @@ namespace UnitTest
         }
     }
 
+    TEST_F(Math_MatrixMxN, TestOuterProduct)
+    {
+        const float lhsElements[] =
+        {
+            0.0f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f
+        };
+
+        const float rhsElements[] =
+        {
+            4.0f, 3.0f, 2.0f, 1.0f, 0.0f
+        };
+
+        const AZ::VectorN lhsVector = AZ::VectorN::CreateFromFloats(7, lhsElements);
+        const AZ::VectorN rhsVector = AZ::VectorN::CreateFromFloats(5, rhsElements);
+
+        AZ::MatrixMxN output = AZ::MatrixMxN::CreateZero(7, 5);
+        AZ::OuterProduct(lhsVector, rhsVector, output);
+        for (AZStd::size_t rowIter = 0; rowIter < output.GetRowCount(); ++rowIter)
+        {
+            for (AZStd::size_t colIter = 0; colIter < output.GetColumnCount(); ++colIter)
+            {
+                const float expectedOutput = float(rowIter) * (4.0f - float(colIter));
+                const float actualOutput = output.GetElement(rowIter, colIter);
+                EXPECT_FLOAT_EQ(actualOutput, expectedOutput);
+            }
+        }
+    }
+
     TEST_F(Math_MatrixMxN, TestVectorMatrixMultiply)
     {
         const float matrixElements[] =
@@ -326,6 +354,45 @@ namespace UnitTest
 
         AZ::VectorN output = AZ::VectorN::CreateZero(6);
         VectorMatrixMultiply(matrix, vector, output);
+        for (AZStd::size_t iter = 0; iter < output.GetDimensionality(); ++iter)
+        {
+            EXPECT_FLOAT_EQ(output.GetElement(iter), outputElements[iter]);
+        }
+    }
+
+    TEST_F(Math_MatrixMxN, TestVectorMatrixLeftMultiply)
+    {
+        const float matrixElements[] =
+        {
+          1.0f, 0.0f, 2.0f, 0.0f, 1.0f, 0.0f, 3.0f,
+          0.0f, 1.0f, 0.0f, 2.0f, 0.0f, 1.0f, 3.0f,
+          0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f, 3.0f,
+          1.0f, 0.0f, 2.0f, 0.0f, 1.0f, 0.0f, 3.0f,
+          0.0f, 1.0f, 0.0f, 2.0f, 0.0f, 1.0f, 3.0f,
+          0.0f, 0.0f, 1.0f, 0.0f, 2.0f, 0.0f, 3.0f,
+        };
+
+        const float vectorElements[] =
+        {
+            1.0f, 0.0f, 2.0f, 0.0f, 3.0f, 0.0f
+        };
+
+        const float outputElements[] =
+        {
+            1.0f + 0.0f + 0.0f + 0.0f + 0.0f + 0.0f,
+            0.0f + 0.0f + 0.0f + 0.0f + 3.0f + 0.0f,
+            2.0f + 0.0f + 2.0f + 0.0f + 0.0f + 0.0f,
+            0.0f + 0.0f + 0.0f + 0.0f + 6.0f + 0.0f,
+            1.0f + 0.0f + 4.0f + 0.0f + 0.0f + 0.0f,
+            0.0f + 0.0f + 0.0f + 0.0f + 3.0f + 0.0f,
+            3.0f + 0.0f + 6.0f + 0.0f + 9.0f + 0.0f,
+        };
+
+        const AZ::MatrixMxN matrix = AZ::MatrixMxN::CreateFromPackedFloats(6, 7, matrixElements);
+        const AZ::VectorN vector = AZ::VectorN::CreateFromFloats(6, vectorElements);
+
+        AZ::VectorN output = AZ::VectorN::CreateZero(7);
+        VectorMatrixMultiplyLeft(vector, matrix, output);
         for (AZStd::size_t iter = 0; iter < output.GetDimensionality(); ++iter)
         {
             EXPECT_FLOAT_EQ(output.GetElement(iter), outputElements[iter]);

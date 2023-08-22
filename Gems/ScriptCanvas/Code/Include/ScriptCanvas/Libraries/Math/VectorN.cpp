@@ -47,12 +47,6 @@ namespace ScriptCanvas
             return source.IsZero(aznumeric_cast<float>(tolerance));
         }
 
-        Data::VectorNType& ReLU(Data::VectorNType& source)
-        {
-            source.ReLU();
-            return source;
-        }
-
         Data::VectorNType GetMin(const Data::VectorNType& a, const Data::VectorNType& b)
         {
             if (a.GetDimensionality() == b.GetDimensionality())
@@ -82,12 +76,12 @@ namespace ScriptCanvas
 
         Data::NumberType LengthSquared(const Data::VectorNType& source)
         {
-            return source.GetLengthSq();
+            return source.Dot(source);
         }
 
         Data::NumberType Length(const Data::VectorNType& source)
         {
-            return source.GetLength();
+            return source.L2Norm();
         }
 
         Data::VectorNType& Normalize(Data::VectorNType& source)
