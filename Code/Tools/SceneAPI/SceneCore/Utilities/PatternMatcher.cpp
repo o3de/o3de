@@ -190,7 +190,8 @@ namespace AZ
 
             const AZStd::string& PatternMatcher::GetPattern() const
             {
-                return m_patterns[0];
+                const static AZStd::string emptyString{};
+                return !m_patterns.empty() ? m_patterns.front() : emptyString;
             }
 
             PatternMatcher::MatchApproach PatternMatcher::GetMatchApproach() const
