@@ -214,7 +214,7 @@ namespace EMotionFX
                         const SceneContainers::SceneGraph::NodeIndex nodeIndex = graph.Find(bonePath);
                         if (!nodeIndex.IsValid())
                         {
-                            AZ_TracePrintf(
+                            AZ_Trace(
                                 SceneUtil::WarningWindow, "Critical bone %s is not stored in the scene. Skipping it.", bonePath.c_str());
                             return true;
                         }
