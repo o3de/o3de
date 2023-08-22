@@ -136,7 +136,7 @@ namespace AtomImGuiTools
         {
             if (ImGui::BeginMenu("Render Pipelines"))
             {
-                for (auto renderPipelinePath : m_switchableRenderPipelines)
+                for (const auto& renderPipelinePath : m_switchableRenderPipelines)
                 {
                     if (ImGui::MenuItem(renderPipelinePath.c_str()))
                     {
