@@ -25,8 +25,14 @@ namespace AZ
 
             void SceneNodeSelectionList::AddSelectedNode(const AZStd::string& name)
             {
-                m_unselectedNodes.erase(name);
-                m_selectedNodes.emplace(name);
+                if (auto extractedNodeHandle = m_unselectedNodes.extract(name); extractedNodeHandle)
+                {
+                    m_selectedNodes.insert(extractedNodeHandle);
+                }
+                else
+                {
+                    m_selectedNodes.emplace(name);
+                }
             }
 
             void SceneNodeSelectionList::AddSelectedNode(AZStd::string&& name)
