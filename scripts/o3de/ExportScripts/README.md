@@ -79,4 +79,4 @@ these args to extract the export options.
 > note: It is required to provide a handler for `--script-help` since the arg parser's handling of `--help` will display the help just for the `export-script` command.
 >
 
-The custom script will be processed by passing in its path to the `--export-script` argument.)
+The custom script will be processed by passing in its path to the `--export-script` argument.
