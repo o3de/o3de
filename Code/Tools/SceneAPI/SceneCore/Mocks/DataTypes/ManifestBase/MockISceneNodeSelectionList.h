@@ -30,7 +30,10 @@ namespace AZ
                     void(const AZStd::string & name));
                 void AddSelectedNode(AZStd::string&& name)
                 {
-                    AddSelectedNode(AZStd::move(name));
+                    // Passing in AZStd::move(Name) directly into AddSelectedNode() causes compile errors on Linux as it
+                    // thinks this has infinite recursion. Storing in a temp variable disambiguates the AddSelectedNode() call.
+                    const AZStd::string& movedName = AZStd::move(name);
+                    AddSelectedNode(movedName);
                 }
                 MOCK_METHOD1(RemoveSelectedNode,
                     void(const AZStd::string & name));
