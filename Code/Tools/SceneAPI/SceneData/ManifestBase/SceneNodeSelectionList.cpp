@@ -23,80 +23,22 @@ namespace AZ
                 return m_selectedNodes.size();
             }
 
-            const AZStd::string& SceneNodeSelectionList::GetSelectedNode(size_t index) const
+            void SceneNodeSelectionList::AddSelectedNode(const AZStd::string& name)
             {
-                AZ_Assert(index < m_selectedNodes.size(), "Invalid index %i for selected node in mesh group.", index);
-                return m_selectedNodes[index];
+                m_unselectedNodes.erase(name);
+                m_selectedNodes.emplace(name);
             }
 
-            size_t SceneNodeSelectionList::AddSelectedNode(const AZStd::string& name)
+            void SceneNodeSelectionList::AddSelectedNode(AZStd::string&& name)
             {
-                auto unselectEntry = AZStd::find(m_unselectedNodes.begin(), m_unselectedNodes.end(), name);
-                if (unselectEntry != m_unselectedNodes.end())
-                {
-                    m_unselectedNodes.erase(unselectEntry);
-                }
-
-                auto entry = AZStd::find(m_selectedNodes.begin(), m_selectedNodes.end(), name);
-                if (entry == m_selectedNodes.end())
-                {
-                    size_t index = m_selectedNodes.size();
-                    m_selectedNodes.push_back(name);
-                    return index;
-                }
-                else
-                {
-                    return entry - m_selectedNodes.begin();
-                }
-            }
-
-            size_t SceneNodeSelectionList::AddSelectedNode(AZStd::string&& name)
-            {
-                auto unselectedEntry = AZStd::find(m_unselectedNodes.begin(), m_unselectedNodes.end(), name);
-                if (unselectedEntry != m_unselectedNodes.end())
-                {
-                    m_unselectedNodes.erase(unselectedEntry);
-                }
-
-                auto entry = AZStd::find(m_selectedNodes.begin(), m_selectedNodes.end(), name);
-                if (entry == m_selectedNodes.end())
-                {
-                    size_t index = m_selectedNodes.size();
-                    m_selectedNodes.push_back(AZStd::move(name));
-                    return index;
-                }
-                else
-                {
-                    return entry - m_selectedNodes.begin();
-                }
-            }
-
-            void SceneNodeSelectionList::RemoveSelectedNode(size_t index)
-            {
-                if (index < m_selectedNodes.size())
-                {
-                    auto unselectedEntry = AZStd::find(m_unselectedNodes.begin(), m_unselectedNodes.end(), m_selectedNodes[index]);
-                    if (unselectedEntry == m_unselectedNodes.end())
-                    {
-                        m_unselectedNodes.push_back(m_selectedNodes[index]);
-                    }
-                    m_selectedNodes.erase(m_selectedNodes.begin() + index);
-                }
+                m_unselectedNodes.erase(name);
+                m_selectedNodes.emplace(AZStd::move(name));
             }
 
             void SceneNodeSelectionList::RemoveSelectedNode(const AZStd::string& name)
             {
-                auto selectEntry = AZStd::find(m_selectedNodes.begin(), m_selectedNodes.end(), name);
-                if (selectEntry != m_selectedNodes.end())
-                {
-                    m_selectedNodes.erase(selectEntry);
-                }
-
-                auto entry = AZStd::find(m_unselectedNodes.begin(), m_unselectedNodes.end(), name);
-                if (entry == m_unselectedNodes.end())
-                {
-                    m_unselectedNodes.push_back(name);
-                }
+                m_selectedNodes.erase(name);
+                m_unselectedNodes.emplace(name);
             }
 
             void SceneNodeSelectionList::ClearSelectedNodes()
@@ -104,22 +46,36 @@ namespace AZ
                 m_selectedNodes.clear();
             }
 
-
-
-            size_t SceneNodeSelectionList::GetUnselectedNodeCount() const
-            {
-                return m_unselectedNodes.size();
-            }
-
-            const AZStd::string& SceneNodeSelectionList::GetUnselectedNode(size_t index) const
-            {
-                AZ_Assert(index < m_unselectedNodes.size(), "Invalid index %i for unselected node in mesh group.", index);
-                return m_unselectedNodes[index];
-            }
-
             void SceneNodeSelectionList::ClearUnselectedNodes()
             {
                 m_unselectedNodes.clear();
+            }
+
+            bool SceneNodeSelectionList::IsSelectedNode(const AZStd::string& name) const
+            {
+                return m_selectedNodes.contains(name);
+            }
+
+            void SceneNodeSelectionList::EnumerateSelectedNodes(const EnumerateNodesCallback& callback) const
+            {
+                for (auto& node : m_selectedNodes)
+                {
+                    if (!callback(node))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            void SceneNodeSelectionList::EnumerateUnselectedNodes(const EnumerateNodesCallback& callback) const
+            {
+                for (auto& node : m_unselectedNodes)
+                {
+                    if (!callback(node))
+                    {
+                        break;
+                    }
+                }
             }
 
             AZStd::unique_ptr<DataTypes::ISceneNodeSelectionList> SceneNodeSelectionList::Copy() const
@@ -150,7 +106,7 @@ namespace AZ
                     return;
                 }
 
-                serializeContext->Class<SceneNodeSelectionList, DataTypes::ISceneNodeSelectionList>()->Version(1)
+                serializeContext->Class<SceneNodeSelectionList, DataTypes::ISceneNodeSelectionList>()->Version(2)
                     ->Field("selectedNodes", &SceneNodeSelectionList::m_selectedNodes)
                     ->Field("unselectedNodes", &SceneNodeSelectionList::m_unselectedNodes);
             }
