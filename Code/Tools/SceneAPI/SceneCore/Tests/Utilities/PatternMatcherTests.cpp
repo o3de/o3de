@@ -71,7 +71,7 @@ namespace AZ
 
             TEST(PatternMatcherTest, MatchesPattern_MatchingPrefixInArrayOfPatterns_ReturnsTrue)
             {
-                AZStd::array<AZStd::string_view, 3> patterns = { "postfix", "xxx", "prefix_" };
+                constexpr auto patterns = AZStd::to_array<AZStd::string_view>({ "postfix", "xxx", "prefix_" });
 
                 PatternMatcher matcher(patterns, PatternMatcher::MatchApproach::PreFix);
                 EXPECT_TRUE(matcher.MatchesPattern("prefix_for_string"));
