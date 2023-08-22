@@ -15,10 +15,13 @@ import pathlib
 import platform
 import psutil
 import shutil
+import subprocess
 
 from o3de import manifest, utils
 from typing import List
 from enum import IntEnum
+
+LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 
 # Account for some windows-specific attributes
 if platform.system().lower() == 'windows':
@@ -26,17 +29,31 @@ if platform.system().lower() == 'windows':
     O3DE_SCRIPT_NAME = 'o3de.bat'
     GENERATOR = None
     CMAKE_GENERATOR_OPTIONS = ['-DLY_DISABLE_TEST_MODULES=ON']
+    CMAKE_MULTI_CONFIGURATION_GENERATOR = True
     ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.pdb', '*.lock']
+
 else:
+    # Test if Ninja is available from the command line to determine the generator and multi-config capability
+    test_ninja_result = None
+    try:
+        test_ninja_result = subprocess.run(['ninja', '--version'])
+    except FileNotFoundError:
+        pass
+
+    if test_ninja_result and test_ninja_result.returncode == 0:
+        GENERATOR = "Ninja Multi-Config"
+        CMAKE_MULTI_CONFIGURATION_GENERATOR = True
+    else:
+        GENERATOR = "Unix Makefiles"
+        CMAKE_MULTI_CONFIGURATION_GENERATOR = False
+
     EXECUTABLE_EXTENSION = ""
     O3DE_SCRIPT_NAME = 'o3de.sh'
-    GENERATOR = "Ninja Multi-Config"
     CMAKE_GENERATOR_OPTIONS = ['-DLY_DISABLE_TEST_MODULES=ON', '-DLY_STRIP_DEBUG_SYMBOLS=ON']
     ADDITIONAL_PLATFORM_IGNORE_FILES = ['*.dbg', '*.lock']
 
 CUSTOM_SCRIPT_HELP_ARGUMENT = '--script-help'
 
-LOCAL_ENGINE_PATH  = pathlib.Path(__file__).parent.parent.parent.parent
 
 # Regardless of the output package configuration, the tools used for the export process must be built with
 # the profile configuration
@@ -341,7 +358,6 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
 
     @param ctx:                 Export Context
     @param tools_build_path:    The tools (cmake) build path to create the build project for the tools
-    @param build_cwd:           The working directory to use when executing A
     @param logger:              Optional Logger
     @return: None
     """
@@ -359,6 +375,8 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         cmake_configure_command.extend(["-G", GENERATOR])
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
+    if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
+        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
     if ctx.is_engine_centric:
         cmake_configure_command.extend([f'-DLY_PROJECTS={ctx.project_path.name}'])
     if logger:
@@ -368,9 +386,13 @@ def build_export_toolchain(ctx: O3DEScriptExportContext,
         raise ExportProjectError("Error generating the project for the pre-requisite tools.")
 
     # Build the project for the pre-requisite tools
-    cmake_build_command = ["cmake", "--build", tools_build_path,
-                                    "--config", PREREQUISITE_TOOL_BUILD_CONFIG,
-                                    "--target", "AssetProcessorBatch", "AssetBundlerBatch"]
+    cmake_build_command = ["cmake", "--build", tools_build_path]
+
+    if CMAKE_MULTI_CONFIGURATION_GENERATOR:
+        cmake_build_command.extend(["--config", PREREQUISITE_TOOL_BUILD_CONFIG])
+
+    cmake_build_command.extend(["--target", "AssetProcessorBatch", "AssetBundlerBatch"])
+
     if ctx.cmake_additional_build_args:
         cmake_build_command.extend(ctx.cmake_additional_build_args)
     if logger:
@@ -433,6 +455,8 @@ def build_game_targets(ctx: O3DEScriptExportContext,
 
     if GENERATOR:
         cmake_configure_command.extend(["-G", GENERATOR])
+    if not CMAKE_MULTI_CONFIGURATION_GENERATOR:
+        cmake_configure_command.extend([f'-DCMAKE_BUILD_TYPE={PREREQUISITE_TOOL_BUILD_CONFIG}'])
     if CMAKE_GENERATOR_OPTIONS:
         cmake_configure_command.extend(CMAKE_GENERATOR_OPTIONS)
     if ctx.is_engine_centric:
@@ -446,9 +470,13 @@ def build_game_targets(ctx: O3DEScriptExportContext,
     if ret != 0:
         raise ExportProjectError(f"Error generating projects for project {ctx.project_name}.")
 
-    mono_build_args = ["cmake", "--build", game_build_path,
-                                "--config", build_config,
-                                "--target"]
+    mono_build_args = ["cmake", "--build", game_build_path]
+
+    if CMAKE_MULTI_CONFIGURATION_GENERATOR:
+        mono_build_args.extend(["--config", build_config])
+
+    mono_build_args.extend(["--target"])
+
     if should_build_server_launcher:
         mono_build_args.append(f"{ctx.project_name}.ServerLauncher")
     if should_build_game_launcher:
