@@ -250,7 +250,7 @@ namespace AZ
                             &Events::GraphMetaInfo::GetVirtualTypes, virtualTypes, *root->GetScene(), index);
                         for (Crc32 name : virtualTypes)
                         {
-                            if (m_filterVirtualTypes.find(name) != m_filterVirtualTypes.end())
+                            if (m_filterVirtualTypes.contains(name))
                             {
                                 result++;
                                 break;
